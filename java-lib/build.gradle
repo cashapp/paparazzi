@@ -1,15 +1,18 @@
 apply plugin: 'java-library'
 apply plugin: 'kotlin'
 
-sourceCompatibility = "7"
-targetCompatibility = "7"
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
 
 dependencies {
-    //    api 'com.android.tools.layoutlib:layoutlib-api:26.3.2'
-    api fileTree(dir: '/Applications/Android Studio.app/Contents/plugins/android/lib/', include: 'layoutlib.jar')
+    api files('libs/layoutlib.jar')
+    api files('libs/layoutlib-api.jar')
+    api files('libs/kxml2-2.3.0.jar')
+    api files('libs/sdk-common.jar')
+    api files('libs/android-base-common.jar')
     api 'junit:junit:4.12'
     api 'androidx.annotation:annotation:1.0.2'
-
+    api 'com.google.guava:guava:27.1-jre'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 }
 
