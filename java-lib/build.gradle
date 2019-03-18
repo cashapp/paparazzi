@@ -5,11 +5,11 @@ sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
 dependencies {
-    api files('libs/layoutlib.jar')
-    api files('libs/layoutlib-api.jar')
-    api files('libs/kxml2-2.3.0.jar')
-    api files('libs/sdk-common.jar')
-    api files('libs/android-base-common.jar')
+    api files("$rootDir/libs/layoutlib.jar")
+    api files("$rootDir/libs/layoutlib-api.jar")
+    api files("$rootDir/libs/kxml2-2.3.0.jar")
+    api files("$rootDir/libs/sdk-common.jar")
+    api files("$rootDir/libs/android-base-common.jar")
     api 'junit:junit:4.12'
     api 'androidx.annotation:annotation:1.0.2'
     api 'com.google.guava:guava:27.1-jre'
