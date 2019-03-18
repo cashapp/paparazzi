@@ -1,0 +1,2 @@
+include ':android-lib', ':java-lib'
+rootProject.name='snapshotter'
