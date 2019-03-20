@@ -63,6 +63,7 @@ class Paparazzi : TestRule {
 
   init {
     setup()
+    RenderTestBase.beforeClass()
   }
 
   override fun apply(
