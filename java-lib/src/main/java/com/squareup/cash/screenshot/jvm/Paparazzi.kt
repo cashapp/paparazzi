@@ -1,0 +1,137 @@
+package com.squareup.cash.screenshot.jvm
+
+import android.view.BridgeInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.annotation.LayoutRes
+import com.android.ide.common.rendering.api.RenderSession
+import com.android.ide.common.rendering.api.Result
+import com.android.ide.common.rendering.api.SessionParams
+import com.android.layoutlib.bridge.Bridge.cleanupThread
+import com.android.layoutlib.bridge.Bridge.prepareThread
+import com.android.layoutlib.bridge.BridgeRenderSession
+import com.android.layoutlib.bridge.impl.RenderAction
+import com.android.layoutlib.bridge.impl.RenderSessionImpl
+import com.android.layoutlib.bridge.intensive.RenderResult
+import com.android.layoutlib.bridge.intensive.setup.LayoutLibTestCallback
+import com.android.layoutlib.bridge.intensive.setup.LayoutPullParser
+import com.android.layoutlib.bridge.intensive.util.ImageUtils
+import com.android.layoutlib.bridge.intensive.util.SessionParamsBuilder
+import org.junit.rules.TestRule
+import org.junit.runner.Description
+import org.junit.runners.model.Statement
+import java.io.File
+import java.io.IOException
+import javax.imageio.ImageIO
+
+class Paparazzi : TestRule {
+  private val THUMBNAIL_SIZE = 1000
+
+  private lateinit var session: RenderSession
+
+  override fun apply(
+    base: Statement?,
+    description: Description?
+  ) = object : Statement() {
+    @Throws(Throwable::class)
+    override fun evaluate() {
+      try {
+        base?.evaluate() // This will run the test.
+      } finally {
+      }
+    }
+  }
+
+  fun <V : View> inflate(@LayoutRes layoutId: Int): V {
+    TODO("need todo")
+  }
+
+  fun <V : View> inflateView(
+    @LayoutRes layoutId: Int,
+    layoutLibCallback: LayoutLibTestCallback,
+    paramsBuilder: SessionParamsBuilder
+  ): V {
+    layoutLibCallback.initResources()
+    val parser = LayoutPullParser.createFromString(
+        """
+        |<?xml version="1.0" encoding="utf-8"?>
+        |<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        |              android:layout_width="match_parent"
+        |              android:layout_height="match_parent"/>
+        """.trimMargin()
+    )
+
+    val params = paramsBuilder
+        .setParser(parser)
+        .setCallback(layoutLibCallback)
+        .setTheme("Theme.Material.NoActionBar.Fullscreen", false)
+        .setRenderingMode(SessionParams.RenderingMode.V_SCROLL)
+        .build()
+
+    val scene = RenderSessionImpl(params)
+
+    try {
+      prepareThread()
+      scene.init(params.timeout)
+
+      val bridgeInflater =
+        RenderAction.getCurrentContext().getSystemService("layout_inflater") as BridgeInflater
+      val view = bridgeInflater.inflate(layoutId, null) as V
+
+      val lastResult = scene.inflate()
+      session = createBridgeSession(scene, lastResult)
+      (session.rootViews.get(0).viewObject as ViewGroup).addView(view)
+
+      return view
+    } finally {
+      scene.release()
+      cleanupThread()
+    }
+  }
+
+  fun snapshot() {
+    session.render(50000)
+    val fromSession = RenderResult.getFromSession(session)
+
+    // hmm
+    session.dispose()
+
+    saveImage(fromSession)
+  }
+
+  private fun createBridgeSession(
+    scene: RenderSessionImpl,
+    lastResult: Result
+  ): BridgeRenderSession {
+    try {
+      val bridgeSessionClass = Class.forName("com.android.layoutlib.bridge.BridgeRenderSession")
+      val constructor =
+        bridgeSessionClass.getDeclaredConstructor(RenderSessionImpl::class.java, Result::class.java)
+      constructor.isAccessible = true
+      return constructor.newInstance(scene, lastResult) as BridgeRenderSession
+    } catch (e: Exception) {
+      throw RuntimeException(e)
+    }
+  }
+
+  private fun saveImage(result: RenderResult) {
+    try {
+      val image = result.image
+      val maxDimension = Math.max(image.width, image.height)
+      val scale = THUMBNAIL_SIZE / maxDimension.toDouble()
+      val thumbnail = ImageUtils.scale(image, scale, scale)
+
+      val output = File("out/failures", "output.jpg")
+      if (output.exists()) {
+        val deleted = output.delete()
+        if (!deleted) {
+          println("Error deleting previous file stored at " + output.path)
+        }
+      }
+      ImageIO.write(thumbnail, "PNG", output)
+      println("Thumbnail for current rendering stored at " + output.path)
+    } catch (e: IOException) {
+      println(e)
+    }
+  }
+}
