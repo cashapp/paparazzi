@@ -43,7 +43,7 @@ public class RenderResult {
     }
 
     @NonNull
-    static RenderResult getFromSession(@NonNull RenderSession session) {
+    public static RenderResult getFromSession(@NonNull RenderSession session) {
         return new RenderResult(session.getResult(),
                 new ArrayList<>(session.getSystemRootViews()),
                 new ArrayList<>(session.getRootViews()),

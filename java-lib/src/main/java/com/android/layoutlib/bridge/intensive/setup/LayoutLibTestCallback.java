@@ -52,7 +52,7 @@ import com.google.common.io.ByteStreams;
 import static com.android.ide.common.rendering.api.ResourceNamespace.RES_AUTO;
 
 public class LayoutLibTestCallback extends LayoutlibCallback {
-    private static final String PACKAGE_NAME = "com.squareup.cash";
+    private static final String PACKAGE_NAME = "com.squareup.cash.screenshot";
 
     private final Map<Integer, ResourceReference> mProjectResources = new HashMap<>();
     private final Map<ResourceReference, Integer> mResources = new HashMap<>();
