@@ -559,7 +559,7 @@ public class RenderTestBase {
      * mode, AppTheme as theme and Nexus 5.
      */
     @NonNull
-    protected SessionParamsBuilder getSessionParamsBuilder() {
+    public SessionParamsBuilder getSessionParamsBuilder() {
         return new SessionParamsBuilder()
                 .setLayoutLog(getLayoutLog())
                 .setFrameworkResources(sFrameworkRepo)
