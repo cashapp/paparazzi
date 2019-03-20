@@ -95,7 +95,7 @@ public class RenderTestBase {
     protected static final String PLATFORM_DIR;
     private static final String TEST_RES_DIR;
     /** Location of the app to test inside {@link #TEST_RES_DIR} */
-    protected static final String APP_TEST_DIR = "/Users/jwilson/Projects/screenshot/android-lib";
+    protected static final String APP_TEST_DIR = "/Users/jrod/Development/screenshot/android-lib";
     /** Location of the app's res dir inside {@link #TEST_RES_DIR} */
     private static final String APP_TEST_RES = APP_TEST_DIR + "/src/main/res";
     /** Location of the app's asset dir inside {@link #TEST_RES_DIR} */
@@ -559,7 +559,7 @@ public class RenderTestBase {
      * mode, AppTheme as theme and Nexus 5.
      */
     @NonNull
-    protected SessionParamsBuilder getSessionParamsBuilder() {
+    public SessionParamsBuilder getSessionParamsBuilder() {
         return new SessionParamsBuilder()
                 .setLayoutLog(getLayoutLog())
                 .setFrameworkResources(sFrameworkRepo)
