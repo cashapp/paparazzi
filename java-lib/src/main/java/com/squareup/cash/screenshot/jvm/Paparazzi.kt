@@ -1,5 +1,7 @@
 package com.squareup.cash.screenshot.jvm
 
+import android.annotation.NonNull
+import android.annotation.Nullable
 import android.view.BridgeInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,10 +15,12 @@ import com.android.layoutlib.bridge.BridgeRenderSession
 import com.android.layoutlib.bridge.impl.RenderAction
 import com.android.layoutlib.bridge.impl.RenderSessionImpl
 import com.android.layoutlib.bridge.intensive.RenderResult
+import com.android.layoutlib.bridge.intensive.RenderTestBase
 import com.android.layoutlib.bridge.intensive.setup.LayoutLibTestCallback
 import com.android.layoutlib.bridge.intensive.setup.LayoutPullParser
 import com.android.layoutlib.bridge.intensive.util.ImageUtils
-import com.android.layoutlib.bridge.intensive.util.SessionParamsBuilder
+import com.android.layoutlib.bridge.intensive.util.ModuleClassLoader
+import com.android.utils.ILogger
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
@@ -26,8 +30,40 @@ import javax.imageio.ImageIO
 
 class Paparazzi : TestRule {
   private val THUMBNAIL_SIZE = 1000
+  private val APP_TEST_DIR = "/Users/jrod/Development/screenshot/android-lib"
+  private val APP_CLASSES_LOCATION =
+    "$APP_TEST_DIR/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes"
+
+  private val renderTestBase = RenderTestBase()
+  private val sRenderMessages = mutableListOf<String>()
+  private val sLogger = object : ILogger {
+    override fun error(
+      t: Throwable, @Nullable msgFormat: String?,
+      vararg args: Any
+    ) {
+      t.printStackTrace()
+      failWithMsg(msgFormat ?: "", *args)
+    }
+
+    override fun warning(@NonNull msgFormat: String, vararg args: Any) {
+      failWithMsg(msgFormat, *args)
+    }
+
+    override fun info(@NonNull msgFormat: String, vararg args: Any) {
+      // pass.
+    }
+
+    override fun verbose(@NonNull msgFormat: String, vararg args: Any) {
+      // pass.
+    }
+  }
 
   private lateinit var session: RenderSession
+  private lateinit var defaultClassLoader: ModuleClassLoader
+
+  init {
+    setup()
+  }
 
   override fun apply(
     base: Statement?,
@@ -42,16 +78,12 @@ class Paparazzi : TestRule {
     }
   }
 
-  fun <V : View> inflate(@LayoutRes layoutId: Int): V {
-    TODO("need todo")
-  }
-
-  fun <V : View> inflateView(
-    @LayoutRes layoutId: Int,
-    layoutLibCallback: LayoutLibTestCallback,
-    paramsBuilder: SessionParamsBuilder
+  fun <V : View> inflate(
+    @LayoutRes layoutId: Int
   ): V {
+    val layoutLibCallback = LayoutLibTestCallback(sLogger, defaultClassLoader)
     layoutLibCallback.initResources()
+
     val parser = LayoutPullParser.createFromString(
         """
         |<?xml version="1.0" encoding="utf-8"?>
@@ -61,7 +93,7 @@ class Paparazzi : TestRule {
         """.trimMargin()
     )
 
-    val params = paramsBuilder
+    val params = renderTestBase.sessionParamsBuilder
         .setParser(parser)
         .setCallback(layoutLibCallback)
         .setTheme("Theme.Material.NoActionBar.Fullscreen", false)
@@ -133,5 +165,17 @@ class Paparazzi : TestRule {
     } catch (e: IOException) {
       println(e)
     }
+  }
+
+  private fun failWithMsg(
+    msgFormat: String,
+    vararg args: Any
+  ) {
+    sRenderMessages.add(if (args.isEmpty()) msgFormat else String.format(msgFormat, *args))
+  }
+
+  private fun setup() {
+    defaultClassLoader = ModuleClassLoader(APP_CLASSES_LOCATION, javaClass.classLoader)
+    sRenderMessages.clear()
   }
 }
