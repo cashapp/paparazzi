@@ -15,6 +15,7 @@
  */
 package com.squareup.cash.screenshot.jvm
 
+import android.content.res.Resources
 import android.view.BridgeInflater
 import android.view.LayoutInflater
 import android.view.View
@@ -52,17 +53,21 @@ class Paparazzi(
 
   private lateinit var session: RenderSession
   private lateinit var scene: RenderSessionImpl
+  private var testName: TestName? = null
   private var snapshotCount = 0
 
   val layoutInflater: LayoutInflater
     get() = RenderAction.getCurrentContext().getSystemService("layout_inflater") as BridgeInflater
+
+  val resources: Resources
+    get() = RenderAction.getCurrentContext().resources
 
   override fun apply(
     base: Statement,
     description: Description
   ) = object : Statement() {
     override fun evaluate() {
-      prepare()
+      prepare(description)
       try {
         base.evaluate()
       } finally {
@@ -71,7 +76,8 @@ class Paparazzi(
     }
   }
 
-  fun prepare() {
+  fun prepare(description: Description) {
+    testName = description.toTestName()
     renderTestBase.beforeClass()
 
     val layoutLibTestCallback = LayoutLibTestCallback(logger, defaultClassLoader)
@@ -98,6 +104,7 @@ class Paparazzi(
   }
 
   fun close() {
+    testName = null
     session.dispose()
     scene.release()
     cleanupThread()
@@ -147,8 +154,13 @@ class Paparazzi(
     val scale = THUMBNAIL_SIZE / maxDimension.toDouble()
     val copy = ImageUtils.scale(image, scale, scale)
 
-    val testName = TestName("com.squareup.paparazzi", "CelebrityTest", "testSettings")
-    val shot = Shot(name, testName, Date())
+    val shot = Shot(name, testName!!, Date())
     snapshotHandler.add(shot, copy)
+  }
+
+  private fun Description.toTestName(): TestName {
+    val packageName = testClass.`package`.name
+    val className = testClass.name.substring(packageName.length + 1)
+    return TestName(packageName, className, methodName)
   }
 }
