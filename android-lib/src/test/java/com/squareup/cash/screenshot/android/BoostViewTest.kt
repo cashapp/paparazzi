@@ -15,7 +15,9 @@ class BoostViewTest {
     val button = paparazzi.inflate<Button>(R.layout.button)
 
     button.text = "Fuck yeeaaa"
+    paparazzi.snapshot(button)
 
-    paparazzi.snapshot()
+    button.text = "Hello, oh snap snap"
+    paparazzi.snapshot(button)
   }
 }
