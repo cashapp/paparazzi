@@ -16,16 +16,6 @@
 
 package com.android.layoutlib.bridge.android;
 
-import com.android.ide.common.rendering.api.SessionParams;
-import com.android.layoutlib.bridge.impl.RenderAction;
-import com.android.layoutlib.bridge.impl.RenderActionTestUtil;
-import com.android.layoutlib.bridge.intensive.RenderTestBase;
-import com.android.layoutlib.bridge.intensive.setup.ConfigGenerator;
-import com.android.layoutlib.bridge.intensive.setup.LayoutLibTestCallback;
-import com.android.layoutlib.bridge.intensive.setup.LayoutPullParser;
-
-import org.junit.Test;
-
 import android.R.attr;
 import android.R.style;
 import android.content.Context;
@@ -33,11 +23,23 @@ import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.util.DisplayMetrics;
 import android.view.ContextThemeWrapper;
+import com.android.ide.common.rendering.api.SessionParams;
+import com.android.layoutlib.bridge.impl.RenderAction;
+import com.android.layoutlib.bridge.impl.RenderActionTestUtil;
+import com.android.layoutlib.bridge.intensive.RenderTestBase;
+import com.android.layoutlib.bridge.intensive.setup.LayoutLibTestCallback;
+import com.android.layoutlib.bridge.intensive.setup.LayoutPullParser;
+import org.junit.Test;
 
+import static com.squareup.cash.screenshot.jvm.EnvironmentKt.detectEnvironment;
 import static org.junit.Assert.assertTrue;
 
 public class BridgeContextTest extends RenderTestBase {
-    @Test
+  public BridgeContextTest() {
+    super(detectEnvironment());
+  }
+
+  @Test
     public void basic() throws ClassNotFoundException {
         // Setup
         // Create the layout pull parser for our resources (empty.xml can not be part of the test
