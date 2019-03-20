@@ -1,0 +1,68 @@
+<html>
+
+<style>
+    .template {
+      display: none;
+    }
+</style>
+
+<script src="current_run.js"></script>
+<script>
+
+var x = 0;
+var currentRunJson = null;
+
+const setLatestRun = function(run) {
+  runJson = JSON.stringify(run);
+  if (runJson == currentRunJson) return;
+  currentRunJson = runJson;
+
+  console.log("New run ");
+  console.log(run);
+
+  const latestRunDiv = document.getElementById("latestRun");
+  while (latestRunDiv.firstChild) {
+    latestRunDiv.removeChild(latestRunDiv.firstChild);
+  }
+
+  for (shotIndex in run.shots) {
+      const shot = run.shots[shotIndex];
+      const shotTemplateDiv = document.getElementById("shotTemplate");
+      const shotDiv = shotTemplateDiv.cloneNode(true);
+      shotDiv.id = undefined;
+      shotDiv.classList.remove("template");
+
+      shotDiv.querySelector(".screenshotImage").src = shot.file;
+      latestRunDiv.appendChild(shotDiv);
+  }
+}
+
+const refresh = function() {
+  const script = document.createElement('script');
+  script.src = 'current_run.js';
+  script.onload = function() {
+    this.remove();
+  };
+  (document.head || document.documentElement).appendChild(script);
+
+  setLatestRun(window.latestRun);
+
+  setTimeout(refresh, 100);
+  x++;
+}
+
+setTimeout(refresh, 100);
+
+
+
+</script>
+
+<div id="latestRun">
+</div>
+
+<div id="shotTemplate" class="template">
+    SCREEENSHOT!
+    <img class="screenshotImage" width="300">
+</div>
+
+</html>
