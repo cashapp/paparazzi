@@ -17,7 +17,7 @@ package com.squareup.cash.screenshot.jvm
 
 import java.util.Date
 
-internal data class Shot(
+data class Shot(
   val name: String,
   val testName: TestName,
   val timestamp: Date,

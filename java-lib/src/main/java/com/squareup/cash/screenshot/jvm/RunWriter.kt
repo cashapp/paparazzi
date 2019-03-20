@@ -25,14 +25,24 @@ import okio.BufferedSink
 import okio.buffer
 import okio.sink
 import java.awt.image.BufferedImage
-import java.io.Closeable
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.UUID
 import javax.imageio.ImageIO
 
+fun defaultRunName(): String {
+  val now = Date()
+  val timestamp = SimpleDateFormat("yyyyMMddHHmmss", Locale.US).format(now)
+  val token = UUID.randomUUID().toString().substring(0, 6)
+  return "${timestamp}_$token"
+}
+
 internal class RunWriter(
-  private val runName: String,
-  private val rootDirectory: File = File("paparazzi")
-) : Closeable {
+  private val runName: String = defaultRunName(),
+  private val rootDirectory: File = File("build/reports/paparazzi")
+) : SnapshotHandler {
   private val runDirectory = File(rootDirectory, runName)
   private val shots = mutableListOf<Shot>()
   private val queue = Channel<Pair<Shot, BufferedImage>>(UNLIMITED)
@@ -41,7 +51,7 @@ internal class RunWriter(
   }
 
   /** Enqueue shot for writing. */
-  fun add(
+  override fun add(
     shot: Shot,
     image: BufferedImage
   ) {
