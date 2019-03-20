@@ -1,7 +1,20 @@
+/*
+ * Copyright (C) 2019 Square, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.squareup.cash.screenshot.jvm
 
-import android.annotation.NonNull
-import android.annotation.Nullable
 import android.view.BridgeInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,7 +33,6 @@ import com.android.layoutlib.bridge.intensive.setup.LayoutLibTestCallback
 import com.android.layoutlib.bridge.intensive.setup.LayoutPullParser
 import com.android.layoutlib.bridge.intensive.util.ImageUtils
 import com.android.layoutlib.bridge.intensive.util.ModuleClassLoader
-import com.android.utils.ILogger
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
@@ -29,39 +41,18 @@ import java.io.IOException
 import javax.imageio.ImageIO
 
 class Paparazzi(
-  private val environment: Environment = detectEnvironment()
+  environment: Environment = detectEnvironment()
 ) : TestRule {
   private val THUMBNAIL_SIZE = 1000
 
   private val renderTestBase = RenderTestBase(environment)
-  private val sRenderMessages = mutableListOf<String>()
-  private val sLogger = object : ILogger {
-    override fun error(
-      t: Throwable, @Nullable msgFormat: String?,
-      vararg args: Any
-    ) {
-      t.printStackTrace()
-      failWithMsg(msgFormat ?: "", *args)
-    }
-
-    override fun warning(@NonNull msgFormat: String, vararg args: Any) {
-      failWithMsg(msgFormat, *args)
-    }
-
-    override fun info(@NonNull msgFormat: String, vararg args: Any) {
-      // pass.
-    }
-
-    override fun verbose(@NonNull msgFormat: String, vararg args: Any) {
-      // pass.
-    }
-  }
+  private val logger = PaparazziLogger()
 
   private lateinit var session: RenderSession
-  private lateinit var defaultClassLoader: ModuleClassLoader
+  private val defaultClassLoader: ModuleClassLoader =
+    ModuleClassLoader(environment.appClassesLocation, javaClass.classLoader)
 
   init {
-    setup()
     renderTestBase.beforeClass()
   }
 
@@ -81,7 +72,7 @@ class Paparazzi(
   fun <V : View> inflate(
     @LayoutRes layoutId: Int
   ): V {
-    val layoutLibCallback = LayoutLibTestCallback(sLogger, defaultClassLoader)
+    val layoutLibCallback = LayoutLibTestCallback(logger, defaultClassLoader)
     layoutLibCallback.initResources()
 
     val parser = LayoutPullParser.createFromString(
@@ -166,17 +157,5 @@ class Paparazzi(
     } catch (e: IOException) {
       println(e)
     }
-  }
-
-  private fun failWithMsg(
-    msgFormat: String,
-    vararg args: Any
-  ) {
-    sRenderMessages.add(if (args.isEmpty()) msgFormat else String.format(msgFormat, *args))
-  }
-
-  private fun setup() {
-    defaultClassLoader = ModuleClassLoader(environment.appClassesLocation, javaClass.classLoader)
-    sRenderMessages.clear()
   }
 }
