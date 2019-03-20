@@ -11,8 +11,10 @@ data class Environment(
 }
 
 fun detectEnvironment(): Environment {
-  // TODO: detect platformDir by finding the highest SDK in ANDROID_HOME.
   val userDir = System.getProperty("user.dir")
-  val platformDir = "/Users/jwilson/Library/Android/sdk/platforms/android-28/"
+  val userHome = System.getProperty("user.home")
+  val androidHome = System.getenv("ANDROID_HOME") ?: "$userHome/Library/Android/sdk"
+  // TODO: detect platformDir by finding the highest SDK in ANDROID_HOME.
+  val platformDir = "$androidHome/platforms/android-28/"
   return Environment(platformDir, userDir)
 }
