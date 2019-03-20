@@ -16,17 +16,16 @@
 
 package com.android.layoutlib.bridge.intensive;
 
+import android.annotation.NonNull;
 import com.android.ide.common.rendering.api.SessionParams;
 import com.android.layoutlib.bridge.intensive.setup.ConfigGenerator;
 import com.android.layoutlib.bridge.intensive.util.perf.PerformanceRunner;
-
+import java.io.FileNotFoundException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import android.annotation.NonNull;
-
-import java.io.FileNotFoundException;
+import static com.squareup.cash.screenshot.jvm.EnvironmentKt.detectEnvironment;
 
 /**
  * Set of render tests
@@ -34,7 +33,11 @@ import java.io.FileNotFoundException;
 @RunWith(PerformanceRunner.class)
 public class PerformanceTests extends RenderTestBase {
 
-    @Before
+  public PerformanceTests() {
+    super(detectEnvironment());
+  }
+
+  @Before
     public void setUp() {
         ignoreAllLogging();
     }

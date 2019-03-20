@@ -28,13 +28,12 @@ import java.io.File
 import java.io.IOException
 import javax.imageio.ImageIO
 
-class Paparazzi : TestRule {
+class Paparazzi(
+  private val environment: Environment = detectEnvironment()
+) : TestRule {
   private val THUMBNAIL_SIZE = 1000
-  private val APP_TEST_DIR = "/Users/jrod/Development/screenshot/android-lib"
-  private val APP_CLASSES_LOCATION =
-    "$APP_TEST_DIR/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes"
 
-  private val renderTestBase = RenderTestBase()
+  private val renderTestBase = RenderTestBase(environment)
   private val sRenderMessages = mutableListOf<String>()
   private val sLogger = object : ILogger {
     override fun error(
@@ -63,7 +62,7 @@ class Paparazzi : TestRule {
 
   init {
     setup()
-    RenderTestBase.beforeClass()
+    renderTestBase.beforeClass()
   }
 
   override fun apply(
@@ -161,6 +160,7 @@ class Paparazzi : TestRule {
           println("Error deleting previous file stored at " + output.path)
         }
       }
+      output.parentFile.mkdirs()
       ImageIO.write(thumbnail, "PNG", output)
       println("Thumbnail for current rendering stored at " + output.path)
     } catch (e: IOException) {
@@ -176,7 +176,7 @@ class Paparazzi : TestRule {
   }
 
   private fun setup() {
-    defaultClassLoader = ModuleClassLoader(APP_CLASSES_LOCATION, javaClass.classLoader)
+    defaultClassLoader = ModuleClassLoader(environment.appClassesLocation, javaClass.classLoader)
     sRenderMessages.clear()
   }
 }
