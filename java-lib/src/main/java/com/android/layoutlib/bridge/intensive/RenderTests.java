@@ -16,10 +16,20 @@
 
 package com.android.layoutlib.bridge.intensive;
 
+import android.annotation.NonNull;
+import android.annotation.Nullable;
+import android.content.res.AssetManager;
+import android.content.res.ColorStateList;
+import android.content.res.Configuration;
+import android.content.res.Resources;
+import android.content.res.Resources_Delegate;
+import android.graphics.Color;
+import android.util.DisplayMetrics;
+import android.util.StateSet;
+import android.util.TypedValue;
 import com.android.ide.common.rendering.api.RenderSession;
 import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.ide.common.rendering.api.ResourceReference;
-import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.ide.common.rendering.api.ResourceValueImpl;
 import com.android.ide.common.rendering.api.SessionParams;
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode;
@@ -38,24 +48,6 @@ import com.android.layoutlib.bridge.intensive.setup.LayoutPullParser;
 import com.android.resources.Density;
 import com.android.resources.Navigation;
 import com.android.resources.ResourceType;
-
-import org.junit.After;
-import org.junit.Test;
-import org.kxml2.io.KXmlParser;
-import org.xmlpull.v1.XmlPullParser;
-
-import android.annotation.NonNull;
-import android.annotation.Nullable;
-import android.content.res.AssetManager;
-import android.content.res.ColorStateList;
-import android.content.res.Configuration;
-import android.content.res.Resources;
-import android.content.res.Resources_Delegate;
-import android.graphics.Color;
-import android.util.DisplayMetrics;
-import android.util.StateSet;
-import android.util.TypedValue;
-
 import java.awt.BasicStroke;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -65,7 +57,12 @@ import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.util.concurrent.TimeUnit;
+import org.junit.After;
+import org.junit.Test;
+import org.kxml2.io.KXmlParser;
+import org.xmlpull.v1.XmlPullParser;
 
+import static com.squareup.cash.screenshot.jvm.EnvironmentKt.detectEnvironment;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -78,7 +75,11 @@ import static org.junit.Assert.assertTrue;
  */
 public class RenderTests extends RenderTestBase {
 
-    @After
+  public RenderTests() {
+    super(detectEnvironment());
+  }
+
+  @After
     public void afterTestCase() {
         com.android.layoutlib.bridge.test.widgets.HookWidget.reset();
     }
@@ -1168,7 +1169,7 @@ public class RenderTests extends RenderTestBase {
             paintBorders(g, 0, 0, 0, vInfo);
         }
 
-        RenderTestBase.verify("view_boundaries.png", image);
+        verify("view_boundaries.png", image);
     }
 
     /**
