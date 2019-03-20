@@ -15,7 +15,7 @@
  */
 package com.squareup.cash.screenshot.jvm
 
-internal data class TestName(
+data class TestName(
   val packageName: String,
   val className: String,
   val methodName: String
