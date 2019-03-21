@@ -39,19 +39,19 @@ internal class RunWriter(
     private val rootDirectory: File = File("build/reports/paparazzi")
 ) : SnapshotHandler {
   private val runDirectory = File(rootDirectory, runName.sanitizeForFilename())
-  private val shots = mutableListOf<Shot>()
-  private val queue = Channel<Pair<Shot, BufferedImage>>(UNLIMITED)
+  private val shots = mutableListOf<Snapshot>()
+  private val queue = Channel<Pair<Snapshot, BufferedImage>>(UNLIMITED)
   private var writerDeferred = GlobalScope.async(Dispatchers.IO) {
     writeLoop()
   }
 
-  /** Enqueue shot for writing. */
-  override fun add(
-      shot: Shot,
+  /** Enqueue snapshot for writing. */
+  override fun handle(
+      snapshot: Snapshot,
       image: BufferedImage
   ) {
     runBlocking {
-      queue.send(shot to image)
+      queue.send(snapshot to image)
     }
   }
 
@@ -138,18 +138,16 @@ internal class RunWriter(
   private fun writeRunJs() {
     File(runDirectory, "run.js").writeAtomically {
       writeUtf8("window.runs[\"$runName\"] = ")
-      PaparazziJson.listOfShotsAdapter.toJson(this, shots)
+      PaparazziJson.LIST_OF_SHOTS_ADAPTER.toJson(this, shots)
       writeUtf8(";")
     }
   }
 
   private fun writeStaticFiles() {
-    val loader = RunWriter::class.java.classLoader
-    File(rootDirectory, "index.html").writeAtomically {
-      writeAll(loader.getResourceAsStream("index.html").source())
-    }
-    File(rootDirectory, "paparazziRenderer.js").writeAtomically {
-      writeAll(loader.getResourceAsStream("paparazziRenderer.js").source())
+    for (staticFile in listOf("index.html", "paparazziRenderer.js")) {
+      File(rootDirectory, staticFile).writeAtomically {
+        writeAll(RunWriter::class.java.classLoader.getResourceAsStream(staticFile).source())
+      }
     }
   }
 
