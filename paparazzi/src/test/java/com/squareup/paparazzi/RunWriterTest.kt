@@ -22,7 +22,7 @@ import org.junit.rules.TemporaryFolder
 import java.awt.image.BufferedImage
 import java.io.File
 import java.time.Instant
-import java.util.*
+import java.util.Date
 
 class RunWriterTest {
   @Rule
@@ -35,8 +35,8 @@ class RunWriterTest {
   fun happyPath() {
     val runWriter = RunWriter("run_one", temporaryFolder.root)
     runWriter.use {
-      runWriter.add(
-          Shot(
+      runWriter.handle(
+          Snapshot(
               name = "loading",
               testName = TestName("com.squareup.paparazzi", "CelebrityTest", "testSettings"),
               timestamp = Instant.parse("2019-03-20T10:27:43Z").toDate(),

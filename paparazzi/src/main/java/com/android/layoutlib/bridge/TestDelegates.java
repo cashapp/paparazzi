@@ -18,12 +18,10 @@ package com.android.layoutlib.bridge;
 
 import com.android.tools.layoutlib.annotations.LayoutlibDelegate;
 import com.android.tools.layoutlib.create.CreateInfo;
-
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
-
 import junit.framework.TestCase;
 
 /**
