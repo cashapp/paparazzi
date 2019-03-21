@@ -141,8 +141,9 @@ class PaparazziRenderer {
   }
 
   start() {
+    this.loadRunScript('index.js');
     for (let runId of window.all_runs) {
-      this.loadRunScript(runId);
+      this.loadRunScript(`${runId}/run.js`);
     }
     setInterval(this.refresh.bind(this), 100);
   }
@@ -176,12 +177,13 @@ class PaparazziRenderer {
   }
 
   renderAll() {
-    for (let runId in window.runs) {
+    this.loadRunScript('index.js');
+    for (let runId of window.all_runs) {
       if (this.lockedRunIds.includes(runId)) {
         continue
       }
       // The js loading is async so the rendering can happen in the next refresh
-      this.loadRunScript(runId)
+      this.loadRunScript(`${runId}/run.js`);
 
       this.render(new Run(runId, window.runs[runId]))
 
@@ -200,9 +202,9 @@ class PaparazziRenderer {
     this.renderAll();
   }
 
-  loadRunScript(runId) {
-    const script = document.createElement('script')
-    script.src = `${runId}/run.js`
+  loadRunScript(js) {
+    const script = document.createElement('script');
+    script.src = js;
     script.onload = function () {
       this.remove()
     }
