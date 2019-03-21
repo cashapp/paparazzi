@@ -18,7 +18,7 @@ package com.squareup.paparazzi.internal;
 
 import java.lang.ref.WeakReference;
 
-public class TestUtils {
+public class Gc {
     public static void gc() {
         // See RuntimeUtil#gc in jlibs (http://jlibs.in/)
         Object obj = new Object();

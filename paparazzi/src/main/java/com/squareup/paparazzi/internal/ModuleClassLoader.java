@@ -18,6 +18,7 @@ package com.squareup.paparazzi.internal;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import libcore.io.Streams;
 
@@ -25,7 +26,7 @@ import libcore.io.Streams;
  * Module class loader that loads classes from the test project.
  */
 public class ModuleClassLoader extends ClassLoader {
-    private final Map<String, Class<?>> mClasses = new HashMap<>();
+    private final Map<String, Class<?>> classes = new LinkedHashMap<>();
     private String myModuleRoot;
 
     /**
@@ -44,13 +45,13 @@ public class ModuleClassLoader extends ClassLoader {
         } catch (ClassNotFoundException ignored) {
         }
 
-        Class<?> clazz = mClasses.get(name);
+        Class<?> clazz = classes.get(name);
         if (clazz == null) {
             String path = name.replace('.', '/').concat(".class");
             try {
                 byte[] b = Streams.readFully(getResourceAsStream(myModuleRoot + path));
                 clazz = defineClass(name, b, 0, b.length);
-                mClasses.put(name, clazz);
+                classes.put(name, clazz);
             } catch (IOException ignore) {
                 throw new ClassNotFoundException(name + " not found");
             }

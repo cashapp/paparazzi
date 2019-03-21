@@ -27,11 +27,11 @@ import java.io.InputStream;
 /**
  * {@link AssetRepository} used for render tests.
  */
-public class TestAssetRepository extends AssetRepository {
-    private final String mAssetPath;
+public class PaparazziAssetRepository extends AssetRepository {
+    private final String assetPath;
 
-    public TestAssetRepository(@NonNull String assetPath) {
-        mAssetPath = assetPath;
+    public PaparazziAssetRepository(@NonNull String assetPath) {
+        this.assetPath = assetPath;
     }
 
     private static InputStream open(String path) throws FileNotFoundException {
@@ -50,7 +50,7 @@ public class TestAssetRepository extends AssetRepository {
 
     @Override
     public InputStream openAsset(String path, int mode) throws IOException {
-        return open(mAssetPath + path);
+        return open(assetPath + path);
     }
 
     @Override

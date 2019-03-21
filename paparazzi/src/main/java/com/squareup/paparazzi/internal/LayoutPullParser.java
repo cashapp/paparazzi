@@ -38,9 +38,9 @@ import static com.android.SdkConstants.LIST_VIEW;
 import static com.android.SdkConstants.SPINNER;
 import static com.android.SdkConstants.TOOLS_URI;
 
-public class LayoutPullParser extends KXmlParser implements ILayoutPullParser{
+public class LayoutPullParser extends KXmlParser implements ILayoutPullParser {
 
-    private ResourceNamespace mLayoutNamespace = ResourceNamespace.RES_AUTO;
+    private ResourceNamespace layoutNamespace = ResourceNamespace.RES_AUTO;
 
     @NonNull
     public static LayoutPullParser createFromFile(@NonNull File layoutFile)
@@ -112,10 +112,10 @@ public class LayoutPullParser extends KXmlParser implements ILayoutPullParser{
     @Override
     @NonNull
     public ResourceNamespace getLayoutNamespace() {
-        return mLayoutNamespace;
+        return layoutNamespace;
     }
 
     public void setLayoutNamespace(@NonNull ResourceNamespace layoutNamespace) {
-        mLayoutNamespace = layoutNamespace;
+        this.layoutNamespace = layoutNamespace;
     }
 }
