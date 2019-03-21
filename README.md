@@ -1,4 +1,4 @@
-# Screenshot
+# Paparazzi
 
 This is not ready.
 
