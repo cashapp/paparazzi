@@ -79,9 +79,7 @@ class LayoutPullParser private constructor(
     return null
   }
 
-  override fun getLayoutNamespace(): ResourceNamespace {
-    return layoutNamespace
-  }
+  override fun getLayoutNamespace(): ResourceNamespace = layoutNamespace
 
   fun setLayoutNamespace(layoutNamespace: ResourceNamespace) {
     this.layoutNamespace = layoutNamespace
@@ -89,9 +87,7 @@ class LayoutPullParser private constructor(
 
   companion object {
     @Throws(FileNotFoundException::class)
-    fun createFromFile(layoutFile: File): LayoutPullParser {
-      return LayoutPullParser(FileInputStream(layoutFile))
-    }
+    fun createFromFile(layoutFile: File) = LayoutPullParser(FileInputStream(layoutFile))
 
     /**
      * @param layoutPath Must start with '/' and be relative to test resources.

@@ -23,17 +23,13 @@ import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
 
-/**
- * [AssetRepository] used for render tests.
- */
 class PaparazziAssetRepository(private val assetPath: String) : AssetRepository() {
   @Throws(FileNotFoundException::class)
   private fun open(path: String): InputStream? {
     val asset = File(path)
-    if (asset.isFile) {
-      return FileInputStream(asset)
-    } else {
-      return null
+    return when {
+      asset.isFile -> FileInputStream(asset)
+      else -> null
     }
   }
 
