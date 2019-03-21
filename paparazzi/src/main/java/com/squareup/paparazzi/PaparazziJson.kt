@@ -29,7 +29,7 @@ internal object PaparazziJson {
       .add(this)
       .build()!!
 
-  val LIST_OF_SHOTS_ADAPTER: JsonAdapter<List<Snapshot>> = moshi.adapter<List<Snapshot>>(
+  val listOfShotsAdapter: JsonAdapter<List<Snapshot>> = moshi.adapter<List<Snapshot>>(
       Types.newParameterizedType(List::class.java, Snapshot::class.java))
       .indent("  ")
 

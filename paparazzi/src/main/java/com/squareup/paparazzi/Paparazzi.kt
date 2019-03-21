@@ -31,7 +31,7 @@ import com.android.layoutlib.bridge.impl.RenderAction
 import com.android.layoutlib.bridge.impl.RenderSessionImpl
 import com.squareup.paparazzi.internal.ImageUtils
 import com.squareup.paparazzi.internal.LayoutPullParser
-import com.squareup.paparazzi.internal.PaparazziLayoutLibCallback
+import com.squareup.paparazzi.internal.PaparazziCallback
 import com.squareup.paparazzi.internal.Renderer
 import org.junit.rules.TestRule
 import org.junit.runner.Description
@@ -47,9 +47,9 @@ class Paparazzi(
   private val THUMBNAIL_SIZE = 1000
 
   private val logger = PaparazziLogger()
-  private lateinit var session: RenderSession
-  private lateinit var scene: RenderSessionImpl
   private lateinit var renderer: Renderer
+  private lateinit var renderSession: RenderSessionImpl
+  private lateinit var bridgeRenderSession: RenderSession
   private var testName: TestName? = null
   private var snapshotCount = 0
 
@@ -74,13 +74,13 @@ class Paparazzi(
   }
 
   fun prepare(description: Description) {
-    val layoutLibTestCallback = PaparazziLayoutLibCallback(logger, packageName)
-    layoutLibTestCallback.initResources()
+    val layoutlibCallback = PaparazziCallback(logger, packageName)
+    layoutlibCallback.initResources()
 
     testName = description.toTestName()
 
-    renderer = Renderer(environment, layoutLibTestCallback, logger)
-    renderer.prepare()
+    renderer = Renderer(environment, layoutlibCallback, logger)
+    val sessionParamsBuilder = renderer.prepare()
 
     val frameLayout = """
         |<?xml version="1.0" encoding="utf-8"?>
@@ -89,31 +89,29 @@ class Paparazzi(
         |              android:layout_height="match_parent"/>
         """.trimMargin()
 
-    val sessionParams = renderer.sessionParamsBuilder
-        .setParser(LayoutPullParser.createFromString(frameLayout))
-        .setCallback(layoutLibTestCallback)
-        .setTheme("Theme.Material.NoActionBar.Fullscreen", false)
-        .setRenderingMode(SessionParams.RenderingMode.V_SCROLL)
+    val sessionParams = sessionParamsBuilder.copy(
+        layoutPullParser = LayoutPullParser.createFromString(frameLayout),
+        renderingMode = SessionParams.RenderingMode.V_SCROLL
+    )
+        .withTheme("Theme.Material.NoActionBar.Fullscreen", false)
         .build()
 
-    scene = RenderSessionImpl(sessionParams)
+    renderSession = RenderSessionImpl(sessionParams)
     prepareThread()
-    scene.init(sessionParams.timeout)
-    session = createBridgeSession(scene, scene.inflate())
+    renderSession.init(sessionParams.timeout)
+    bridgeRenderSession = createBridgeSession(renderSession, renderSession.inflate())
   }
 
   fun close() {
     testName = null
     renderer.close()
-    session.dispose()
-    scene.release()
+    renderSession.release()
+    bridgeRenderSession.dispose()
     cleanupThread()
     snapshotHandler.close()
   }
 
-  fun <V : View> inflate(@LayoutRes layoutId: Int): V {
-    return layoutInflater.inflate(layoutId, null) as V
-  }
+  fun <V : View> inflate(@LayoutRes layoutId: Int): V = layoutInflater.inflate(layoutId, null) as V
 
   fun snapshot(
     view: View,
@@ -121,26 +119,26 @@ class Paparazzi(
   ) {
     snapshotCount++
 
-    val viewGroup = session.rootViews[0].viewObject as ViewGroup
+    val viewGroup = bridgeRenderSession.rootViews[0].viewObject as ViewGroup
     viewGroup.addView(view)
     try {
-      scene.render(true)
-      saveImage(name ?: snapshotCount.toString(), session.image)
+      renderSession.render(true)
+      saveImage(name ?: snapshotCount.toString(), bridgeRenderSession.image)
     } finally {
       viewGroup.removeView(view)
     }
   }
 
   private fun createBridgeSession(
-    scene: RenderSessionImpl,
-    lastResult: Result
+    renderSession: RenderSessionImpl,
+    result: Result
   ): BridgeRenderSession {
     try {
       val bridgeSessionClass = Class.forName("com.android.layoutlib.bridge.BridgeRenderSession")
       val constructor =
         bridgeSessionClass.getDeclaredConstructor(RenderSessionImpl::class.java, Result::class.java)
       constructor.isAccessible = true
-      return constructor.newInstance(scene, lastResult) as BridgeRenderSession
+      return constructor.newInstance(renderSession, result) as BridgeRenderSession
     } catch (e: Exception) {
       throw RuntimeException(e)
     }
@@ -153,9 +151,8 @@ class Paparazzi(
     val maxDimension = Math.max(image.width, image.height)
     val scale = THUMBNAIL_SIZE / maxDimension.toDouble()
     val copy = ImageUtils.scale(image, scale, scale)
-
-    val shot = Snapshot(name, testName!!, Date())
-    snapshotHandler.handle(shot, copy)
+    val snapshot = Snapshot(name, testName!!, Date())
+    snapshotHandler.handle(snapshot, copy)
   }
 
   private fun Description.toTestName(): TestName {
