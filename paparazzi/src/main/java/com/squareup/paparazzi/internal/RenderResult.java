@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-package com.android.layoutlib.bridge.intensive;
-
-import com.android.ide.common.rendering.api.RenderSession;
-import com.android.ide.common.rendering.api.Result;
-import com.android.ide.common.rendering.api.ViewInfo;
+package com.squareup.paparazzi.internal;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-
+import com.android.ide.common.rendering.api.RenderSession;
+import com.android.ide.common.rendering.api.Result;
+import com.android.ide.common.rendering.api.ViewInfo;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collections;
