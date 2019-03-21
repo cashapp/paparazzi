@@ -30,10 +30,10 @@ import com.android.layoutlib.bridge.BridgeRenderSession
 import com.android.layoutlib.bridge.impl.RenderAction
 import com.android.layoutlib.bridge.impl.RenderSessionImpl
 import com.squareup.paparazzi.internal.ImageUtils
-import com.squareup.paparazzi.internal.LayoutLibTestCallback
+import com.squareup.paparazzi.internal.PaparazziLayoutLibCallback
 import com.squareup.paparazzi.internal.LayoutPullParser
 import com.squareup.paparazzi.internal.ModuleClassLoader
-import com.squareup.paparazzi.internal.RenderTestBase
+import com.squareup.paparazzi.internal.Renderer
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
@@ -53,7 +53,7 @@ class Paparazzi(
 
   private lateinit var session: RenderSession
   private lateinit var scene: RenderSessionImpl
-  private lateinit var renderTestBase: RenderTestBase
+  private lateinit var renderer: Renderer
   private var testName: TestName? = null
   private var snapshotCount = 0
 
@@ -78,13 +78,15 @@ class Paparazzi(
   }
 
   fun prepare(description: Description) {
-    val layoutLibTestCallback = LayoutLibTestCallback(logger, defaultClassLoader, packageName)
+    val layoutLibTestCallback = PaparazziLayoutLibCallback(
+        logger, defaultClassLoader, packageName
+    )
     layoutLibTestCallback.initResources()
 
     testName = description.toTestName()
 
-    renderTestBase = RenderTestBase(environment, layoutLibTestCallback, logger)
-    renderTestBase.prepare()
+    renderer = Renderer(environment, layoutLibTestCallback, logger)
+    renderer.prepare()
 
     val frameLayout = """
         |<?xml version="1.0" encoding="utf-8"?>
@@ -93,7 +95,7 @@ class Paparazzi(
         |              android:layout_height="match_parent"/>
         """.trimMargin()
 
-    val sessionParams = renderTestBase.sessionParamsBuilder
+    val sessionParams = renderer.sessionParamsBuilder
         .setParser(LayoutPullParser.createFromString(frameLayout))
         .setCallback(layoutLibTestCallback)
         .setTheme("Theme.Material.NoActionBar.Fullscreen", false)
@@ -108,7 +110,7 @@ class Paparazzi(
 
   fun close() {
     testName = null
-    renderTestBase.close()
+    renderer.close()
     session.dispose()
     scene.release()
     cleanupThread()
