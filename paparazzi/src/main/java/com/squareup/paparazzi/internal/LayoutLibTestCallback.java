@@ -14,27 +14,36 @@
  * limitations under the License.
  */
 
-package com.android.layoutlib.bridge.intensive.setup;
+package com.squareup.paparazzi.internal;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import com.android.SdkConstants;
-import com.android.ide.common.rendering.api.*;
+import com.android.ide.common.rendering.api.ActionBarCallback;
+import com.android.ide.common.rendering.api.AdapterBinding;
+import com.android.ide.common.rendering.api.ILayoutPullParser;
+import com.android.ide.common.rendering.api.LayoutlibCallback;
+import com.android.ide.common.rendering.api.ResourceReference;
+import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.ide.common.rendering.api.SessionParams.Key;
 import com.android.layoutlib.bridge.android.RenderParamsFlags;
 import com.android.resources.ResourceType;
 import com.android.utils.ILogger;
 import com.google.common.io.ByteStreams;
-import org.kxml2.io.KXmlParser;
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
+import org.kxml2.io.KXmlParser;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
 
 import static com.android.ide.common.rendering.api.ResourceNamespace.RES_AUTO;
 

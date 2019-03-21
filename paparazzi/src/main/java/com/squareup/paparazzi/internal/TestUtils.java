@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.layoutlib.bridge.intensive.util;
+package com.squareup.paparazzi.internal;
 
 import java.lang.ref.WeakReference;
 
