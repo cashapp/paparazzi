@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package com.android.layoutlib.bridge.intensive.util;
+package com.squareup.paparazzi.internal;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-
 import libcore.io.Streams;
 
 /**

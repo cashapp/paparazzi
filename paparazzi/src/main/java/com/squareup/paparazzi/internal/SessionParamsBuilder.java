@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package com.android.layoutlib.bridge.intensive.util;
+package com.squareup.paparazzi.internal;
 
+import android.annotation.NonNull;
 import com.android.SdkConstants;
 import com.android.ide.common.rendering.api.AssetRepository;
 import com.android.ide.common.rendering.api.LayoutLog;
@@ -27,16 +28,10 @@ import com.android.ide.common.rendering.api.SessionParams.RenderingMode;
 import com.android.ide.common.resources.ResourceResolver;
 import com.android.ide.common.resources.configuration.FolderConfiguration;
 import com.android.ide.common.resources.deprecated.ResourceRepository;
-import com.android.layoutlib.bridge.intensive.setup.ConfigGenerator;
-import com.android.layoutlib.bridge.intensive.setup.LayoutPullParser;
 import com.android.resources.ResourceType;
-
-import android.annotation.NonNull;
-
+import com.google.common.collect.ImmutableMap;
 import java.util.HashMap;
 import java.util.Map;
-
-import com.google.common.collect.ImmutableMap;
 
 /**
  * Builder to help setting up {@link SessionParams} objects.
