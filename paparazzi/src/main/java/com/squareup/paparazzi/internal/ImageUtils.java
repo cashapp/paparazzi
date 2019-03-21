@@ -39,12 +39,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-
-// Adapted by taking the relevant pieces of code from the following classes:
-//
-// com.android.tools.idea.rendering.ImageUtils,
-// com.android.tools.idea.tests.gui.framework.fixture.layout.ImageFixture and
-// com.android.tools.idea.rendering.RenderTestBase
 /**
  * Utilities related to image processing.
  */

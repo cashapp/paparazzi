@@ -59,11 +59,11 @@ import org.xmlpull.v1.XmlPullParserFactory;
  * provides utility methods to parse build.prop and attrs.xml to generate the appropriate maps.
  */
 @SuppressWarnings("UnusedDeclaration") // For the pre-configured nexus generators.
-public class ConfigGenerator {
+public class DeviceConfig {
 
-    public static final ConfigGenerator NEXUS_4 = new ConfigGenerator();
+    public static final DeviceConfig NEXUS_4 = new DeviceConfig();
 
-    public static final ConfigGenerator NEXUS_5 = new ConfigGenerator()
+    public static final DeviceConfig NEXUS_5 = new DeviceConfig()
                                                         .setScreenHeight(1920)
                                                         .setScreenWidth(1080)
                                                         .setXdpi(445)
@@ -78,7 +78,7 @@ public class ConfigGenerator {
                                                         .setSoftButtons(true)
                                                         .setNavigation(Navigation.NONAV);
 
-    public static final ConfigGenerator NEXUS_7 = new ConfigGenerator()
+    public static final DeviceConfig NEXUS_7 = new DeviceConfig()
                                                         .setScreenHeight(1920)
                                                         .setScreenWidth(1200)
                                                         .setXdpi(323)
@@ -93,7 +93,7 @@ public class ConfigGenerator {
                                                         .setSoftButtons(true)
                                                         .setNavigation(Navigation.NONAV);
 
-    public static final ConfigGenerator NEXUS_10 = new ConfigGenerator()
+    public static final DeviceConfig NEXUS_10 = new DeviceConfig()
                                                         .setScreenHeight(1600)
                                                         .setScreenWidth(2560)
                                                         .setXdpi(300)
@@ -108,7 +108,7 @@ public class ConfigGenerator {
                                                         .setSoftButtons(true)
                                                         .setNavigation(Navigation.NONAV);
 
-    public static final ConfigGenerator NEXUS_5_LAND = new ConfigGenerator()
+    public static final DeviceConfig NEXUS_5_LAND = new DeviceConfig()
                                                         .setScreenHeight(1080)
                                                         .setScreenWidth(1920)
                                                         .setXdpi(445)
@@ -123,7 +123,7 @@ public class ConfigGenerator {
                                                         .setSoftButtons(true)
                                                         .setNavigation(Navigation.NONAV);
 
-    public static final ConfigGenerator NEXUS_7_2012 = new ConfigGenerator()
+    public static final DeviceConfig NEXUS_7_2012 = new DeviceConfig()
                                                         .setScreenHeight(1280)
                                                         .setScreenWidth(800)
                                                         .setXdpi(195)
@@ -145,37 +145,37 @@ public class ConfigGenerator {
     private static final String ATTR_VALUE = "value";
 
     // Device Configuration. Defaults are for a Nexus 4 device.
-    private int mScreenHeight = 1280;
-    private int mScreenWidth = 768;
-    private int mXdpi = 320;
-    private int mYdpi = 320;
-    private ScreenOrientation mOrientation = ScreenOrientation.PORTRAIT;
-    private Density mDensity = Density.XHIGH;
-    private ScreenRatio mRatio = ScreenRatio.NOTLONG;
-    private ScreenSize mSize = ScreenSize.NORMAL;
-    private Keyboard mKeyboard = Keyboard.NOKEY;
-    private TouchScreen mTouchScreen = TouchScreen.FINGER;
-    private KeyboardState mKeyboardState = KeyboardState.SOFT;
-    private boolean mSoftButtons = true;
-    private Navigation mNavigation = Navigation.NONAV;
+    private int screenHeight = 1280;
+    private int screenWidth = 768;
+    private int xdpi = 320;
+    private int ydpi = 320;
+    private ScreenOrientation orientation = ScreenOrientation.PORTRAIT;
+    private Density density = Density.XHIGH;
+    private ScreenRatio ratio = ScreenRatio.NOTLONG;
+    private ScreenSize size = ScreenSize.NORMAL;
+    private Keyboard keyboard = Keyboard.NOKEY;
+    private TouchScreen touchScreen = TouchScreen.FINGER;
+    private KeyboardState keyboardState = KeyboardState.SOFT;
+    private boolean softButtons = true;
+    private Navigation navigation = Navigation.NONAV;
 
     public FolderConfiguration getFolderConfig() {
         FolderConfiguration config = FolderConfiguration.createDefault();
-        config.setDensityQualifier(new DensityQualifier(mDensity));
-        config.setNavigationMethodQualifier(new NavigationMethodQualifier(mNavigation));
-        if (mScreenWidth > mScreenHeight) {
-            config.setScreenDimensionQualifier(new ScreenDimensionQualifier(mScreenWidth,
-                    mScreenHeight));
+        config.setDensityQualifier(new DensityQualifier(density));
+        config.setNavigationMethodQualifier(new NavigationMethodQualifier(navigation));
+        if (screenWidth > screenHeight) {
+            config.setScreenDimensionQualifier(new ScreenDimensionQualifier(screenWidth,
+                screenHeight));
         } else {
-            config.setScreenDimensionQualifier(new ScreenDimensionQualifier(mScreenHeight,
-                    mScreenWidth));
+            config.setScreenDimensionQualifier(new ScreenDimensionQualifier(screenHeight,
+                screenWidth));
         }
-        config.setScreenRatioQualifier(new ScreenRatioQualifier(mRatio));
-        config.setScreenSizeQualifier(new ScreenSizeQualifier(mSize));
-        config.setTextInputMethodQualifier(new TextInputMethodQualifier(mKeyboard));
-        config.setTouchTypeQualifier(new TouchScreenQualifier(mTouchScreen));
-        config.setKeyboardStateQualifier(new KeyboardStateQualifier(mKeyboardState));
-        config.setScreenOrientationQualifier(new ScreenOrientationQualifier(mOrientation));
+        config.setScreenRatioQualifier(new ScreenRatioQualifier(ratio));
+        config.setScreenSizeQualifier(new ScreenSizeQualifier(size));
+        config.setTextInputMethodQualifier(new TextInputMethodQualifier(keyboard));
+        config.setTouchTypeQualifier(new TouchScreenQualifier(touchScreen));
+        config.setKeyboardStateQualifier(new KeyboardStateQualifier(keyboardState));
+        config.setScreenOrientationQualifier(new ScreenOrientationQualifier(orientation));
 
         config.updateScreenWidthAndHeight();
 
@@ -191,8 +191,8 @@ public class ConfigGenerator {
     }
 
     public HardwareConfig getHardwareConfig() {
-        return new HardwareConfig(mScreenWidth, mScreenHeight, mDensity, mXdpi, mYdpi, mSize,
-                mOrientation, null, mSoftButtons);
+        return new HardwareConfig(screenWidth, screenHeight, density, xdpi, ydpi, size,
+            orientation, null, softButtons);
     }
 
     public static Map<String, String> loadProperties(File path) {
@@ -251,68 +251,68 @@ public class ConfigGenerator {
 
     // Methods to set the configuration values.
 
-    public ConfigGenerator setScreenHeight(int height) {
-        mScreenHeight = height;
+    public DeviceConfig setScreenHeight(int height) {
+        screenHeight = height;
         return this;
     }
 
-    public ConfigGenerator setScreenWidth(int width) {
-        mScreenWidth = width;
+    public DeviceConfig setScreenWidth(int width) {
+        screenWidth = width;
         return this;
     }
 
-    public ConfigGenerator setXdpi(int xdpi) {
-        mXdpi = xdpi;
+    public DeviceConfig setXdpi(int xdpi) {
+        this.xdpi = xdpi;
         return this;
     }
 
-    public ConfigGenerator setYdpi(int ydpi) {
-        mYdpi = ydpi;
+    public DeviceConfig setYdpi(int ydpi) {
+        this.ydpi = ydpi;
         return this;
     }
 
-    public ConfigGenerator setOrientation(ScreenOrientation orientation) {
-        mOrientation = orientation;
+    public DeviceConfig setOrientation(ScreenOrientation orientation) {
+        this.orientation = orientation;
         return this;
     }
 
-    public ConfigGenerator setDensity(Density density) {
-        mDensity = density;
+    public DeviceConfig setDensity(Density density) {
+        this.density = density;
         return this;
     }
 
-    public ConfigGenerator setRatio(ScreenRatio ratio) {
-        mRatio = ratio;
+    public DeviceConfig setRatio(ScreenRatio ratio) {
+        this.ratio = ratio;
         return this;
     }
 
-    public ConfigGenerator setSize(ScreenSize size) {
-        mSize = size;
+    public DeviceConfig setSize(ScreenSize size) {
+        this.size = size;
         return this;
     }
 
-    public ConfigGenerator setKeyboard(Keyboard keyboard) {
-        mKeyboard = keyboard;
+    public DeviceConfig setKeyboard(Keyboard keyboard) {
+        this.keyboard = keyboard;
         return this;
     }
 
-    public ConfigGenerator setTouchScreen(TouchScreen touchScreen) {
-        mTouchScreen = touchScreen;
+    public DeviceConfig setTouchScreen(TouchScreen touchScreen) {
+        this.touchScreen = touchScreen;
         return this;
     }
 
-    public ConfigGenerator setKeyboardState(KeyboardState state) {
-        mKeyboardState = state;
+    public DeviceConfig setKeyboardState(KeyboardState state) {
+        keyboardState = state;
         return this;
     }
 
-    public ConfigGenerator setSoftButtons(boolean softButtons) {
-        mSoftButtons = softButtons;
+    public DeviceConfig setSoftButtons(boolean softButtons) {
+        this.softButtons = softButtons;
         return this;
     }
 
-    public ConfigGenerator setNavigation(Navigation navigation) {
-        mNavigation = navigation;
+    public DeviceConfig setNavigation(Navigation navigation) {
+        this.navigation = navigation;
         return this;
     }
 }
