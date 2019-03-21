@@ -19,7 +19,6 @@ package com.squareup.paparazzi.internal;
 import android.annotation.NonNull;
 import com.android.SdkConstants;
 import com.android.ide.common.rendering.api.AssetRepository;
-import com.android.ide.common.rendering.api.LayoutLog;
 import com.android.ide.common.rendering.api.LayoutlibCallback;
 import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.ide.common.rendering.api.ResourceReference;
@@ -30,7 +29,8 @@ import com.android.ide.common.resources.configuration.FolderConfiguration;
 import com.android.ide.common.resources.deprecated.ResourceRepository;
 import com.android.resources.ResourceType;
 import com.google.common.collect.ImmutableMap;
-import java.util.HashMap;
+import com.squareup.paparazzi.PaparazziLogger;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -38,56 +38,56 @@ import java.util.Map;
  */
 public class SessionParamsBuilder {
 
-    private LayoutPullParser mLayoutParser;
-    private RenderingMode mRenderingMode = RenderingMode.NORMAL;
-    private Object mProjectKey = null;
-    private ConfigGenerator mConfigGenerator = ConfigGenerator.NEXUS_5;
-    private ResourceRepository mFrameworkResources;
-    private ResourceRepository mProjectResources;
-    private String mThemeName;
+    private LayoutPullParser layoutPullParser;
+    private RenderingMode renderingMode = RenderingMode.NORMAL;
+    private Object projectKey = null;
+    private DeviceConfig deviceConfig = DeviceConfig.NEXUS_5;
+    private ResourceRepository frameworkResources;
+    private ResourceRepository projectResources;
+    private String themeName;
     private boolean isProjectTheme;
-    private LayoutlibCallback mLayoutlibCallback;
-    private int mTargetSdk;
-    private int mMinSdk = 0;
-    private LayoutLog mLayoutLog;
-    private Map<SessionParams.Key, Object> mFlags = new HashMap<>();
-    private AssetRepository mAssetRepository = null;
-    private boolean mDecor = true;
+    private LayoutlibCallback layoutlibCallback;
+    private int targetSdk;
+    private int minSdk = 0;
+    private PaparazziLogger logger;
+    private Map<SessionParams.Key, Object> flags = new LinkedHashMap<>();
+    private AssetRepository assetRepository = null;
+    private boolean decor = true;
 
     @NonNull
     public SessionParamsBuilder setParser(@NonNull LayoutPullParser layoutParser) {
-        mLayoutParser = layoutParser;
+        this.layoutPullParser = layoutParser;
 
         return this;
     }
 
     @NonNull
     public SessionParamsBuilder setRenderingMode(@NonNull RenderingMode renderingMode) {
-        mRenderingMode = renderingMode;
+        this.renderingMode = renderingMode;
         return this;
     }
 
     @NonNull
-    public SessionParamsBuilder setConfigGenerator(@NonNull ConfigGenerator configGenerator) {
-        mConfigGenerator = configGenerator;
+    public SessionParamsBuilder setDeviceConfig(@NonNull DeviceConfig deviceConfig) {
+        this.deviceConfig = deviceConfig;
         return this;
     }
 
     @NonNull
     public SessionParamsBuilder setProjectResources(@NonNull ResourceRepository resources) {
-        mProjectResources = resources;
+        projectResources = resources;
         return this;
     }
 
     @NonNull
     public SessionParamsBuilder setFrameworkResources(@NonNull ResourceRepository resources) {
-        mFrameworkResources = resources;
+        frameworkResources = resources;
         return this;
     }
 
     @NonNull
     public SessionParamsBuilder setTheme(@NonNull String themeName, boolean isProjectTheme) {
-        mThemeName = themeName;
+        this.themeName = themeName;
         this.isProjectTheme = isProjectTheme;
         return this;
     }
@@ -106,73 +106,73 @@ public class SessionParamsBuilder {
 
     @NonNull
     public SessionParamsBuilder setCallback(@NonNull LayoutlibCallback callback) {
-        mLayoutlibCallback = callback;
+        layoutlibCallback = callback;
         return this;
     }
 
     @NonNull
     public SessionParamsBuilder setTargetSdk(int targetSdk) {
-        mTargetSdk = targetSdk;
+        this.targetSdk = targetSdk;
         return this;
     }
 
     @SuppressWarnings("unused")
     @NonNull
     public SessionParamsBuilder setMinSdk(int minSdk) {
-        mMinSdk = minSdk;
+        this.minSdk = minSdk;
         return this;
     }
 
     @NonNull
-    public SessionParamsBuilder setLayoutLog(@NonNull LayoutLog layoutLog) {
-        mLayoutLog = layoutLog;
+    public SessionParamsBuilder setLogger(@NonNull PaparazziLogger logger) {
+        this.logger = logger;
         return this;
     }
 
     @NonNull
     public SessionParamsBuilder setFlag(@NonNull SessionParams.Key flag, Object value) {
-        mFlags.put(flag, value);
+        flags.put(flag, value);
         return this;
     }
 
     @NonNull
     public SessionParamsBuilder setAssetRepository(@NonNull AssetRepository repository) {
-        mAssetRepository = repository;
+        assetRepository = repository;
         return this;
     }
 
     @NonNull
     public SessionParamsBuilder disableDecoration() {
-        mDecor = false;
+        decor = false;
         return this;
     }
 
     @NonNull
     public SessionParams build() {
-        assert mFrameworkResources != null;
-        assert mProjectResources != null;
-        assert mThemeName != null;
-        assert mLayoutLog != null;
-        assert mLayoutlibCallback != null;
+        assert frameworkResources != null;
+        assert projectResources != null;
+        assert themeName != null;
+        assert logger != null;
+        assert layoutlibCallback != null;
 
-        FolderConfiguration config = mConfigGenerator.getFolderConfig();
+        FolderConfiguration config = deviceConfig.getFolderConfig();
         ResourceResolver resourceResolver = ResourceResolver.create(
                 ImmutableMap.of(
-                        ResourceNamespace.ANDROID, mFrameworkResources.getConfiguredResources(config),
-                        ResourceNamespace.TODO(), mProjectResources.getConfiguredResources(config)),
+                        ResourceNamespace.ANDROID, frameworkResources.getConfiguredResources(config),
+                        ResourceNamespace.TODO(), projectResources.getConfiguredResources(config)),
                 new ResourceReference(
                         ResourceNamespace.fromBoolean(!isProjectTheme),
                         ResourceType.STYLE,
-                        mThemeName));
+                    themeName));
 
-        SessionParams params = new SessionParams(mLayoutParser, mRenderingMode, mProjectKey /* for
-        caching */, mConfigGenerator.getHardwareConfig(), resourceResolver, mLayoutlibCallback,
-                mMinSdk, mTargetSdk, mLayoutLog);
+        SessionParams params = new SessionParams(layoutPullParser, renderingMode, projectKey /* for
+        caching */, deviceConfig.getHardwareConfig(), resourceResolver, layoutlibCallback,
+            minSdk, targetSdk, logger);
 
-        mFlags.forEach(params::setFlag);
-        params.setAssetRepository(mAssetRepository);
+        flags.forEach(params::setFlag);
+        params.setAssetRepository(assetRepository);
 
-        if (!mDecor) {
+        if (!decor) {
             params.setForceNoDecor();
         }
 
