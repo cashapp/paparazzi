@@ -20,7 +20,7 @@ import libcore.io.Streams
 import java.io.IOException
 
 /**
- * Module class loader that loads classes from the test project.
+ * Loads classes from the test project.
  *
  * @param moduleRoot The path to the module root
  * @param parent The parent class loader

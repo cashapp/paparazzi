@@ -20,25 +20,14 @@ import com.android.ide.common.rendering.api.RenderSession
 import com.android.ide.common.rendering.api.Result
 import com.android.ide.common.rendering.api.ViewInfo
 import java.awt.image.BufferedImage
-import java.util.ArrayList
 
-class RenderResult private constructor(
+data class RenderResult(
   val result: Result,
-  systemViews: List<ViewInfo>?,
-  rootViews: List<ViewInfo>?,
+  val systemViews: List<ViewInfo>,
+  val rootViews: List<ViewInfo>,
   val image: BufferedImage
-) {
-  val rootViews: List<ViewInfo> = rootViews ?: emptyList()
-  val systemViews: List<ViewInfo> = systemViews ?: emptyList()
+)
 
-  companion object {
-    fun getFromSession(session: RenderSession): RenderResult {
-      return RenderResult(
-          session.result,
-          ArrayList(session.systemRootViews),
-          ArrayList(session.rootViews),
-          session.image
-      )
-    }
-  }
+fun RenderSession.toResult(): RenderResult {
+  return RenderResult(result, systemRootViews.toList(), rootViews.toList(), image)
 }
