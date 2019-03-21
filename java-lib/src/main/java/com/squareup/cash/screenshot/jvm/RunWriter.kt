@@ -25,6 +25,7 @@ import kotlinx.coroutines.runBlocking
 import okio.BufferedSink
 import okio.buffer
 import okio.sink
+import okio.source
 import java.awt.image.BufferedImage
 import java.io.File
 import java.text.SimpleDateFormat
@@ -66,6 +67,7 @@ internal class RunWriter(
   /** Write shots from the queue. */
   private suspend fun writeLoop() {
     runDirectory.mkdirs()
+    writeStaticFiles()
     writeRunJs()
     writeIndexJs()
 
@@ -138,6 +140,16 @@ internal class RunWriter(
       writeUtf8("window.runs[\"$runName\"] = ")
       PaparazziJson.listOfShotsAdapter.toJson(this, shots)
       writeUtf8(";")
+    }
+  }
+
+  private fun writeStaticFiles() {
+    val loader = RunWriter::class.java.classLoader
+    File(rootDirectory, "index.html").writeAtomically {
+      writeAll(loader.getResourceAsStream("index.html").source())
+    }
+    File(rootDirectory, "paparazziRenderer.js").writeAtomically {
+      writeAll(loader.getResourceAsStream("paparazziRenderer.js").source())
     }
   }
 
