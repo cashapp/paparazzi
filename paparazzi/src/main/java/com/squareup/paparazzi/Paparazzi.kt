@@ -30,9 +30,8 @@ import com.android.layoutlib.bridge.BridgeRenderSession
 import com.android.layoutlib.bridge.impl.RenderAction
 import com.android.layoutlib.bridge.impl.RenderSessionImpl
 import com.squareup.paparazzi.internal.ImageUtils
-import com.squareup.paparazzi.internal.PaparazziLayoutLibCallback
 import com.squareup.paparazzi.internal.LayoutPullParser
-import com.squareup.paparazzi.internal.ModuleClassLoader
+import com.squareup.paparazzi.internal.PaparazziLayoutLibCallback
 import com.squareup.paparazzi.internal.Renderer
 import org.junit.rules.TestRule
 import org.junit.runner.Description
@@ -48,9 +47,6 @@ class Paparazzi(
   private val THUMBNAIL_SIZE = 1000
 
   private val logger = PaparazziLogger()
-  private val defaultClassLoader: ModuleClassLoader =
-    ModuleClassLoader(environment.appClassesLocation, javaClass.classLoader)
-
   private lateinit var session: RenderSession
   private lateinit var scene: RenderSessionImpl
   private lateinit var renderer: Renderer
@@ -78,9 +74,7 @@ class Paparazzi(
   }
 
   fun prepare(description: Description) {
-    val layoutLibTestCallback = PaparazziLayoutLibCallback(
-        logger, defaultClassLoader, packageName
-    )
+    val layoutLibTestCallback = PaparazziLayoutLibCallback(logger, packageName)
     layoutLibTestCallback.initResources()
 
     testName = description.toTestName()
