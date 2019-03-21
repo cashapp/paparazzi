@@ -136,11 +136,11 @@ class SessionParamsBuilder {
     require(logger != null)
     require(layoutlibCallback != null)
 
-    val config = deviceConfig.folderConfig
+    val folderConfiguration = deviceConfig.folderConfiguration
     val resourceResolver = ResourceResolver.create(
         mapOf<ResourceNamespace, Map<ResourceType, ResourceValueMap>>(
-            ResourceNamespace.ANDROID to frameworkResources!!.getConfiguredResources(config),
-            ResourceNamespace.TODO() to projectResources!!.getConfiguredResources(config)
+            ResourceNamespace.ANDROID to frameworkResources!!.getConfiguredResources(folderConfiguration),
+            ResourceNamespace.TODO() to projectResources!!.getConfiguredResources(folderConfiguration)
         ),
         ResourceReference(
             ResourceNamespace.fromBoolean(!isProjectTheme),
