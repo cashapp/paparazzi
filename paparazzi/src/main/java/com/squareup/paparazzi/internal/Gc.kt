@@ -14,23 +14,23 @@
  * limitations under the License.
  */
 
-package com.squareup.paparazzi.internal;
+package com.squareup.paparazzi.internal
 
-import java.lang.ref.WeakReference;
+import java.lang.ref.WeakReference
 
-public class Gc {
-    public static void gc() {
-        // See RuntimeUtil#gc in jlibs (http://jlibs.in/)
-        Object obj = new Object();
-        WeakReference ref = new WeakReference<>(obj);
-        //noinspection UnusedAssignment
-        obj = null;
-        while (ref.get() != null) {
-            System.gc();
-            System.runFinalization();
-        }
+object Gc {
+  fun gc() {
+    // See RuntimeUtil#gc in jlibs (http://jlibs.in/)
+    var obj: Any? = Any()
+    val ref = WeakReference<Any>(obj)
 
-        System.gc();
-        System.runFinalization();
+    obj = null
+    while (ref.get() != null) {
+      System.gc()
+      System.runFinalization()
     }
+
+    System.gc()
+    System.runFinalization()
+  }
 }
