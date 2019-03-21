@@ -121,7 +121,7 @@ class Paparazzi(
   ) {
     snapshotCount++
 
-    val viewGroup = session.rootViews.get(0).viewObject as ViewGroup
+    val viewGroup = session.rootViews[0].viewObject as ViewGroup
     viewGroup.addView(view)
     try {
       scene.render(true)
@@ -154,8 +154,8 @@ class Paparazzi(
     val scale = THUMBNAIL_SIZE / maxDimension.toDouble()
     val copy = ImageUtils.scale(image, scale, scale)
 
-    val shot = Shot(name, testName!!, Date())
-    snapshotHandler.add(shot, copy)
+    val shot = Snapshot(name, testName!!, Date())
+    snapshotHandler.handle(shot, copy)
   }
 
   private fun Description.toTestName(): TestName {
