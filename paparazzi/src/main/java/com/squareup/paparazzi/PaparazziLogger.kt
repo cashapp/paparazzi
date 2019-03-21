@@ -15,26 +15,81 @@
  */
 package com.squareup.paparazzi
 
+import com.android.ide.common.rendering.api.LayoutLog
 import com.android.utils.ILogger
+import java.util.logging.Level
+import java.util.logging.Logger
+import java.util.logging.Logger.getLogger
 
-class PaparazziLogger : ILogger {
-  private val renderMessages = mutableListOf<String>()
+/**
+ * This logger delegates to java.util.Logging.
+ *
+ * TODO: gather logged messages and fail successful tests that have unexpected errors.
+ */
+class PaparazziLogger : LayoutLog(), ILogger {
+  private val logger: Logger = getLogger(Paparazzi::class.java.name)
 
   override fun error(
     t: Throwable,
     format: String?,
     vararg args: Any
   ) {
-    renderMessages += String.format(format ?: "", *args)
+    logger.log(Level.SEVERE, format, args)
   }
 
-  override fun warning(format: String, vararg args: Any) {
-    renderMessages += String.format(format, *args)
+  override fun warning(
+    format: String,
+    vararg args: Any
+  ) {
+    logger.log(Level.WARNING, format, args)
   }
 
-  override fun info(msgFormat: String, vararg args: Any) {
+  override fun info(
+    format: String,
+    vararg args: Any
+  ) {
+    logger.log(Level.INFO, format, args)
   }
 
-  override fun verbose(msgFormat: String, vararg args: Any) {
+  override fun verbose(
+    format: String,
+    vararg args: Any
+  ) {
+    logger.log(Level.FINE, format, args)
+  }
+
+  override fun warning(
+    tag: String,
+    message: String,
+    data: Any
+  ) {
+    logger.log(Level.WARNING, "$tag: $message")
+  }
+
+  override fun fidelityWarning(
+    tag: String?,
+    message: String?,
+    throwable: Throwable?,
+    cookie: Any?,
+    data: Any?
+  ) {
+    logger.log(Level.WARNING, "$tag: $message", throwable)
+  }
+
+  override fun error(
+    tag: String,
+    message: String,
+    data: Any
+  ) {
+    logger.log(Level.SEVERE, "$tag: $message")
+  }
+
+  override fun error(
+    tag: String,
+    message: String,
+    throwable: Throwable?,
+    data: Any
+  ) {
+    logger.log(Level.SEVERE, "$tag: $message")
   }
 }
