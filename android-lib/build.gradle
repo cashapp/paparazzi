@@ -19,11 +19,12 @@ dependencies {
 }
 
 def compileAndroidResources = tasks.register("compileAndroidResources", Exec) {
-    def aapt2 = Files.list(Paths.get(System.getenv("ANDROID_HOME"), "build-tools"))
+    def aapt2 = Files.list(Paths.get("${project.android.sdkDirectory}/build-tools"))
             .max(Comparator.naturalOrder())
             .get()
             .resolve("aapt2")
 
+    mkdir "${buildDir}/tmp"
     executable aapt2
     args 'compile',
          '--dir', "${projectDir}/src/main/res/",
@@ -31,7 +32,7 @@ def compileAndroidResources = tasks.register("compileAndroidResources", Exec) {
 }
 
 def generateRJava = tasks.register("generateRJava", Exec) {
-    def aapt2 = Files.list(Paths.get(System.getenv("ANDROID_HOME"), "build-tools"))
+    def aapt2 = Files.list(Paths.get("${project.android.sdkDirectory}/build-tools"))
             .max(Comparator.naturalOrder())
             .get()
             .resolve("aapt2")
