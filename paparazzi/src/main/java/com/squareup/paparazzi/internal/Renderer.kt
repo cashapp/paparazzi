@@ -17,7 +17,6 @@
 package com.squareup.paparazzi.internal
 
 import com.android.ide.common.rendering.api.SessionParams
-import com.android.ide.common.rendering.api.SessionParams.RenderingMode
 import com.android.ide.common.resources.deprecated.FrameworkResources
 import com.android.ide.common.resources.deprecated.ResourceItem
 import com.android.ide.common.resources.deprecated.ResourceRepository
@@ -37,50 +36,43 @@ import java.util.concurrent.TimeUnit
 /** View rendering. */
 class Renderer(
   private val environment: Environment,
-  private val layoutLibCallback: PaparazziLayoutLibCallback,
+  private val layoutlibCallback: PaparazziCallback,
   private val logger: PaparazziLogger
 ) : Closeable {
   private var bridge: Bridge? = null
-  private var frameworkRepo: FrameworkResources? = null
-  private var projectResources: ResourceRepository? = null
-
-  /**
-   * Returns a pre-configured [SessionParamsBuilder] for target API 22, Normal rendering
-   * mode, AppTheme as theme and Nexus 5.
-   */
-  val sessionParamsBuilder: SessionParamsBuilder
-    get() = SessionParamsBuilder()
-        .setLogger(logger)
-        .setFrameworkResources(frameworkRepo!!)
-        .setDeviceConfig(DeviceConfig.NEXUS_5)
-        .setProjectResources(projectResources!!)
-        .setTheme("AppTheme", true)
-        .setRenderingMode(RenderingMode.NORMAL)
-        .setTargetSdk(22)
-        .setFlag(RenderParamsFlags.FLAG_DO_NOT_RENDER_ON_CREATE, true)
-        .setAssetRepository(
-            PaparazziAssetRepository(environment.testResDir + "/" + environment.assetsDir)
-        )
+  private lateinit var sessionParamsBuilder: SessionParamsBuilder
 
   /** Initialize the bridge and the resource maps. */
-  fun prepare() {
-    val dataDir = File(environment.platformDir, "data")
-    val res = File(dataDir, "res")
-    frameworkRepo = FrameworkResources(FolderWrapper(res)).apply {
+  fun prepare(): SessionParamsBuilder {
+    val platformDataDir = File("${environment.platformDir}/data")
+    val platformDataResDir = File("${environment.platformDir}/data/res")
+    val frameworkResources = FrameworkResources(FolderWrapper(platformDataResDir)).apply {
       loadResources()
       loadPublicResources(logger)
     }
 
-    projectResources = object : ResourceRepository(FolderWrapper(environment.resDir), false) {
+    val projectResources = object : ResourceRepository(FolderWrapper(environment.resDir), false) {
       override fun createResourceItem(name: String): ResourceItem {
         return ResourceItem(name)
       }
     }
-    projectResources!!.loadResources()
+    projectResources.loadResources()
 
-    val fontLocation = File(dataDir, "fonts")
+    sessionParamsBuilder = SessionParamsBuilder(
+        layoutlibCallback = layoutlibCallback,
+        logger = logger,
+        frameworkResources = frameworkResources,
+        projectResources = projectResources,
+        assetRepository = PaparazziAssetRepository(
+            "${environment.testResDir}/${environment.assetsDir}"
+        )
+    )
+        .plusFlag(RenderParamsFlags.FLAG_DO_NOT_RENDER_ON_CREATE, true)
+        .withTheme("AppTheme", true)
+
+    val fontLocation = File(platformDataDir, "fonts")
     val buildProp = File(environment.platformDir, "build.prop")
-    val attrs = File(res, "values" + File.separator + "attrs.xml")
+    val attrs = File(platformDataResDir, "values" + File.separator + "attrs.xml")
     bridge = Bridge().apply {
       init(
           DeviceConfig.loadProperties(buildProp),
@@ -97,11 +89,11 @@ class Renderer(
       Bridge.getLock()
           .unlock()
     }
+
+    return sessionParamsBuilder
   }
 
   override fun close() {
-    frameworkRepo = null
-    projectResources = null
     bridge = null
 
     Gc.gc()
@@ -164,11 +156,11 @@ class Renderer(
    */
   @JvmOverloads
   fun renderAndVerify(
-    params: SessionParams,
+    sessionParams: SessionParams,
     goldenFileName: String,
     frameTimeNanos: Long = -1
   ): RenderResult {
-    val result = render(bridge!!, params, frameTimeNanos)
+    val result = render(bridge!!, sessionParams, frameTimeNanos)
     verify(goldenFileName, result.image)
     return result
   }
@@ -186,22 +178,12 @@ class Renderer(
     goldenFileName: String,
     deviceConfig: DeviceConfig = DeviceConfig.NEXUS_5
   ): RenderResult {
-    val params = createSessionParams(layoutFileName, deviceConfig)
-    return renderAndVerify(params, goldenFileName)
-  }
-
-  fun createSessionParams(
-    layoutFileName: String,
-    deviceConfig: DeviceConfig
-  ): SessionParams {
-    // Create the layout pull parser.
-    val parser = createParserFromPath(layoutFileName)
-    // TODO: Set up action bar handler properly to test menu rendering.
-    // Create session params.
-    return sessionParamsBuilder
-        .setParser(parser)
-        .setDeviceConfig(deviceConfig)
-        .setCallback(layoutLibCallback)
+    val sessionParams = sessionParamsBuilder
+        .copy(
+            layoutPullParser = createParserFromPath(layoutFileName),
+            deviceConfig = deviceConfig
+        )
         .build()
+    return renderAndVerify(sessionParams, goldenFileName)
   }
 }

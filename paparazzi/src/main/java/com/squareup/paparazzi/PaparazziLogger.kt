@@ -30,11 +30,11 @@ class PaparazziLogger : LayoutLog(), ILogger {
   private val logger: Logger = getLogger(Paparazzi::class.java.name)
 
   override fun error(
-    t: Throwable,
+    throwable: Throwable?,
     format: String?,
     vararg args: Any
   ) {
-    logger.log(Level.SEVERE, format, args)
+    logger.log(Level.SEVERE, format?.format(args), throwable)
   }
 
   override fun warning(
@@ -58,14 +58,6 @@ class PaparazziLogger : LayoutLog(), ILogger {
     logger.log(Level.FINE, format, args)
   }
 
-  override fun warning(
-    tag: String?,
-    message: String,
-    data: Any
-  ) {
-    logger.log(Level.WARNING, "$tag: $message")
-  }
-
   override fun fidelityWarning(
     tag: String?,
     message: String?,
@@ -78,18 +70,29 @@ class PaparazziLogger : LayoutLog(), ILogger {
 
   override fun error(
     tag: String?,
-    message: String,
-    data: Any
+    message: String?,
+    viewCookie: Any?,
+    data: Any?
   ) {
     logger.log(Level.SEVERE, "$tag: $message")
   }
 
   override fun error(
     tag: String?,
-    message: String,
+    message: String?,
     throwable: Throwable?,
-    data: Any
+    viewCookie: Any?,
+    data: Any?
   ) {
-    logger.log(Level.SEVERE, "$tag: $message")
+    logger.log(Level.SEVERE, "$tag: $message", throwable)
+  }
+
+  override fun warning(
+    tag: String?,
+    message: String?,
+    viewCookie: Any?,
+    data: Any?
+  ) {
+    logger.log(Level.WARNING, "$tag: $message")
   }
 }

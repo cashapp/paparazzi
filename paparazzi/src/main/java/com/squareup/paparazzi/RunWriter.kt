@@ -138,7 +138,7 @@ internal class RunWriter(
   private fun writeRunJs() {
     File(runDirectory, "run.js").writeAtomically {
       writeUtf8("window.runs[\"$runName\"] = ")
-      PaparazziJson.LIST_OF_SHOTS_ADAPTER.toJson(this, shots)
+      PaparazziJson.listOfShotsAdapter.toJson(this, shots)
       writeUtf8(";")
     }
   }

@@ -20,8 +20,6 @@ data class Environment(
   val appTestDir: String
 ) {
   val testResDir: String = "$appTestDir/app/build/intermediates/classes/production/release/"
-  val appClassesLocation =
-    "$appTestDir/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes"
   val assetsDir = "$appTestDir/src/main/assets/"
   val resDir = "$appTestDir/src/main/res"
 }
