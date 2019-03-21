@@ -29,11 +29,11 @@ import com.android.layoutlib.bridge.Bridge.prepareThread
 import com.android.layoutlib.bridge.BridgeRenderSession
 import com.android.layoutlib.bridge.impl.RenderAction
 import com.android.layoutlib.bridge.impl.RenderSessionImpl
-import com.android.layoutlib.bridge.intensive.RenderTestBase
-import com.android.layoutlib.bridge.intensive.setup.LayoutLibTestCallback
-import com.android.layoutlib.bridge.intensive.setup.LayoutPullParser
-import com.android.layoutlib.bridge.intensive.util.ImageUtils
-import com.android.layoutlib.bridge.intensive.util.ModuleClassLoader
+import com.squareup.paparazzi.internal.RenderTestBase
+import com.squareup.paparazzi.internal.LayoutLibTestCallback
+import com.squareup.paparazzi.internal.LayoutPullParser
+import com.squareup.paparazzi.internal.ImageUtils
+import com.squareup.paparazzi.internal.ModuleClassLoader
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
@@ -49,7 +49,9 @@ class Paparazzi(
   private val renderTestBase = RenderTestBase(environment)
   private val logger = PaparazziLogger()
   private val defaultClassLoader: ModuleClassLoader =
-    ModuleClassLoader(environment.appClassesLocation, javaClass.classLoader)
+    ModuleClassLoader(
+        environment.appClassesLocation, javaClass.classLoader
+    )
 
   private lateinit var session: RenderSession
   private lateinit var scene: RenderSessionImpl
@@ -80,7 +82,8 @@ class Paparazzi(
     testName = description.toTestName()
     renderTestBase.beforeClass()
 
-    val layoutLibTestCallback = LayoutLibTestCallback(logger, defaultClassLoader)
+    val layoutLibTestCallback =
+      LayoutLibTestCallback(logger, defaultClassLoader)
     layoutLibTestCallback.initResources()
 
     val frameLayout = """

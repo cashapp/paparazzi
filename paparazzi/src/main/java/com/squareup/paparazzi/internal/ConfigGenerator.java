@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.layoutlib.bridge.intensive.setup;
+package com.squareup.paparazzi.internal;
 
 import com.android.ide.common.rendering.api.HardwareConfig;
 import com.android.ide.common.resources.configuration.CountryCodeQualifier;
@@ -44,18 +44,15 @@ import com.android.resources.ScreenRatio;
 import com.android.resources.ScreenSize;
 import com.android.resources.TouchScreen;
 import com.android.resources.UiMode;
-
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-import org.xmlpull.v1.XmlPullParserFactory;
-
+import com.google.android.collect.Maps;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
-
-import com.google.android.collect.Maps;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlPullParserFactory;
 
 /**
  * Provides {@link FolderConfiguration} and {@link HardwareConfig} for various devices. Also
