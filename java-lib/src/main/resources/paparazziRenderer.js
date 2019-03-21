@@ -4,7 +4,7 @@ class Run {
   constructor(id, data) {
     this.id = id
     // TODO(oldergod) which entries are required/optional?
-    this.data = data // These are not Shot object..., they are the run.js.
+    this.data = data
   }
 }
 
@@ -38,10 +38,13 @@ class Shot {
     this.name = name;
     this.test = test;
 
-    var testMethodRegex = /^(.*)\.([^.]*)#([^.]*)$/;
-    [, this.package, this.clazz, this.method] = testMethodRegex.exec(test);
+    [, this.package, this.clazz, this.method] = Shot.TestMethodRegex.exec(test);
 
     this.runs = [];
+  }
+
+  static get TestMethodRegex() {
+    return /^(.*)\.([^.]*)#([^.]*)$/;
   }
 
   addRun(runId, file, timestamp) {
@@ -57,15 +60,14 @@ class Shot {
     this.img.src = runId + '/' + file
     this.timestampP.innerText = timestamp
 
-    var _this = this;
     const circle = document.createElement('div');
     circle.classList.add('test__details__selector', `run-${runId}`);
-    circle.onmouseover = function(e) {
-      _this.img.src = runId + '/' + file;
+    circle.onmouseover = function (e) {
+      this.img.src = runId + '/' + file;
 
-      for(var shot of Object.values(paparazziRenderer.shots)) {
-        var found = false
-        for(var run of shot.runs) {
+      for (let shot of Object.values(paparazziRenderer.shots)) {
+        let found = false
+        for (let run of shot.runs) {
           if (runId == run.id) {
             shot.img.src = run.id + '/' + run.file;
             shot.timestampP.innerText = run.timestamp
@@ -74,11 +76,9 @@ class Shot {
             break;
           }
         }
-        if (!found) {
-          shot.img.style.opacity = "0.9";
-        }
+        shot.img.style.opacity = found ? "1" : "0.3";
       }
-    };
+    }.bind(this);
     this.overlayDiv.appendChild(circle)
   }
 
@@ -121,8 +121,8 @@ class Shot {
     overlayDiv.appendChild(timestampP)
 
     nameP.innerText = `${this.method} ${this.name}`
-    classP.innerText = `${this.clazz}`
-    packageP.innerText = `${this.package}`
+    classP.innerText = this.clazz
+    packageP.innerText = this.package
 
     // hold references to the DOM for later updates
     this.img = img
