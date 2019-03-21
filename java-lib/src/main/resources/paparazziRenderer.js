@@ -57,8 +57,28 @@ class Shot {
     this.img.src = runId + '/' + file
     this.timestampP.innerText = timestamp
 
-    const circle = document.createElement('div')
-    circle.classList.add('test__details__selector', `run-${runId}`)
+    var _this = this;
+    const circle = document.createElement('div');
+    circle.classList.add('test__details__selector', `run-${runId}`);
+    circle.onmouseover = function(e) {
+      _this.img.src = runId + '/' + file;
+
+      for(var shot of Object.values(paparazziRenderer.shots)) {
+        var found = false
+        for(var run of shot.runs) {
+          if (runId == run.id) {
+            shot.img.src = run.id + '/' + run.file;
+            shot.timestampP.innerText = run.timestamp
+
+            found = true;
+            break;
+          }
+        }
+        if (!found) {
+          shot.img.style.opacity = "0.9";
+        }
+      }
+    };
     this.overlayDiv.appendChild(circle)
   }
 
@@ -124,7 +144,7 @@ class PaparazziRenderer {
     for (let runId of window.all_runs) {
       this.loadRunScript(runId);
     }
-    setInterval(this.refresh.bind(this), 1000);
+    setInterval(this.refresh.bind(this), 100);
   }
 
   render(run) {
@@ -151,7 +171,6 @@ class PaparazziRenderer {
       console.log('Adding run to shot', shot)
       shot.addRun(run.id, datum.file, datum.timestamp)
 
-      // add to html in a idempotent way (we replace first, fallback to appending)
       // TODO setup listeners for filters/hovering, etc
     }
   }
@@ -191,10 +210,10 @@ class PaparazziRenderer {
   }
 }
 
+const paparazziRenderer = new PaparazziRenderer()
+console.log(paparazziRenderer)
+
 function bootstrap() {
   document.rootContainer = document.getElementById('rootContainer');
-
-  const paparazziRenderer = new PaparazziRenderer()
-  console.log(paparazziRenderer)
   paparazziRenderer.start()
 }

@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@color/keypadGreen"
-    android:padding="50dp"
+    android:padding="30dp"
     >
 
   <TextView
