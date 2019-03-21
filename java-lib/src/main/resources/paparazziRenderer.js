@@ -1,3 +1,5 @@
+window.runs = {};
+
 class Run {
   constructor(id, data) {
     this.id = id
@@ -33,13 +35,13 @@ class Run {
 
 class Shot {
   constructor(name, test) {
-    this.name = name
-    this.test = test // split into method, class, package
-    this.method = "TODO"
-    // TODO(oldergod) is it a keyword?
-    this.class = "TODO"
-    this.package = "TODO"
-    this.runs = []
+    this.name = name;
+    this.test = test;
+
+    var testMethodRegex = /^(.*)\.([^.]*)#([^.]*)$/;
+    [, this.package, this.clazz, this.method] = testMethodRegex.exec(test);
+
+    this.runs = [];
   }
 
   addRun(runId, file, timestamp) {
@@ -51,6 +53,13 @@ class Shot {
         'timestamp': timestamp
       }
     )
+
+    this.img.src = runId + '/' + file
+    this.timestampP.innerText = timestamp
+
+    const circle = document.createElement('div')
+    circle.classList.add('test__details__selector', `run-${runId}`)
+    this.overlayDiv.appendChild(circle)
   }
 
   removeRun(runId) {
@@ -61,35 +70,44 @@ class Shot {
   }
 
   inflate() {
-    const circles = this.runs.map(run => {
-      const circle = document.createElement('div')
-      circle.classList.add('test__details__selector', `run-${run.id}`)
-      circle
-    })
+    const screenDiv = document.createElement('div')
+    screenDiv.classList.add('screen')
+
+    document.rootContainer.appendChild(screenDiv)
+
+    const img = document.createElement('img')
+
+    const overlayDiv = document.createElement('div')
+    overlayDiv.classList.add('overlay')
+
+    screenDiv.appendChild(img)
+    screenDiv.appendChild(overlayDiv)
 
     const nameP = document.createElement('p')
     nameP.classList.add('test__details', 'test__details__name')
-    nameP.innerText = `${this.method} ${this.name}`
 
-    // TODO create classP
-    // TODO create packageP
-    // TODO create timestampP
+    const classP = document.createElement('p')
+    classP.classList.add('test__details', 'test__details__class')
 
-    // TODO create overlayDiv
+    const packageP = document.createElement('p')
+    packageP.classList.add('test__details', 'test__details__package')
+
+    const timestampP = document.createElement('p')
+    timestampP.classList.add('test__details', 'test__details__timestamp')
 
     overlayDiv.appendChild(nameP)
     overlayDiv.appendChild(classP)
     overlayDiv.appendChild(packageP)
     overlayDiv.appendChild(timestampP)
-    circles.forEach(circle => overlayDiv.appendChild(circle))
 
-    // TODO create img
+    nameP.innerText = `${this.method} ${this.name}`
+    classP.innerText = `${this.clazz}`
+    packageP.innerText = `${this.package}`
 
-    const div = document.createElement('div')
-    div.classList.add('screen')
-
-    div.appendChild(img)
-    div.appendChild(overlayDiv)
+    // hold references to the DOM for later updates
+    this.img = img
+    this.timestampP = timestampP
+    this.overlayDiv = overlayDiv
   }
 }
 
@@ -104,9 +122,9 @@ class PaparazziRenderer {
 
   start() {
     for (let runId of window.all_runs) {
-      this.loadRunScript(runId)
+      this.loadRunScript(runId);
     }
-    setInterval(this.refresh.bind(this), 1000)
+    setInterval(this.refresh.bind(this), 1000);
   }
 
   render(run) {
@@ -119,14 +137,20 @@ class PaparazziRenderer {
     console.log('rendering', run)
 
     for (let datum of run.data) {
-      const key = `${datum.test}${datum.name}`
+      const key = `${datum.testName}${datum.name}`
       let shot = this.shots[key]
-      if (!shot) { this.shots[key] = new Shot(datum.name, datum.test) }
-      shot.removeRun(run.id)
+      if (!shot) {
+        console.log('New shot detected', shot)
+        shot = new Shot(datum.name, datum.testName)
+        this.shots[key] = shot
+        shot.inflate()
+      } else {
+        //shot.removeRun(run.id)
+      }
+
+      console.log('Adding run to shot', shot)
       shot.addRun(run.id, datum.file, datum.timestamp)
 
-      console.log('Gonna render', shot)
-      // inflate
       // add to html in a idempotent way (we replace first, fallback to appending)
       // TODO setup listeners for filters/hovering, etc
     }
@@ -152,9 +176,9 @@ class PaparazziRenderer {
   }
 
   refresh() {
-    if (window.all_runs.length == 0) return
+    if (window.all_runs.length == 0) return;
 
-    this.renderAll()
+    this.renderAll();
   }
 
   loadRunScript(runId) {
@@ -167,6 +191,10 @@ class PaparazziRenderer {
   }
 }
 
-const paparazziRenderer = new PaparazziRenderer()
-console.log(paparazziRenderer)
-paparazziRenderer.start()
+function bootstrap() {
+  document.rootContainer = document.getElementById('rootContainer');
+
+  const paparazziRenderer = new PaparazziRenderer()
+  console.log(paparazziRenderer)
+  paparazziRenderer.start()
+}
