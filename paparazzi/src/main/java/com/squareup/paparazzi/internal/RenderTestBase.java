@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.layoutlib.bridge.intensive;
+package com.squareup.paparazzi.internal;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -30,14 +30,6 @@ import com.android.io.FolderWrapper;
 import com.android.layoutlib.bridge.Bridge;
 import com.android.layoutlib.bridge.android.RenderParamsFlags;
 import com.android.layoutlib.bridge.impl.DelegateManager;
-import com.android.layoutlib.bridge.intensive.setup.ConfigGenerator;
-import com.android.layoutlib.bridge.intensive.setup.LayoutLibTestCallback;
-import com.android.layoutlib.bridge.intensive.setup.LayoutPullParser;
-import com.android.layoutlib.bridge.intensive.util.ImageUtils;
-import com.android.layoutlib.bridge.intensive.util.ModuleClassLoader;
-import com.android.layoutlib.bridge.intensive.util.SessionParamsBuilder;
-import com.android.layoutlib.bridge.intensive.util.TestAssetRepository;
-import com.android.layoutlib.bridge.intensive.util.TestUtils;
 import com.android.tools.layoutlib.java.System_Delegate;
 import com.android.utils.ILogger;
 import com.google.android.collect.Lists;

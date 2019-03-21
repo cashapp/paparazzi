@@ -14,16 +14,11 @@
  * limitations under the License.
  */
 
-package com.android.layoutlib.bridge.intensive.setup;
-
-import com.android.ide.common.rendering.api.ILayoutPullParser;
-import com.android.ide.common.rendering.api.ResourceNamespace;
-
-import org.kxml2.io.KXmlParser;
-import org.xmlpull.v1.XmlPullParserException;
+package com.squareup.paparazzi.internal;
 
 import android.annotation.NonNull;
-
+import com.android.ide.common.rendering.api.ILayoutPullParser;
+import com.android.ide.common.rendering.api.ResourceNamespace;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -33,6 +28,8 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
+import org.kxml2.io.KXmlParser;
+import org.xmlpull.v1.XmlPullParserException;
 
 import static com.android.SdkConstants.ATTR_IGNORE;
 import static com.android.SdkConstants.EXPANDABLE_LIST_VIEW;

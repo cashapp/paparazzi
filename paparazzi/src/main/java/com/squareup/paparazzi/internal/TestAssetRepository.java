@@ -14,12 +14,10 @@
  * limitations under the License.
  */
 
-package com.android.layoutlib.bridge.intensive.util;
-
-import com.android.ide.common.rendering.api.AssetRepository;
+package com.squareup.paparazzi.internal;
 
 import android.annotation.NonNull;
-
+import com.android.ide.common.rendering.api.AssetRepository;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

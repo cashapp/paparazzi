@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package com.android.layoutlib.bridge.intensive.util;
+package com.squareup.paparazzi.internal;
 
 import android.annotation.NonNull;
-
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -26,10 +25,14 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-
 import javax.imageio.ImageIO;
 
-import static java.awt.RenderingHints.*;
+import static java.awt.RenderingHints.KEY_ANTIALIASING;
+import static java.awt.RenderingHints.KEY_INTERPOLATION;
+import static java.awt.RenderingHints.KEY_RENDERING;
+import static java.awt.RenderingHints.VALUE_ANTIALIAS_ON;
+import static java.awt.RenderingHints.VALUE_INTERPOLATION_BILINEAR;
+import static java.awt.RenderingHints.VALUE_RENDER_QUALITY;
 import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
 import static java.io.File.separatorChar;
 import static org.junit.Assert.assertEquals;
