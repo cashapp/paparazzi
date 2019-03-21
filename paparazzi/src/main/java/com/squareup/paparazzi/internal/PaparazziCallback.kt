@@ -41,7 +41,7 @@ import java.io.FileNotFoundException
 import java.io.IOException
 import java.lang.reflect.Modifier
 
-class PaparazziLayoutLibCallback(
+class PaparazziCallback(
   private val logger: PaparazziLogger,
   private val packageName: String
 ) : LayoutlibCallback() {
@@ -53,28 +53,27 @@ class PaparazziLayoutLibCallback(
   @Throws(ClassNotFoundException::class)
   fun initResources() {
     val rClass = Class.forName("$packageName.R")
-    val nestedClasses = rClass.declaredClasses
-    for (resClass in nestedClasses) {
-      val resType = ResourceType.getEnum(resClass.simpleName)
+    for (resourceClass in rClass.declaredClasses) {
+      val resourceType = ResourceType.getEnum(resourceClass.simpleName) ?: continue
 
-      if (resType != null) {
-        for (field in resClass.declaredFields) {
-          val modifiers = field.modifiers
-          if (Modifier.isStatic(modifiers)) { // May not be final in library projects
-            val type = field.type
-            try {
-              if (type == Int::class.javaPrimitiveType) {
-                val value = field.get(null) as Int
-                val reference = ResourceReference(RES_AUTO, resType, field.name)
-                projectResources[value] = reference
-                resources[reference] = value
-              } else if (!(type.isArray && type.componentType == Int::class.javaPrimitiveType)) {
-                logger.error(null, "Unknown field type in R class: %1\$s", type)
-              }
-            } catch (e: IllegalAccessException) {
-              logger.error(e, "Malformed R class: %1\$s", "$packageName.R")
-            }
+      for (field in resourceClass.declaredFields) {
+        if (!Modifier.isStatic(field.modifiers)) continue
+
+        // May not be final in library projects.
+        val type = field.type
+        try {
+          if (type == Int::class.javaPrimitiveType) {
+            val value = field.get(null) as Int
+            val reference = ResourceReference(RES_AUTO, resourceType, field.name)
+            projectResources[value] = reference
+            resources[reference] = value
+          } else if (type.isArray && type.componentType == Int::class.javaPrimitiveType) {
+            // Ignore.
+          } else {
+            logger.error(null, "Unknown field type in R class: $type")
           }
+        } catch (e: IllegalAccessException) {
+          logger.error(e, "Malformed R class: %1\$s", "$packageName.R")
         }
       }
     }

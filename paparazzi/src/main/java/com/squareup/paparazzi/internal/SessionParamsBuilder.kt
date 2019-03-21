@@ -18,7 +18,6 @@ package com.squareup.paparazzi.internal
 
 import com.android.SdkConstants
 import com.android.ide.common.rendering.api.AssetRepository
-import com.android.ide.common.rendering.api.LayoutlibCallback
 import com.android.ide.common.rendering.api.ResourceNamespace
 import com.android.ide.common.rendering.api.ResourceReference
 import com.android.ide.common.rendering.api.SessionParams
@@ -29,118 +28,52 @@ import com.android.ide.common.resources.ResourceValueMap
 import com.android.ide.common.resources.deprecated.ResourceRepository
 import com.android.resources.ResourceType
 import com.squareup.paparazzi.PaparazziLogger
-import java.util.LinkedHashMap
 
-/**
- * Builder to help setting up [SessionParams] objects.
- */
-class SessionParamsBuilder {
-  private var layoutPullParser: LayoutPullParser? = null
-  private var renderingMode = RenderingMode.NORMAL
-  private val projectKey: Any? = null
-  private var deviceConfig = DeviceConfig.NEXUS_5
-  private var frameworkResources: ResourceRepository? = null
-  private var projectResources: ResourceRepository? = null
-  private var themeName: String? = null
-  private var isProjectTheme: Boolean = false
-  private var layoutlibCallback: LayoutlibCallback? = null
-  private var targetSdk: Int = 0
-  private var minSdk = 0
-  private var logger: PaparazziLogger? = null
-  private val flags = LinkedHashMap<SessionParams.Key<*>, Any>()
-  private var assetRepository: AssetRepository? = null
-  private var decor = true
-
-  fun setParser(layoutParser: LayoutPullParser): SessionParamsBuilder {
-    this.layoutPullParser = layoutParser
-    return this
+/** Creates [SessionParams] objects. */
+data class SessionParamsBuilder(
+  private val layoutlibCallback: PaparazziCallback,
+  private val logger: PaparazziLogger,
+  private val frameworkResources: ResourceRepository,
+  private val assetRepository: AssetRepository,
+  private val projectResources: ResourceRepository,
+  private val deviceConfig: DeviceConfig = DeviceConfig.NEXUS_5,
+  private val renderingMode: RenderingMode = RenderingMode.NORMAL,
+  private val targetSdk: Int = 22,
+  private val flags: Map<Key<*>, Any> = mapOf(),
+  private val themeName: String? = null,
+  private val isProjectTheme: Boolean = false,
+  private val layoutPullParser: LayoutPullParser? = null,
+  private val projectKey: Any? = null,
+  private val minSdk: Int = 0,
+  private val decor: Boolean = true
+) {
+  fun withTheme(themeName: String, isProjectTheme: Boolean): SessionParamsBuilder {
+    return copy(themeName = themeName, isProjectTheme = isProjectTheme)
   }
 
-  fun setRenderingMode(renderingMode: RenderingMode): SessionParamsBuilder {
-    this.renderingMode = renderingMode
-    return this
-  }
-
-  fun setDeviceConfig(deviceConfig: DeviceConfig): SessionParamsBuilder {
-    this.deviceConfig = deviceConfig
-    return this
-  }
-
-  fun setProjectResources(resources: ResourceRepository): SessionParamsBuilder {
-    projectResources = resources
-    return this
-  }
-
-  fun setFrameworkResources(resources: ResourceRepository): SessionParamsBuilder {
-    frameworkResources = resources
-    return this
-  }
-
-  fun setTheme(themeName: String, isProjectTheme: Boolean): SessionParamsBuilder {
-    this.themeName = themeName
-    this.isProjectTheme = isProjectTheme
-    return this
-  }
-
-  fun setTheme(themeName: String): SessionParamsBuilder {
-    var themeName = themeName
-    val isProjectTheme: Boolean
-    if (themeName.startsWith(SdkConstants.PREFIX_ANDROID)) {
-      themeName = themeName.substring(SdkConstants.PREFIX_ANDROID.length)
-      isProjectTheme = false
-    } else {
-      isProjectTheme = true
+  fun withTheme(themeName: String): SessionParamsBuilder {
+    return when {
+      themeName.startsWith(SdkConstants.PREFIX_ANDROID) -> {
+        withTheme(themeName.substring(SdkConstants.PREFIX_ANDROID.length), false)
+      }
+      else -> withTheme(themeName, true)
     }
-    return setTheme(themeName, isProjectTheme)
   }
 
-  fun setCallback(callback: LayoutlibCallback): SessionParamsBuilder {
-    layoutlibCallback = callback
-    return this
-  }
-
-  fun setTargetSdk(targetSdk: Int): SessionParamsBuilder {
-    this.targetSdk = targetSdk
-    return this
-  }
-
-  fun setMinSdk(minSdk: Int): SessionParamsBuilder {
-    this.minSdk = minSdk
-    return this
-  }
-
-  fun setLogger(logger: PaparazziLogger): SessionParamsBuilder {
-    this.logger = logger
-    return this
-  }
-
-  fun setFlag(flag: SessionParams.Key<*>, value: Any): SessionParamsBuilder {
-    flags[flag] = value
-    return this
-  }
-
-  fun setAssetRepository(repository: AssetRepository): SessionParamsBuilder {
-    assetRepository = repository
-    return this
-  }
-
-  fun disableDecoration(): SessionParamsBuilder {
-    decor = false
-    return this
-  }
+  fun plusFlag(flag: SessionParams.Key<*>, value: Any) = copy(flags = flags + (flag to value))
 
   fun build(): SessionParams {
-    require(frameworkResources != null)
-    require(projectResources != null)
     require(themeName != null)
-    require(logger != null)
-    require(layoutlibCallback != null)
 
     val folderConfiguration = deviceConfig.folderConfiguration
     val resourceResolver = ResourceResolver.create(
         mapOf<ResourceNamespace, Map<ResourceType, ResourceValueMap>>(
-            ResourceNamespace.ANDROID to frameworkResources!!.getConfiguredResources(folderConfiguration),
-            ResourceNamespace.TODO() to projectResources!!.getConfiguredResources(folderConfiguration)
+            ResourceNamespace.ANDROID to frameworkResources.getConfiguredResources(
+                folderConfiguration
+            ),
+            ResourceNamespace.TODO() to projectResources.getConfiguredResources(
+                folderConfiguration
+            )
         ),
         ResourceReference(
             ResourceNamespace.fromBoolean(!isProjectTheme),
@@ -149,8 +82,10 @@ class SessionParamsBuilder {
         )
     )
 
-    val result = SessionParams(layoutPullParser, renderingMode, projectKey /* for caching */,
-        deviceConfig.hardwareConfig, resourceResolver, layoutlibCallback, minSdk, targetSdk, logger)
+    val result = SessionParams(
+        layoutPullParser, renderingMode, projectKey /* for caching */,
+        deviceConfig.hardwareConfig, resourceResolver, layoutlibCallback, minSdk, targetSdk, logger
+    )
 
     for ((key, value) in flags) {
       result.setFlag(key as Key<Any>, value)
