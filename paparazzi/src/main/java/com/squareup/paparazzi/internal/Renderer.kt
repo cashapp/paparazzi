@@ -86,13 +86,16 @@ class Renderer(
           DeviceConfig.loadProperties(buildProp),
           fontLocation,
           DeviceConfig.getEnumMap(attrs),
-          logger)
+          logger
+      )
     }
-    Bridge.getLock().lock()
+    Bridge.getLock()
+        .lock()
     try {
       Bridge.setLog(logger)
     } finally {
-      Bridge.getLock().unlock()
+      Bridge.getLock()
+          .unlock()
     }
   }
 
@@ -133,16 +136,17 @@ class Renderer(
         }
       }
 
-      return RenderResult.getFromSession(session)
+      return session.toResult()
     } finally {
       session.dispose()
     }
   }
 
-  /**
-   * Compares the golden image with the passed image
-   */
-  fun verify(goldenImageName: String, image: BufferedImage) {
+  /** Compares the golden image with the passed image. */
+  fun verify(
+    goldenImageName: String,
+    image: BufferedImage
+  ) {
     try {
       val goldenImagePath = environment.appTestDir + "/golden/" + goldenImageName
       ImageUtils.requireSimilar(goldenImagePath, image)

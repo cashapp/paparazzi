@@ -54,60 +54,51 @@ import java.io.IOException
 import java.util.Properties
 
 /**
- * Provides [FolderConfiguration] and [HardwareConfig] for various devices. Also
- * provides utility methods to parse build.prop and attrs.xml to generate the appropriate maps.
+ * Provides [FolderConfiguration] and [HardwareConfig] for various devices. Also provides utility
+ * methods to parse `build.prop` and `attrs.xml` to generate the appropriate maps.
+ *
+ * Defaults are for a Nexus 4 device.
  */
-class DeviceConfig {
+data class DeviceConfig(
+  var screenHeight: Int = 1280,
+  var screenWidth: Int = 768,
+  var xdpi: Int = 320,
+  var ydpi: Int = 320,
+  var orientation: ScreenOrientation = ScreenOrientation.PORTRAIT,
+  var density: Density = Density.XHIGH,
+  var ratio: ScreenRatio = ScreenRatio.NOTLONG,
+  var size: ScreenSize = ScreenSize.NORMAL,
+  var keyboard: Keyboard = Keyboard.NOKEY,
+  var touchScreen: TouchScreen = TouchScreen.FINGER,
+  var keyboardState: KeyboardState = KeyboardState.SOFT,
+  var softButtons: Boolean = true,
+  var navigation: Navigation = Navigation.NONAV
+) {
+  val folderConfiguration: FolderConfiguration
+    get() = FolderConfiguration.createDefault()
+        .apply {
+          densityQualifier = DensityQualifier(density)
+          navigationMethodQualifier = NavigationMethodQualifier(navigation)
+          screenDimensionQualifier = when {
+            screenWidth > screenHeight -> ScreenDimensionQualifier(screenWidth, screenHeight)
+            else -> ScreenDimensionQualifier(screenHeight, screenWidth)
+          }
+          screenRatioQualifier = ScreenRatioQualifier(ratio)
+          screenSizeQualifier = ScreenSizeQualifier(size)
+          textInputMethodQualifier = TextInputMethodQualifier(keyboard)
+          touchTypeQualifier = TouchScreenQualifier(touchScreen)
+          keyboardStateQualifier = KeyboardStateQualifier(keyboardState)
+          screenOrientationQualifier = ScreenOrientationQualifier(orientation)
 
-  // Device Configuration. Defaults are for a Nexus 4 device.
-  private var screenHeight = 1280
-  private var screenWidth = 768
-  private var xdpi = 320
-  private var ydpi = 320
-  private var orientation = ScreenOrientation.PORTRAIT
-  private var density = Density.XHIGH
-  private var ratio = ScreenRatio.NOTLONG
-  private var size = ScreenSize.NORMAL
-  private var keyboard = Keyboard.NOKEY
-  private var touchScreen = TouchScreen.FINGER
-  private var keyboardState = KeyboardState.SOFT
-  private var softButtons = true
-  private var navigation = Navigation.NONAV
-
-  // some default qualifiers.
-  val folderConfig: FolderConfiguration
-    get() {
-      val config = FolderConfiguration.createDefault()
-      config.densityQualifier = DensityQualifier(density)
-      config.navigationMethodQualifier = NavigationMethodQualifier(navigation)
-      if (screenWidth > screenHeight) {
-        config.screenDimensionQualifier = ScreenDimensionQualifier(
-            screenWidth,
-            screenHeight
-        )
-      } else {
-        config.screenDimensionQualifier = ScreenDimensionQualifier(
-            screenHeight,
-            screenWidth
-        )
-      }
-      config.screenRatioQualifier = ScreenRatioQualifier(ratio)
-      config.screenSizeQualifier = ScreenSizeQualifier(size)
-      config.textInputMethodQualifier = TextInputMethodQualifier(keyboard)
-      config.touchTypeQualifier = TouchScreenQualifier(touchScreen)
-      config.keyboardStateQualifier = KeyboardStateQualifier(keyboardState)
-      config.screenOrientationQualifier = ScreenOrientationQualifier(orientation)
-
-      config.updateScreenWidthAndHeight()
-      config.uiModeQualifier = UiModeQualifier(UiMode.NORMAL)
-      config.nightModeQualifier = NightModeQualifier(NightMode.NOTNIGHT)
-      config.countryCodeQualifier = CountryCodeQualifier()
-      config.layoutDirectionQualifier = LayoutDirectionQualifier()
-      config.networkCodeQualifier = NetworkCodeQualifier()
-      config.localeQualifier = LocaleQualifier()
-      config.versionQualifier = VersionQualifier()
-      return config
-    }
+          updateScreenWidthAndHeight()
+          uiModeQualifier = UiModeQualifier(UiMode.NORMAL)
+          nightModeQualifier = NightModeQualifier(NightMode.NOTNIGHT)
+          countryCodeQualifier = CountryCodeQualifier()
+          layoutDirectionQualifier = LayoutDirectionQualifier()
+          networkCodeQualifier = NetworkCodeQualifier()
+          localeQualifier = LocaleQualifier()
+          versionQualifier = VersionQualifier()
+        }
 
   val hardwareConfig: HardwareConfig
     get() = HardwareConfig(
@@ -115,157 +106,94 @@ class DeviceConfig {
         orientation, null, softButtons
     )
 
-  // Methods to set the configuration values.
-
-  fun setScreenHeight(height: Int): DeviceConfig {
-    screenHeight = height
-    return this
-  }
-
-  fun setScreenWidth(width: Int): DeviceConfig {
-    screenWidth = width
-    return this
-  }
-
-  fun setXdpi(xdpi: Int): DeviceConfig {
-    this.xdpi = xdpi
-    return this
-  }
-
-  fun setYdpi(ydpi: Int): DeviceConfig {
-    this.ydpi = ydpi
-    return this
-  }
-
-  fun setOrientation(orientation: ScreenOrientation): DeviceConfig {
-    this.orientation = orientation
-    return this
-  }
-
-  fun setDensity(density: Density): DeviceConfig {
-    this.density = density
-    return this
-  }
-
-  fun setRatio(ratio: ScreenRatio): DeviceConfig {
-    this.ratio = ratio
-    return this
-  }
-
-  fun setSize(size: ScreenSize): DeviceConfig {
-    this.size = size
-    return this
-  }
-
-  fun setKeyboard(keyboard: Keyboard): DeviceConfig {
-    this.keyboard = keyboard
-    return this
-  }
-
-  fun setTouchScreen(touchScreen: TouchScreen): DeviceConfig {
-    this.touchScreen = touchScreen
-    return this
-  }
-
-  fun setKeyboardState(state: KeyboardState): DeviceConfig {
-    keyboardState = state
-    return this
-  }
-
-  fun setSoftButtons(softButtons: Boolean): DeviceConfig {
-    this.softButtons = softButtons
-    return this
-  }
-
-  fun setNavigation(navigation: Navigation): DeviceConfig {
-    this.navigation = navigation
-    return this
-  }
-
   companion object {
-
     val NEXUS_4 = DeviceConfig()
 
-    val NEXUS_5 = DeviceConfig()
-        .setScreenHeight(1920)
-        .setScreenWidth(1080)
-        .setXdpi(445)
-        .setYdpi(445)
-        .setOrientation(ScreenOrientation.PORTRAIT)
-        .setDensity(Density.XXHIGH)
-        .setRatio(ScreenRatio.NOTLONG)
-        .setSize(ScreenSize.NORMAL)
-        .setKeyboard(Keyboard.NOKEY)
-        .setTouchScreen(TouchScreen.FINGER)
-        .setKeyboardState(KeyboardState.SOFT)
-        .setSoftButtons(true)
-        .setNavigation(Navigation.NONAV)
+    val NEXUS_5 = DeviceConfig(
+        screenHeight = 1920,
+        screenWidth = 1080,
+        xdpi = 445,
+        ydpi = 445,
+        orientation = ScreenOrientation.PORTRAIT,
+        density = Density.XXHIGH,
+        ratio = ScreenRatio.NOTLONG,
+        size = ScreenSize.NORMAL,
+        keyboard = Keyboard.NOKEY,
+        touchScreen = TouchScreen.FINGER,
+        keyboardState = KeyboardState.SOFT,
+        softButtons = true,
+        navigation = Navigation.NONAV
+    )
 
-    val NEXUS_7 = DeviceConfig()
-        .setScreenHeight(1920)
-        .setScreenWidth(1200)
-        .setXdpi(323)
-        .setYdpi(323)
-        .setOrientation(ScreenOrientation.PORTRAIT)
-        .setDensity(Density.XHIGH)
-        .setRatio(ScreenRatio.NOTLONG)
-        .setSize(ScreenSize.LARGE)
-        .setKeyboard(Keyboard.NOKEY)
-        .setTouchScreen(TouchScreen.FINGER)
-        .setKeyboardState(KeyboardState.SOFT)
-        .setSoftButtons(true)
-        .setNavigation(Navigation.NONAV)
+    val NEXUS_7 = DeviceConfig(
+        screenHeight = 1920,
+        screenWidth = 1200,
+        xdpi = 323,
+        ydpi = 323,
+        orientation = ScreenOrientation.PORTRAIT,
+        density = Density.XHIGH,
+        ratio = ScreenRatio.NOTLONG,
+        size = ScreenSize.LARGE,
+        keyboard = Keyboard.NOKEY,
+        touchScreen = TouchScreen.FINGER,
+        keyboardState = KeyboardState.SOFT,
+        softButtons = true,
+        navigation = Navigation.NONAV
+    )
 
-    val NEXUS_10 = DeviceConfig()
-        .setScreenHeight(1600)
-        .setScreenWidth(2560)
-        .setXdpi(300)
-        .setYdpi(300)
-        .setOrientation(ScreenOrientation.LANDSCAPE)
-        .setDensity(Density.XHIGH)
-        .setRatio(ScreenRatio.NOTLONG)
-        .setSize(ScreenSize.XLARGE)
-        .setKeyboard(Keyboard.NOKEY)
-        .setTouchScreen(TouchScreen.FINGER)
-        .setKeyboardState(KeyboardState.SOFT)
-        .setSoftButtons(true)
-        .setNavigation(Navigation.NONAV)
+    val NEXUS_10 = DeviceConfig(
+        screenHeight = 1600,
+        screenWidth = 2560,
+        xdpi = 300,
+        ydpi = 300,
+        orientation = ScreenOrientation.LANDSCAPE,
+        density = Density.XHIGH,
+        ratio = ScreenRatio.NOTLONG,
+        size = ScreenSize.XLARGE,
+        keyboard = Keyboard.NOKEY,
+        touchScreen = TouchScreen.FINGER,
+        keyboardState = KeyboardState.SOFT,
+        softButtons = true,
+        navigation = Navigation.NONAV
+    )
 
-    val NEXUS_5_LAND = DeviceConfig()
-        .setScreenHeight(1080)
-        .setScreenWidth(1920)
-        .setXdpi(445)
-        .setYdpi(445)
-        .setOrientation(ScreenOrientation.LANDSCAPE)
-        .setDensity(Density.XXHIGH)
-        .setRatio(ScreenRatio.NOTLONG)
-        .setSize(ScreenSize.NORMAL)
-        .setKeyboard(Keyboard.NOKEY)
-        .setTouchScreen(TouchScreen.FINGER)
-        .setKeyboardState(KeyboardState.SOFT)
-        .setSoftButtons(true)
-        .setNavigation(Navigation.NONAV)
+    val NEXUS_5_LAND = DeviceConfig(
+        screenHeight = 1080,
+        screenWidth = 1920,
+        xdpi = 445,
+        ydpi = 445,
+        orientation = ScreenOrientation.LANDSCAPE,
+        density = Density.XXHIGH,
+        ratio = ScreenRatio.NOTLONG,
+        size = ScreenSize.NORMAL,
+        keyboard = Keyboard.NOKEY,
+        touchScreen = TouchScreen.FINGER,
+        keyboardState = KeyboardState.SOFT,
+        softButtons = true,
+        navigation = Navigation.NONAV
+    )
 
-    val NEXUS_7_2012 = DeviceConfig()
-        .setScreenHeight(1280)
-        .setScreenWidth(800)
-        .setXdpi(195)
-        .setYdpi(200)
-        .setOrientation(ScreenOrientation.PORTRAIT)
-        .setDensity(Density.TV)
-        .setRatio(ScreenRatio.NOTLONG)
-        .setSize(ScreenSize.LARGE)
-        .setKeyboard(Keyboard.NOKEY)
-        .setTouchScreen(TouchScreen.FINGER)
-        .setKeyboardState(KeyboardState.SOFT)
-        .setSoftButtons(true)
-        .setNavigation(Navigation.NONAV)
+    val NEXUS_7_2012 = DeviceConfig(
+        screenHeight = 1280,
+        screenWidth = 800,
+        xdpi = 195,
+        ydpi = 200,
+        orientation = ScreenOrientation.PORTRAIT,
+        density = Density.TV,
+        ratio = ScreenRatio.NOTLONG,
+        size = ScreenSize.LARGE,
+        keyboard = Keyboard.NOKEY,
+        touchScreen = TouchScreen.FINGER,
+        keyboardState = KeyboardState.SOFT,
+        softButtons = true,
+        navigation = Navigation.NONAV
+    )
 
-    private val TAG_ATTR = "attr"
-    private val TAG_ENUM = "enum"
-    private val TAG_FLAG = "flag"
-    private val ATTR_NAME = "name"
-    private val ATTR_VALUE = "value"
+    private const val TAG_ATTR = "attr"
+    private const val TAG_ENUM = "enum"
+    private const val TAG_FLAG = "flag"
+    private const val ATTR_NAME = "name"
+    private const val ATTR_VALUE = "value"
 
     fun loadProperties(path: File): Map<String, String> {
       val p = Properties()
@@ -285,7 +213,8 @@ class DeviceConfig {
     fun getEnumMap(path: File): Map<String, Map<String, Int>> {
       val map = mutableMapOf<String, MutableMap<String, Int>>()
       try {
-        val xmlPullParser = XmlPullParserFactory.newInstance().newPullParser()
+        val xmlPullParser = XmlPullParserFactory.newInstance()
+            .newPullParser()
         xmlPullParser.setInput(FileInputStream(path), null)
         var eventType = xmlPullParser.eventType
         var attr: String? = null
