@@ -98,7 +98,7 @@ internal class RunWriter(
    */
   private fun writeIndexJs() {
     val runNames = mutableListOf<String>()
-    for (dir in rootDirectory.listFiles()) {
+    for (dir in rootDirectory.listFiles().sorted()) {
       if (File(dir, "run.js").exists()) {
         runNames += dir.name
       }
