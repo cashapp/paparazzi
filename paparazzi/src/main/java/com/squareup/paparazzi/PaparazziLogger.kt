@@ -59,7 +59,7 @@ class PaparazziLogger : LayoutLog(), ILogger {
   }
 
   override fun warning(
-    tag: String,
+    tag: String?,
     message: String,
     data: Any
   ) {
@@ -77,7 +77,7 @@ class PaparazziLogger : LayoutLog(), ILogger {
   }
 
   override fun error(
-    tag: String,
+    tag: String?,
     message: String,
     data: Any
   ) {
@@ -85,7 +85,7 @@ class PaparazziLogger : LayoutLog(), ILogger {
   }
 
   override fun error(
-    tag: String,
+    tag: String?,
     message: String,
     throwable: Throwable?,
     data: Any
