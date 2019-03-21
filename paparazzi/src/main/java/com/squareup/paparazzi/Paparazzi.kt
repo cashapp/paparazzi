@@ -29,11 +29,11 @@ import com.android.layoutlib.bridge.Bridge.prepareThread
 import com.android.layoutlib.bridge.BridgeRenderSession
 import com.android.layoutlib.bridge.impl.RenderAction
 import com.android.layoutlib.bridge.impl.RenderSessionImpl
-import com.squareup.paparazzi.internal.RenderTestBase
+import com.squareup.paparazzi.internal.ImageUtils
 import com.squareup.paparazzi.internal.LayoutLibTestCallback
 import com.squareup.paparazzi.internal.LayoutPullParser
-import com.squareup.paparazzi.internal.ImageUtils
 import com.squareup.paparazzi.internal.ModuleClassLoader
+import com.squareup.paparazzi.internal.RenderTestBase
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
@@ -41,20 +41,19 @@ import java.awt.image.BufferedImage
 import java.util.Date
 
 class Paparazzi(
-    environment: Environment = detectEnvironment(),
-    private val snapshotHandler: SnapshotHandler = RunWriter()
+  private val packageName: String,
+  private val environment: Environment = detectEnvironment(),
+  private val snapshotHandler: SnapshotHandler = RunWriter()
 ) : TestRule {
   private val THUMBNAIL_SIZE = 1000
 
-  private val renderTestBase = RenderTestBase(environment)
   private val logger = PaparazziLogger()
   private val defaultClassLoader: ModuleClassLoader =
-    ModuleClassLoader(
-        environment.appClassesLocation, javaClass.classLoader
-    )
+    ModuleClassLoader(environment.appClassesLocation, javaClass.classLoader)
 
   private lateinit var session: RenderSession
   private lateinit var scene: RenderSessionImpl
+  private lateinit var renderTestBase: RenderTestBase
   private var testName: TestName? = null
   private var snapshotCount = 0
 
@@ -79,12 +78,13 @@ class Paparazzi(
   }
 
   fun prepare(description: Description) {
-    testName = description.toTestName()
-    renderTestBase.beforeClass()
-
-    val layoutLibTestCallback =
-      LayoutLibTestCallback(logger, defaultClassLoader)
+    val layoutLibTestCallback = LayoutLibTestCallback(logger, defaultClassLoader, packageName)
     layoutLibTestCallback.initResources()
+
+    testName = description.toTestName()
+
+    renderTestBase = RenderTestBase(environment, layoutLibTestCallback, logger)
+    renderTestBase.prepare()
 
     val frameLayout = """
         |<?xml version="1.0" encoding="utf-8"?>
@@ -108,6 +108,7 @@ class Paparazzi(
 
   fun close() {
     testName = null
+    renderTestBase.close()
     session.dispose()
     scene.release()
     cleanupThread()
