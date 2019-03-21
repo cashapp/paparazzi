@@ -27,17 +27,17 @@ import java.util.Collections;
 import java.util.List;
 
 public class RenderResult {
-    private final List<ViewInfo> mRootViews;
-    private final List<ViewInfo> mSystemViews;
-    private final Result mRenderResult;
-    private BufferedImage mImage;
+    private final List<ViewInfo> rootViews;
+    private final List<ViewInfo> systemViews;
+    private final Result renderResult;
+    private BufferedImage image;
 
     private RenderResult(@Nullable Result result, @Nullable List<ViewInfo> systemViewInfoList,
             @Nullable List<ViewInfo> rootViewInfoList, @Nullable BufferedImage image) {
-        mSystemViews = systemViewInfoList == null ? Collections.emptyList() : systemViewInfoList;
-        mRootViews = rootViewInfoList == null ? Collections.emptyList() : rootViewInfoList;
-        mRenderResult = result;
-        mImage = image;
+        this.systemViews = systemViewInfoList == null ? Collections.emptyList() : systemViewInfoList;
+        this.rootViews = rootViewInfoList == null ? Collections.emptyList() : rootViewInfoList;
+        this.renderResult = result;
+        this.image = image;
     }
 
     @NonNull
@@ -50,21 +50,21 @@ public class RenderResult {
 
     @Nullable
     public Result getResult() {
-        return mRenderResult;
+        return renderResult;
     }
 
     @NonNull
     public List<ViewInfo> getRootViews() {
-        return mRootViews;
+        return rootViews;
     }
 
     @NonNull
     public List<ViewInfo> getSystemViews() {
-        return mSystemViews;
+        return systemViews;
     }
 
     @Nullable
     public BufferedImage getImage() {
-        return mImage;
+        return image;
     }
 }

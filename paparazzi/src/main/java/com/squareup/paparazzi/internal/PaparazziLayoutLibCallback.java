@@ -28,8 +28,8 @@ import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.ide.common.rendering.api.SessionParams.Key;
 import com.android.layoutlib.bridge.android.RenderParamsFlags;
 import com.android.resources.ResourceType;
-import com.android.utils.ILogger;
 import com.google.common.io.ByteStreams;
+import com.squareup.paparazzi.PaparazziLogger;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -39,7 +39,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import org.kxml2.io.KXmlParser;
 import org.xmlpull.v1.XmlPullParser;
@@ -47,24 +47,24 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import static com.android.ide.common.rendering.api.ResourceNamespace.RES_AUTO;
 
-public class LayoutLibTestCallback extends LayoutlibCallback {
-    private final String PACKAGE_NAME;
+public class PaparazziLayoutLibCallback extends LayoutlibCallback {
+    private final String packageName;
+    private final Map<Integer, ResourceReference> projectResources = new LinkedHashMap<>();
+    private final Map<ResourceReference, Integer> resources = new LinkedHashMap<>();
+    private final PaparazziLogger logger;
+    private final ActionBarCallback actionBarCallback = new ActionBarCallback();
+    private final ClassLoader moduleClassLoader;
+    private String adaptiveIconMaskPath;
 
-    private final Map<Integer, ResourceReference> mProjectResources = new HashMap<>();
-    private final Map<ResourceReference, Integer> mResources = new HashMap<>();
-    private final ILogger mLog;
-    private final ActionBarCallback mActionBarCallback = new ActionBarCallback();
-    private final ClassLoader mModuleClassLoader;
-    private String mAdaptiveIconMaskPath;
-
-    public LayoutLibTestCallback(ILogger logger, ClassLoader classLoader, String packageName) {
-        mLog = logger;
-        mModuleClassLoader = classLoader;
-        this.PACKAGE_NAME = packageName;
+    public PaparazziLayoutLibCallback(
+        PaparazziLogger logger, ClassLoader classLoader, String packageName) {
+        this.logger = logger;
+        this.moduleClassLoader = classLoader;
+        this.packageName = packageName;
     }
 
     public void initResources() throws ClassNotFoundException {
-        Class<?> rClass = mModuleClassLoader.loadClass(PACKAGE_NAME + ".R");
+        Class<?> rClass = moduleClassLoader.loadClass(packageName + ".R");
         Class<?>[] nestedClasses = rClass.getDeclaredClasses();
         for (Class<?> resClass : nestedClasses) {
             final ResourceType resType = ResourceType.getEnum(resClass.getSimpleName());
@@ -79,13 +79,13 @@ public class LayoutLibTestCallback extends LayoutlibCallback {
                                 final Integer value = (Integer) field.get(null);
                                 ResourceReference reference =
                                         new ResourceReference(RES_AUTO, resType, field.getName());
-                                mProjectResources.put(value, reference);
-                                mResources.put(reference, value);
+                                projectResources.put(value, reference);
+                                resources.put(reference, value);
                             } else if (!(type.isArray() && type.getComponentType() == int.class)) {
-                                mLog.error(null, "Unknown field type in R class: %1$s", type);
+                                logger.error(null, "Unknown field type in R class: %1$s", type);
                             }
                         } catch (IllegalAccessException e) {
-                            mLog.error(e, "Malformed R class: %1$s", PACKAGE_NAME + ".R");
+                            logger.error(e, "Malformed R class: %1$s", packageName + ".R");
                         }
                     }
                 }
@@ -97,7 +97,7 @@ public class LayoutLibTestCallback extends LayoutlibCallback {
     @Override
     public Object loadView(@NonNull String name, @NonNull Class[] constructorSignature, Object[] constructorArgs)
             throws Exception {
-        Class<?> viewClass = mModuleClassLoader.loadClass(name);
+        Class<?> viewClass = moduleClassLoader.loadClass(name);
         Constructor<?> viewConstructor = viewClass.getConstructor(constructorSignature);
         viewConstructor.setAccessible(true);
         return viewConstructor.newInstance(constructorArgs);
@@ -106,17 +106,17 @@ public class LayoutLibTestCallback extends LayoutlibCallback {
     @NonNull
     @Override
     public String getNamespace() {
-        return String.format(SdkConstants.NS_CUSTOM_RESOURCES_S, PACKAGE_NAME);
+        return String.format(SdkConstants.NS_CUSTOM_RESOURCES_S, packageName);
     }
 
     @Override
     public ResourceReference resolveResourceId(int id) {
-        return mProjectResources.get(id);
+        return projectResources.get(id);
     }
 
     @Override
     public int getOrGenerateResourceId(@NonNull ResourceReference resource) {
-        Integer id = mResources.get(resource);
+        Integer id = resources.get(resource);
         return id != null ? id : 0;
     }
 
@@ -145,7 +145,7 @@ public class LayoutLibTestCallback extends LayoutlibCallback {
 
     @Override
     public ActionBarCallback getActionBarCallback() {
-        return mActionBarCallback;
+        return actionBarCallback;
     }
 
     @Override
@@ -185,15 +185,15 @@ public class LayoutLibTestCallback extends LayoutlibCallback {
     @SuppressWarnings("unchecked") // The Key<T> API is based on unchecked casts.
     public <T> T getFlag(Key<T> key) {
         if (key.equals(RenderParamsFlags.FLAG_KEY_APPLICATION_PACKAGE)) {
-            return (T) PACKAGE_NAME;
+            return (T) packageName;
         }
         if (key.equals(RenderParamsFlags.FLAG_KEY_ADAPTIVE_ICON_MASK_PATH)) {
-            return (T) mAdaptiveIconMaskPath;
+            return (T) adaptiveIconMaskPath;
         }
         return null;
     }
 
     public void setAdaptiveIconMaskPath(String adaptiveIconMaskPath) {
-        mAdaptiveIconMaskPath = adaptiveIconMaskPath;
+        this.adaptiveIconMaskPath = adaptiveIconMaskPath;
     }
 }
