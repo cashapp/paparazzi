@@ -66,5 +66,12 @@ class RunWriterTest {
         |""".trimMargin())
   }
 
+  @Test
+  fun sanitizeForFilename() {
+    assertThat("0 Dollars".sanitizeForFilename()).isEqualTo("0_dollars")
+    assertThat("`!#$%&*+=|\\'\"<>?/".sanitizeForFilename()).isEqualTo("_________________")
+    assertThat("~@^()[]{}:;,.".sanitizeForFilename()).isEqualTo("~@^()[]{}:;,.")
+  }
+
   private fun Instant.toDate() = Date(toEpochMilli())
 }
