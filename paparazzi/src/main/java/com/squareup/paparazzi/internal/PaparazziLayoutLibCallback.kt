@@ -43,7 +43,6 @@ import java.lang.reflect.Modifier
 
 class PaparazziLayoutLibCallback(
   private val logger: PaparazziLogger,
-  private val moduleClassLoader: ClassLoader,
   private val packageName: String
 ) : LayoutlibCallback() {
   private val projectResources = mutableMapOf<Int, ResourceReference>()
@@ -53,7 +52,7 @@ class PaparazziLayoutLibCallback(
 
   @Throws(ClassNotFoundException::class)
   fun initResources() {
-    val rClass = moduleClassLoader.loadClass("$packageName.R")
+    val rClass = Class.forName("$packageName.R")
     val nestedClasses = rClass.declaredClasses
     for (resClass in nestedClasses) {
       val resType = ResourceType.getEnum(resClass.simpleName)
@@ -87,7 +86,7 @@ class PaparazziLayoutLibCallback(
     constructorSignature: Array<Class<*>>,
     constructorArgs: Array<Any>
   ): Any? {
-    val viewClass = moduleClassLoader.loadClass(name)
+    val viewClass = Class.forName(name)
     val viewConstructor = viewClass.getConstructor(*constructorSignature)
     viewConstructor.isAccessible = true
     return viewConstructor.newInstance(*constructorArgs)
