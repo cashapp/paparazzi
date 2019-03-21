@@ -63,17 +63,17 @@ import static org.junit.Assert.assertNotNull;
  * <p>
  * The app resources are at: test_res.dir/testApp/MyApplication/app/src/main/res
  */
-public class RenderTestBase implements Closeable {
-    private Bridge sBridge;
-    private FrameworkResources sFrameworkRepo;
-    private ResourceRepository sProjectResources;
+public class Renderer implements Closeable {
+    private Bridge bridge;
+    private FrameworkResources frameworkRepo;
+    private ResourceRepository projectResources;
     private final PaparazziLogger logger;
     private final Environment environment;
-    private final LayoutLibTestCallback layoutLibCallback;
+    private final PaparazziLayoutLibCallback layoutLibCallback;
 
-    public RenderTestBase(
+    public Renderer(
         Environment environment,
-        LayoutLibTestCallback layoutLibCallback,
+        PaparazziLayoutLibCallback layoutLibCallback,
         PaparazziLogger logger) {
         this.environment = environment;
         this.layoutLibCallback = layoutLibCallback;
@@ -86,11 +86,11 @@ public class RenderTestBase implements Closeable {
     public void prepare() {
         File data_dir = new File(environment.getPlatformDir(), "data");
         File res = new File(data_dir, "res");
-        sFrameworkRepo = new FrameworkResources(new FolderWrapper(res));
-        sFrameworkRepo.loadResources();
-        sFrameworkRepo.loadPublicResources(logger);
+        frameworkRepo = new FrameworkResources(new FolderWrapper(res));
+        frameworkRepo.loadResources();
+        frameworkRepo.loadPublicResources(logger);
 
-        sProjectResources =
+        projectResources =
                 new ResourceRepository(new FolderWrapper(environment.getResDir()),
                         false) {
                     @NonNull
@@ -99,14 +99,14 @@ public class RenderTestBase implements Closeable {
                         return new ResourceItem(name);
                     }
                 };
-        sProjectResources.loadResources();
+        projectResources.loadResources();
 
         File fontLocation = new File(data_dir, "fonts");
         File buildProp = new File(environment.getPlatformDir(), "build.prop");
         File attrs = new File(res, "values" + File.separator + "attrs.xml");
-        sBridge = new Bridge();
-        sBridge.init(ConfigGenerator.loadProperties(buildProp), fontLocation,
-                ConfigGenerator.getEnumMap(attrs), logger);
+        bridge = new Bridge();
+        bridge.init(DeviceConfig.loadProperties(buildProp), fontLocation,
+                DeviceConfig.getEnumMap(attrs), logger);
         Bridge.getLock().lock();
         try {
             Bridge.setLog(logger);
@@ -116,11 +116,11 @@ public class RenderTestBase implements Closeable {
     }
 
     @Override public void close() {
-        sFrameworkRepo = null;
-        sProjectResources = null;
-        sBridge = null;
+        frameworkRepo = null;
+        projectResources = null;
+        bridge = null;
 
-        TestUtils.gc();
+        Gc.gc();
 
         System.out.println("Objects still linked from the DelegateManager:");
         DelegateManager.dump(System.out);
@@ -181,7 +181,7 @@ public class RenderTestBase implements Closeable {
     @Nullable
     protected RenderResult renderAndVerify(
         SessionParams params, String goldenFileName, long frameTimeNanos) {
-        RenderResult result = render(sBridge, params, frameTimeNanos);
+        RenderResult result = render(bridge, params, frameTimeNanos);
         assertNotNull(result.getImage());
         verify(goldenFileName, result.getImage());
 
@@ -208,7 +208,7 @@ public class RenderTestBase implements Closeable {
      */
     @Nullable
     protected RenderResult renderAndVerify(String layoutFileName, String goldenFileName) {
-        return renderAndVerify(layoutFileName, goldenFileName, ConfigGenerator.NEXUS_5);
+        return renderAndVerify(layoutFileName, goldenFileName, DeviceConfig.NEXUS_5);
     }
 
     /**
@@ -217,20 +217,20 @@ public class RenderTestBase implements Closeable {
      */
     @Nullable
     protected RenderResult renderAndVerify(String layoutFileName, String goldenFileName,
-            ConfigGenerator deviceConfig) {
+            DeviceConfig deviceConfig) {
         SessionParams params = createSessionParams(layoutFileName, deviceConfig);
         return renderAndVerify(params, goldenFileName);
     }
 
     protected SessionParams createSessionParams(
-        String layoutFileName, ConfigGenerator deviceConfig) {
+        String layoutFileName, DeviceConfig deviceConfig) {
         // Create the layout pull parser.
         LayoutPullParser parser = createParserFromPath(layoutFileName);
         // TODO: Set up action bar handler properly to test menu rendering.
         // Create session params.
         return getSessionParamsBuilder()
                 .setParser(parser)
-                .setConfigGenerator(deviceConfig)
+                .setDeviceConfig(deviceConfig)
                 .setCallback(layoutLibCallback)
                 .build();
     }
@@ -242,14 +242,14 @@ public class RenderTestBase implements Closeable {
     @NonNull
     public SessionParamsBuilder getSessionParamsBuilder() {
         return new SessionParamsBuilder()
-                .setLayoutLog(logger)
-                .setFrameworkResources(sFrameworkRepo)
-                .setConfigGenerator(ConfigGenerator.NEXUS_5)
-                .setProjectResources(sProjectResources)
+                .setLogger(logger)
+                .setFrameworkResources(frameworkRepo)
+                .setDeviceConfig(DeviceConfig.NEXUS_5)
+                .setProjectResources(projectResources)
                 .setTheme("AppTheme", true)
                 .setRenderingMode(RenderingMode.NORMAL)
                 .setTargetSdk(22)
                 .setFlag(RenderParamsFlags.FLAG_DO_NOT_RENDER_ON_CREATE, true)
-                .setAssetRepository(new TestAssetRepository(environment.getTestResDir() + "/" + environment.getAssetsDir()));
+                .setAssetRepository(new PaparazziAssetRepository(environment.getTestResDir() + "/" + environment.getAssetsDir()));
     }
 }
