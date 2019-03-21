@@ -17,11 +17,11 @@ package com.squareup.paparazzi
 
 import java.util.Date
 
-data class Shot(
-    val name: String,
-    val testName: TestName,
-    val timestamp: Date,
-    val tags: List<String> = listOf(),
-    val file: String? = null
+data class Snapshot(
+  val name: String,
+  val testName: TestName,
+  val timestamp: Date,
+  val tags: List<String> = listOf(),
+  val file: String? = null
 )
 

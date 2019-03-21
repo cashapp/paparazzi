@@ -27,10 +27,10 @@ internal object PaparazziJson {
   val moshi = Moshi.Builder()
       .add(Date::class.java, Rfc3339DateJsonAdapter())
       .add(this)
-      .build()
+      .build()!!
 
-  val listOfShotsAdapter: JsonAdapter<List<Shot>> = moshi.adapter<List<Shot>>(
-      Types.newParameterizedType(List::class.java, Shot::class.java))
+  val LIST_OF_SHOTS_ADAPTER: JsonAdapter<List<Snapshot>> = moshi.adapter<List<Snapshot>>(
+      Types.newParameterizedType(List::class.java, Snapshot::class.java))
       .indent("  ")
 
   val listOfStringsAdapter: JsonAdapter<List<String>> = moshi.adapter<List<String>>(
