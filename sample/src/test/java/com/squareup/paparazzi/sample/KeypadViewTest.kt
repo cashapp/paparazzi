@@ -23,7 +23,7 @@ import org.junit.Test
 
 class KeypadViewTest {
   @get:Rule
-  var paparazzi = Paparazzi()
+  var paparazzi = Paparazzi("com.squareup.paparazzi.sample")
 
   @Test
   fun testViews() {

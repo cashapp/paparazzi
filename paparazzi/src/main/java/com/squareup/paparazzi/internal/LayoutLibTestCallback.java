@@ -48,7 +48,7 @@ import org.xmlpull.v1.XmlPullParserException;
 import static com.android.ide.common.rendering.api.ResourceNamespace.RES_AUTO;
 
 public class LayoutLibTestCallback extends LayoutlibCallback {
-    private static final String PACKAGE_NAME = "com.squareup.paparazzi.sample";
+    private final String PACKAGE_NAME;
 
     private final Map<Integer, ResourceReference> mProjectResources = new HashMap<>();
     private final Map<ResourceReference, Integer> mResources = new HashMap<>();
@@ -57,9 +57,10 @@ public class LayoutLibTestCallback extends LayoutlibCallback {
     private final ClassLoader mModuleClassLoader;
     private String mAdaptiveIconMaskPath;
 
-    public LayoutLibTestCallback(ILogger logger, ClassLoader classLoader) {
+    public LayoutLibTestCallback(ILogger logger, ClassLoader classLoader, String packageName) {
         mLog = logger;
         mModuleClassLoader = classLoader;
+        this.PACKAGE_NAME = packageName;
     }
 
     public void initResources() throws ClassNotFoundException {
