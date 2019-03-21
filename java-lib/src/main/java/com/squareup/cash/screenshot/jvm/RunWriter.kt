@@ -15,6 +15,7 @@
  */
 package com.squareup.cash.screenshot.jvm
 
+import com.google.common.base.CharMatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
@@ -32,18 +33,11 @@ import java.util.Locale
 import java.util.UUID
 import javax.imageio.ImageIO
 
-fun defaultRunName(): String {
-  val now = Date()
-  val timestamp = SimpleDateFormat("yyyyMMddHHmmss", Locale.US).format(now)
-  val token = UUID.randomUUID().toString().substring(0, 6)
-  return "${timestamp}_$token"
-}
-
 internal class RunWriter(
   private val runName: String = defaultRunName(),
   private val rootDirectory: File = File("build/reports/paparazzi")
 ) : SnapshotHandler {
-  private val runDirectory = File(rootDirectory, runName)
+  private val runDirectory = File(rootDirectory, runName.sanitizeForFilename())
   private val shots = mutableListOf<Shot>()
   private val queue = Channel<Pair<Shot, BufferedImage>>(UNLIMITED)
   private var writerDeferred = GlobalScope.async(Dispatchers.IO) {
@@ -78,7 +72,7 @@ internal class RunWriter(
     while (true) {
       val (shot, bufferedImage) = queue.receiveOrNull() ?: break
 
-      val file = File(runDirectory, shot.name + ".png")
+      val file = File(runDirectory, shot.name.sanitizeForFilename() + ".png")
       file.writeAtomically(bufferedImage)
 
       shots += shot.copy(file = file.name)
@@ -162,5 +156,20 @@ internal class RunWriter(
         }
     tmpFile.renameTo(this)
   }
+}
+
+internal fun defaultRunName(): String {
+  val now = Date()
+  val timestamp = SimpleDateFormat("yyyyMMddHHmmss", Locale.US).format(now)
+  val token = UUID.randomUUID().toString().substring(0, 6)
+  return "${timestamp}_$token"
+}
+
+internal val filenameSafeChars = CharMatcher.inRange('a', 'z')
+    .or(CharMatcher.inRange('0', '9'))
+    .or(CharMatcher.anyOf("_-.~@^()[]{}:;,"))
+
+internal fun String.sanitizeForFilename(): String? {
+  return filenameSafeChars.negate().replaceFrom(toLowerCase(Locale.US), '_')
 }
 

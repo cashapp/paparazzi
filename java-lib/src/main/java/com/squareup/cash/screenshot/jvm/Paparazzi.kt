@@ -42,7 +42,7 @@ import java.util.Date
 
 class Paparazzi(
   environment: Environment = detectEnvironment(),
-  val snapshotHandler: SnapshotHandler = RunWriter()
+  private val snapshotHandler: SnapshotHandler = RunWriter()
 ) : TestRule {
   private val THUMBNAIL_SIZE = 1000
 
