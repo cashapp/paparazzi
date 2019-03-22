@@ -11,10 +11,15 @@
       margin: 0.2em;
       display: inline-block;
       position: relative;
+      overflow: hidden;
     }
 
     .screen img {
       width: 300px;
+    }
+
+    div.overlay__hovered {
+        display: block;
     }
 
     .overlay {
@@ -25,11 +30,24 @@
       background: rgba(25, 0, 237, .68);
       color: #fff;
       opacity: 0;
+      display: none;
       transition: 150ms;
+
+       -webkit-animation-name: slideIn;
+       -webkit-animation-duration: 0.4s;
+      animation-name: slideIn;
+      animation-duration: 0.4s;
+      animation-fill-mode: forwards;
     }
 
-    .overlay:hover {
-      opacity: 1;
+    @-webkit-keyframes slideIn {
+      from {bottom: -300px; opacity: 0}
+      to {bottom: 0; opacity: 1}
+    }
+
+    @keyframes slideIn {
+      from {bottom: -300px; opacity: 0}
+      to {bottom: 0; opacity: 1}
     }
 
     .test__details {
