@@ -102,6 +102,12 @@ class Shot {
 
     screenDiv.appendChild(img)
     screenDiv.appendChild(overlayDiv)
+    screenDiv.onmouseover = function (e) {
+      overlayDiv.classList.add('overlay__hovered');
+    }.bind(this);
+    screenDiv.onmouseout = function (e) {
+      overlayDiv.classList.remove('overlay__hovered');
+    }.bind(this);
 
     const nameP = document.createElement('p')
     nameP.classList.add('test__details', 'test__details__name')
