@@ -48,7 +48,6 @@ class Shot {
   }
 
   addRun(runId, file, timestamp) {
-    // TODO(oldergod) do we need to sort?
     this.runs.push(
       {
         'id': runId,
