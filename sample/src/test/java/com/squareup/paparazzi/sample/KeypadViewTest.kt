@@ -15,6 +15,8 @@
  */
 package com.squareup.paparazzi.sample
 
+import android.animation.ObjectAnimator
+import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
 import com.squareup.paparazzi.Paparazzi
@@ -54,6 +56,15 @@ class KeypadViewTest {
     amount789.setTextColor(darkGrey)
     amount0.setTextColor(darkGrey)
     amount.text = ".01 BTC"
+
     paparazzi.snapshot(keypad, "bolt")
+
+    val rotation = ObjectAnimator.ofFloat(amount, View.ROTATION, 0.0f, 360.0f).apply {
+      duration = 500
+      startDelay = 500
+    }
+    rotation.start()
+
+    paparazzi.gif(keypad, "zero dollars", start = 500, end = 1500, fps = 30)
   }
 }
