@@ -1,2 +1,4 @@
 rootProject.name = 'paparazzi'
-include ':sample', ':paparazzi'
+include ':sample'
+include ':paparazzi'
+include ':libs:layoutlib'
