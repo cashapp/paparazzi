@@ -24,16 +24,12 @@ import androidx.annotation.LayoutRes
 import com.android.ide.common.rendering.api.RenderSession
 import com.android.ide.common.rendering.api.Result
 import com.android.ide.common.rendering.api.SessionParams
-import com.android.internal.R.attr.height
-import com.android.internal.R.attr.width
 import com.android.layoutlib.bridge.Bridge.cleanupThread
 import com.android.layoutlib.bridge.Bridge.prepareThread
 import com.android.layoutlib.bridge.BridgeRenderSession
 import com.android.layoutlib.bridge.impl.RenderAction
 import com.android.layoutlib.bridge.impl.RenderSessionImpl
 import com.android.tools.layoutlib.java.System_Delegate
-import com.squareup.gifencoder.GifEncoder
-import com.squareup.gifencoder.ImageOptions
 import com.squareup.paparazzi.internal.ImageUtils
 import com.squareup.paparazzi.internal.LayoutPullParser
 import com.squareup.paparazzi.internal.PaparazziCallback
@@ -42,8 +38,7 @@ import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
 import java.awt.image.BufferedImage
-import java.io.FileOutputStream
-import java.util.*
+import java.util.Date
 
 class Paparazzi(
   private val packageName: String,
@@ -123,16 +118,7 @@ class Paparazzi(
     view: View,
     name: String? = null
   ) {
-    snapshotCount++
-
-    val viewGroup = bridgeRenderSession.rootViews[0].viewObject as ViewGroup
-    viewGroup.addView(view)
-    try {
-      renderSession.render(true)
-      saveImage(name ?: snapshotCount.toString(), bridgeRenderSession.image)
-    } finally {
-      viewGroup.removeView(view)
-    }
+    takeSnapshots(view, name, 0, -1, 0, 1)
   }
 
   fun gif(
@@ -142,29 +128,39 @@ class Paparazzi(
     end: Long = 500,
     fps: Int = 30
   ) {
-
     val millisPerFrame = 1000f / fps
     val duration = end - start
     val frameCount = (((duration + millisPerFrame - 1) / millisPerFrame)).toInt()
+    takeSnapshots(view, name, start, fps, duration, frameCount)
+  }
 
-    val viewGroup = bridgeRenderSession.rootViews[0].viewObject as ViewGroup
-    viewGroup.addView(view)
-    try {
-      val outputStream = FileOutputStream("test.gif")
-      val options = ImageOptions()
-      val gifEncoder = GifEncoder(outputStream, width, height, 0)
-      renderSession.setElapsedFrameTimeNanos(0L)
-      for (frame in 0 until frameCount) {
-        val timestamp = start + (frame * duration) / frameCount
-        System_Delegate.setNanosTime(timestamp * 1_000_000)
-        renderSession.render(true)
-        gifEncoder.addImage(toInts(bridgeRenderSession.image), options)
+  private fun takeSnapshots(
+    view: View,
+    name: String?,
+    start: Long,
+    fps: Int,
+    duration: Long,
+    frameCount: Int
+  ) {
+    snapshotCount++
+    val snapshot = Snapshot(name ?: snapshotCount.toString(), testName!!, Date())
+
+    val frameHandler = snapshotHandler.newFrameHandler(snapshot, frameCount, fps)
+    frameHandler.use {
+      val viewGroup = bridgeRenderSession.rootViews[0].viewObject as ViewGroup
+      viewGroup.addView(view)
+      try {
+        renderSession.setElapsedFrameTimeNanos(0L)
+        for (frame in 0 until frameCount) {
+          val timestamp = start + (frame * duration) / frameCount
+          System_Delegate.setNanosTime(timestamp * 1_000_000)
+          renderSession.render(true)
+          frameHandler.handle(scaleImage(bridgeRenderSession.image))
+        }
+      } finally {
+        viewGroup.removeView(view)
+        System_Delegate.setNanosTime(0L)
       }
-      gifEncoder.finishEncoding()
-      outputStream.close()
-    } finally {
-      viewGroup.removeView(view)
-      System_Delegate.setNanosTime(0L)
     }
   }
 
@@ -183,28 +179,15 @@ class Paparazzi(
     }
   }
 
-  private fun saveImage(
-    name: String,
-    image: BufferedImage
-  ) {
+  private fun scaleImage(image: BufferedImage): BufferedImage {
     val maxDimension = Math.max(image.width, image.height)
     val scale = THUMBNAIL_SIZE / maxDimension.toDouble()
-    val copy = ImageUtils.scale(image, scale, scale)
-    val snapshot = Snapshot(name, testName!!, Date())
-    snapshotHandler.handle(snapshot, copy)
+    return ImageUtils.scale(image, scale, scale)
   }
 
   private fun Description.toTestName(): TestName {
     val packageName = testClass.`package`.name
     val className = testClass.name.substring(packageName.length + 1)
     return TestName(packageName, className, methodName)
-  }
-}
-
-private fun toInts(bufferedImage: BufferedImage): Array<out IntArray> {
-  return Array(bufferedImage.height) { y ->
-    IntArray(bufferedImage.width) { x ->
-      bufferedImage.getRGB(x, y)
-    }
   }
 }
