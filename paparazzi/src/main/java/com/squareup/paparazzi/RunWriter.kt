@@ -16,16 +16,12 @@
 package com.squareup.paparazzi
 
 import com.google.common.base.CharMatcher
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.Channel.Factory.UNLIMITED
-import kotlinx.coroutines.runBlocking
+import com.squareup.paparazzi.SnapshotHandler.FrameHandler
 import okio.BufferedSink
 import okio.buffer
 import okio.sink
 import okio.source
+import org.jcodec.api.awt.AWTSequenceEncoder
 import java.awt.image.BufferedImage
 import java.io.File
 import java.text.SimpleDateFormat
@@ -35,56 +31,56 @@ import java.util.UUID
 import javax.imageio.ImageIO
 
 internal class RunWriter(
-    private val runName: String = defaultRunName(),
-    private val rootDirectory: File = File("build/reports/paparazzi")
+  private val runName: String = defaultRunName(),
+  private val rootDirectory: File = File("build/reports/paparazzi")
 ) : SnapshotHandler {
   private val runDirectory = File(rootDirectory, runName.sanitizeForFilename())
   private val shots = mutableListOf<Snapshot>()
-  private val queue = Channel<Pair<Snapshot, BufferedImage>>(UNLIMITED)
-  private var writerDeferred = GlobalScope.async(Dispatchers.IO) {
-    writeLoop()
+
+  init {
+    runDirectory.mkdirs()
+    writeStaticFiles()
+    writeRunJs()
+    writeIndexJs()
   }
 
-  /** Enqueue snapshot for writing. */
-  override fun handle(
-      snapshot: Snapshot,
-      image: BufferedImage
-  ) {
-    runBlocking {
-      queue.send(snapshot to image)
+  override fun newFrameHandler(
+    snapshot: Snapshot,
+    frameCount: Int,
+    fps: Int
+  ): FrameHandler {
+    val extension = if (frameCount == 1) "png" else "mov"
+    val file = File(runDirectory, snapshot.name.sanitizeForFilename() + "." + extension)
+
+    if (frameCount == 1) {
+      return object : FrameHandler {
+        override fun handle(image: BufferedImage) {
+          file.writeAtomically(image)
+        }
+
+        override fun close() {
+          shots += snapshot.copy(file = file.name)
+        }
+      }
+    } else {
+      val tmpFile = File(file.parentFile, "${file.name}.tmp")
+      val encoder = AWTSequenceEncoder.createSequenceEncoder(file, fps)
+      return object : FrameHandler {
+        override fun handle(image: BufferedImage) {
+          encoder.encodeImage(image)
+        }
+
+        override fun close() {
+          encoder.finish()
+          tmpFile.renameTo(file)
+          shots += snapshot.copy(file = file.name)
+        }
+      }
     }
   }
 
   /** Release all resources and block until everything has been written to the file system. */
   override fun close() {
-    queue.close()
-
-    runBlocking {
-      writerDeferred.join()
-    }
-  }
-
-  /** Write shots from the queue. */
-  private suspend fun writeLoop() {
-    runDirectory.mkdirs()
-    writeStaticFiles()
-    writeRunJs()
-    writeIndexJs()
-
-    while (true) {
-      val (shot, bufferedImage) = queue.receiveOrNull() ?: break
-
-      val file = File(runDirectory, shot.name.sanitizeForFilename() + ".png")
-      file.writeAtomically(bufferedImage)
-
-      shots += shot.copy(file = file.name)
-
-      // Flush the index unless we're immediately about to update it.
-      if (queue.isEmpty) {
-        writeRunJs()
-      }
-    }
-
     writeRunJs()
   }
 

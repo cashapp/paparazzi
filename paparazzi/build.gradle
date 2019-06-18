@@ -15,11 +15,13 @@ dependencies {
     api 'com.google.guava:guava:27.1-jre'
     api 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.1.1'
     api 'com.squareup.okio:okio:2.2.2'
-    testImplementation 'org.assertj:assertj-core:3.11.0'
     implementation 'com.squareup.moshi:moshi:1.6.0'
     implementation 'com.squareup.moshi:moshi-adapters:1.6.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    implementation 'com.squareup:gifencoder:0.9.1'
+    implementation 'org.jcodec:jcodec:0.2.3'
+    implementation 'org.jcodec:jcodec-javase:0.2.3'
+
+    testImplementation 'org.assertj:assertj-core:3.11.0'
 }
 
 compileKotlin {
