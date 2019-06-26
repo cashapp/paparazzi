@@ -57,11 +57,11 @@ class Shot {
     );
 
     if (file.endsWith('.png')) {
-      this.img.src = runId + '/' + file;
+      this.img.src = file;
       this.img.style.display = 'inline';
       this.video.style.display = 'none';
     } else {
-      this.video.src = runId + '/' + file;
+      this.video.src = file;
       this.video.style.display = 'inline';
       this.img.style.display = 'none';
     }
@@ -71,16 +71,16 @@ class Shot {
     circle.classList.add('test__details__selector', `run-${runId}`);
     circle.onmouseover = function (e) {
       if (file.endsWith('.png')) {
-        this.img.src = runId + '/' + file;
+        this.img.src = file;
       } else {
-        this.video.src = runId + '/' + file;
+        this.video.src = file;
       }
 
       for (let shot of Object.values(paparazziRenderer.shots)) {
         let found = false;
         for (let run of shot.runs) {
           if (runId == run.id) {
-            shot.img.src = run.id + '/' + run.file;
+            shot.img.src = run.file;
             shot.timestampP.innerText = run.timestamp;
 
             found = true;
@@ -166,7 +166,7 @@ class PaparazziRenderer {
   start() {
     this.loadRunScript('index.js');
     for (let runId of window.all_runs) {
-      this.loadRunScript(`${runId}/run.js`);
+      this.loadRunScript(`runs/${runId}.js`);
     }
     setInterval(this.refresh.bind(this), 100);
   }
