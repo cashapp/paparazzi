@@ -1,7 +1,7 @@
 plugins {
-    id 'maven-publish'
-    id 'signing'
-    id 'org.ajoberstar.grgit' version '3.1.1'
+  id 'maven-publish'
+  id 'signing'
+  id 'org.ajoberstar.grgit' version '3.1.1'
 }
 
 /**
@@ -10,92 +10,93 @@ plugins {
  * https://android.googlesource.com/platform/prebuilts/studio/layoutlib/+/refs/tags/studio-3.2.1/PREBUILT
  */
 task cloneLayoutlib() {
-    def repoDir = new File("$buildDir/prebuilts/studio/layoutlib")
+  def repoDir = new File("$buildDir/prebuilts/studio/layoutlib")
 
-    doFirst {
-        if (!repoDir.exists()) {
-            logger.warn('Cloning prebuilt layoutlib: this make take a few minutes...')
-            grgit.clone {
-                dir = repoDir
-                uri = "https://android.googlesource.com/platform/prebuilts/studio/layoutlib"
-            }
-            logger.warn('Cloned prebuilt layoutlib.')
-        }
-
-        def repo = grgit.open {
-            dir = repoDir
-        }
-        repo.checkout {
-            branch = 'studio-3.2.1'
-        }
+  doFirst {
+    if (!repoDir.exists()) {
+      logger.warn('Cloning prebuilt layoutlib: this make take a few minutes...')
+      grgit.clone {
+        dir = repoDir
+        uri = "https://android.googlesource.com/platform/prebuilts/studio/layoutlib"
+      }
+      logger.warn('Cloned prebuilt layoutlib.')
     }
 
-    ext.layoutlibJar = new File("$repoDir/data/layoutlib.jar")
+    def repo = grgit.open {
+      dir = repoDir
+    }
+    repo.checkout {
+      branch = 'studio-3.2.1'
+    }
+  }
+
+  ext.layoutlibJar = new File("$repoDir/data/layoutlib.jar")
 }
 
 task sourcesJar(type: Jar) {
-    // TODO: fetch sources from the corresponding AOSP repos.
-    archiveClassifier = 'sources'
+  // TODO: fetch sources from the corresponding AOSP repos.
+  archiveClassifier = 'sources'
 }
 
 task javadocJar(type: Jar) {
-    archiveClassifier = 'javadoc'
+  archiveClassifier = 'javadoc'
 }
 
 /**
  * Publish layoutlib.jar to Maven Central with Paparazzi coordinates.
  */
 publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            groupId = 'com.squareup.paparazzi'
-            artifactId = 'layoutlib'
-            version = '3.2.1'
+  publications {
+    mavenJava(MavenPublication) {
+      groupId = 'app.cash.paparazzi'
+      artifactId = 'layoutlib'
+      version = '3.2.1'
 
-            pom {
-                name = "layoutlib"
-                description = "Android Studio's layoutlib, packaged for Paparazzi"
-                url = "https://github.com/square/paparazzi/"
-                licenses {
-                    license {
-                        name = "The Apache Software License, Version 2.0"
-                        url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
-                    }
-                }
-                developers {
-                    developer {
-                        id = "square"
-                        name = "Square, Inc."
-                    }
-                }
-                scm {
-                    url = "https://github.com/square/paparazzi/"
-                    connection = "scm:git:git://github.com/square/paparazzi.git"
-                    developerConnection = "scm:git:ssh://git@github.com/square/paparazzi.git"
-                }
-            }
-
-            artifact(cloneLayoutlib.layoutlibJar) {
-                extension "jar"
-                builtBy cloneLayoutlib
-            }
-
-            artifact javadocJar
-
-            artifact sourcesJar
+      pom {
+        name = "layoutlib"
+        description = "Android Studio's layoutlib, packaged for Paparazzi"
+        url = "https://github.com/cashapp/paparazzi/"
+        licenses {
+          license {
+            name = "The Apache Software License, Version 2.0"
+            url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+          }
         }
-    }
-    repositories {
-        maven {
-            url project.findProperty("RELEASE_REPOSITORY_URL") ?: "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-            credentials {
-                username = project.findProperty("SONATYPE_NEXUS_USERNAME")
-                password = project.findProperty("SONATYPE_NEXUS_PASSWORD")
-            }
+        developers {
+          developer {
+            id = "square"
+            name = "Square, Inc."
+          }
         }
+        scm {
+          url = "https://github.com/cashapp/paparazzi/"
+          connection = "scm:git:git://github.com/cashapp/paparazzi.git"
+          developerConnection = "scm:git:ssh://git@github.com/cashapp/paparazzi.git"
+        }
+      }
+
+      artifact(cloneLayoutlib.layoutlibJar) {
+        extension "jar"
+        builtBy cloneLayoutlib
+      }
+
+      artifact javadocJar
+
+      artifact sourcesJar
     }
+  }
+  repositories {
+    maven {
+      url project.findProperty("RELEASE_REPOSITORY_URL") ?:
+          "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+      credentials {
+        username = project.findProperty("SONATYPE_NEXUS_USERNAME")
+        password = project.findProperty("SONATYPE_NEXUS_PASSWORD")
+      }
+    }
+  }
 }
 
 signing {
-    sign publishing.publications.mavenJava
+  sign publishing.publications.mavenJava
 }
