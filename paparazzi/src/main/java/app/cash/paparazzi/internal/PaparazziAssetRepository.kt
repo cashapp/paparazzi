@@ -23,7 +23,7 @@ import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
 
-class PaparazziAssetRepository(private val assetPath: String) : AssetRepository() {
+internal class PaparazziAssetRepository(private val assetPath: String) : AssetRepository() {
   @Throws(FileNotFoundException::class)
   private fun open(path: String): InputStream? {
     val asset = File(path)
@@ -36,8 +36,15 @@ class PaparazziAssetRepository(private val assetPath: String) : AssetRepository(
   override fun isSupported(): Boolean = true
 
   @Throws(IOException::class)
-  override fun openAsset(path: String, mode: Int): InputStream? = open(assetPath + path)
+  override fun openAsset(
+    path: String,
+    mode: Int
+  ): InputStream? = open(assetPath + path)
 
   @Throws(IOException::class)
-  override fun openNonAsset(cookie: Int, path: String, mode: Int): InputStream? = open(path)
+  override fun openNonAsset(
+    cookie: Int,
+    path: String,
+    mode: Int
+  ): InputStream? = open(path)
 }
