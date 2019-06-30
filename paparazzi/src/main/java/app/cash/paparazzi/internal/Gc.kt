@@ -18,7 +18,7 @@ package app.cash.paparazzi.internal
 
 import java.lang.ref.WeakReference
 
-object Gc {
+internal object Gc {
   fun gc() {
     // See RuntimeUtil#gc in jlibs (http://jlibs.in/)
     var obj: Any? = Any()

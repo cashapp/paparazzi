@@ -21,13 +21,13 @@ import com.android.ide.common.rendering.api.Result
 import com.android.ide.common.rendering.api.ViewInfo
 import java.awt.image.BufferedImage
 
-data class RenderResult(
+internal data class RenderResult(
   val result: Result,
   val systemViews: List<ViewInfo>,
   val rootViews: List<ViewInfo>,
   val image: BufferedImage
 )
 
-fun RenderSession.toResult(): RenderResult {
+internal fun RenderSession.toResult(): RenderResult {
   return RenderResult(result, systemRootViews.toList(), rootViews.toList(), image)
 }

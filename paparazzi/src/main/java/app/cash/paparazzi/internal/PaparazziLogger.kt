@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package app.cash.paparazzi
+package app.cash.paparazzi.internal
 
+import app.cash.paparazzi.Paparazzi
 import com.android.ide.common.rendering.api.LayoutLog
 import com.android.utils.ILogger
 import java.util.logging.Level
@@ -26,7 +27,7 @@ import java.util.logging.Logger.getLogger
  *
  * TODO: gather logged messages and fail successful tests that have unexpected errors.
  */
-class PaparazziLogger : LayoutLog(), ILogger {
+internal class PaparazziLogger : LayoutLog(), ILogger {
   private val logger: Logger = getLogger(Paparazzi::class.java.name)
 
   override fun error(

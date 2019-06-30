@@ -15,16 +15,5 @@
  */
 package app.cash.paparazzi
 
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.Test
-
-class PaparazziJsonTest {
-  @Test
-  fun testName() {
-    val adapter = PaparazziJson.moshi.adapter(TestName::class.java)
-    val testName = TestName("app.cash.paparazzi", "CelebrityTest", "testSettings")
-    val json = "\"app.cash.paparazzi.CelebrityTest#testSettings\""
-    assertThat(adapter.toJson(testName)).isEqualTo(json)
-    assertThat(adapter.fromJson(json)).isEqualTo(testName)
-  }
-}
+/** Simulate an empty R.java for this package. */
+class R

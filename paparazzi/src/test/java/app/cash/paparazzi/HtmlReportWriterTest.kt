@@ -24,26 +24,30 @@ import java.io.File
 import java.time.Instant
 import java.util.Date
 
-class RunWriterTest {
+class HtmlReportWriterTest {
   @Rule
   @JvmField
   var temporaryFolder: TemporaryFolder = TemporaryFolder()
 
   private val anyImage = BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB)
+  private val anyImageHash = "9069ca78e7450a285173431b3e52c5c25299e473"
 
   @Test
   fun happyPath() {
-    val runWriter = RunWriter("run_one", temporaryFolder.root)
-    runWriter.use {
-      runWriter.handle(
+    val htmlReportWriter = HtmlReportWriter("run_one", temporaryFolder.root)
+    htmlReportWriter.use {
+      val frameHandler = htmlReportWriter.newFrameHandler(
           Snapshot(
               name = "loading",
               testName = TestName("app.cash.paparazzi", "CelebrityTest", "testSettings"),
               timestamp = Instant.parse("2019-03-20T10:27:43Z").toDate(),
               tags = listOf("redesign")
           ),
-          anyImage
+          1, -1
       )
+      frameHandler.use {
+        frameHandler.handle(anyImage)
+      }
     }
 
     assertThat(File("${temporaryFolder.root}/index.js")).hasContent(
@@ -54,11 +58,11 @@ class RunWriterTest {
         |""".trimMargin()
     )
 
-    assertThat(File("${temporaryFolder.root}/run_one/run.js")).hasContent(
+    assertThat(File("${temporaryFolder.root}/runs/run_one.js")).hasContent(
         """
         |window.runs["run_one"] = [
         |  {
-        |    "file": "loading.png",
+        |    "file": "images/$anyImageHash.png",
         |    "name": "loading",
         |    "tags": [
         |      "redesign"
