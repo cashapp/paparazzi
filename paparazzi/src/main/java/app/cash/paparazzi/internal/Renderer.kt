@@ -17,7 +17,6 @@
 package app.cash.paparazzi.internal
 
 import app.cash.paparazzi.Environment
-import app.cash.paparazzi.PaparazziLogger
 import com.android.ide.common.rendering.api.SessionParams
 import com.android.ide.common.resources.deprecated.FrameworkResources
 import com.android.ide.common.resources.deprecated.ResourceItem
@@ -26,15 +25,13 @@ import com.android.io.FolderWrapper
 import com.android.layoutlib.bridge.Bridge
 import com.android.layoutlib.bridge.android.RenderParamsFlags
 import com.android.layoutlib.bridge.impl.DelegateManager
-import com.android.tools.layoutlib.java.System_Delegate
 import java.awt.image.BufferedImage
 import java.io.Closeable
 import java.io.File
 import java.io.IOException
-import java.util.concurrent.TimeUnit
 
 /** View rendering. */
-class Renderer(
+internal class Renderer(
   private val environment: Environment,
   private val layoutlibCallback: PaparazziCallback,
   private val logger: PaparazziLogger
@@ -107,10 +104,6 @@ class Renderer(
     params: SessionParams,
     frameTimeNanos: Long
   ): RenderResult {
-    // TODO: Set up action bar handler properly to test menu rendering.
-    // Create session params.
-    System_Delegate.setBootTimeNanos(TimeUnit.MILLISECONDS.toNanos(871732800000L))
-    System_Delegate.setNanosTime(TimeUnit.MILLISECONDS.toNanos(871732800000L))
     val session = bridge.createSession(params)
 
     try {

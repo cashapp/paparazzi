@@ -16,7 +16,6 @@
 
 package app.cash.paparazzi.internal
 
-import app.cash.paparazzi.PaparazziLogger
 import com.android.SdkConstants
 import com.android.ide.common.rendering.api.AssetRepository
 import com.android.ide.common.rendering.api.ResourceNamespace
@@ -30,7 +29,7 @@ import com.android.ide.common.resources.deprecated.ResourceRepository
 import com.android.resources.ResourceType
 
 /** Creates [SessionParams] objects. */
-data class SessionParamsBuilder(
+internal data class SessionParamsBuilder(
   private val layoutlibCallback: PaparazziCallback,
   private val logger: PaparazziLogger,
   private val frameworkResources: ResourceRepository,

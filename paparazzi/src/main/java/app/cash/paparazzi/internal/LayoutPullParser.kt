@@ -36,7 +36,7 @@ import java.io.InputStream
 import java.nio.charset.Charset
 import java.util.HashMap
 
-class LayoutPullParser private constructor(
+internal class LayoutPullParser private constructor(
   inputStream: InputStream
 ) : KXmlParser(), ILayoutPullParser {
   private var layoutNamespace = ResourceNamespace.RES_AUTO

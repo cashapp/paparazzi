@@ -59,7 +59,7 @@ import java.util.Properties
  *
  * Defaults are for a Nexus 4 device.
  */
-data class DeviceConfig(
+internal data class DeviceConfig(
   var screenHeight: Int = 1280,
   var screenWidth: Int = 768,
   var xdpi: Int = 320,
