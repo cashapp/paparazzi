@@ -12,3 +12,8 @@ build
 /captures
 .externalNativeBuild
 .cxx
+
+# Mkdocs files
+docs/0.x
+docs/changelog.md
+docs/index.md
