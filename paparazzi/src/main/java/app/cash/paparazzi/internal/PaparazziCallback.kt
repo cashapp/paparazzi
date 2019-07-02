@@ -16,7 +16,6 @@
 
 package app.cash.paparazzi.internal
 
-import app.cash.paparazzi.PaparazziLogger
 import com.android.SdkConstants
 import com.android.ide.common.rendering.api.ActionBarCallback
 import com.android.ide.common.rendering.api.AdapterBinding
@@ -41,7 +40,7 @@ import java.io.FileNotFoundException
 import java.io.IOException
 import java.lang.reflect.Modifier
 
-class PaparazziCallback(
+internal class PaparazziCallback(
   private val logger: PaparazziLogger,
   private val packageName: String
 ) : LayoutlibCallback() {

@@ -15,15 +15,19 @@
  */
 package app.cash.paparazzi
 
+import android.content.Context
 import android.content.res.Resources
 import android.view.BridgeInflater
+import android.view.Choreographer_Delegate
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AnimationUtils
 import androidx.annotation.LayoutRes
 import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.LayoutPullParser
 import app.cash.paparazzi.internal.PaparazziCallback
+import app.cash.paparazzi.internal.PaparazziLogger
 import app.cash.paparazzi.internal.Renderer
 import com.android.ide.common.rendering.api.RenderSession
 import com.android.ide.common.rendering.api.Result
@@ -39,11 +43,12 @@ import org.junit.runner.Description
 import org.junit.runners.model.Statement
 import java.awt.image.BufferedImage
 import java.util.Date
+import java.util.concurrent.TimeUnit
 
 class Paparazzi(
   private val packageName: String,
   private val environment: Environment = detectEnvironment(),
-  private val snapshotHandler: SnapshotHandler = RunWriter()
+  private val snapshotHandler: SnapshotHandler = HtmlReportWriter()
 ) : TestRule {
   private val THUMBNAIL_SIZE = 1000
 
@@ -59,6 +64,9 @@ class Paparazzi(
 
   val resources: Resources
     get() = RenderAction.getCurrentContext().resources
+
+  val context: Context
+    get() = RenderAction.getCurrentContext()
 
   override fun apply(
     base: Statement,
@@ -118,28 +126,30 @@ class Paparazzi(
     view: View,
     name: String? = null
   ) {
-    takeSnapshots(view, name, 0, -1, 0, 1)
+    takeSnapshots(view, name, 0, -1, 1)
   }
 
   fun gif(
     view: View,
     name: String? = null,
-    start: Long = 0,
-    end: Long = 500,
+    start: Long = 0L,
+    end: Long = 500L,
     fps: Int = 30
   ) {
-    val millisPerFrame = 1000f / fps
-    val duration = end - start
-    val frameCount = (((duration + millisPerFrame - 1) / millisPerFrame)).toInt()
-    takeSnapshots(view, name, start, fps, duration, frameCount)
+    // Add one to the frame count so we get the last frame. Otherwise a 1 second, 60 FPS animation
+    // our 60th frame will be at time 983 ms, and we want our last frame to be 1,000 ms. This gets
+    // us 61 frames for a 1 second animation, 121 frames for a 2 second animation, etc.
+    val durationMillis = (end - start).toInt()
+    val frameCount = (durationMillis * fps) / 1000 + 1
+    val startNanos = TimeUnit.MILLISECONDS.toNanos(start)
+    takeSnapshots(view, name, startNanos, fps, frameCount)
   }
 
   private fun takeSnapshots(
     view: View,
     name: String?,
-    start: Long,
+    startNanos: Long,
     fps: Int,
-    duration: Long,
     frameCount: Int
   ) {
     snapshotCount++
@@ -150,17 +160,37 @@ class Paparazzi(
       val viewGroup = bridgeRenderSession.rootViews[0].viewObject as ViewGroup
       viewGroup.addView(view)
       try {
-        renderSession.setElapsedFrameTimeNanos(0L)
+        withTime(0L) {
+          // Empty block to initialize the choreographer at time=0.
+        }
+
         for (frame in 0 until frameCount) {
-          val timestamp = start + (frame * duration) / frameCount
-          System_Delegate.setNanosTime(timestamp * 1_000_000)
-          renderSession.render(true)
-          frameHandler.handle(scaleImage(bridgeRenderSession.image))
+          val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
+          withTime(nowNanos) {
+            renderSession.render(true)
+            frameHandler.handle(scaleImage(bridgeRenderSession.image))
+          }
         }
       } finally {
         viewGroup.removeView(view)
-        System_Delegate.setNanosTime(0L)
       }
+    }
+  }
+
+  private fun withTime(timeNanos: Long, block: () -> Unit) {
+    val frameNanos = TIME_OFFSET_NANOS + timeNanos
+
+    // Execute the block at the requested time.
+    System_Delegate.setBootTimeNanos(frameNanos)
+    System_Delegate.setNanosTime(frameNanos)
+    Choreographer_Delegate.doFrame(frameNanos)
+    AnimationUtils.lockAnimationClock(TimeUnit.NANOSECONDS.toMillis(frameNanos))
+    try {
+      block()
+    } finally {
+      AnimationUtils.unlockAnimationClock()
+      System_Delegate.setNanosTime(0L)
+      System_Delegate.setBootTimeNanos(0L)
     }
   }
 
@@ -189,5 +219,10 @@ class Paparazzi(
     val packageName = testClass.`package`.name
     val className = testClass.name.substring(packageName.length + 1)
     return TestName(packageName, className, methodName)
+  }
+
+  companion object {
+    /** The choreographer doesn't like 0 as a frame time, so start an hour later. */
+    internal val TIME_OFFSET_NANOS = TimeUnit.HOURS.toNanos(1L)
   }
 }

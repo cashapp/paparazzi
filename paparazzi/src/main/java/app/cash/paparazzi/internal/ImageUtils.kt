@@ -38,7 +38,7 @@ import javax.imageio.ImageIO
 /**
  * Utilities related to image processing.
  */
-object ImageUtils {
+internal object ImageUtils {
   /**
    * Normally, this test will fail when there is a missing thumbnail. However, when
    * you create creating a new test, it's useful to be able to turn this off such that

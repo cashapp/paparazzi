@@ -16,6 +16,7 @@
 package app.cash.paparazzi
 
 import app.cash.paparazzi.SnapshotHandler.FrameHandler
+import app.cash.paparazzi.internal.PaparazziJson
 import com.google.common.base.CharMatcher
 import okio.BufferedSink
 import okio.HashingSink
@@ -56,7 +57,7 @@ import javax.imageio.ImageIO
  * paparazzi.js
  * ```
  */
-internal class RunWriter(
+internal class HtmlReportWriter(
   private val runName: String = defaultRunName(),
   private val rootDirectory: File = File("build/reports/paparazzi")
 ) : SnapshotHandler {
@@ -213,7 +214,7 @@ internal class RunWriter(
   private fun writeStaticFiles() {
     for (staticFile in listOf("index.html", "paparazzi.js")) {
       File(rootDirectory, staticFile).writeAtomically {
-        writeAll(RunWriter::class.java.classLoader.getResourceAsStream(staticFile).source())
+        writeAll(HtmlReportWriter::class.java.classLoader.getResourceAsStream(staticFile).source())
       }
     }
   }
