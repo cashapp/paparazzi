@@ -6,7 +6,7 @@ sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
 dependencies {
-  api 'com.squareup.paparazzi:layoutlib:3.4.0'
+  api 'app.cash.paparazzi:layoutlib:3.4.0'
   api 'com.android.tools:common:26.4.2'
   api 'com.android.tools.layoutlib:layoutlib-api:26.4.2'
   api 'com.android.tools:sdk-common:26.4.2'
