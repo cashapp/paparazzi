@@ -26,7 +26,7 @@ task cloneLayoutlib() {
       dir = repoDir
     }
     repo.checkout {
-      branch = 'studio-3.2.1'
+      branch = 'studio-3.4.0'
     }
   }
 
@@ -50,7 +50,7 @@ publishing {
     mavenJava(MavenPublication) {
       groupId = 'app.cash.paparazzi'
       artifactId = 'layoutlib'
-      version = '3.2.1'
+      version = '3.4.0'
 
       pom {
         name = "layoutlib"
