@@ -74,6 +74,7 @@ internal class Renderer(
       init(
           DeviceConfig.loadProperties(buildProp),
           fontLocation,
+          null,
           DeviceConfig.getEnumMap(attrs),
           logger
       )

@@ -20,7 +20,6 @@ import com.android.SdkConstants
 import com.android.ide.common.rendering.api.ActionBarCallback
 import com.android.ide.common.rendering.api.AdapterBinding
 import com.android.ide.common.rendering.api.ILayoutPullParser
-import com.android.ide.common.rendering.api.IProjectCallback
 import com.android.ide.common.rendering.api.LayoutlibCallback
 import com.android.ide.common.rendering.api.ResourceNamespace.RES_AUTO
 import com.android.ide.common.rendering.api.ResourceReference
@@ -114,7 +113,7 @@ internal class PaparazziCallback(
     fullParentPosition: Int,
     parentPositionPerType: Int,
     viewRef: ResourceReference,
-    viewAttribute: IProjectCallback.ViewAttribute,
+    viewAttribute: ViewAttribute,
     defaultValue: Any
   ): Any? = null
 
