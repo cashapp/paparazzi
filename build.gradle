@@ -21,6 +21,9 @@ allprojects {
       url 'https://dl.bintray.com/kotlin/dokka'
     }
   }
+
+  group = GROUP
+  version = VERSION_NAME
 }
 
 task clean(type: Delete) {
