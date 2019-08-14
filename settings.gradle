@@ -1,4 +1,5 @@
-rootProject.name = 'paparazzi'
+rootProject.name = 'paparazzi-parent'
+
 include ':sample'
 include ':paparazzi'
 include ':libs:layoutlib'

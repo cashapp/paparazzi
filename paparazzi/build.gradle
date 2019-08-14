@@ -50,3 +50,5 @@ afterEvaluate { project ->
     }
   }
 }
+
+apply from: "$rootDir/gradle/gradle-mvn-push.gradle"
