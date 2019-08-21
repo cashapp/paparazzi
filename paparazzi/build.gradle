@@ -6,17 +6,19 @@ sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
 dependencies {
+  def androidToolsVersion = '26.5.0'
+
   api 'app.cash.paparazzi:layoutlib:3.4.0'
-  api 'com.android.tools:common:26.4.2'
-  api 'com.android.tools.layoutlib:layoutlib-api:26.4.2'
-  api 'com.android.tools:sdk-common:26.4.2'
+  api "com.android.tools:common:${androidToolsVersion}"
+  api "com.android.tools.layoutlib:layoutlib-api:${androidToolsVersion}"
+  api "com.android.tools:sdk-common:${androidToolsVersion}"
   api 'kxml2:kxml2:2.3.0'
   api 'junit:junit:4.12'
-  api 'androidx.annotation:annotation:1.0.2'
+  api 'androidx.annotation:annotation:1.1.0'
   api 'com.google.guava:guava:27.1-jre'
-  api 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.1.1'
-  api 'com.squareup.okio:okio:2.2.2'
-  implementation 'com.squareup.moshi:moshi:1.6.0'
+  api 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.2.1'
+  api 'com.squareup.okio:okio:2.3.0'
+  implementation 'com.squareup.moshi:moshi:1.8.0'
   implementation 'com.squareup.moshi:moshi-adapters:1.6.0'
   implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
   implementation 'org.jcodec:jcodec:0.2.3'
