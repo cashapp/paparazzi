@@ -46,7 +46,10 @@ internal class PaparazziCallback(
   private val projectResources = mutableMapOf<Int, ResourceReference>()
   private val resources = mutableMapOf<ResourceReference, Int>()
   private val actionBarCallback = ActionBarCallback()
+
   private var adaptiveIconMaskPath: String? = null
+  private var highQualityShadow = false
+  private var enableShadow = true
 
   @Throws(ClassNotFoundException::class)
   fun initResources() {
@@ -154,11 +157,21 @@ internal class PaparazziCallback(
     return when (key) {
       RenderParamsFlags.FLAG_KEY_APPLICATION_PACKAGE -> packageName as T
       RenderParamsFlags.FLAG_KEY_ADAPTIVE_ICON_MASK_PATH -> adaptiveIconMaskPath as T?
+      RenderParamsFlags.FLAG_RENDER_HIGH_QUALITY_SHADOW -> highQualityShadow as T
+      RenderParamsFlags.FLAG_ENABLE_SHADOW -> enableShadow as T
       else -> null
     }
   }
 
   fun setAdaptiveIconMaskPath(adaptiveIconMaskPath: String) {
     this.adaptiveIconMaskPath = adaptiveIconMaskPath
+  }
+
+  fun setHighQualityShadow(highQualityShadow: Boolean) {
+    this.highQualityShadow = highQualityShadow
+  }
+
+  fun setEnableShadow(enableShadow: Boolean) {
+    this.enableShadow = enableShadow
   }
 }
