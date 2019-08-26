@@ -15,7 +15,7 @@ dependencies {
 
   compileOnly gradleApi()
   implementation "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-  implementation "com.android.tools.build:gradle:3.5.0"
+  implementation "com.android.tools.build:gradle:3.4.2"
 
   testImplementation 'junit:junit:4.12'
   testImplementation 'com.google.truth:truth:1.0'

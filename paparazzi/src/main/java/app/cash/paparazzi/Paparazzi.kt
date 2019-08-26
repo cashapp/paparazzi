@@ -102,7 +102,7 @@ class Paparazzi(
         layoutPullParser = LayoutPullParser.createFromString(frameLayout),
         renderingMode = SessionParams.RenderingMode.V_SCROLL
     )
-        .withTheme("Theme.Material.NoActionBar.Fullscreen", false)
+        .withTheme("Theme.Material.Light.NoActionBar.Fullscreen", false)
         .build()
 
     renderSession = RenderSessionImpl(sessionParams)
