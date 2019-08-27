@@ -1,0 +1,52 @@
+apply plugin: 'org.jetbrains.kotlin.jvm'
+apply plugin: 'java-gradle-plugin'
+
+gradlePlugin {
+  plugins {
+    paparazzi {
+      id = 'app.cash.paparazzi'
+      implementationClass = 'app.cash.paparazzi.gradle.PaparazziPlugin'
+    }
+  }
+}
+
+dependencies {
+  implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+
+  compileOnly gradleApi()
+  implementation "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+  implementation "com.android.tools.build:gradle:3.5.0"
+
+  testImplementation 'junit:junit:4.12'
+  testImplementation 'com.google.truth:truth:1.0'
+}
+
+sourceSets {
+  main.java.srcDir 'src/generated/kotlin'
+}
+
+def generateVersion = tasks.register("pluginVersion") {
+  def outputDir = file('src/generated/kotlin')
+
+  inputs.property 'version', version
+  outputs.dir outputDir
+
+  doLast {
+    def versionFile = file("${outputDir}/app/cash/paparazzi/Version.kt")
+    versionFile.parentFile.mkdirs()
+    versionFile.text = """// Generated file. Do not edit!
+package app.cash.paparazzi
+const val VERSION = "${project.version}"
+"""
+  }
+}
+
+tasks.named('compileKotlin').configure {
+  it.dependsOn(generateVersion)
+}
+
+test {
+  dependsOn(":paparazzi:installLocally")
+}
+
+apply from: "$rootDir/gradle/gradle-mvn-push.gradle"

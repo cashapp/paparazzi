@@ -1,0 +1,11 @@
+plugins {
+  id 'com.android.library'
+  id 'app.cash.paparazzi'
+}
+
+android {
+  compileSdkVersion 28
+  defaultConfig {
+    minSdkVersion 25
+  }
+}
