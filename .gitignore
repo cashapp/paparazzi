@@ -1,13 +1,16 @@
 *.iml
-.gradle
 local.properties
 .idea
 .DS_Store
-build
 reports
 captures
 .externalNativeBuild
 .cxx
+
+# Gradle
+.gradle
+build
+generated
 
 # Mkdocs files
 docs/0.x
