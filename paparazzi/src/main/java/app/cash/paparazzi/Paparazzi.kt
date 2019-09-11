@@ -46,7 +46,6 @@ import java.util.Date
 import java.util.concurrent.TimeUnit
 
 class Paparazzi(
-  private val packageName: String,
   private val environment: Environment = detectEnvironment(),
   private val snapshotHandler: SnapshotHandler = HtmlReportWriter()
 ) : TestRule {
@@ -83,7 +82,7 @@ class Paparazzi(
   }
 
   fun prepare(description: Description) {
-    val layoutlibCallback = PaparazziCallback(logger, packageName)
+    val layoutlibCallback = PaparazziCallback(logger, environment.packageName)
     layoutlibCallback.initResources()
 
     testName = description.toTestName()
