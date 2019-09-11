@@ -15,8 +15,11 @@
  */
 package app.cash.paparazzi.gradle
 
+import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.tasks.MergeResources
+import com.android.ide.common.symbols.getPackageNameFromManifest
 import org.gradle.api.DefaultTask
+import org.gradle.api.Project
 import org.gradle.api.file.Directory
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.OutputDirectory
@@ -35,6 +38,22 @@ open class PrepareResourcesTask : DefaultTask() {
     val out = outputDir.get()
         .asFile
     out.delete()
-    out.writeText(mergeResourcesProvider.get().outputDir.path)
+    out.bufferedWriter()
+        .use {
+          it.write(project.packageName())
+          it.newLine()
+          it.write(mergeResourcesProvider.get().outputDir.path)
+        }
+  }
+
+  private fun Project.packageName(): String {
+    val androidExtension = extensions.getByType(BaseExtension::class.java)
+    androidExtension.sourceSets
+        .map { it.manifest.srcFile }
+        .filter { it.exists() }
+        .forEach {
+          return getPackageNameFromManifest(it)
+        }
+    throw IllegalStateException("No source sets available")
   }
 }
