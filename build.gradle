@@ -4,11 +4,13 @@ buildscript {
     google()
     mavenCentral()
     jcenter()
+    mavenLocal()
   }
   dependencies {
     classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     classpath 'com.android.tools.build:gradle:3.5.0'
     classpath 'org.jetbrains.dokka:dokka-gradle-plugin:0.9.18'
+    classpath 'app.cash.paparazzi:paparazzi-gradle-plugin:1.0.0-square06'
   }
 }
 
@@ -20,6 +22,7 @@ allprojects {
     maven {
       url 'https://dl.bintray.com/kotlin/dokka'
     }
+    mavenLocal()
   }
 
   group = GROUP
