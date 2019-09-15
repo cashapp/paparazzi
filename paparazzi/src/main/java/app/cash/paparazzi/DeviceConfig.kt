@@ -115,6 +115,11 @@ data class DeviceConfig(
    */
 
   companion object {
+    val NONE = DeviceConfig(
+        screenHeight = 0,
+        screenWidth = 0
+    )
+
     val NEXUS_4 = DeviceConfig()
 
     val NEXUS_5 = DeviceConfig(

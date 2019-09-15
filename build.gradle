@@ -62,7 +62,7 @@ buildscript {
     google()
     mavenCentral()
     jcenter()
-    //mavenLocal()
+    mavenLocal()
   }
 
   dependencies {
@@ -88,7 +88,7 @@ allprojects {
     maven {
       url 'https://dl.bintray.com/kotlin/dokka'
     }
-    //mavenLocal()
+    mavenLocal()
   }
 
   group = GROUP

@@ -38,6 +38,7 @@ import com.android.layoutlib.bridge.Bridge.prepareThread
 import com.android.layoutlib.bridge.BridgeRenderSession
 import com.android.layoutlib.bridge.impl.RenderAction
 import com.android.layoutlib.bridge.impl.RenderSessionImpl
+import com.android.sdklib.devices.Device
 import com.android.tools.layoutlib.java.System_Delegate
 import org.junit.rules.TestRule
 import org.junit.runner.Description
@@ -80,6 +81,13 @@ class Paparazzi(
         |              android:layout_height="match_parent"/>
         """.trimMargin()
 
+  val noFrameContentRoot = """
+        |<?xml version="1.0" encoding="utf-8"?>
+        |<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        |              android:layout_width="match_parent"
+        |              android:layout_height="wrap_content"/>
+        """.trimMargin()
+
   override fun apply(
     base: Statement,
     description: Description
@@ -112,6 +120,18 @@ class Paparazzi(
             renderingMode = SessionParams.RenderingMode.V_SCROLL
         )
         .withTheme(theme)
+
+    if (environment.deviceConfig === DeviceConfig.NONE) {
+      sessionParamsBuilder = sessionParamsBuilder.copy(
+          layoutPullParser = LayoutPullParser.createFromString(noFrameContentRoot),
+          decor = false
+      )
+    } else {
+      sessionParamsBuilder = sessionParamsBuilder.copy(
+          layoutPullParser = LayoutPullParser.createFromString(contentRoot),
+          decor = true
+      )
+    }
 
     val sessionParams = sessionParamsBuilder.build()
     renderSession = RenderSessionImpl(sessionParams)
@@ -178,7 +198,11 @@ class Paparazzi(
           )
 
       if (deviceConfig != null) {
-        sessionParamsBuilder = sessionParamsBuilder.copy(deviceConfig = deviceConfig)
+        sessionParamsBuilder = if (deviceConfig == DeviceConfig.NONE) {
+          sessionParamsBuilder.copy(decor = false)
+        } else {
+          sessionParamsBuilder.copy(deviceConfig = deviceConfig)
+        }
       }
 
       if (theme != null) {

@@ -20,12 +20,20 @@ import app.cash.paparazzi.Paparazzi
 import app.cash.paparazzi.DeviceConfig.Companion.NEXUS_5
 import app.cash.paparazzi.DeviceConfig.Companion.NEXUS_5_LAND
 import app.cash.paparazzi.DeviceConfig.Companion.NEXUS_7
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 
 class LaunchViewTest {
   @get:Rule
   var paparazzi = Paparazzi(deviceConfig = NEXUS_7)
+
+  @Test
+  @Ignore
+  fun no_frame() {
+    val launch = paparazzi.inflate<LinearLayout>(R.layout.launch)
+    paparazzi.snapshot(launch, "launch no frame", deviceConfig = DeviceConfig.NONE)
+  }
 
   @Test
   fun nexus7() {
