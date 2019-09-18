@@ -16,6 +16,7 @@
 
 package app.cash.paparazzi.internal
 
+import app.cash.paparazzi.DeviceConfig
 import com.android.SdkConstants
 import com.android.ide.common.rendering.api.AssetRepository
 import com.android.ide.common.rendering.api.ResourceNamespace
