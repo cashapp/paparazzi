@@ -24,6 +24,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import androidx.annotation.LayoutRes
+import app.cash.paparazzi.Mode.DEVELOPMENT
+import app.cash.paparazzi.Mode.RECORD
+import app.cash.paparazzi.Mode.VERIFY
 import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.LayoutPullParser
 import app.cash.paparazzi.internal.PaparazziCallback
@@ -49,7 +52,8 @@ import java.util.concurrent.TimeUnit
 class Paparazzi(
   private val environment: Environment = detectEnvironment(),
   private val deviceConfig: DeviceConfig = DeviceConfig.NEXUS_5,
-  private val snapshotHandler: SnapshotHandler = HtmlReportWriter()
+  private val mode: Mode = VERIFY,
+  private val snapshotHandler: SnapshotHandler = detectHandler(mode)
 ) : TestRule {
   private val THUMBNAIL_SIZE = 1000
 
@@ -96,6 +100,7 @@ class Paparazzi(
     layoutlibCallback.initResources()
 
     testName = description.toTestName()
+    snapshotHandler.testName = testName!!
 
     renderer = Renderer(environment, layoutlibCallback, logger)
     sessionParamsBuilder = renderer.prepare()
@@ -248,4 +253,17 @@ class Paparazzi(
     /** The choreographer doesn't like 0 as a frame time, so start an hour later. */
     internal val TIME_OFFSET_NANOS = TimeUnit.HOURS.toNanos(1L)
   }
+}
+
+internal fun detectHandler(mode: Mode) =
+  when (mode) {
+    DEVELOPMENT -> HtmlReportWriter()
+    RECORD -> SnapshotWriter()
+    VERIFY -> SnapshotVerifier()
+  }
+
+enum class Mode {
+  DEVELOPMENT,
+  RECORD,
+  VERIFY
 }

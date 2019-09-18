@@ -49,13 +49,13 @@ internal object ImageUtils {
 
   private val THUMBNAIL_SIZE = 1000
 
-  private val MAX_PERCENT_DIFFERENCE = 0.1
+  internal val MAX_PERCENT_DIFFERENCE = 0.1
 
   /** Directory where to write the thumbnails and deltas. */
   private val failureDir: File
     get() {
       val workingDirString = System.getProperty("user.dir")
-      val failureDir = File(workingDirString, "out/failures")
+      val failureDir = File(workingDirString, "screenshots/images")
       failureDir.mkdirs()
       return failureDir
     }

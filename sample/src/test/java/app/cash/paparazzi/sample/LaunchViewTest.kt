@@ -16,6 +16,7 @@
 package app.cash.paparazzi.sample
 
 import android.widget.LinearLayout
+import app.cash.paparazzi.Mode.VERIFY
 import app.cash.paparazzi.Paparazzi
 import app.cash.paparazzi.DeviceConfig.Companion.NEXUS_5
 import app.cash.paparazzi.DeviceConfig.Companion.NEXUS_5_LAND
@@ -25,7 +26,7 @@ import org.junit.Test
 
 class LaunchViewTest {
   @get:Rule
-  var paparazzi = Paparazzi(deviceConfig = NEXUS_7)
+  var paparazzi = Paparazzi(deviceConfig = NEXUS_7, mode = VERIFY)
 
   @Test
   fun nexus7() {

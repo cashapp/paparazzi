@@ -18,8 +18,10 @@ package app.cash.paparazzi
 import java.awt.image.BufferedImage
 import java.io.Closeable
 
-interface SnapshotHandler : Closeable {
-  fun newFrameHandler(
+abstract class SnapshotHandler : Closeable {
+  lateinit var testName: TestName
+
+  abstract fun newFrameHandler(
     snapshot: Snapshot,
     frameCount: Int,
     fps: Int
