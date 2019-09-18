@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package app.cash.paparazzi.internal
+package app.cash.paparazzi
 
 import com.android.ide.common.rendering.api.HardwareConfig
 import com.android.ide.common.resources.configuration.CountryCodeQualifier
@@ -59,7 +59,7 @@ import java.util.Properties
  *
  * Defaults are for a Nexus 4 device.
  */
-internal data class DeviceConfig(
+data class DeviceConfig(
   var screenHeight: Int = 1280,
   var screenWidth: Int = 768,
   var xdpi: Int = 320,

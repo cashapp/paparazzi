@@ -29,6 +29,7 @@ import app.cash.paparazzi.internal.LayoutPullParser
 import app.cash.paparazzi.internal.PaparazziCallback
 import app.cash.paparazzi.internal.PaparazziLogger
 import app.cash.paparazzi.internal.Renderer
+import app.cash.paparazzi.internal.SessionParamsBuilder
 import com.android.ide.common.rendering.api.RenderSession
 import com.android.ide.common.rendering.api.Result
 import com.android.ide.common.rendering.api.SessionParams
@@ -47,11 +48,13 @@ import java.util.concurrent.TimeUnit
 
 class Paparazzi(
   private val environment: Environment = detectEnvironment(),
+  private val deviceConfig: DeviceConfig = DeviceConfig.NEXUS_5,
   private val snapshotHandler: SnapshotHandler = HtmlReportWriter()
 ) : TestRule {
   private val THUMBNAIL_SIZE = 1000
 
   private val logger = PaparazziLogger()
+  private lateinit var sessionParamsBuilder: SessionParamsBuilder
   private lateinit var renderer: Renderer
   private lateinit var renderSession: RenderSessionImpl
   private lateinit var bridgeRenderSession: RenderSession
@@ -66,6 +69,13 @@ class Paparazzi(
 
   val context: Context
     get() = RenderAction.getCurrentContext()
+
+  val contentRoot = """
+        |<?xml version="1.0" encoding="utf-8"?>
+        |<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        |              android:layout_width="match_parent"
+        |              android:layout_height="match_parent"/>
+        """.trimMargin()
 
   override fun apply(
     base: Statement,
@@ -88,22 +98,17 @@ class Paparazzi(
     testName = description.toTestName()
 
     renderer = Renderer(environment, layoutlibCallback, logger)
-    val sessionParamsBuilder = renderer.prepare()
+    sessionParamsBuilder = renderer.prepare()
 
-    val frameLayout = """
-        |<?xml version="1.0" encoding="utf-8"?>
-        |<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        |              android:layout_width="match_parent"
-        |              android:layout_height="match_parent"/>
-        """.trimMargin()
-
-    val sessionParams = sessionParamsBuilder.copy(
-        layoutPullParser = LayoutPullParser.createFromString(frameLayout),
-        renderingMode = SessionParams.RenderingMode.V_SCROLL
-    )
+    sessionParamsBuilder = sessionParamsBuilder
+        .copy(
+            layoutPullParser = LayoutPullParser.createFromString(contentRoot),
+            deviceConfig = deviceConfig,
+            renderingMode = SessionParams.RenderingMode.V_SCROLL
+        )
         .withTheme("Theme.Material.NoActionBar.Fullscreen", false)
-        .build()
 
+    val sessionParams = sessionParamsBuilder.build()
     renderSession = RenderSessionImpl(sessionParams)
     prepareThread()
     renderSession.init(sessionParams.timeout)
@@ -123,14 +128,16 @@ class Paparazzi(
 
   fun snapshot(
     view: View,
-    name: String? = null
+    name: String? = null,
+    deviceConfig: DeviceConfig? = null
   ) {
-    takeSnapshots(view, name, 0, -1, 1)
+    takeSnapshots(view, name, deviceConfig, 0, -1, 1)
   }
 
   fun gif(
     view: View,
     name: String? = null,
+    deviceConfig: DeviceConfig? = null,
     start: Long = 0L,
     end: Long = 500L,
     fps: Int = 30
@@ -141,16 +148,33 @@ class Paparazzi(
     val durationMillis = (end - start).toInt()
     val frameCount = (durationMillis * fps) / 1000 + 1
     val startNanos = TimeUnit.MILLISECONDS.toNanos(start)
-    takeSnapshots(view, name, startNanos, fps, frameCount)
+    takeSnapshots(view, name, deviceConfig, startNanos, fps, frameCount)
   }
 
   private fun takeSnapshots(
     view: View,
     name: String?,
+    deviceConfig: DeviceConfig? = null,
     startNanos: Long,
     fps: Int,
     frameCount: Int
   ) {
+    if (deviceConfig != null) {
+      renderSession.release()
+      bridgeRenderSession.dispose()
+
+      sessionParamsBuilder = sessionParamsBuilder
+          .copy(
+              // Required to reset underlying parser stream
+              layoutPullParser = LayoutPullParser.createFromString(contentRoot),
+              deviceConfig = deviceConfig
+          )
+      val sessionParams = sessionParamsBuilder.build()
+      renderSession = RenderSessionImpl(sessionParams)
+      renderSession.init(sessionParams.timeout)
+      bridgeRenderSession = createBridgeSession(renderSession, renderSession.inflate())
+    }
+
     snapshotCount++
     val snapshot = Snapshot(name ?: snapshotCount.toString(), testName!!, Date())
 
