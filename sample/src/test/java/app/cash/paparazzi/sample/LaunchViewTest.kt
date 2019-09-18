@@ -17,16 +17,26 @@ package app.cash.paparazzi.sample
 
 import android.widget.LinearLayout
 import app.cash.paparazzi.Paparazzi
+import app.cash.paparazzi.DeviceConfig.Companion.NEXUS_5
+import app.cash.paparazzi.DeviceConfig.Companion.NEXUS_5_LAND
+import app.cash.paparazzi.DeviceConfig.Companion.NEXUS_7
 import org.junit.Rule
 import org.junit.Test
 
 class LaunchViewTest {
   @get:Rule
-  var paparazzi = Paparazzi()
+  var paparazzi = Paparazzi(deviceConfig = NEXUS_7)
 
   @Test
-  fun testViews() {
+  fun nexus7() {
     val launch = paparazzi.inflate<LinearLayout>(R.layout.launch)
-    paparazzi.snapshot(launch, "launch")
+    paparazzi.snapshot(launch, "launch nexus7")
+  }
+
+  @Test
+  fun nexus5_differentOrientations() {
+    val launch = paparazzi.inflate<LinearLayout>(R.layout.launch)
+    paparazzi.snapshot(launch, "launch nexus 5 portrait", deviceConfig = NEXUS_5)
+    paparazzi.snapshot(launch, "launch nexus 5 landscape", deviceConfig = NEXUS_5_LAND)
   }
 }
