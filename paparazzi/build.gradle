@@ -54,3 +54,19 @@ afterEvaluate { project ->
 }
 
 apply from: "$rootDir/gradle/gradle-mvn-push.gradle"
+
+def generateTestConfig = tasks.register("generateTestConfig") {
+  doLast {
+    File configParent = new File("$buildDir/intermediates/paparazzi")
+    configParent.mkdirs()
+    File configFile = new File(configParent, "resources.txt")
+    configFile.withWriter('utf-8') { writer ->
+      writer.writeLine("app.cash.paparazzi")
+      writer.writeLine(".")
+    }
+  }
+}
+
+test {
+  dependsOn(generateTestConfig)
+}
