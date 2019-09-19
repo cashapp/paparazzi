@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit
 
 class PaparazziTest {
   @get:Rule
-  var paparazzi = Paparazzi("app.cash.paparazzi")
+  val paparazzi = Paparazzi()
 
   @Test
   fun drawCalls() {
