@@ -60,19 +60,19 @@ import java.util.Properties
  * Defaults are for a Nexus 4 device.
  */
 data class DeviceConfig(
-  var screenHeight: Int = 1280,
-  var screenWidth: Int = 768,
-  var xdpi: Int = 320,
-  var ydpi: Int = 320,
-  var orientation: ScreenOrientation = ScreenOrientation.PORTRAIT,
-  var density: Density = Density.XHIGH,
-  var ratio: ScreenRatio = ScreenRatio.NOTLONG,
-  var size: ScreenSize = ScreenSize.NORMAL,
-  var keyboard: Keyboard = Keyboard.NOKEY,
-  var touchScreen: TouchScreen = TouchScreen.FINGER,
-  var keyboardState: KeyboardState = KeyboardState.SOFT,
-  var softButtons: Boolean = true,
-  var navigation: Navigation = Navigation.NONAV
+  val screenHeight: Int = 1280,
+  val screenWidth: Int = 768,
+  val xdpi: Int = 320,
+  val ydpi: Int = 320,
+  val orientation: ScreenOrientation = ScreenOrientation.PORTRAIT,
+  val density: Density = Density.XHIGH,
+  val ratio: ScreenRatio = ScreenRatio.NOTLONG,
+  val size: ScreenSize = ScreenSize.NORMAL,
+  val keyboard: Keyboard = Keyboard.NOKEY,
+  val touchScreen: TouchScreen = TouchScreen.FINGER,
+  val keyboardState: KeyboardState = KeyboardState.SOFT,
+  val softButtons: Boolean = true,
+  val navigation: Navigation = Navigation.NONAV
 ) {
   val folderConfiguration: FolderConfiguration
     get() = FolderConfiguration.createDefault()
