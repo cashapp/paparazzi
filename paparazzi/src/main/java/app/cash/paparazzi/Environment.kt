@@ -30,6 +30,8 @@ data class Environment(
 }
 
 fun detectEnvironment(): Environment {
+  checkInstalledJvm()
+
   val userDir = System.getProperty("user.dir")
   val userHome = System.getProperty("user.home")
   val androidHome = System.getenv("ANDROID_HOME") ?: "$userHome/Library/Android/sdk"
@@ -45,4 +47,24 @@ fun detectEnvironment(): Environment {
   val resDir = configLines[1]
 
   return Environment(platformDir, userDir, resDir, packageName)
+}
+
+private fun checkInstalledJvm() {
+  val jvmVendor = System.getProperty("java.vendor")
+  val jvmVersion = System.getProperty("java.version")
+  if (jvmVendor == null || jvmVersion == null) return // we tried...
+
+  val (major, minor) = jvmVersion.split(".")
+
+  if (jvmVendor.startsWith("Oracle") && major.toInt() == 1 && minor.toInt() <= 8) {
+    println(
+        """
+          |Unsupported JRE detected!!!
+          |
+          |Some custom fonts may not render correctly.  To avoid this, please install and run 
+          |Paparazzi test suites on OpenJDK version 8 or greater.
+          |See https://github.com/cashapp/paparazzi/issues/33 for additional context.
+          |""".trimMargin()
+    )
+  }
 }
