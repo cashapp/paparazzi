@@ -37,6 +37,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
- [changelog]: https://square.github.io/paparazzi/changelog/
- [paparazzi]: https://square.github.io/paparazzi/
+ [changelog]: https://cashapp.github.io/paparazzi/changelog/
+ [paparazzi]: https://cashapp.github.io/paparazzi/
  [snap]: https://oss.sonatype.org/content/repositories/snapshots/
