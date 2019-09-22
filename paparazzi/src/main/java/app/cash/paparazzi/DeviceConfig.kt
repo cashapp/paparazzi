@@ -72,7 +72,8 @@ data class DeviceConfig(
   val touchScreen: TouchScreen = TouchScreen.FINGER,
   val keyboardState: KeyboardState = KeyboardState.SOFT,
   val softButtons: Boolean = true,
-  val navigation: Navigation = Navigation.NONAV
+  val navigation: Navigation = Navigation.NONAV,
+  val released: String = "November 13, 2012"
 ) {
   val folderConfiguration: FolderConfiguration
     get() = FolderConfiguration.createDefault()
@@ -106,6 +107,13 @@ data class DeviceConfig(
         orientation, null, softButtons
     )
 
+  /**
+   * Device specs per:
+   * https://android.googlesource.com/platform/tools/base/+/studio-master-dev/sdklib/src/main/java/com/android/sdklib/devices/nexus.xml
+   *
+   * Release dates obtained from Wikipedia.
+   */
+
   companion object {
     val NEXUS_4 = DeviceConfig()
 
@@ -122,7 +130,8 @@ data class DeviceConfig(
         touchScreen = TouchScreen.FINGER,
         keyboardState = KeyboardState.SOFT,
         softButtons = true,
-        navigation = Navigation.NONAV
+        navigation = Navigation.NONAV,
+        released = "October 31, 2013"
     )
 
     val NEXUS_7 = DeviceConfig(
@@ -138,7 +147,8 @@ data class DeviceConfig(
         touchScreen = TouchScreen.FINGER,
         keyboardState = KeyboardState.SOFT,
         softButtons = true,
-        navigation = Navigation.NONAV
+        navigation = Navigation.NONAV,
+        released = "July 26, 2013"
     )
 
     val NEXUS_10 = DeviceConfig(
@@ -154,7 +164,8 @@ data class DeviceConfig(
         touchScreen = TouchScreen.FINGER,
         keyboardState = KeyboardState.SOFT,
         softButtons = true,
-        navigation = Navigation.NONAV
+        navigation = Navigation.NONAV,
+        released = "November 13, 2012"
     )
 
     val NEXUS_5_LAND = DeviceConfig(
@@ -170,7 +181,8 @@ data class DeviceConfig(
         touchScreen = TouchScreen.FINGER,
         keyboardState = KeyboardState.SOFT,
         softButtons = true,
-        navigation = Navigation.NONAV
+        navigation = Navigation.NONAV,
+        released = "October 31, 2013"
     )
 
     val NEXUS_7_2012 = DeviceConfig(
@@ -186,7 +198,161 @@ data class DeviceConfig(
         touchScreen = TouchScreen.FINGER,
         keyboardState = KeyboardState.SOFT,
         softButtons = true,
-        navigation = Navigation.NONAV
+        navigation = Navigation.NONAV,
+        released = "July 13, 2012"
+    )
+
+    val PIXEL_C = DeviceConfig(
+        screenHeight = 1800,
+        screenWidth = 2560,
+        xdpi = 308,
+        ydpi = 308,
+        orientation = ScreenOrientation.LANDSCAPE,
+        density = Density.XHIGH,
+        ratio = ScreenRatio.NOTLONG,
+        size = ScreenSize.XLARGE,
+        keyboard = Keyboard.QWERTY,
+        touchScreen = TouchScreen.FINGER,
+        keyboardState = KeyboardState.SOFT,
+        softButtons = true,
+        navigation = Navigation.NONAV,
+        released = "December 8, 2015"
+    )
+
+    val PIXEL = DeviceConfig(
+        screenHeight = 1920,
+        screenWidth = 1080,
+        xdpi = 440,
+        ydpi = 440,
+        orientation = ScreenOrientation.PORTRAIT,
+        density = Density.DPI_420,
+        ratio = ScreenRatio.NOTLONG,
+        size = ScreenSize.NORMAL,
+        keyboard = Keyboard.NOKEY,
+        touchScreen = TouchScreen.FINGER,
+        keyboardState = KeyboardState.SOFT,
+        softButtons = true,
+        navigation = Navigation.NONAV,
+        released = "October 20, 2016"
+    )
+
+    val PIXEL_XL = DeviceConfig(
+        screenHeight = 2560,
+        screenWidth = 1440,
+        xdpi = 534,
+        ydpi = 534,
+        orientation = ScreenOrientation.PORTRAIT,
+        density = Density.DPI_560,
+        ratio = ScreenRatio.NOTLONG,
+        size = ScreenSize.NORMAL,
+        keyboard = Keyboard.NOKEY,
+        touchScreen = TouchScreen.FINGER,
+        keyboardState = KeyboardState.SOFT,
+        softButtons = true,
+        navigation = Navigation.NONAV,
+        released = "October 20, 2016"
+    )
+
+    val PIXEL_2 = DeviceConfig(
+        screenHeight = 1920,
+        screenWidth = 1080,
+        xdpi = 442,
+        ydpi = 443,
+        orientation = ScreenOrientation.PORTRAIT,
+        density = Density.DPI_420,
+        ratio = ScreenRatio.NOTLONG,
+        size = ScreenSize.NORMAL,
+        keyboard = Keyboard.NOKEY,
+        touchScreen = TouchScreen.FINGER,
+        keyboardState = KeyboardState.SOFT,
+        softButtons = true,
+        navigation = Navigation.NONAV,
+        released = "October 19, 2017"
+    )
+
+    val PIXEL_2_XL = DeviceConfig(
+        screenHeight = 2880,
+        screenWidth = 1440,
+        xdpi = 537,
+        ydpi = 537,
+        orientation = ScreenOrientation.PORTRAIT,
+        density = Density.DPI_560,
+        ratio = ScreenRatio.LONG,
+        size = ScreenSize.NORMAL,
+        keyboard = Keyboard.NOKEY,
+        touchScreen = TouchScreen.FINGER,
+        keyboardState = KeyboardState.SOFT,
+        softButtons = true,
+        navigation = Navigation.NONAV,
+        released = "October 19, 2017"
+    )
+
+    val PIXEL_3 = DeviceConfig(
+        screenHeight = 2160,
+        screenWidth = 1080,
+        xdpi = 442,
+        ydpi = 442,
+        orientation = ScreenOrientation.PORTRAIT,
+        density = Density.DPI_440,
+        ratio = ScreenRatio.LONG,
+        size = ScreenSize.NORMAL,
+        keyboard = Keyboard.NOKEY,
+        touchScreen = TouchScreen.FINGER,
+        keyboardState = KeyboardState.SOFT,
+        softButtons = true,
+        navigation = Navigation.NONAV,
+        released = "October 18, 2018"
+    )
+
+    val PIXEL_3_XL = DeviceConfig(
+        screenHeight = 2960,
+        screenWidth = 1440,
+        xdpi = 522,
+        ydpi = 522,
+        orientation = ScreenOrientation.PORTRAIT,
+        density = Density.DPI_560,
+        ratio = ScreenRatio.LONG,
+        size = ScreenSize.NORMAL,
+        keyboard = Keyboard.NOKEY,
+        touchScreen = TouchScreen.FINGER,
+        keyboardState = KeyboardState.SOFT,
+        softButtons = true,
+        navigation = Navigation.NONAV,
+        released = "October 18, 2018"
+    )
+
+    val PIXEL_3A = DeviceConfig(
+        screenHeight = 2220,
+        screenWidth = 1080,
+        xdpi = 442,
+        ydpi = 444,
+        orientation = ScreenOrientation.PORTRAIT,
+        density = Density.DPI_440,
+        ratio = ScreenRatio.LONG,
+        size = ScreenSize.NORMAL,
+        keyboard = Keyboard.NOKEY,
+        touchScreen = TouchScreen.FINGER,
+        keyboardState = KeyboardState.SOFT,
+        softButtons = true,
+        navigation = Navigation.NONAV,
+        released = "May 7, 2019"
+    )
+
+    val PIXEL_3A_XL = DeviceConfig(
+        screenHeight = 2160,
+        screenWidth = 1080,
+        xdpi = 397,
+        ydpi = 400,
+        orientation = ScreenOrientation.PORTRAIT,
+        density = Density.DPI_400,
+        ratio = ScreenRatio.LONG,
+        size = ScreenSize.NORMAL,
+        keyboard = Keyboard.NOKEY,
+        touchScreen = TouchScreen.FINGER,
+        keyboardState = KeyboardState.SOFT,
+        softButtons = true,
+        navigation = Navigation.NONAV,
+        released = "May 7, 2019"
     )
 
     private const val TAG_ATTR = "attr"
