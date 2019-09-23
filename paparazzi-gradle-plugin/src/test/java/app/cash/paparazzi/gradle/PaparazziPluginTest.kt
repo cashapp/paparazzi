@@ -41,8 +41,9 @@ class PaparazziPluginTest {
     val resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/resources.txt")
     assertThat(resourcesFile.exists()).isTrue()
 
-    val resourceFileContents = resourcesFile.readText()
-    assertThat(resourceFileContents).endsWith(
+    val resourceFileContents = resourcesFile.readLines()
+    assertThat(resourceFileContents[0]).isEqualTo("app.cash.paparazzi.plugin.test")
+    assertThat(resourceFileContents[1]).endsWith(
         "src/test/projects/verify-resources/build/intermediates/res/merged/debug"
     )
   }
@@ -60,7 +61,7 @@ class PaparazziPluginTest {
     assertThat(result.task(":testDebugUnitTest")).isNotNull()
 
     val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
-    val snapshotFile = File(snapshotsDir, "215bfbc973787f8c7e63650970fefc19fdd3399d.png")
+    val snapshotFile = File(snapshotsDir, "06eed37f8377a96128efdbfd47e28b24ecac09e6.png")
     assertThat(snapshotFile.exists()).isTrue()
 
     val goldenImage = File(fixtureRoot, "src/test/resources/launch.png")
