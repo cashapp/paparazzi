@@ -39,4 +39,19 @@ class LaunchViewTest {
     paparazzi.snapshot(launch, "launch nexus 5 portrait", deviceConfig = NEXUS_5)
     paparazzi.snapshot(launch, "launch nexus 5 landscape", deviceConfig = NEXUS_5_LAND)
   }
+
+  @Test
+  fun nexus7_differentThemes() {
+    val launch = paparazzi.inflate<LinearLayout>(R.layout.launch)
+    paparazzi.snapshot(
+        view = launch,
+        name = "launch nexus 7 light",
+        theme = "android:Theme.Material.Light"
+    )
+    paparazzi.snapshot(
+        view = launch,
+        name = "launch nexus 7 light no-action-bar",
+        theme = "android:Theme.Material.Light.NoActionBar"
+    )
+  }
 }
