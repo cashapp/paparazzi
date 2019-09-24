@@ -25,7 +25,6 @@ data class Environment(
   val resDir: String,
   val packageName: String
 ) {
-  val testResDir: String = "$appTestDir/app/build/intermediates/classes/production/release/"
   val assetsDir = "$appTestDir/src/main/assets/"
 }
 
