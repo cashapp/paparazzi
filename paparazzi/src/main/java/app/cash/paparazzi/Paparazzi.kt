@@ -49,6 +49,7 @@ import java.util.concurrent.TimeUnit
 class Paparazzi(
   private val environment: Environment = detectEnvironment(),
   private val deviceConfig: DeviceConfig = DeviceConfig.NEXUS_5,
+  private val theme: String = "android:Theme.Material.NoActionBar.Fullscreen",
   private val snapshotHandler: SnapshotHandler = HtmlReportWriter()
 ) : TestRule {
   private val THUMBNAIL_SIZE = 1000
@@ -106,7 +107,7 @@ class Paparazzi(
             deviceConfig = deviceConfig,
             renderingMode = SessionParams.RenderingMode.V_SCROLL
         )
-        .withTheme("Theme.Material.NoActionBar.Fullscreen", false)
+        .withTheme(theme)
 
     val sessionParams = sessionParamsBuilder.build()
     renderSession = RenderSessionImpl(sessionParams)
@@ -129,15 +130,17 @@ class Paparazzi(
   fun snapshot(
     view: View,
     name: String? = null,
-    deviceConfig: DeviceConfig? = null
+    deviceConfig: DeviceConfig? = null,
+    theme: String? = null
   ) {
-    takeSnapshots(view, name, deviceConfig, 0, -1, 1)
+    takeSnapshots(view, name, deviceConfig, theme, 0, -1, 1)
   }
 
   fun gif(
     view: View,
     name: String? = null,
     deviceConfig: DeviceConfig? = null,
+    theme: String? = null,
     start: Long = 0L,
     end: Long = 500L,
     fps: Int = 30
@@ -148,27 +151,36 @@ class Paparazzi(
     val durationMillis = (end - start).toInt()
     val frameCount = (durationMillis * fps) / 1000 + 1
     val startNanos = TimeUnit.MILLISECONDS.toNanos(start)
-    takeSnapshots(view, name, deviceConfig, startNanos, fps, frameCount)
+    takeSnapshots(view, name, deviceConfig, theme, startNanos, fps, frameCount)
   }
 
   private fun takeSnapshots(
     view: View,
     name: String?,
     deviceConfig: DeviceConfig? = null,
+    theme: String? = null,
     startNanos: Long,
     fps: Int,
     frameCount: Int
   ) {
-    if (deviceConfig != null) {
+    if (deviceConfig != null || theme != null) {
       renderSession.release()
       bridgeRenderSession.dispose()
 
       sessionParamsBuilder = sessionParamsBuilder
           .copy(
               // Required to reset underlying parser stream
-              layoutPullParser = LayoutPullParser.createFromString(contentRoot),
-              deviceConfig = deviceConfig
+              layoutPullParser = LayoutPullParser.createFromString(contentRoot)
           )
+
+      if (deviceConfig != null) {
+        sessionParamsBuilder = sessionParamsBuilder.copy(deviceConfig = deviceConfig)
+      }
+
+      if (theme != null) {
+        sessionParamsBuilder = sessionParamsBuilder.withTheme(theme)
+      }
+
       val sessionParams = sessionParamsBuilder.build()
       renderSession = RenderSessionImpl(sessionParams)
       renderSession.init(sessionParams.timeout)
