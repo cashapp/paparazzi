@@ -61,9 +61,7 @@ internal class Renderer(
         logger = logger,
         frameworkResources = frameworkResources,
         projectResources = projectResources,
-        assetRepository = PaparazziAssetRepository(
-            "${environment.testResDir}/${environment.assetsDir}"
-        )
+        assetRepository = PaparazziAssetRepository(environment.assetsDir)
     )
         .plusFlag(RenderParamsFlags.FLAG_DO_NOT_RENDER_ON_CREATE, true)
         .withTheme("AppTheme", true)
