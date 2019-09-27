@@ -11,14 +11,14 @@ gradlePlugin {
 }
 
 dependencies {
-  implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+  implementation deps.kotlin.stdlib.jdk8
 
   compileOnly gradleApi()
-  implementation "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-  implementation "com.android.tools.build:gradle:3.5.0"
+  implementation deps.plugins.kotlin
+  implementation deps.plugins.android
 
-  testImplementation 'junit:junit:4.12'
-  testImplementation 'com.google.truth:truth:1.0'
+  testImplementation deps.junit
+  testImplementation deps.truth
 }
 
 sourceSets {
