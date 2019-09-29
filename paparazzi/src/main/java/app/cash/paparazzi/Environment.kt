@@ -33,7 +33,9 @@ fun detectEnvironment(): Environment {
 
   val userDir = System.getProperty("user.dir")
   val userHome = System.getProperty("user.home")
-  val androidHome = System.getenv("ANDROID_HOME") ?: "$userHome/Library/Android/sdk"
+  val androidHome = System.getenv("ANDROID_SDK_ROOT")
+      ?: System.getenv("ANDROID_HOME")
+      ?: "$userHome/Library/Android/sdk"
   val platformDir = Files.list(Paths.get("$androidHome/platforms"))
       .filter { Files.isDirectory(it) }
       .map { it.toString() }
