@@ -37,7 +37,7 @@ fun detectEnvironment(): Environment {
   val platformDir = File("$androidHome/platforms")
       .listFiles()
       .orEmpty()
-      .filter { it.isDirectory }
+      .filter { it.isDirectoryWithFiles }
       .map { it.toString() }
       .sorted()
       .last()
@@ -68,3 +68,8 @@ private fun checkInstalledJvm() {
     )
   }
 }
+
+/**
+ * @return true if this [File] is a directory that has files.
+ */
+private val File.isDirectoryWithFiles: Boolean get() = isDirectory && list().orEmpty().isNotEmpty()
