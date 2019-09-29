@@ -43,16 +43,14 @@ fun detectEnvironment(): Environment {
       .last()
 
   val configLines = File("build/intermediates/paparazzi/resources.txt").readLines()
-  val packageName = configLines[0]
-  val resDir = configLines[1]
+  val (packageName, resDir) = configLines
 
   return Environment(platformDir, userDir, resDir, packageName)
 }
 
 private fun checkInstalledJvm() {
-  val jvmVendor = System.getProperty("java.vendor")
-  val jvmVersion = System.getProperty("java.version")
-  if (jvmVendor == null || jvmVersion == null) return // we tried...
+  val jvmVendor = System.getProperty("java.vendor") ?: return
+  val jvmVersion = System.getProperty("java.version") ?: return
 
   val (major, minor) = jvmVersion.split(".")
 
