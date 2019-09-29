@@ -38,7 +38,7 @@ fun detectEnvironment(): Environment {
       .listFiles()
       .orEmpty()
       .filter { it.isDirectoryWithFiles }
-      .map { it.toString() }
+      .map { it.path }
       .sorted()
       .last()
 
