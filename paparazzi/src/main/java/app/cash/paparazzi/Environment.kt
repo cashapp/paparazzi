@@ -16,8 +16,6 @@
 package app.cash.paparazzi
 
 import java.io.File
-import java.nio.file.Files
-import java.nio.file.Paths
 
 data class Environment(
   val platformDir: String,
@@ -36,12 +34,13 @@ fun detectEnvironment(): Environment {
   val androidHome = System.getenv("ANDROID_SDK_ROOT")
       ?: System.getenv("ANDROID_HOME")
       ?: "$userHome/Library/Android/sdk"
-  val platformDir = Files.list(Paths.get("$androidHome/platforms"))
-      .filter { Files.isDirectory(it) }
+  val platformDir = File("$androidHome/platforms")
+      .listFiles()
+      .orEmpty()
+      .filter { it.isDirectory }
       .map { it.toString() }
       .sorted()
-      .reduce { _, next -> next }
-      .orElse(null)
+      .last()
 
   val configLines = File("build/intermediates/paparazzi/resources.txt").readLines()
   val packageName = configLines[0]
