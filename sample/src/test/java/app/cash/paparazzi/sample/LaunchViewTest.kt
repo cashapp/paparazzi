@@ -45,13 +45,13 @@ class LaunchViewTest {
     val launch = paparazzi.inflate<LinearLayout>(R.layout.launch)
     paparazzi.snapshot(
         view = launch,
-        name = "launch nexus 7 light",
-        theme = "android:Theme.Material.Light"
+        name = "launch nexus 7 light"
+//        theme = "android:Theme.Material.Light"
     )
     paparazzi.snapshot(
         view = launch,
-        name = "launch nexus 7 light no-action-bar",
-        theme = "android:Theme.Material.Light.NoActionBar"
+        name = "launch nexus 7 light no-action-bar"
+//        theme = "android:Theme.Material.Light.NoActionBar"
     )
   }
 }

@@ -6,9 +6,22 @@ android {
   compileSdkVersion 28
   defaultConfig {
     minSdkVersion 25
+    testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+  }
+  testOptions.unitTests.all {
+    testLogging {
+      events 'passed', 'skipped', 'failed', 'standardOut', 'standardError'
+    }
   }
 }
 
 dependencies {
   implementation deps.kotlin.stdlib.jdk8
+
+  androidTestImplementation 'androidx.test:runner:1.2.0'
+  androidTestImplementation 'androidx.test:rules:1.2.0'
+}
+
+tasks.withType(Test) {
+  outputs.upToDateWhen { false }
 }
