@@ -6,8 +6,12 @@ jobs:
   build:
 
     runs-on: ubuntu-18.04
-    
+
     steps:
     - uses: actions/checkout@v1
     - name: Execute a build
       run: ./gradlew check
+    - uses: actions/upload-artifact@master
+      with:
+        name: error-report
+        path: $GITHUB_WORKSPACE/paparazzi/paparazzi/paparazzi-gradle-plugin/build/reports
