@@ -16,4 +16,4 @@ jobs:
       uses: actions/upload-artifact@master
       with:
         name: error-report
-        path: paparazzi-gradle-plugin/build/reports
+        path: paparazzi-gradle-plugin/build/reports/tests/test/index.html
