@@ -12,11 +12,9 @@ jobs:
       uses: actions/checkout@v1
     - name: Execute a build
       run: ./gradlew check | return 0
-    - run: ls -lR .
-      if: always()
     - name: Upload errors
-      if: always()
+      if: failure()
       uses: actions/upload-artifact@master
       with:
         name: error-report
-        path: paparazzi-gradle-plugin/build/reports/tests/test/index.html
+        path: paparazzi-gradle-plugin/build/reports
