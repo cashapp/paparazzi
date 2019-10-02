@@ -12,6 +12,7 @@ jobs:
       uses: actions/checkout@v1
     - name: Execute a build
       run: ./gradlew check
+    - run: ls -lR .
     - name: Upload errors
       uses: actions/upload-artifact@master
       with:
