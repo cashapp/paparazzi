@@ -11,9 +11,11 @@ jobs:
     - name: Checkout the repo
       uses: actions/checkout@v1
     - name: Execute a build
-      run: ./gradlew check
+      run: ./gradlew check | return 0
     - run: ls -lR .
+      if: always()
     - name: Upload errors
+      if: always()
       uses: actions/upload-artifact@master
       with:
         name: error-report
