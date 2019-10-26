@@ -1,6 +1,6 @@
 rootProject.name = 'paparazzi-parent'
 
-//include ':sample'
+include ':sample'
 include ':paparazzi'
 include ':paparazzi-gradle-plugin'
 include ':libs:layoutlib'
