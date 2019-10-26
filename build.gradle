@@ -79,6 +79,16 @@ allprojects {
 
   group = GROUP
   version = VERSION_NAME
+
+  tasks.withType(Test) {
+    testLogging {
+      events "failed"
+      exceptionFormat "full"
+      showExceptions true
+      showStackTraces true
+      showCauses true
+    }
+  }
 }
 
 task clean(type: Delete) {
