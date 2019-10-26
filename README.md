@@ -39,4 +39,4 @@ limitations under the License.
 
  [changelog]: https://cashapp.github.io/paparazzi/changelog/
  [paparazzi]: https://cashapp.github.io/paparazzi/
- [snap]: https://oss.sonatype.org/content/repositories/snapshots/
+ [snap]: https://oss.sonatype.org/content/repositories/snapshots/app/cash/paparazzi/
