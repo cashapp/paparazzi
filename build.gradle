@@ -7,7 +7,8 @@ buildscript {
     layoutlib: '3.4.0', // "should" be similar to versions.agp
     androidTools: '26.5.0', // agp + 23.0.0 = androidTools
     jcodec: '0.2.5',
-    moshi: '1.8.0'
+    moshi: '1.8.0',
+    releasedPaparazzi: '0.5.0-SNAPSHOT'
   ]
 
   ext.deps = [
@@ -51,10 +52,16 @@ buildscript {
   ]
 
   repositories {
+    maven {
+      url 'https://oss.sonatype.org/content/repositories/snapshots/'
+      content {
+        includeGroup 'app.cash.paparazzi'
+      }
+    }
     google()
     mavenCentral()
     jcenter()
-    mavenLocal()
+    //mavenLocal()
   }
 
   dependencies {
@@ -62,19 +69,25 @@ buildscript {
     classpath deps.plugins.android
     classpath 'com.github.ben-manes:gradle-versions-plugin:0.27.0'
     classpath 'org.jetbrains.dokka:dokka-gradle-plugin:0.9.18'
-    //classpath 'app.cash.paparazzi:paparazzi-gradle-plugin:1.0.0-square08'
+    classpath "app.cash.paparazzi:paparazzi-gradle-plugin:${versions.releasedPaparazzi}"
   }
 }
 
 allprojects {
   repositories {
+    maven {
+      url 'https://oss.sonatype.org/content/repositories/snapshots/'
+      content {
+        includeGroup 'app.cash.paparazzi'
+      }
+    }
     google()
     mavenCentral()
     jcenter()
     maven {
       url 'https://dl.bintray.com/kotlin/dokka'
     }
-    mavenLocal()
+    //mavenLocal()
   }
 
   group = GROUP
