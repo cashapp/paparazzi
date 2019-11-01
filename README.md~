@@ -15,7 +15,7 @@ Our [change log][changelog] has release history.
 implementation 'app.cash.paparazzi:paparazzi:0.1.0'
 ```
 
-Snapshots of the development version are available in [Sonatype's `snapshots` repository][snap].
+Snapshots of the development version are available in [Sonatype's `snapshots` repository](snap).
 
 ```groovy
 repositories {
