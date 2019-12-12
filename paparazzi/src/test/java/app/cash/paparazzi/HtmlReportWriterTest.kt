@@ -62,13 +62,13 @@ class HtmlReportWriterTest {
         """
         |window.runs["run_one"] = [
         |  {
-        |    "file": "images/$anyImageHash.png",
         |    "name": "loading",
+        |    "testName": "app.cash.paparazzi.CelebrityTest#testSettings",
+        |    "timestamp": "2019-03-20T10:27:43.000Z",
         |    "tags": [
         |      "redesign"
         |    ],
-        |    "testName": "app.cash.paparazzi.CelebrityTest#testSettings",
-        |    "timestamp": "2019-03-20T10:27:43.000Z"
+        |    "file": "images/$anyImageHash.png"
         |  }
         |];
         |""".trimMargin()
