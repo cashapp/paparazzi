@@ -1,7 +1,14 @@
 language: android
 
+dist: trusty
+
 jdk:
   - openjdk8
+
+android:
+  components:
+    - android-28
+    - build-tools-28.0.3
 
 script:
   - ./gradlew clean check
@@ -16,8 +23,8 @@ after_success:
 
 env:
   global:
-    - secure: "TODO"
-    - secure: "TODO"
+    - secure: "kSJ3VKgiIEmZZ52Ayt85FHF6HgYpsAo9ch4N9+EuB6hev0fb+MmHlAUTX9XegB+JUySQftaF2tEMXVWnnalDoPiHb1IBViD1f19P2MMhifs9ovvnwdY/6u4miVsq+8yt6+Kp9o9bwdyy+jcmJz5dfpeZ6XBzpnmnG8xYefPMUe7GrmQQoUm9H6Zc2HoAt2Tnv/15N46O2YTW89MwZObklpVW4Ux1rdvKmA84rbyK/GLcn+avtDI99U3SGy1/ojh7B3wVKDxg1JJiIxpWSBwyYEfDJJUhqBQyQwQWDw+kiy/tO117RRhjBAj+A+zuQ1LWSUDMgs/ZxJbDFgNuV4xzD+h/x6eYBP2OrBDk0p+nMIJBzEbaD8GqxoMrRgmz3cpUQD9HEohfaBy24nNTySbTOResVc0azFSdPzlXbe0lLOTQRqrZD5WXVWL3/+QFQYgg+RGkiuNcJLmq/bvD1BTsXzBu7h8XUA+ngX+O3POY45RYMAtkCB8O+DzyBc+JSdilPyIpmVv6xZlC6EJuUFbc6kBPN5U8c0yiaIfAtw18uXHHGXunZfN7ICTLSeAqVlD4EgcH8PTP5+7BBqxhMSGi/DOOFvgeDCNyk19kO12gRoGDqNlekxNJy3M3aYQ65qtkIex0lOFk1FTUUOSyXGeo5prTrSSipQrhqzDI/utISkE="
+    - secure: "HM6v79bekuu37Rx4SC273yGlXrQj/B6t6XSBw5pnlYgbsiVGXnNUk04qgSPyWZUlKsCw5meVELHwxBCRJcJD7jBCm82BuJ9cOFW9KpkjI2q6czh8c89Tya81K3AzUmuu6Y2ERqifef+/jKt5YQVJUYlEziH5Xcze4TS+T2QDo9xxkG/85oLrH7pihppfJyA+lWkH6dF96+qeU2I+NIBmkHMA25fLFxR4w4/2/Sy98joY3+K8c14qtkadUg2yOsx7K3zA+NP75hxpcrUQ+Q3lPUpmeQMxxQqGs2laAvI0YPAIDqaEjIQO0EAlV2uAcYSmgCBPC71oAY8Dkj5tT2t/WMfA7QzQ39aWbCTXPuiCLF1WaWfR/97mZF3rHPXp2d+bDyNso62QQ9ZwhAOTeRimG8i/eAbXIoTAsRiyfVexMMMoZ4s7fPU+ujVuos+RrDsggiXR56yhPZ7pdwooA6J/pb7qJTryLXk+hh0861VpnJQx+yPQGpeldakLVnZeOGGH+iT9WYn6IGJqnynbcJwuvVNcF+1buFaySkzGN11C8oizwPG3bMsaU3BPlW6AODpXBL4bwv7vvA5hpRVd3R9j2KMkjpE/q3Rpp1ANm20Fgvd2U2e1lSexGEeYyQ+Lw5Ck6pRLwqwIOTS0G49IMHZwNxcCTGIjDdTYaaE9ol0K4FU="
 
 branches:
   except:
