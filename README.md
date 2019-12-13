@@ -11,12 +11,20 @@ Releases
 
 Our [change log][changelog] has release history.
 
-```kotlin
-implementation("app.cash.paparazzi:paparazzi:0.1.0")
+```groovy
+implementation 'app.cash.paparazzi:paparazzi:0.1.0'
 ```
 
-Snapshot builds are [available][snap].
+Snapshots of the development version are available in [Sonatype's `snapshots` repository][snap].
 
+```groovy
+repositories {
+  mavenCentral()
+  maven {
+    url 'https://oss.sonatype.org/content/repositories/snapshots/'
+  }
+}
+```
 
 License
 -------
@@ -39,4 +47,4 @@ limitations under the License.
 
  [changelog]: https://cashapp.github.io/paparazzi/changelog/
  [paparazzi]: https://cashapp.github.io/paparazzi/
- [snap]: https://oss.sonatype.org/content/repositories/snapshots/
+ [snap]: https://oss.sonatype.org/content/repositories/snapshots/app/cash/paparazzi/

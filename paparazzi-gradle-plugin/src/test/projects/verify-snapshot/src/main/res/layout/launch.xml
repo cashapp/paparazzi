@@ -13,14 +13,15 @@
       android:src="@drawable/camera"
       />
 
-  <TextView
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:gravity="center"
-      android:textColor="@color/cameraBody"
-      android:text="paparazzi"
-      android:textSize="70dp"
-      android:textFontWeight="100"
-      />
+<!-- TODO: uncomment when font rasterizing is fixed on CI and verifySnapshot is re-enabled -->
+<!--  <TextView-->
+<!--      android:layout_width="match_parent"-->
+<!--      android:layout_height="wrap_content"-->
+<!--      android:gravity="center"-->
+<!--      android:textColor="@color/cameraBody"-->
+<!--      android:text="paparazzi"-->
+<!--      android:textSize="70dp"-->
+<!--      android:textFontWeight="100"-->
+<!--      />-->
 
 </LinearLayout>

@@ -6,12 +6,11 @@ jobs:
   build:
 
     runs-on: ubuntu-18.04
-
     steps:
     - name: Checkout the repo
       uses: actions/checkout@v1
     - name: Execute a build
-      run: ./gradlew check | return 0
+      run: ./gradlew check
     - name: Upload errors
       if: failure()
       uses: actions/upload-artifact@master
