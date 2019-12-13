@@ -17,3 +17,4 @@ jobs:
       with:
         name: error-report
         path: paparazzi-gradle-plugin/build/reports
+

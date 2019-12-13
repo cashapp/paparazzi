@@ -15,8 +15,10 @@
  */
 package app.cash.paparazzi
 
+import com.squareup.moshi.JsonClass
 import java.util.Date
 
+@JsonClass(generateAdapter = true)
 data class Snapshot(
   val name: String,
   val testName: TestName,

@@ -31,15 +31,19 @@ internal object PaparazziJson {
       .add(this)
       .build()!!
 
-  val listOfShotsAdapter: JsonAdapter<List<Snapshot>> = moshi.adapter<List<Snapshot>>(
-      Types.newParameterizedType(List::class.java, Snapshot::class.java)
-  )
-      .indent("  ")
+  val listOfShotsAdapter: JsonAdapter<List<Snapshot>> =
+    moshi
+        .adapter<List<Snapshot>>(
+            Types.newParameterizedType(List::class.java, Snapshot::class.java)
+        )
+        .indent("  ")
 
-  val listOfStringsAdapter: JsonAdapter<List<String>> = moshi.adapter<List<String>>(
-      Types.newParameterizedType(List::class.java, String::class.java)
-  )
-      .indent("  ")
+  val listOfStringsAdapter: JsonAdapter<List<String>> =
+    moshi
+        .adapter<List<String>>(
+            Types.newParameterizedType(List::class.java, String::class.java)
+        )
+        .indent("  ")
 
   @ToJson
   fun testNameToJson(testName: TestName): String {
