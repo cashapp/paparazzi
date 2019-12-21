@@ -1,4 +1,5 @@
 site_name: Paparazzi
+site_url: https://cashapp.github.io/paparazzi/
 repo_name: Paparazzi
 repo_url: https://github.com/square/paparazzi
 site_description: "Android screenshots without Android"
