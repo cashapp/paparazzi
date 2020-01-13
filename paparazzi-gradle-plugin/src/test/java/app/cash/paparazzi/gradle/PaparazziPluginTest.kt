@@ -96,6 +96,25 @@ class PaparazziPluginTest {
     assertThat(actualFileBytes).isEqualTo(expectedFileBytes)
   }
 
+  @Test
+    fun verifyVectorDrawables() {
+    val fixtureRoot = File("src/test/projects/verify-svgs")
+
+    gradleRunner.runFixture(fixtureRoot) {
+      withArguments("testDebug").build()
+    }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshotFile = File(snapshotsDir, "c955e956af7c3127cffd96b9b7160aa609cfde23.png")
+    assertThat(snapshotFile.exists()).isTrue()
+
+    val goldenImage = File(fixtureRoot, "src/test/resources/arrow_up.png")
+    val actualFileBytes = Files.readAllBytes(snapshotFile.toPath())
+    val expectedFileBytes = Files.readAllBytes(goldenImage.toPath())
+
+    assertThat(actualFileBytes).isEqualTo(expectedFileBytes)
+  }
+
   private fun GradleRunner.runFixture(
     root: File,
     action: GradleRunner.() -> BuildResult

@@ -63,6 +63,7 @@ def generateTestConfig = tasks.register("generateTestConfig") {
     configFile.withWriter('utf-8') { writer ->
       writer.writeLine("app.cash.paparazzi")
       writer.writeLine(".")
+      writer.writeLine("28")
     }
   }
 }

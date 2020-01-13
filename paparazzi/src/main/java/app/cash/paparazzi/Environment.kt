@@ -23,7 +23,8 @@ data class Environment(
   val platformDir: String,
   val appTestDir: String,
   val resDir: String,
-  val packageName: String
+  val packageName: String,
+  val compileSdkVersion: Int
 ) {
   val assetsDir = "$appTestDir/src/main/assets/"
 }
@@ -46,8 +47,9 @@ fun detectEnvironment(): Environment {
   val configLines = File("build/intermediates/paparazzi/resources.txt").readLines()
   val packageName = configLines[0]
   val resDir = configLines[1]
+  val compileSdkVersion = configLines[2].toInt()
 
-  return Environment(platformDir, userDir, resDir, packageName)
+  return Environment(platformDir, userDir, resDir, packageName, compileSdkVersion)
 }
 
 private fun checkInstalledJvm() {
