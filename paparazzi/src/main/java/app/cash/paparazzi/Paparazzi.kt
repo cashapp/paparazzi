@@ -43,6 +43,8 @@ import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
 import java.awt.image.BufferedImage
+import java.lang.reflect.Field
+import java.lang.reflect.Modifier
 import java.util.Date
 import java.util.concurrent.TimeUnit
 
@@ -93,6 +95,8 @@ class Paparazzi(
   }
 
   fun prepare(description: Description) {
+    forcePlatformSdkVersion(environment.compileSdkVersion)
+
     val layoutlibCallback = PaparazziCallback(logger, environment.packageName)
     layoutlibCallback.initResources()
 
@@ -212,7 +216,10 @@ class Paparazzi(
     }
   }
 
-  private fun withTime(timeNanos: Long, block: () -> Unit) {
+  private fun withTime(
+    timeNanos: Long,
+    block: () -> Unit
+  ) {
     val frameNanos = TIME_OFFSET_NANOS + timeNanos
 
     // Execute the block at the requested time.
@@ -254,6 +261,27 @@ class Paparazzi(
     val packageName = testClass.`package`.name
     val className = testClass.name.substring(packageName.length + 1)
     return TestName(packageName, className, methodName)
+  }
+
+  private fun forcePlatformSdkVersion(compileSdkVersion: Int) {
+    val modifiersField: Field = Field::class.java
+        .getDeclaredField("modifiers")
+        .apply {
+          isAccessible = true
+        }
+
+    val versionClass = try {
+      Paparazzi::class.java.classLoader.loadClass("android.os.Build\$VERSION")
+    } catch (e: ClassNotFoundException) {
+      return
+    }
+
+    versionClass
+        .getDeclaredField("SDK_INT")
+        .apply {
+          modifiersField.setInt(this, modifiers and Modifier.FINAL.inv())
+          setInt(null, compileSdkVersion)
+        }
   }
 
   companion object {

@@ -43,6 +43,8 @@ open class PrepareResourcesTask : DefaultTask() {
           it.write(project.packageName())
           it.newLine()
           it.write(mergeResourcesProvider.get().outputDir.path)
+          it.newLine()
+          it.write(project.compileSdkVersion())
         }
   }
 
@@ -55,5 +57,16 @@ open class PrepareResourcesTask : DefaultTask() {
           return getPackageNameFromManifest(it)
         }
     throw IllegalStateException("No source sets available")
+  }
+
+  private fun Project.compileSdkVersion(): String {
+    val androidExtension = extensions.getByType(BaseExtension::class.java)
+    return androidExtension.compileSdkVersion.substringAfter(
+        "android-", DEFAULT_COMPILE_SDK_VERSION.toString()
+    )
+  }
+
+  companion object {
+    const val DEFAULT_COMPILE_SDK_VERSION = 28
   }
 }
