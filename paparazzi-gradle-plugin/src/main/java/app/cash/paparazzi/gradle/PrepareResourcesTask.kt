@@ -43,7 +43,7 @@ open class PrepareResourcesTask : DefaultTask() {
         .use {
           it.write(project.packageName())
           it.newLine()
-          it.write(mergeResourcesProvider.get().outputDir.path)
+          it.write(mergeResourcesProvider.get().outputDir.get().asFile.path)
           it.newLine()
           it.write(project.compileSdkVersion())
         }
