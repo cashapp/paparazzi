@@ -29,11 +29,12 @@ import org.gradle.api.tasks.TaskProvider
 
 open class PrepareResourcesTask : DefaultTask() {
   // Replace with @InputDirectory once mergeResourcesProvider.outputDir is of type Provider<File>.
-  @Internal
-  internal lateinit var mergeResourcesProvider: TaskProvider<MergeResources>
 
-  @Nested
+  internal lateinit var mergeResourcesProvider: TaskProvider<MergeResources>
+    @Internal get
+
   internal var outputDir: Provider<Directory> = project.objects.directoryProperty()
+    @Internal get
 
   @TaskAction
   fun writeResourcesFile() {
