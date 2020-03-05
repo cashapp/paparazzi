@@ -23,18 +23,17 @@ import org.gradle.api.Project
 import org.gradle.api.file.Directory
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Internal
-import org.gradle.api.tasks.InputDirectory
-import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.TaskProvider
 
 open class PrepareResourcesTask : DefaultTask() {
   // Replace with @InputDirectory once mergeResourcesProvider.outputDir is of type Provider<File>.
+  @Internal
   internal lateinit var mergeResourcesProvider: TaskProvider<MergeResources>
-    @InputDirectory get
 
+  @Nested
   internal var outputDir: Provider<Directory> = project.objects.directoryProperty()
-    @OutputDirectory get
 
   @TaskAction
   fun writeResourcesFile() {
