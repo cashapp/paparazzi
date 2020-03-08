@@ -41,8 +41,7 @@ open class PrepareResourcesTask : DefaultTask() {
 
   @TaskAction
   fun writeResourcesFile() {
-    val out = outputDir.get()
-        .asFile
+    val out = outputDir.get().asFile
     out.delete()
     out.bufferedWriter()
         .use {
