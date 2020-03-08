@@ -17,17 +17,22 @@ package app.cash.paparazzi.gradle
 
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.tasks.MergeResources
+import com.android.Version
 import com.android.ide.common.symbols.getPackageNameFromManifest
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
 import org.gradle.api.file.Directory
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.TaskProvider
+import org.gradle.util.VersionNumber
+import java.io.File
 
 open class PrepareResourcesTask : DefaultTask() {
   // Replace with @InputDirectory once mergeResourcesProvider.outputDir is of type Provider<File>.
+
   internal lateinit var mergeResourcesProvider: TaskProvider<MergeResources>
     @Internal get
 
@@ -36,18 +41,41 @@ open class PrepareResourcesTask : DefaultTask() {
 
   @TaskAction
   fun writeResourcesFile() {
-    val out = outputDir.get()
-        .asFile
+    val out = outputDir.get().asFile
     out.delete()
     out.bufferedWriter()
         .use {
           it.write(project.packageName())
           it.newLine()
-          it.write(mergeResourcesProvider.get().outputDir.path)
+          it.write(mergeResourcesProvider.get().outputDirAsFile().path)
           it.newLine()
           it.write(project.compileSdkVersion())
         }
   }
+
+  /**
+   * In AGP 3.6 the return type of MergeResources#getOutputDir() was changed from File to
+   * DirectoryProperty. Here we use reflection in order to support users that have not upgraded to
+   * 3.6 yet.
+   */
+  private fun MergeResources.outputDirAsFile(): File {
+    val getOutputDir = this::class.java.getDeclaredMethod("getOutputDir")
+
+    return if (agpVersion() < VersionNumber.parse("3.6.0")) {
+      getOutputDir.invoke(this) as File
+    } else {
+      (getOutputDir.invoke(this) as DirectoryProperty).asFile.get()
+    }
+  }
+
+  private fun agpVersion() = VersionNumber.parse(
+      try {
+        Version.ANDROID_GRADLE_PLUGIN_VERSION
+      } catch (e: NoClassDefFoundError) {
+        @Suppress("DEPRECATION")
+        com.android.builder.model.Version.ANDROID_GRADLE_PLUGIN_VERSION
+      }
+  )
 
   private fun Project.packageName(): String {
     val androidExtension = extensions.getByType(BaseExtension::class.java)
