@@ -16,14 +16,15 @@ class PaparazziPluginTest {
   fun setUp() {
     gradleRunner = GradleRunner.create()
         .withPluginClasspath()
-        .withArguments("preparePaparazziDebugResources", "--stacktrace")
   }
 
   @Test
   fun missingPlugin() {
     val fixtureRoot = File("src/test/projects/missing-plugin")
 
-    val result = gradleRunner.runFixture(fixtureRoot) { buildAndFail() }
+    val result = gradleRunner
+        .withArguments("preparePaparazziDebugResources", "--stacktrace")
+        .runFixture(fixtureRoot) { buildAndFail() }
 
     assertThat(result.task(":preparePaparazziDebugResources")).isNull()
     assertThat(result.output).contains(
@@ -32,10 +33,12 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun verifyResources() {
-    val fixtureRoot = File("src/test/projects/verify-resources")
+  fun verifyResourcesGeneratedForJavaProject() {
+    val fixtureRoot = File("src/test/projects/verify-resources-java")
 
-    val result = gradleRunner.runFixture(fixtureRoot) { build() }
+    val result = gradleRunner
+        .withArguments("compileDebugUnitTestJavaWithJavac", "--stacktrace")
+        .runFixture(fixtureRoot) { build() }
 
     assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
 
@@ -45,7 +48,27 @@ class PaparazziPluginTest {
     val resourceFileContents = resourcesFile.readLines()
     assertThat(resourceFileContents[0]).isEqualTo("app.cash.paparazzi.plugin.test")
     assertThat(resourceFileContents[1]).endsWith(
-        "src/test/projects/verify-resources/build/intermediates/res/merged/debug"
+        "src/test/projects/verify-resources-java/build/intermediates/res/merged/debug"
+    )
+  }
+
+  @Test
+  fun verifyResourcesGeneratedForKotlinProject() {
+    val fixtureRoot = File("src/test/projects/verify-resources-kotlin")
+
+    val result = gradleRunner
+        .withArguments("compileDebugUnitTestKotlin", "--stacktrace")
+        .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
+
+    val resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/resources.txt")
+    assertThat(resourcesFile.exists()).isTrue()
+
+    val resourceFileContents = resourcesFile.readLines()
+    assertThat(resourceFileContents[0]).isEqualTo("app.cash.paparazzi.plugin.test")
+    assertThat(resourceFileContents[1]).endsWith(
+        "src/test/projects/verify-resources-kotlin/build/intermediates/res/merged/debug"
     )
   }
 
@@ -53,10 +76,9 @@ class PaparazziPluginTest {
   fun verifySnapshot_withoutFonts() {
     val fixtureRoot = File("src/test/projects/verify-snapshot")
 
-    val result = gradleRunner.runFixture(fixtureRoot) {
-      withArguments("testDebug")
-          .build()
-    }
+    val result = gradleRunner
+        .withArguments("testDebug", "--stacktrace")
+        .runFixture(fixtureRoot) { build() }
 
     assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
     assertThat(result.task(":testDebugUnitTest")).isNotNull()
@@ -77,10 +99,9 @@ class PaparazziPluginTest {
   fun verifySnapshot() {
     val fixtureRoot = File("src/test/projects/verify-snapshot")
 
-    val result = gradleRunner.runFixture(fixtureRoot) {
-      withArguments("testDebug")
-          .build()
-    }
+    val result = gradleRunner
+        .withArguments("testDebug", "--stacktrace")
+        .runFixture(fixtureRoot) { build() }
 
     assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
     assertThat(result.task(":testDebugUnitTest")).isNotNull()
@@ -100,9 +121,9 @@ class PaparazziPluginTest {
     fun verifyVectorDrawables() {
     val fixtureRoot = File("src/test/projects/verify-svgs")
 
-    gradleRunner.runFixture(fixtureRoot) {
-      withArguments("testDebug").build()
-    }
+    gradleRunner
+        .withArguments("testDebug", "--stacktrace")
+        .runFixture(fixtureRoot) { build() }
 
     val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
     val snapshotFile = File(snapshotsDir, "c955e956af7c3127cffd96b9b7160aa609cfde23.png")
