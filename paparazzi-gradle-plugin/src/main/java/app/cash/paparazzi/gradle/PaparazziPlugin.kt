@@ -19,6 +19,8 @@ import app.cash.paparazzi.VERSION
 import com.android.build.gradle.LibraryExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.plugins.JavaBasePlugin
+import org.jetbrains.kotlin.gradle.plugin.KotlinBasePluginWrapper
 import java.util.Locale
 
 class PaparazziPlugin : Plugin<Project> {
@@ -49,10 +51,17 @@ class PaparazziPlugin : Plugin<Project> {
         it.dependsOn(variant.mergeResourcesProvider)
       }
 
-      project.tasks.named("test${variant.unitTestVariant.name.capitalize(Locale.US)}")
-          .configure {
-            it.dependsOn(writeResourcesTask)
-          }
+      val testVariantSlug = variant.unitTestVariant.name.capitalize(Locale.US)
+
+      project.plugins.withType(JavaBasePlugin::class.java) {
+        project.tasks.named("compile${testVariantSlug}JavaWithJavac")
+            .configure { it.dependsOn(writeResourcesTask) }
+      }
+
+      project.plugins.withType(KotlinBasePluginWrapper::class.java) {
+        project.tasks.named("compile${testVariantSlug}Kotlin")
+            .configure { it.dependsOn(writeResourcesTask) }
+      }
     }
   }
 }
