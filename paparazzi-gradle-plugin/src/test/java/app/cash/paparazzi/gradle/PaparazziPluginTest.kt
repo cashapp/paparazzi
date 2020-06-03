@@ -140,42 +140,35 @@ class PaparazziPluginTest {
     root: File,
     action: GradleRunner.() -> BuildResult
   ): BuildResult {
-    var generatedSettings = false
     val settings = File(root, "settings.gradle")
-    var generatedGradleProperties = false
-    val gradleProperties = File(root, "gradle.properties")
-    return try {
-      if (!settings.exists()) {
-        settings.createNewFile()
-        generatedSettings = true
-      }
-
-      if (!gradleProperties.exists()) {
-        val rootGradleProperties = File("../gradle.properties")
-        if (!rootGradleProperties.exists()) {
-          fail("Root gradle.properties doesn't exist at $rootGradleProperties.")
-        }
-        val versionName = rootGradleProperties.useLines { lines ->
-          lines.firstOrNull { it.startsWith("VERSION_NAME") }
-        }
-        if (versionName == null) {
-          fail("Root gradle.properties is missing the VERSION_NAME entry.")
-        }
-        gradleProperties.createNewFile()
-        gradleProperties.writeText(versionName!!)
-        generatedGradleProperties = true
-      } else {
-        gradleProperties.useLines { lines ->
-          if (lines.none { it.startsWith("VERSION_NAME") }) {
-            fail("Fixture's gradle.properties has to include the VERSION_NAME entry.")
-          }
-        }
-      }
-
-      withProjectDir(root).action()
-    } finally {
-      if (generatedSettings) settings.delete()
-      if (generatedGradleProperties) gradleProperties.delete()
+    if (!settings.exists()) {
+      settings.createNewFile()
+      settings.deleteOnExit()
     }
+
+    val gradleProperties = File(root, "gradle.properties")
+    if (!gradleProperties.exists()) {
+      val rootGradleProperties = File("../gradle.properties")
+      if (!rootGradleProperties.exists()) {
+        fail("Root gradle.properties doesn't exist at $rootGradleProperties.")
+      }
+      val versionName = rootGradleProperties.useLines { lines ->
+        lines.firstOrNull { it.startsWith("VERSION_NAME") }
+      }
+      if (versionName == null) {
+        fail("Root gradle.properties is missing the VERSION_NAME entry.")
+      }
+      gradleProperties.createNewFile()
+      gradleProperties.writeText(versionName!!)
+      gradleProperties.deleteOnExit()
+    } else {
+      gradleProperties.useLines { lines ->
+        if (lines.none { it.startsWith("VERSION_NAME") }) {
+          fail("Fixture's gradle.properties has to include the VERSION_NAME entry.")
+        }
+      }
+    }
+
+    return withProjectDir(root).action()
   }
 }
