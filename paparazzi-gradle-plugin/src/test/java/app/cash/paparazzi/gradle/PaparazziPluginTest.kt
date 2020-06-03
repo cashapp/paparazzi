@@ -12,6 +12,7 @@ import java.nio.file.Files
 
 class PaparazziPluginTest {
   private lateinit var gradleRunner: GradleRunner
+
   @Before
   fun setUp() {
     gradleRunner = GradleRunner.create()
@@ -118,7 +119,7 @@ class PaparazziPluginTest {
   }
 
   @Test
-    fun verifyVectorDrawables() {
+  fun verifyVectorDrawables() {
     val fixtureRoot = File("src/test/projects/verify-svgs")
 
     gradleRunner
