@@ -155,6 +155,13 @@ class PaparazziPluginTest {
       manifest.deleteOnExit()
     }
 
+    val gradleProperties = File(root, "gradle.properties")
+    if (!gradleProperties.exists()) {
+      gradleProperties.createNewFile()
+      gradleProperties.writeText("android.useAndroidX=true")
+      gradleProperties.deleteOnExit()
+    }
+
     return withProjectDir(root).action()
   }
 }
