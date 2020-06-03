@@ -17,6 +17,7 @@ package app.cash.paparazzi
 
 import android.content.Context
 import android.content.res.Resources
+import android.util.AttributeSet
 import android.view.BridgeInflater
 import android.view.Choreographer_Delegate
 import android.view.LayoutInflater
@@ -52,6 +53,7 @@ class Paparazzi(
   private val environment: Environment = detectEnvironment(),
   private val deviceConfig: DeviceConfig = DeviceConfig.NEXUS_5,
   private val theme: String = "android:Theme.Material.NoActionBar.Fullscreen",
+  private val appCompatEnabled: Boolean = true,
   private val snapshotHandler: SnapshotHandler = HtmlReportWriter()
 ) : TestRule {
   private val THUMBNAIL_SIZE = 1000
@@ -117,6 +119,12 @@ class Paparazzi(
     renderSession = RenderSessionImpl(sessionParams)
     prepareThread()
     renderSession.init(sessionParams.timeout)
+
+    // requires LayoutInflater to be created, which is a side-effect of RenderSessionImpl.init()
+    if (appCompatEnabled) {
+      initializeAppCompatIfPresent()
+    }
+
     bridgeRenderSession = createBridgeSession(renderSession, renderSession.inflate())
   }
 
@@ -282,6 +290,77 @@ class Paparazzi(
           modifiersField.setInt(this, modifiers and Modifier.FINAL.inv())
           setInt(null, compileSdkVersion)
         }
+  }
+
+  private fun initializeAppCompatIfPresent() {
+    lateinit var appCompatDelegateClass: Class<*>
+    try {
+      // See androidx.appcompat.widget.AppCompatDrawableManager#preload()
+      val appCompatDrawableManagerClass =
+        Class.forName("androidx.appcompat.widget.AppCompatDrawableManager")
+      val preloadMethod = appCompatDrawableManagerClass.getMethod("preload")
+      preloadMethod.invoke(null)
+
+      appCompatDelegateClass = Class.forName("androidx.appcompat.app.AppCompatDelegate")
+    } catch (e: ClassNotFoundException) {
+      logger.info("AppCompat not found on classpath, exiting...")
+      return
+    }
+
+    // See androidx.appcompat.app.AppCompatDelegateImpl#installViewFactory()
+    if (layoutInflater.factory == null) {
+      layoutInflater.factory2 = object : LayoutInflater.Factory2 {
+        override fun onCreateView(
+          parent: View?,
+          name: String,
+          context: Context,
+          attrs: AttributeSet
+        ): View? {
+          val appCompatViewInflaterClass =
+            Class.forName("androidx.appcompat.app.AppCompatViewInflater")
+
+          val createViewMethod = appCompatViewInflaterClass
+              .getDeclaredMethod(
+                  "createView",
+                  View::class.java,
+                  String::class.java,
+                  Context::class.java,
+                  AttributeSet::class.java,
+                  Boolean::class.javaPrimitiveType,
+                  Boolean::class.javaPrimitiveType,
+                  Boolean::class.javaPrimitiveType,
+                  Boolean::class.javaPrimitiveType
+              )
+              .apply { isAccessible = true }
+
+          val inheritContext = true
+          val readAndroidTheme = true
+          val readAppTheme = true
+          val wrapContext = true
+
+          val newAppCompatViewInflaterInstance = appCompatViewInflaterClass
+              .getConstructor()
+              .newInstance()
+
+          return createViewMethod.invoke(
+              newAppCompatViewInflaterInstance, parent, name, context, attrs,
+              inheritContext, readAndroidTheme, readAppTheme, wrapContext
+          ) as View?
+        }
+
+        override fun onCreateView(
+          name: String,
+          context: Context,
+          attrs: AttributeSet
+        ): View? = onCreateView(null, name, context, attrs)
+      }
+    } else {
+      if (!appCompatDelegateClass.isAssignableFrom(layoutInflater.factory2::class.java)) {
+        throw IllegalStateException(
+            "The LayoutInflater already has a Factory installed so we can not install AppCompat's"
+        )
+      }
+    }
   }
 
   companion object {
