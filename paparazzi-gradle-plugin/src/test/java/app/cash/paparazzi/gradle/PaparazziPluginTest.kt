@@ -146,6 +146,15 @@ class PaparazziPluginTest {
       settings.deleteOnExit()
     }
 
+    val mainSourceRoot = File(root, "src/main")
+    val manifest = File(mainSourceRoot, "AndroidManifest.xml")
+    if (!manifest.exists()) {
+      mainSourceRoot.mkdirs()
+      manifest.createNewFile()
+      manifest.writeText("""<manifest package="app.cash.paparazzi.plugin.test"/>""")
+      manifest.deleteOnExit()
+    }
+
     return withProjectDir(root).action()
   }
 }
