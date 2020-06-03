@@ -74,7 +74,7 @@ buildscript {
   }
 }
 
-allprojects {
+subprojects {
   repositories {
     maven {
       url 'https://oss.sonatype.org/content/repositories/snapshots/'
@@ -101,6 +101,17 @@ allprojects {
       showExceptions true
       showStackTraces true
       showCauses true
+    }
+  }
+
+  tasks.withType(JavaCompile).configureEach { task ->
+    task.sourceCompatibility = JavaVersion.VERSION_1_8
+    task.targetCompatibility = JavaVersion.VERSION_1_8
+  }
+
+  tasks.withType(org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile).configureEach { task ->
+    task.kotlinOptions {
+      jvmTarget = "1.8"
     }
   }
 }
