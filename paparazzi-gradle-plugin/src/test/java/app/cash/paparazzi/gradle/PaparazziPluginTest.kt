@@ -136,6 +136,44 @@ class PaparazziPluginTest {
     assertThat(actualFileBytes).isEqualTo(expectedFileBytes)
   }
 
+  @Test
+  fun withoutAppCompat() {
+    val fixtureRoot = File("src/test/projects/appcompat-missing")
+
+    gradleRunner
+        .withArguments("testDebug", "--stacktrace")
+        .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshotFile = File(snapshotsDir, "f76880c9f1f1fcae4d3cfcc870496b9abe3ee81b.png")
+    assertThat(snapshotFile.exists()).isTrue()
+
+    val goldenImage = File(fixtureRoot, "src/test/resources/arrow_missing.png")
+    val actualFileBytes = Files.readAllBytes(snapshotFile.toPath())
+    val expectedFileBytes = Files.readAllBytes(goldenImage.toPath())
+
+    assertThat(actualFileBytes).isEqualTo(expectedFileBytes)
+  }
+
+  @Test
+  fun withAppCompat() {
+    val fixtureRoot = File("src/test/projects/appcompat-present")
+
+    gradleRunner
+        .withArguments("testDebug", "--stacktrace")
+        .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshotFile = File(snapshotsDir, "be373e00b3ff3a319e40b9d798b1d2a1e40dec7d.png")
+    assertThat(snapshotFile.exists()).isTrue()
+
+    val goldenImage = File(fixtureRoot, "src/test/resources/arrow_present.png")
+    val actualFileBytes = Files.readAllBytes(snapshotFile.toPath())
+    val expectedFileBytes = Files.readAllBytes(goldenImage.toPath())
+
+    assertThat(actualFileBytes).isEqualTo(expectedFileBytes)
+  }
+
   private fun GradleRunner.runFixture(
     root: File,
     action: GradleRunner.() -> BuildResult
