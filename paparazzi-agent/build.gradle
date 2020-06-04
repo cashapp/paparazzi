@@ -1,0 +1,12 @@
+apply plugin: 'java-library'
+apply plugin: 'org.jetbrains.kotlin.jvm'
+
+dependencies {
+  implementation deps.kotlin.stdlib.jdk8
+
+  implementation deps.bytebuddy.core
+  implementation deps.bytebuddy.agent
+  api deps.junit
+}
+
+apply from: "$rootDir/gradle/gradle-mvn-push.gradle"

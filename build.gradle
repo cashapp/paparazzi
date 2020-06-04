@@ -8,6 +8,7 @@ buildscript {
     androidTools: '26.5.0', // agp + 23.0.0 = androidTools
     jcodec: '0.2.5',
     moshi: '1.9.2',
+    bytebuddy: '1.10.11',
     releasedPaparazzi: '0.5.0-SNAPSHOT'
   ]
 
@@ -45,6 +46,10 @@ buildscript {
     jcodec: [
       core: "org.jcodec:jcodec:${versions.jcodec}",
       javase: "org.jcodec:jcodec-javase:${versions.jcodec}"
+    ],
+    bytebuddy: [
+      core: "net.bytebuddy:byte-buddy:${versions.bytebuddy}",
+      agent: "net.bytebuddy:byte-buddy-agent:${versions.bytebuddy}",
     ],
     guava: 'com.google.guava:guava:27.1-jre',
     junit: 'junit:junit:4.12',

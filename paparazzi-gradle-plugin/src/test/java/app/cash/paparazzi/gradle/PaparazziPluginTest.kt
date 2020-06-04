@@ -174,6 +174,54 @@ class PaparazziPluginTest {
     assertThat(actualFileBytes).isEqualTo(expectedFileBytes)
   }
 
+  @Test
+  fun customFontsInXml() {
+    val fixtureRoot = File("src/test/projects/custom-fonts-xml")
+
+    gradleRunner
+        .withArguments("testDebug", "--stacktrace")
+        .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    // TODO: figure out why hash is different on CI vs local
+    // val snapshotFile = File(snapshotsDir, "6e5fc9bd831350e368e7ec21180c115c2140d2f3.png")
+    // assertThat(snapshotFile.exists()).isTrue()
+    val snapshots = snapshotsDir.listFiles()
+    assertThat(snapshots!!).hasLength(1)
+
+    val snapshotFile = snapshots[0]
+
+    val goldenImage = File(fixtureRoot, "src/test/resources/textviews.png")
+    val actualFileBytes = Files.readAllBytes(snapshotFile.toPath())
+    val expectedFileBytes = Files.readAllBytes(goldenImage.toPath())
+
+    assertThat(actualFileBytes).isEqualTo(expectedFileBytes)
+  }
+
+  @Test
+  fun customFontsInCode() {
+    val fixtureRoot = File("src/test/projects/custom-fonts-code")
+
+    gradleRunner
+        .withArguments("testDebug", "--stacktrace")
+        .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    // TODO: figure out why hash is different on CI vs local
+    // val snapshotFile = File(snapshotsDir, "6e5fc9bd831350e368e7ec21180c115c2140d2f3.png")
+    // assertThat(snapshotFile.exists()).isTrue()
+    val snapshots = snapshotsDir.listFiles()
+    assertThat(snapshots!!).hasLength(1)
+
+    val snapshotFile = snapshots[0]
+
+    val goldenImage = File(fixtureRoot, "src/test/resources/textviews.png")
+    val actualFileBytes = Files.readAllBytes(snapshotFile.toPath())
+    val expectedFileBytes = Files.readAllBytes(goldenImage.toPath())
+
+    assertThat(actualFileBytes).isEqualTo(expectedFileBytes)
+  }
+
   private fun GradleRunner.runFixture(
     root: File,
     action: GradleRunner.() -> BuildResult

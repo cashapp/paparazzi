@@ -47,6 +47,7 @@ tasks.named('compileKotlin').configure {
 
 test {
   dependsOn(":paparazzi:installLocally")
+  dependsOn(":paparazzi-agent:installLocally")
 }
 
 apply from: "$rootDir/gradle/gradle-mvn-push.gradle"
