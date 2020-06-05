@@ -1,5 +1,6 @@
 package app.cash.paparazzi.gradle
 
+import app.cash.paparazzi.gradle.ImageSubject.Companion.assertThat
 import com.google.common.truth.Truth.assertThat
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
@@ -183,19 +184,12 @@ class PaparazziPluginTest {
         .runFixture(fixtureRoot) { build() }
 
     val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
-    // TODO: figure out why hash is different on CI vs local
-    // val snapshotFile = File(snapshotsDir, "6e5fc9bd831350e368e7ec21180c115c2140d2f3.png")
-    // assertThat(snapshotFile.exists()).isTrue()
     val snapshots = snapshotsDir.listFiles()
     assertThat(snapshots!!).hasLength(1)
 
-    val snapshotFile = snapshots[0]
-
+    val snapshotImage = snapshots[0]
     val goldenImage = File(fixtureRoot, "src/test/resources/textviews.png")
-    val actualFileBytes = Files.readAllBytes(snapshotFile.toPath())
-    val expectedFileBytes = Files.readAllBytes(goldenImage.toPath())
-
-    assertThat(actualFileBytes).isEqualTo(expectedFileBytes)
+    assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
   }
 
   @Test
@@ -207,19 +201,12 @@ class PaparazziPluginTest {
         .runFixture(fixtureRoot) { build() }
 
     val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
-    // TODO: figure out why hash is different on CI vs local
-    // val snapshotFile = File(snapshotsDir, "6e5fc9bd831350e368e7ec21180c115c2140d2f3.png")
-    // assertThat(snapshotFile.exists()).isTrue()
     val snapshots = snapshotsDir.listFiles()
     assertThat(snapshots!!).hasLength(1)
 
-    val snapshotFile = snapshots[0]
-
+    val snapshotImage = snapshots[0]
     val goldenImage = File(fixtureRoot, "src/test/resources/textviews.png")
-    val actualFileBytes = Files.readAllBytes(snapshotFile.toPath())
-    val expectedFileBytes = Files.readAllBytes(goldenImage.toPath())
-
-    assertThat(actualFileBytes).isEqualTo(expectedFileBytes)
+    assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
   }
 
   private fun GradleRunner.runFixture(
