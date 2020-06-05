@@ -14,10 +14,7 @@ class AgentTestRule : TestRule {
       ByteBuddyAgent.install()
       InterceptorRegistrar.registerMethodInterceptors()
 
-      try {
-        base.evaluate()
-      } finally {
-      }
+      base.evaluate()
     }
   }
 }
