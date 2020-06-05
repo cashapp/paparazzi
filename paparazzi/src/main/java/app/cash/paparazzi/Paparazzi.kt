@@ -25,11 +25,14 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import androidx.annotation.LayoutRes
+import app.cash.paparazzi.agent.AgentTestRule
+import app.cash.paparazzi.agent.InterceptorRegistrar
 import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.LayoutPullParser
 import app.cash.paparazzi.internal.PaparazziCallback
 import app.cash.paparazzi.internal.PaparazziLogger
 import app.cash.paparazzi.internal.Renderer
+import app.cash.paparazzi.internal.ResourcesInterceptor
 import app.cash.paparazzi.internal.SessionParamsBuilder
 import com.android.ide.common.rendering.api.RenderSession
 import com.android.ide.common.rendering.api.Result
@@ -85,15 +88,19 @@ class Paparazzi(
   override fun apply(
     base: Statement,
     description: Description
-  ) = object : Statement() {
-    override fun evaluate() {
-      prepare(description)
-      try {
-        base.evaluate()
-      } finally {
-        close()
+  ): Statement {
+    val statement = object : Statement() {
+      override fun evaluate() {
+        prepare(description)
+        try {
+          base.evaluate()
+        } finally {
+          close()
+        }
       }
     }
+
+    return wrapIfResourceCompatDetected(statement, description)
   }
 
   fun prepare(description: Description) {
@@ -360,6 +367,32 @@ class Paparazzi(
             "The LayoutInflater already has a Factory installed so we can not install AppCompat's"
         )
       }
+    }
+  }
+
+  /**
+   * Current workaround for supporting custom fonts when constructing views in code. This check
+   * may be used or expanded to support other cases requiring similar method interception
+   * techniques.
+   *
+   * See:
+   * https://github.com/cashapp/paparazzi/issues/119
+   * https://issuetracker.google.com/issues/156065472
+   */
+  private fun wrapIfResourceCompatDetected(
+    innerStatement: Statement,
+    description: Description
+  ): Statement {
+    return try {
+      val resourcesCompatClass = Class.forName("androidx.core.content.res.ResourcesCompat")
+      InterceptorRegistrar.addMethodInterceptor(
+          resourcesCompatClass, "getFont", ResourcesInterceptor::class.java
+      )
+      val outerRule = AgentTestRule()
+      outerRule.apply(innerStatement, description)
+    } catch (e: ClassNotFoundException) {
+      logger.info("ResourceCompat not found on classpath, exiting...")
+      innerStatement
     }
   }
 

@@ -47,6 +47,15 @@ tasks.named('compileKotlin').configure {
 
 test {
   dependsOn(":paparazzi:installLocally")
+  dependsOn(":paparazzi-agent:installLocally")
+
+  testLogging {
+    events 'passed', 'failed', 'skipped'
+    exceptionFormat 'full'
+    showExceptions true
+    showStackTraces true
+    showCauses true
+  }
 }
 
 apply from: "$rootDir/gradle/gradle-mvn-push.gradle"

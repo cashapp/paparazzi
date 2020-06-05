@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    >
+  <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_weight="1"
+      android:fontFamily="@font/cashmarket_medium"
+      android:gravity="center"
+      android:text="Normal (default)"
+      android:textSize="32sp"
+      tools:ignore="HardcodedText"
+      />
+  <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_weight="1"
+      android:fontFamily="@font/cashmarket_medium"
+      android:gravity="center"
+      android:text="Normal (styled)"
+      android:textSize="32sp"
+      android:textStyle="normal"
+      tools:ignore="HardcodedText"
+      />
+  <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_weight="1"
+      android:fontFamily="@font/cashmarket_medium_normal"
+      android:gravity="center"
+      android:text="Normal (explicit)"
+      android:textSize="32sp"
+      tools:ignore="HardcodedText"
+      />
+  <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_weight="1"
+      android:fontFamily="@font/cashmarket_medium"
+      android:gravity="center"
+      android:text="Italics (styled)"
+      android:textSize="32sp"
+      android:textStyle="italic"
+      tools:ignore="HardcodedText"
+      />
+  <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_weight="1"
+      android:fontFamily="@font/cashmarket_medium_italic"
+      android:gravity="center"
+      android:text="Italics (explicit)"
+      android:textSize="32sp"
+      tools:ignore="HardcodedText"
+      />
+</LinearLayout>

@@ -23,6 +23,7 @@ dependencies {
   implementation deps.kotlin.stdlib.jdk8
   implementation deps.jcodec.core
   implementation deps.jcodec.javase
+  implementation project(':paparazzi-agent')
 
   testImplementation deps.assertj
 }
