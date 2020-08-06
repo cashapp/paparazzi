@@ -59,7 +59,7 @@ buildscript {
 
   repositories {
     maven {
-      url 'https://oss.sonatype.org/content/repositories/snapshots/'
+      url project.findProperty("PAPARAZZI_MAVEN_REPOSITORY_URL")
       content {
         includeGroup 'app.cash.paparazzi'
       }
@@ -82,7 +82,7 @@ buildscript {
 subprojects {
   repositories {
     maven {
-      url 'https://oss.sonatype.org/content/repositories/snapshots/'
+      url project.findProperty("PAPARAZZI_MAVEN_REPOSITORY_URL")
       content {
         includeGroup 'app.cash.paparazzi'
       }

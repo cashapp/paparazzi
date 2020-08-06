@@ -87,11 +87,10 @@ publishing {
   }
   repositories {
     maven {
-      url project.findProperty("RELEASE_REPOSITORY_URL") ?:
-          "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+      url RELEASE_REPOSITORY_URL
       credentials {
-        username = project.findProperty("SONATYPE_NEXUS_USERNAME")
-        password = project.findProperty("SONATYPE_NEXUS_PASSWORD")
+        username = SONATYPE_NEXUS_USERNAME
+        password = SONATYPE_NEXUS_PASSWORD
       }
     }
   }
