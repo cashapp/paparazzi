@@ -21,8 +21,8 @@ import com.android.Version
 import com.android.ide.common.symbols.getPackageNameFromManifest
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
-import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.RegularFile
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
@@ -36,21 +36,21 @@ open class PrepareResourcesTask : DefaultTask() {
   internal lateinit var mergeResourcesProvider: TaskProvider<MergeResources>
     @Internal get
 
-  internal var outputDir: Provider<Directory> = project.objects.directoryProperty()
+  internal var outputResourcesFile: Provider<RegularFile> = project.objects.fileProperty()
     @Internal get
 
   @TaskAction
   fun writeResourcesFile() {
-    val out = outputDir.get().asFile
-    out.delete()
-    out.bufferedWriter()
-        .use {
-          it.write(project.packageName())
-          it.newLine()
-          it.write(mergeResourcesProvider.get().outputDirAsFile().path)
-          it.newLine()
-          it.write(project.compileSdkVersion())
-        }
+    outputResourcesFile.get().asFile.apply {
+      delete()
+      bufferedWriter().use {
+        it.write(project.packageName())
+        it.newLine()
+        it.write(mergeResourcesProvider.get().outputDirAsFile().path)
+        it.newLine()
+        it.write(project.compileSdkVersion())
+      }
+    }
   }
 
   /**

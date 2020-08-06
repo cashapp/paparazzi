@@ -29,7 +29,7 @@ data class Environment(
   val assetsDir = "$appTestDir/src/main/assets/"
 }
 
-fun detectEnvironment(): Environment {
+fun detectEnvironment(paparazziResourcesDetailsFile: String = System.getProperty("PAPARAZZI_RESOURCES_DETAILS_FILE_KEY")): Environment {
   checkInstalledJvm()
 
   val userDir = System.getProperty("user.dir")
@@ -44,12 +44,14 @@ fun detectEnvironment(): Environment {
       .reduce { _, next -> next }
       .orElse(null)
 
-  val configLines = File("build/intermediates/paparazzi/resources.txt").readLines()
-  val packageName = configLines[0]
-  val resDir = configLines[1]
-  val compileSdkVersion = configLines[2].toInt()
+  File(paparazziResourcesDetailsFile).readLines()
+          .run {
+            val packageName = this[0]
+            val resDir = this[1]
+            val compileSdkVersion = this[2].toInt()
 
-  return Environment(platformDir, userDir, resDir, packageName, compileSdkVersion)
+            return Environment(platformDir, userDir, resDir, packageName, compileSdkVersion)
+          }
 }
 
 private fun checkInstalledJvm() {

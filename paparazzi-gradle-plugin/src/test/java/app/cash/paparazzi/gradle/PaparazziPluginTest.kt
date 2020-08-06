@@ -43,7 +43,7 @@ class PaparazziPluginTest {
 
     assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
 
-    val resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/resources.txt")
+    val resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/debug/resources.txt")
     assertThat(resourcesFile.exists()).isTrue()
 
     val resourceFileContents = resourcesFile.readLines()
@@ -63,7 +63,7 @@ class PaparazziPluginTest {
 
     assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
 
-    val resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/resources.txt")
+    val resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/debug/resources.txt")
     assertThat(resourcesFile.exists()).isTrue()
 
     val resourceFileContents = resourcesFile.readLines()
