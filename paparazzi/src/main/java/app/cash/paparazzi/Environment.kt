@@ -33,7 +33,9 @@ fun androidHome() = System.getenv("ANDROID_SDK_ROOT")
     ?: System.getenv("ANDROID_HOME")
     ?: "${System.getProperty("user.home")}/Library/Android/sdk"
 
-fun detectEnvironment(): Environment {
+fun paparazziResourcesDetailsFilePath(): String = System.getProperty("paparazzi.file.resources-details")
+
+fun detectEnvironment(paparazziResourcesDetailsFile: String): Environment {
   checkInstalledJvm()
 
   val userDir = System.getProperty("user.dir")
@@ -44,12 +46,14 @@ fun detectEnvironment(): Environment {
       .reduce { _, next -> next }
       .orElse(null)
 
-  val configLines = File("build/intermediates/paparazzi/resources.txt").readLines()
-  val packageName = configLines[0]
-  val resDir = configLines[1]
-  val compileSdkVersion = configLines[2].toInt()
+  File(paparazziResourcesDetailsFile).readLines().toMutableList()
+          .run {
+            val packageName = removeFirst()
+            val resDir = removeFirst()
+            val compileSdkVersion = removeFirst().toInt()
 
-  return Environment(platformDir, userDir, resDir, packageName, compileSdkVersion)
+            return Environment(platformDir, userDir, resDir, packageName, compileSdkVersion)
+          }
 }
 
 private fun checkInstalledJvm() {

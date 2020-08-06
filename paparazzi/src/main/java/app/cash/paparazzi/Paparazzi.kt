@@ -54,7 +54,7 @@ import java.util.Date
 import java.util.concurrent.TimeUnit
 
 class Paparazzi(
-  private val environment: Environment = detectEnvironment(),
+  private val environment: Environment = detectEnvironment(paparazziResourcesDetailsFilePath()),
   private val deviceConfig: DeviceConfig = DeviceConfig.NEXUS_5,
   private val theme: String = "android:Theme.Material.NoActionBar.Fullscreen",
   private val appCompatEnabled: Boolean = true,
