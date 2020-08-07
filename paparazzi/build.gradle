@@ -53,6 +53,10 @@ def generateTestConfig = tasks.register("generateTestConfig") {
       writer.writeLine("app.cash.paparazzi")
       writer.writeLine(".")
       writer.writeLine("28")
+      def androidSdkFolder = System.getenv("ANDROID_SDK_ROOT")
+              ?: System.getenv("ANDROID_HOME")
+              ?: "$userHome/Library/Android/sdk"
+      writer.writeLine("${androidSdkFolder}/platforms/android-28/")
     }
   }
 }
