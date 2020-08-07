@@ -31,7 +31,7 @@ import com.android.resources.ResourceType
 
 /** Creates [SessionParams] objects. */
 internal data class SessionParamsBuilder(
-  private val layoutlibCallback: PaparazziCallback,
+  private val layoutlibCallback: PaparazziCallbackBase,
   private val logger: PaparazziLogger,
   private val frameworkResources: ResourceRepository,
   private val assetRepository: AssetRepository,

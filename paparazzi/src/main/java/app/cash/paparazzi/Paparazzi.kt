@@ -29,7 +29,7 @@ import app.cash.paparazzi.agent.AgentTestRule
 import app.cash.paparazzi.agent.InterceptorRegistrar
 import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.LayoutPullParser
-import app.cash.paparazzi.internal.PaparazziCallback
+import app.cash.paparazzi.internal.PaparazziLibraryCallback
 import app.cash.paparazzi.internal.PaparazziLogger
 import app.cash.paparazzi.internal.Renderer
 import app.cash.paparazzi.internal.ResourcesInterceptor
@@ -106,7 +106,7 @@ class Paparazzi(
   fun prepare(description: Description) {
     forcePlatformSdkVersion(environment.compileSdkVersion)
 
-    val layoutlibCallback = PaparazziCallback(logger, environment.packageName)
+    val layoutlibCallback = PaparazziLibraryCallback(logger, environment.packageName)
     layoutlibCallback.initResources()
 
     testName = description.toTestName()

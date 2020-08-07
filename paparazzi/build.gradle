@@ -17,6 +17,7 @@ dependencies {
   api deps.guava
   api deps.kotlinx.coroutines.core
   api deps.okio
+  implementation deps.apkparser
   implementation deps.moshi.core
   implementation deps.moshi.adapters
   kapt deps.moshi.kotlinCodegen

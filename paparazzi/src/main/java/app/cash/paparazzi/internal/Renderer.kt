@@ -34,7 +34,7 @@ import java.io.IOException
 /** View rendering. */
 internal class Renderer(
   private val environment: Environment,
-  private val layoutlibCallback: PaparazziCallback,
+  private val layoutlibCallback: PaparazziCallbackBase,
   private val logger: PaparazziLogger
 ) : Closeable {
   private var bridge: Bridge? = null

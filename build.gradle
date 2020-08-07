@@ -51,6 +51,7 @@ buildscript {
       core: "net.bytebuddy:byte-buddy:${versions.bytebuddy}",
       agent: "net.bytebuddy:byte-buddy-agent:${versions.bytebuddy}",
     ],
+    apkparser: 'net.dongliu:apk-parser:2.6.10',
     guava: 'com.google.guava:guava:27.1-jre',
     junit: 'junit:junit:4.12',
     truth: 'com.google.truth:truth:1.0',
