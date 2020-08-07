@@ -27,6 +27,7 @@ import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
+import java.io.File
 
 @CacheableTask
 open class PrepareResourcesTask : DefaultTask() {
@@ -48,6 +49,9 @@ open class PrepareResourcesTask : DefaultTask() {
           it.write(mergeResourcesOutput.get().asFile.path)
           it.newLine()
           it.write(project.compileSdkVersion())
+          it.newLine()
+          it.write("${project.sdkFolder().absolutePath}/platforms/android-${project.compileSdkVersion()}/")
+          it.newLine()
         }
   }
 
@@ -67,6 +71,11 @@ open class PrepareResourcesTask : DefaultTask() {
     return androidExtension.compileSdkVersion.substringAfter(
         "android-", DEFAULT_COMPILE_SDK_VERSION.toString()
     )
+  }
+
+  private fun Project.sdkFolder(): File {
+    val androidExtension = extensions.getByType(BaseExtension::class.java)
+    return androidExtension.sdkDirectory
   }
 
   companion object {

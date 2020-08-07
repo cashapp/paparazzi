@@ -40,14 +40,13 @@ class PaparazziPlugin : Plugin<Project> {
     val variants = project.extensions.getByType(LibraryExtension::class.java)
         .libraryVariants
     variants.all { variant ->
-      val paparazziResourcesDetailsFile = "intermediates/paparazzi/resources.txt"
       val variantSlug = variant.name.capitalize(Locale.US)
       val writeResourcesTask = project.tasks.register(
           "preparePaparazzi${variantSlug}Resources", PrepareResourcesTask::class.java
       ) { task ->
         task.mergeResourcesOutput.set(variant.mergeResourcesProvider.flatMap { it.outputDir })
         // TODO: variant-aware file path
-        task.paparazziResources.set(project.layout.buildDirectory.file(paparazziResourcesDetailsFile))
+        task.paparazziResources.set(project.layout.buildDirectory.file("intermediates/paparazzi/resources.txt"))
       }
 
       val testVariantSlug = variant.unitTestVariant.name.capitalize(Locale.US)
@@ -67,8 +66,8 @@ class PaparazziPlugin : Plugin<Project> {
 
       val testTaskProvider = project.tasks.named("test${testVariantSlug}", Test::class.java) { test ->
         test.systemProperty(
-                "paparazzi.file.resources-details",
-                "${project.buildDir}/${paparazziResourcesDetailsFile}")
+                "paparazzi.test.resources",
+                writeResourcesTask.flatMap { it.paparazziResources.asFile }.get().path)
         test.doFirst {
           test.systemProperty(
               "paparazzi.test.record",
