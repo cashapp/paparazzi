@@ -1,6 +1,9 @@
 rootProject.name = 'paparazzi-parent'
 
-//include ':sample'
+if (System.getProperty("WITH_SAMPLES") == "true") {
+    include ':sample'
+    include ':sample:app'
+}
 include ':paparazzi'
 include ':paparazzi-agent'
 include ':paparazzi-gradle-plugin'

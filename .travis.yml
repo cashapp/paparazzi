@@ -12,6 +12,9 @@ android:
 
 script:
   - ./gradlew clean check
+  # verify samples are working
+  - ./gradlew installLocally
+  - ./gradlew :sample:testDebugUnitTest :sample:app:testDebugUnitTest -DWITH_SAMPLES=true
 
 before_install:
   # Install SDK license so Android Gradle plugin can install deps.

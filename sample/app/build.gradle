@@ -1,0 +1,42 @@
+buildscript {
+  repositories {
+    maven {
+      url "file://${rootProject.buildDir.absolutePath}/localMaven"
+      content {
+        includeGroup 'app.cash.paparazzi'
+      }
+    }
+    google()
+    mavenCentral()
+    jcenter()
+
+    dependencies{
+      classpath "app.cash.paparazzi:paparazzi-gradle-plugin:$VERSION_NAME"
+    }
+  }
+}
+
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'app.cash.paparazzi'
+
+android {
+  compileSdkVersion 28
+  defaultConfig {
+    minSdkVersion 25
+  }
+}
+
+dependencies {
+  implementation deps.kotlin.stdlib.jdk8
+}
+
+repositories {
+  maven {
+    url "file://${rootProject.buildDir.absolutePath}/localMaven"
+  }
+}
+
+dependencies {
+  implementation project(":sample")
+}
