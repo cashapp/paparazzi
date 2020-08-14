@@ -32,9 +32,11 @@ class KeypadViewTest {
     val keypad = paparazzi.inflate<LinearLayout>(R.layout.keypad)
     val amount = keypad.findViewById<TextView>(R.id.amount)
     val amount123 = keypad.findViewById<TextView>(R.id.amount123)
-    val amount456 = keypad.findViewById<TextView>(R.id.amount456)
+    val amount456 = keypad.findViewById<TextView>(android.R.id.text1)
     val amount789 = keypad.findViewById<TextView>(R.id.amount789)
     val amount0 = keypad.findViewById<TextView>(R.id.amount0)
+
+    paparazzi.snapshot(keypad, "original")
 
     amount.text = "$0"
     paparazzi.snapshot(keypad, "zero dollars")

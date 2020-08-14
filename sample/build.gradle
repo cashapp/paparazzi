@@ -2,6 +2,24 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'app.cash.paparazzi'
 
+buildscript {
+  repositories {
+    maven {
+      url "file://${rootProject.buildDir.absolutePath}/localMaven"
+      content {
+        includeGroup 'app.cash.paparazzi'
+      }
+    }
+    google()
+    mavenCentral()
+    jcenter()
+
+    dependencies{
+      classpath "app.cash.paparazzi:paparazzi-gradle-plugin:$VERSION_NAME"
+    }
+  }
+}
+
 android {
   compileSdkVersion 28
   defaultConfig {

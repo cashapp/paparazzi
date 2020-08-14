@@ -24,7 +24,7 @@
       android:id="@+id/amount123"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:text="1      2      3"
+      android:text="@string/amount123"
       android:textSize="45dp"
       android:gravity="center"
       android:textFontWeight="200"
@@ -32,24 +32,21 @@
       android:layout_weight="1"
       />
   <TextView
-      android:id="@+id/amount456"
+      android:id="@android:id/text1"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:text="4      5      6"
       android:textFontWeight="400"
-
       android:textSize="45dp"
       android:gravity="center"
-      android:textColor="@android:color/white"
       android:layout_weight="1"
       />
   <TextView
-      android:id="@+id/amount789"
+      android:id="@id/amount789"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:text="7      8      9"
       android:textFontWeight="600"
-
       android:textSize="45dp"
       android:gravity="center"
       android:textColor="@android:color/white"
@@ -62,7 +59,6 @@
       android:text="#      0       . "
       android:textSize="45dp"
       android:textFontWeight="800"
-
       android:gravity="center"
       android:textColor="@android:color/white"
       android:layout_weight="1"
