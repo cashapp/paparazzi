@@ -17,6 +17,7 @@ dependencies {
   api deps.guava
   api deps.kotlinx.coroutines.core
   api deps.okio
+  implementation deps.apkparser
   implementation deps.moshi.core
   implementation deps.moshi.adapters
   kapt deps.moshi.kotlinCodegen
@@ -50,13 +51,15 @@ def generateTestConfig = tasks.register("generateTestConfig") {
     configParent.mkdirs()
     File configFile = new File(configParent, "resources.txt")
     configFile.withWriter('utf-8') { writer ->
+      writer.writeLine("Library")
       writer.writeLine("app.cash.paparazzi")
-      writer.writeLine(".")
+      writer.writeLine(File.createTempDir("paparazzi_lib_tests", "res").absolutePath)
       writer.writeLine("28")
       def androidSdkFolder = System.getenv("ANDROID_SDK_ROOT")
               ?: System.getenv("ANDROID_HOME")
               ?: "$userHome/Library/Android/sdk"
       writer.writeLine("${androidSdkFolder}/platforms/android-28/")
+      writer.writeLine("${configParent.absolutePath}/reports/paparazzi/variant")
     }
   }
 }

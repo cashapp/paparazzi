@@ -17,29 +17,42 @@ package app.cash.paparazzi
 
 import java.io.File
 
+const val PAPARAZZI_RESOURCES_DETAILS_FILE_KEY = "PAPARAZZI_RESOURCES_DETAILS_FILE_KEY"
+
+enum class PaparazziRenderer {
+    Library,
+    Application
+}
+
 data class Environment(
+  val renderer: PaparazziRenderer,
+  val reportDir: String,
   val platformDir: String,
   val appTestDir: String,
   val resDir: String,
   val packageName: String,
-  val compileSdkVersion: Int
-) {
-  val assetsDir = "$appTestDir/src/main/assets/"
-}
+  val compileSdkVersion: Int,
+  val mergedResourceValueDir: String,
+  val apkPath: String,
+  val assetsDir: String = "$appTestDir/src/main/assets/")
 
-fun detectEnvironment(paparazziResourcesDetailsFile: String = System.getProperty("PAPARAZZI_RESOURCES_DETAILS_FILE_KEY")): Environment {
+fun detectEnvironment(paparazziResourcesDetailsFile: String = System.getProperty(PAPARAZZI_RESOURCES_DETAILS_FILE_KEY)): Environment {
   checkInstalledJvm()
 
   val userDir = System.getProperty("user.dir")
 
   File(paparazziResourcesDetailsFile).readLines()
           .run {
-            val packageName = this[0]
-            val resDir = this[1]
-            val compileSdkVersion = this[2].toInt()
-            val platformDir = this[3]
+            val renderer = PaparazziRenderer.valueOf(this[0])
+            val packageName = this[1]
+            val resDir = this[2]
+            val compileSdkVersion = this[3].toInt()
+            val platformDir = this[4]
+            val reportDir = this[5]
+            val apkPath = this.getOrElse(6) { "" }
+            val mergedResourceValueDir = this.getOrElse(7) { "" }
 
-            return Environment(platformDir, userDir, resDir, packageName, compileSdkVersion)
+            return Environment(renderer, reportDir, platformDir, userDir, resDir, packageName, compileSdkVersion, mergedResourceValueDir, apkPath)
           }
 }
 

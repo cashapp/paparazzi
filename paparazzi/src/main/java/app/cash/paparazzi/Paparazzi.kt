@@ -29,6 +29,7 @@ import app.cash.paparazzi.agent.AgentTestRule
 import app.cash.paparazzi.agent.InterceptorRegistrar
 import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.LayoutPullParser
+import app.cash.paparazzi.internal.PaparazziApplicationCallback
 import app.cash.paparazzi.internal.PaparazziCallback
 import app.cash.paparazzi.internal.PaparazziLogger
 import app.cash.paparazzi.internal.Renderer
@@ -47,6 +48,7 @@ import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
 import java.awt.image.BufferedImage
+import java.io.File
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier
 import java.util.Date
@@ -57,7 +59,7 @@ class Paparazzi(
   private val deviceConfig: DeviceConfig = DeviceConfig.NEXUS_5,
   private val theme: String = "android:Theme.Material.NoActionBar.Fullscreen",
   private val appCompatEnabled: Boolean = true,
-  private val snapshotHandler: SnapshotHandler = HtmlReportWriter()
+  private val snapshotHandler: SnapshotHandler = HtmlReportWriter(rootDirectory = File(environment.reportDir))
 ) : TestRule {
   private val THUMBNAIL_SIZE = 1000
 
@@ -106,7 +108,10 @@ class Paparazzi(
   fun prepare(description: Description) {
     forcePlatformSdkVersion(environment.compileSdkVersion)
 
-    val layoutlibCallback = PaparazziCallback(logger, environment.packageName)
+    val layoutlibCallback = when(environment.renderer) {
+      PaparazziRenderer.Library -> PaparazziCallback(logger, environment)
+      PaparazziRenderer.Application -> PaparazziApplicationCallback(logger, environment)
+    }
     layoutlibCallback.initResources()
 
     testName = description.toTestName()
@@ -142,9 +147,14 @@ class Paparazzi(
     bridgeRenderSession.dispose()
     cleanupThread()
     snapshotHandler.close()
+//    val v: LinearLayout
+//    for (childIndex in 0..v.childCount) {
+//      println("child #${childIndex} is ${v.getChildAt(childIndex)} with ID ${v.getChildAt(childIndex).id}")
+//    }
+
   }
 
-  fun <V : View> inflate(@LayoutRes layoutId: Int): V = layoutInflater.inflate(layoutId, null) as V
+  fun <V : View> inflate(@LayoutRes layoutId: Int): V = layoutInflater.inflate(layoutId, null)  as V
 
   fun snapshot(
     view: View,

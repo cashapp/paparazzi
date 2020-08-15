@@ -15,58 +15,84 @@
  */
 package app.cash.paparazzi.gradle
 
+import app.cash.paparazzi.PAPARAZZI_RESOURCES_DETAILS_FILE_KEY
 import app.cash.paparazzi.VERSION
+import com.android.build.gradle.AppExtension
 import com.android.build.gradle.LibraryExtension
+import com.android.build.gradle.api.BaseVariant
+import com.android.build.gradle.internal.api.TestedVariant
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaBasePlugin
+import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.testing.Test
 import org.jetbrains.kotlin.gradle.plugin.KotlinBasePluginWrapper
-import java.io.File
 import java.util.Locale
 
+@OptIn(ExperimentalStdlibApi::class)
 class PaparazziPlugin : Plugin<Project> {
-  @OptIn(ExperimentalStdlibApi::class)
+
   override fun apply(project: Project) {
-    require(project.plugins.hasPlugin("com.android.library")) {
-      "The Android Gradle library plugin must be applied before the Paparazzi plugin."
+    val isAndroidLibrary = project.plugins.hasPlugin("com.android.library")
+    val isAndroidApplication = project.plugins.hasPlugin("com.android.application")
+
+    if (!isAndroidApplication && !isAndroidLibrary) {
+      throw IllegalArgumentException("The Android Gradle library/application plugin must be applied before the Paparazzi plugin.")
     }
 
     project.configurations.getByName("testImplementation").dependencies.add(
         project.dependencies.create("app.cash.paparazzi:paparazzi:$VERSION")
     )
 
-    val variants = project.extensions.getByType(LibraryExtension::class.java)
-        .libraryVariants
-    variants.all { variant ->
-      val paparazziResourcesDetailsFile = "intermediates/paparazzi/${variant.name}/resources.txt"
-      val variantSlug = variant.name.capitalize(Locale.US)
-      val writeResourcesTask = project.tasks.register(
-          "preparePaparazzi${variantSlug}Resources", PrepareResourcesTask::class.java
-      ) {
-        it.outputs.file("${project.buildDir}/${paparazziResourcesDetailsFile}")
+    if (isAndroidLibrary) {
+      project.extensions.getByType(LibraryExtension::class.java)
+              .libraryVariants
+              .all { variant ->
+                setupResourcesFunction(
+                        project.tasks.register("preparePaparazzi${variant.name.capitalize(Locale.US)}Resources", PrepareResourcesTask::class.java),
+                        project, variant, variant)
+              }
+    } else {
+      project.extensions.getByType(AppExtension::class.java)
+              .applicationVariants
+              .all { variant ->
+                val taskProvider = project.tasks.register("preparePaparazzi${variant.name.capitalize(Locale.US)}AppResources", PrepareResourcesTask.PrepareAppResourcesTask::class.java)
+                setupResourcesFunction(taskProvider, project, variant, variant)
+                taskProvider.configure {
+                  it.dependsOn(variant.packageApplicationProvider)
+                  it.apkProvider = variant.packageApplicationProvider
+                }
+              }
 
-        // Temporary, until AGP provides outputDir as Provider<File>
-        it.mergeResourcesProvider = variant.mergeResourcesProvider
-        it.outputResourcesFile = project.layout.buildDirectory.file(paparazziResourcesDetailsFile)
-        it.dependsOn(variant.mergeResourcesProvider)
-      }
+    }
+  }
 
-      val testVariantSlug = variant.unitTestVariant.name.capitalize(Locale.US)
+  private fun setupResourcesFunction(writeResourcesTask: TaskProvider<out PrepareResourcesTask>, project: Project, variant: BaseVariant, testVariant: TestedVariant) {
+    val paparazziResourcesDetailsFile = "intermediates/paparazzi/${variant.name}/resources.txt"
+    writeResourcesTask.configure {
+      it.outputs.file("${project.buildDir}/${paparazziResourcesDetailsFile}")
 
-      project.plugins.withType(JavaBasePlugin::class.java) {
-        project.tasks.named("compile${testVariantSlug}JavaWithJavac")
-            .configure { it.dependsOn(writeResourcesTask) }
-      }
+      // Temporary, until AGP provides outputDir as Provider<File>
+      it.dependsOn(variant.mergeResourcesProvider)
+      it.mergeResourcesProvider = variant.mergeResourcesProvider
+      it.outputResourcesFile = project.layout.buildDirectory.file(paparazziResourcesDetailsFile)
+      it.variant = testVariant.unitTestVariant
+    }
 
-      project.plugins.withType(KotlinBasePluginWrapper::class.java) {
-        project.tasks.named("compile${testVariantSlug}Kotlin")
-            .configure { it.dependsOn(writeResourcesTask) }
-      }
+    val testVariantSlug = testVariant.unitTestVariant.name.capitalize(Locale.US)
 
-      project.tasks.named("test${testVariantSlug}", Test::class.java).configure {
-        it.systemProperties["PAPARAZZI_RESOURCES_DETAILS_FILE_KEY"] = "${project.buildDir}/${paparazziResourcesDetailsFile}"
-      }
+    project.plugins.withType(JavaBasePlugin::class.java) {
+      project.tasks.named("compile${testVariantSlug}JavaWithJavac")
+              .configure { it.dependsOn(writeResourcesTask) }
+    }
+
+    project.plugins.withType(KotlinBasePluginWrapper::class.java) {
+      project.tasks.named("compile${testVariantSlug}Kotlin")
+              .configure { it.dependsOn(writeResourcesTask) }
+    }
+
+    project.tasks.named("test${testVariantSlug}", Test::class.java).configure {
+      it.systemProperties[PAPARAZZI_RESOURCES_DETAILS_FILE_KEY] = "${project.buildDir.absolutePath}/${paparazziResourcesDetailsFile}"
     }
   }
 }

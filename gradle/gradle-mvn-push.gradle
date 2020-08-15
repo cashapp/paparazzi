@@ -81,7 +81,7 @@ afterEvaluate { project ->
 
     repositories {
       mavenDeployer {
-        repository(url: "file://${rootProject.buildDir}/localMaven")
+        repository(url: "file://${rootProject.buildDir.absolutePath}/localMaven")
 
         configurePom(pom)
       }

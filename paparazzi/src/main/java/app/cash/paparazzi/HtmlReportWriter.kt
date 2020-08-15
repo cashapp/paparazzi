@@ -59,7 +59,7 @@ import javax.imageio.ImageIO
  */
 internal class HtmlReportWriter(
   private val runName: String = defaultRunName(),
-  private val rootDirectory: File = File("build/reports/paparazzi")
+  private val rootDirectory: File
 ) : SnapshotHandler {
   private val runsDirectory: File = File(rootDirectory, "runs")
   private val imagesDirectory: File = File(rootDirectory, "images")

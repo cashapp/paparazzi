@@ -20,8 +20,6 @@ import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Environment
 import com.android.ide.common.rendering.api.SessionParams
 import com.android.ide.common.resources.deprecated.FrameworkResources
-import com.android.ide.common.resources.deprecated.ResourceItem
-import com.android.ide.common.resources.deprecated.ResourceRepository
 import com.android.io.FolderWrapper
 import com.android.layoutlib.bridge.Bridge
 import com.android.layoutlib.bridge.android.RenderParamsFlags
@@ -49,11 +47,7 @@ internal class Renderer(
       loadPublicResources(logger)
     }
 
-    val projectResources = object : ResourceRepository(FolderWrapper(environment.resDir), false) {
-      override fun createResourceItem(name: String): ResourceItem {
-        return ResourceItem(name)
-      }
-    }
+    val projectResources = layoutlibCallback.createProjectResources()
     projectResources.loadResources()
 
     sessionParamsBuilder = SessionParamsBuilder(
@@ -61,7 +55,7 @@ internal class Renderer(
         logger = logger,
         frameworkResources = frameworkResources,
         projectResources = projectResources,
-        assetRepository = PaparazziAssetRepository(environment.assetsDir)
+        assetRepository = layoutlibCallback.createAssetsRepository()
     )
         .plusFlag(RenderParamsFlags.FLAG_DO_NOT_RENDER_ON_CREATE, true)
         .withTheme("AppTheme", true)
