@@ -1,18 +1,15 @@
 package app.cash.paparazzi.internal
 
 import app.cash.paparazzi.Environment
-import app.cash.paparazzi.PaparazziRenderer
 import com.android.ide.common.rendering.api.ResourceNamespace.ANDROID
 import com.android.ide.common.rendering.api.ResourceReference
-import net.dongliu.apk.parser.struct.resource.ResourceTable
 import java.io.File
-import java.util.*
 import java.util.zip.ZipFile
 
 internal open class PaparazziApplicationCallback :
         PaparazziCallback {
-    constructor(logger: PaparazziLogger, environment: Environment): super(logger, adjustEnvironmentForApp(environment))
-    constructor(logger: PaparazziLogger, environment: Environment, projectResources: Map<Int, ResourceReference>): super(logger, adjustEnvironmentForApp(environment), projectResources)
+    constructor(logger: PaparazziLogger, environment: Environment): super(logger, environment)
+    constructor(logger: PaparazziLogger, environment: Environment, projectResources: Map<Int, ResourceReference>): super(logger, environment, projectResources)
 
     private val apkEntriesSupport = ApkEntriesSupport(environment.apkPath,
             projectResources,
@@ -54,15 +51,3 @@ internal open class PaparazziApplicationCallback :
                 }
     }
 }
-
-fun adjustEnvironmentForApp(environment: Environment) = Environment(
-        renderer = PaparazziRenderer.Application,
-        platformDir = environment.platformDir,
-        appTestDir = environment.appTestDir,
-        resDir = "${environment.resDir}/res",
-        packageName = environment.packageName,
-        compileSdkVersion = environment.compileSdkVersion,
-        mergedResourceValueDir = environment.mergedResourceValueDir,
-        apkPath = environment.apkPath,
-        assetsDir = "${environment.resDir}/assets",
-        reportDir = environment.reportDir)

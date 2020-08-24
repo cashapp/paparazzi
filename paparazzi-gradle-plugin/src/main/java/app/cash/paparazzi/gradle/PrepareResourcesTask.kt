@@ -60,6 +60,8 @@ open class PrepareResourcesTask(private val renderer: PaparazziRenderer) : Defau
         it.newLine()
         it.write(resourcesFolder)
         it.newLine()
+        it.write(assetsFolder)
+        it.newLine()
         it.write(project.compileSdkVersion())
         it.newLine()
         it.write("${project.sdkFolder().absolutePath}/platforms/android-${project.compileSdkVersion()}/")
@@ -69,6 +71,11 @@ open class PrepareResourcesTask(private val renderer: PaparazziRenderer) : Defau
       }
     }
   }
+
+  protected open val assetsFolder: String
+    //TODO: This value needs to be taken from the variant
+    @Internal get() = "${project.projectDir.absolutePath}/src/main/assets/"
+
 
   protected open val resourcesFolder: String
     @Internal get() = mergeResourcesProvider.get().outputDirAsFile().absolutePath
@@ -83,7 +90,10 @@ open class PrepareResourcesTask(private val renderer: PaparazziRenderer) : Defau
       @Internal get
 
     override val resourcesFolder: String
-      get() = "${outputResourcesFile.get().asFile.parentFile.absolutePath}/apk_dump"
+      get() = "${outputResourcesFile.get().asFile.parentFile.absolutePath}/apk_dump/res"
+
+    override val assetsFolder: String
+      get() = "${outputResourcesFile.get().asFile.parentFile.absolutePath}/apk_dump/assets"
 
     @TaskAction
     override fun writeResourcesFile() {

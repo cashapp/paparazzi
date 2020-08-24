@@ -54,6 +54,7 @@ def generateTestConfig = tasks.register("generateTestConfig") {
       writer.writeLine("Library")
       writer.writeLine("app.cash.paparazzi")
       writer.writeLine(File.createTempDir("paparazzi_lib_tests", "res").absolutePath)
+      writer.writeLine("${projectDir.absolutePath}/src/main/assets")
       writer.writeLine("28")
       def androidSdkFolder = System.getenv("ANDROID_SDK_ROOT")
               ?: System.getenv("ANDROID_HOME")

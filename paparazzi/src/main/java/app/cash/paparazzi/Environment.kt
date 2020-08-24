@@ -34,7 +34,7 @@ data class Environment(
   val compileSdkVersion: Int,
   val mergedResourceValueDir: String,
   val apkPath: String,
-  val assetsDir: String = "$appTestDir/src/main/assets/")
+  val assetsDir: String)
 
 fun detectEnvironment(paparazziResourcesDetailsFile: String = System.getProperty(PAPARAZZI_RESOURCES_DETAILS_FILE_KEY)): Environment {
   checkInstalledJvm()
@@ -46,13 +46,24 @@ fun detectEnvironment(paparazziResourcesDetailsFile: String = System.getProperty
             val renderer = PaparazziRenderer.valueOf(this[0])
             val packageName = this[1]
             val resDir = this[2]
-            val compileSdkVersion = this[3].toInt()
-            val platformDir = this[4]
-            val reportDir = this[5]
-            val apkPath = this.getOrElse(6) { "" }
-            val mergedResourceValueDir = this.getOrElse(7) { "" }
+            val assetsDir = this[3]
+            val compileSdkVersion = this[4].toInt()
+            val platformDir = this[5]
+            val reportDir = this[6]
+            val apkPath = this.getOrElse(7) { "" }
+            val mergedResourceValueDir = this.getOrElse(8) { "" }
 
-            return Environment(renderer, reportDir, platformDir, userDir, resDir, packageName, compileSdkVersion, mergedResourceValueDir, apkPath)
+            return Environment(renderer = renderer,
+                    reportDir = reportDir,
+                    platformDir = platformDir,
+                    appTestDir = userDir,
+                    resDir = resDir,
+                    assetsDir = assetsDir,
+                    packageName = packageName,
+                    compileSdkVersion = compileSdkVersion,
+                    mergedResourceValueDir = mergedResourceValueDir,
+                    apkPath = apkPath
+            )
           }
 }
 
