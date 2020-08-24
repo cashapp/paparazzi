@@ -84,7 +84,7 @@ class PaparazziBinaryResourcesCallbackTest {
                 renderer = PaparazziRenderer.Application,
                 reportDir = Files.createTempDir().absolutePath,
                 platformDir = "",
-                appTestDir = "",
+                goldenImagesFolder = "",
                 resDir = Files.createTempDir().absolutePath,
                 packageName = "app.cash.paparazzi.sample",
                 compileSdkVersion = 28,

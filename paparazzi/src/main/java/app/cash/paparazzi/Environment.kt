@@ -28,7 +28,7 @@ data class Environment(
   val renderer: PaparazziRenderer,
   val reportDir: String,
   val platformDir: String,
-  val appTestDir: String,
+  val goldenImagesFolder: String,
   val resDir: String,
   val packageName: String,
   val compileSdkVersion: Int,
@@ -39,8 +39,6 @@ data class Environment(
 fun detectEnvironment(paparazziResourcesDetailsFile: String = System.getProperty(PAPARAZZI_RESOURCES_DETAILS_FILE_KEY)): Environment {
   checkInstalledJvm()
 
-  val userDir = System.getProperty("user.dir")
-
   File(paparazziResourcesDetailsFile).readLines()
           .run {
             val renderer = PaparazziRenderer.valueOf(this[0])
@@ -50,13 +48,14 @@ fun detectEnvironment(paparazziResourcesDetailsFile: String = System.getProperty
             val compileSdkVersion = this[4].toInt()
             val platformDir = this[5]
             val reportDir = this[6]
-            val apkPath = this.getOrElse(7) { "" }
-            val mergedResourceValueDir = this.getOrElse(8) { "" }
+            val goldenImagesFolder = this[7]
+            val apkPath = this.getOrElse(8) { "" }
+            val mergedResourceValueDir = this.getOrElse(9) { "" }
 
             return Environment(renderer = renderer,
                     reportDir = reportDir,
+                    goldenImagesFolder = goldenImagesFolder,
                     platformDir = platformDir,
-                    appTestDir = userDir,
                     resDir = resDir,
                     assetsDir = assetsDir,
                     packageName = packageName,

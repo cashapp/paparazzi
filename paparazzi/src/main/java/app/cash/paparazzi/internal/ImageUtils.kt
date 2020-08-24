@@ -45,11 +45,11 @@ internal object ImageUtils {
    * you can generate all the missing thumbnails in one go, rather than having to run
    * the test repeatedly to get to each new render assertion generating its thumbnail.
    */
-  private val FAIL_ON_MISSING_THUMBNAIL = true
+  private const val FAIL_ON_MISSING_THUMBNAIL = true
 
-  private val THUMBNAIL_SIZE = 1000
+  private const val THUMBNAIL_SIZE = 1000
 
-  private val MAX_PERCENT_DIFFERENCE = 0.1
+  private const val MAX_PERCENT_DIFFERENCE = 0.1
 
   /** Directory where to write the thumbnails and deltas. */
   private val failureDir: File

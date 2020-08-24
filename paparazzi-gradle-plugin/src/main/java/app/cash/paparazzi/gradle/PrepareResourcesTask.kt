@@ -68,6 +68,8 @@ open class PrepareResourcesTask(private val renderer: PaparazziRenderer) : Defau
         it.newLine()
         it.write("${project.buildDir.absolutePath}/reports/paparazzi/${variant.name}")
         it.newLine()
+        it.write("${project.projectDir.absolutePath}/paparazzi/${variant.name}")
+        it.newLine()
       }
     }
   }

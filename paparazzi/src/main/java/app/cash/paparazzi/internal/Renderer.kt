@@ -127,7 +127,7 @@ internal class Renderer(
     image: BufferedImage
   ) {
     try {
-      val goldenImagePath = environment.appTestDir + "/golden/" + goldenImageName
+      val goldenImagePath = environment.goldenImagesFolder + "/golden/" + goldenImageName
       ImageUtils.requireSimilar(goldenImagePath, image)
     } catch (e: IOException) {
       logger.error(e, e.message)
@@ -152,7 +152,7 @@ internal class Renderer(
     return result
   }
 
-  fun createParserFromPath(layoutPath: String): LayoutPullParser =
+  private fun createParserFromPath(layoutPath: String): LayoutPullParser =
     LayoutPullParser.createFromPath("${environment.resDir}/layout/$layoutPath")
 
   /**
