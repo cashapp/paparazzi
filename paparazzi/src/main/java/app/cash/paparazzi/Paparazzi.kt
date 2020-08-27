@@ -53,6 +53,7 @@ import java.lang.reflect.Field
 import java.lang.reflect.Modifier
 import java.util.Date
 import java.util.concurrent.TimeUnit
+import kotlin.math.max
 
 private const val THUMBNAIL_SIZE = 1000
 
@@ -282,7 +283,7 @@ class Paparazzi(
   }
 
   private fun scaleImage(image: BufferedImage): BufferedImage {
-    val maxDimension = Math.max(image.width, image.height)
+    val maxDimension = max(image.width, image.height)
     val scale = THUMBNAIL_SIZE / maxDimension.toDouble()
     return ImageUtils.scale(image, scale, scale)
   }

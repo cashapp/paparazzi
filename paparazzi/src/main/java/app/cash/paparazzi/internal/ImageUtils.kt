@@ -16,8 +16,10 @@
 
 package app.cash.paparazzi.internal
 
+import com.google.common.annotations.VisibleForTesting
 import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
+import org.junit.Assume
 import java.awt.AlphaComposite
 import java.awt.Color
 import java.awt.Graphics2D
@@ -30,12 +32,9 @@ import java.awt.RenderingHints.VALUE_RENDER_QUALITY
 import java.awt.image.BufferedImage
 import java.awt.image.BufferedImage.TYPE_INT_ARGB
 import java.io.File
-import java.io.File.separatorChar
-import java.io.IOException
 import javax.imageio.ImageIO
 import kotlin.math.abs
 import kotlin.math.max
-import kotlin.math.min
 
 /**
  * Utilities related to image processing.
@@ -49,14 +48,7 @@ internal object ImageUtils {
    */
   private const val FAIL_ON_MISSING_THUMBNAIL = false
 
-  private const val THUMBNAIL_SIZE = 1000
-
   private const val MAX_PERCENT_DIFFERENCE = 0.1
-
-  /** Directory where to write the thumbnails and deltas. */
-  private fun failureDir(reportsFolder: String) = File(reportsFolder, "out/failures").also {
-    it.mkdirs()
-  }
 
   fun requireSimilar(
           goldenImagePath: String,
@@ -79,13 +71,14 @@ internal object ImageUtils {
           fail(message)
         } else {
           ImageIO.write(image, "PNG", diffImagePath)
-          println("${message}. Generated image was stored at ${diffImagePath.absolutePath}.")
+          Assume.assumeTrue("${message}. Generated image was stored at ${diffImagePath.absolutePath}.", false)
         }
       }
     }
   }
 
-  private fun assertImageSimilar(
+  @VisibleForTesting
+  internal fun assertImageSimilar(
     goldenImage: BufferedImage,
     image: BufferedImage,
     maxPercentDifferent: Double,
@@ -100,71 +93,41 @@ internal object ImageUtils {
     // goldenImage = blur(goldenImage, 6);
     // image = blur(image, 6);
 
-    val width = 3 * goldenImage.width
-    val deltaImage = BufferedImage(width, goldenImage.height, TYPE_INT_ARGB)
-    val g = deltaImage.graphics
+    val deltaImage = BufferedImage(goldenImage.width, goldenImage.height, TYPE_INT_ARGB)
 
     // Compute delta map
     var delta: Long = 0
     for (y in 0 until goldenImage.height) {
       for (x in 0 until goldenImage.width) {
-        val goldenRgb = goldenImage.getRGB(x, y)
-        val rgb = image.getRGB(x, y)
-        if (goldenRgb == rgb) {
-          deltaImage.setRGB(goldenImage.width + x, y, 0x00808080)
-          continue
+        val goldenRgb = Color(goldenImage.getRGB(x, y))
+        val generatedRgb = Color(image.getRGB(x, y))
+        if (goldenRgb.rgb == generatedRgb.rgb) {
+          deltaImage.setRGB(x, y, 0x00808080)
+        } else if (goldenRgb.alpha == 0 && generatedRgb.alpha == 0) {
+          // If the pixels have no opacity, don't delta colors at all
+          deltaImage.setRGB(x, y, 0x00808080)
+        } else {
+          deltaImage.setRGB(x, y, Color(
+                  mean(goldenRgb.red, generatedRgb.red),
+                  mean(goldenRgb.green, generatedRgb.green),
+                  mean(goldenRgb.blue, generatedRgb.blue),
+                  mean(goldenRgb.alpha, generatedRgb.alpha)).rgb)
+
+          delta += abs(goldenRgb.red - generatedRgb.red).toLong()
+          delta += abs(goldenRgb.green - generatedRgb.green).toLong()
+          delta += abs(goldenRgb.blue - generatedRgb.blue).toLong()
+          delta += abs(goldenRgb.alpha - generatedRgb.alpha).toLong()
         }
-
-        // If the pixels have no opacity, don't delta colors at all
-        if (goldenRgb and -0x1000000 == 0 && rgb and -0x1000000 == 0) {
-          deltaImage.setRGB(goldenImage.width + x, y, 0x00808080)
-          continue
-        }
-
-        val deltaR = (rgb and 0xFF0000).ushr(16) - (goldenRgb and 0xFF0000).ushr(16)
-        val newR = 128 + deltaR and 0xFF
-        val deltaG = (rgb and 0x00FF00).ushr(8) - (goldenRgb and 0x00FF00).ushr(8)
-        val newG = 128 + deltaG and 0xFF
-        val deltaB = (rgb and 0x0000FF) - (goldenRgb and 0x0000FF)
-        val newB = 128 + deltaB and 0xFF
-
-        val avgAlpha =
-          ((goldenRgb and -0x1000000).ushr(24) + (rgb and -0x1000000).ushr(24)) / 2 shl 24
-
-        val newRGB = avgAlpha or (newR shl 16) or (newG shl 8) or newB
-        deltaImage.setRGB(goldenImage.width + x, y, newRGB)
-
-        delta += abs(deltaR)
-            .toLong()
-        delta += abs(deltaG)
-            .toLong()
-        delta += abs(deltaB)
-            .toLong()
       }
     }
 
-    // 3 different colors, 256 color levels
-    val total = goldenImage.height.toLong() * goldenImage.width.toLong() * 3L * 256L
+    // 3 different colors + alpha, 256 color levels
+    val total = goldenImage.height.toLong() * goldenImage.width.toLong() * 4L * 256L
     val percentDifference = (delta * 100 / total.toDouble()).toFloat()
 
     if (percentDifference > maxPercentDifferent) {
-      // Expected on the left
-      // Golden on the right
-      g.drawImage(goldenImage, 0, 0, null)
-      g.drawImage(image, 2 * goldenImage.width, 0, null)
-
-      // Labels
-      if (goldenImage.width > 80) {
-        g.color = Color.RED
-        g.drawString("Expected", 10, 20)
-        g.drawString("Actual", 2 * goldenImage.width + 10, 20)
-      }
-
-      outputDiffImagePath.delete()
       ImageIO.write(deltaImage, "PNG", outputDiffImagePath)
     }
-
-    g.dispose()
   }
 
   /**
@@ -184,8 +147,8 @@ internal object ImageUtils {
 
     var sourceWidth = source.width
     var sourceHeight = source.height
-    val destWidth = Math.max(1, (xScale * sourceWidth).toInt())
-    val destHeight = Math.max(1, (yScale * sourceHeight).toInt())
+    val destWidth = max(1, (xScale * sourceWidth).toInt())
+    val destHeight = max(1, (yScale * sourceHeight).toInt())
     var imageType = source.type
     if (imageType == BufferedImage.TYPE_CUSTOM) {
       imageType = BufferedImage.TYPE_INT_ARGB
@@ -273,8 +236,6 @@ internal object ImageUtils {
     g2.setRenderingHint(KEY_RENDERING, VALUE_RENDER_QUALITY)
     g2.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_ON)
   }
-
-  private fun getName(relativePath: String): String {
-    return relativePath.substring(relativePath.lastIndexOf(separatorChar) + 1)
-  }
 }
+
+private fun mean(a: Int, b: Int) = (a+b)/2
