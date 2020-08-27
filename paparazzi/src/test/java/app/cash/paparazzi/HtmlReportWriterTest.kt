@@ -36,18 +36,13 @@ class HtmlReportWriterTest {
   fun happyPath() {
     val htmlReportWriter = HtmlReportWriter("run_one", temporaryFolder.root)
     htmlReportWriter.use {
-      val frameHandler = htmlReportWriter.newFrameHandler(
-          Snapshot(
+      it.writeTestFrame(anyImage)
+      it.closeTestRun(Snapshot(
               name = "loading",
               testName = TestName("app.cash.paparazzi", "CelebrityTest", "testSettings"),
               timestamp = Instant.parse("2019-03-20T10:27:43Z").toDate(),
               tags = listOf("redesign")
-          ),
-          1, -1
-      )
-      frameHandler.use {
-        frameHandler.handle(anyImage)
-      }
+      ), 1)
     }
 
     assertThat(File("${temporaryFolder.root}/index.js")).hasContent(
@@ -68,7 +63,7 @@ class HtmlReportWriterTest {
         |    "tags": [
         |      "redesign"
         |    ],
-        |    "file": "images/$anyImageHash.png"
+        |    "file": "${temporaryFolder.root}/images/$anyImageHash.png"
         |  }
         |];
         |""".trimMargin()

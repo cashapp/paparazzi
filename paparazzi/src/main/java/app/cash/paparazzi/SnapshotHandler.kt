@@ -17,6 +17,7 @@ package app.cash.paparazzi
 
 import java.awt.image.BufferedImage
 import java.io.Closeable
+import java.io.File
 
 interface SnapshotHandler : Closeable {
   fun newFrameHandler(
@@ -26,6 +27,45 @@ interface SnapshotHandler : Closeable {
   ): FrameHandler
 
   interface FrameHandler : Closeable {
-    fun handle(image: BufferedImage)
+    fun handleTestFrame(image: BufferedImage)
+  }
+}
+
+internal interface TestMediaWriter: Closeable {
+  fun writeTestFrame(image: BufferedImage)
+
+  /**
+   * returns the generated media file
+   */
+  fun closeTestRun(snapshot: Snapshot, fps: Int): File
+}
+
+internal interface MediaVerifier {
+
+}
+
+internal class PaparazziTestMediaHandler(
+        private val mediaWriter: TestMediaWriter,
+        private val mediaVerifier: MediaVerifier) : SnapshotHandler {
+
+  override fun newFrameHandler(
+          snapshot: Snapshot,
+          frameCount: Int,
+          fps: Int
+  ): SnapshotHandler.FrameHandler {
+    return object : SnapshotHandler.FrameHandler {
+
+      override fun handleTestFrame(image: BufferedImage) {
+        mediaWriter.writeTestFrame(image)
+      }
+
+      override fun close() {
+        mediaWriter.closeTestRun(snapshot, fps)
+      }
+    }
+  }
+
+  override fun close() {
+    mediaWriter.close()
   }
 }

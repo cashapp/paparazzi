@@ -17,7 +17,6 @@
 package app.cash.paparazzi.internal
 
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import java.awt.AlphaComposite
 import java.awt.Color
@@ -34,6 +33,9 @@ import java.io.File
 import java.io.File.separatorChar
 import java.io.IOException
 import javax.imageio.ImageIO
+import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * Utilities related to image processing.
@@ -45,76 +47,52 @@ internal object ImageUtils {
    * you can generate all the missing thumbnails in one go, rather than having to run
    * the test repeatedly to get to each new render assertion generating its thumbnail.
    */
-  private const val FAIL_ON_MISSING_THUMBNAIL = true
+  private const val FAIL_ON_MISSING_THUMBNAIL = false
 
   private const val THUMBNAIL_SIZE = 1000
 
   private const val MAX_PERCENT_DIFFERENCE = 0.1
 
   /** Directory where to write the thumbnails and deltas. */
-  private val failureDir: File
-    get() {
-      val workingDirString = System.getProperty("user.dir")
-      val failureDir = File(workingDirString, "out/failures")
-      failureDir.mkdirs()
-      return failureDir
-    }
+  private fun failureDir(reportsFolder: String) = File(reportsFolder, "out/failures").also {
+    it.mkdirs()
+  }
 
-  @Throws(IOException::class)
   fun requireSimilar(
-    relativePath: String,
-    image: BufferedImage
+          goldenImagePath: String,
+          image: BufferedImage,
+          diffImagePath: File
   ) {
-    val maxDimension = Math.max(image.width, image.height)
-    val scale = THUMBNAIL_SIZE / maxDimension.toDouble()
-    val thumbnail = scale(image, scale, scale)
-
-    val `is` = ImageUtils::class.java.classLoader.getResourceAsStream(relativePath)
-    if (`is` ==
-        null
-    ) {
-      var message = "Unable to load golden thumbnail: $relativePath\n"
-      message = saveImageAndAppendMessage(thumbnail, message, relativePath)
-      if (FAIL_ON_MISSING_THUMBNAIL) {
-        fail(message)
+    File(goldenImagePath).let {
+      if (it.isFile) {
+        it.inputStream().use {
+          assertImageSimilar(
+                  ImageIO.read(it),
+                  image,
+                  MAX_PERCENT_DIFFERENCE,
+                  diffImagePath
+          )
+        }
       } else {
-        println(message)
-      }
-    } else {
-      try {
-        val goldenImage = ImageIO.read(`is`)
-        assertImageSimilar(
-            relativePath,
-            goldenImage,
-            thumbnail,
-            MAX_PERCENT_DIFFERENCE
-        )
-      } finally {
-        `is`.close()
+        val message = "Unable to load golden image: $goldenImagePath."
+        if (FAIL_ON_MISSING_THUMBNAIL) {
+          fail(message)
+        } else {
+          ImageIO.write(image, "PNG", diffImagePath)
+          println("${message}. Generated image was stored at ${diffImagePath.absolutePath}.")
+        }
       }
     }
   }
 
-  @Throws(IOException::class)
-  fun assertImageSimilar(
-    relativePath: String,
+  private fun assertImageSimilar(
     goldenImage: BufferedImage,
     image: BufferedImage,
-    maxPercentDifferent: Double
+    maxPercentDifferent: Double,
+    outputDiffImagePath: File
   ) {
-    var goldenImage = goldenImage
-    if (goldenImage.type != TYPE_INT_ARGB) {
-      val temp = BufferedImage(
-          goldenImage.width, goldenImage.height,
-          TYPE_INT_ARGB
-      )
-      temp.graphics.drawImage(goldenImage, 0, 0, null)
-      goldenImage = temp
-    }
-    assertEquals(TYPE_INT_ARGB.toLong(), goldenImage.type.toLong())
-
-    val imageWidth = Math.min(goldenImage.width, image.width)
-    val imageHeight = Math.min(goldenImage.height, image.height)
+    assertEquals("Golden-image and generated image widths are not the same!", goldenImage.width, image.width)
+    assertEquals("Golden-image and generated image heights are not the same!", goldenImage.height, image.height)
 
     // Blur the images to account for the scenarios where there are pixel
     // differences
@@ -122,24 +100,24 @@ internal object ImageUtils {
     // goldenImage = blur(goldenImage, 6);
     // image = blur(image, 6);
 
-    val width = 3 * imageWidth
-    val deltaImage = BufferedImage(width, imageHeight, TYPE_INT_ARGB)
+    val width = 3 * goldenImage.width
+    val deltaImage = BufferedImage(width, goldenImage.height, TYPE_INT_ARGB)
     val g = deltaImage.graphics
 
     // Compute delta map
     var delta: Long = 0
-    for (y in 0 until imageHeight) {
-      for (x in 0 until imageWidth) {
+    for (y in 0 until goldenImage.height) {
+      for (x in 0 until goldenImage.width) {
         val goldenRgb = goldenImage.getRGB(x, y)
         val rgb = image.getRGB(x, y)
         if (goldenRgb == rgb) {
-          deltaImage.setRGB(imageWidth + x, y, 0x00808080)
+          deltaImage.setRGB(goldenImage.width + x, y, 0x00808080)
           continue
         }
 
         // If the pixels have no opacity, don't delta colors at all
         if (goldenRgb and -0x1000000 == 0 && rgb and -0x1000000 == 0) {
-          deltaImage.setRGB(imageWidth + x, y, 0x00808080)
+          deltaImage.setRGB(goldenImage.width + x, y, 0x00808080)
           continue
         }
 
@@ -154,58 +132,36 @@ internal object ImageUtils {
           ((goldenRgb and -0x1000000).ushr(24) + (rgb and -0x1000000).ushr(24)) / 2 shl 24
 
         val newRGB = avgAlpha or (newR shl 16) or (newG shl 8) or newB
-        deltaImage.setRGB(imageWidth + x, y, newRGB)
+        deltaImage.setRGB(goldenImage.width + x, y, newRGB)
 
-        delta += Math.abs(deltaR)
+        delta += abs(deltaR)
             .toLong()
-        delta += Math.abs(deltaG)
+        delta += abs(deltaG)
             .toLong()
-        delta += Math.abs(deltaB)
+        delta += abs(deltaB)
             .toLong()
       }
     }
 
     // 3 different colors, 256 color levels
-    val total = imageHeight.toLong() * imageWidth.toLong() * 3L * 256L
+    val total = goldenImage.height.toLong() * goldenImage.width.toLong() * 3L * 256L
     val percentDifference = (delta * 100 / total.toDouble()).toFloat()
 
-    var error: String? = null
-    val imageName = getName(relativePath)
     if (percentDifference > maxPercentDifferent) {
-      error = String.format("Images differ (by %.1f%%)", percentDifference)
-    } else if (Math.abs(goldenImage.width - image.width) >= 2) {
-      error = "Widths differ too much for " + imageName + ": " +
-          goldenImage.width + "x" + goldenImage.height +
-          "vs" + image.width + "x" + image.height
-    } else if (Math.abs(goldenImage.height - image.height) >= 2) {
-      error = "Heights differ too much for " + imageName + ": " +
-          goldenImage.width + "x" + goldenImage.height +
-          "vs" + image.width + "x" + image.height
-    }
-
-    if (error != null) {
       // Expected on the left
       // Golden on the right
       g.drawImage(goldenImage, 0, 0, null)
-      g.drawImage(image, 2 * imageWidth, 0, null)
+      g.drawImage(image, 2 * goldenImage.width, 0, null)
 
       // Labels
-      if (imageWidth > 80) {
+      if (goldenImage.width > 80) {
         g.color = Color.RED
         g.drawString("Expected", 10, 20)
-        g.drawString("Actual", 2 * imageWidth + 10, 20)
+        g.drawString("Actual", 2 * goldenImage.width + 10, 20)
       }
 
-      val output = File(failureDir, "delta-$imageName")
-      if (output.exists()) {
-        val deleted = output.delete()
-        assertTrue(deleted)
-      }
-      ImageIO.write(deltaImage, "PNG", output)
-      error += " - see details in " + output.path + "\n"
-      error = saveImageAndAppendMessage(image, error, relativePath)
-      println(error)
-      fail(error)
+      outputDiffImagePath.delete()
+      ImageIO.write(deltaImage, "PNG", outputDiffImagePath)
     }
 
     g.dispose()
@@ -316,34 +272,6 @@ internal object ImageUtils {
     g2.setRenderingHint(KEY_INTERPOLATION, VALUE_INTERPOLATION_BILINEAR)
     g2.setRenderingHint(KEY_RENDERING, VALUE_RENDER_QUALITY)
     g2.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_ON)
-  }
-
-  /**
-   * Saves the generated thumbnail image and appends the info message to an initial message
-   */
-  @Throws(IOException::class)
-  private fun saveImageAndAppendMessage(
-    image: BufferedImage,
-    initialMessage: String,
-    relativePath: String
-  ): String {
-    var initialMessage = initialMessage
-    val output = File(
-        failureDir,
-        getName(relativePath)
-    )
-    if (output.exists()) {
-      val deleted = output.delete()
-      assertTrue(deleted)
-    }
-    ImageIO.write(image, "PNG", output)
-    initialMessage += "Thumbnail for current rendering stored at " + output.path
-    //        initialMessage += "\nRun the following command to accept the changes:\n";
-    //        initialMessage += String.format("mv %1$s %2$s", output.getPath(),
-    //                ImageUtils.class.getResource(relativePath).getPath());
-    // The above has been commented out, since the destination path returned is in out dir
-    // and it makes the tests pass without the code being actually checked in.
-    return initialMessage
   }
 
   private fun getName(relativePath: String): String {

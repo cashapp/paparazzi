@@ -15,7 +15,6 @@
  */
 package app.cash.paparazzi
 
-import app.cash.paparazzi.SnapshotHandler.FrameHandler
 import app.cash.paparazzi.internal.PaparazziJson
 import com.google.common.base.CharMatcher
 import okio.BufferedSink
@@ -60,10 +59,12 @@ import javax.imageio.ImageIO
 internal class HtmlReportWriter(
   private val runName: String = defaultRunName(),
   private val rootDirectory: File
-) : SnapshotHandler {
+) : TestMediaWriter {
   private val runsDirectory: File = File(rootDirectory, "runs")
   private val imagesDirectory: File = File(rootDirectory, "images")
   private val videosDirectory: File = File(rootDirectory, "videos")
+
+  private val writtenMediaFiles = mutableListOf<File>()
   private val shots = mutableListOf<Snapshot>()
 
   init {
@@ -75,37 +76,22 @@ internal class HtmlReportWriter(
     writeIndexJs()
   }
 
-  override fun newFrameHandler(
-    snapshot: Snapshot,
-    frameCount: Int,
-    fps: Int
-  ): FrameHandler {
-    return object : FrameHandler {
-      val hashes = mutableListOf<String>()
-
-      override fun handle(image: BufferedImage) {
-        hashes += writeImage(image)
-      }
-
-      override fun close() {
-        if (hashes.size == 1) {
-          shots += snapshot.copy(file = "images/${hashes[0]}.png")
-        } else {
-          val hash = writeVideo(hashes, fps)
-          shots += snapshot.copy(file = "videos/$hash.mov")
-        }
-      }
-    }
-  }
-
-  /** Returns the hash of the image. */
-  private fun writeImage(image: BufferedImage): String {
+  override fun writeTestFrame(image: BufferedImage) {
     val hash = hash(image)
     val file = File(rootDirectory, "images/$hash.png")
-    if (!file.exists()) {
-      file.writeAtomically(image)
+    file.writeAtomically(image)
+    writtenMediaFiles += file
+  }
+
+  override fun closeTestRun(snapshot: Snapshot, fps: Int): File {
+    return (if (writtenMediaFiles.size == 1) {
+      writtenMediaFiles.first()
+    } else {
+      writeVideo(writtenMediaFiles, fps)
+    }).also {
+      shots += snapshot.copy(file = it.absolutePath)
+      writtenMediaFiles.clear()
     }
-    return hash
   }
 
   /** Returns a SHA-1 hash of the pixels of [image]. */
@@ -121,34 +107,33 @@ internal class HtmlReportWriter(
     return hashingSink.hash.hex()
   }
 
-  private fun writeVideo(frameHashes: List<String>, fps: Int): String {
-    val hash = hash(frameHashes)
+  private fun writeVideo(frameFiles: List<File>, fps: Int): File {
+    val hash = hash(frameFiles)
     val file = File(rootDirectory, "videos/$hash.mov")
     if (!file.exists()) {
       val tmpFile = File(rootDirectory, "videos/$hash.mov.tmp")
       val encoder = AWTSequenceEncoder.createSequenceEncoder(tmpFile, fps)
-      for (frameHash in frameHashes) {
-        val frame = ImageIO.read(File(rootDirectory, "images/$frameHash.png"))
+      for (frameHash in frameFiles) {
+        val frame = ImageIO.read(frameHash)
         encoder.encodeImage(frame)
       }
       encoder.finish()
       tmpFile.renameTo(file)
     }
-    return hash
+    return file
   }
 
   /** Returns a SHA-1 hash of [lines]. */
-  private fun hash(lines: List<String>): String {
+  private fun hash(lines: List<File>): String {
     val hashingSink = HashingSink.sha1(blackholeSink())
     hashingSink.buffer().use { sink ->
       for (hash in lines) {
-        sink.writeUtf8(hash)
+        sink.writeUtf8(hash.path)
         sink.writeUtf8("\n")
       }
     }
     return hashingSink.hash.hex()
   }
-
   /** Release all resources and block until everything has been written to the file system. */
   override fun close() {
     writeRunJs()

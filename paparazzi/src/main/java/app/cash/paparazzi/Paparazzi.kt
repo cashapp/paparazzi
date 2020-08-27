@@ -54,14 +54,19 @@ import java.lang.reflect.Modifier
 import java.util.Date
 import java.util.concurrent.TimeUnit
 
+private const val THUMBNAIL_SIZE = 1000
+
+private val NO_OP_VERIFIER = object : MediaVerifier {}
+
 class Paparazzi(
   private val environment: Environment = detectEnvironment(),
   private val deviceConfig: DeviceConfig = DeviceConfig.NEXUS_5,
   private val theme: String = "android:Theme.Material.NoActionBar.Fullscreen",
   private val appCompatEnabled: Boolean = true,
-  private val snapshotHandler: SnapshotHandler = HtmlReportWriter(rootDirectory = File(environment.reportDir))
+  private val snapshotHandler: SnapshotHandler = PaparazziTestMediaHandler(
+          mediaWriter = HtmlReportWriter(rootDirectory = File(environment.reportDir)),
+          mediaVerifier = NO_OP_VERIFIER)
 ) : TestRule {
-  private val THUMBNAIL_SIZE = 1000
 
   private val logger = PaparazziLogger()
   private lateinit var sessionParamsBuilder: SessionParamsBuilder
@@ -71,7 +76,7 @@ class Paparazzi(
   private var testName: TestName? = null
   private var snapshotCount = 0
 
-  val layoutInflater: LayoutInflater
+  private val layoutInflater: LayoutInflater
     get() = RenderAction.getCurrentContext().getSystemService("layout_inflater") as BridgeInflater
 
   val resources: Resources
@@ -232,7 +237,7 @@ class Paparazzi(
           val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
           withTime(nowNanos) {
             renderSession.render(true)
-            frameHandler.handle(scaleImage(bridgeRenderSession.image))
+            frameHandler.handleTestFrame(scaleImage(bridgeRenderSession.image))
           }
         }
       } finally {

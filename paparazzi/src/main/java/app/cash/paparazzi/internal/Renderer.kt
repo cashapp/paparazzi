@@ -24,10 +24,8 @@ import com.android.io.FolderWrapper
 import com.android.layoutlib.bridge.Bridge
 import com.android.layoutlib.bridge.android.RenderParamsFlags
 import com.android.layoutlib.bridge.impl.DelegateManager
-import java.awt.image.BufferedImage
 import java.io.Closeable
 import java.io.File
-import java.io.IOException
 
 /** View rendering. */
 internal class Renderer(
@@ -93,7 +91,7 @@ internal class Renderer(
     DelegateManager.dump(System.out)
   }
 
-  fun render(
+  private fun render(
     bridge: com.android.ide.common.rendering.api.Bridge,
     params: SessionParams,
     frameTimeNanos: Long
@@ -121,19 +119,6 @@ internal class Renderer(
     }
   }
 
-  /** Compares the golden image with the passed image. */
-  fun verify(
-    goldenImageName: String,
-    image: BufferedImage
-  ) {
-    try {
-      val goldenImagePath = environment.goldenImagesFolder + "/golden/" + goldenImageName
-      ImageUtils.requireSimilar(goldenImagePath, image)
-    } catch (e: IOException) {
-      logger.error(e, e.message)
-    }
-  }
-
   /**
    * Create a new rendering session and test that rendering the given layout doesn't throw any
    * exceptions and matches the provided image.
@@ -148,7 +133,8 @@ internal class Renderer(
     frameTimeNanos: Long = -1
   ): RenderResult {
     val result = render(bridge!!, sessionParams, frameTimeNanos)
-    verify(goldenFileName, result.image)
+    val goldenImagePath = "${environment.goldenImagesFolder}/$goldenFileName"
+    ImageUtils.requireSimilar(goldenImagePath, result.image, File("${environment.reportDir}/failure-diff/$goldenFileName"))
     return result
   }
 
