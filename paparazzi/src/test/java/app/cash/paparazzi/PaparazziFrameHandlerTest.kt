@@ -74,6 +74,8 @@ class PaparazziFrameHandlerTest {
             Assert.assertFalse(mediaWriter.isClosed)
             Assert.assertEquals(1, mediaWriter.snapshotsClosed.size)
             Assert.assertEquals(snapshot1 to -1, mediaWriter.snapshotsClosed.first())
+            Assert.assertEquals(1, mediaVerifier.verified.size)
+            Assert.assertEquals(snapshot1 to File(snapshot1.name.sanitizeForFilename()), mediaVerifier.verified.first())
             mediaWriter.writtenImage.clear()
 
             underTest.newFrameHandler(snapshot2, 1, -1).use {
@@ -86,6 +88,8 @@ class PaparazziFrameHandlerTest {
             Assert.assertFalse(mediaWriter.isClosed)
             Assert.assertEquals(2, mediaWriter.snapshotsClosed.size)
             Assert.assertEquals(snapshot2 to -1, mediaWriter.snapshotsClosed[1]/*second*/)
+            Assert.assertEquals(2, mediaVerifier.verified.size)
+            Assert.assertEquals(snapshot2 to File(snapshot2.name.sanitizeForFilename()), mediaVerifier.verified[1])
         }
 
         Assert.assertTrue(mediaWriter.isClosed)
@@ -115,6 +119,8 @@ class PaparazziFrameHandlerTest {
             Assert.assertFalse(mediaWriter.isClosed)
             Assert.assertEquals(1, mediaWriter.snapshotsClosed.size)
             Assert.assertEquals(snapshot1 to 20, mediaWriter.snapshotsClosed.first())
+            Assert.assertEquals(1, mediaVerifier.verified.size)
+            Assert.assertEquals(snapshot1 to File(snapshot1.name.sanitizeForFilename()), mediaVerifier.verified.first())
         }
 
         Assert.assertTrue(mediaWriter.isClosed)
@@ -126,13 +132,13 @@ private class FakeMediaWriter : TestMediaWriter {
     val snapshotsClosed = mutableListOf<Pair<Snapshot, Int>>()
     var isClosed = false
 
-    override fun writeTestFrame(image: BufferedImage) {
+    override fun writeSnapshotFrame(image: BufferedImage) {
         writtenImage.add(image)
     }
 
-    override fun closeTestRun(snapshot: Snapshot, fps: Int): File {
+    override fun finishSnapshot(snapshot: Snapshot, fps: Int): File {
         snapshotsClosed.add(snapshot to fps)
-        return File(snapshot.name)
+        return File(snapshot.name.sanitizeForFilename())
     }
 
     override fun close() {
@@ -141,4 +147,11 @@ private class FakeMediaWriter : TestMediaWriter {
 
 }
 
-private class FakeMediaVerifier : MediaVerifier
+private class FakeMediaVerifier : MediaVerifier {
+    val verified = mutableListOf<Pair<Snapshot, File>>()
+    val assertionFail = false
+    override fun verify(snapshot: Snapshot, generatedImage: File) {
+        verified.add(snapshot to generatedImage)
+        if (assertionFail) Assert.fail("Snapshot ${snapshot.name} fail")
+    }
+}

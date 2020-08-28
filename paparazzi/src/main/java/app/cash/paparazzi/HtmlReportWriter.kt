@@ -76,14 +76,14 @@ internal class HtmlReportWriter(
     writeIndexJs()
   }
 
-  override fun writeTestFrame(image: BufferedImage) {
+  override fun writeSnapshotFrame(image: BufferedImage) {
     val hash = hash(image)
     val file = File(rootDirectory, "images/$hash.png")
     file.writeAtomically(image)
     writtenMediaFiles += file
   }
 
-  override fun closeTestRun(snapshot: Snapshot, fps: Int): File {
+  override fun finishSnapshot(snapshot: Snapshot, fps: Int): File {
     return (if (writtenMediaFiles.size == 1) {
       writtenMediaFiles.first()
     } else {
@@ -230,9 +230,9 @@ internal fun defaultRunName(): String {
 
 internal val filenameSafeChars = CharMatcher.inRange('a', 'z')
     .or(CharMatcher.inRange('0', '9'))
-    .or(CharMatcher.anyOf("_-.~@^()[]{}:;,"))
+    .or(CharMatcher.anyOf("_-@^()[]{}"))
 
-internal fun String.sanitizeForFilename(): String? {
+internal fun String.sanitizeForFilename(): String {
   return filenameSafeChars.negate().replaceFrom(toLowerCase(Locale.US), '_')
 }
 

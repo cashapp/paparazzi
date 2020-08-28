@@ -15,57 +15,60 @@
  */
 package app.cash.paparazzi
 
+import app.cash.paparazzi.internal.ImageUtils
 import java.awt.image.BufferedImage
 import java.io.Closeable
 import java.io.File
 
 interface SnapshotHandler : Closeable {
-  fun newFrameHandler(
-    snapshot: Snapshot,
-    frameCount: Int,
-    fps: Int
-  ): FrameHandler
+    fun newFrameHandler(
+            snapshot: Snapshot,
+            frameCount: Int,
+            fps: Int
+    ): FrameHandler
 
-  interface FrameHandler : Closeable {
-    fun handleTestFrame(image: BufferedImage)
-  }
+    interface FrameHandler : Closeable {
+        fun handleTestFrame(image: BufferedImage)
+    }
 }
 
 internal interface TestMediaWriter: Closeable {
-  fun writeTestFrame(image: BufferedImage)
+  fun writeSnapshotFrame(image: BufferedImage)
 
   /**
    * returns the generated media file
    */
-  fun closeTestRun(snapshot: Snapshot, fps: Int): File
+  fun finishSnapshot(snapshot: Snapshot, fps: Int): File
 }
 
 internal interface MediaVerifier {
-
+  fun verify(snapshot: Snapshot, generatedImage: File)
 }
 
 internal class PaparazziTestMediaHandler(
         private val mediaWriter: TestMediaWriter,
         private val mediaVerifier: MediaVerifier) : SnapshotHandler {
 
-  override fun newFrameHandler(
-          snapshot: Snapshot,
-          frameCount: Int,
-          fps: Int
-  ): SnapshotHandler.FrameHandler {
-    return object : SnapshotHandler.FrameHandler {
+    override fun newFrameHandler(
+            snapshot: Snapshot,
+            frameCount: Int,
+            fps: Int
+    ): SnapshotHandler.FrameHandler {
+        return object : SnapshotHandler.FrameHandler {
 
-      override fun handleTestFrame(image: BufferedImage) {
-        mediaWriter.writeTestFrame(image)
-      }
+            override fun handleTestFrame(image: BufferedImage) {
+                mediaWriter.writeSnapshotFrame(image)
+            }
 
-      override fun close() {
-        mediaWriter.closeTestRun(snapshot, fps)
-      }
+            override fun close() {
+                mediaWriter.finishSnapshot(snapshot, fps).also { generatedImage ->
+                  mediaVerifier.verify(snapshot, generatedImage)
+                }
+            }
+        }
     }
-  }
 
-  override fun close() {
-    mediaWriter.close()
-  }
+    override fun close() {
+        mediaWriter.close()
+    }
 }

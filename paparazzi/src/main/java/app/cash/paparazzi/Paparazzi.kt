@@ -27,7 +27,6 @@ import android.view.animation.AnimationUtils
 import androidx.annotation.LayoutRes
 import app.cash.paparazzi.agent.AgentTestRule
 import app.cash.paparazzi.agent.InterceptorRegistrar
-import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.LayoutPullParser
 import app.cash.paparazzi.internal.PaparazziApplicationCallback
 import app.cash.paparazzi.internal.PaparazziCallback
@@ -47,17 +46,17 @@ import com.android.tools.layoutlib.java.System_Delegate
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
-import java.awt.image.BufferedImage
 import java.io.File
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier
 import java.util.Date
 import java.util.concurrent.TimeUnit
-import kotlin.math.max
 
-private const val THUMBNAIL_SIZE = 1000
-
-private val NO_OP_VERIFIER = object : MediaVerifier {}
+private val NO_OP_VERIFIER = object : MediaVerifier {
+  override fun verify(snapshot: Snapshot, generatedImage: File) {
+    //no-op
+  }
+}
 
 class Paparazzi(
   private val environment: Environment = detectEnvironment(),
@@ -238,7 +237,7 @@ class Paparazzi(
           val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
           withTime(nowNanos) {
             renderSession.render(true)
-            frameHandler.handleTestFrame(scaleImage(bridgeRenderSession.image))
+            frameHandler.handleTestFrame(bridgeRenderSession.image)
           }
         }
       } finally {
@@ -280,12 +279,6 @@ class Paparazzi(
     } catch (e: Exception) {
       throw RuntimeException(e)
     }
-  }
-
-  private fun scaleImage(image: BufferedImage): BufferedImage {
-    val maxDimension = max(image.width, image.height)
-    val scale = THUMBNAIL_SIZE / maxDimension.toDouble()
-    return ImageUtils.scale(image, scale, scale)
   }
 
   private fun Description.toTestName(): TestName {

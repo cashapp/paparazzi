@@ -32,48 +32,49 @@ class ImageUtilsTest {
     fun testSameImage() {
         val diffImageFile = temporaryFolder.newFile("diff.png")
         diffImageFile.delete()
-        ImageUtils.assertImageSimilar(
+        Assert.assertTrue(ImageUtils.areImagesSimilar(
                 loadTestImage("golden-image.png"),
                 loadTestImage("golden-image.png"),
                 0.01,
-                diffImageFile)
+                diffImageFile))
 
-        Assert.assertFalse(diffImageFile.exists())
+        Assert.assertTrue(diffImageFile.exists())
     }
 
     @Test
     fun testImageDiffBelowThreshold() {
         val diffImageFile = temporaryFolder.newFile("diff.png")
         diffImageFile.delete()
-        ImageUtils.assertImageSimilar(
+        Assert.assertTrue(ImageUtils.areImagesSimilar(
                 loadTestImage("golden-image.png"),
                 loadTestImage("generated-less-than-0dot1-percent-diff.png"),
                 0.1,
-                diffImageFile)
+                diffImageFile))
 
-        Assert.assertFalse(diffImageFile.exists())
+        Assert.assertTrue(diffImageFile.exists())
     }
 
     @Test
     fun testImageDiffAboveThreshold() {
         val diffImageFile = temporaryFolder.newFile("diff.png")
         diffImageFile.delete()
-        ImageUtils.assertImageSimilar(
+        Assert.assertFalse(ImageUtils.areImagesSimilar(
                 loadTestImage("golden-image.png"),
                 loadTestImage("generated-0dot11-percent-diff.png"),
                 0.1,
-                diffImageFile)
+                diffImageFile))
 
         Assert.assertTrue(diffImageFile.exists())
 
         diffImageFile.delete()
-        ImageUtils.assertImageSimilar(
+        //changing threshold
+        Assert.assertTrue(ImageUtils.areImagesSimilar(
                 loadTestImage("golden-image.png"),
                 loadTestImage("generated-0dot11-percent-diff.png"),
                 0.2,
-                diffImageFile)
+                diffImageFile))
 
-        Assert.assertFalse(diffImageFile.exists())
+        Assert.assertTrue(diffImageFile.exists())
     }
 
     private fun loadTestImage(imageFileName: String): BufferedImage =

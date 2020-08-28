@@ -36,8 +36,8 @@ class HtmlReportWriterTest {
   fun happyPath() {
     val htmlReportWriter = HtmlReportWriter("run_one", temporaryFolder.root)
     htmlReportWriter.use {
-      it.writeTestFrame(anyImage)
-      it.closeTestRun(Snapshot(
+      it.writeSnapshotFrame(anyImage)
+      it.finishSnapshot(Snapshot(
               name = "loading",
               testName = TestName("app.cash.paparazzi", "CelebrityTest", "testSettings"),
               timestamp = Instant.parse("2019-03-20T10:27:43Z").toDate(),
@@ -74,7 +74,7 @@ class HtmlReportWriterTest {
   fun sanitizeForFilename() {
     assertThat("0 Dollars".sanitizeForFilename()).isEqualTo("0_dollars")
     assertThat("`!#$%&*+=|\\'\"<>?/".sanitizeForFilename()).isEqualTo("_________________")
-    assertThat("~@^()[]{}:;,.".sanitizeForFilename()).isEqualTo("~@^()[]{}:;,.")
+    assertThat("~@^()[]{}:;,.".sanitizeForFilename()).isEqualTo("_@^()[]{}____")
   }
 
   private fun Instant.toDate() = Date(toEpochMilli())
