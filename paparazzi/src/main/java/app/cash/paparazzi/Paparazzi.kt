@@ -52,12 +52,6 @@ import java.lang.reflect.Modifier
 import java.util.Date
 import java.util.concurrent.TimeUnit
 
-private val NO_OP_VERIFIER = object : MediaVerifier {
-  override fun verify(snapshot: Snapshot, generatedImage: File) {
-    //no-op
-  }
-}
-
 class Paparazzi(
   private val environment: Environment = detectEnvironment(),
   private val deviceConfig: DeviceConfig = DeviceConfig.NEXUS_5,
@@ -65,7 +59,7 @@ class Paparazzi(
   private val appCompatEnabled: Boolean = true,
   private val snapshotHandler: SnapshotHandler = PaparazziTestMediaHandler(
           mediaWriter = HtmlReportWriter(rootDirectory = File(environment.reportDir)),
-          mediaVerifier = NO_OP_VERIFIER)
+          mediaVerifier = PaparazziMediaVerifier(environment, PaparazziLogger()))
 ) : TestRule {
 
   private val logger = PaparazziLogger()
