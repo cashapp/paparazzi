@@ -159,9 +159,10 @@ class Paparazzi(
     view: View,
     name: String? = null,
     deviceConfig: DeviceConfig? = null,
-    theme: String? = null
+    theme: String? = null,
+    noVerify: Boolean = false
   ) {
-    takeSnapshots(view, name, deviceConfig, theme, 0, -1, 1)
+    takeSnapshots(view, name, deviceConfig, theme, 0, -1, 1, noVerify)
   }
 
   fun gif(
@@ -171,7 +172,8 @@ class Paparazzi(
     theme: String? = null,
     start: Long = 0L,
     end: Long = 500L,
-    fps: Int = 30
+    fps: Int = 30,
+    noVerify: Boolean = false
   ) {
     // Add one to the frame count so we get the last frame. Otherwise a 1 second, 60 FPS animation
     // our 60th frame will be at time 983 ms, and we want our last frame to be 1,000 ms. This gets
@@ -179,7 +181,7 @@ class Paparazzi(
     val durationMillis = (end - start).toInt()
     val frameCount = (durationMillis * fps) / 1000 + 1
     val startNanos = TimeUnit.MILLISECONDS.toNanos(start)
-    takeSnapshots(view, name, deviceConfig, theme, startNanos, fps, frameCount)
+    takeSnapshots(view, name, deviceConfig, theme, startNanos, fps, frameCount, noVerify)
   }
 
   private fun takeSnapshots(
@@ -189,7 +191,8 @@ class Paparazzi(
     theme: String? = null,
     startNanos: Long,
     fps: Int,
-    frameCount: Int
+    frameCount: Int,
+    noVerify: Boolean
   ) {
     if (deviceConfig != null || theme != null) {
       renderSession.release()
@@ -218,7 +221,7 @@ class Paparazzi(
     snapshotCount++
     val snapshot = Snapshot(name ?: snapshotCount.toString(), testName!!, Date())
 
-    val frameHandler = snapshotHandler.newFrameHandler(snapshot, frameCount, fps)
+    val frameHandler = snapshotHandler.newFrameHandler(snapshot, frameCount, fps, noVerify)
     frameHandler.use {
       val viewGroup = bridgeRenderSession.rootViews[0].viewObject as ViewGroup
       viewGroup.addView(view)

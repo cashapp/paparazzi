@@ -23,9 +23,12 @@ import android.view.View
 import android.view.animation.AnimationUtils
 import android.view.animation.LinearInterpolator
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.Assert
+import org.junit.AssumptionViolatedException
 import org.junit.Rule
 import org.junit.Test
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicReference
 
 class PaparazziTest {
   @get:Rule
@@ -46,7 +49,15 @@ class PaparazziTest {
       }
     }
 
-    paparazzi.snapshot(view)
+    val assumptions = AtomicReference<String>(null)
+    try {
+      paparazzi.snapshot(view, noVerify = true)
+    } catch (assumption: AssumptionViolatedException) {
+      //this is great!
+      assumptions.set(assumption.message)
+    }
+
+    Assert.assertTrue(assumptions.get().contains(" was overwritten. Copied the generated image to "))
 
     assertThat(log).containsExactly("onDraw time=0")
   }

@@ -24,7 +24,8 @@ interface SnapshotHandler : Closeable {
     fun newFrameHandler(
             snapshot: Snapshot,
             frameCount: Int,
-            fps: Int
+            fps: Int,
+            noVerify: Boolean
     ): FrameHandler
 
     interface FrameHandler : Closeable {
@@ -42,7 +43,7 @@ internal interface TestMediaWriter: Closeable {
 }
 
 internal interface MediaVerifier {
-  fun verify(snapshot: Snapshot, generatedImage: File)
+  fun verify(snapshot: Snapshot, generatedImage: File, noVerify: Boolean)
 }
 
 internal class PaparazziTestMediaHandler(
@@ -52,7 +53,8 @@ internal class PaparazziTestMediaHandler(
     override fun newFrameHandler(
             snapshot: Snapshot,
             frameCount: Int,
-            fps: Int
+            fps: Int,
+            noVerify: Boolean
     ): SnapshotHandler.FrameHandler {
         return object : SnapshotHandler.FrameHandler {
 
@@ -62,7 +64,7 @@ internal class PaparazziTestMediaHandler(
 
             override fun close() {
                 mediaWriter.finishSnapshot(snapshot, fps).also { generatedImage ->
-                  mediaVerifier.verify(snapshot, generatedImage)
+                  mediaVerifier.verify(snapshot, generatedImage, noVerify)
                 }
             }
         }

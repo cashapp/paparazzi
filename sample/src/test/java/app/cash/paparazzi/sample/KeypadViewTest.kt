@@ -59,7 +59,7 @@ class KeypadViewTest {
     amount0.setTextColor(darkGrey)
     amount.text = ".01 BTC"
 
-    paparazzi.snapshot(keypad, "bolt")
+    paparazzi.snapshot(keypad, "bolt", noVerify = true)
 
     val rotation = ObjectAnimator.ofFloat(amount, View.ROTATION, 0.0f, 360.0f).apply {
       duration = 500

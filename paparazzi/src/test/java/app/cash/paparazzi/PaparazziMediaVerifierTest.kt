@@ -87,12 +87,12 @@ class PaparazziMediaVerifierTest {
             }
         }
 
-        underTest.verify(snapshot, generatedImage)
+        underTest.verify(snapshot, generatedImage, false)
         Assert.assertTrue(logger.warnings.first().contains(" Only supporting PNG snapshot verifications."))
     }
 
     @Test
-    fun testCopyToGoldenImagesIfMissingGoldenImage() {
+    fun testCopyToGoldenImagesIfNoVerify() {
         val generatedImage = copyToGeneratedFolder("golden-image.png")
         val expectedGoldenImage = getGoldenImagePath(environment, snapshot)
 
@@ -100,14 +100,14 @@ class PaparazziMediaVerifierTest {
 
         val assumptions = AtomicReference<String>(null)
         try {
-            underTest.verify(snapshot, generatedImage)
+            underTest.verify(snapshot, generatedImage, true)
         } catch (assumption: AssumptionViolatedException) {
             //this is great!
             assumptions.set(assumption.message)
         }
 
         val warningMessage = logger.warnings.first()
-        Assert.assertTrue(warningMessage.contains(" was missing. Copied the generated image to "))
+        Assert.assertTrue(warningMessage.contains(" was overwritten. Copied the generated image to "))
         Assert.assertEquals(warningMessage, assumptions.get())
 
         Assert.assertTrue(expectedGoldenImage.exists())
@@ -117,11 +117,33 @@ class PaparazziMediaVerifierTest {
     }
 
     @Test
+    fun testNoCopyToGoldenImagesIfMissingGoldenImageAndVerify() {
+        val generatedImage = copyToGeneratedFolder("golden-image.png")
+        val expectedGoldenImage = getGoldenImagePath(environment, snapshot)
+
+        Assert.assertFalse(expectedGoldenImage.exists())
+
+        val assertions = AtomicReference<String>(null)
+        try {
+            underTest.verify(snapshot, generatedImage, false)
+        } catch (assertion: AssertionError) {
+            //this is great!
+            assertions.set(assertion.message)
+        }
+
+        val warningMessage = logger.warnings.first()
+        Assert.assertTrue(warningMessage.contains("Golden-image DOES NOT exist"))
+        Assert.assertEquals(warningMessage, assertions.get())
+
+        Assert.assertFalse(expectedGoldenImage.exists())
+    }
+
+    @Test
     fun testVerifyMatchingImages() {
         val generatedImage = copyToGeneratedFolder("golden-image.png")
         copyToGoldenFolder("golden-image.png")
 
-        underTest.verify(snapshot, generatedImage)
+        underTest.verify(snapshot, generatedImage, false)
     }
 
     @Test
@@ -131,7 +153,7 @@ class PaparazziMediaVerifierTest {
 
         val gotAssertion = AtomicReference<String>(null)
         try {
-            underTest.verify(snapshot, generatedImage)
+            underTest.verify(snapshot, generatedImage, false)
         } catch (assertion: AssertionError) {
             //this is great!
             gotAssertion.set(assertion.message)
