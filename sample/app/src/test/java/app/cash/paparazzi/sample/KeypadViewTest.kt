@@ -48,7 +48,7 @@ class KeypadViewTest {
     val darkGrey = paparazzi.resources.getColor(R.color.keypadDarkGrey)
     keypad.setBackgroundColor(darkGrey)
     amount.text = "$1.00"
-    paparazzi.snapshot(keypad, "grey", noVerify = true)
+    paparazzi.snapshot(keypad, "grey")
 
     //keypad.setBackgroundResource(R.color.keypadDarkGrey)
     keypad.setBackgroundColor(paparazzi.resources.getColor(R.color.bolt))
@@ -59,7 +59,7 @@ class KeypadViewTest {
     amount0.setTextColor(darkGrey)
     amount.text = ".01 BTC"
 
-    paparazzi.snapshot(keypad, "bolt", noVerify = true)
+    paparazzi.snapshot(keypad, "bolt")
 
     val rotation = ObjectAnimator.ofFloat(amount, View.ROTATION, 0.0f, 360.0f).apply {
       duration = 500

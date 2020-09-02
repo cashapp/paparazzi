@@ -42,7 +42,7 @@ class PaparazziMediaVerifierTest {
             timestamp = Date())
 
     private lateinit var logger: FakeLogger
-    private lateinit var underTest: PaparazziMediaVerifier
+    private lateinit var underTest: MediaVerifier
 
     @Before
     fun setup() {
@@ -87,12 +87,14 @@ class PaparazziMediaVerifierTest {
             }
         }
 
-        underTest.verify(snapshot, generatedImage, false)
+        underTest.verify(snapshot, generatedImage)
         Assert.assertTrue(logger.warnings.first().contains(" Only supporting PNG snapshot verifications."))
     }
 
     @Test
     fun testCopyToGoldenImagesIfNoVerify() {
+        underTest = PaparazziOverwritingMediaVerifier(environment, logger)
+
         val generatedImage = copyToGeneratedFolder("golden-image.png")
         val expectedGoldenImage = getGoldenImagePath(environment, snapshot)
 
@@ -100,7 +102,7 @@ class PaparazziMediaVerifierTest {
 
         val assumptions = AtomicReference<String>(null)
         try {
-            underTest.verify(snapshot, generatedImage, true)
+            underTest.verify(snapshot, generatedImage)
         } catch (assumption: AssumptionViolatedException) {
             //this is great!
             assumptions.set(assumption.message)
@@ -125,7 +127,7 @@ class PaparazziMediaVerifierTest {
 
         val assertions = AtomicReference<String>(null)
         try {
-            underTest.verify(snapshot, generatedImage, false)
+            underTest.verify(snapshot, generatedImage)
         } catch (assertion: AssertionError) {
             //this is great!
             assertions.set(assertion.message)
@@ -143,7 +145,7 @@ class PaparazziMediaVerifierTest {
         val generatedImage = copyToGeneratedFolder("golden-image.png")
         copyToGoldenFolder("golden-image.png")
 
-        underTest.verify(snapshot, generatedImage, false)
+        underTest.verify(snapshot, generatedImage)
     }
 
     @Test
@@ -153,7 +155,7 @@ class PaparazziMediaVerifierTest {
 
         val gotAssertion = AtomicReference<String>(null)
         try {
-            underTest.verify(snapshot, generatedImage, false)
+            underTest.verify(snapshot, generatedImage)
         } catch (assertion: AssertionError) {
             //this is great!
             gotAssertion.set(assertion.message)

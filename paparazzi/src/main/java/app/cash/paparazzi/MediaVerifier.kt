@@ -16,39 +16,47 @@ internal fun getGenericImagePath(rootFolder: String, snapshot: Snapshot): File =
 
 internal class PaparazziMediaVerifier(private val environment: Environment, private val logger: ILogger) : MediaVerifier {
 
-    override fun verify(snapshot: Snapshot, generatedImageFile: File, noVerify: Boolean) {
+    override fun verify(snapshot: Snapshot, generatedImageFile: File) {
         val logPrefix = "Snapshot [${snapshot}]:"
         if (generatedImageFile.extension.equals("png", ignoreCase = true)) {
             val goldenImageFile = getGoldenImagePath(environment, snapshot)
-            if (noVerify) {
-                //since we specify noVerify, we'll ignore the test (with assumption)
+            if (goldenImageFile.exists()) {
+                //verifying
+                val diffFile = getGenericImagePath("${environment.reportDir}/diff", snapshot)
+                if (ImageUtils.areImagesSimilar(
+                                ImageIO.read(goldenImageFile),
+                                ImageIO.read(generatedImageFile),
+                                0.1,/*hard code, sigh*/
+                                diffFile
+                        )) {
+                    logger.info("$logPrefix Generated image ${generatedImageFile.absolutePath} matches golden-image ${goldenImageFile.absolutePath}. Diff (if minor) is at ${diffFile.absolutePath}.")
+                } else {
+                    val errorMessage = "Snapshot [${snapshot}]: Generated image ${generatedImageFile.absolutePath} DOES NOT match golden-image ${goldenImageFile.absolutePath}. Diff is at ${diffFile.absolutePath}."
+                    logger.warning(errorMessage)
+                    Assert.fail(errorMessage)
+                }
+            } else {
+                val errorMessage = "Golden-image DOES NOT exist at ${goldenImageFile.absolutePath}."
+                logger.warning(errorMessage)
+                Assert.fail(errorMessage)
+            }
+        } else {
+            logger.warning("Snapshot [${snapshot}]: Only supporting PNG snapshot verifications.")
+        }
+    }
+}
+
+class PaparazziOverwritingMediaVerifier(private val environment: Environment, private val logger: ILogger) : MediaVerifier {
+
+    override fun verify(snapshot: Snapshot, generatedImageFile: File) {
+        if (generatedImageFile.extension.equals("png", ignoreCase = true)) {
+            val goldenImageFile = getGoldenImagePath(environment, snapshot)
+                //since we specify overwrite, we'll ignore the test (with assumption)
                 //and copy the image over.
                 generatedImageFile.copyTo(goldenImageFile, overwrite = true)
                 val missingImageMessage = "Snapshot [${snapshot}]: Golden image was overwritten. Copied the generated image to ${goldenImageFile.absolutePath}. You should verify that it is okay."
                 logger.warning(missingImageMessage)
                 Assume.assumeTrue(missingImageMessage, false)
-            } else {
-                if (goldenImageFile.exists()) {
-                    //verifying
-                    val diffFile = getGenericImagePath("${environment.reportDir}/diff", snapshot)
-                    if (ImageUtils.areImagesSimilar(
-                                    ImageIO.read(goldenImageFile),
-                                    ImageIO.read(generatedImageFile),
-                                    0.1,/*hard code, sigh*/
-                                    diffFile
-                            )) {
-                        logger.info("$logPrefix Generated image ${generatedImageFile.absolutePath} matches golden-image ${goldenImageFile.absolutePath}. Diff (if minor) is at ${diffFile.absolutePath}.")
-                    } else {
-                        val errorMessage = "Snapshot [${snapshot}]: Generated image ${generatedImageFile.absolutePath} DOES NOT match golden-image ${goldenImageFile.absolutePath}. Diff is at ${diffFile.absolutePath}."
-                        logger.warning(errorMessage)
-                        Assert.fail(errorMessage)
-                    }
-                } else {
-                    val errorMessage = "Golden-image DOES NOT exist at ${goldenImageFile.absolutePath}."
-                    logger.warning(errorMessage)
-                    Assert.fail(errorMessage)
-                }
-            }
         } else {
             logger.warning("Snapshot [${snapshot}]: Only supporting PNG snapshot verifications.")
         }

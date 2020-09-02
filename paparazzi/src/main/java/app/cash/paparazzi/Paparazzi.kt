@@ -57,9 +57,10 @@ class Paparazzi(
   private val deviceConfig: DeviceConfig = DeviceConfig.NEXUS_5,
   private val theme: String = "android:Theme.Material.NoActionBar.Fullscreen",
   private val appCompatEnabled: Boolean = true,
+  private val mediaVerifier: MediaVerifier = PaparazziMediaVerifier(environment, PaparazziLogger()),
   private val snapshotHandler: SnapshotHandler = PaparazziTestMediaHandler(
           mediaWriter = HtmlReportWriter(rootDirectory = File(environment.reportDir)),
-          mediaVerifier = PaparazziMediaVerifier(environment, PaparazziLogger()))
+          mediaVerifier = mediaVerifier)
 ) : TestRule {
 
   private val logger = PaparazziLogger()
@@ -159,10 +160,9 @@ class Paparazzi(
     view: View,
     name: String? = null,
     deviceConfig: DeviceConfig? = null,
-    theme: String? = null,
-    noVerify: Boolean = false
+    theme: String? = null
   ) {
-    takeSnapshots(view, name, deviceConfig, theme, 0, -1, 1, noVerify)
+    takeSnapshots(view, name, deviceConfig, theme, 0, -1, 1)
   }
 
   fun gif(
@@ -172,8 +172,7 @@ class Paparazzi(
     theme: String? = null,
     start: Long = 0L,
     end: Long = 500L,
-    fps: Int = 30,
-    noVerify: Boolean = false
+    fps: Int = 30
   ) {
     // Add one to the frame count so we get the last frame. Otherwise a 1 second, 60 FPS animation
     // our 60th frame will be at time 983 ms, and we want our last frame to be 1,000 ms. This gets
@@ -181,7 +180,7 @@ class Paparazzi(
     val durationMillis = (end - start).toInt()
     val frameCount = (durationMillis * fps) / 1000 + 1
     val startNanos = TimeUnit.MILLISECONDS.toNanos(start)
-    takeSnapshots(view, name, deviceConfig, theme, startNanos, fps, frameCount, noVerify)
+    takeSnapshots(view, name, deviceConfig, theme, startNanos, fps, frameCount)
   }
 
   private fun takeSnapshots(
@@ -191,8 +190,7 @@ class Paparazzi(
     theme: String? = null,
     startNanos: Long,
     fps: Int,
-    frameCount: Int,
-    noVerify: Boolean
+    frameCount: Int
   ) {
     if (deviceConfig != null || theme != null) {
       renderSession.release()
@@ -221,7 +219,7 @@ class Paparazzi(
     snapshotCount++
     val snapshot = Snapshot(name ?: snapshotCount.toString(), testName!!, Date())
 
-    val frameHandler = snapshotHandler.newFrameHandler(snapshot, frameCount, fps, noVerify)
+    val frameHandler = snapshotHandler.newFrameHandler(snapshot, frameCount, fps)
     frameHandler.use {
       val viewGroup = bridgeRenderSession.rootViews[0].viewObject as ViewGroup
       viewGroup.addView(view)

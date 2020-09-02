@@ -40,7 +40,7 @@ class PaparazziFrameHandlerTest {
         underTest.use {
             val bufferedImage1 = BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB)
             val snapshot1 = Snapshot("snapshot1", TestName("p", "c", "m"), Date.from(Instant.now()), emptyList())
-            underTest.newFrameHandler(snapshot1, 1, -1, noVerify = false).use {
+            underTest.newFrameHandler(snapshot1, 1, -1).use {
                 it.handleTestFrame(bufferedImage1)
                 Assert.assertFalse(mediaWriter.isClosed)
                 Assert.assertTrue(mediaWriter.snapshotsClosed.isEmpty())
@@ -63,7 +63,7 @@ class PaparazziFrameHandlerTest {
             val snapshot1 = Snapshot("snapshot1", TestName("p", "c", "m"), Date.from(Instant.now()), emptyList())
             val bufferedImage2 = BufferedImage(2, 2, BufferedImage.TYPE_INT_ARGB)
             val snapshot2 = Snapshot("snapshot2", TestName("p", "c", "m"), Date.from(Instant.now()), emptyList())
-            underTest.newFrameHandler(snapshot1, 1, -1, noVerify = false).use {
+            underTest.newFrameHandler(snapshot1, 1, -1).use {
                 it.handleTestFrame(bufferedImage1)
                 Assert.assertFalse(mediaWriter.isClosed)
                 Assert.assertTrue(mediaWriter.snapshotsClosed.isEmpty())
@@ -78,7 +78,7 @@ class PaparazziFrameHandlerTest {
             Assert.assertEquals(snapshot1 to File(snapshot1.name.sanitizeForFilename()), mediaVerifier.verified.first())
             mediaWriter.writtenImage.clear()
 
-            underTest.newFrameHandler(snapshot2, 1, -1, noVerify = false).use {
+            underTest.newFrameHandler(snapshot2, 1, -1).use {
                 it.handleTestFrame(bufferedImage2)
                 Assert.assertFalse(mediaWriter.isClosed)
                 Assert.assertEquals(1, mediaWriter.writtenImage.size)
@@ -104,7 +104,7 @@ class PaparazziFrameHandlerTest {
                     BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB))
 
             val snapshot1 = Snapshot("snapshot1", TestName("p", "c", "m"), Date.from(Instant.now()), emptyList())
-            underTest.newFrameHandler(snapshot1, bufferedImages.size, 20, noVerify = false).use {
+            underTest.newFrameHandler(snapshot1, bufferedImages.size, 20).use {
                 bufferedImages.forEach { frame ->
                     it.handleTestFrame(frame)
                 }
@@ -150,7 +150,7 @@ private class FakeMediaWriter : TestMediaWriter {
 private class FakeMediaVerifier : MediaVerifier {
     val verified = mutableListOf<Pair<Snapshot, File>>()
     val assertionFail = false
-    override fun verify(snapshot: Snapshot, generatedImage: File, noVerify: Boolean) {
+    override fun verify(snapshot: Snapshot, generatedImage: File) {
         verified.add(snapshot to generatedImage)
         if (assertionFail) Assert.fail("Snapshot ${snapshot.name} fail")
     }
