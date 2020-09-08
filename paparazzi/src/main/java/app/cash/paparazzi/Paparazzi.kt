@@ -58,7 +58,7 @@ class Paparazzi(
   private val deviceConfig: DeviceConfig = DeviceConfig.NEXUS_5,
   private val theme: String = "android:Theme.Material.NoActionBar.Fullscreen",
   private val appCompatEnabled: Boolean = true,
-  private val mediaVerifier: MediaVerifier = PaparazziMediaVerifier(environment, PaparazziLogger()),
+  private val mediaVerifier: MediaVerifier = buildMediaVerifier(environment, PaparazziLogger()),
   private val snapshotHandler: SnapshotHandler = PaparazziTestMediaHandler(
           mediaWriter = HtmlReportWriter(rootDirectory = File(environment.reportDir)),
           mediaVerifier = mediaVerifier)

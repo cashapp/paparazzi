@@ -77,6 +77,7 @@ class PaparazziPlugin : Plugin<Project> {
       it.mergeResourcesProvider = variant.mergeResourcesProvider
       it.outputResourcesFile = project.layout.buildDirectory.file(paparazziResourcesDetailsFile)
       it.variant = testVariant.unitTestVariant
+      it.overwriteGoldenMedia = project.rootProject.hasProperty("PAPARAZZI_OVERWRITE_GOLDEN")
     }
 
     val testVariantSlug = testVariant.unitTestVariant.name.capitalize(Locale.US)
@@ -92,6 +93,7 @@ class PaparazziPlugin : Plugin<Project> {
     }
 
     project.tasks.named("test${testVariantSlug}", Test::class.java).configure {
+      //TODO: Ensure the golden-images folder is also marked as an input to the task. In case golden-images are changed the tests should re-run.
       it.systemProperties[PAPARAZZI_RESOURCES_DETAILS_FILE_KEY] = "${project.buildDir.absolutePath}/${paparazziResourcesDetailsFile}"
     }
   }

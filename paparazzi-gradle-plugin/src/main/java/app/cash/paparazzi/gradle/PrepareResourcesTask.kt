@@ -17,6 +17,7 @@ package app.cash.paparazzi.gradle
 
 import app.cash.paparazzi.Environment
 import app.cash.paparazzi.PaparazziRenderer
+import app.cash.paparazzi.VerifyMode
 import app.cash.paparazzi.dumpEnvironment
 import com.android.Version
 import com.android.build.gradle.BaseExtension
@@ -50,8 +51,12 @@ open class PrepareResourcesTask(private val renderer: PaparazziRenderer) : Defau
   internal var outputResourcesFile: Provider<RegularFile> = project.objects.fileProperty()
     @Internal get
 
+  internal var overwriteGoldenMedia = false
+    @Internal get
+
   protected open fun generateEnvironment() = Environment(
           renderer = renderer,
+          verifyMode = if (overwriteGoldenMedia) VerifyMode.GenerateToGolden else VerifyMode.VerifyAgainstGolden,
           packageName = project.packageName(),
           resDir = resourcesFolder,
           assetsDir = assetsFolder,

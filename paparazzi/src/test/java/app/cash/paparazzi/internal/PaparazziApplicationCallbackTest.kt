@@ -2,6 +2,7 @@ package app.cash.paparazzi.internal
 
 import app.cash.paparazzi.Environment
 import app.cash.paparazzi.PaparazziRenderer
+import app.cash.paparazzi.VerifyMode
 import com.android.ide.common.rendering.api.ResourceNamespace
 import com.google.common.io.Files
 import org.assertj.core.api.Assertions.assertThat
@@ -82,6 +83,7 @@ class PaparazziBinaryResourcesCallbackTest {
     private fun buildEnvironment(resourceApkFile: File) =
         Environment(
                 renderer = PaparazziRenderer.Application,
+                verifyMode = VerifyMode.VerifyAgainstGolden,
                 reportDir = Files.createTempDir().absolutePath,
                 platformDir = "",
                 goldenImagesFolder = "",

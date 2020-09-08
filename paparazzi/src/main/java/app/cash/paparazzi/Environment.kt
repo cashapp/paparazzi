@@ -15,8 +15,6 @@
  */
 package app.cash.paparazzi
 
-import app.cash.paparazzi.internal.PaparazziJson
-import com.squareup.moshi.JsonReader
 import java.io.BufferedWriter
 import java.io.File
 
@@ -27,8 +25,14 @@ enum class PaparazziRenderer {
     Application
 }
 
+enum class VerifyMode {
+    VerifyAgainstGolden,
+    GenerateToGolden
+}
+
 data class Environment(
   val renderer: PaparazziRenderer,
+  val verifyMode: VerifyMode,
   val reportDir: String,
   val platformDir: String,
   val goldenImagesFolder: String,
@@ -41,6 +45,8 @@ data class Environment(
 
 fun dumpEnvironment(environment: Environment, writer: BufferedWriter) {
     writer.write(environment.renderer.name)
+    writer.newLine()
+    writer.write(environment.verifyMode.name)
     writer.newLine()
     writer.write(environment.packageName)
     writer.newLine()
@@ -62,23 +68,27 @@ fun dumpEnvironment(environment: Environment, writer: BufferedWriter) {
     writer.newLine()
 }
 
+@OptIn(ExperimentalStdlibApi::class)
 fun detectEnvironment(paparazziResourcesDetailsFile: String = System.getProperty(PAPARAZZI_RESOURCES_DETAILS_FILE_KEY)): Environment {
   checkInstalledJvm()
 
   File(paparazziResourcesDetailsFile).readLines()
+          .toMutableList()
           .run {
-            val renderer = PaparazziRenderer.valueOf(this[0])
-            val packageName = this[1]
-            val resDir = this[2]
-            val assetsDir = this[3]
-            val compileSdkVersion = this[4].toInt()
-            val platformDir = this[5]
-            val reportDir = this[6]
-            val goldenImagesFolder = this[7]
-            val apkPath = this[8]
-            val mergedResourceValueDir = this[9]
+            val renderer = PaparazziRenderer.valueOf(removeFirst())
+            val verifyMode = VerifyMode.valueOf(removeFirst())
+            val packageName = removeFirst()
+            val resDir = removeFirst()
+            val assetsDir = removeFirst()
+            val compileSdkVersion = removeFirst().toInt()
+            val platformDir = removeFirst()
+            val reportDir = removeFirst()
+            val goldenImagesFolder = removeFirst()
+            val apkPath = removeFirst()
+            val mergedResourceValueDir = removeFirst()
 
             return Environment(renderer = renderer,
+                    verifyMode = verifyMode,
                     reportDir = reportDir,
                     goldenImagesFolder = goldenImagesFolder,
                     platformDir = platformDir,

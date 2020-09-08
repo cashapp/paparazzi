@@ -52,6 +52,7 @@ def generateTestConfig = tasks.register("generateTestConfig") {
     File configFile = new File(configParent, "resources.txt")
     configFile.withWriter('utf-8') { writer ->
       writer.writeLine("Library")
+      writer.writeLine("VerifyAgainstGolden")
       writer.writeLine("app.cash.paparazzi")
       writer.writeLine(File.createTempDir("paparazzi_lib_tests", "res").absolutePath)
       writer.writeLine("${projectDir.absolutePath}/src/main/assets")
@@ -61,7 +62,7 @@ def generateTestConfig = tasks.register("generateTestConfig") {
               ?: "$userHome/Library/Android/sdk"
       writer.writeLine("${androidSdkFolder}/platforms/android-28/")
       writer.writeLine("${configParent.absolutePath}/reports/paparazzi/variant")
-      writer.writeLine("${configParent.absolutePath}/paparazzi/golden/variant")
+      writer.writeLine("${projectDir.absolutePath}/paparazzi/golden/variant")
       writer.writeLine("")
       writer.writeLine("")
     }

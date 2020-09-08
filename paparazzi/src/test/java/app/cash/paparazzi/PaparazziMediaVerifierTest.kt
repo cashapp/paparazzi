@@ -18,7 +18,6 @@ package app.cash.paparazzi
 import app.cash.paparazzi.internal.ImageUtilsTest
 import com.android.utils.ILogger
 import org.junit.Assert
-import org.junit.AssumptionViolatedException
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -49,6 +48,7 @@ class PaparazziMediaVerifierTest {
         generatedImagesFolder = temporaryFolder.newFolder()
         environment = Environment(
                 renderer = PaparazziRenderer.Application,
+                verifyMode = VerifyMode.VerifyAgainstGolden,
                 reportDir = "/tmp/report",
                 goldenImagesFolder = temporaryFolder.newFolder("golden").absolutePath,
                 packageName = "com.package",
@@ -64,11 +64,24 @@ class PaparazziMediaVerifierTest {
     }
 
     @Test
+    fun testBuildFromEnvironment() {
+        Assert.assertTrue(buildMediaVerifier(
+                environment.copy(verifyMode = VerifyMode.VerifyAgainstGolden),
+                logger
+        ) is PaparazziMediaVerifier)
+        Assert.assertTrue(buildMediaVerifier(
+                environment.copy(verifyMode = VerifyMode.GenerateToGolden),
+                logger
+        ) is PaparazziOverwritingMediaVerifier)
+    }
+
+    @Test
     fun testGoldenImageFile() {
         Assert.assertEquals(
                 File("${environment.goldenImagesFolder}/com.package.classname/method_name/this_is_a_snapshot_test.png"),
                 getGoldenImagePath(environment, snapshot)
         )
+
     }
 
     @Test

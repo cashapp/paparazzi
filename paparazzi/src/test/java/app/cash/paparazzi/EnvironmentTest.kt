@@ -29,6 +29,7 @@ class EnvironmentTest {
     fun fullRoundTest() {
         val environment = Environment(
                 renderer = PaparazziRenderer.Library,
+                verifyMode = VerifyMode.VerifyAgainstGolden,
                 packageName = "test.example",
                 platformDir = "/tmp/platform",
                 compileSdkVersion = 22,
