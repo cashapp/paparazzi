@@ -15,7 +15,9 @@
  */
 package app.cash.paparazzi.gradle
 
+import app.cash.paparazzi.Environment
 import app.cash.paparazzi.PaparazziRenderer
+import app.cash.paparazzi.dumpEnvironment
 import com.android.Version
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.api.BaseVariant
@@ -32,7 +34,6 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.util.VersionNumber
 import java.io.File
-import java.io.FileOutputStream
 import javax.inject.Inject
 
 open class PrepareResourcesTask(private val renderer: PaparazziRenderer) : DefaultTask() {
@@ -49,27 +50,25 @@ open class PrepareResourcesTask(private val renderer: PaparazziRenderer) : Defau
   internal var outputResourcesFile: Provider<RegularFile> = project.objects.fileProperty()
     @Internal get
 
+  protected open fun generateEnvironment() = Environment(
+          renderer = renderer,
+          packageName = project.packageName(),
+          resDir = resourcesFolder,
+          assetsDir = assetsFolder,
+          compileSdkVersion = project.compileSdkVersion().toInt(),
+          platformDir = "${project.sdkFolder().absolutePath}/platforms/android-${project.compileSdkVersion()}/",
+          reportDir = "${project.buildDir.absolutePath}/reports/paparazzi/${variant.name}",
+          goldenImagesFolder = "${project.projectDir.absolutePath}/paparazzi/${variant.name}",
+          apkPath = "",
+          mergedResourceValueDir = ""
+  )
+
   @TaskAction
-  open fun writeResourcesFile() {
+  fun writeResourcesFile() {
     outputResourcesFile.get().asFile.apply {
       delete()
       bufferedWriter().use {
-        it.write(renderer.name)
-        it.newLine()
-        it.write(project.packageName())
-        it.newLine()
-        it.write(resourcesFolder)
-        it.newLine()
-        it.write(assetsFolder)
-        it.newLine()
-        it.write(project.compileSdkVersion())
-        it.newLine()
-        it.write("${project.sdkFolder().absolutePath}/platforms/android-${project.compileSdkVersion()}/")
-        it.newLine()
-        it.write("${project.buildDir.absolutePath}/reports/paparazzi/${variant.name}")
-        it.newLine()
-        it.write("${project.projectDir.absolutePath}/paparazzi/${variant.name}")
-        it.newLine()
+        dumpEnvironment(generateEnvironment(), it)
       }
     }
   }
@@ -97,29 +96,22 @@ open class PrepareResourcesTask(private val renderer: PaparazziRenderer) : Defau
     override val assetsFolder: String
       get() = "${outputResourcesFile.get().asFile.parentFile.absolutePath}/apk_dump/assets"
 
-    @TaskAction
-    override fun writeResourcesFile() {
-      super.writeResourcesFile()
+    override fun generateEnvironment(): Environment {
       val outputs = apkProvider.get()
       val apkPath = File(outputs.outputDirectory.asFile.get(), outputs.apkNames.first())
       if (!apkPath.canRead()) {
         throw IllegalStateException("Failed to read ${apkPath.absolutePath}")
       }
 
-      outputResourcesFile.get().asFile.apply {
-        FileOutputStream(this, true/*append*/)
-                .bufferedWriter().use {
-          it.write(apkPath.absolutePath)
-          it.newLine()
-          //I don't know of a better way to get the merged values folder... this is so fragile.
-          it.write(File(mergeResourcesProvider.get().incrementalFolder, "merged.dir").absolutePath.replace("/incremental/package", "/incremental/merge"))
-          it.newLine()
-        }
-      }
+      return super.generateEnvironment().copy(
+              apkPath = apkPath.absolutePath,
+              //I don't know of a better way to get the merged values folder... this is so fragile and requires that building is actually done
+              //on the locall machine.
+              mergedResourceValueDir = File(mergeResourcesProvider.get().incrementalFolder, "merged.dir").absolutePath.replace("/incremental/package", "/incremental/merge")
+      )
     }
   }
 }
-
 
 /**
  * In AGP 3.6 the return type of MergeResources#getOutputDir() was changed from File to

@@ -102,7 +102,7 @@ class PaparazziMediaVerifierTest {
 
         underTest.verify(snapshot, generatedImage)
 
-        val warningMessage = logger.warnings.first()
+        val warningMessage = logger.infos.first()
         Assert.assertTrue(warningMessage.contains(" was overwritten. Copied the generated image to "))
 
         Assert.assertTrue(expectedGoldenImage.exists())

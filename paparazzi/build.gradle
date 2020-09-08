@@ -62,6 +62,8 @@ def generateTestConfig = tasks.register("generateTestConfig") {
       writer.writeLine("${androidSdkFolder}/platforms/android-28/")
       writer.writeLine("${configParent.absolutePath}/reports/paparazzi/variant")
       writer.writeLine("${configParent.absolutePath}/paparazzi/golden/variant")
+      writer.writeLine("")
+      writer.writeLine("")
     }
   }
 }

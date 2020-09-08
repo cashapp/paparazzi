@@ -15,6 +15,9 @@
  */
 package app.cash.paparazzi
 
+import app.cash.paparazzi.internal.PaparazziJson
+import com.squareup.moshi.JsonReader
+import java.io.BufferedWriter
 import java.io.File
 
 const val PAPARAZZI_RESOURCES_DETAILS_FILE_KEY = "PAPARAZZI_RESOURCES_DETAILS_FILE_KEY"
@@ -36,6 +39,29 @@ data class Environment(
   val apkPath: String,
   val assetsDir: String)
 
+fun dumpEnvironment(environment: Environment, writer: BufferedWriter) {
+    writer.write(environment.renderer.name)
+    writer.newLine()
+    writer.write(environment.packageName)
+    writer.newLine()
+    writer.write(environment.resDir)
+    writer.newLine()
+    writer.write(environment.assetsDir)
+    writer.newLine()
+    writer.write(environment.compileSdkVersion.toString())
+    writer.newLine()
+    writer.write(environment.platformDir)
+    writer.newLine()
+    writer.write(environment.reportDir)
+    writer.newLine()
+    writer.write(environment.goldenImagesFolder)
+    writer.newLine()
+    writer.write(environment.apkPath)
+    writer.newLine()
+    writer.write(environment.mergedResourceValueDir)
+    writer.newLine()
+}
+
 fun detectEnvironment(paparazziResourcesDetailsFile: String = System.getProperty(PAPARAZZI_RESOURCES_DETAILS_FILE_KEY)): Environment {
   checkInstalledJvm()
 
@@ -49,8 +75,8 @@ fun detectEnvironment(paparazziResourcesDetailsFile: String = System.getProperty
             val platformDir = this[5]
             val reportDir = this[6]
             val goldenImagesFolder = this[7]
-            val apkPath = this.getOrElse(8) { "" }
-            val mergedResourceValueDir = this.getOrElse(9) { "" }
+            val apkPath = this[8]
+            val mergedResourceValueDir = this[9]
 
             return Environment(renderer = renderer,
                     reportDir = reportDir,
