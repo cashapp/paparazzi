@@ -41,7 +41,7 @@ internal interface TestMediaWriter: Closeable {
   fun finishSnapshot(snapshot: Snapshot, fps: Int): File
 }
 
-internal interface MediaVerifier {
+interface MediaVerifier {
   fun verify(snapshot: Snapshot, generatedImage: File)
 }
 

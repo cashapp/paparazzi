@@ -42,7 +42,7 @@ class PaparazziMediaVerifierTest {
             timestamp = Date())
 
     private lateinit var logger: FakeLogger
-    private lateinit var underTest: PaparazziMediaVerifier
+    private lateinit var underTest: MediaVerifier
 
     @Before
     fun setup() {
@@ -92,7 +92,9 @@ class PaparazziMediaVerifierTest {
     }
 
     @Test
-    fun testCopyToGoldenImagesIfMissingGoldenImage() {
+    fun testCopyToGoldenImagesIfNoVerify() {
+        underTest = PaparazziOverwritingMediaVerifier(environment, logger)
+
         val generatedImage = copyToGeneratedFolder("golden-image.png")
         val expectedGoldenImage = getGoldenImagePath(environment, snapshot)
 
@@ -107,13 +109,35 @@ class PaparazziMediaVerifierTest {
         }
 
         val warningMessage = logger.warnings.first()
-        Assert.assertTrue(warningMessage.contains(" was missing. Copied the generated image to "))
+        Assert.assertTrue(warningMessage.contains(" was overwritten. Copied the generated image to "))
         Assert.assertEquals(warningMessage, assumptions.get())
 
         Assert.assertTrue(expectedGoldenImage.exists())
         Assert.assertArrayEquals(
                 generatedImage.readBytes(),
                 expectedGoldenImage.readBytes())
+    }
+
+    @Test
+    fun testNoCopyToGoldenImagesIfMissingGoldenImageAndVerify() {
+        val generatedImage = copyToGeneratedFolder("golden-image.png")
+        val expectedGoldenImage = getGoldenImagePath(environment, snapshot)
+
+        Assert.assertFalse(expectedGoldenImage.exists())
+
+        val assertions = AtomicReference<String>(null)
+        try {
+            underTest.verify(snapshot, generatedImage)
+        } catch (assertion: AssertionError) {
+            //this is great!
+            assertions.set(assertion.message)
+        }
+
+        val warningMessage = logger.warnings.first()
+        Assert.assertTrue(warningMessage.contains("Golden-image DOES NOT exist"))
+        Assert.assertEquals(warningMessage, assertions.get())
+
+        Assert.assertFalse(expectedGoldenImage.exists())
     }
 
     @Test

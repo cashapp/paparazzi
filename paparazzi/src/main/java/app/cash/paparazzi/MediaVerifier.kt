@@ -36,14 +36,27 @@ internal class PaparazziMediaVerifier(private val environment: Environment, priv
                     Assert.fail(errorMessage)
                 }
             } else {
-                //since golden image does not exit, we'll ignore the test (with assumption)
+                val errorMessage = "Golden-image DOES NOT exist at ${goldenImageFile.absolutePath}."
+                logger.warning(errorMessage)
+                Assert.fail(errorMessage)
+            }
+        } else {
+            logger.warning("Snapshot [${snapshot}]: Only supporting PNG snapshot verifications.")
+        }
+    }
+}
+
+class PaparazziOverwritingMediaVerifier(private val environment: Environment, private val logger: ILogger) : MediaVerifier {
+
+    override fun verify(snapshot: Snapshot, generatedImageFile: File) {
+        if (generatedImageFile.extension.equals("png", ignoreCase = true)) {
+            val goldenImageFile = getGoldenImagePath(environment, snapshot)
+                //since we specify overwrite, we'll ignore the test (with assumption)
                 //and copy the image over.
-                //TODO: I'm not sure this logic belongs to the verifier, but let's think about that later.
                 generatedImageFile.copyTo(goldenImageFile, overwrite = true)
-                val missingImageMessage = "Snapshot [${snapshot}]: Golden image was missing. Copied the generated image to ${goldenImageFile.absolutePath}. You should verify that it is okay."
+                val missingImageMessage = "Snapshot [${snapshot}]: Golden image was overwritten. Copied the generated image to ${goldenImageFile.absolutePath}. You should verify that it is okay."
                 logger.warning(missingImageMessage)
                 Assume.assumeTrue(missingImageMessage, false)
-            }
         } else {
             logger.warning("Snapshot [${snapshot}]: Only supporting PNG snapshot verifications.")
         }
