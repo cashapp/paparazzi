@@ -100,17 +100,10 @@ class PaparazziMediaVerifierTest {
 
         Assert.assertFalse(expectedGoldenImage.exists())
 
-        val assumptions = AtomicReference<String>(null)
-        try {
-            underTest.verify(snapshot, generatedImage)
-        } catch (assumption: AssumptionViolatedException) {
-            //this is great!
-            assumptions.set(assumption.message)
-        }
+        underTest.verify(snapshot, generatedImage)
 
         val warningMessage = logger.warnings.first()
         Assert.assertTrue(warningMessage.contains(" was overwritten. Copied the generated image to "))
-        Assert.assertEquals(warningMessage, assumptions.get())
 
         Assert.assertTrue(expectedGoldenImage.exists())
         Assert.assertArrayEquals(

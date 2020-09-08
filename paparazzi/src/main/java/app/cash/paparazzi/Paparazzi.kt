@@ -16,6 +16,7 @@
 package app.cash.paparazzi
 
 import android.content.Context
+import android.content.Context.LAYOUT_INFLATER_SERVICE
 import android.content.res.Resources
 import android.util.AttributeSet
 import android.view.BridgeInflater
@@ -72,7 +73,7 @@ class Paparazzi(
   private var snapshotCount = 0
 
   private val layoutInflater: LayoutInflater
-    get() = RenderAction.getCurrentContext().getSystemService("layout_inflater") as BridgeInflater
+    get() = RenderAction.getCurrentContext().getSystemService(LAYOUT_INFLATER_SERVICE) as BridgeInflater
 
   val resources: Resources
     get() = RenderAction.getCurrentContext().resources
@@ -80,7 +81,7 @@ class Paparazzi(
   val context: Context
     get() = RenderAction.getCurrentContext()
 
-  val contentRoot = """
+  private val contentRoot = """
         |<?xml version="1.0" encoding="utf-8"?>
         |<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
         |              android:layout_width="match_parent"

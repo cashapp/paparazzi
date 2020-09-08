@@ -3,7 +3,6 @@ package app.cash.paparazzi
 import app.cash.paparazzi.internal.ImageUtils
 import com.android.utils.ILogger
 import org.junit.Assert
-import org.junit.Assume
 import java.io.File
 import javax.imageio.ImageIO
 
@@ -48,17 +47,11 @@ internal class PaparazziMediaVerifier(private val environment: Environment, priv
 
 class PaparazziOverwritingMediaVerifier(private val environment: Environment, private val logger: ILogger) : MediaVerifier {
 
-    override fun verify(snapshot: Snapshot, generatedImageFile: File) {
-        if (generatedImageFile.extension.equals("png", ignoreCase = true)) {
-            val goldenImageFile = getGoldenImagePath(environment, snapshot)
-                //since we specify overwrite, we'll ignore the test (with assumption)
-                //and copy the image over.
-                generatedImageFile.copyTo(goldenImageFile, overwrite = true)
-                val missingImageMessage = "Snapshot [${snapshot}]: Golden image was overwritten. Copied the generated image to ${goldenImageFile.absolutePath}. You should verify that it is okay."
-                logger.warning(missingImageMessage)
-                Assume.assumeTrue(missingImageMessage, false)
-        } else {
-            logger.warning("Snapshot [${snapshot}]: Only supporting PNG snapshot verifications.")
-        }
+    override fun verify(snapshot: Snapshot, generatedImage: File) {
+        val goldenImageFile = getGoldenImagePath(environment, snapshot)
+        //since we specify overwrite, we'll ignore the test (with assumption)
+        //and copy the image over.
+        generatedImage.copyTo(goldenImageFile, overwrite = true)
+        logger.info("Snapshot [${snapshot}]: Golden image was overwritten. Copied the generated image to ${goldenImageFile.absolutePath}. You should verify that it is okay.")
     }
 }
