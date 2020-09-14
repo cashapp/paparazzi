@@ -19,8 +19,10 @@ import app.cash.paparazzi.VERSION
 import com.android.build.gradle.LibraryExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.logging.LogLevel.LIFECYCLE
 import org.gradle.api.plugins.JavaBasePlugin
 import org.jetbrains.kotlin.gradle.plugin.KotlinBasePluginWrapper
+import java.io.File
 import java.util.Locale
 
 class PaparazziPlugin : Plugin<Project> {
@@ -62,6 +64,14 @@ class PaparazziPlugin : Plugin<Project> {
         project.tasks.named("compile${testVariantSlug}Kotlin")
             .configure { it.dependsOn(writeResourcesTask) }
       }
+
+      project.tasks.named("test${testVariantSlug}")
+          .configure {
+            it.doLast {
+              val uri = File(project.buildDir, "reports/paparazzi/index.html").toURI()
+              project.logger.log(LIFECYCLE, "Click here for Paparazzi report: $uri")
+            }
+          }
     }
   }
 }
