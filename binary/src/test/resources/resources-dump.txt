@@ -1,0 +1,92 @@
+- resource @color/bolt 0x7f010000:
+    * configuration default:
+      located under res/values/colors.xml
+        value #ffebff00
+
+- resource @color/cameraBody 0x7f010001:
+    * configuration default:
+      located under res/values/colors.xml
+        value #ff332f21
+
+- resource @color/cameraBodyAlpha 0x7f010002:
+    * configuration default:
+      located under res/values/colors.xml
+        value #ab332221
+
+- resource @color/cameraBodyLow 0x7f010003:
+    * configuration default:
+      located under res/values/colors.xml
+        value #ff332222
+
+- resource @color/cameraBodyLowAlpha 0x7f010004:
+    * configuration default:
+      located under res/values/colors.xml
+        value #aa332222
+
+- resource @color/keypadDarkGrey 0x7f010005:
+    * configuration default:
+      located under res/values/colors.xml
+        value #ff595959
+
+- resource @color/keypadGreen 0x7f010006:
+    * configuration default:
+      located under res/values/colors.xml
+        value #ff00d015
+
+- resource @color/launchBackground 0x7f010007:
+    * configuration default:
+      located under res/values/colors.xml
+        value #ffdcdccc
+
+- resource @drawable/camera 0x7f020000:
+    * configuration default:
+      located under res/drawable/camera.png
+
+- resource @drawable/icn 0x7f020001:
+    * configuration default:
+      located under res/drawable/icn.xml
+
+- resource @drawable/icn2 0x7f020002:
+    * configuration default:
+      located under res/drawable/icn2.xml
+
+- resource @+id/amount 0x7f030000:
+    * configuration default:
+      located under res/values/ids.xml
+        value false
+
+- resource @+id/amount0 0x7f030001:
+    * configuration default:
+      located under res/values/ids.xml
+        value false
+
+- resource @+id/amount123 0x7f030002:
+    * configuration default:
+      located under res/values/ids.xml
+        value false
+
+- resource @+id/amount789 0x7f030003:
+    * configuration default:
+      located under res/values/ids.xml
+        value false
+
+- resource @layout/keypad 0x7f040000:
+    * configuration default:
+      located under res/layout/keypad.xml
+
+- resource @layout/launch 0x7f040001:
+    * configuration default:
+      located under res/layout/launch.xml
+
+- resource @string/amount123 0x7f050000:
+    * configuration default:
+      located under res/values/strings.xml
+        value 1 2 3
+
+- resource @string/orientation 0x7f050001:
+    * configuration default:
+      located under res/values/strings.xml
+        value reg
+    * configuration land:
+      located under res/values-land/strings.xml
+        value land
