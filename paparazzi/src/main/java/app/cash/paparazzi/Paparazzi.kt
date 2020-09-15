@@ -57,7 +57,7 @@ class Paparazzi(
   private val deviceConfig: DeviceConfig = DeviceConfig.NEXUS_5,
   private val theme: String = "android:Theme.Material.NoActionBar.Fullscreen",
   private val appCompatEnabled: Boolean = true,
-  private val snapshotHandler: SnapshotHandler = HtmlReportWriter()
+  private val snapshotHandler: SnapshotHandler = determineHandler()
 ) : TestRule {
   private val THUMBNAIL_SIZE = 1000
 
@@ -67,7 +67,6 @@ class Paparazzi(
   private lateinit var renderSession: RenderSessionImpl
   private lateinit var bridgeRenderSession: RenderSession
   private var testName: TestName? = null
-  private var snapshotCount = 0
 
   val layoutInflater: LayoutInflater
     get() = RenderAction.getCurrentContext().getSystemService("layout_inflater") as BridgeInflater
@@ -206,8 +205,7 @@ class Paparazzi(
       bridgeRenderSession = createBridgeSession(renderSession, renderSession.inflate())
     }
 
-    snapshotCount++
-    val snapshot = Snapshot(name ?: snapshotCount.toString(), testName!!, Date())
+    val snapshot = Snapshot(name, testName!!, Date())
 
     val frameHandler = snapshotHandler.newFrameHandler(snapshot, frameCount, fps)
     frameHandler.use {
@@ -399,5 +397,15 @@ class Paparazzi(
   companion object {
     /** The choreographer doesn't like 0 as a frame time, so start an hour later. */
     internal val TIME_OFFSET_NANOS = TimeUnit.HOURS.toNanos(1L)
+
+    private val isVerifying: Boolean =
+      System.getProperty("paparazzi.test.verify")?.toBoolean() == true
+
+    private fun determineHandler(): SnapshotHandler =
+      if (isVerifying) {
+        SnapshotVerifier()
+      } else {
+        HtmlReportWriter()
+      }
   }
 }

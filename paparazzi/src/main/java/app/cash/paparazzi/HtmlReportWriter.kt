@@ -59,12 +59,20 @@ import javax.imageio.ImageIO
  */
 internal class HtmlReportWriter(
   private val runName: String = defaultRunName(),
-  private val rootDirectory: File = File("build/reports/paparazzi")
+  private val rootDirectory: File = File("build/reports/paparazzi"),
+  snapshotRootDirectory: File = File("src/test/snapshots")
 ) : SnapshotHandler {
   private val runsDirectory: File = File(rootDirectory, "runs")
   private val imagesDirectory: File = File(rootDirectory, "images")
   private val videosDirectory: File = File(rootDirectory, "videos")
+
+  private val goldenImagesDirectory = File(snapshotRootDirectory, "images")
+  private val goldenVideosDirectory = File(snapshotRootDirectory, "videos")
+
   private val shots = mutableListOf<Snapshot>()
+
+  private val isRecording: Boolean =
+    System.getProperty("paparazzi.test.record")?.toBoolean() == true
 
   init {
     runsDirectory.mkdirs()
@@ -88,12 +96,39 @@ internal class HtmlReportWriter(
       }
 
       override fun close() {
-        if (hashes.size == 1) {
-          shots += snapshot.copy(file = "images/${hashes[0]}.png")
+        val shot = if (hashes.size == 1) {
+          val original = File(imagesDirectory, "${hashes[0]}.png")
+          if (isRecording) {
+            val goldenFile = File(goldenImagesDirectory, snapshot.toFileName("_", "png"))
+            if (!goldenFile.exists()) {
+              original.copyTo(goldenFile)
+            }
+          }
+          snapshot.copy(file = rootDirectory.toPath().relativize(original.toPath()).toString())
         } else {
           val hash = writeVideo(hashes, fps)
-          shots += snapshot.copy(file = "videos/$hash.mov")
+
+          if (isRecording) {
+            for ((index, frameHash) in hashes.withIndex()) {
+              val originalFrame = File(imagesDirectory, "$frameHash.png")
+              val frameSnapshot = snapshot.copy(name = "${snapshot.name} $index")
+              val goldenFile = File(goldenImagesDirectory, frameSnapshot.toFileName("_", "png"))
+              if (!goldenFile.exists()) {
+                originalFrame.copyTo(goldenFile)
+              }
+            }
+          }
+          val original = File(videosDirectory, "$hash.mov")
+          if (isRecording) {
+            val goldenFile = File(goldenVideosDirectory, snapshot.toFileName("_", "mov"))
+            if (!goldenFile.exists()) {
+              original.copyTo(goldenFile)
+            }
+          }
+          snapshot.copy(file = rootDirectory.toPath().relativize(original.toPath()).toString())
         }
+
+        shots += shot
       }
     }
   }
@@ -101,7 +136,7 @@ internal class HtmlReportWriter(
   /** Returns the hash of the image. */
   private fun writeImage(image: BufferedImage): String {
     val hash = hash(image)
-    val file = File(rootDirectory, "images/$hash.png")
+    val file = File(imagesDirectory, "$hash.png")
     if (!file.exists()) {
       file.writeAtomically(image)
     }
@@ -121,14 +156,17 @@ internal class HtmlReportWriter(
     return hashingSink.hash.hex()
   }
 
-  private fun writeVideo(frameHashes: List<String>, fps: Int): String {
+  private fun writeVideo(
+    frameHashes: List<String>,
+    fps: Int
+  ): String {
     val hash = hash(frameHashes)
-    val file = File(rootDirectory, "videos/$hash.mov")
+    val file = File(videosDirectory, "$hash.mov")
     if (!file.exists()) {
-      val tmpFile = File(rootDirectory, "videos/$hash.mov.tmp")
+      val tmpFile = File(videosDirectory, "$hash.mov.tmp")
       val encoder = AWTSequenceEncoder.createSequenceEncoder(tmpFile, fps)
       for (frameHash in frameHashes) {
-        val frame = ImageIO.read(File(rootDirectory, "images/$frameHash.png"))
+        val frame = ImageIO.read(File(imagesDirectory, "$frameHash.png"))
         encoder.encodeImage(frame)
       }
       encoder.finish()
