@@ -23,7 +23,6 @@ import org.gradle.api.logging.LogLevel.LIFECYCLE
 import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.api.tasks.testing.Test
 import org.jetbrains.kotlin.gradle.plugin.KotlinBasePluginWrapper
-import java.io.File
 import java.util.Locale
 
 @Suppress("unused")
@@ -85,8 +84,8 @@ class PaparazziPlugin : Plugin<Project> {
 
       testTaskProvider.configure {
         it.doLast {
-          val uri = File(project.buildDir, "reports/paparazzi/index.html").toURI()
-          project.logger.log(LIFECYCLE, "Click here for Paparazzi report: $uri")
+          val uri = project.buildDir.toPath().resolve("reports/paparazzi/index.html").toUri()
+          project.logger.log(LIFECYCLE, "See the Paparazzi report at: $uri")
         }
       }
     }
