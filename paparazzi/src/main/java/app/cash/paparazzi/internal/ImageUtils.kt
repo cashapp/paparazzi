@@ -49,7 +49,7 @@ internal object ImageUtils {
 
   private val THUMBNAIL_SIZE = 1000
 
-  private val MAX_PERCENT_DIFFERENCE = 0.1
+  val MAX_PERCENT_DIFFERENCE = 0.1
 
   /** Directory where to write the thumbnails and deltas. */
   private val failureDir: File

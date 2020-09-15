@@ -17,13 +17,25 @@ package app.cash.paparazzi
 
 import com.squareup.moshi.JsonClass
 import java.util.Date
+import java.util.Locale
 
 @JsonClass(generateAdapter = true)
 data class Snapshot(
-  val name: String,
+  val name: String?,
   val testName: TestName,
   val timestamp: Date,
   val tags: List<String> = listOf(),
   val file: String? = null
 )
 
+internal fun Snapshot.toFileName(
+  delimiter: String = "_",
+  extension: String
+): String {
+  val formattedLabel = if(name != null) {
+    "$delimiter${name.toLowerCase(Locale.US).replace("\\s".toRegex(), delimiter)}"
+  } else {
+    ""
+  }
+  return "${testName.packageName}${delimiter}${testName.className}${delimiter}${testName.methodName}$formattedLabel.${extension}"
+}

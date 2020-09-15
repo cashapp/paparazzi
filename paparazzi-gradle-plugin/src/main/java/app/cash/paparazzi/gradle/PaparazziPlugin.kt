@@ -21,10 +21,12 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.logging.LogLevel.LIFECYCLE
 import org.gradle.api.plugins.JavaBasePlugin
+import org.gradle.api.tasks.testing.Test
 import org.jetbrains.kotlin.gradle.plugin.KotlinBasePluginWrapper
 import java.io.File
 import java.util.Locale
 
+@Suppress("unused")
 class PaparazziPlugin : Plugin<Project> {
   @OptIn(ExperimentalStdlibApi::class)
   override fun apply(project: Project) {
@@ -65,13 +67,28 @@ class PaparazziPlugin : Plugin<Project> {
             .configure { it.dependsOn(writeResourcesTask) }
       }
 
-      project.tasks.named("test${testVariantSlug}")
-          .configure {
-            it.doLast {
-              val uri = File(project.buildDir, "reports/paparazzi/index.html").toURI()
-              project.logger.log(LIFECYCLE, "Click here for Paparazzi report: $uri")
-            }
-          }
+      val recordTaskProvider = project.tasks.register("recordPaparazzi${variantSlug}") {
+        System.setProperty("paparazzi.record", "true")
+      }
+
+      val verifyTaskProvider = project.tasks.register("verifyPaparazzi${variantSlug}") {
+        System.setProperty("paparazzi.verify", "true")
+      }
+
+      val testTaskProvider = project.tasks.named("test${testVariantSlug}", Test::class.java) {
+        it.systemProperty("paparazzi.test.record", System.getProperty("paparazzi.record") ?: "false")
+        it.systemProperty("paparazzi.test.verify", System.getProperty("paparazzi.verify") ?: "false")
+      }
+
+      recordTaskProvider.configure { it.dependsOn(testTaskProvider) }
+      verifyTaskProvider.configure { it.dependsOn(testTaskProvider) }
+
+      testTaskProvider.configure {
+        it.doLast {
+          val uri = File(project.buildDir, "reports/paparazzi/index.html").toURI()
+          project.logger.log(LIFECYCLE, "Click here for Paparazzi report: $uri")
+        }
+      }
     }
   }
 }
