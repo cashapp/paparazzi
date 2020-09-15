@@ -29,15 +29,15 @@ data class Environment(
   val assetsDir = "$appTestDir/src/main/assets/"
 }
 
+fun androidHome() = System.getenv("ANDROID_SDK_ROOT")
+    ?: System.getenv("ANDROID_HOME")
+    ?: "${System.getProperty("user.home")}/Library/Android/sdk"
+
 fun detectEnvironment(): Environment {
   checkInstalledJvm()
 
   val userDir = System.getProperty("user.dir")
-  val userHome = System.getProperty("user.home")
-  val androidHome = System.getenv("ANDROID_SDK_ROOT")
-      ?: System.getenv("ANDROID_HOME")
-      ?: "$userHome/Library/Android/sdk"
-  val platformDir = Files.list(Paths.get("$androidHome/platforms"))
+  val platformDir = Files.list(Paths.get("${androidHome()}/platforms"))
       .filter { Files.isDirectory(it) }
       .map { it.toString() }
       .sorted()
