@@ -1,7 +1,7 @@
 plugins {
   id 'maven-publish'
   id 'signing'
-  id 'org.ajoberstar.grgit' version '3.1.1'
+  id 'org.ajoberstar.grgit' version '4.0.2'
 }
 
 /**

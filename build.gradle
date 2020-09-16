@@ -2,13 +2,13 @@ apply plugin: 'com.github.ben-manes.versions'
 
 buildscript {
   ext.versions = [
-    kotlin: '1.3.72',
+    kotlin: '1.4.10',
     agp: '3.6.1',
     layoutlib: '3.4.0', // "should" be similar to versions.agp
     androidTools: '26.5.0', // agp + 23.0.0 = androidTools
     jcodec: '0.2.5',
-    moshi: '1.9.2',
-    bytebuddy: '1.10.11',
+    moshi: '1.10.0',
+    bytebuddy: '1.10.14',
     releasedPaparazzi: '0.5.0-SNAPSHOT'
   ]
 
@@ -24,7 +24,7 @@ buildscript {
     ],
     kotlinx: [
       coroutines: [
-        core: 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.2',
+        core: 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9',
       ],
     ],
     tools: [
@@ -37,7 +37,7 @@ buildscript {
       annotations: 'androidx.annotation:annotation:1.1.0'
     ],
     layoutlib: "app.cash.paparazzi:layoutlib:${versions.layoutlib}",
-    okio: 'com.squareup.okio:okio:2.4.0',
+    okio: 'com.squareup.okio:okio:2.8.0',
     moshi: [
       core: "com.squareup.moshi:moshi:${versions.moshi}",
       adapters: "com.squareup.moshi:moshi-adapters:${versions.moshi}",
@@ -51,10 +51,10 @@ buildscript {
       core: "net.bytebuddy:byte-buddy:${versions.bytebuddy}",
       agent: "net.bytebuddy:byte-buddy-agent:${versions.bytebuddy}",
     ],
-    guava: 'com.google.guava:guava:27.1-jre',
-    junit: 'junit:junit:4.12',
-    truth: 'com.google.truth:truth:1.0',
-    assertj: 'org.assertj:assertj-core:3.13.2'
+    guava: 'com.google.guava:guava:29.0-jre',
+    junit: 'junit:junit:4.13',
+    truth: 'com.google.truth:truth:1.0.1',
+    assertj: 'org.assertj:assertj-core:3.17.2'
   ]
 
   repositories {
@@ -73,7 +73,7 @@ buildscript {
   dependencies {
     classpath deps.plugins.kotlin
     classpath deps.plugins.android
-    classpath 'com.github.ben-manes:gradle-versions-plugin:0.27.0'
+    classpath 'com.github.ben-manes:gradle-versions-plugin:0.33.0'
     classpath 'org.jetbrains.dokka:dokka-gradle-plugin:0.9.18'
     //classpath "app.cash.paparazzi:paparazzi-gradle-plugin:${versions.releasedPaparazzi}"
   }
