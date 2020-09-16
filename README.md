@@ -20,8 +20,26 @@ Releases
 
 Our [change log][changelog] has release history.
 
+Using plugin application:
 ```groovy
-implementation 'app.cash.paparazzi:paparazzi:0.1.0'
+buildscript {
+  repositories {
+    mavenCentral()
+    google()
+  }
+  dependencies {
+    classpath 'app.cash.paparazzi:paparazzi-gradle-plugin:0.5.0'
+  }
+}
+
+apply plugin: 'app.cash.paparazzi'
+```
+
+Using the plugins DSL:
+```groovy
+plugins {
+  id 'app.cash.paparazzi' version '0.5.0'
+}
 ```
 
 Snapshots of the development version are available in [Sonatype's `snapshots` repository][snap].
