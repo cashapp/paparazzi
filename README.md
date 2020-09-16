@@ -53,6 +53,30 @@ repositories {
 }
 ```
 
+Tasks
+-------
+```
+$ ./gradlew some-project:testDebug
+```
+
+Runs tests and generates an HTML report at `some-project/build/reports/paparazzi/debug/` showing all 
+test runs and snapshots. 
+
+```
+$ ./gradlew some-project:recordPaparazziDebug
+```
+
+Saves snapshots as golden values to a predefined source-controlled location 
+(default: `src/test/snapshots`).
+
+```
+$ ./gradlew some-project:verifyPaparazziDebug
+```
+
+Runs tests and verifies against previously-recorded golden values.
+
+Check out the [sample](sample).
+
 License
 -------
 

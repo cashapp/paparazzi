@@ -1,8 +1,8 @@
 Change Log
 ==========
 
-## Version 0.1.0
+## Version 0.5.0
 
-_2019-06-28_
+_2020-09-16_
 
 Initial release.
