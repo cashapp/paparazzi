@@ -24,8 +24,8 @@ Using plugin application:
 ```groovy
 buildscript {
   repositories {
-    google()
     mavenCentral()
+    google()
   }
   dependencies {
     classpath 'app.cash.paparazzi:paparazzi-gradle-plugin:0.5.0'
