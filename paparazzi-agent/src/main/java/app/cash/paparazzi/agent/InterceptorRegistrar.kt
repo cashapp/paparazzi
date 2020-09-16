@@ -15,7 +15,7 @@ object InterceptorRegistrar {
   ) {
     methodInterceptors += {
       ByteBuddy()
-          .rebase(receiver)
+          .redefine(receiver)
           .method(ElementMatchers.named(methodName))
           .intercept(MethodDelegation.to(interceptor))
           .make()
@@ -25,5 +25,9 @@ object InterceptorRegistrar {
 
   fun registerMethodInterceptors() {
     methodInterceptors.forEach { it.invoke() }
+  }
+
+  fun clearMethodInterceptors() {
+    methodInterceptors.clear()
   }
 }

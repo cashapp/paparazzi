@@ -34,6 +34,15 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun interceptViewEditMode() {
+    val fixtureRoot = File("src/test/projects/edit-mode-intercept")
+
+    gradleRunner
+        .withArguments("testDebug", "--stacktrace")
+        .runFixture(fixtureRoot) { build() }
+  }
+
+  @Test
   fun verifyResourcesGeneratedForJavaProject() {
     val fixtureRoot = File("src/test/projects/verify-resources-java")
 

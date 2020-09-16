@@ -27,6 +27,7 @@ import android.view.animation.AnimationUtils
 import androidx.annotation.LayoutRes
 import app.cash.paparazzi.agent.AgentTestRule
 import app.cash.paparazzi.agent.InterceptorRegistrar
+import app.cash.paparazzi.internal.EditModeInterceptor
 import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.LayoutPullParser
 import app.cash.paparazzi.internal.PaparazziCallback
@@ -99,7 +100,11 @@ class Paparazzi(
       }
     }
 
-    return wrapIfResourceCompatDetected(statement, description)
+    registerFontLookupInterceptionIfResourceCompatDetected()
+    registerViewEditModeInterception()
+
+    val outerRule = AgentTestRule()
+    return outerRule.apply(statement, description)
   }
 
   fun prepare(description: Description) {
@@ -377,21 +382,22 @@ class Paparazzi(
    * https://github.com/cashapp/paparazzi/issues/119
    * https://issuetracker.google.com/issues/156065472
    */
-  private fun wrapIfResourceCompatDetected(
-    innerStatement: Statement,
-    description: Description
-  ): Statement {
-    return try {
+  private fun registerFontLookupInterceptionIfResourceCompatDetected() {
+    try {
       val resourcesCompatClass = Class.forName("androidx.core.content.res.ResourcesCompat")
       InterceptorRegistrar.addMethodInterceptor(
           resourcesCompatClass, "getFont", ResourcesInterceptor::class.java
       )
-      val outerRule = AgentTestRule()
-      outerRule.apply(innerStatement, description)
     } catch (e: ClassNotFoundException) {
-      logger.info("ResourceCompat not found on classpath, exiting...")
-      innerStatement
+      logger.info("ResourceCompat not found on classpath...")
     }
+  }
+
+  private fun registerViewEditModeInterception() {
+    val viewClass = Class.forName("android.view.View")
+    InterceptorRegistrar.addMethodInterceptor(
+        viewClass, "isInEditMode", EditModeInterceptor::class.java
+    )
   }
 
   companion object {
