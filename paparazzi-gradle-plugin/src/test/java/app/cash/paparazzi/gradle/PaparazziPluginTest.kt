@@ -325,6 +325,25 @@ class PaparazziPluginTest {
     assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
   }
 
+  @Test
+  fun verifyAaptResource() {
+    val fixtureRoot = File("src/test/projects/verify-aapt")
+
+    gradleRunner
+        .withArguments("testDebug", "--stacktrace")
+        .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshotFile = File(snapshotsDir, "e53100ad2c8b937d5f941fb3c333e58c5c1807aa.png")
+    assertThat(snapshotFile.exists()).isTrue()
+
+    val goldenImage = File(fixtureRoot, "src/test/resources/aapt_vector.png")
+    val actualFileBytes = Files.readAllBytes(snapshotFile.toPath())
+    val expectedFileBytes = Files.readAllBytes(goldenImage.toPath())
+
+    assertThat(actualFileBytes).isEqualTo(expectedFileBytes)
+  }
+
   private fun GradleRunner.runFixture(
     projectRoot: File,
     moduleRoot: File = projectRoot,
