@@ -5,6 +5,15 @@ An Android library to render your application screens without a physical device 
 
 See the [project website][paparazzi] for documentation and APIs.
 
+Jetifier
+--------
+
+If using Jetifier to migrate off Support libraries, add the following to your `gradle.properties` to 
+exclude bundled Android dependencies.
+
+```groovy
+android.jetifier.blacklist=android-base-common,common
+```
 
 Releases
 --------
