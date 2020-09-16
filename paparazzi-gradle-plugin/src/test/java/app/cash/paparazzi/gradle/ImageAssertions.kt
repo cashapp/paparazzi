@@ -93,7 +93,9 @@ internal class ImageSubject private constructor(
   }
 
   companion object {
-    private val IMAGE_SUBJECT_FACTORY = Factory(::ImageSubject)
+    private val IMAGE_SUBJECT_FACTORY = Factory<ImageSubject, File> { metadata, actual ->
+      ImageSubject(metadata, actual)
+    }
 
     fun assertThat(actual: File?): ImageSubject {
       return assertAbout(IMAGE_SUBJECT_FACTORY).that(actual)
