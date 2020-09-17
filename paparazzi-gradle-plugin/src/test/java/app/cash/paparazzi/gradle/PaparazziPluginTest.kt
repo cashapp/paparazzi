@@ -64,6 +64,28 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun recordMultiModuleProject() {
+    val fixtureRoot = File("src/test/projects/record-mode-multiple-modules")
+    val moduleRoot = File(fixtureRoot, "module")
+
+    val result = gradleRunner
+        .withArguments("module:recordPaparazziDebug", "--stacktrace")
+        .runFixture(fixtureRoot, moduleRoot) { build() }
+
+    assertThat(result.task(":module:testDebugUnitTest")).isNotNull()
+
+    val snapshotsDir = File(moduleRoot, "src/test/snapshots")
+
+    val snapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_RecordTest_record.png")
+    assertThat(snapshot.exists()).isTrue()
+
+    val snapshotWithLabel = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_RecordTest_record_label.png")
+    assertThat(snapshotWithLabel.exists()).isTrue()
+
+    snapshotsDir.deleteRecursively()
+  }
+
+  @Test
   fun verifySuccess() {
     val fixtureRoot = File("src/test/projects/verify-mode-success")
 
@@ -89,6 +111,39 @@ class PaparazziPluginTest {
     assertThat(delta.exists()).isTrue()
 
     val goldenImage = File(fixtureRoot, "src/test/resources/expected_delta.png")
+    assertThat(delta).isSimilarTo(goldenImage).withDefaultThreshold()
+
+    failureDir.deleteRecursively()
+  }
+
+  @Test
+  fun verifySuccessMultiModule() {
+    val fixtureRoot = File("src/test/projects/verify-mode-success-multiple-modules")
+    val moduleRoot = File(fixtureRoot, "module")
+
+    val result = gradleRunner
+        .withArguments("module:verifyPaparazziDebug", "--stacktrace")
+        .runFixture(fixtureRoot, moduleRoot) { build() }
+
+    assertThat(result.task(":module:testDebugUnitTest")).isNotNull()
+  }
+
+  @Test
+  fun verifyFailureMultiModule() {
+    val fixtureRoot = File("src/test/projects/verify-mode-failure-multiple-modules")
+    val moduleRoot = File(fixtureRoot, "module")
+
+    val result = gradleRunner
+        .withArguments("module:verifyPaparazziDebug", "--stacktrace")
+        .runFixture(fixtureRoot, moduleRoot) { buildAndFail() }
+
+    assertThat(result.task(":module:testDebugUnitTest")).isNotNull()
+
+    val failureDir = File(moduleRoot, "out/failures")
+    val delta = File(failureDir, "delta-app.cash.paparazzi.plugin.test_VerifyTest_verify.png")
+    assertThat(delta.exists()).isTrue()
+
+    val goldenImage = File(moduleRoot, "src/test/resources/expected_delta.png")
     assertThat(delta).isSimilarTo(goldenImage).withDefaultThreshold()
 
     failureDir.deleteRecursively()
@@ -271,31 +326,32 @@ class PaparazziPluginTest {
   }
 
   private fun GradleRunner.runFixture(
-    root: File,
+    projectRoot: File,
+    moduleRoot: File = projectRoot,
     action: GradleRunner.() -> BuildResult
   ): BuildResult {
-    val settings = File(root, "settings.gradle")
+    val settings = File(projectRoot, "settings.gradle")
     if (!settings.exists()) {
       settings.createNewFile()
       settings.deleteOnExit()
     }
 
-    val mainSourceRoot = File(root, "src/main")
+    val mainSourceRoot = File(moduleRoot, "src/main")
     val manifest = File(mainSourceRoot, "AndroidManifest.xml")
-    if (!manifest.exists()) {
+    if (!mainSourceRoot.exists() || !manifest.exists()) {
       mainSourceRoot.mkdirs()
       manifest.createNewFile()
       manifest.writeText("""<manifest package="app.cash.paparazzi.plugin.test"/>""")
       manifest.deleteOnExit()
     }
 
-    val gradleProperties = File(root, "gradle.properties")
+    val gradleProperties = File(projectRoot, "gradle.properties")
     if (!gradleProperties.exists()) {
       gradleProperties.createNewFile()
       gradleProperties.writeText("android.useAndroidX=true")
       gradleProperties.deleteOnExit()
     }
 
-    return withProjectDir(root).action()
+    return withProjectDir(projectRoot).action()
   }
 }
