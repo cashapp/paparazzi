@@ -73,11 +73,11 @@ class PaparazziPlugin : Plugin<Project> {
         test.doFirst {
           test.systemProperty(
               "paparazzi.test.record",
-              project.gradle.taskGraph.hasTask(":recordPaparazzi${variantSlug}")
+              project.gradle.taskGraph.hasTask(recordTaskProvider.get())
           )
           test.systemProperty(
               "paparazzi.test.verify",
-              project.gradle.taskGraph.hasTask(":verifyPaparazzi${variantSlug}")
+              project.gradle.taskGraph.hasTask(verifyTaskProvider.get())
           )
         }
       }
