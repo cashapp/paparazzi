@@ -1,0 +1,21 @@
+plugins {
+  id 'com.android.library'
+  id 'kotlin-android'
+  id 'app.cash.paparazzi'
+}
+
+repositories {
+  maven {
+    url "file://${projectDir.absolutePath}/../../../../../build/localMaven"
+  }
+  mavenCentral()
+  google()
+  jcenter()
+}
+
+android {
+  compileSdkVersion 28
+  defaultConfig {
+    minSdkVersion 25
+  }
+}

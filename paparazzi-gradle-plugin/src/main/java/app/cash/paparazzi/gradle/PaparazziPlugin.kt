@@ -66,17 +66,20 @@ class PaparazziPlugin : Plugin<Project> {
             .configure { it.dependsOn(writeResourcesTask) }
       }
 
-      val recordTaskProvider = project.tasks.register("recordPaparazzi${variantSlug}") {
-        System.setProperty("paparazzi.record", "true")
-      }
+      val recordTaskProvider = project.tasks.register("recordPaparazzi${variantSlug}")
+      val verifyTaskProvider = project.tasks.register("verifyPaparazzi${variantSlug}")
 
-      val verifyTaskProvider = project.tasks.register("verifyPaparazzi${variantSlug}") {
-        System.setProperty("paparazzi.verify", "true")
-      }
-
-      val testTaskProvider = project.tasks.named("test${testVariantSlug}", Test::class.java) {
-        it.systemProperty("paparazzi.test.record", System.getProperty("paparazzi.record") ?: "false")
-        it.systemProperty("paparazzi.test.verify", System.getProperty("paparazzi.verify") ?: "false")
+      val testTaskProvider = project.tasks.named("test${testVariantSlug}", Test::class.java) { test ->
+        test.doFirst {
+          test.systemProperty(
+              "paparazzi.test.record",
+              project.gradle.taskGraph.hasTask(":recordPaparazzi${variantSlug}")
+          )
+          test.systemProperty(
+              "paparazzi.test.verify",
+              project.gradle.taskGraph.hasTask(":verifyPaparazzi${variantSlug}")
+          )
+        }
       }
 
       recordTaskProvider.configure { it.dependsOn(testTaskProvider) }
