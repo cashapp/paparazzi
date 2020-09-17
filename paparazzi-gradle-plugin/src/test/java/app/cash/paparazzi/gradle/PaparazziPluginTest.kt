@@ -43,6 +43,58 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun record() {
+    val fixtureRoot = File("src/test/projects/record-mode")
+
+    val result = gradleRunner
+        .withArguments("recordPaparazziDebug", "--stacktrace")
+        .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":testDebugUnitTest")).isNotNull()
+
+    val snapshotsDir = File(fixtureRoot, "src/test/snapshots")
+
+    val snapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_RecordTest_record.png")
+    assertThat(snapshot.exists()).isTrue()
+
+    val snapshotWithLabel = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_RecordTest_record_label.png")
+    assertThat(snapshotWithLabel.exists()).isTrue()
+
+    snapshotsDir.deleteRecursively()
+  }
+
+  @Test
+  fun verifySuccess() {
+    val fixtureRoot = File("src/test/projects/verify-mode-success")
+
+    val result = gradleRunner
+        .withArguments("verifyPaparazziDebug", "--stacktrace")
+        .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":testDebugUnitTest")).isNotNull()
+  }
+
+  @Test
+  fun verifyFailure() {
+    val fixtureRoot = File("src/test/projects/verify-mode-failure")
+
+    val result = gradleRunner
+        .withArguments("verifyPaparazziDebug", "--stacktrace")
+        .runFixture(fixtureRoot) { buildAndFail() }
+
+    assertThat(result.task(":testDebugUnitTest")).isNotNull()
+
+    val failureDir = File(fixtureRoot, "out/failures")
+    val delta = File(failureDir, "delta-app.cash.paparazzi.plugin.test_VerifyTest_verify.png")
+    assertThat(delta.exists()).isTrue()
+
+    val goldenImage = File(fixtureRoot, "src/test/resources/expected_delta.png")
+    assertThat(delta).isSimilarTo(goldenImage).withDefaultThreshold()
+
+    failureDir.deleteRecursively()
+  }
+
+  @Test
   fun verifyResourcesGeneratedForJavaProject() {
     val fixtureRoot = File("src/test/projects/verify-resources-java")
 
