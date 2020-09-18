@@ -24,52 +24,44 @@ import com.android.SdkConstants.SPINNER
 import com.android.SdkConstants.TOOLS_URI
 import com.android.ide.common.rendering.api.ILayoutPullParser
 import com.android.ide.common.rendering.api.ResourceNamespace
-import org.kxml2.io.KXmlParser
-import org.xmlpull.v1.XmlPullParser
-import org.xmlpull.v1.XmlPullParserException
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileNotFoundException
-import java.io.IOError
-import java.io.InputStream
 import java.nio.charset.Charset
 import java.util.HashMap
 
-internal class LayoutPullParser private constructor(
-  inputStream: InputStream
-) : KXmlParser(), ILayoutPullParser {
+internal class LayoutPullParser(resourceSnapshot: ResourceSnapshot) : ResourceSnapshotPullParser(
+    resourceSnapshot
+), ILayoutPullParser {
   private var layoutNamespace = ResourceNamespace.RES_AUTO
 
-  init {
-    try {
-      setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true)
-      setInput(inputStream, null)
-    } catch (e: XmlPullParserException) {
-      throw IOError(e)
-    }
+  fun getExtractedResources(): Map<String, ResourceSnapshot> {
+    return resourceSnapshot.aaptSnapshots
   }
 
   override fun getViewCookie(): Any? {
     // TODO: Implement this properly.
-    val name = super.getName() ?: return null
+    val rootSnapshot = resourceSnapshot.rootSnapshot
+    val name = rootSnapshot.name
 
     // Store tools attributes if this looks like a layout we'll need adapter view
     // bindings for in the LayoutlibCallback.
     if (LIST_VIEW == name || EXPANDABLE_LIST_VIEW == name || GRID_VIEW == name || SPINNER == name) {
       var map: MutableMap<String, String>? = null
-      val count = attributeCount
+      val count = rootSnapshot.attributes.size
       for (i in 0 until count) {
-        val namespace = getAttributeNamespace(i)
-        if (namespace != null && namespace == TOOLS_URI) {
-          val attribute = getAttributeName(i)
+        val attributeSnapshot = rootSnapshot.attributes[i]
+        val namespace = attributeSnapshot.namespace
+        if (namespace == TOOLS_URI) {
+          val attribute = attributeSnapshot.name
           if (attribute == ATTR_IGNORE) {
             continue
           }
           if (map == null) {
             map = HashMap(4)
           }
-          map[attribute] = getAttributeValue(i)
+          map[attribute] = attributeSnapshot.value
         }
       }
 
@@ -87,7 +79,8 @@ internal class LayoutPullParser private constructor(
 
   companion object {
     @Throws(FileNotFoundException::class)
-    fun createFromFile(layoutFile: File) = LayoutPullParser(FileInputStream(layoutFile))
+    fun createFromFile(layoutFile: File) =
+      LayoutPullParser(ResourceSnapshot(FileInputStream(layoutFile)))
 
     /**
      * @param layoutPath Must start with '/' and be relative to test resources.
@@ -99,14 +92,22 @@ internal class LayoutPullParser private constructor(
       }
 
       return LayoutPullParser(
-          LayoutPullParser::class.java.classLoader.getResourceAsStream(layoutPath)
+          ResourceSnapshot(
+              LayoutPullParser::class.java.classLoader.getResourceAsStream(layoutPath)
+          )
       )
     }
 
     fun createFromString(contents: String): LayoutPullParser {
       return LayoutPullParser(
-          ByteArrayInputStream(contents.toByteArray(Charset.forName("UTF-8")))
+          ResourceSnapshot(
+              ByteArrayInputStream(contents.toByteArray(Charset.forName("UTF-8")))
+          )
       )
+    }
+
+    fun createFromResourceSnapshot(resourceSnapshot: ResourceSnapshot): LayoutPullParser {
+      return LayoutPullParser(resourceSnapshot)
     }
   }
 }

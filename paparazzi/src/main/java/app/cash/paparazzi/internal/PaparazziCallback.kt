@@ -46,6 +46,7 @@ internal class PaparazziCallback(
   private val projectResources = mutableMapOf<Int, ResourceReference>()
   private val resources = mutableMapOf<ResourceReference, Int>()
   private val actionBarCallback = ActionBarCallback()
+  private val aaptResourceSnapshots = mutableMapOf<String, ResourceSnapshot>()
 
   private var adaptiveIconMaskPath: String? = null
   private var highQualityShadow = false
@@ -101,7 +102,13 @@ internal class PaparazziCallback(
 
   override fun getParser(layoutResource: ResourceValue): ILayoutPullParser? {
     try {
-      return LayoutPullParser.createFromFile(File(layoutResource.value))
+      if (aaptResourceSnapshots.isNotEmpty() && layoutResource.resourceType == ResourceType.AAPT) {
+        return LayoutPullParser.createFromResourceSnapshot(aaptResourceSnapshots[layoutResource.value]!!)
+      }
+
+      val layoutPullParser = LayoutPullParser.createFromFile(File(layoutResource.value))
+      aaptResourceSnapshots.putAll(layoutPullParser.getExtractedResources())
+      return layoutPullParser
     } catch (e: FileNotFoundException) {
       return null
     }
