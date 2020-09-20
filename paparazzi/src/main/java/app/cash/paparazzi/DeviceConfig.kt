@@ -109,7 +109,7 @@ data class DeviceConfig(
 
   /**
    * Device specs per:
-   * https://android.googlesource.com/platform/tools/base/+/studio-master-dev/sdklib/src/main/java/com/android/sdklib/devices/nexus.xml
+   * https://android.googlesource.com/platform/tools/base/+/mirror-goog-studio-master-dev/sdklib/src/main/java/com/android/sdklib/devices/nexus.xml
    *
    * Release dates obtained from Wikipedia.
    */
@@ -353,6 +353,57 @@ data class DeviceConfig(
         softButtons = true,
         navigation = Navigation.NONAV,
         released = "May 7, 2019"
+    )
+
+    val PIXEL_4 = DeviceConfig(
+        screenHeight = 2280,
+        screenWidth = 1080,
+        xdpi = 444,
+        ydpi = 444,
+        orientation = ScreenOrientation.PORTRAIT,
+        density = Density.DPI_440,
+        ratio = ScreenRatio.LONG,
+        size = ScreenSize.NORMAL,
+        keyboard = Keyboard.NOKEY,
+        touchScreen = TouchScreen.FINGER,
+        keyboardState = KeyboardState.SOFT,
+        softButtons = true,
+        navigation = Navigation.NONAV,
+        released = "October 24, 2019"
+    )
+
+    val PIXEL_4_XL = DeviceConfig(
+        screenHeight = 3040,
+        screenWidth = 1440,
+        xdpi = 537,
+        ydpi = 537,
+        orientation = ScreenOrientation.PORTRAIT,
+        density = Density.DPI_560,
+        ratio = ScreenRatio.LONG,
+        size = ScreenSize.NORMAL,
+        keyboard = Keyboard.NOKEY,
+        touchScreen = TouchScreen.FINGER,
+        keyboardState = KeyboardState.SOFT,
+        softButtons = true,
+        navigation = Navigation.NONAV,
+        released = "October 24, 2019"
+    )
+
+    val PIXEL_4A = DeviceConfig(
+        screenHeight = 2340,
+        screenWidth = 1080,
+        xdpi = 442,
+        ydpi = 444,
+        orientation = ScreenOrientation.PORTRAIT,
+        density = Density.DPI_440,
+        ratio = ScreenRatio.LONG,
+        size = ScreenSize.NORMAL,
+        keyboard = Keyboard.NOKEY,
+        touchScreen = TouchScreen.FINGER,
+        keyboardState = KeyboardState.SOFT,
+        softButtons = true,
+        navigation = Navigation.NONAV,
+        released = "August 20, 2020"
     )
 
     private const val TAG_ATTR = "attr"
