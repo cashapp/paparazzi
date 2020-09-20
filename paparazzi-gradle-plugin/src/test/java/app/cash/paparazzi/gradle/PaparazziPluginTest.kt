@@ -243,14 +243,12 @@ class PaparazziPluginTest {
         .runFixture(fixtureRoot) { build() }
 
     val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
-    val snapshotFile = File(snapshotsDir, "c955e956af7c3127cffd96b9b7160aa609cfde23.png")
-    assertThat(snapshotFile.exists()).isTrue()
+    val snapshots = snapshotsDir.listFiles()
+    assertThat(snapshots!!).hasLength(1)
 
+    val snapshotImage = snapshots[0]
     val goldenImage = File(fixtureRoot, "src/test/resources/arrow_up.png")
-    val actualFileBytes = Files.readAllBytes(snapshotFile.toPath())
-    val expectedFileBytes = Files.readAllBytes(goldenImage.toPath())
-
-    assertThat(actualFileBytes).isEqualTo(expectedFileBytes)
+    assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
   }
 
   @Test
@@ -281,14 +279,12 @@ class PaparazziPluginTest {
         .runFixture(fixtureRoot) { build() }
 
     val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
-    val snapshotFile = File(snapshotsDir, "be373e00b3ff3a319e40b9d798b1d2a1e40dec7d.png")
-    assertThat(snapshotFile.exists()).isTrue()
+    val snapshots = snapshotsDir.listFiles()
+    assertThat(snapshots!!).hasLength(1)
 
+    val snapshotImage = snapshots[0]
     val goldenImage = File(fixtureRoot, "src/test/resources/arrow_present.png")
-    val actualFileBytes = Files.readAllBytes(snapshotFile.toPath())
-    val expectedFileBytes = Files.readAllBytes(goldenImage.toPath())
-
-    assertThat(actualFileBytes).isEqualTo(expectedFileBytes)
+    assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
   }
 
   @Test
