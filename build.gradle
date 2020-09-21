@@ -9,7 +9,7 @@ buildscript {
     jcodec: '0.2.5',
     moshi: '1.10.0',
     bytebuddy: '1.10.14',
-    releasedPaparazzi: '0.5.0-SNAPSHOT'
+    releasedPaparazzi: '0.5.2'
   ]
 
   ext.deps = [
@@ -58,14 +58,8 @@ buildscript {
   ]
 
   repositories {
-    maven {
-      url 'https://oss.sonatype.org/content/repositories/snapshots/'
-      content {
-        includeGroup 'app.cash.paparazzi'
-      }
-    }
-    google()
     mavenCentral()
+    google()
     jcenter()
     //mavenLocal()
   }
@@ -75,20 +69,14 @@ buildscript {
     classpath deps.plugins.android
     classpath 'com.github.ben-manes:gradle-versions-plugin:0.33.0'
     classpath 'org.jetbrains.dokka:dokka-gradle-plugin:0.9.18'
-    //classpath "app.cash.paparazzi:paparazzi-gradle-plugin:${versions.releasedPaparazzi}"
+    classpath "app.cash.paparazzi:paparazzi-gradle-plugin:${versions.releasedPaparazzi}"
   }
 }
 
 subprojects {
   repositories {
-    maven {
-      url 'https://oss.sonatype.org/content/repositories/snapshots/'
-      content {
-        includeGroup 'app.cash.paparazzi'
-      }
-    }
-    google()
     mavenCentral()
+    google()
     jcenter()
     maven {
       url 'https://dl.bintray.com/kotlin/dokka'
