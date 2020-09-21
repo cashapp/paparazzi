@@ -4,6 +4,7 @@ import app.cash.paparazzi.gradle.ImageSubject.Companion.assertThat
 import com.google.common.truth.Truth.assertThat
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
+import org.gradle.testkit.runner.TaskOutcome.FROM_CACHE
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
@@ -31,6 +32,33 @@ class PaparazziPluginTest {
     assertThat(result.output).contains(
         "The Android Gradle library plugin must be applied before the Paparazzi plugin."
     )
+  }
+
+  @Test
+  fun cacheable() {
+    val fixtureRoot = File("src/test/projects/cacheable")
+
+    val firstRun = gradleRunner
+        .withArguments("testDebug", "--build-cache", "--stacktrace")
+        .runFixture(fixtureRoot) { build() }
+
+    with(firstRun.task(":preparePaparazziDebugResources")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isNotEqualTo(FROM_CACHE)
+    }
+
+    fixtureRoot.resolve("build").deleteRecursively()
+
+    val secondRun = gradleRunner
+        .withArguments("testDebug", "--build-cache", "--stacktrace")
+        .runFixture(fixtureRoot) { build() }
+
+    with(secondRun.task(":preparePaparazziDebugResources")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(FROM_CACHE)
+    }
+
+    fixtureRoot.resolve("build-cache").deleteRecursively()
   }
 
   @Test
