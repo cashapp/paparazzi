@@ -44,14 +44,10 @@ class PaparazziPlugin : Plugin<Project> {
 
       val writeResourcesTask = project.tasks.register(
           "preparePaparazzi${variantSlug}Resources", PrepareResourcesTask::class.java
-      ) {
+      ) { task ->
+        task.mergeResourcesOutput.set(variant.mergeResourcesProvider.flatMap { it.outputDir })
         // TODO: variant-aware file path
-        it.outputs.file("${project.buildDir}/intermediates/paparazzi/resources.txt")
-
-        // Temporary, until AGP provides outputDir as Provider<File>
-        it.mergeResourcesProvider = variant.mergeResourcesProvider
-        it.outputDir = project.layout.buildDirectory.dir("intermediates/paparazzi/resources.txt")
-        it.dependsOn(variant.mergeResourcesProvider)
+        task.paparazziResources.set(project.layout.buildDirectory.file("intermediates/paparazzi/resources.txt"))
       }
 
       val testVariantSlug = variant.unitTestVariant.name.capitalize(Locale.US)
