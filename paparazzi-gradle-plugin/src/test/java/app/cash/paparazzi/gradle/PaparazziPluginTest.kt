@@ -201,6 +201,46 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun verifyTargetSdkIsDifferentFromCompileSdk() {
+    val fixtureRoot = File("src/test/projects/verify-target-sdk-compile-sdk")
+
+    val result = gradleRunner
+        .withArguments("compileDebugUnitTestJavaWithJavac", "--stacktrace")
+        .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
+
+    val resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/debug/resources.txt")
+    assertThat(resourcesFile.exists()).isTrue()
+
+    val resourceFileContents = resourcesFile.readLines()
+    assertThat(resourceFileContents[2]).isEqualTo("27")
+    assertThat(resourceFileContents[3]).endsWith(
+        "/platforms/android-28/"
+    )
+  }
+
+  @Test
+  fun verifyTargetSdkIsSameAsCompileSdk() {
+    val fixtureRoot = File("src/test/projects/verify-resources-java")
+
+    val result = gradleRunner
+        .withArguments("compileDebugUnitTestJavaWithJavac", "--stacktrace")
+        .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
+
+    val resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/debug/resources.txt")
+    assertThat(resourcesFile.exists()).isTrue()
+
+    val resourceFileContents = resourcesFile.readLines()
+    assertThat(resourceFileContents[2]).isEqualTo("29")
+    assertThat(resourceFileContents[3]).endsWith(
+        "/platforms/android-29/"
+    )
+  }
+
+  @Test
   fun verifyResourcesGeneratedForKotlinProject() {
     val fixtureRoot = File("src/test/projects/verify-resources-kotlin")
 
