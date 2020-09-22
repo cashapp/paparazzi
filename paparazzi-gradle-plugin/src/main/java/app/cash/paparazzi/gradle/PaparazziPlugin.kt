@@ -41,6 +41,7 @@ class PaparazziPlugin : Plugin<Project> {
         .libraryVariants
     variants.all { variant ->
       val variantSlug = variant.name.capitalize(Locale.US)
+
       val writeResourcesTask = project.tasks.register(
           "preparePaparazzi${variantSlug}Resources", PrepareResourcesTask::class.java
       ) { task ->
@@ -67,7 +68,8 @@ class PaparazziPlugin : Plugin<Project> {
       val testTaskProvider = project.tasks.named("test${testVariantSlug}", Test::class.java) { test ->
         test.systemProperty(
             "paparazzi.test.resources",
-            writeResourcesTask.flatMap { it.paparazziResources.asFile }.get().path)
+            writeResourcesTask.flatMap { it.paparazziResources.asFile }.get().path
+        )
         test.doFirst {
           test.systemProperty(
               "paparazzi.test.record",

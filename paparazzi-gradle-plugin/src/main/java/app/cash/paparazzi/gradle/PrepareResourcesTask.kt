@@ -75,7 +75,7 @@ open class PrepareResourcesTask : DefaultTask() {
 
   private fun Project.sdkFolder(): File {
     val androidExtension = extensions.getByType(BaseExtension::class.java)
-    return androidExtension.sdkDirectory
+    return androidExtension.sdkDirectory!!
   }
 
   companion object {
