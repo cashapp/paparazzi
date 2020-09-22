@@ -44,11 +44,10 @@ afterEvaluate { project ->
 
 apply from: "$rootDir/gradle/gradle-mvn-push.gradle"
 
+def configFile = new File("$buildDir/intermediates/paparazzi/resources.txt")
 def generateTestConfig = tasks.register("generateTestConfig") {
   doLast {
-    File configParent = new File("$buildDir/intermediates/paparazzi")
-    configParent.mkdirs()
-    File configFile = new File(configParent, "resources.txt")
+    configFile.parentFile.mkdirs()
     configFile.withWriter('utf-8') { writer ->
       writer.writeLine("app.cash.paparazzi")
       writer.writeLine(".")
@@ -59,6 +58,11 @@ def generateTestConfig = tasks.register("generateTestConfig") {
       writer.writeLine("${androidHome}/platforms/android-28/")
     }
   }
+}
+
+tasks.withType(Test).configureEach { task ->
+  task.dependsOn(generateTestConfig)
+  task.systemProperty("paparazzi.test.resources", configFile)
 }
 
 test {

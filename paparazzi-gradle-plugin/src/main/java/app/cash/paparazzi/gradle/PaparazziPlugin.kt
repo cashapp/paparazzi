@@ -66,8 +66,8 @@ class PaparazziPlugin : Plugin<Project> {
 
       val testTaskProvider = project.tasks.named("test${testVariantSlug}", Test::class.java) { test ->
         test.systemProperty(
-                "paparazzi.test.resources",
-                writeResourcesTask.flatMap { it.paparazziResources.asFile }.get().path)
+            "paparazzi.test.resources",
+            writeResourcesTask.flatMap { it.paparazziResources.asFile }.get().path)
         test.doFirst {
           test.systemProperty(
               "paparazzi.test.record",
