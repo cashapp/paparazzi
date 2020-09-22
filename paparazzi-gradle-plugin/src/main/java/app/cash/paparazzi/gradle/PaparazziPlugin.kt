@@ -65,19 +65,13 @@ class PaparazziPlugin : Plugin<Project> {
       val verifyTaskProvider = project.tasks.register("verifyPaparazzi${variantSlug}")
 
       val testTaskProvider = project.tasks.named("test${testVariantSlug}", Test::class.java) { test ->
-        test.systemProperty(
-            "paparazzi.test.resources",
+        test.systemProperties["paparazzi.test.resources"] =
             writeResourcesTask.flatMap { it.paparazziResources.asFile }.get().path
-        )
         test.doFirst {
-          test.systemProperty(
-              "paparazzi.test.record",
+          test.systemProperties["paparazzi.test.record"] =
               project.gradle.taskGraph.hasTask(recordTaskProvider.get())
-          )
-          test.systemProperty(
-              "paparazzi.test.verify",
+          test.systemProperties["paparazzi.test.verify"] =
               project.gradle.taskGraph.hasTask(verifyTaskProvider.get())
-          )
         }
       }
 
