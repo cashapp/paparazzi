@@ -46,8 +46,7 @@ class PaparazziPlugin : Plugin<Project> {
           "preparePaparazzi${variantSlug}Resources", PrepareResourcesTask::class.java
       ) { task ->
         task.mergeResourcesOutput.set(variant.mergeResourcesProvider.flatMap { it.outputDir })
-        // TODO: variant-aware file path
-        task.paparazziResources.set(project.layout.buildDirectory.file("intermediates/paparazzi/resources.txt"))
+        task.paparazziResources.set(project.layout.buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.txt"))
       }
 
       val testVariantSlug = variant.unitTestVariant.name.capitalize(Locale.US)
