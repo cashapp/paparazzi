@@ -4,6 +4,7 @@ import app.cash.paparazzi.gradle.ImageSubject.Companion.assertThat
 import com.google.common.truth.Truth.assertThat
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
+import org.gradle.testkit.runner.TaskOutcome
 import org.gradle.testkit.runner.TaskOutcome.FROM_CACHE
 import org.junit.Before
 import org.junit.Ignore
@@ -30,7 +31,7 @@ class PaparazziPluginTest {
 
     assertThat(result.task(":preparePaparazziDebugResources")).isNull()
     assertThat(result.output).contains(
-        "The Android Gradle library plugin must be applied before the Paparazzi plugin."
+        "The Android Gradle library/application plugin must be applied before the Paparazzi plugin."
     )
   }
 
@@ -306,6 +307,22 @@ class PaparazziPluginTest {
     val expectedFileBytes = Files.readAllBytes(goldenImage.toPath())
 
     assertThat(actualFileBytes).isEqualTo(expectedFileBytes)
+  }
+
+  @Test
+  fun verifyAppSnapshot() {
+    val fixtureRoot = File("src/test/projects/verify-snapshot-app")
+    val goldenImage = File(fixtureRoot, "src/test/snapshots/images/app.cash.paparazzi.plugin.test_LaunchViewTest_testViews_launch.png")
+    assertThat(goldenImage).exists()
+
+    val result = gradleRunner
+            .withArguments("verifyPaparazziDebug", "--stacktrace")
+            .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
+    assertThat(result.task(":decodeDebugPaparazziApkResources")).isNotNull()
+    assertThat(result.task(":testDebugUnitTest")).isNotNull()
+    assertThat(result.task(":testDebugUnitTest")?.outcome).isEqualTo(TaskOutcome.SUCCESS)
   }
 
   @Test
