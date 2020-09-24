@@ -46,6 +46,7 @@ class PaparazziPlugin : Plugin<Project> {
           "preparePaparazzi${variantSlug}Resources", PrepareResourcesTask::class.java
       ) { task ->
         task.mergeResourcesOutput.set(variant.mergeResourcesProvider.flatMap { it.outputDir })
+        task.mergeAssetsOutput.set(variant.mergeAssetsProvider.flatMap { it.outputDir })
         task.paparazziResources.set(project.layout.buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.txt"))
       }
 

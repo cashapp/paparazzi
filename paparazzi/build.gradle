@@ -58,6 +58,7 @@ def generateTestConfig = tasks.register("generateTestConfig") {
           ?: System.getenv("ANDROID_HOME")
           ?: "$userHome/Library/Android/sdk"
       writer.writeLine("${androidHome}/platforms/android-28/")
+      writer.writeLine(".")
     }
   }
 }
