@@ -36,6 +36,10 @@ open class PrepareResourcesTask : DefaultTask() {
   @get:PathSensitive(PathSensitivity.RELATIVE)
   internal val mergeResourcesOutput: DirectoryProperty = project.objects.directoryProperty()
 
+  @get:InputDirectory
+  @get:PathSensitive(PathSensitivity.RELATIVE)
+  internal val assetsDirectory: DirectoryProperty = project.objects.directoryProperty()
+
   @get:OutputFile
   internal val paparazziResources: RegularFileProperty = project.objects.fileProperty()
 
@@ -54,6 +58,8 @@ open class PrepareResourcesTask : DefaultTask() {
           it.newLine()
           // will use the compile version for system framework resources
           it.write("${project.sdkFolder().absolutePath}/platforms/android-${project.compileSdkVersion()}/")
+          it.newLine()
+          it.write(assetsDirectory.get().asFile.path)
           it.newLine()
         }
   }

@@ -195,6 +195,9 @@ class PaparazziPluginTest {
     assertThat(resourceFileContents[1]).endsWith(
         "src/test/projects/verify-resources-java/build/intermediates/res/merged/debug"
     )
+    assertThat(resourceFileContents[4]).endsWith(
+        "src/test/projects/verify-resources-java/build/intermediates/library_assets/debug/out"
+    )
   }
 
   @Test
@@ -254,6 +257,9 @@ class PaparazziPluginTest {
     assertThat(resourceFileContents[0]).isEqualTo("app.cash.paparazzi.plugin.test")
     assertThat(resourceFileContents[1]).endsWith(
         "src/test/projects/verify-resources-kotlin/build/intermediates/res/merged/debug"
+    )
+    assertThat(resourceFileContents[4]).endsWith(
+        "src/test/projects/verify-resources-kotlin/build/intermediates/library_assets/debug/out"
     )
   }
 
