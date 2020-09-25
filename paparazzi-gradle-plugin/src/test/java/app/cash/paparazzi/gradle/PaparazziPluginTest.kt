@@ -4,6 +4,7 @@ import app.cash.paparazzi.gradle.ImageSubject.Companion.assertThat
 import com.google.common.truth.Truth.assertThat
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
+import org.gradle.testkit.runner.TaskOutcome
 import org.gradle.testkit.runner.TaskOutcome.FROM_CACHE
 import org.junit.Before
 import org.junit.Ignore
@@ -30,7 +31,7 @@ class PaparazziPluginTest {
 
     assertThat(result.task(":preparePaparazziDebugResources")).isNull()
     assertThat(result.output).contains(
-        "The Android Gradle library plugin must be applied before the Paparazzi plugin."
+        "The Android Gradle library/application plugin must be applied before the Paparazzi plugin."
     )
   }
 
@@ -195,6 +196,49 @@ class PaparazziPluginTest {
     assertThat(resourceFileContents[1]).endsWith(
         "src/test/projects/verify-resources-java/build/intermediates/res/merged/debug"
     )
+    assertThat(resourceFileContents[4]).endsWith(
+        "src/test/projects/verify-resources-java/build/intermediates/library_assets/debug/out"
+    )
+  }
+
+  @Test
+  fun verifyTargetSdkIsDifferentFromCompileSdk() {
+    val fixtureRoot = File("src/test/projects/verify-target-sdk-compile-sdk")
+
+    val result = gradleRunner
+        .withArguments("compileDebugUnitTestJavaWithJavac", "--stacktrace")
+        .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
+
+    val resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/debug/resources.txt")
+    assertThat(resourcesFile.exists()).isTrue()
+
+    val resourceFileContents = resourcesFile.readLines()
+    assertThat(resourceFileContents[2]).isEqualTo("27")
+    assertThat(resourceFileContents[3]).endsWith(
+        "/platforms/android-28/"
+    )
+  }
+
+  @Test
+  fun verifyTargetSdkIsSameAsCompileSdk() {
+    val fixtureRoot = File("src/test/projects/verify-resources-java")
+
+    val result = gradleRunner
+        .withArguments("compileDebugUnitTestJavaWithJavac", "--stacktrace")
+        .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
+
+    val resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/debug/resources.txt")
+    assertThat(resourcesFile.exists()).isTrue()
+
+    val resourceFileContents = resourcesFile.readLines()
+    assertThat(resourceFileContents[2]).isEqualTo("28")
+    assertThat(resourceFileContents[3]).endsWith(
+        "/platforms/android-28/"
+    )
   }
 
   @Test
@@ -214,6 +258,9 @@ class PaparazziPluginTest {
     assertThat(resourceFileContents[0]).isEqualTo("app.cash.paparazzi.plugin.test")
     assertThat(resourceFileContents[1]).endsWith(
         "src/test/projects/verify-resources-kotlin/build/intermediates/res/merged/debug"
+    )
+    assertThat(resourceFileContents[4]).endsWith(
+        "src/test/projects/verify-resources-kotlin/build/intermediates/library_assets/debug/out"
     )
   }
 
@@ -260,6 +307,22 @@ class PaparazziPluginTest {
     val expectedFileBytes = Files.readAllBytes(goldenImage.toPath())
 
     assertThat(actualFileBytes).isEqualTo(expectedFileBytes)
+  }
+
+  @Test
+  fun verifyAppSnapshot() {
+    val fixtureRoot = File("src/test/projects/verify-snapshot-app")
+    val goldenImage = File(fixtureRoot, "src/test/snapshots/images/app.cash.paparazzi.plugin.test_LaunchViewTest_testViews_launch.png")
+    assertThat(goldenImage).exists()
+
+    val result = gradleRunner
+            .withArguments("verifyPaparazziDebug", "--stacktrace")
+            .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
+    assertThat(result.task(":decodeDebugPaparazziApkResources")).isNotNull()
+    assertThat(result.task(":testDebugUnitTest")).isNotNull()
+    assertThat(result.task(":testDebugUnitTest")?.outcome).isEqualTo(TaskOutcome.SUCCESS)
   }
 
   @Test

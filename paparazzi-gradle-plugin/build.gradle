@@ -16,6 +16,7 @@ dependencies {
   compileOnly gradleApi()
   implementation deps.plugins.kotlin
   implementation deps.plugins.android
+  implementation project(':binary')
 
   testImplementation deps.junit
   testImplementation deps.truth

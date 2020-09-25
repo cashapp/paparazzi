@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:background="@color/launchBackground" android:gravity="0x11" android:layout_height="-1" android:layout_width="-1" android:orientation="1">
+    <ImageView android:layout_height="200.0dp" android:layout_width="200.0dp" android:src="@drawable/camera"/>
+    <TextView android:gravity="0x11" android:layout_height="-2" android:layout_width="-1" android:text="paparazzi" android:textColor="@color/cameraBody" android:textFontWeight="100" android:textSize="70.0dp"/>
+</LinearLayout>

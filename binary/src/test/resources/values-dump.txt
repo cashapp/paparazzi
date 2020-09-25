@@ -1,0 +1,34 @@
+path res/values/colors.xml:
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item type="color" name="bolt">#ffebff00</item>
+    <item type="color" name="cameraBody">#ff332f21</item>
+    <item type="color" name="cameraBodyAlpha">#ab332221</item>
+    <item type="color" name="cameraBodyLow">#ff332222</item>
+    <item type="color" name="cameraBodyLowAlpha">#aa332222</item>
+    <item type="color" name="keypadDarkGrey">#ff595959</item>
+    <item type="color" name="keypadGreen">#ff00d015</item>
+    <item type="color" name="launchBackground">#ffdcdccc</item>
+</resources>
+
+path res/values/ids.xml:
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item type="id" name="amount"/>
+    <item type="id" name="amount0"/>
+    <item type="id" name="amount123"/>
+    <item type="id" name="amount789"/>
+</resources>
+
+path res/values/strings.xml:
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item type="string" name="amount123">1 2 3</item>
+    <item type="string" name="orientation">reg</item>
+</resources>
+
+path res/values-land/strings.xml:
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item type="string" name="orientation">land</item>
+</resources>

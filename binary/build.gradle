@@ -1,0 +1,17 @@
+apply plugin: 'java-library'
+apply plugin: 'kotlin'
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
+apply from: "$rootDir/gradle/gradle-mvn-push.gradle"
+
+dependencies {
+  implementation("com.android.tools.apkparser:binary-resources:27.0.1")
+  implementation deps.kotlin.stdlib.jdk8
+  api deps.androidx.annotations
+  implementation deps.guava
+
+  testImplementation deps.junit
+  testImplementation deps.assertj
+}

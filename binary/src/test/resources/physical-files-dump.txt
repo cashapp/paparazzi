@@ -1,0 +1,5 @@
+res/drawable/camera.png
+res/drawable/icn.xml
+res/drawable/icn2.xml
+res/layout/keypad.xml
+res/layout/launch.xml
