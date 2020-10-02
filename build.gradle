@@ -4,7 +4,7 @@ buildscript {
   ext.versions = [
     kotlin: '1.4.10',
     agp: '3.6.1',
-    layoutlib: '3.4.0', // "should" be similar to versions.agp
+    layoutlib: '4.0.0-alpha01-1a8ff9c', // "should" be similar to versions.agp
     androidTools: '26.5.0', // agp + 23.0.0 = androidTools
     jcodec: '0.2.5',
     moshi: '1.10.0',
