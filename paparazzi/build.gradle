@@ -53,11 +53,11 @@ def generateTestConfig = tasks.register("generateTestConfig") {
     configFile.withWriter('utf-8') { writer ->
       writer.writeLine("app.cash.paparazzi")
       writer.writeLine(".")
-      writer.writeLine("28")
+      writer.writeLine("29")
       def androidHome = System.getenv("ANDROID_SDK_ROOT")
           ?: System.getenv("ANDROID_HOME")
           ?: "$userHome/Library/Android/sdk"
-      writer.writeLine("${androidHome}/platforms/android-28/")
+      writer.writeLine("${androidHome}/platforms/android-29/")
     }
   }
 }
