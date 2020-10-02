@@ -26,13 +26,13 @@ task cloneLayoutlib() {
       dir = repoDir
     }
     repo.checkout {
-      // maps to this commit: https://android.googlesource.com/platform/prebuilts/studio/layoutlib/+/1a8ff9cfb0310892adc44d7c0d9e143a286c9aa0
-      // which is based on Android Q and puts us closer to the version released in Android Studio 4.0
-      branch = '1a8ff9c'
+      // maps to this commit: https://android.googlesource.com/platform/prebuilts/studio/layoutlib/+/b169460c8473a1e87aafa01da881556682fa4f86
+      // which runs on JDK 11
+      branch = 'b169460'
     }
   }
 
-  ext.layoutlibJar = new File("$repoDir/data/layoutlib.jar")
+  ext.layoutlibJar = new File("$repoDir/data/layoutlib-jdk11.jar")
 }
 
 task sourcesJar(type: Jar) {
@@ -51,8 +51,8 @@ publishing {
   publications {
     mavenJava(MavenPublication) {
       groupId = 'app.cash.paparazzi'
-      artifactId = 'layoutlib'
-      version = '4.0.0-alpha01-1a8ff9c'
+      artifactId = 'layoutlib-jdk11'
+      version = '4.0.0-alpha02-b169460'
 
       pom {
         name = "layoutlib"
