@@ -19,10 +19,12 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.graphics.Canvas
+import android.view.Choreographer
+import android.view.Choreographer.CALLBACK_ANIMATION
 import android.view.View
-import android.view.animation.AnimationUtils
 import android.view.animation.LinearInterpolator
-import org.assertj.core.api.Assertions.assertThat
+import com.android.tools.layoutlib.java.System_Delegate
+import org.assertj.core.api.Java6Assertions.assertThat
 import org.junit.Rule
 import org.junit.Test
 import java.util.concurrent.TimeUnit
@@ -101,10 +103,30 @@ class PaparazziTest {
     )
   }
 
+  @Test
+  fun frameCallbacksExecutedAfterLayout() {
+    val log = mutableListOf<String>()
+
+    val view = object: View(paparazzi.context) {
+      override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        Choreographer.getInstance()
+            .postCallback(
+                CALLBACK_ANIMATION,
+                { log += "view width=${width} height=${height}" },
+                false
+            )
+      }
+    }
+
+    paparazzi.snapshot(view)
+
+    assertThat(log).containsExactly("view width=1080 height=1776")
+  }
+
   private val time: Long
     get() {
-      return AnimationUtils.currentAnimationTimeMillis() -
-          TimeUnit.NANOSECONDS.toMillis(Paparazzi.TIME_OFFSET_NANOS)
+      return TimeUnit.NANOSECONDS.toMillis(System_Delegate.nanoTime() - Paparazzi.TIME_OFFSET_NANOS)
     }
 }
 
