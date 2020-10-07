@@ -40,7 +40,7 @@ jobs:
           name: test-failures
           path: |
             **/build/reports/tests/test/
-            paparazzi-gradle-plugin/src/test/projects/**/build/reports/paparazzi/images/
+            paparazzi-gradle-plugin/src/test/projects/**/build/reports/paparazzi/*/images/
 
   publish:
     runs-on: ubuntu-latest

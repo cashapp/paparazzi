@@ -42,12 +42,14 @@ class PaparazziPlugin : Plugin<Project> {
     variants.all { variant ->
       val variantSlug = variant.name.capitalize(Locale.US)
 
+      val reportOutputFolder = project.layout.buildDirectory.dir("reports/paparazzi/$variantSlug")
       val writeResourcesTask = project.tasks.register(
           "preparePaparazzi${variantSlug}Resources", PrepareResourcesTask::class.java
       ) { task ->
         task.mergeResourcesOutput.set(variant.mergeResourcesProvider.flatMap { it.outputDir })
         task.mergeAssetsOutput.set(variant.mergeAssetsProvider.flatMap { it.outputDir })
         task.paparazziResources.set(project.layout.buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.txt"))
+        task.paparazziReportOutput = reportOutputFolder.get().asFile.absolutePath
       }
 
       val testVariantSlug = variant.unitTestVariant.name.capitalize(Locale.US)
@@ -68,6 +70,9 @@ class PaparazziPlugin : Plugin<Project> {
       val testTaskProvider = project.tasks.named("test${testVariantSlug}", Test::class.java) { test ->
         test.systemProperties["paparazzi.test.resources"] =
             writeResourcesTask.flatMap { it.paparazziResources.asFile }.get().path
+        //We're adding the report folder to the test-task's outputs to ensure
+        //it is stored in Gradle's cache.
+        test.outputs.dir(reportOutputFolder)
         test.doFirst {
           test.systemProperties["paparazzi.test.record"] =
               project.gradle.taskGraph.hasTask(recordTaskProvider.get())
@@ -81,7 +86,7 @@ class PaparazziPlugin : Plugin<Project> {
 
       testTaskProvider.configure {
         it.doLast {
-          val uri = project.buildDir.toPath().resolve("reports/paparazzi/index.html").toUri()
+          val uri = reportOutputFolder.get().asFile.toPath().resolve("index.html").toUri()
           project.logger.log(LIFECYCLE, "See the Paparazzi report at: $uri")
         }
       }

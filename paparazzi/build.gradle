@@ -59,6 +59,7 @@ def generateTestConfig = tasks.register("generateTestConfig") {
           ?: "$userHome/Library/Android/sdk"
       writer.writeLine("${androidHome}/platforms/android-29/")
       writer.writeLine(".")
+      writer.writeLine(".")
     }
   }
 }

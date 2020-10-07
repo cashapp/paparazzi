@@ -22,6 +22,7 @@ import org.gradle.api.Project
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.tasks.CacheableTask
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
@@ -38,6 +39,9 @@ open class PrepareResourcesTask : DefaultTask() {
   @get:InputDirectory
   @get:PathSensitive(PathSensitivity.RELATIVE)
   internal val mergeAssetsOutput: DirectoryProperty = project.objects.directoryProperty()
+
+  @get:Input
+  internal var paparazziReportOutput: String = ""
 
   @get:OutputFile
   internal val paparazziResources: RegularFileProperty = project.objects.fileProperty()
@@ -57,6 +61,8 @@ open class PrepareResourcesTask : DefaultTask() {
           it.write("${project.sdkFolder().absolutePath}/platforms/android-${project.compileSdkVersion()}/")
           it.newLine()
           it.write(mergeAssetsOutput.get().asFile.path)
+          it.newLine()
+          it.write(paparazziReportOutput)
           it.newLine()
         }
   }

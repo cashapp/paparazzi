@@ -48,6 +48,7 @@ import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
 import java.awt.image.BufferedImage
+import java.io.File
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier
 import java.util.Date
@@ -58,7 +59,7 @@ class Paparazzi(
   private val deviceConfig: DeviceConfig = DeviceConfig.NEXUS_5,
   private val theme: String = "android:Theme.Material.NoActionBar.Fullscreen",
   private val appCompatEnabled: Boolean = true,
-  private val snapshotHandler: SnapshotHandler = determineHandler()
+  private val snapshotHandler: SnapshotHandler = determineHandler(environment)
 ) : TestRule {
   private val THUMBNAIL_SIZE = 1000
 
@@ -408,11 +409,11 @@ class Paparazzi(
     private val isVerifying: Boolean =
       System.getProperty("paparazzi.test.verify")?.toBoolean() == true
 
-    private fun determineHandler(): SnapshotHandler =
+    private fun determineHandler(environment: Environment): SnapshotHandler =
       if (isVerifying) {
         SnapshotVerifier()
       } else {
-        HtmlReportWriter()
+        HtmlReportWriter(rootDirectory = File(environment.reportFolder))
       }
   }
 }
