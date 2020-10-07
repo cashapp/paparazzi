@@ -17,12 +17,16 @@ package app.cash.paparazzi
 
 import android.content.Context
 import android.content.res.Resources
+import android.os.ServiceManager
 import android.util.AttributeSet
 import android.view.BridgeInflater
 import android.view.Choreographer_Delegate
+import android.view.IWindowManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager.LayoutParams
+import android.view.animation.AnimationUtils
 import androidx.annotation.LayoutRes
 import app.cash.paparazzi.agent.AgentTestRule
 import app.cash.paparazzi.agent.InterceptorRegistrar
@@ -33,7 +37,9 @@ import app.cash.paparazzi.internal.PaparazziCallback
 import app.cash.paparazzi.internal.PaparazziLogger
 import app.cash.paparazzi.internal.Renderer
 import app.cash.paparazzi.internal.ResourcesInterceptor
+import app.cash.paparazzi.internal.ServiceManagerInterceptor
 import app.cash.paparazzi.internal.SessionParamsBuilder
+import app.cash.paparazzi.internal.WindowManagerInterceptor
 import com.android.ide.common.rendering.api.RenderSession
 import com.android.ide.common.rendering.api.Result
 import com.android.ide.common.rendering.api.SessionParams
@@ -101,6 +107,8 @@ class Paparazzi(
 
     registerFontLookupInterceptionIfResourceCompatDetected()
     registerViewEditModeInterception()
+    registerDisplayService()
+    registerWindowSession()
 
     val outerRule = AgentTestRule()
     return outerRule.apply(statement, description)
@@ -272,10 +280,19 @@ class Paparazzi(
       val constructor =
         bridgeSessionClass.getDeclaredConstructor(RenderSessionImpl::class.java, Result::class.java)
       constructor.isAccessible = true
-      return constructor.newInstance(renderSession, result) as BridgeRenderSession
+      return (constructor.newInstance(renderSession, result) as BridgeRenderSession).apply {
+        val viewGroup = rootViews[0].viewObject as View
+        val viewRootImpl = viewGroup.viewRootImpl
+        val params = sessionParamsBuilder.build()
+        viewRootImpl.setView(viewGroup.findRoot(), LayoutParams(params.screenWidth, params.screenHeight, 0, 0, 0), null)
+      }
     } catch (e: Exception) {
       throw RuntimeException(e)
     }
+  }
+
+  tailrec private fun View.findRoot(): View {
+    return if (parent == null) this else (parent as View).findRoot()
   }
 
   private fun scaleImage(image: BufferedImage): BufferedImage {
@@ -407,6 +424,18 @@ class Paparazzi(
     val viewClass = Class.forName("android.view.View")
     InterceptorRegistrar.addMethodInterceptor(
         viewClass, "isInEditMode", EditModeInterceptor::class.java
+    )
+  }
+
+  private fun registerDisplayService() {
+    InterceptorRegistrar.addMethodInterceptor(
+        ServiceManager::class.java, "getService", ServiceManagerInterceptor::class.java
+    )
+  }
+
+  private fun registerWindowSession() {
+    InterceptorRegistrar.addMethodInterceptor(
+        IWindowManager.Default::class.java, "openSession", WindowManagerInterceptor::class.java
     )
   }
 
