@@ -59,3 +59,13 @@ test {
 }
 
 apply from: "$rootDir/gradle/gradle-mvn-push.gradle"
+
+//when cleaning this project build data, we also want to clean the test projects build data.
+tasks.named("clean").configure { cleaner ->
+  cleaner.doFirst {
+    project.file('src/test/projects').listFiles().each { testProjectFolder ->
+      new File(testProjectFolder, '.gradle').deleteDir()
+      new File(testProjectFolder, 'build').deleteDir()
+    }
+  }
+}
