@@ -38,8 +38,12 @@ class PaparazziPluginTest {
   fun cacheable() {
     val fixtureRoot = File("src/test/projects/cacheable")
 
+    //deleting any previous cache data from disk.
+    fixtureRoot.resolve("build").deleteRecursively()
+    fixtureRoot.resolve(".gradle").deleteRecursively()
+
     val firstRun = gradleRunner
-        .withArguments("testDebug", "--build-cache", "--stacktrace")
+        .withArguments("recordPaparazziDebug", "--build-cache", "--stacktrace")
         .runFixture(fixtureRoot) { build() }
 
     with(firstRun.task(":preparePaparazziDebugResources")) {
@@ -50,7 +54,7 @@ class PaparazziPluginTest {
     fixtureRoot.resolve("build").deleteRecursively()
 
     val secondRun = gradleRunner
-        .withArguments("testDebug", "--build-cache", "--stacktrace")
+        .withArguments("recordPaparazziDebug", "--build-cache", "--stacktrace")
         .runFixture(fixtureRoot) { build() }
 
     with(secondRun.task(":preparePaparazziDebugResources")) {
@@ -66,7 +70,7 @@ class PaparazziPluginTest {
     val fixtureRoot = File("src/test/projects/edit-mode-intercept")
 
     gradleRunner
-        .withArguments("testDebug", "--stacktrace")
+        .withArguments("recordPaparazziDebug", "--stacktrace")
         .runFixture(fixtureRoot) { build() }
   }
 
@@ -228,13 +232,13 @@ class PaparazziPluginTest {
     val fixtureRoot = File("src/test/projects/verify-snapshot")
 
     val result = gradleRunner
-        .withArguments("testDebug", "--stacktrace")
+        .withArguments("recordPaparazziDebug", "--stacktrace")
         .runFixture(fixtureRoot) { build() }
 
     assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
     assertThat(result.task(":testDebugUnitTest")).isNotNull()
 
-    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/debugUnitTest/images")
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/Debug/images")
     val snapshotFile = File(snapshotsDir, "6fca3e0a7f717916b1636195184e9f61c524369b.png")
     assertThat(snapshotFile.exists()).isTrue()
 
@@ -251,13 +255,13 @@ class PaparazziPluginTest {
     val fixtureRoot = File("src/test/projects/verify-snapshot")
 
     val result = gradleRunner
-        .withArguments("testDebug", "--stacktrace")
+        .withArguments("recordPaparazziDebug", "--stacktrace")
         .runFixture(fixtureRoot) { build() }
 
     assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
     assertThat(result.task(":testDebugUnitTest")).isNotNull()
 
-    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/debugUnitTest/images")
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/Debug/images")
     val snapshotFile = File(snapshotsDir, "06eed37f8377a96128efdbfd47e28b24ecac09e6.png")
     assertThat(snapshotFile.exists()).isTrue()
 
@@ -273,10 +277,10 @@ class PaparazziPluginTest {
     val fixtureRoot = File("src/test/projects/verify-svgs")
 
     gradleRunner
-        .withArguments("testDebug", "--stacktrace")
+        .withArguments("recordPaparazziDebug", "--stacktrace")
         .runFixture(fixtureRoot) { build() }
 
-    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/debugUnitTest/images")
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/Debug/images")
     val snapshots = snapshotsDir.listFiles()
     assertThat(snapshots!!).hasLength(1)
 
@@ -290,10 +294,10 @@ class PaparazziPluginTest {
     val fixtureRoot = File("src/test/projects/appcompat-missing")
 
     gradleRunner
-        .withArguments("testDebug", "--stacktrace")
+        .withArguments("recordPaparazziDebug", "--stacktrace")
         .runFixture(fixtureRoot) { build() }
 
-    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/debugUnitTest/images")
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/Debug/images")
     val snapshotFile = File(snapshotsDir, "6dc7ccef5e1decc563e334e3d809fd68e6f6b122.png")
     assertThat(snapshotFile.exists()).isTrue()
 
@@ -309,10 +313,10 @@ class PaparazziPluginTest {
     val fixtureRoot = File("src/test/projects/appcompat-present")
 
     gradleRunner
-        .withArguments("testDebug", "--stacktrace")
+        .withArguments("recordPaparazziDebug", "--stacktrace")
         .runFixture(fixtureRoot) { build() }
 
-    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/debugUnitTest/images")
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/Debug/images")
     val snapshots = snapshotsDir.listFiles()
     assertThat(snapshots!!).hasLength(1)
 
@@ -326,10 +330,10 @@ class PaparazziPluginTest {
     val fixtureRoot = File("src/test/projects/custom-fonts-xml")
 
     gradleRunner
-        .withArguments("testDebug", "--stacktrace")
+        .withArguments("recordPaparazziDebug", "--stacktrace")
         .runFixture(fixtureRoot) { build() }
 
-    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/debugUnitTest/images")
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/Debug/images")
     val snapshots = snapshotsDir.listFiles()
     assertThat(snapshots!!).hasLength(1)
 
@@ -343,10 +347,10 @@ class PaparazziPluginTest {
     val fixtureRoot = File("src/test/projects/custom-fonts-code")
 
     gradleRunner
-        .withArguments("testDebug", "--stacktrace")
+        .withArguments("recordPaparazziDebug", "--stacktrace")
         .runFixture(fixtureRoot) { build() }
 
-    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/debugUnitTest/images")
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/Debug/images")
     val snapshots = snapshotsDir.listFiles()
     assertThat(snapshots!!).hasLength(1)
 

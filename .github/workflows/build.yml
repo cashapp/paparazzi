@@ -31,7 +31,9 @@ jobs:
           java-version: ${{ matrix.java-version }}
 
       - name: Run Tests
-        run: ./gradlew check
+        run: |
+          ./gradlew :paparazzi-gradle-plugin:clean
+          ./gradlew check
 
       - name: Upload Test Failures
         if: failure()
