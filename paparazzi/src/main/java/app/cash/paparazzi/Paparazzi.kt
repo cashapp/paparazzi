@@ -23,7 +23,6 @@ import android.view.Choreographer_Delegate
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.AnimationUtils
 import androidx.annotation.LayoutRes
 import app.cash.paparazzi.agent.AgentTestRule
 import app.cash.paparazzi.agent.InterceptorRegistrar
@@ -127,7 +126,7 @@ class Paparazzi(
         .withTheme(theme)
 
     val sessionParams = sessionParamsBuilder.build()
-    renderSession = RenderSessionImpl(sessionParams)
+    renderSession = createRenderSession(sessionParams)
     prepareThread()
     renderSession.init(sessionParams.timeout)
 
@@ -205,7 +204,7 @@ class Paparazzi(
       }
 
       val sessionParams = sessionParamsBuilder.build()
-      renderSession = RenderSessionImpl(sessionParams)
+      renderSession = createRenderSession(sessionParams)
       renderSession.init(sessionParams.timeout)
       bridgeRenderSession = createBridgeSession(renderSession, renderSession.inflate())
     }
@@ -215,12 +214,13 @@ class Paparazzi(
     val frameHandler = snapshotHandler.newFrameHandler(snapshot, frameCount, fps)
     frameHandler.use {
       val viewGroup = bridgeRenderSession.rootViews[0].viewObject as ViewGroup
-      viewGroup.addView(view)
       try {
         withTime(0L) {
-          // Empty block to initialize the choreographer at time=0.
+          // Initialize the choreographer at time=0.
+          Choreographer_Delegate.doFrame(System_Delegate.nanoTime())
         }
 
+        viewGroup.addView(view)
         for (frame in 0 until frameCount) {
           val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
           withTime(nowNanos) {
@@ -243,15 +243,24 @@ class Paparazzi(
     // Execute the block at the requested time.
     System_Delegate.setBootTimeNanos(frameNanos)
     System_Delegate.setNanosTime(frameNanos)
-    Choreographer_Delegate.doFrame(frameNanos)
-    AnimationUtils.lockAnimationClock(TimeUnit.NANOSECONDS.toMillis(frameNanos))
     try {
       block()
     } finally {
-      AnimationUtils.unlockAnimationClock()
       System_Delegate.setNanosTime(0L)
       System_Delegate.setBootTimeNanos(0L)
     }
+  }
+
+  private fun createRenderSession(sessionParams: SessionParams): RenderSessionImpl {
+    val renderSession = RenderSessionImpl(sessionParams)
+    renderSession.setElapsedFrameTimeNanos(0L)
+    RenderSessionImpl::class.java
+        .getDeclaredField("mFirstFrameExecuted")
+        .apply {
+          isAccessible = true
+          set(renderSession, true)
+        }
+    return renderSession
   }
 
   private fun createBridgeSession(
