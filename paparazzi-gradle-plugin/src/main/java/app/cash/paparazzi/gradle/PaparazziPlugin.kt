@@ -37,6 +37,11 @@ class PaparazziPlugin : Plugin<Project> {
         project.dependencies.create("app.cash.paparazzi:paparazzi:$VERSION")
     )
 
+    //Creating an root tasks for executing all snapshot tasks for all variants.
+    //These tasks will depend on all variant-specific tasks.
+    val verifyAllVariant = project.tasks.register("verifyPaparazzi")
+    val recordAllVariant = project.tasks.register("recordPaparazzi")
+
     val variants = project.extensions.getByType(LibraryExtension::class.java)
         .libraryVariants
     variants.all { variant ->
@@ -63,7 +68,13 @@ class PaparazziPlugin : Plugin<Project> {
       }
 
       val recordTaskProvider = project.tasks.register("recordPaparazzi${variantSlug}")
+      recordAllVariant.configure {
+        it.dependsOn(recordTaskProvider)
+      }
       val verifyTaskProvider = project.tasks.register("verifyPaparazzi${variantSlug}")
+      verifyAllVariant.configure {
+        it.dependsOn(verifyTaskProvider)
+      }
 
       val testTaskProvider = project.tasks.named("test${testVariantSlug}", Test::class.java) { test ->
         test.systemProperties["paparazzi.test.resources"] =
