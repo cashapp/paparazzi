@@ -39,6 +39,7 @@ import com.android.resources.Keyboard
 import com.android.resources.KeyboardState
 import com.android.resources.Navigation
 import com.android.resources.NightMode
+import com.android.resources.NightMode.NOTNIGHT
 import com.android.resources.ScreenOrientation
 import com.android.resources.ScreenRatio
 import com.android.resources.ScreenSize
@@ -65,6 +66,7 @@ data class DeviceConfig(
   val xdpi: Int = 320,
   val ydpi: Int = 320,
   val orientation: ScreenOrientation = ScreenOrientation.PORTRAIT,
+  val nightMode: NightMode = NOTNIGHT,
   val density: Density = Density.XHIGH,
   val ratio: ScreenRatio = ScreenRatio.NOTLONG,
   val size: ScreenSize = ScreenSize.NORMAL,
@@ -93,7 +95,7 @@ data class DeviceConfig(
 
           updateScreenWidthAndHeight()
           uiModeQualifier = UiModeQualifier(UiMode.NORMAL)
-          nightModeQualifier = NightModeQualifier(NightMode.NOTNIGHT)
+          nightModeQualifier = NightModeQualifier(nightMode)
           countryCodeQualifier = CountryCodeQualifier()
           layoutDirectionQualifier = LayoutDirectionQualifier()
           networkCodeQualifier = NetworkCodeQualifier()
