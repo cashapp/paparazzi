@@ -24,7 +24,7 @@ import android.view.Choreographer.CALLBACK_ANIMATION
 import android.view.View
 import android.view.animation.LinearInterpolator
 import com.android.tools.layoutlib.java.System_Delegate
-import org.assertj.core.api.Java6Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Rule
 import org.junit.Test
 import java.util.concurrent.TimeUnit
