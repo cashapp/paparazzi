@@ -69,4 +69,12 @@ tasks.withType(Test).configureEach { task ->
       "paparazzi.test.resources",
       generateTestConfig.map { it.outputs.files.singleFile }.get().path
   )
+  task.testLogging {
+    events 'passed', 'failed', 'skipped', 'standardOut', 'standardError'
+    exceptionFormat 'FULL'
+    showCauses true
+    showExceptions true
+    showStackTraces true
+    showStandardStreams true
+  }
 }
