@@ -46,21 +46,18 @@ fun detectEnvironment(): Environment {
 }
 
 private fun checkInstalledJvm() {
-  val jvmVendor = System.getProperty("java.vendor")
-  val jvmVersion = System.getProperty("java.version")
-  if (jvmVendor == null || jvmVersion == null) return // we tried...
+  val feature = try {
+    // Runtime#version() only available as of Java 9.
+    val version = Runtime::class.java.getMethod("version").invoke(null)
+    // Runtime.Version#feature() only available as of Java 10.
+    version.javaClass.getMethod("feature").invoke(version) as Int
+  } catch(e: NoSuchMethodException) {
+    -1
+  }
 
-  val (major, minor) = jvmVersion.split(".")
-
-  if (jvmVendor.startsWith("Oracle") && major.toInt() == 1 && minor.toInt() <= 8) {
-    println(
-        """
-          |Unsupported JRE detected!!!
-          |
-          |Some custom fonts may not render correctly.  To avoid this, please install and run 
-          |Paparazzi test suites on OpenJDK version 8 or greater.
-          |See https://github.com/cashapp/paparazzi/issues/33 for additional context.
-          |""".trimMargin()
+  if (feature < 11) {
+    throw IllegalStateException(
+        "Unsupported JRE detected! Please install and run Paparazzi test suites on JDK 11+."
     )
   }
 }
