@@ -127,29 +127,20 @@ class PaparazziTest {
 
   @Test
   fun open_file_from_assets() {
-    val fileName = "file.txt"
     val fileContent = "file context"
 
-    tempFile("${detectEnvironment().assetsDir}/$fileName") { file ->
-      file.writeText(fileContent)
-
-      paparazzi.context.assets.open(fileName).bufferedReader().use { reader ->
-        assertThat(reader.readLine()).isEqualTo(fileContent)
-      }
-
-      paparazzi.context.assets.open(fileName, 2).bufferedReader().use { reader ->
-        assertThat(reader.readLine()).isEqualTo(fileContent)
-      }
+    val file = File.createTempFile("tmp", null, File(detectEnvironment().assetsDir)).apply {
+      writeText(fileContent)
+      deleteOnExit()
     }
-  }
 
-  private fun tempFile(path: String, action: (File) -> Unit) {
-    val file = File(path)
+    paparazzi.context.assets.open(file.name).bufferedReader().use { reader ->
+      assertThat(reader.readLine()).isEqualTo(fileContent)
+    }
 
-    val result = runCatching { action(file) }
-    file.delete()
-
-    result.exceptionOrNull()?.let { throw it }
+    paparazzi.context.assets.open(file.name, 2).bufferedReader().use { reader ->
+      assertThat(reader.readLine()).isEqualTo(fileContent)
+    }
   }
 
   private val time: Long
