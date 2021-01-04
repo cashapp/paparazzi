@@ -27,6 +27,7 @@ import com.android.tools.layoutlib.java.System_Delegate
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Rule
 import org.junit.Test
+import java.io.File
 import java.util.concurrent.TimeUnit
 
 class PaparazziTest {
@@ -122,6 +123,33 @@ class PaparazziTest {
     paparazzi.snapshot(view)
 
     assertThat(log).containsExactly("view width=1080 height=1776")
+  }
+
+  @Test
+  fun open_file_from_assets() {
+    val fileName = "file.txt"
+    val fileContent = "file context"
+
+    tempFile("${detectEnvironment().assetsDir}/$fileName") { file ->
+      file.writeText(fileContent)
+
+      paparazzi.context.assets.open(fileName).bufferedReader().use { content ->
+        assertThat(content).isEqualTo(fileContent)
+      }
+
+      paparazzi.context.assets.open(fileName, 2).bufferedReader().use { content ->
+        assertThat(content).isEqualTo(fileContent)
+      }
+    }
+  }
+
+  private fun tempFile(path: String, action: (File) -> Unit) {
+    val file = File(path)
+
+    val result = runCatching { action(file) }
+    file.delete()
+
+    result.exceptionOrNull()?.let { throw it }
   }
 
   private val time: Long

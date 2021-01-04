@@ -29,7 +29,9 @@ import app.cash.paparazzi.agent.InterceptorRegistrar
 import app.cash.paparazzi.internal.EditModeInterceptor
 import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.LayoutPullParser
+import app.cash.paparazzi.internal.PaparazziAssetRepository
 import app.cash.paparazzi.internal.PaparazziCallback
+import app.cash.paparazzi.internal.PaparazziContext
 import app.cash.paparazzi.internal.PaparazziLogger
 import app.cash.paparazzi.internal.Renderer
 import app.cash.paparazzi.internal.ResourcesInterceptor
@@ -75,7 +77,7 @@ class Paparazzi(
     get() = RenderAction.getCurrentContext().resources
 
   val context: Context
-    get() = RenderAction.getCurrentContext()
+    get() = PaparazziContext(RenderAction.getCurrentContext(), PaparazziAssetRepository(environment.assetsDir))
 
   val contentRoot = """
         |<?xml version="1.0" encoding="utf-8"?>
