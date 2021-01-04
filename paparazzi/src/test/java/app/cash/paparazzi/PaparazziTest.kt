@@ -133,12 +133,12 @@ class PaparazziTest {
     tempFile("${detectEnvironment().assetsDir}/$fileName") { file ->
       file.writeText(fileContent)
 
-      paparazzi.context.assets.open(fileName).bufferedReader().use { content ->
-        assertThat(content).isEqualTo(fileContent)
+      paparazzi.context.assets.open(fileName).bufferedReader().use { reader ->
+        assertThat(reader.readLine()).isEqualTo(fileContent)
       }
 
-      paparazzi.context.assets.open(fileName, 2).bufferedReader().use { content ->
-        assertThat(content).isEqualTo(fileContent)
+      paparazzi.context.assets.open(fileName, 2).bufferedReader().use { reader ->
+        assertThat(reader.readLine()).isEqualTo(fileContent)
       }
     }
   }
