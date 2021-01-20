@@ -49,8 +49,6 @@ internal object ImageUtils {
 
   private val THUMBNAIL_SIZE = 1000
 
-  val MAX_PERCENT_DIFFERENCE = 0.1
-
   /** Directory where to write the thumbnails and deltas. */
   private val failureDir: File
     get() {
@@ -63,7 +61,8 @@ internal object ImageUtils {
   @Throws(IOException::class)
   fun requireSimilar(
     relativePath: String,
-    image: BufferedImage
+    image: BufferedImage,
+    maxPercentDifferent: Double
   ) {
     val maxDimension = Math.max(image.width, image.height)
     val scale = THUMBNAIL_SIZE / maxDimension.toDouble()
@@ -87,7 +86,7 @@ internal object ImageUtils {
             relativePath,
             goldenImage,
             thumbnail,
-            MAX_PERCENT_DIFFERENCE
+            maxPercentDifferent
         )
       } finally {
         `is`.close()

@@ -57,7 +57,8 @@ class Paparazzi(
   private val deviceConfig: DeviceConfig = DeviceConfig.NEXUS_5,
   private val theme: String = "android:Theme.Material.NoActionBar.Fullscreen",
   private val appCompatEnabled: Boolean = true,
-  private val snapshotHandler: SnapshotHandler = determineHandler()
+  private val maxPercentDifference: Double = 0.1,
+  private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference)
 ) : TestRule {
   private val THUMBNAIL_SIZE = 1000
 
@@ -114,7 +115,7 @@ class Paparazzi(
 
     testName = description.toTestName()
 
-    renderer = Renderer(environment, layoutlibCallback, logger)
+    renderer = Renderer(environment, layoutlibCallback, logger, maxPercentDifference)
     sessionParamsBuilder = renderer.prepare()
 
     sessionParamsBuilder = sessionParamsBuilder
@@ -417,9 +418,9 @@ class Paparazzi(
     private val isVerifying: Boolean =
       System.getProperty("paparazzi.test.verify")?.toBoolean() == true
 
-    private fun determineHandler(): SnapshotHandler =
+    private fun determineHandler(maxPercentDifference: Double): SnapshotHandler =
       if (isVerifying) {
-        SnapshotVerifier()
+        SnapshotVerifier(maxPercentDifference)
       } else {
         HtmlReportWriter()
       }

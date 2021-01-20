@@ -17,13 +17,13 @@ package app.cash.paparazzi
 
 import app.cash.paparazzi.SnapshotHandler.FrameHandler
 import app.cash.paparazzi.internal.ImageUtils
-import app.cash.paparazzi.internal.ImageUtils.MAX_PERCENT_DIFFERENCE
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
 
 class SnapshotVerifier(
-  rootDirectory: File = File("src/test/snapshots")
+  private val maxPercentDifference: Double,
+  rootDirectory: File = File("src/test/snapshots"),
 ) : SnapshotHandler {
   private val imagesDirectory: File = File(rootDirectory, "images")
   private val videosDirectory: File = File(rootDirectory, "videos")
@@ -51,7 +51,7 @@ class SnapshotVerifier(
             relativePath = expected.path,
             image = image,
             goldenImage = goldenImage,
-            maxPercentDifferent = MAX_PERCENT_DIFFERENCE
+            maxPercentDifferent = maxPercentDifference
         )
       }
 
