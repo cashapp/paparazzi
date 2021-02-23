@@ -28,7 +28,7 @@ import app.cash.paparazzi.agent.AgentTestRule
 import app.cash.paparazzi.agent.InterceptorRegistrar
 import app.cash.paparazzi.internal.EditModeInterceptor
 import app.cash.paparazzi.internal.ImageUtils
-import app.cash.paparazzi.internal.LayoutPullParser
+import app.cash.paparazzi.internal.parsers.LayoutPullParser
 import app.cash.paparazzi.internal.PaparazziCallback
 import app.cash.paparazzi.internal.PaparazziLogger
 import app.cash.paparazzi.internal.Renderer

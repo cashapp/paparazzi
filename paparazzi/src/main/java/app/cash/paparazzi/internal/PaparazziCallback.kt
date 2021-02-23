@@ -16,6 +16,8 @@
 
 package app.cash.paparazzi.internal
 
+import app.cash.paparazzi.internal.parsers.LayoutPullParser
+import app.cash.paparazzi.internal.parsers.TagSnapshot
 import com.android.SdkConstants
 import com.android.ide.common.rendering.api.ActionBarCallback
 import com.android.ide.common.rendering.api.AdapterBinding
@@ -47,6 +49,7 @@ internal class PaparazziCallback(
   private val projectResources = mutableMapOf<Int, ResourceReference>()
   private val resources = mutableMapOf<ResourceReference, Int>()
   private val actionBarCallback = ActionBarCallback()
+  private val aaptDeclaredResources = mutableMapOf<String, TagSnapshot>()
 
   private var adaptiveIconMaskPath: String? = null
   private var highQualityShadow = false
@@ -110,7 +113,17 @@ internal class PaparazziCallback(
 
   override fun getParser(layoutResource: ResourceValue): ILayoutPullParser? {
     try {
+      val value = layoutResource.value ?: return null
+      if (aaptDeclaredResources.isNotEmpty() && layoutResource.resourceType == ResourceType.AAPT) {
+        val aaptResource = aaptDeclaredResources.getValue(value)
+        return LayoutPullParser.createFromAaptResource(aaptResource)
+      }
+
       return LayoutPullParser.createFromFile(File(layoutResource.value))
+          .also {
+            // For parser of elements included in this parser, publish any aapt declared values
+            aaptDeclaredResources.putAll(it.getAaptDeclaredAttrs())
+          }
     } catch (e: FileNotFoundException) {
       return null
     }

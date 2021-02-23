@@ -19,6 +19,7 @@ package app.cash.paparazzi.internal
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Environment
 import app.cash.paparazzi.Flags
+import app.cash.paparazzi.internal.parsers.LayoutPullParser
 import com.android.ide.common.rendering.api.SessionParams
 import com.android.ide.common.resources.deprecated.FrameworkResources
 import com.android.ide.common.resources.deprecated.ResourceItem
