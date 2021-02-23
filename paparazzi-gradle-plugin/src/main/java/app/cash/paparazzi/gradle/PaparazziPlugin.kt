@@ -71,7 +71,6 @@ class PaparazziPlugin : Plugin<Project> {
       }
       val verifyTaskProvider = project.tasks.register("verifyPaparazzi${variantSlug}")
       verifyAllVariant.configure {
-        it.dependsOn(verifyTaskProvider)
       }
 
       val testTaskProvider = project.tasks.named("test${testVariantSlug}", Test::class.java) { test ->
