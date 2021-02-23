@@ -37,6 +37,10 @@ class PaparazziPlugin : Plugin<Project> {
         project.dependencies.create("app.cash.paparazzi:paparazzi:$VERSION")
     )
 
+    // Create anchor tasks for all variants.
+    val verifyVariants = project.tasks.register("verifyPaparazzi")
+    val recordVariants = project.tasks.register("recordPaparazzi")
+
     val variants = project.extensions.getByType(LibraryExtension::class.java)
         .libraryVariants
     variants.all { variant ->
@@ -63,7 +67,9 @@ class PaparazziPlugin : Plugin<Project> {
       }
 
       val recordTaskProvider = project.tasks.register("recordPaparazzi${variantSlug}")
+      recordVariants.configure { it.dependsOn(recordTaskProvider) }
       val verifyTaskProvider = project.tasks.register("verifyPaparazzi${variantSlug}")
+      verifyVariants.configure { it.dependsOn(verifyTaskProvider) }
 
       val testTaskProvider = project.tasks.named("test${testVariantSlug}", Test::class.java) { test ->
         test.systemProperties["paparazzi.test.resources"] =

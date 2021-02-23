@@ -92,6 +92,21 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun recordAllVariants() {
+    val fixtureRoot = File("src/test/projects/record-mode")
+
+    val result = gradleRunner
+            .withArguments("recordPaparazzi", "--stacktrace")
+            .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":recordPaparazziDebug")).isNotNull()
+    assertThat(result.task(":recordPaparazziRelease")).isNotNull()
+
+    val snapshotsDir = File(fixtureRoot, "src/test/snapshots")
+    snapshotsDir.deleteRecursively()
+  }
+
+  @Test
   fun recordMultiModuleProject() {
     val fixtureRoot = File("src/test/projects/record-mode-multiple-modules")
     val moduleRoot = File(fixtureRoot, "module")
@@ -122,6 +137,18 @@ class PaparazziPluginTest {
         .runFixture(fixtureRoot) { build() }
 
     assertThat(result.task(":testDebugUnitTest")).isNotNull()
+  }
+
+  @Test
+  fun verifyAllVariants() {
+    val fixtureRoot = File("src/test/projects/verify-mode-success")
+
+    val result = gradleRunner
+        .withArguments("verifyPaparazzi", "--stacktrace")
+        .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":verifyPaparazziDebug")).isNotNull()
+    assertThat(result.task(":verifyPaparazziRelease")).isNotNull()
   }
 
   @Test
