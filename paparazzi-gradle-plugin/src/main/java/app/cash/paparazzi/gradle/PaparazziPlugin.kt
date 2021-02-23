@@ -79,6 +79,9 @@ class PaparazziPlugin : Plugin<Project> {
               project.gradle.taskGraph.hasTask(recordTaskProvider.get())
           test.systemProperties["paparazzi.test.verify"] =
               project.gradle.taskGraph.hasTask(verifyTaskProvider.get())
+          val paparazziProperties =
+            project.properties.filterKeys { it.startsWith("app.cash.paparazzi") }
+          test.systemProperties.putAll(paparazziProperties)
         }
       }
 

@@ -35,6 +35,28 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun flagDebugLinkedObjectsIsOff() {
+    val fixtureRoot = File("src/test/projects/flag-debug-linked-objects-off")
+
+    val result = gradleRunner
+        .withArguments("testDebug", "--stacktrace")
+        .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.output).doesNotContain("Objects still linked from the DelegateManager:")
+  }
+
+  @Test
+  fun flagDebugLinkedObjectsIsOn() {
+    val fixtureRoot = File("src/test/projects/flag-debug-linked-objects-on")
+
+    val result = gradleRunner
+        .withArguments("testDebug", "--stacktrace")
+        .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.output).contains("Objects still linked from the DelegateManager:")
+  }
+
+  @Test
   fun cacheable() {
     val fixtureRoot = File("src/test/projects/cacheable")
 
