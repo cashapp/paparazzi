@@ -19,7 +19,7 @@ import android.view.View
 import java.awt.image.BufferedImage
 
 /**
-RenderExtension is an interface that can render additional information on top of the ui Paparazzi renders for each frame
+ * An extension for overlaying additional information on top of each rendered frame.
  */
 interface RenderExtension {
   fun render(
