@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- Empty style for when you don't want a parent. -->
+  <style name="None" />
+
+  <style name="TextAppearance.Title" parent="None">
+    <item name="android:letterSpacing">0.01</item>
+    <item name="android:textSize">24sp</item>
+    <item name="android:textColor">@color/keypadGreen</item>
+  </style>
+</resources>
