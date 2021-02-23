@@ -71,7 +71,6 @@ class PaparazziPlugin : Plugin<Project> {
       }
       val verifyTaskProvider = project.tasks.register("verifyPaparazzi${variantSlug}")
       verifyVariants.configure { it.dependsOn(verifyTaskProvider) }
-      }
 
       val testTaskProvider = project.tasks.named("test${testVariantSlug}", Test::class.java) { test ->
         test.systemProperties["paparazzi.test.resources"] =
