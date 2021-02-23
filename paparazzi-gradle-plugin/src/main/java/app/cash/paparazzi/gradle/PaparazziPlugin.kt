@@ -39,7 +39,7 @@ class PaparazziPlugin : Plugin<Project> {
 
     // Create anchor tasks for all variants.
     //These tasks will depend on all variant-specific tasks.
-    val verifyAllVariant = project.tasks.register("verifyPaparazzi")
+    val verifyVariants = project.tasks.register("verifyPaparazzi")
     val recordAllVariant = project.tasks.register("recordPaparazzi")
 
     val variants = project.extensions.getByType(LibraryExtension::class.java)
