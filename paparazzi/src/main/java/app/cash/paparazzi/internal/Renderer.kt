@@ -18,6 +18,7 @@ package app.cash.paparazzi.internal
 
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Environment
+import app.cash.paparazzi.Flags
 import com.android.ide.common.rendering.api.SessionParams
 import com.android.ide.common.resources.deprecated.FrameworkResources
 import com.android.ide.common.resources.deprecated.ResourceItem
@@ -96,8 +97,10 @@ internal class Renderer(
 
     Gc.gc()
 
-    println("Objects still linked from the DelegateManager:")
-    DelegateManager.dump(System.out)
+    if (System.getProperty(Flags.DEBUG_LINKED_OBJECTS) != null) {
+      println("Objects still linked from the DelegateManager:")
+      DelegateManager.dump(System.out)
+    }
   }
 
   fun render(
