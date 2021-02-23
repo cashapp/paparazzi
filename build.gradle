@@ -7,8 +7,8 @@ buildscript {
     layoutlib: '4.0.0-alpha02-b169460', // "should" be similar to versions.agp
     androidTools: '26.6.0', // agp + 23.0.0 = androidTools
     jcodec: '0.2.5',
-    moshi: '1.10.0',
-    bytebuddy: '1.10.14',
+    moshi: '1.11.0',
+    bytebuddy: '1.10.21',
     releasedPaparazzi: '0.6.0'
   ]
 
@@ -24,7 +24,7 @@ buildscript {
     ],
     kotlinx: [
       coroutines: [
-        core: 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9',
+        core: 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2',
       ],
     ],
     tools: [
@@ -51,10 +51,10 @@ buildscript {
       core: "net.bytebuddy:byte-buddy:${versions.bytebuddy}",
       agent: "net.bytebuddy:byte-buddy-agent:${versions.bytebuddy}",
     ],
-    guava: 'com.google.guava:guava:29.0-jre',
-    junit: 'junit:junit:4.13',
-    truth: 'com.google.truth:truth:1.0.1',
-    assertj: 'org.assertj:assertj-core:3.17.2'
+    guava: 'com.google.guava:guava:30.1-jre',
+    junit: 'junit:junit:4.13.2',
+    truth: 'com.google.truth:truth:1.1.2',
+    assertj: 'org.assertj:assertj-core:3.19.0'
   ]
 
   repositories {
@@ -67,7 +67,7 @@ buildscript {
   dependencies {
     classpath deps.plugins.kotlin
     classpath deps.plugins.android
-    classpath 'com.github.ben-manes:gradle-versions-plugin:0.33.0'
+    classpath 'com.github.ben-manes:gradle-versions-plugin:0.36.0'
     classpath 'org.jetbrains.dokka:dokka-gradle-plugin:0.9.18'
     classpath "app.cash.paparazzi:paparazzi-gradle-plugin:${versions.releasedPaparazzi}"
   }
