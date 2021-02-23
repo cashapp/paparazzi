@@ -67,6 +67,7 @@ class Paparazzi(
   private lateinit var renderSession: RenderSessionImpl
   private lateinit var bridgeRenderSession: RenderSession
   private var testName: TestName? = null
+  private val renderExtensions = LinkedHashSet<RenderExtension>()
 
   val layoutInflater: LayoutInflater
     get() = RenderAction.getCurrentContext().getSystemService("layout_inflater") as BridgeInflater
@@ -176,6 +177,14 @@ class Paparazzi(
     takeSnapshots(view, name, deviceConfig, theme, startNanos, fps, frameCount)
   }
 
+  fun addRenderExtension(renderExtension: RenderExtension) {
+    renderExtensions.add(renderExtension)
+  }
+
+  fun removeRenderExtension(renderExtension: RenderExtension) {
+    renderExtensions.remove(renderExtension)
+  }
+
   private fun takeSnapshots(
     view: View,
     name: String?,
@@ -225,7 +234,12 @@ class Paparazzi(
           val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
           withTime(nowNanos) {
             renderSession.render(true)
-            frameHandler.handle(scaleImage(bridgeRenderSession.image))
+
+            var image = bridgeRenderSession.image
+            renderExtensions.forEach {
+              image = it.render(snapshot = snapshot, view = view, image = image)
+            }
+            frameHandler.handle(scaleImage(image))
           }
         }
       } finally {
