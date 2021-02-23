@@ -2,7 +2,7 @@ apply plugin: 'com.github.ben-manes.versions'
 
 buildscript {
   ext.versions = [
-    kotlin: '1.4.10',
+    kotlin: '1.4.30',
     agp: '3.6.1',
     layoutlib: '4.0.0-alpha02-b169460', // "should" be similar to versions.agp
     androidTools: '26.6.0', // agp + 23.0.0 = androidTools
