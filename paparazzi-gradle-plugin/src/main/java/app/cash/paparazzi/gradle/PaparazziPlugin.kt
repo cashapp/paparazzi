@@ -37,7 +37,7 @@ class PaparazziPlugin : Plugin<Project> {
         project.dependencies.create("app.cash.paparazzi:paparazzi:$VERSION")
     )
 
-    //Creating an root tasks for executing all snapshot tasks for all variants.
+    // Create anchor tasks for all variants.
     //These tasks will depend on all variant-specific tasks.
     val verifyAllVariant = project.tasks.register("verifyPaparazzi")
     val recordAllVariant = project.tasks.register("recordPaparazzi")
