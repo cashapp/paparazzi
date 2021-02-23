@@ -27,6 +27,7 @@ import com.android.ide.common.rendering.api.ResourceValue
 import com.android.ide.common.rendering.api.SessionParams.Key
 import com.android.layoutlib.bridge.android.RenderParamsFlags
 import com.android.resources.ResourceType
+import com.android.resources.ResourceType.STYLE
 import com.google.common.io.ByteStreams
 import org.kxml2.io.KXmlParser
 import org.xmlpull.v1.XmlPullParser
@@ -97,7 +98,15 @@ internal class PaparazziCallback(
 
   override fun resolveResourceId(id: Int): ResourceReference? = projectResources[id]
 
-  override fun getOrGenerateResourceId(resource: ResourceReference): Int = resources[resource] ?: 0
+  override fun getOrGenerateResourceId(resource: ResourceReference): Int {
+    // Workaround: We load our resource map from fields in R.class, which are named using Java
+    // class conventions.  Therefore, we need to similarly transform style naming conventions
+    // that contain periods (e.g., Widget.AppCompat.TextView) to avoid false lookup misses.
+    // Long-term: Perhaps parse and load resource names from file system directly?
+    val resourceKey =
+      if (resource.resourceType == STYLE) resource.transformStyleResource() else resource
+    return resources[resourceKey] ?: 0
+  }
 
   override fun getParser(layoutResource: ResourceValue): ILayoutPullParser? {
     try {
@@ -174,4 +183,7 @@ internal class PaparazziCallback(
   fun setEnableShadow(enableShadow: Boolean) {
     this.enableShadow = enableShadow
   }
+
+  private fun ResourceReference.transformStyleResource() =
+    ResourceReference.style(namespace, name.replace('.', '_'))
 }

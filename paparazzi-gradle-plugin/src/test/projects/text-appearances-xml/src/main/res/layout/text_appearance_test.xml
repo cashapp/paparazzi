@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="@android:color/white"
+    >
+
+  <TextView
+      android:id="@+id/text_ta"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:text="Hello, Text Appearance!"
+      android:textAppearance="@style/TextAppearance.Title"
+      tools:ignore="HardcodedText"
+      />
+
+  <TextView
+      android:id="@+id/text_style"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:text="Hello, Style!"
+      style="@style/TextAppearance.Title"
+      tools:ignore="HardcodedText"
+      />
+
+</LinearLayout>
