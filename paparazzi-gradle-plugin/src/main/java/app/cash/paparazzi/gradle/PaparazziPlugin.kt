@@ -67,7 +67,7 @@ class PaparazziPlugin : Plugin<Project> {
       }
 
       val recordTaskProvider = project.tasks.register("recordPaparazzi${variantSlug}")
-      recordAllVariant.configure {
+      recordVariants.configure { it.dependsOn(recordTaskProvider) }
         it.dependsOn(recordTaskProvider)
       }
       val verifyTaskProvider = project.tasks.register("verifyPaparazzi${variantSlug}")
