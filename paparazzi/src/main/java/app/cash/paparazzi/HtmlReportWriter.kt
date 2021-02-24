@@ -100,9 +100,7 @@ internal class HtmlReportWriter(
           val original = File(imagesDirectory, "${hashes[0]}.png")
           if (isRecording) {
             val goldenFile = File(goldenImagesDirectory, snapshot.toFileName("_", "png"))
-            if (!goldenFile.exists()) {
-              original.copyTo(goldenFile)
-            }
+            original.copyTo(goldenFile, overwrite = true)
           }
           snapshot.copy(file = rootDirectory.toPath().relativize(original.toPath()).toString())
         } else {

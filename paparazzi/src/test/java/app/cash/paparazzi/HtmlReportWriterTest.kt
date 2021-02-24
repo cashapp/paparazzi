@@ -21,20 +21,26 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.awt.image.BufferedImage
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.attribute.BasicFileAttributes
+import java.nio.file.attribute.FileTime
 import java.time.Instant
 import java.util.Date
 
 class HtmlReportWriterTest {
-  @Rule
-  @JvmField
-  var temporaryFolder: TemporaryFolder = TemporaryFolder()
+  @get:Rule
+  val reportRoot: TemporaryFolder = TemporaryFolder()
+
+  @get:Rule
+  val snapshotRoot: TemporaryFolder = TemporaryFolder()
 
   private val anyImage = BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB)
   private val anyImageHash = "9069ca78e7450a285173431b3e52c5c25299e473"
 
   @Test
   fun happyPath() {
-    val htmlReportWriter = HtmlReportWriter("run_one", temporaryFolder.root)
+    val htmlReportWriter = HtmlReportWriter("run_one", reportRoot.root)
     htmlReportWriter.use {
       val frameHandler = htmlReportWriter.newFrameHandler(
           Snapshot(
@@ -50,7 +56,7 @@ class HtmlReportWriterTest {
       }
     }
 
-    assertThat(File("${temporaryFolder.root}/index.js")).hasContent(
+    assertThat(File("${reportRoot.root}/index.js")).hasContent(
         """
         |window.all_runs = [
         |  "run_one"
@@ -58,7 +64,7 @@ class HtmlReportWriterTest {
         |""".trimMargin()
     )
 
-    assertThat(File("${temporaryFolder.root}/runs/run_one.js")).hasContent(
+    assertThat(File("${reportRoot.root}/runs/run_one.js")).hasContent(
         """
         |window.runs["run_one"] = [
         |  {
@@ -82,5 +88,57 @@ class HtmlReportWriterTest {
     assertThat("~@^()[]{}:;,.".sanitizeForFilename()).isEqualTo("~@^()[]{}:;,.")
   }
 
+  @Test
+  fun alwaysOverwriteOnRecord() {
+    // set record mode
+    System.setProperty("paparazzi.test.record", "true")
+
+    val htmlReportWriter = HtmlReportWriter("record_run", reportRoot.root, snapshotRoot.root)
+    htmlReportWriter.use {
+      val now = Instant.parse("2021-02-23T10:27:43Z")
+      val snapshot = Snapshot(
+          name = "test",
+          testName = TestName("app.cash.paparazzi", "HomeView", "testSettings"),
+          timestamp = now.toDate()
+      )
+      val file =
+        File("${snapshotRoot.root}/images/app.cash.paparazzi_HomeView_testSettings_test.png")
+      val golden = file.toPath()
+
+      // precondition
+      assertThat(golden).doesNotExist()
+
+      // take 1
+      val frameHandler1 = htmlReportWriter.newFrameHandler(
+          snapshot = snapshot,
+          frameCount = 1,
+          fps = -1
+      )
+      frameHandler1.use { frameHandler1.handle(anyImage) }
+      assertThat(golden).exists()
+      val timeFirstWrite = golden.lastModifiedTime()
+
+      // I know....but guarantees writes won't happen in same tick
+      Thread.sleep(100)
+
+      // take 2
+      val frameHandler2 = htmlReportWriter.newFrameHandler(
+          snapshot = snapshot.copy(timestamp = now.plusSeconds(1).toDate()),
+          frameCount = 1,
+          fps = -1
+      )
+      frameHandler2.use { frameHandler2.handle(anyImage) }
+      assertThat(golden).exists()
+      val timeOverwrite = golden.lastModifiedTime()
+
+      // should always overwrite
+      assertThat(timeOverwrite).isGreaterThan(timeFirstWrite)
+    }
+  }
+
   private fun Instant.toDate() = Date(toEpochMilli())
+
+  private fun Path.lastModifiedTime(): FileTime {
+    return Files.readAttributes(this, BasicFileAttributes::class.java).lastModifiedTime()
+  }
 }
