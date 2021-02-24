@@ -60,7 +60,7 @@ test {
 
 apply from: "$rootDir/gradle/gradle-mvn-push.gradle"
 
-//when cleaning this project build data, we also want to clean the test projects build data.
+// When cleaning this project, we also want to clean the test projects.
 tasks.named("clean").configure { cleaner ->
   cleaner.doFirst {
     project.file('src/test/projects').listFiles().each { testProjectFolder ->
