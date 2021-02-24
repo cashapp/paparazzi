@@ -39,7 +39,7 @@ internal class PaparazziAssetRepository(private val assetPath: String) : AssetRe
   override fun openAsset(
     path: String,
     mode: Int
-  ): InputStream? = open(assetPath + path)
+  ): InputStream? = open("$assetPath/$path")
 
   @Throws(IOException::class)
   override fun openNonAsset(
