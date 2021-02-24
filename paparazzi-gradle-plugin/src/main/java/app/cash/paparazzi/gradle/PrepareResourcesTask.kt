@@ -16,7 +16,6 @@
 package app.cash.paparazzi.gradle
 
 import com.android.build.gradle.BaseExtension
-import com.android.build.gradle.api.BaseVariant
 import com.android.ide.common.symbols.getPackageNameFromManifest
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
@@ -43,7 +42,6 @@ open class PrepareResourcesTask : DefaultTask() {
   @get:OutputFile
   internal val paparazziResources: RegularFileProperty = project.objects.fileProperty()
 
-
   @TaskAction
   fun writeResourcesFile() {
     val out = paparazziResources.get().asFile
@@ -56,7 +54,7 @@ open class PrepareResourcesTask : DefaultTask() {
           it.newLine()
           it.write(project.targetSdkVersion())
           it.newLine()
-          // will use the compile version for system framework resources
+          // Use compileSdkVersion for system framework resources.
           it.write("${project.sdkFolder().absolutePath}/platforms/android-${project.compileSdkVersion()}/")
           it.newLine()
           it.write(mergeAssetsOutput.get().asFile.path)
@@ -85,7 +83,7 @@ open class PrepareResourcesTask : DefaultTask() {
   private fun Project.targetSdkVersion(): String {
     val androidExtension = extensions.getByType(BaseExtension::class.java)
     return androidExtension.defaultConfig.targetSdkVersion?.apiLevel?.toString()
-            ?: DEFAULT_COMPILE_SDK_VERSION.toString()
+        ?: DEFAULT_COMPILE_SDK_VERSION.toString()
   }
 
   private fun Project.sdkFolder(): File {
