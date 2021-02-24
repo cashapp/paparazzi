@@ -31,7 +31,9 @@ jobs:
           java-version: ${{ matrix.java-version }}
 
       - name: Run Tests
-        run: ./gradlew check
+        run: |
+          ./gradlew :paparazzi-gradle-plugin:clean
+          ./gradlew check
 
       - name: Upload Test Failures
         if: failure()
@@ -40,7 +42,7 @@ jobs:
           name: test-failures
           path: |
             **/build/reports/tests/test/
-            paparazzi-gradle-plugin/src/test/projects/**/build/reports/paparazzi/images/
+            paparazzi-gradle-plugin/src/test/projects/**/build/reports/paparazzi/*/images/
 
   publish:
     runs-on: ubuntu-latest
