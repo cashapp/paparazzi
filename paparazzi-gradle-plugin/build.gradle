@@ -63,9 +63,9 @@ apply from: "$rootDir/gradle/gradle-mvn-push.gradle"
 // When cleaning this project, we also want to clean the test projects.
 tasks.named("clean").configure { cleaner ->
   cleaner.doFirst {
-    project.file('src/test/projects').listFiles().each { testProjectFolder ->
-      new File(testProjectFolder, '.gradle').deleteDir()
-      new File(testProjectFolder, 'build').deleteDir()
+    project.file('src/test/projects').eachFile { root ->
+      new File(root, '.gradle').deleteDir()
+      new File(root, 'build').deleteDir()
     }
   }
 }
