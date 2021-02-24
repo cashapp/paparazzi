@@ -309,6 +309,15 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun verifyOpenAssets() {
+    val fixtureRoot = File("src/test/projects/open-assets")
+
+    gradleRunner
+        .withArguments("testDebug", "--stacktrace")
+        .runFixture(fixtureRoot) { build() }
+  }
+
+  @Test
   fun verifySnapshot_withoutFonts() {
     val fixtureRoot = File("src/test/projects/verify-snapshot")
 
