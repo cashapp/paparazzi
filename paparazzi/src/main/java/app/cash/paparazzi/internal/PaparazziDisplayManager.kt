@@ -29,7 +29,6 @@ import android.view.DisplayInfo
 import android.view.Surface
 
 class PaparazziDisplayManager : IDisplayManager.Stub() {
-
   override fun getPreferredWideGamutColorSpaceId(): Int {
     return 0
   }
