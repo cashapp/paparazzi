@@ -35,7 +35,6 @@ class PaparazziDisplayManager : IDisplayManager.Stub() {
   }
 
   override fun registerCallback(p0: IDisplayManagerCallback?) {
-
   }
 
   override fun getDisplayInfo(p0: Int): DisplayInfo {
