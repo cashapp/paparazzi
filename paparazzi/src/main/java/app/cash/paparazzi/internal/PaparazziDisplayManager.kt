@@ -178,5 +178,4 @@ class PaparazziDisplayManager : IDisplayManager.Stub() {
   override fun getMinimumBrightnessCurve(): Curve {
     throw UnsupportedOperationException("Minimum IDisplayManager methods are supported.")
   }
-
 }
