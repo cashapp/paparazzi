@@ -124,6 +124,24 @@ class PaparazziTest {
     assertThat(log).containsExactly("view width=1080 height=1776")
   }
 
+  @Test
+  fun onGlobalLayoutCalls() {
+    var onGlobalLayout = false
+
+    val view = object: View(paparazzi.context) {
+      override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        viewTreeObserver.addOnGlobalLayoutListener {
+          onGlobalLayout = true
+        }
+      }
+    }
+
+    paparazzi.snapshot(view)
+
+    assertThat(onGlobalLayout).isTrue
+  }
+
   private val time: Long
     get() {
       return TimeUnit.NANOSECONDS.toMillis(System_Delegate.nanoTime() - Paparazzi.TIME_OFFSET_NANOS)
