@@ -62,7 +62,7 @@ internal object ImageUtils {
   fun requireSimilar(
     relativePath: String,
     image: BufferedImage,
-    maxPercentDifferent: Double
+    maxPercentDifference: Double
   ) {
     val maxDimension = Math.max(image.width, image.height)
     val scale = THUMBNAIL_SIZE / maxDimension.toDouble()
