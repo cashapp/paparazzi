@@ -37,7 +37,8 @@ import java.io.IOException
 internal class Renderer(
   private val environment: Environment,
   private val layoutlibCallback: PaparazziCallback,
-  private val logger: PaparazziLogger
+  private val logger: PaparazziLogger,
+  private val maxPercentDifference: Double,
 ) : Closeable {
   private var bridge: Bridge? = null
   private lateinit var sessionParamsBuilder: SessionParamsBuilder
@@ -135,11 +136,11 @@ internal class Renderer(
   /** Compares the golden image with the passed image. */
   fun verify(
     goldenImageName: String,
-    image: BufferedImage
+    image: BufferedImage,
   ) {
     try {
       val goldenImagePath = environment.appTestDir + "/golden/" + goldenImageName
-      ImageUtils.requireSimilar(goldenImagePath, image)
+      ImageUtils.requireSimilar(goldenImagePath, image, maxPercentDifference)
     } catch (e: IOException) {
       logger.error(e, e.message)
     }
