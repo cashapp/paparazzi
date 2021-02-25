@@ -86,7 +86,7 @@ internal object ImageUtils {
             relativePath,
             goldenImage,
             thumbnail,
-            maxPercentDifferent
+            maxPercentDifference
         )
       } finally {
         `is`.close()
