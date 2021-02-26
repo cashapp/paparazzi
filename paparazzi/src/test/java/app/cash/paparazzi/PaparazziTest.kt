@@ -125,24 +125,6 @@ class PaparazziTest {
   }
 
   @Test
-  fun onGlobalLayoutCalls() {
-    var onGlobalLayout = false
-
-    val view = object: View(paparazzi.context) {
-      override fun onAttachedToWindow() {
-        super.onAttachedToWindow()
-        viewTreeObserver.addOnGlobalLayoutListener {
-          onGlobalLayout = true
-        }
-      }
-    }
-
-    paparazzi.snapshot(view)
-
-    assertThat(onGlobalLayout).isTrue
-  }
-
-  @Test
   fun throwsRenderingExceptions() {
     val view = object : View(paparazzi.context) {
       override fun onAttachedToWindow() {
