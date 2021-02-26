@@ -48,6 +48,8 @@ class PaparazziPlugin : Plugin<Project> {
 
       val mergeResourcesOutputDir = variant.mergeResourcesProvider.flatMap { it.outputDir }
       val mergeAssetsOutputDir = variant.mergeAssetsProvider.flatMap { it.outputDir }
+      val reportOutputDir = project.layout.buildDirectory.dir("reports/paparazzi")
+      val snapshotOutputDir = project.layout.projectDirectory.dir("src/test/snapshots")
 
       val writeResourcesTask = project.tasks.register(
           "preparePaparazzi${variantSlug}Resources", PrepareResourcesTask::class.java
@@ -80,6 +82,8 @@ class PaparazziPlugin : Plugin<Project> {
 
         test.inputs.dir(mergeResourcesOutputDir)
         test.inputs.dir(mergeAssetsOutputDir)
+        test.outputs.dir(reportOutputDir)
+        test.outputs.dir(snapshotOutputDir)
 
         test.doFirst {
           test.systemProperties["paparazzi.test.record"] =
@@ -97,7 +101,7 @@ class PaparazziPlugin : Plugin<Project> {
 
       testTaskProvider.configure {
         it.doLast {
-          val uri = project.buildDir.toPath().resolve("reports/paparazzi/index.html").toUri()
+          val uri = reportOutputDir.get().asFile.toPath().resolve("index.html").toUri()
           project.logger.log(LIFECYCLE, "See the Paparazzi report at: $uri")
         }
       }
