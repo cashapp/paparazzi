@@ -323,11 +323,27 @@ class Paparazzi(
   }
 
   private fun forcePlatformSdkVersion(compileSdkVersion: Int) {
-    val modifiersField: Field = Field::class.java
-        .getDeclaredField("modifiers")
-        .apply {
-          isAccessible = true
+    val modifiersField =
+      try {
+        Field::class.java.getDeclaredField("modifiers")
+      } catch (e: NoSuchFieldException) {
+        // Hack for Java 12+ access
+        // https://stackoverflow.com/q/56039341
+        // https://github.com/powermock/powermock/commit/66ce9f77215bae68b45f35481abc8b52a5d5b6ae#diff-21c1fc51058efd316026f11f34f51c5c
+        try {
+          val getDeclaredFields0 =
+            Class::class.java.getDeclaredMethod(
+                "getDeclaredFields0", Boolean::class.javaPrimitiveType
+            )
+          getDeclaredFields0.isAccessible = true
+          val fields = getDeclaredFields0.invoke(Field::class.java, false) as Array<Field>
+          fields.find { it.name == "modifiers" } ?: throw e
+        } catch (ex: Exception) {
+          e.addSuppressed(ex)
+          throw e
         }
+      }
+    modifiersField.isAccessible = true
 
     val versionClass = try {
       Paparazzi::class.java.classLoader.loadClass("android.os.Build\$VERSION")
