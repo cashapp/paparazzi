@@ -42,6 +42,7 @@ import app.cash.paparazzi.internal.SessionParamsBuilder
 import app.cash.paparazzi.internal.WindowManagerInterceptor
 import com.android.ide.common.rendering.api.RenderSession
 import com.android.ide.common.rendering.api.Result
+import com.android.ide.common.rendering.api.Result.Status.ERROR_UNKNOWN
 import com.android.ide.common.rendering.api.SessionParams
 import com.android.layoutlib.bridge.Bridge.cleanupThread
 import com.android.layoutlib.bridge.Bridge.prepareThread
@@ -242,7 +243,10 @@ class Paparazzi(
         for (frame in 0 until frameCount) {
           val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
           withTime(nowNanos) {
-            renderSession.render(true)
+            val result = renderSession.render(true)
+            if (result.status == ERROR_UNKNOWN) {
+              throw result.exception
+            }
 
             var image = bridgeRenderSession.image
             renderExtensions.forEach {

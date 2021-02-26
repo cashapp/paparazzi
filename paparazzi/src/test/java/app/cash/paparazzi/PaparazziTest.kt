@@ -107,7 +107,7 @@ class PaparazziTest {
   fun frameCallbacksExecutedAfterLayout() {
     val log = mutableListOf<String>()
 
-    val view = object: View(paparazzi.context) {
+    val view = object : View(paparazzi.context) {
       override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         Choreographer.getInstance()
@@ -140,6 +140,24 @@ class PaparazziTest {
     paparazzi.snapshot(view)
 
     assertThat(onGlobalLayout).isTrue
+  }
+
+  @Test
+  fun throwsRenderingExceptions() {
+    val view = object : View(paparazzi.context) {
+      override fun onAttachedToWindow() {
+        throw Throwable("Oops")
+      }
+    }
+
+    val thrown = try {
+      paparazzi.snapshot(view)
+      false
+    } catch (exception: Throwable) {
+      true
+    }
+
+    assertThat(thrown).isTrue
   }
 
   private val time: Long
