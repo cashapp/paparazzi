@@ -317,8 +317,9 @@ class Paparazzi(
   }
 
   private fun Description.toTestName(): TestName {
-    val packageName = testClass.`package`.name
-    val className = testClass.name.substring(packageName.length + 1)
+    val fullQualifiedName = className
+    val packageName = fullQualifiedName.substringBeforeLast('.', missingDelimiterValue = "")
+    val className = fullQualifiedName.substringAfterLast('.')
     return TestName(packageName, className, methodName)
   }
 
