@@ -5,6 +5,7 @@ import com.google.common.truth.Truth.assertThat
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome.FROM_CACHE
+import org.gradle.testkit.runner.TaskOutcome.SUCCESS
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
@@ -148,6 +149,108 @@ class PaparazziPluginTest {
     assertThat(snapshotWithLabel.exists()).isTrue()
 
     snapshotsDir.deleteRecursively()
+  }
+
+  @Test
+  fun rerunOnResourceChange() {
+    val fixtureRoot = File("src/test/projects/rerun-resource-change")
+
+    val snapshotsDir = File(fixtureRoot, "src/test/snapshots")
+    val snapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_RecordTest_record.png")
+
+    val valuesDir = File(fixtureRoot, "src/main/res/values/")
+    val destResourceFile = File(valuesDir, "colors.xml")
+    val firstResourceFile = File(fixtureRoot, "src/test/resources/colors1.xml")
+    val secondResourceFile = File(fixtureRoot, "src/test/resources/colors2.xml")
+
+    // Original resource
+    firstResourceFile.copyTo(destResourceFile, overwrite = false)
+
+    // Take 1
+    val firstRunResult = gradleRunner
+        .withArguments("recordPaparazziDebug", "--stacktrace")
+        .runFixture(fixtureRoot) { build() }
+
+    with(firstRunResult.task(":testDebugUnitTest")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(SUCCESS)
+    }
+    assertThat(snapshot.exists()).isTrue()
+
+    val firstRunBytes = snapshot.readBytes()
+
+    // Update resource
+    secondResourceFile.copyTo(destResourceFile, overwrite = true)
+
+    // Take 2
+    val secondRunResult = gradleRunner
+        .withArguments("recordPaparazziDebug", "--stacktrace")
+        .runFixture(fixtureRoot) { build() }
+
+    with(secondRunResult.task(":testDebugUnitTest")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(SUCCESS) // not UP-TO-DATE
+    }
+    assertThat(snapshot.exists()).isTrue()
+
+    val secondRunBytes = snapshot.readBytes()
+
+    // should be different colors
+    assertThat(firstRunBytes).isNotEqualTo(secondRunBytes)
+
+    snapshotsDir.deleteRecursively()
+    valuesDir.deleteRecursively()
+  }
+
+  @Test
+  fun rerunOnAssetChange() {
+    val fixtureRoot = File("src/test/projects/rerun-asset-change")
+
+    val snapshotsDir = File(fixtureRoot, "src/test/snapshots")
+    val snapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_RecordTest_record.png")
+
+    val assetsDir = File(fixtureRoot, "src/main/assets/")
+    val destAssetFile = File(assetsDir, "secret.txt")
+    val firstAssetFile = File(fixtureRoot, "src/test/resources/secret1.txt")
+    val secondAssetFile = File(fixtureRoot, "src/test/resources/secret2.txt")
+
+    // Original asset
+    firstAssetFile.copyTo(destAssetFile, overwrite = false)
+
+    // Take 1
+    val firstRunResult = gradleRunner
+        .withArguments("recordPaparazziDebug", "--stacktrace")
+        .runFixture(fixtureRoot) { build() }
+
+    with(firstRunResult.task(":testDebugUnitTest")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(SUCCESS)
+    }
+    assertThat(snapshot.exists()).isTrue()
+
+    val firstRunBytes = snapshot.readBytes()
+
+    // Update asset
+    secondAssetFile.copyTo(destAssetFile, overwrite = true)
+
+    // Take 2
+    val secondRunResult = gradleRunner
+        .withArguments("recordPaparazziDebug", "--stacktrace")
+        .runFixture(fixtureRoot) { build() }
+
+    with(secondRunResult.task(":testDebugUnitTest")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(SUCCESS) // not UP-TO-DATE
+    }
+    assertThat(snapshot.exists()).isTrue()
+
+    val secondRunBytes = snapshot.readBytes()
+
+    // should be different
+    assertThat(firstRunBytes).isNotEqualTo(secondRunBytes)
+
+    snapshotsDir.deleteRecursively()
+    assetsDir.deleteRecursively()
   }
 
   @Test

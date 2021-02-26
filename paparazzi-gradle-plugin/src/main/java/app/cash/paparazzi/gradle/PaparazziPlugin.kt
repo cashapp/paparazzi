@@ -46,11 +46,14 @@ class PaparazziPlugin : Plugin<Project> {
     variants.all { variant ->
       val variantSlug = variant.name.capitalize(Locale.US)
 
+      val mergeResourcesOutputDir = variant.mergeResourcesProvider.flatMap { it.outputDir }
+      val mergeAssetsOutputDir = variant.mergeAssetsProvider.flatMap { it.outputDir }
+
       val writeResourcesTask = project.tasks.register(
           "preparePaparazzi${variantSlug}Resources", PrepareResourcesTask::class.java
       ) { task ->
-        task.mergeResourcesOutput.set(variant.mergeResourcesProvider.flatMap { it.outputDir })
-        task.mergeAssetsOutput.set(variant.mergeAssetsProvider.flatMap { it.outputDir })
+        task.mergeResourcesOutput.set(mergeResourcesOutputDir)
+        task.mergeAssetsOutput.set(mergeAssetsOutputDir)
         task.paparazziResources.set(project.layout.buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.txt"))
       }
 
@@ -74,6 +77,10 @@ class PaparazziPlugin : Plugin<Project> {
       val testTaskProvider = project.tasks.named("test${testVariantSlug}", Test::class.java) { test ->
         test.systemProperties["paparazzi.test.resources"] =
             writeResourcesTask.flatMap { it.paparazziResources.asFile }.get().path
+
+        test.inputs.dir(mergeResourcesOutputDir)
+        test.inputs.dir(mergeAssetsOutputDir)
+
         test.doFirst {
           test.systemProperties["paparazzi.test.record"] =
               project.gradle.taskGraph.hasTask(recordTaskProvider.get())
