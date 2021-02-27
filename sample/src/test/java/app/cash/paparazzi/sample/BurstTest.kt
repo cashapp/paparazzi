@@ -4,15 +4,13 @@ import android.widget.LinearLayout
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Paparazzi
 import com.squareup.burst.BurstJUnit4
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-@Ignore("This is not supported paparazzi version this sample uses.")
 @RunWith(BurstJUnit4::class)
 class BurstTest(
-  private val config: Config
+  config: Config
 ) {
   enum class Config(
     val deviceConfig: DeviceConfig,

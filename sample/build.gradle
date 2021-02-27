@@ -12,5 +12,5 @@ android {
 dependencies {
   implementation deps.kotlin.stdlib.jdk8
 
-  testImplementation "com.squareup.burst:burst-junit4:1.2.0"
+  testImplementation deps.burst
 }
