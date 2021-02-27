@@ -55,7 +55,7 @@ buildscript {
     junit: 'junit:junit:4.13.2',
     truth: 'com.google.truth:truth:1.1.2',
     assertj: 'org.assertj:assertj-core:3.19.0',
-    burst: 'com.squareup.burst:burst-junit4:1.2.0'
+    burst: 'com.squareup.burst:burst-junit4:1.2.0',
   ]
 
   repositories {
