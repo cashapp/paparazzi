@@ -8,7 +8,7 @@
 
 set -ex
 
-REPO="git@github.com:square/paparazzi.git"
+REPO="git@github.com:cashapp/paparazzi.git"
 DIR=../temp-clone-paparazzi
 
 # Delete any existing temporary website clone
