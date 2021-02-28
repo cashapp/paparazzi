@@ -1,7 +1,7 @@
 site_name: Paparazzi
 site_url: https://cashapp.github.io/paparazzi/
 repo_name: Paparazzi
-repo_url: https://github.com/square/paparazzi
+repo_url: https://github.com/cashapp/paparazzi
 site_description: "Android screenshots without Android"
 site_author: Square, Inc.
 remote_branch: gh-pages
