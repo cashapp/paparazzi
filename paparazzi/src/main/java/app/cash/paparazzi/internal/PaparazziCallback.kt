@@ -96,9 +96,6 @@ internal class PaparazziCallback(
     return viewConstructor.newInstance(*constructorArgs)
   }
 
-  override fun getNamespace(): String =
-    String.format(SdkConstants.NS_CUSTOM_RESOURCES_S, packageName)
-
   override fun resolveResourceId(id: Int): ResourceReference? = projectResources[id]
 
   override fun getOrGenerateResourceId(resource: ResourceReference): Int {
@@ -149,8 +146,6 @@ internal class PaparazziCallback(
   ): AdapterBinding? = null
 
   override fun getActionBarCallback(): ActionBarCallback = actionBarCallback
-
-  override fun supports(ideFeature: Int): Boolean = false
 
   override fun createXmlParserForPsiFile(fileName: String): XmlPullParser? =
     createXmlParserForFile(fileName)
