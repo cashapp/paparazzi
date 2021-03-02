@@ -14,6 +14,10 @@ jobs:
       matrix:
         java-version:
           - 11
+          - 12
+          - 13
+          - 14
+          - 15
 
     steps:
       - name: (Temp) Remove Platforms 30
@@ -55,7 +59,7 @@ jobs:
       - name: Configure JDK
         uses: actions/setup-java@v1
         with:
-          java-version: 1.8
+          java-version: 11
 
       - name: Upload Artifacts
         run: ./gradlew uploadArchives
