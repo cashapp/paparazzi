@@ -75,7 +75,7 @@ open class PrepareResourcesTask : DefaultTask() {
 
   private fun Project.compileSdkVersion(): String {
     val androidExtension = extensions.getByType(BaseExtension::class.java)
-    return androidExtension.compileSdkVersion.substringAfter(
+    return androidExtension.compileSdkVersion!!.substringAfter(
         "android-", DEFAULT_COMPILE_SDK_VERSION.toString()
     )
   }
@@ -88,7 +88,7 @@ open class PrepareResourcesTask : DefaultTask() {
 
   private fun Project.sdkFolder(): File {
     val androidExtension = extensions.getByType(BaseExtension::class.java)
-    return androidExtension.sdkDirectory!!
+    return androidExtension.sdkDirectory
   }
 
   companion object {

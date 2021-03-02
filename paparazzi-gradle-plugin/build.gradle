@@ -11,8 +11,6 @@ gradlePlugin {
 }
 
 dependencies {
-  implementation deps.kotlin.stdlib.jdk8
-
   compileOnly gradleApi()
   implementation deps.plugins.kotlin
   implementation deps.plugins.android
