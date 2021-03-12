@@ -152,6 +152,28 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun recordModeSingleTestOfMany() {
+    val fixtureRoot = File("src/test/projects/record-mode-multiple-tests")
+    val moduleRoot = File(fixtureRoot, "module")
+
+    val result = gradleRunner
+        .withArguments("module:recordPaparazziDebug", "--tests=*recordSecond", "--stacktrace")
+        .runFixture(fixtureRoot, moduleRoot) { build() }
+
+    assertThat(result.task(":module:testDebugUnitTest")).isNotNull()
+
+    val snapshotsDir = File(moduleRoot, "src/test/snapshots")
+
+    val firstSnapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_RecordTest_recordFirst.png")
+    assertThat(firstSnapshot.exists()).isFalse()
+
+    val secondSnapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_RecordTest_recordSecond_label.png")
+    assertThat(secondSnapshot.exists()).isTrue()
+
+    snapshotsDir.deleteRecursively()
+  }
+
+  @Test
   fun rerunOnResourceChange() {
     val fixtureRoot = File("src/test/projects/rerun-resource-change")
 
