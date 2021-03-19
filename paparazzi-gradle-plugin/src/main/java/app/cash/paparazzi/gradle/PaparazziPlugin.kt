@@ -27,7 +27,6 @@ import org.gradle.api.tasks.options.Option
 import org.gradle.api.tasks.testing.Test
 import org.jetbrains.kotlin.gradle.plugin.KotlinBasePluginWrapper
 import java.util.Locale
-import org.gradle.api.tasks.testing.AbstractTestTask
 
 @Suppress("unused")
 class PaparazziPlugin : Plugin<Project> {
