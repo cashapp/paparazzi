@@ -88,7 +88,7 @@ subprojects {
   group = GROUP
   version = VERSION_NAME
 
-  tasks.withType(Test) {
+  tasks.withType(Test).configureEach {
     testLogging {
       events "failed"
       exceptionFormat "full"
@@ -98,13 +98,13 @@ subprojects {
     }
   }
 
-  tasks.withType(JavaCompile).configureEach { task ->
-    task.sourceCompatibility = JavaVersion.VERSION_1_8
-    task.targetCompatibility = JavaVersion.VERSION_1_8
+  tasks.withType(JavaCompile).configureEach {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
   }
 
-  tasks.withType(org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile).configureEach { task ->
-    task.kotlinOptions {
+  tasks.withType(org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile).configureEach {
+    kotlinOptions {
       jvmTarget = "1.8"
     }
   }

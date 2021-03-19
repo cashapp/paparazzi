@@ -26,17 +26,15 @@ dependencies {
   testImplementation deps.assertj
 }
 
-afterEvaluate { project ->
-  project.tasks.dokka {
-    outputDirectory = "$rootDir/docs/0.x"
-    outputFormat = 'gfm'
-    reportUndocumented = false
-    skipDeprecated = true
-    jdkVersion = 8
-    packageOptions {
-      prefix = "app.cash.paparazzi.internal"
-      suppress = true
-    }
+tasks.named("dokka").configure {
+  outputDirectory = "$rootDir/docs/0.x"
+  outputFormat = 'gfm'
+  reportUndocumented = false
+  skipDeprecated = true
+  jdkVersion = 8
+  packageOptions {
+    prefix = "app.cash.paparazzi.internal"
+    suppress = true
   }
 }
 
@@ -61,13 +59,13 @@ def generateTestConfig = tasks.register("generateTestConfig") {
   }
 }
 
-tasks.withType(Test).configureEach { task ->
-  task.dependsOn(generateTestConfig)
-  task.systemProperty(
+tasks.withType(Test).configureEach {
+  dependsOn(generateTestConfig)
+  systemProperty(
       "paparazzi.test.resources",
       generateTestConfig.map { it.outputs.files.singleFile }.get().path
   )
-  task.testLogging {
+  testLogging {
     events 'passed', 'failed', 'skipped', 'standardOut', 'standardError'
     exceptionFormat 'FULL'
     showCauses true
