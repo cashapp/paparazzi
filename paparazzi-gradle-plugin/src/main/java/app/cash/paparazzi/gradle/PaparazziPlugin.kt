@@ -17,10 +17,12 @@ package app.cash.paparazzi.gradle
 
 import app.cash.paparazzi.VERSION
 import com.android.build.gradle.LibraryExtension
+import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.logging.LogLevel.LIFECYCLE
 import org.gradle.api.plugins.JavaBasePlugin
+import org.gradle.api.tasks.options.Option
 import org.gradle.api.tasks.testing.Test
 import org.jetbrains.kotlin.gradle.plugin.KotlinBasePluginWrapper
 import java.util.Locale
@@ -71,9 +73,9 @@ class PaparazziPlugin : Plugin<Project> {
             .configure { it.dependsOn(writeResourcesTask) }
       }
 
-      val recordTaskProvider = project.tasks.register("recordPaparazzi${variantSlug}")
+      val recordTaskProvider = project.tasks.register("recordPaparazzi${variantSlug}", PaparazziTask::class.java)
       recordVariants.configure { it.dependsOn(recordTaskProvider) }
-      val verifyTaskProvider = project.tasks.register("verifyPaparazzi${variantSlug}")
+      val verifyTaskProvider = project.tasks.register("verifyPaparazzi${variantSlug}", PaparazziTask::class.java)
       verifyVariants.configure { it.dependsOn(verifyTaskProvider) }
 
       val testTaskProvider = project.tasks.named("test${testVariantSlug}", Test::class.java) { test ->
@@ -105,6 +107,16 @@ class PaparazziPlugin : Plugin<Project> {
           project.logger.log(LIFECYCLE, "See the Paparazzi report at: $uri")
         }
       }
+    }
+  }
+
+  open class PaparazziTask : DefaultTask() {
+    @Option(option = "tests", description = "Sets test class or method name to be included, '*' is supported.")
+    open fun setTestNameIncludePatterns(testNamePattern: List<String>): PaparazziTask {
+      project.tasks.withType(Test::class.java).configureEach {
+        it.setTestNameIncludePatterns(testNamePattern)
+      }
+      return this
     }
   }
 }
