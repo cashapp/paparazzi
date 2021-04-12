@@ -18,5 +18,5 @@ package app.cash.paparazzi
 data class TestName(
   val packageName: String,
   val className: String,
-  val methodName: String
+  val methodName: String?
 )

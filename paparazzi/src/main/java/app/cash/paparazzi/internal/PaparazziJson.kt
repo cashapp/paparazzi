@@ -47,13 +47,16 @@ internal object PaparazziJson {
 
   @ToJson
   fun testNameToJson(testName: TestName): String {
+    if (testName.methodName == null) {
+      return "${testName.packageName}.${testName.className}"
+    }
     return "${testName.packageName}.${testName.className}#${testName.methodName}"
   }
 
   @FromJson
   fun testNameFromJson(json: String): TestName {
-    val regex = Regex("(.*)\\.([^.]*)#([^.]*)")
+    val regex = Regex("(.*)\\.([^.#]*)(?:#([^.]*))?")
     val (packageName, className, methodName) = regex.matchEntire(json)!!.destructured
-    return TestName(packageName, className, methodName)
+    return TestName(packageName, className, methodName.ifEmpty { null })
   }
 }
