@@ -75,7 +75,7 @@ $ ./gradlew some-project:verifyPaparazziDebug
 
 Runs tests and verifies against previously-recorded golden values.
 
-Check out the [sample](sample).
+Check out the [sample][sample].
 
 License
 -------
@@ -98,4 +98,5 @@ limitations under the License.
 
  [changelog]: https://cashapp.github.io/paparazzi/changelog/
  [paparazzi]: https://cashapp.github.io/paparazzi/
+ [sample]: https://github.com/cashapp/paparazzi/tree/master/sample
  [snap]: https://oss.sonatype.org/content/repositories/snapshots/app/cash/paparazzi/
