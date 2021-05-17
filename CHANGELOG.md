@@ -1,6 +1,15 @@
 Change Log
 ==========
 
+## Version 0.7.1
+_2021-05-17_
+
+### New
+* [Gradle Plugin] Support the --tests option for record/verify tasks
+
+### Fixed
+* [Gradle Plugin] Defer task configuration until created
+
 ## Version 0.7.0
 _2021-02-26_
 
