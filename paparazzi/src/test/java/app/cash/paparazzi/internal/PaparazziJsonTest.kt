@@ -28,4 +28,13 @@ class PaparazziJsonTest {
     assertThat(adapter.toJson(testName)).isEqualTo(json)
     assertThat(adapter.fromJson(json)).isEqualTo(testName)
   }
+
+  @Test
+  fun testNoMethodName() {
+    val adapter = PaparazziJson.moshi.adapter(TestName::class.java)
+    val testName = TestName("app.cash.paparazzi", "CelebrityTest", null)
+    val json = "\"app.cash.paparazzi.CelebrityTest\""
+    assertThat(adapter.toJson(testName)).isEqualTo(json)
+    assertThat(adapter.fromJson(json)).isEqualTo(testName)
+  }
 }
