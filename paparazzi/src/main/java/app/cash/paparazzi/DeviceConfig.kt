@@ -414,57 +414,49 @@ data class DeviceConfig(
     private const val ATTR_NAME = "name"
     private const val ATTR_VALUE = "value"
 
+    @Throws(IOException::class)
     fun loadProperties(path: File): Map<String, String> {
       val p = Properties()
       val map = Maps.newHashMap<String, String>()
-      try {
-        p.load(FileInputStream(path))
-        for (key in p.stringPropertyNames()) {
-          map[key] = p.getProperty(key)
-        }
-      } catch (e: IOException) {
-        e.printStackTrace()
+      p.load(FileInputStream(path))
+      for (key in p.stringPropertyNames()) {
+        map[key] = p.getProperty(key)
       }
-
       return map
     }
 
+    @Throws(IOException::class, XmlPullParserException::class)
     fun getEnumMap(path: File): Map<String, Map<String, Int>> {
       val map = mutableMapOf<String, MutableMap<String, Int>>()
-      try {
-        val xmlPullParser = XmlPullParserFactory.newInstance()
-            .newPullParser()
-        xmlPullParser.setInput(FileInputStream(path), null)
-        var eventType = xmlPullParser.eventType
-        var attr: String? = null
-        while (eventType != XmlPullParser.END_DOCUMENT) {
-          if (eventType == XmlPullParser.START_TAG) {
-            if (TAG_ATTR == xmlPullParser.name) {
-              attr = xmlPullParser.getAttributeValue(null, ATTR_NAME)
-            } else if (TAG_ENUM == xmlPullParser.name || TAG_FLAG == xmlPullParser.name) {
-              val name = xmlPullParser.getAttributeValue(null, ATTR_NAME)
-              val value = xmlPullParser.getAttributeValue(null, ATTR_VALUE)
-              // Integer.decode cannot handle "ffffffff", see JDK issue 6624867
-              val i = (java.lang.Long.decode(value) as Long).toInt()
-              require(attr != null)
-              var attributeMap: MutableMap<String, Int>? = map[attr]
-              if (attributeMap == null) {
-                attributeMap = Maps.newHashMap()
-                map[attr] = attributeMap
-              }
-              attributeMap!![name] = i
+
+      val xmlPullParser = XmlPullParserFactory.newInstance()
+          .newPullParser()
+      xmlPullParser.setInput(FileInputStream(path), null)
+      var eventType = xmlPullParser.eventType
+      var attr: String? = null
+      while (eventType != XmlPullParser.END_DOCUMENT) {
+        if (eventType == XmlPullParser.START_TAG) {
+          if (TAG_ATTR == xmlPullParser.name) {
+            attr = xmlPullParser.getAttributeValue(null, ATTR_NAME)
+          } else if (TAG_ENUM == xmlPullParser.name || TAG_FLAG == xmlPullParser.name) {
+            val name = xmlPullParser.getAttributeValue(null, ATTR_NAME)
+            val value = xmlPullParser.getAttributeValue(null, ATTR_VALUE)
+            // Integer.decode cannot handle "ffffffff", see JDK issue 6624867
+            val i = (java.lang.Long.decode(value) as Long).toInt()
+            require(attr != null)
+            var attributeMap: MutableMap<String, Int>? = map[attr]
+            if (attributeMap == null) {
+              attributeMap = Maps.newHashMap()
+              map[attr] = attributeMap
             }
-          } else if (eventType == XmlPullParser.END_TAG) {
-            if (TAG_ATTR == xmlPullParser.name) {
-              attr = null
-            }
+            attributeMap!![name] = i
           }
-          eventType = xmlPullParser.next()
+        } else if (eventType == XmlPullParser.END_TAG) {
+          if (TAG_ATTR == xmlPullParser.name) {
+            attr = null
+          }
         }
-      } catch (e: XmlPullParserException) {
-        e.printStackTrace()
-      } catch (e: IOException) {
-        e.printStackTrace()
+        eventType = xmlPullParser.next()
       }
 
       return map

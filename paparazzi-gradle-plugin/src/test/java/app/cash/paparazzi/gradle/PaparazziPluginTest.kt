@@ -36,6 +36,20 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun missingPlatformDirTest() {
+    val fixtureRoot = File("src/test/projects/missing-platform-dir")
+
+    val result = gradleRunner
+        .withArguments("testDebug", "--stacktrace")
+        .forwardOutput()
+        .runFixture(fixtureRoot) { buildAndFail() }
+
+    assertThat(result.task(":testDebug")).isNull()
+    assertThat(result.output).contains("java.io.FileNotFoundException")
+    assertThat(result.output).contains("platforms/android-28")
+  }
+
+  @Test
   fun flagDebugLinkedObjectsIsOff() {
     val fixtureRoot = File("src/test/projects/flag-debug-linked-objects-off")
 
