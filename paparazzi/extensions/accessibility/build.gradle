@@ -1,0 +1,41 @@
+apply plugin: 'java-library'
+apply plugin: 'kotlin'
+apply plugin: 'org.jetbrains.kotlin.kapt'
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
+dependencies {
+  api project(':paparazzi')
+  implementation deps.kotlin.stdlib.jdk8
+  implementation project(':paparazzi-agent')
+
+  testImplementation deps.assertj
+}
+
+def generateTestConfig = tasks.register("generateTestConfig") {
+  def resources = "$buildDir/intermediates/paparazzi/resources.txt"
+  outputs.file(resources)
+
+  doLast {
+    File configFile = new File(resources)
+    configFile.withWriter('utf-8') { writer ->
+      writer.writeLine("app.cash.paparazzi")
+      writer.writeLine(".")
+      writer.writeLine("29")
+      def androidHome = System.getenv("ANDROID_SDK_ROOT")
+          ?: System.getenv("ANDROID_HOME")
+          ?: "$userHome/Library/Android/sdk"
+      writer.writeLine("${androidHome}/platforms/android-29/")
+      writer.writeLine(".")
+    }
+  }
+}
+
+tasks.withType(Test).configureEach { task ->
+  task.dependsOn(generateTestConfig)
+  task.systemProperty(
+      "paparazzi.test.resources",
+      generateTestConfig.map { it.outputs.files.singleFile }.get().path
+  )
+}

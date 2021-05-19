@@ -2,6 +2,7 @@ rootProject.name = 'paparazzi-parent'
 
 include ':sample'
 include ':paparazzi'
+include ':paparazzi:extensions:accessibility'
 include ':paparazzi-agent'
 include ':paparazzi-gradle-plugin'
 include ':libs:layoutlib'
