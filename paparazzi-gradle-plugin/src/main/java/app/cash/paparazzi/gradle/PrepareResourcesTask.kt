@@ -50,14 +50,14 @@ open class PrepareResourcesTask : DefaultTask() {
         .use {
           it.write(project.packageName())
           it.newLine()
-          it.write(mergeResourcesOutput.get().asFile.path)
+          it.write(project.relativePath(mergeResourcesOutput.get().asFile.path))
           it.newLine()
           it.write(project.targetSdkVersion())
           it.newLine()
           // Use compileSdkVersion for system framework resources.
-          it.write("${project.sdkFolder().absolutePath}/platforms/android-${project.compileSdkVersion()}/")
+          it.write("platforms/android-${project.compileSdkVersion()}/")
           it.newLine()
-          it.write(mergeAssetsOutput.get().asFile.path)
+          it.write(project.relativePath(mergeAssetsOutput.get().asFile.path))
           it.newLine()
         }
   }

@@ -16,6 +16,7 @@
 package app.cash.paparazzi
 
 import java.io.File
+import java.nio.file.Paths
 
 data class Environment(
   val platformDir: String,
@@ -35,11 +36,14 @@ fun detectEnvironment(): Environment {
 
   val resourcesFile = File(System.getProperty("paparazzi.test.resources"))
   val configLines = resourcesFile.readLines()
+
+  val appTestDir = Paths.get(System.getProperty("user.dir"))
+  val androidHome = Paths.get(androidHome())
   return Environment(
-      platformDir = configLines[3],
-      appTestDir = System.getProperty("user.dir"),
-      resDir = configLines[1],
-      assetsDir = configLines[4],
+      platformDir = androidHome.resolve(configLines[3]).toString(),
+      appTestDir = appTestDir.toString(),
+      resDir = appTestDir.resolve(configLines[1]).toString(),
+      assetsDir = appTestDir.resolve(configLines[4]).toString(),
       packageName = configLines[0],
       compileSdkVersion = configLines[2].toInt()
   )
