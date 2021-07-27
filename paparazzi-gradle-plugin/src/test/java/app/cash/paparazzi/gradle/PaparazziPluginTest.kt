@@ -443,12 +443,8 @@ class PaparazziPluginTest {
 
     val resourceFileContents = resourcesFile.readLines()
     assertThat(resourceFileContents[0]).isEqualTo("app.cash.paparazzi.plugin.test")
-    assertThat(resourceFileContents[1]).endsWith(
-        "src/test/projects/verify-resources-java/build/intermediates/res/merged/debug"
-    )
-    assertThat(resourceFileContents[4]).endsWith(
-        "src/test/projects/verify-resources-java/build/intermediates/library_assets/debug/out"
-    )
+    assertThat(resourceFileContents[1]).isEqualTo("build/intermediates/res/merged/debug")
+    assertThat(resourceFileContents[4]).isEqualTo("build/intermediates/library_assets/debug/out")
   }
 
   @Test
@@ -466,12 +462,8 @@ class PaparazziPluginTest {
 
     val resourceFileContents = resourcesFile.readLines()
     assertThat(resourceFileContents[0]).isEqualTo("app.cash.paparazzi.plugin.test")
-    assertThat(resourceFileContents[1]).endsWith(
-        "src/test/projects/verify-resources-kotlin/build/intermediates/res/merged/debug"
-    )
-    assertThat(resourceFileContents[4]).endsWith(
-        "src/test/projects/verify-resources-kotlin/build/intermediates/library_assets/debug/out"
-    )
+    assertThat(resourceFileContents[1]).isEqualTo("build/intermediates/res/merged/debug")
+    assertThat(resourceFileContents[4]).isEqualTo("build/intermediates/library_assets/debug/out")
   }
 
   @Test
@@ -489,7 +481,7 @@ class PaparazziPluginTest {
 
     val resourceFileContents = resourcesFile.readLines()
     assertThat(resourceFileContents[2]).isEqualTo("29")
-    assertThat(resourceFileContents[3]).endsWith("/platforms/android-29/")
+    assertThat(resourceFileContents[3]).isEqualTo("platforms/android-29/")
   }
 
   @Test
@@ -507,7 +499,7 @@ class PaparazziPluginTest {
 
     val resourceFileContents = resourcesFile.readLines()
     assertThat(resourceFileContents[2]).isEqualTo("27")
-    assertThat(resourceFileContents[3]).endsWith("/platforms/android-29/")
+    assertThat(resourceFileContents[3]).isEqualTo("platforms/android-29/")
   }
 
   @Test
