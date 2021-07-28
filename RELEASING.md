@@ -11,7 +11,8 @@ Releasing
  8. Update the `gradle.properties` to the next SNAPSHOT version.
  9. `git commit -am "Prepare next development version"`
  10. `git push && git push --tags`
- 11. Update the sample app to the release version and send a PR.
+ 11. `./deploy_website.sh`
+ 12. Update the sample app to the release version and send a PR.
 
 
 If step 5 or 6 fails, drop the Sonatype repo, fix the problem, commit, and start again at step 4.
