@@ -3,14 +3,15 @@ package app.cash.paparazzi.sample
 import android.widget.LinearLayout
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Paparazzi
-import com.squareup.burst.BurstJUnit4
+import com.google.testing.junit.testparameterinjector.TestParameter
+import com.google.testing.junit.testparameterinjector.TestParameterInjector
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-@RunWith(BurstJUnit4::class)
-class BurstTest(
-  config: Config
+@RunWith(TestParameterInjector::class)
+class TestParameterInjectorTest(
+  @TestParameter config: Config
 ) {
   enum class Config(
     val deviceConfig: DeviceConfig,
@@ -35,7 +36,7 @@ class BurstTest(
   }
 
   @Test
-  fun simpleWithTheme(theme: Theme) {
+  fun simpleWithTheme(@TestParameter theme: Theme) {
     val launch = paparazzi.inflate<LinearLayout>(R.layout.launch)
     paparazzi.snapshot(launch, theme = theme.themeName)
   }
