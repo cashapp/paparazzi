@@ -10,5 +10,5 @@ android {
 }
 
 dependencies {
-  testImplementation deps.burst
+  testImplementation deps.testparameterinjector
 }
