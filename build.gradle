@@ -69,7 +69,7 @@ buildscript {
     classpath deps.plugins.kotlin
     classpath deps.plugins.android
     classpath 'com.github.ben-manes:gradle-versions-plugin:0.36.0'
-    classpath 'org.jetbrains.dokka:dokka-gradle-plugin:0.9.18'
+    classpath 'org.jetbrains.dokka:dokka-gradle-plugin:1.5.0'
     classpath "app.cash.paparazzi:paparazzi-gradle-plugin:${versions.releasedPaparazzi}"
   }
 }
