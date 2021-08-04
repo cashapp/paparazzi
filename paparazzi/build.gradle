@@ -26,15 +26,19 @@ dependencies {
   testImplementation deps.assertj
 }
 
-tasks.named("dokka").configure {
-  outputDirectory = "$rootDir/docs/0.x"
-  outputFormat = 'gfm'
-  reportUndocumented = false
-  skipDeprecated = true
-  jdkVersion = 8
-  packageOptions {
-    prefix = "app.cash.paparazzi.internal"
-    suppress = true
+tasks.named("dokkaGfm").configure {
+  outputDirectory = rootProject.file("docs/0.x")
+
+  dokkaSourceSets {
+    configureEach {
+      reportUndocumented = false
+      skipDeprecated = true
+      jdkVersion = 8
+      perPackageOption {
+        prefix = "app.cash.paparazzi.internal"
+        suppress = true
+      }
+    }
   }
 }
 
