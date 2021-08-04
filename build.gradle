@@ -2,14 +2,14 @@ apply plugin: 'com.github.ben-manes.versions'
 
 buildscript {
   ext.versions = [
-    kotlin: '1.4.31',
-    agp: '4.1.2',
+    kotlin: '1.5.10',
+    agp: '4.2.2',
     layoutlib: '4.0.0-alpha02-b169460', // "should" be similar to versions.agp
-    androidTools: '27.1.2', // agp + 23.0.0 = androidTools
+    androidTools: '27.2.2', // agp + 23.0.0 = androidTools
     jcodec: '0.2.5',
-    moshi: '1.11.0',
-    bytebuddy: '1.10.21',
-    releasedPaparazzi: '0.7.0'
+    moshi: '1.12.0',
+    bytebuddy: '1.11.9',
+    releasedPaparazzi: '0.7.1'
   ]
 
   ext.deps = [
@@ -17,14 +17,9 @@ buildscript {
       android: "com.android.tools.build:gradle:${versions.agp}",
       kotlin: "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}",
     ],
-    kotlin: [
-      stdlib: [
-        jdk8: "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${versions.kotlin}"
-      ]
-    ],
     kotlinx: [
       coroutines: [
-        core: 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2',
+        core: 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1',
       ],
     ],
     tools: [
@@ -34,10 +29,10 @@ buildscript {
     ],
     kxml2: 'kxml2:kxml2:2.3.0',
     androidx: [
-      annotations: 'androidx.annotation:annotation:1.1.0'
+      annotations: 'androidx.annotation:annotation:1.2.0'
     ],
     layoutlib: "app.cash.paparazzi:layoutlib-jdk11:${versions.layoutlib}",
-    okio: 'com.squareup.okio:okio:2.8.0',
+    okio: 'com.squareup.okio:okio:2.10.0',
     moshi: [
       core: "com.squareup.moshi:moshi:${versions.moshi}",
       adapters: "com.squareup.moshi:moshi-adapters:${versions.moshi}",
@@ -51,24 +46,24 @@ buildscript {
       core: "net.bytebuddy:byte-buddy:${versions.bytebuddy}",
       agent: "net.bytebuddy:byte-buddy-agent:${versions.bytebuddy}",
     ],
-    guava: 'com.google.guava:guava:30.1-jre',
+    guava: 'com.google.guava:guava:30.1.1-jre',
     junit: 'junit:junit:4.13.2',
-    truth: 'com.google.truth:truth:1.1.2',
-    assertj: 'org.assertj:assertj-core:3.19.0',
+    truth: 'com.google.truth:truth:1.1.3',
+    assertj: 'org.assertj:assertj-core:3.20.2',
     testparameterinjector: 'com.google.testparameterinjector:test-parameter-injector:1.4',
   ]
 
   repositories {
     mavenCentral()
     google()
-    jcenter()
+    gradlePluginPortal()
     //mavenLocal()
   }
 
   dependencies {
     classpath deps.plugins.kotlin
     classpath deps.plugins.android
-    classpath 'com.github.ben-manes:gradle-versions-plugin:0.36.0'
+    classpath 'com.github.ben-manes:gradle-versions-plugin:0.39.0'
     classpath 'org.jetbrains.dokka:dokka-gradle-plugin:1.5.0'
     classpath "app.cash.paparazzi:paparazzi-gradle-plugin:${versions.releasedPaparazzi}"
   }
@@ -78,10 +73,6 @@ subprojects {
   repositories {
     mavenCentral()
     google()
-    jcenter()
-    maven {
-      url 'https://dl.bintray.com/kotlin/dokka'
-    }
     //mavenLocal()
   }
 
