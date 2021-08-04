@@ -9,7 +9,6 @@ repositories {
   }
   mavenCentral()
   google()
-  jcenter()
 }
 
 android {
