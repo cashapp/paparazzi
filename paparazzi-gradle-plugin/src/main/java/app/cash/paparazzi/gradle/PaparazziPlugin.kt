@@ -16,6 +16,7 @@
 package app.cash.paparazzi.gradle
 
 import app.cash.paparazzi.VERSION
+import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.LibraryExtension
 import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
@@ -57,6 +58,10 @@ class PaparazziPlugin : Plugin<Project> {
       val writeResourcesTask = project.tasks.register(
           "preparePaparazzi${variantSlug}Resources", PrepareResourcesTask::class.java
       ) { task ->
+        val androidExtension = project.extensions.getByType(BaseExtension::class.java)
+        task.packageName.set(PrepareResourcesTask.packageName(androidExtension))
+        task.targetSdkVersion.set(PrepareResourcesTask.targetSdkVersion(androidExtension))
+        task.compileSdkVersion.set(PrepareResourcesTask.compileSdkVersion(androidExtension))
         task.mergeResourcesOutput.set(mergeResourcesOutputDir)
         task.mergeAssetsOutput.set(mergeAssetsOutputDir)
         task.paparazziResources.set(project.layout.buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.txt"))

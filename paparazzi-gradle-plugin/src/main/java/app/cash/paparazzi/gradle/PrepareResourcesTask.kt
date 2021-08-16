@@ -18,26 +18,36 @@ package app.cash.paparazzi.gradle
 import com.android.build.gradle.BaseExtension
 import com.android.ide.common.symbols.getPackageNameFromManifest
 import org.gradle.api.DefaultTask
-import org.gradle.api.Project
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
-import java.io.File
 
 @CacheableTask
 open class PrepareResourcesTask : DefaultTask() {
+  @get:Input
+  internal lateinit var packageName: Property<String>
+  @get:Input
+  internal lateinit var targetSdkVersion: Property<String>
+  @get:Input
+  internal lateinit var compileSdkVersion: Property<String>
+
   @get:InputDirectory
   @get:PathSensitive(PathSensitivity.RELATIVE)
   internal val mergeResourcesOutput: DirectoryProperty = project.objects.directoryProperty()
+  private val mergeResourcesOutputPath =
+    project.relativePath(mergeResourcesOutput.get().asFile.path)
 
   @get:InputDirectory
   @get:PathSensitive(PathSensitivity.RELATIVE)
   internal val mergeAssetsOutput: DirectoryProperty = project.objects.directoryProperty()
+  private val mergeAssetsOutputPath = project.relativePath(mergeAssetsOutput.get().asFile.path)
 
   @get:OutputFile
   internal val paparazziResources: RegularFileProperty = project.objects.fileProperty()
@@ -48,50 +58,42 @@ open class PrepareResourcesTask : DefaultTask() {
     out.delete()
     out.bufferedWriter()
         .use {
-          it.write(project.packageName())
+          it.write(packageName.get())
           it.newLine()
-          it.write(project.relativePath(mergeResourcesOutput.get().asFile.path))
+          it.write(mergeResourcesOutputPath)
           it.newLine()
-          it.write(project.targetSdkVersion())
+          it.write(targetSdkVersion.get())
           it.newLine()
           // Use compileSdkVersion for system framework resources.
-          it.write("platforms/android-${project.compileSdkVersion()}/")
+          it.write("platforms/android-${compileSdkVersion.get()}/")
           it.newLine()
-          it.write(project.relativePath(mergeAssetsOutput.get().asFile.path))
+          it.write(mergeAssetsOutputPath)
           it.newLine()
         }
   }
 
-  private fun Project.packageName(): String {
-    val androidExtension = extensions.getByType(BaseExtension::class.java)
-    androidExtension.sourceSets
+  companion object {
+    const val DEFAULT_COMPILE_SDK_VERSION = 29
+
+    internal fun packageName(androidExtension: BaseExtension): String {
+      androidExtension.sourceSets
         .map { it.manifest.srcFile }
         .filter { it.exists() }
         .forEach {
           return getPackageNameFromManifest(it)
         }
-    throw IllegalStateException("No source sets available")
-  }
+      throw IllegalStateException("No source sets available")
+    }
 
-  private fun Project.compileSdkVersion(): String {
-    val androidExtension = extensions.getByType(BaseExtension::class.java)
-    return androidExtension.compileSdkVersion!!.substringAfter(
+    internal fun compileSdkVersion(androidExtension: BaseExtension): String {
+      return androidExtension.compileSdkVersion!!.substringAfter(
         "android-", DEFAULT_COMPILE_SDK_VERSION.toString()
-    )
-  }
+      )
+    }
 
-  private fun Project.targetSdkVersion(): String {
-    val androidExtension = extensions.getByType(BaseExtension::class.java)
-    return androidExtension.defaultConfig.targetSdkVersion?.apiLevel?.toString()
+    internal fun targetSdkVersion(androidExtension: BaseExtension): String {
+      return androidExtension.defaultConfig.targetSdkVersion?.apiLevel?.toString()
         ?: DEFAULT_COMPILE_SDK_VERSION.toString()
-  }
-
-  private fun Project.sdkFolder(): File {
-    val androidExtension = extensions.getByType(BaseExtension::class.java)
-    return androidExtension.sdkDirectory
-  }
-
-  companion object {
-    const val DEFAULT_COMPILE_SDK_VERSION = 29
+    }
   }
 }
