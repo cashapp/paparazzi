@@ -12,7 +12,7 @@ If using Jetifier to migrate off Support libraries, add the following to your `g
 exclude bundled Android dependencies.
 
 ```groovy
-android.jetifier.blacklist=android-base-common,common
+android.jetifier.ignorelist=android-base-common,common
 ```
 
 Releases
