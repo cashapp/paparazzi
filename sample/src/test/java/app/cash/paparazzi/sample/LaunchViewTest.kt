@@ -20,9 +20,11 @@ import app.cash.paparazzi.Paparazzi
 import app.cash.paparazzi.DeviceConfig.Companion.NEXUS_5
 import app.cash.paparazzi.DeviceConfig.Companion.NEXUS_5_LAND
 import app.cash.paparazzi.DeviceConfig.Companion.PIXEL_3
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 
+@Ignore
 class LaunchViewTest {
   @get:Rule
   var paparazzi = Paparazzi(deviceConfig = PIXEL_3)

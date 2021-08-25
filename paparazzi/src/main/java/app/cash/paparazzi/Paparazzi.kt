@@ -115,7 +115,11 @@ class Paparazzi(
     val layoutlibCallback = PaparazziCallback(logger, environment.packageName)
     layoutlibCallback.initResources()
 
-    testName = description.toTestName()
+    // If we're running as a ClassRule, the methodName will not be populated. Defer the description
+    // handling until the companion PaparazziRule is executed.
+    if (!description.methodName.isNullOrEmpty()) {
+      setDescription(description)
+    }
 
     renderer = Renderer(environment, layoutlibCallback, logger, maxPercentDifference)
     sessionParamsBuilder = renderer.prepare()
@@ -139,6 +143,10 @@ class Paparazzi(
     }
 
     bridgeRenderSession = createBridgeSession(renderSession, renderSession.inflate())
+  }
+
+  fun setDescription(description: Description) {
+    testName = description.toTestName()
   }
 
   fun close() {
@@ -220,7 +228,11 @@ class Paparazzi(
       bridgeRenderSession = createBridgeSession(renderSession, renderSession.inflate())
     }
 
-    val snapshot = Snapshot(name, testName!!, Date())
+    val testName = requireNotNull(testName) {
+      "TODO: Some helpful error message about using the rules correctly."
+    }
+
+    val snapshot = Snapshot(name, testName, Date())
 
     val frameHandler = snapshotHandler.newFrameHandler(snapshot, frameCount, fps)
     frameHandler.use {

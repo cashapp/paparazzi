@@ -20,9 +20,11 @@ import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
 import app.cash.paparazzi.Paparazzi
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 
+@Ignore
 class KeypadViewTest {
   @get:Rule
   var paparazzi = Paparazzi()
