@@ -15,24 +15,19 @@
  */
 package app.cash.paparazzi.sample
 
-import android.widget.LinearLayout
 import android.widget.TextView
-import app.cash.paparazzi.DeviceConfig.Companion.NEXUS_5
-import app.cash.paparazzi.DeviceConfig.Companion.NEXUS_5_LAND
 import app.cash.paparazzi.DeviceConfig.Companion.PIXEL_3
 import app.cash.paparazzi.Paparazzi
-import app.cash.paparazzi.PaparazziRule
 import org.junit.ClassRule
 import org.junit.Rule
 import org.junit.Test
 
 class CompanionRuleTest {
   companion object {
-    @get:ClassRule @JvmStatic
+    @get:ClassRule @get:Rule @JvmStatic
     val paparazzi = Paparazzi(deviceConfig = PIXEL_3)
   }
 
-  @get:Rule val companionRule = PaparazziRule(paparazzi)
 //  @get:Rule val paparazzi = Paparazzi(deviceConfig = PIXEL_3)
 
   private fun test() {

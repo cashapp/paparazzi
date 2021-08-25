@@ -91,22 +91,36 @@ class Paparazzi(
     base: Statement,
     description: Description
   ): Statement {
-    val statement = object : Statement() {
-      override fun evaluate() {
-        prepare(description)
-        try {
+    // The first call in sets up the instance, whether it's a method rule or a class rule.
+    if (!this::renderer.isInitialized) {
+      val statement = object : Statement() {
+        override fun evaluate() {
+          prepare(description)
+          try {
+            base.evaluate()
+          } finally {
+            close()
+          }
+        }
+      }
+
+      registerFontLookupInterceptionIfResourceCompatDetected()
+      registerViewEditModeInterception()
+
+      val outerRule = AgentTestRule()
+      return outerRule.apply(statement, description)
+    } else if (description.isTest) {
+      // Instance has been prepared via a class rule and we're now being called for the test rule
+      // with the method name.
+      return object : Statement() {
+        override fun evaluate() {
+          setDescription(description)
           base.evaluate()
-        } finally {
-          close()
         }
       }
     }
 
-    registerFontLookupInterceptionIfResourceCompatDetected()
-    registerViewEditModeInterception()
-
-    val outerRule = AgentTestRule()
-    return outerRule.apply(statement, description)
+    return base
   }
 
   fun prepare(description: Description) {
@@ -116,7 +130,7 @@ class Paparazzi(
     layoutlibCallback.initResources()
 
     // If we're running as a ClassRule, the methodName will not be populated. Defer the description
-    // handling until the companion PaparazziRule is executed.
+    // handling until the test rule is executed.
     if (!description.methodName.isNullOrEmpty()) {
       setDescription(description)
     }
