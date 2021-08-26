@@ -242,8 +242,8 @@ class Paparazzi(
       bridgeRenderSession = createBridgeSession(renderSession, renderSession.inflate())
     }
 
-    val testName = requireNotNull(testName) {
-      "TODO: Some helpful error message about using the rules correctly."
+    val testName = checkNotNull(testName) {
+      "To use Paparazzi as a @ClassRule, it must also be a @Rule."
     }
 
     val snapshot = Snapshot(name, testName, Date())
