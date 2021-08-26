@@ -35,8 +35,7 @@ class PaparazziClassRuleErrorTest {
     try {
       classRuleOnlyPaparazzi.snapshot(view)
       fail()
-    } catch (expected: Exception) {
-      assertThat(expected).isInstanceOf(IllegalStateException::class.java)
+    } catch (expected: IllegalStateException) {
       assertThat(expected).hasMessage("To use Paparazzi as a @ClassRule, it must also be a @Rule.")
     }
   }
