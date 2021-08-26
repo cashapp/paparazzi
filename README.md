@@ -103,12 +103,23 @@ update Paparazzi's environment to use API 29.
 #### Resource Resolution Errors
 Ex: 
 ```
-  java.lang.NullPointerException
-      at com.android.ide.common.resources.ResourceResolver.getUnresolvedResource(ResourceResolver.java:421)
+java.lang.NullPointerException
+  at com.android.ide.common.resources.ResourceResolver.getUnresolvedResource(ResourceResolver.java:421)
 ```
 Paparazzi does not currently support namespaced resources. If you are seeing this error, verify that the following flag is 
 not present in the project's `gradle.properties`:
 `android.nonTransitiveRClass=true`
+
+-------- 
+
+#### Running Tests from the IDE
+Ex:
+```
+java.lang.NullPointerException
+	at java.base/java.io.File.<init>(File.java:278)
+	at app.cash.paparazzi.EnvironmentKt.detectEnvironment(Environment.kt:36)
+```
+Running tests from the IDE requires Android Studio Artic Fox. 
 
 -------- 
 
