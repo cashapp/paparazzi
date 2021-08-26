@@ -77,6 +77,52 @@ Runs tests and verifies against previously-recorded golden values.
 
 Check out the [sample][sample].
 
+Known Limitations
+-------
+
+#### STANDARD_ERROR
+Ex:
+```
+STANDARD_ERROR
+    Unable to load the list of fonts. Try re-installing the SDK Platform from the SDK Manager.
+```
+layoutlib must be migrated to support APIs 30+. Until then, you'll need to 
+update Paparazzi's environment to use API 29.
+
+```kotlin
+  @get:Rule
+  val paparazzi = Paparazzi(
+    environment = detectEnvironment().copy(
+      platformDir = "${androidHome()}/platforms/android-29",
+      compileSdkVersion = 29
+    )
+  )
+```
+--------
+
+#### Resource Resolution Errors
+Ex: 
+```
+java.lang.NullPointerException
+  at com.android.ide.common.resources.ResourceResolver.getUnresolvedResource(ResourceResolver.java:421)
+```
+Paparazzi does not currently support namespaced resources. If you are seeing this error, verify that the following flag is 
+not present in the project's `gradle.properties`:
+`android.nonTransitiveRClass=true`
+
+-------- 
+
+#### Running Tests from the IDE
+Ex:
+```
+java.lang.NullPointerException
+  at java.base/java.io.File.<init>(File.java:278)
+  at app.cash.paparazzi.EnvironmentKt.detectEnvironment(Environment.kt:36)
+```
+Running tests from the IDE requires Android Studio Arctic Fox or later. 
+
+-------- 
+
 License
 -------
 
