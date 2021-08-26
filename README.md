@@ -86,7 +86,7 @@ Ex:
 STANDARD_ERROR
     Unable to load the list of fonts. Try re-installing the SDK Platform from the SDK Manager.
 ```
-layout-lib must be migrated to support APIs 30+. Until then, you'll need to 
+layoutlib must be migrated to support APIs 30+. Until then, you'll need to 
 update Paparazzi's environment to use API 29.
 
 ```kotlin
@@ -119,7 +119,7 @@ java.lang.NullPointerException
   at java.base/java.io.File.<init>(File.java:278)
   at app.cash.paparazzi.EnvironmentKt.detectEnvironment(Environment.kt:36)
 ```
-Running tests from the IDE requires Android Studio Artic Fox. 
+Running tests from the IDE requires Android Studio Arctic Fox or later. 
 
 -------- 
 
