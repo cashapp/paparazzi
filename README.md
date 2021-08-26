@@ -116,8 +116,8 @@ not present in the project's `gradle.properties`:
 Ex:
 ```
 java.lang.NullPointerException
-	at java.base/java.io.File.<init>(File.java:278)
-	at app.cash.paparazzi.EnvironmentKt.detectEnvironment(Environment.kt:36)
+  at java.base/java.io.File.<init>(File.java:278)
+  at app.cash.paparazzi.EnvironmentKt.detectEnvironment(Environment.kt:36)
 ```
 Running tests from the IDE requires Android Studio Artic Fox. 
 
