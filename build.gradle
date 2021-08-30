@@ -1,10 +1,14 @@
 apply plugin: 'com.github.ben-manes.versions'
 
 buildscript {
+  // maps to this commit: https://android.googlesource.com/platform/prebuilts/studio/layoutlib/+/b169460c8473a1e87aafa01da881556682fa4f86
+  // which runs on JDK 11
+  ext.layoutLibPrebuiltSha = 'b169460'
+
   ext.versions = [
     kotlin: '1.5.10',
     agp: '4.2.2',
-    layoutlib: '4.0.0-alpha02-b169460', // "should" be similar to versions.agp
+    layoutlib: "4.0.0-alpha02-$layoutLibPrebuiltSha", // "should" be similar to versions.agp
     androidTools: '27.2.2', // agp + 23.0.0 = androidTools
     jcodec: '0.2.5',
     moshi: '1.12.0',
@@ -63,6 +67,8 @@ buildscript {
   dependencies {
     classpath deps.plugins.kotlin
     classpath deps.plugins.android
+    classpath 'com.vanniktech:gradle-maven-publish-plugin:0.17.0'
+    classpath 'org.ajoberstar.grgit:grgit-gradle:4.1.0'
     classpath 'com.github.ben-manes:gradle-versions-plugin:0.39.0'
     classpath 'org.jetbrains.dokka:dokka-gradle-plugin:1.5.0'
     classpath "app.cash.paparazzi:paparazzi-gradle-plugin:${versions.releasedPaparazzi}"
@@ -97,6 +103,17 @@ subprojects {
   tasks.withType(org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile).configureEach {
     kotlinOptions {
       jvmTarget = "1.8"
+    }
+  }
+
+  plugins.withId('com.vanniktech.maven.publish') {
+    publishing {
+      repositories {
+        maven {
+          name = "projectLocalMaven"
+          url = "${rootProject.buildDir}/localMaven"
+        }
+      }
     }
   }
 }

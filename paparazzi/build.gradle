@@ -1,6 +1,7 @@
 apply plugin: 'org.jetbrains.kotlin.jvm'
 apply plugin: 'org.jetbrains.kotlin.kapt'
 apply plugin: 'org.jetbrains.dokka'
+apply plugin: 'com.vanniktech.maven.publish'
 
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
@@ -41,8 +42,6 @@ tasks.named("dokkaGfm").configure {
     }
   }
 }
-
-apply from: "$rootDir/gradle/gradle-mvn-push.gradle"
 
 def generateTestConfig = tasks.register("generateTestConfig") {
   def resources = "$buildDir/intermediates/paparazzi/resources.txt"

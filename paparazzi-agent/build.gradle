@@ -1,9 +1,8 @@
 apply plugin: 'org.jetbrains.kotlin.jvm'
+apply plugin: 'com.vanniktech.maven.publish'
 
 dependencies {
   implementation deps.bytebuddy.core
   implementation deps.bytebuddy.agent
   api deps.junit
 }
-
-apply from: "$rootDir/gradle/gradle-mvn-push.gradle"
