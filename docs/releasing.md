@@ -42,6 +42,6 @@ Prerequisites
 
 In `~/.gradle/gradle.properties`, set the following:
 
- * `SONATYPE_NEXUS_USERNAME` - Sonatype username for releasing to `app.cash`.
- * `SONATYPE_NEXUS_PASSWORD` - Sonatype password for releasing to `app.cash`.
+ * `mavenCentralUsername` - Sonatype username for releasing to `app.cash`.
+ * `mavenCentralPassword` - Sonatype password for releasing to `app.cash`.
 

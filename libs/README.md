@@ -8,9 +8,8 @@ Note that layoutlib's version tracks [Android Studio Releases][studio_releases] 
 
 1. Build and upload:
 
-
     ```
-    ./gradlew  :libs:layoutlib:publishMavenJavaPublicationToMavenRepository
+    ./gradlew :libs:layoutlib:publishLayoutLibPublicationToMavenCentralRepository
     ```
 
    This may take a few minutes. It clones a large repo (2.4 GiB) and then uploads a large artifact
@@ -25,8 +24,8 @@ Prerequisites
 
 In `~/.gradle/gradle.properties`, set the following:
 
- * `SONATYPE_NEXUS_USERNAME` - Sonatype username for releasing to `app.cash`.
- * `SONATYPE_NEXUS_PASSWORD` - Sonatype password for releasing to `app.cash`.
+ * `mavenCentralUsername` - Sonatype username for releasing to `app.cash`.
+ * `mavenCentralPassword` - Sonatype password for releasing to `app.cash`.
 
 
 [android_studio]: https://developer.android.com/studio
