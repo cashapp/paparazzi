@@ -1,6 +1,8 @@
 apply plugin: 'org.ajoberstar.grgit'
 apply plugin: 'com.vanniktech.maven.publish'
 
+version = versions.layoutlib
+
 /**
  * Clone AOSP's prebuilts repo to get a prebuilt layoutlib jar. This big repo that takes a long time to clone!
  *
@@ -43,13 +45,10 @@ publishing {
     layoutLib(MavenPublication) {
       artifact(tasks.
           named("cloneLayoutlib").
-          map {
-            new File(it.outputs.files.getSingleFile(), 'data/layoutlib-jdk11.jar')
-          }
+          map { new File(it.outputs.files.getSingleFile(), 'data/layoutlib-jdk11.jar') }
       )
-
-      version = versions.layoutlib
+      artifact emptySourcesJar
+      artifact emptyJavadocJar
     }
   }
 }
-

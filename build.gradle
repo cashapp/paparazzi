@@ -116,6 +116,15 @@ subprojects {
       }
     }
   }
+
+  tasks.register('emptySourcesJar', Jar) {
+    // TODO: fetch sources from the corresponding AOSP repos.
+    archiveClassifier = 'sources'
+  }
+
+  tasks.register('emptyJavadocJar', Jar) {
+    archiveClassifier = 'javadoc'
+  }
 }
 
 task clean(type: Delete) {
