@@ -6,20 +6,30 @@ import net.bytebuddy.implementation.MethodDelegation
 import net.bytebuddy.matcher.ElementMatchers
 
 object InterceptorRegistrar {
+  private val byteBuddy = ByteBuddy()
   private val methodInterceptors = mutableListOf<() -> Unit>()
 
   fun addMethodInterceptor(
     receiver: Class<*>,
     methodName: String,
     interceptor: Class<*>
+  ) = addMethodInterceptors(receiver, setOf(methodName to interceptor))
+
+  fun addMethodInterceptors(
+    receiver: Class<*>,
+    methodNamesToInterceptors: Set<Pair<String, Class<*>>>
   ) {
     methodInterceptors += {
-      ByteBuddy()
-          .redefine(receiver)
-          .method(ElementMatchers.named(methodName))
-          .intercept(MethodDelegation.to(interceptor))
-          .make()
-          .load(receiver.classLoader, ClassReloadingStrategy.fromInstalledAgent())
+      var builder = byteBuddy
+        .redefine(receiver)
+
+      methodNamesToInterceptors.forEach {
+        builder = builder.method(ElementMatchers.named(it.first)).intercept(MethodDelegation.to(it.second))
+      }
+
+      builder
+        .make()
+        .load(receiver.classLoader, ClassReloadingStrategy.fromInstalledAgent())
     }
   }
 

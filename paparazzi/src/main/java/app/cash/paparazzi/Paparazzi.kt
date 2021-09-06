@@ -28,6 +28,8 @@ import app.cash.paparazzi.agent.AgentTestRule
 import app.cash.paparazzi.agent.InterceptorRegistrar
 import app.cash.paparazzi.internal.EditModeInterceptor
 import app.cash.paparazzi.internal.ImageUtils
+import app.cash.paparazzi.internal.MatrixMatrixMultiplicationInterceptor
+import app.cash.paparazzi.internal.MatrixVectorMultiplicationInterceptor
 import app.cash.paparazzi.internal.parsers.LayoutPullParser
 import app.cash.paparazzi.internal.PaparazziCallback
 import app.cash.paparazzi.internal.PaparazziLogger
@@ -104,6 +106,7 @@ class Paparazzi(
 
     registerFontLookupInterceptionIfResourceCompatDetected()
     registerViewEditModeInterception()
+    registerMatrixMultiplyInterception()
 
     val outerRule = AgentTestRule()
     return outerRule.apply(statement, description)
@@ -443,6 +446,17 @@ class Paparazzi(
     val viewClass = Class.forName("android.view.View")
     InterceptorRegistrar.addMethodInterceptor(
         viewClass, "isInEditMode", EditModeInterceptor::class.java
+    )
+  }
+
+  private fun registerMatrixMultiplyInterception() {
+    val matrixClass = Class.forName("android.opengl.Matrix")
+    InterceptorRegistrar.addMethodInterceptors(
+      matrixClass,
+      setOf(
+        "multiplyMM" to MatrixMatrixMultiplicationInterceptor::class.java,
+        "multiplyMV" to MatrixVectorMultiplicationInterceptor::class.java
+      )
     )
   }
 

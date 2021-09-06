@@ -5,4 +5,6 @@ dependencies {
   implementation deps.bytebuddy.core
   implementation deps.bytebuddy.agent
   api deps.junit
+
+  testImplementation deps.assertj
 }
