@@ -24,7 +24,9 @@ object InterceptorRegistrar {
         .redefine(receiver)
 
       methodNamesToInterceptors.forEach {
-        builder = builder.method(ElementMatchers.named(it.first)).intercept(MethodDelegation.to(it.second))
+        builder = builder
+          .method(ElementMatchers.named(it.first))
+          .intercept(MethodDelegation.to(it.second))
       }
 
       builder
