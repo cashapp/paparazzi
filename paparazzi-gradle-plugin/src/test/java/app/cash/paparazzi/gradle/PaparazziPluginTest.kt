@@ -470,6 +470,7 @@ class PaparazziPluginTest {
     assertThat(resourceFileContents[0]).isEqualTo("app.cash.paparazzi.plugin.test")
     assertThat(resourceFileContents[1]).isEqualTo("build/intermediates/res/merged/debug")
     assertThat(resourceFileContents[4]).isEqualTo("build/intermediates/library_assets/debug/out")
+    assertThat(resourceFileContents[6]).isEqualTo("app.cash.paparazzi.plugin.test")
   }
 
   @Test
@@ -489,6 +490,7 @@ class PaparazziPluginTest {
     assertThat(resourceFileContents[0]).isEqualTo("app.cash.paparazzi.plugin.test")
     assertThat(resourceFileContents[1]).isEqualTo("build/intermediates/res/merged/debug")
     assertThat(resourceFileContents[4]).isEqualTo("build/intermediates/library_assets/debug/out")
+    assertThat(resourceFileContents[6]).isEqualTo("app.cash.paparazzi.plugin.test")
   }
 
   @Test
@@ -728,6 +730,23 @@ class PaparazziPluginTest {
 
     val snapshotImage = snapshots[0]
     val goldenImage = File(fixtureRoot, "src/test/resources/card_chip.png")
+    assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
+  }
+
+  @Test
+  fun transitiveResourcesInCode() {
+    val fixtureRoot = File("src/test/projects/transitive-resources-code")
+
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()
+    assertThat(snapshots!!).hasLength(1)
+
+    val snapshotImage = snapshots[0]
+    val goldenImage = File(fixtureRoot, "src/test/resources/five_bucks.png")
     assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
   }
 

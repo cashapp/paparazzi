@@ -19,6 +19,7 @@ import app.cash.paparazzi.NATIVE_LIB_VERSION
 import app.cash.paparazzi.VERSION
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.LibraryExtension
+import com.android.build.gradle.internal.res.GenerateLibraryRFileTask
 import com.android.ide.common.symbols.getPackageNameFromManifest
 import org.gradle.api.Action
 import org.gradle.api.DefaultTask
@@ -31,6 +32,7 @@ import org.gradle.api.internal.artifacts.ArtifactAttributes
 import org.gradle.api.internal.artifacts.transform.UnzipTransform
 import org.gradle.api.logging.LogLevel.LIFECYCLE
 import org.gradle.api.plugins.JavaBasePlugin
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.options.Option
 import org.gradle.api.tasks.testing.Test
 import org.gradle.internal.os.OperatingSystem
@@ -56,7 +58,12 @@ class PaparazziPlugin : Plugin<Project> {
         .libraryVariants
     variants.all { variant ->
       val variantSlug = variant.name.capitalize(Locale.US)
+      val testVariantSlug = variant.unitTestVariant.name.capitalize(Locale.US)
 
+      val nonTransitiveRClassEnabled = (project.findProperty("android.nonTransitiveRClass") as String?)?.toBoolean() ?: false
+
+      val generateStubRFileProvider = project.tasks.named("generate${testVariantSlug}StubRFile") as Provider<GenerateLibraryRFileTask>
+      val symbolListsProvider = generateStubRFileProvider.map { it.dependencies }
       val mergeResourcesOutputDir = variant.mergeResourcesProvider.flatMap { it.outputDir }
       val mergeAssetsOutputDir = variant.mergeAssetsProvider.flatMap { it.outputDir }
       val reportOutputDir = project.layout.buildDirectory.dir("reports/paparazzi")
@@ -68,6 +75,8 @@ class PaparazziPlugin : Plugin<Project> {
         val android = project.extensions.getByType(BaseExtension::class.java)
 
         task.packageName.set(android.packageName())
+        task.symbolLists.from(symbolListsProvider.get())
+        task.nonTransitiveRClassEnabled.set(nonTransitiveRClassEnabled)
         task.mergeResourcesOutput.set(mergeResourcesOutputDir)
         task.targetSdkVersion.set(android.targetSdkVersion())
         task.compileSdkVersion.set(android.compileSdkVersion())
@@ -75,8 +84,6 @@ class PaparazziPlugin : Plugin<Project> {
         task.platformDataRoot.set(unzipConfiguration.singleFile)
         task.paparazziResources.set(project.layout.buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.txt"))
       }
-
-      val testVariantSlug = variant.unitTestVariant.name.capitalize(Locale.US)
 
       project.plugins.withType(JavaBasePlugin::class.java) {
         project.tasks.named("compile${testVariantSlug}JavaWithJavac")
@@ -127,6 +134,7 @@ class PaparazziPlugin : Plugin<Project> {
         })
       }
 
+      writeResourcesTask.configure { it.dependsOn(generateStubRFileProvider) }
       recordTaskProvider.configure { it.dependsOn(testTaskProvider) }
       verifyTaskProvider.configure { it.dependsOn(testTaskProvider) }
 

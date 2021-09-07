@@ -16,6 +16,7 @@
 package app.cash.paparazzi.gradle
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
@@ -23,6 +24,7 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
@@ -32,6 +34,13 @@ import org.gradle.api.tasks.TaskAction
 open class PrepareResourcesTask : DefaultTask() {
   @get:Input
   internal val packageName: Property<String> = project.objects.property(String::class.java)
+
+  @get:InputFiles
+  @get:PathSensitive(PathSensitivity.NONE)
+  internal val symbolLists: ConfigurableFileCollection = project.objects.fileCollection()
+
+  @get:Input
+  internal val nonTransitiveRClassEnabled: Property<Boolean> = project.objects.property(Boolean::class.java)
 
   @get:InputDirectory
   @get:PathSensitive(PathSensitivity.RELATIVE)
@@ -60,9 +69,19 @@ open class PrepareResourcesTask : DefaultTask() {
   fun writeResourcesFile() {
     val out = paparazziResources.get().asFile
     out.delete()
+
+    val mainPackage = packageName.get()
+    val resourcePackageNames = if (nonTransitiveRClassEnabled.get()) {
+      symbolLists.files.joinToString(separator = ",") { file ->
+        file.useLines { lines -> lines.first() }
+      }
+    } else {
+      mainPackage
+    }
+
     out.bufferedWriter()
       .use {
-        it.write(packageName.get())
+        it.write(mainPackage)
         it.newLine()
         it.write(projectDirectory.relativize(mergeResourcesOutput.get()))
         it.newLine()
@@ -74,6 +93,8 @@ open class PrepareResourcesTask : DefaultTask() {
         it.write(projectDirectory.relativize(mergeAssetsOutput.get()))
         it.newLine()
         it.write(platformDataRoot.get().asFile.path)
+        it.newLine()
+        it.write(resourcePackageNames)
         it.newLine()
       }
   }
