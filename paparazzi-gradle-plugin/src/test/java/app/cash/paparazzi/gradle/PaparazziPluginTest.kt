@@ -537,7 +537,7 @@ class PaparazziPluginTest {
     assertThat(result.task(":testDebugUnitTest")).isNotNull()
 
     val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
-    val snapshotFile = File(snapshotsDir, "6fca3e0a7f717916b1636195184e9f61c524369b.png")
+    val snapshotFile = File(snapshotsDir, "2e47ac6a584facd650a77c53987bf4f52a97fada.png")
     assertThat(snapshotFile.exists()).isTrue()
 
     val goldenImage = File(fixtureRoot, "src/test/resources/launch_without_fonts.png")

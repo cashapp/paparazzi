@@ -6,8 +6,23 @@ apply plugin: 'com.vanniktech.maven.publish'
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
+def artifactType = Attribute.of('artifactType', String)
+
+configurations {
+  unzip {
+    attributes.attribute(artifactType, ArtifactTypeDefinition.DIRECTORY_TYPE)
+  }
+}
+
 dependencies {
-  api deps.layoutlib
+  registerTransform(org.gradle.api.internal.artifacts.transform.UnzipTransform) {
+    from.attribute(artifactType, ArtifactTypeDefinition.JAR_TYPE)
+    to.attribute(artifactType, ArtifactTypeDefinition.DIRECTORY_TYPE)
+  }
+}
+
+dependencies {
+  api deps.layoutlib.native.jdk11
   api deps.tools.common
   api deps.tools.layoutlib
   api deps.tools.sdkcommon
@@ -23,6 +38,15 @@ dependencies {
   implementation deps.jcodec.core
   implementation deps.jcodec.javase
   implementation project(':paparazzi-agent')
+
+  def osName = System.getProperty("os.name").toLowerCase(Locale.US)
+  if (osName.startsWith("mac")) {
+    unzip deps.layoutlib.native.macOsX
+  } else if (osName.startsWith("windows")) {
+    unzip deps.layoutlib.native.windows
+  } else {
+    unzip deps.layoutlib.native.linux
+  }
 
   testImplementation deps.assertj
 }
@@ -55,6 +79,7 @@ def generateTestConfig = tasks.register("generateTestConfig") {
       writer.writeLine("29")
       writer.writeLine("platforms/android-29/")
       writer.writeLine(".")
+      writer.writeLine(configurations.unzip.singleFile.path)
     }
   }
 }

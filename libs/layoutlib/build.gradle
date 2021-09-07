@@ -6,11 +6,8 @@ version = versions.layoutlib
 /**
  * Clone AOSP's prebuilts repo to get a prebuilt layoutlib jar. This big repo that takes a long time to clone!
  *
- * https://android.googlesource.com/platform/prebuilts/studio/layoutlib/+/refs/tags/studio-3.2.1/PREBUILT
+ * https://android.googlesource.com/platform/prebuilts/studio/layoutlib/+/refs/tags/studio-4.1.0/PREBUILT
  */
-
-ext.repoDir = new File("$rootProject.buildDir/prebuilts/studio/layoutlib")
-
 tasks.register('cloneLayoutlib') {
   outputs.dir(repoDir)
 
@@ -42,10 +39,10 @@ tasks.register('cloneLayoutlib') {
  */
 publishing {
   publications {
-    layoutLib(MavenPublication) {
+    mavenNativeLibrary(MavenPublication) {
       artifact(tasks.
           named("cloneLayoutlib").
-          map { new File(it.outputs.files.getSingleFile(), 'data/layoutlib-jdk11.jar') }
+          map { new File(it.outputs.files.getSingleFile(), 'data/layoutlib_native-jdk11.jar') }
       )
       artifact emptySourcesJar
       artifact emptyJavadocJar
