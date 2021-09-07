@@ -17,9 +17,11 @@ package app.cash.paparazzi
 
 import android.content.Context
 import android.content.res.Resources
+import android.graphics.Bitmap
 import android.util.AttributeSet
+import android.util.DisplayMetrics
 import android.view.BridgeInflater
-import android.view.Choreographer_Delegate
+import android.view.Choreographer
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -132,6 +134,7 @@ class Paparazzi(
     renderSession = createRenderSession(sessionParams)
     prepareThread()
     renderSession.init(sessionParams.timeout)
+    Bitmap.setDefaultDensity(DisplayMetrics.DENSITY_DEVICE_STABLE)
 
     // requires LayoutInflater to be created, which is a side-effect of RenderSessionImpl.init()
     if (appCompatEnabled) {
@@ -217,6 +220,7 @@ class Paparazzi(
       val sessionParams = sessionParamsBuilder.build()
       renderSession = createRenderSession(sessionParams)
       renderSession.init(sessionParams.timeout)
+      Bitmap.setDefaultDensity(DisplayMetrics.DENSITY_DEVICE_STABLE)
       bridgeRenderSession = createBridgeSession(renderSession, renderSession.inflate())
     }
 
@@ -228,7 +232,6 @@ class Paparazzi(
       try {
         withTime(0L) {
           // Initialize the choreographer at time=0.
-          Choreographer_Delegate.doFrame(System_Delegate.nanoTime())
         }
 
         viewGroup.addView(view)
@@ -262,6 +265,7 @@ class Paparazzi(
     // Execute the block at the requested time.
     System_Delegate.setBootTimeNanos(frameNanos)
     System_Delegate.setNanosTime(frameNanos)
+    Choreographer.getInstance().doFrame(frameNanos, 0)
     try {
       block()
     } finally {

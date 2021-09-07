@@ -1,15 +1,17 @@
 apply plugin: 'com.github.ben-manes.versions'
 
 buildscript {
-  // maps to this commit: https://android.googlesource.com/platform/prebuilts/studio/layoutlib/+/b169460c8473a1e87aafa01da881556682fa4f86
+  ext.repoDir = new File("$rootProject.buildDir/prebuilts/studio/layoutlib")
+
+  // maps to this commit: https://android.googlesource.com/platform/prebuilts/studio/layoutlib/+/ae77d65
   // which runs on JDK 11
-  ext.layoutLibPrebuiltSha = 'b169460'
+  ext.layoutLibPrebuiltSha = 'ae77d65'
 
   ext.versions = [
     kotlin: '1.5.10',
     agp: '4.2.2',
-    layoutlib: "4.0.0-alpha02-$layoutLibPrebuiltSha", // "should" be similar to versions.agp
-    androidTools: '27.2.2', // agp + 23.0.0 = androidTools
+    layoutlib: "4.1.0-$layoutLibPrebuiltSha", // "should" be similar to versions.agp
+    androidTools: '27.1.2', // agp + 23.0.0 = androidTools
     jcodec: '0.2.5',
     moshi: '1.12.0',
     bytebuddy: '1.11.9',
@@ -28,14 +30,21 @@ buildscript {
     ],
     tools: [
       common: "com.android.tools:common:${versions.androidTools}",
-      layoutlib: "com.android.tools.layoutlib:layoutlib-api:26.6.0",
+      layoutlib: "com.android.tools.layoutlib:layoutlib-api:27.0.2",
       sdkcommon: "com.android.tools:sdk-common:26.6.4",
     ],
     kxml2: 'kxml2:kxml2:2.3.0',
     androidx: [
       annotations: 'androidx.annotation:annotation:1.2.0'
     ],
-    layoutlib: "app.cash.paparazzi:layoutlib-jdk11:${versions.layoutlib}",
+    layoutlib: [
+      native: [
+        jdk11: "app.cash.paparazzi:layoutlib-native-jdk11:${versions.layoutlib}",
+        macOsX: "app.cash.paparazzi:layoutlib-native-macosx:${versions.layoutlib}",
+        windows: "app.cash.paparazzi:layoutlib-native-win:${versions.layoutlib}",
+        linux: "app.cash.paparazzi:layoutlib-native-linux:${versions.layoutlib}",
+      ]
+    ],
     okio: 'com.squareup.okio:okio:2.10.0',
     moshi: [
       core: "com.squareup.moshi:moshi:${versions.moshi}",

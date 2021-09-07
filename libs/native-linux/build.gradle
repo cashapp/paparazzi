@@ -1,0 +1,23 @@
+apply plugin: 'com.vanniktech.maven.publish'
+
+version = versions.layoutlib
+
+tasks.register('linuxJar', Jar) {
+  from(repoDir) {
+    include 'data/linux/**'
+    include 'data/fonts/**'
+    include 'data/icu/**'
+    exclude '**/BUILD'
+  }
+  dependsOn(':libs:layoutlib:cloneLayoutlib')
+}
+
+publishing {
+  publications {
+    mavenNativeLibrary(MavenPublication) {
+      artifact linuxJar
+      artifact emptySourcesJar
+      artifact emptyJavadocJar
+    }
+  }
+}

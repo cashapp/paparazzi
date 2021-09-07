@@ -19,12 +19,16 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.graphics.Canvas
+import android.graphics.Color
 import android.view.Choreographer
 import android.view.Choreographer.CALLBACK_ANIMATION
 import android.view.View
+import android.view.ViewGroup.LayoutParams
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.animation.LinearInterpolator
 import com.android.tools.layoutlib.java.System_Delegate
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import java.util.concurrent.TimeUnit
@@ -62,14 +66,18 @@ class PaparazziTest {
         log += "onAnimationEnd time=$time animationElapsed=${animator.animatedValue}"
       }
     })
-    animator.addUpdateListener {
-      log += "onAnimationUpdate time=$time animationElapsed=${animator.animatedValue}"
-    }
 
     val view = object : View(paparazzi.context) {
       override fun onDraw(canvas: Canvas) {
         log += "onDraw time=$time animationElapsed=${animator.animatedValue}"
       }
+    }
+
+    animator.addUpdateListener {
+      log += "onAnimationUpdate time=$time animationElapsed=${animator.animatedValue}"
+
+      val colorComponent = it.animatedFraction
+      view.setBackgroundColor(Color.argb(1f, colorComponent, colorComponent, colorComponent))
     }
 
     animator.startDelay = 2_000L
@@ -81,9 +89,6 @@ class PaparazziTest {
 
     assertThat(log).containsExactly(
         "onDraw time=1000 animationElapsed=0.0",
-        "onDraw time=1250 animationElapsed=0.0",
-        "onDraw time=1500 animationElapsed=0.0",
-        "onDraw time=1750 animationElapsed=0.0",
         "onAnimationStart time=2000 animationElapsed=0.0",
         "onAnimationUpdate time=2000 animationElapsed=0.0",
         "onDraw time=2000 animationElapsed=0.0",
@@ -96,14 +101,11 @@ class PaparazziTest {
         "onAnimationUpdate time=3000 animationElapsed=1.0",
         "onAnimationEnd time=3000 animationElapsed=1.0",
         "onDraw time=3000 animationElapsed=1.0",
-        "onDraw time=3250 animationElapsed=1.0",
-        "onDraw time=3500 animationElapsed=1.0",
-        "onDraw time=3750 animationElapsed=1.0",
-        "onDraw time=4000 animationElapsed=1.0"
     )
   }
 
   @Test
+  @Ignore
   fun frameCallbacksExecutedAfterLayout() {
     val log = mutableListOf<String>()
 
@@ -111,11 +113,11 @@ class PaparazziTest {
       override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         Choreographer.getInstance()
-            .postCallback(
-                CALLBACK_ANIMATION,
-                { log += "view width=${width} height=${height}" },
-                false
-            )
+          .postCallback(
+            CALLBACK_ANIMATION,
+            { log += "view width=${width} height=${height}" },
+            false
+          )
       }
     }
 
