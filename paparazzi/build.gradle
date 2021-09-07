@@ -54,7 +54,7 @@ dependencies {
 tasks.named("dokkaGfm").configure {
   outputDirectory = rootProject.file("docs/0.x")
 
-  dokkaSourceSets {
+  dokkaSourceSets.named("main") {
     configureEach {
       reportUndocumented = false
       skipDeprecated = true
