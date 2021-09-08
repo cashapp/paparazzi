@@ -68,6 +68,7 @@ data class DeviceConfig(
   val orientation: ScreenOrientation = ScreenOrientation.PORTRAIT,
   val nightMode: NightMode = NOTNIGHT,
   val density: Density = Density.XHIGH,
+  val fontScale: Float = 1f,
   val ratio: ScreenRatio = ScreenRatio.NOTLONG,
   val size: ScreenSize = ScreenSize.NORMAL,
   val keyboard: Keyboard = Keyboard.NOKEY,

@@ -93,6 +93,7 @@ internal data class SessionParamsBuilder(
         layoutPullParser, renderingMode, projectKey /* for caching */,
         deviceConfig.hardwareConfig, resourceResolver, layoutlibCallback, minSdk, targetSdk, logger
     )
+    result.fontScale = deviceConfig.fontScale
 
     for ((key, value) in flags) {
       result.setFlag(key as Key<Any>, value)
