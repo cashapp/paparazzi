@@ -32,15 +32,13 @@ import org.gradle.api.tasks.TaskAction
 open class PrepareResourcesTask : DefaultTask() {
   @get:Input
   internal val packageName: Property<String> = project.objects.property(String::class.java)
+  @get:InputDirectory
+  @get:PathSensitive(PathSensitivity.RELATIVE)
+  internal val mergeResourcesOutput: DirectoryProperty = project.objects.directoryProperty()
   @get:Input
   internal val targetSdkVersion: Property<String> = project.objects.property(String::class.java)
   @get:Input
   internal val compileSdkVersion: Property<String> = project.objects.property(String::class.java)
-
-  @get:InputDirectory
-  @get:PathSensitive(PathSensitivity.RELATIVE)
-  internal val mergeResourcesOutput: DirectoryProperty = project.objects.directoryProperty()
-
   @get:InputDirectory
   @get:PathSensitive(PathSensitivity.RELATIVE)
   internal val mergeAssetsOutput: DirectoryProperty = project.objects.directoryProperty()
