@@ -32,13 +32,17 @@ import org.gradle.api.tasks.TaskAction
 open class PrepareResourcesTask : DefaultTask() {
   @get:Input
   internal val packageName: Property<String> = project.objects.property(String::class.java)
+
   @get:InputDirectory
   @get:PathSensitive(PathSensitivity.RELATIVE)
   internal val mergeResourcesOutput: DirectoryProperty = project.objects.directoryProperty()
+
   @get:Input
   internal val targetSdkVersion: Property<String> = project.objects.property(String::class.java)
+
   @get:Input
   internal val compileSdkVersion: Property<String> = project.objects.property(String::class.java)
+
   @get:InputDirectory
   @get:PathSensitive(PathSensitivity.RELATIVE)
   internal val mergeAssetsOutput: DirectoryProperty = project.objects.directoryProperty()
@@ -50,27 +54,28 @@ open class PrepareResourcesTask : DefaultTask() {
   @get:OutputFile
   internal val paparazziResources: RegularFileProperty = project.objects.fileProperty()
 
+  private val projectDirectory = project.layout.projectDirectory
+
   @TaskAction
   fun writeResourcesFile() {
-    val projectDirectory = project.layout.projectDirectory
     val out = paparazziResources.get().asFile
     out.delete()
     out.bufferedWriter()
-        .use {
-          it.write(packageName.get())
-          it.newLine()
-          it.write(projectDirectory.relativize(mergeResourcesOutput.get()))
-          it.newLine()
-          it.write(targetSdkVersion.get())
-          it.newLine()
-          // Use compileSdkVersion for system framework resources.
-          it.write("platforms/android-${compileSdkVersion.get()}/")
-          it.newLine()
-          it.write(projectDirectory.relativize(mergeAssetsOutput.get()))
-          it.newLine()
-          it.write(platformDataRoot.get().asFile.path)
-          it.newLine()
-        }
+      .use {
+        it.write(packageName.get())
+        it.newLine()
+        it.write(projectDirectory.relativize(mergeResourcesOutput.get()))
+        it.newLine()
+        it.write(targetSdkVersion.get())
+        it.newLine()
+        // Use compileSdkVersion for system framework resources.
+        it.write("platforms/android-${compileSdkVersion.get()}/")
+        it.newLine()
+        it.write(projectDirectory.relativize(mergeAssetsOutput.get()))
+        it.newLine()
+        it.write(platformDataRoot.get().asFile.path)
+        it.newLine()
+      }
   }
 
   private fun Directory.relativize(child: Directory): String {

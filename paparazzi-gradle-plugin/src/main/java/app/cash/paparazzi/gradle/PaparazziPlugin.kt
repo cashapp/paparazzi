@@ -36,8 +36,6 @@ import org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
 import org.jetbrains.kotlin.gradle.plugin.KotlinBasePluginWrapper
 import java.util.Locale
 
-private const val DEFAULT_COMPILE_SDK_VERSION = 29
-
 @Suppress("unused")
 class PaparazziPlugin : Plugin<Project> {
   @OptIn(ExperimentalStdlibApi::class)
@@ -66,10 +64,11 @@ class PaparazziPlugin : Plugin<Project> {
           "preparePaparazzi${variantSlug}Resources", PrepareResourcesTask::class.java
       ) { task ->
         val android = project.extensions.getByType(BaseExtension::class.java)
+
         task.packageName.set(android.packageName())
+        task.mergeResourcesOutput.set(mergeResourcesOutputDir)
         task.targetSdkVersion.set(android.targetSdkVersion())
         task.compileSdkVersion.set(android.compileSdkVersion())
-        task.mergeResourcesOutput.set(mergeResourcesOutputDir)
         task.mergeAssetsOutput.set(mergeAssetsOutputDir)
         task.platformDataRoot.set(unzipConfiguration.singleFile)
         task.paparazziResources.set(project.layout.buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.txt"))
@@ -128,25 +127,6 @@ class PaparazziPlugin : Plugin<Project> {
     }
   }
 
-  private fun BaseExtension.packageName(): String {
-    sourceSets
-      .map { it.manifest.srcFile }
-      .filter { it.exists() }
-      .forEach {
-        return getPackageNameFromManifest(it)
-      }
-    throw IllegalStateException("No source sets available")
-  }
-
-  private fun BaseExtension.compileSdkVersion(): String {
-    return compileSdkVersion!!.substringAfter("android-", DEFAULT_COMPILE_SDK_VERSION.toString())
-  }
-
-  private fun BaseExtension.targetSdkVersion(): String {
-    return defaultConfig.targetSdkVersion?.apiLevel?.toString()
-      ?: DEFAULT_COMPILE_SDK_VERSION.toString()
-  }
-
   open class PaparazziTask : DefaultTask() {
     @Option(option = "tests", description = "Sets test class or method name to be included, '*' is supported.")
     open fun setTestNameIncludePatterns(testNamePattern: List<String>): PaparazziTask {
@@ -186,4 +166,25 @@ class PaparazziPlugin : Plugin<Project> {
 
     return unzipConfiguration
   }
+
+  private fun BaseExtension.packageName(): String {
+    sourceSets
+      .map { it.manifest.srcFile }
+      .filter { it.exists() }
+      .forEach {
+        return getPackageNameFromManifest(it)
+      }
+    throw IllegalStateException("No source sets available")
+  }
+
+  private fun BaseExtension.compileSdkVersion(): String {
+    return compileSdkVersion!!.substringAfter("android-", DEFAULT_COMPILE_SDK_VERSION.toString())
+  }
+
+  private fun BaseExtension.targetSdkVersion(): String {
+    return defaultConfig.targetSdkVersion?.apiLevel?.toString()
+      ?: DEFAULT_COMPILE_SDK_VERSION.toString()
+  }
 }
+
+private const val DEFAULT_COMPILE_SDK_VERSION = 29
