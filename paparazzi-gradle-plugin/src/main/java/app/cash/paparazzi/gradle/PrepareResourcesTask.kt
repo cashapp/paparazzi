@@ -30,11 +30,11 @@ import org.gradle.api.tasks.TaskAction
 @CacheableTask
 open class PrepareResourcesTask : DefaultTask() {
   @get:Input
-  internal lateinit var packageName: Property<String>
+  internal val packageName: Property<String> = project.objects.property(String::class.java)
   @get:Input
-  internal lateinit var targetSdkVersion: Property<String>
+  internal val targetSdkVersion: Property<String> = project.objects.property(String::class.java)
   @get:Input
-  internal lateinit var compileSdkVersion: Property<String>
+  internal val compileSdkVersion: Property<String> = project.objects.property(String::class.java)
 
   @get:InputDirectory
   @get:PathSensitive(PathSensitivity.RELATIVE)
