@@ -15,26 +15,30 @@
  */
 package app.cash.paparazzi.gradle
 
-import com.android.build.gradle.BaseExtension
-import com.android.ide.common.symbols.getPackageNameFromManifest
 import org.gradle.api.DefaultTask
-import org.gradle.api.Project
+import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
-import java.io.File
 
 @CacheableTask
 open class PrepareResourcesTask : DefaultTask() {
+  @get:Input
+  internal val packageName: Property<String> = project.objects.property(String::class.java)
   @get:InputDirectory
   @get:PathSensitive(PathSensitivity.RELATIVE)
   internal val mergeResourcesOutput: DirectoryProperty = project.objects.directoryProperty()
-
+  @get:Input
+  internal val targetSdkVersion: Property<String> = project.objects.property(String::class.java)
+  @get:Input
+  internal val compileSdkVersion: Property<String> = project.objects.property(String::class.java)
   @get:InputDirectory
   @get:PathSensitive(PathSensitivity.RELATIVE)
   internal val mergeAssetsOutput: DirectoryProperty = project.objects.directoryProperty()
@@ -48,56 +52,28 @@ open class PrepareResourcesTask : DefaultTask() {
 
   @TaskAction
   fun writeResourcesFile() {
+    val projectDirectory = project.layout.projectDirectory
     val out = paparazziResources.get().asFile
     out.delete()
     out.bufferedWriter()
         .use {
-          it.write(project.packageName())
+          it.write(packageName.get())
           it.newLine()
-          it.write(project.relativePath(mergeResourcesOutput.get().asFile.path))
+          it.write(projectDirectory.relativize(mergeResourcesOutput.get()))
           it.newLine()
-          it.write(project.targetSdkVersion())
+          it.write(targetSdkVersion.get())
           it.newLine()
           // Use compileSdkVersion for system framework resources.
-          it.write("platforms/android-${project.compileSdkVersion()}/")
+          it.write("platforms/android-${compileSdkVersion.get()}/")
           it.newLine()
-          it.write(project.relativePath(mergeAssetsOutput.get().asFile.path))
+          it.write(projectDirectory.relativize(mergeAssetsOutput.get()))
           it.newLine()
           it.write(platformDataRoot.get().asFile.path)
           it.newLine()
         }
   }
 
-  private fun Project.packageName(): String {
-    val androidExtension = extensions.getByType(BaseExtension::class.java)
-    androidExtension.sourceSets
-        .map { it.manifest.srcFile }
-        .filter { it.exists() }
-        .forEach {
-          return getPackageNameFromManifest(it)
-        }
-    throw IllegalStateException("No source sets available")
-  }
-
-  private fun Project.compileSdkVersion(): String {
-    val androidExtension = extensions.getByType(BaseExtension::class.java)
-    return androidExtension.compileSdkVersion!!.substringAfter(
-        "android-", DEFAULT_COMPILE_SDK_VERSION.toString()
-    )
-  }
-
-  private fun Project.targetSdkVersion(): String {
-    val androidExtension = extensions.getByType(BaseExtension::class.java)
-    return androidExtension.defaultConfig.targetSdkVersion?.apiLevel?.toString()
-        ?: DEFAULT_COMPILE_SDK_VERSION.toString()
-  }
-
-  private fun Project.sdkFolder(): File {
-    val androidExtension = extensions.getByType(BaseExtension::class.java)
-    return androidExtension.sdkDirectory
-  }
-
-  companion object {
-    const val DEFAULT_COMPILE_SDK_VERSION = 29
+  private fun Directory.relativize(child: Directory): String {
+    return asFile.toPath().relativize(child.asFile.toPath()).toString()
   }
 }
