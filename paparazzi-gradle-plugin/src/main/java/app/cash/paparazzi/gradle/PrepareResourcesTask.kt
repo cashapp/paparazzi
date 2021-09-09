@@ -16,6 +16,7 @@
 package app.cash.paparazzi.gradle
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
@@ -39,34 +40,36 @@ open class PrepareResourcesTask : DefaultTask() {
   @get:InputDirectory
   @get:PathSensitive(PathSensitivity.RELATIVE)
   internal val mergeResourcesOutput: DirectoryProperty = project.objects.directoryProperty()
-  private val mergeResourcesOutputPath =
-    project.relativePath(mergeResourcesOutput.get().asFile.path)
 
   @get:InputDirectory
   @get:PathSensitive(PathSensitivity.RELATIVE)
   internal val mergeAssetsOutput: DirectoryProperty = project.objects.directoryProperty()
-  private val mergeAssetsOutputPath = project.relativePath(mergeAssetsOutput.get().asFile.path)
 
   @get:OutputFile
   internal val paparazziResources: RegularFileProperty = project.objects.fileProperty()
 
   @TaskAction
   fun writeResourcesFile() {
+    val projectDirectory = project.layout.projectDirectory
     val out = paparazziResources.get().asFile
     out.delete()
     out.bufferedWriter()
         .use {
           it.write(packageName.get())
           it.newLine()
-          it.write(mergeResourcesOutputPath)
+          it.write(projectDirectory.relativize(mergeResourcesOutput.get()))
           it.newLine()
           it.write(targetSdkVersion.get())
           it.newLine()
           // Use compileSdkVersion for system framework resources.
           it.write("platforms/android-${compileSdkVersion.get()}/")
           it.newLine()
-          it.write(mergeAssetsOutputPath)
+          it.write(projectDirectory.relativize(mergeAssetsOutput.get()))
           it.newLine()
         }
+  }
+
+  private fun Directory.relativize(child: Directory): String {
+    return asFile.toPath().relativize(child.asFile.toPath()).toString()
   }
 }
