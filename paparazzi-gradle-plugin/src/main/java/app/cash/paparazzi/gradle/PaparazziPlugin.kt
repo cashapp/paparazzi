@@ -18,6 +18,7 @@ package app.cash.paparazzi.gradle
 import app.cash.paparazzi.VERSION
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.LibraryExtension
+import com.android.ide.common.symbols.getPackageNameFromManifest
 import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -28,6 +29,8 @@ import org.gradle.api.tasks.testing.Test
 import org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
 import org.jetbrains.kotlin.gradle.plugin.KotlinBasePluginWrapper
 import java.util.Locale
+
+private const val DEFAULT_COMPILE_SDK_VERSION = 29
 
 @Suppress("unused")
 class PaparazziPlugin : Plugin<Project> {
@@ -58,10 +61,10 @@ class PaparazziPlugin : Plugin<Project> {
       val writeResourcesTask = project.tasks.register(
           "preparePaparazzi${variantSlug}Resources", PrepareResourcesTask::class.java
       ) { task ->
-        val androidExtension = project.extensions.getByType(BaseExtension::class.java)
-        task.packageName.set(PrepareResourcesTask.packageName(androidExtension))
-        task.targetSdkVersion.set(PrepareResourcesTask.targetSdkVersion(androidExtension))
-        task.compileSdkVersion.set(PrepareResourcesTask.compileSdkVersion(androidExtension))
+        val android = project.extensions.getByType(BaseExtension::class.java)
+        task.packageName.set(android.packageName())
+        task.targetSdkVersion.set(android.targetSdkVersion())
+        task.compileSdkVersion.set(android.compileSdkVersion())
         task.mergeResourcesOutput.set(mergeResourcesOutputDir)
         task.mergeAssetsOutput.set(mergeAssetsOutputDir)
         task.paparazziResources.set(project.layout.buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.txt"))
@@ -118,6 +121,25 @@ class PaparazziPlugin : Plugin<Project> {
         }
       }
     }
+  }
+
+  private fun BaseExtension.packageName(): String {
+    sourceSets
+      .map { it.manifest.srcFile }
+      .filter { it.exists() }
+      .forEach {
+        return getPackageNameFromManifest(it)
+      }
+    throw IllegalStateException("No source sets available")
+  }
+
+  private fun BaseExtension.compileSdkVersion(): String {
+    return compileSdkVersion!!.substringAfter("android-", DEFAULT_COMPILE_SDK_VERSION.toString())
+  }
+
+  private fun BaseExtension.targetSdkVersion(): String {
+    return defaultConfig.targetSdkVersion?.apiLevel?.toString()
+      ?: DEFAULT_COMPILE_SDK_VERSION.toString()
   }
 
   open class PaparazziTask : DefaultTask() {

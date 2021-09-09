@@ -15,8 +15,6 @@
  */
 package app.cash.paparazzi.gradle
 
-import com.android.build.gradle.BaseExtension
-import com.android.ide.common.symbols.getPackageNameFromManifest
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
@@ -70,30 +68,5 @@ open class PrepareResourcesTask : DefaultTask() {
           it.write(mergeAssetsOutputPath)
           it.newLine()
         }
-  }
-
-  companion object {
-    const val DEFAULT_COMPILE_SDK_VERSION = 29
-
-    internal fun packageName(androidExtension: BaseExtension): String {
-      androidExtension.sourceSets
-        .map { it.manifest.srcFile }
-        .filter { it.exists() }
-        .forEach {
-          return getPackageNameFromManifest(it)
-        }
-      throw IllegalStateException("No source sets available")
-    }
-
-    internal fun compileSdkVersion(androidExtension: BaseExtension): String {
-      return androidExtension.compileSdkVersion!!.substringAfter(
-        "android-", DEFAULT_COMPILE_SDK_VERSION.toString()
-      )
-    }
-
-    internal fun targetSdkVersion(androidExtension: BaseExtension): String {
-      return androidExtension.defaultConfig.targetSdkVersion?.apiLevel?.toString()
-        ?: DEFAULT_COMPILE_SDK_VERSION.toString()
-    }
   }
 }
