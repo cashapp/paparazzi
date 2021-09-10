@@ -102,14 +102,10 @@ class PaparazziPluginTest {
   fun configurationCache() {
     val fixtureRoot = File("src/test/projects/configuration-cache")
 
+    // check to avoid plugin regressions that might affect Gradle's configuration caching
+    // https://docs.gradle.org/current/userguide/configuration_cache.html
     gradleRunner
-      .withArguments(
-        "testDebug",
-        "--configuration-cache",
-        "--configuration-cache-problems=warn",
-        "-Dorg.gradle.unsafe.configuration-cache.max-problems=3",
-        "--stacktrace"
-      )
+      .withArguments("testDebug", "--configuration-cache", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
   }
 
