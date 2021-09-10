@@ -95,6 +95,14 @@ class PaparazziPlugin : Plugin<Project> {
       }
       verifyVariants.configure { it.dependsOn(verifyTaskProvider) }
 
+      val isRecordRun = project.objects.property(Boolean::class.java)
+      val isVerifyRun = project.objects.property(Boolean::class.java)
+
+      project.gradle.taskGraph.whenReady { graph ->
+        isRecordRun.set(graph.hasTask(recordTaskProvider.get()))
+        isVerifyRun.set(graph.hasTask(verifyTaskProvider.get()))
+      }
+
       val testTaskProvider = project.tasks.named("test${testVariantSlug}", Test::class.java) { test ->
         test.systemProperties["paparazzi.test.resources"] =
             writeResourcesTask.flatMap { it.paparazziResources.asFile }.get().path
@@ -104,13 +112,11 @@ class PaparazziPlugin : Plugin<Project> {
         test.outputs.dir(reportOutputDir)
         test.outputs.dir(snapshotOutputDir)
 
+        val paparazziProperties = project.properties.filterKeys { it.startsWith("app.cash.paparazzi") }
+
         test.doFirst {
-          test.systemProperties["paparazzi.test.record"] =
-              project.gradle.taskGraph.hasTask(recordTaskProvider.get())
-          test.systemProperties["paparazzi.test.verify"] =
-              project.gradle.taskGraph.hasTask(verifyTaskProvider.get())
-          val paparazziProperties =
-            project.properties.filterKeys { it.startsWith("app.cash.paparazzi") }
+          test.systemProperties["paparazzi.test.record"] = isRecordRun.get()
+          test.systemProperties["paparazzi.test.verify"] = isVerifyRun.get()
           test.systemProperties.putAll(paparazziProperties)
         }
       }
