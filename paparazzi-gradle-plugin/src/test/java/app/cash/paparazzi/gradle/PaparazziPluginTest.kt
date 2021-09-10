@@ -99,6 +99,21 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun configurationCache() {
+    val fixtureRoot = File("src/test/projects/configuration-cache")
+
+    gradleRunner
+      .withArguments(
+        "testDebug",
+        "--configuration-cache",
+        "--configuration-cache-problems=warn",
+        "-Dorg.gradle.unsafe.configuration-cache.max-problems=3",
+        "--stacktrace"
+      )
+      .runFixture(fixtureRoot) { build() }
+  }
+
+  @Test
   fun interceptViewEditMode() {
     val fixtureRoot = File("src/test/projects/edit-mode-intercept")
 

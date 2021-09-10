@@ -118,10 +118,10 @@ class PaparazziPlugin : Plugin<Project> {
       recordTaskProvider.configure { it.dependsOn(testTaskProvider) }
       verifyTaskProvider.configure { it.dependsOn(testTaskProvider) }
 
-      testTaskProvider.configure {
-        it.doLast {
+      testTaskProvider.configure { test ->
+        test.doLast {
           val uri = reportOutputDir.get().asFile.toPath().resolve("index.html").toUri()
-          project.logger.log(LIFECYCLE, "See the Paparazzi report at: $uri")
+          test.logger.log(LIFECYCLE, "See the Paparazzi report at: $uri")
         }
       }
     }
