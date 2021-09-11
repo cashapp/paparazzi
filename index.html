@@ -256,40 +256,6 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#standard_error" class="md-nav__link">
-    STANDARD_ERROR
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#getrule-val-paparazzi-paparazzi-environment-detectenvironmentcopy-platformdir-androidhomeplatformsandroid-29-compilesdkversion-29" class="md-nav__link">
-      @get:Rule
-  val paparazzi = Paparazzi(
-    environment = detectEnvironment().copy(
-      platformDir = &quot;${androidHome()}/platforms/android-29&quot;,
-      compileSdkVersion = 29
-    )
-  )
-
-  </a>
-  
-    <nav class="md-nav" aria-label="  @get:Rule
-  val paparazzi = Paparazzi(
-    environment = detectEnvironment().copy(
-      platformDir = &quot;${androidHome()}/platforms/android-29&quot;,
-      compileSdkVersion = 29
-    )
-  )
-">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
   <a href="#resource-resolution-errors" class="md-nav__link">
     Resource Resolution Errors
   </a>
@@ -425,40 +391,6 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#standard_error" class="md-nav__link">
-    STANDARD_ERROR
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#getrule-val-paparazzi-paparazzi-environment-detectenvironmentcopy-platformdir-androidhomeplatformsandroid-29-compilesdkversion-29" class="md-nav__link">
-      @get:Rule
-  val paparazzi = Paparazzi(
-    environment = detectEnvironment().copy(
-      platformDir = &quot;${androidHome()}/platforms/android-29&quot;,
-      compileSdkVersion = 29
-    )
-  )
-
-  </a>
-  
-    <nav class="md-nav" aria-label="  @get:Rule
-  val paparazzi = Paparazzi(
-    environment = detectEnvironment().copy(
-      platformDir = &quot;${androidHome()}/platforms/android-29&quot;,
-      compileSdkVersion = 29
-    )
-  )
-">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
   <a href="#resource-resolution-errors" class="md-nav__link">
     Resource Resolution Errors
   </a>
@@ -558,21 +490,6 @@ test runs and snapshots. </p>
 <p>Runs tests and verifies against previously-recorded golden values.</p>
 <p>Check out the <a href="https://github.com/cashapp/paparazzi/tree/master/sample">sample</a>.</p>
 <h2 id="known-limitations">Known Limitations<a class="headerlink" href="#known-limitations" title="Permanent link">&para;</a></h2>
-<h4 id="standard_error">STANDARD_ERROR<a class="headerlink" href="#standard_error" title="Permanent link">&para;</a></h4>
-<p>Ex:
-<div class="highlight"><pre><span></span><code>STANDARD_ERROR
-    Unable to load the list of fonts. Try re-installing the SDK Platform from the SDK Manager.
-</code></pre></div>
-layoutlib must be migrated to support APIs 30+. Until then, you&rsquo;ll need to 
-update Paparazzi&rsquo;s environment to use API 29.</p>
-<h2 id="getrule-val-paparazzi-paparazzi-environment-detectenvironmentcopy-platformdir-androidhomeplatformsandroid-29-compilesdkversion-29"><div class="highlight"><pre><span></span><code>  <span class="n">@get</span><span class="p">:</span><span class="n">Rule</span>
-  <span class="k">val</span> <span class="py">paparazzi</span> <span class="p">=</span> <span class="n">Paparazzi</span><span class="p">(</span>
-    <span class="n">environment</span> <span class="p">=</span> <span class="n">detectEnvironment</span><span class="p">().</span><span class="n">copy</span><span class="p">(</span>
-      <span class="n">platformDir</span> <span class="p">=</span> <span class="s">&quot;${androidHome()}/platforms/android-29&quot;</span><span class="p">,</span>
-      <span class="n">compileSdkVersion</span> <span class="p">=</span> <span class="m">29</span>
-    <span class="p">)</span>
-  <span class="p">)</span>
-</code></pre></div><a class="headerlink" href="#getrule-val-paparazzi-paparazzi-environment-detectenvironmentcopy-platformdir-androidhomeplatformsandroid-29-compilesdkversion-29" title="Permanent link">&para;</a></h2>
 <h4 id="resource-resolution-errors">Resource Resolution Errors<a class="headerlink" href="#resource-resolution-errors" title="Permanent link">&para;</a></h4>
 <p>Ex: 
 <div class="highlight"><pre><span></span><code>java.lang.NullPointerException
