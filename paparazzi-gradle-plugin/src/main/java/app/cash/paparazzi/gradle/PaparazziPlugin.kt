@@ -20,9 +20,11 @@ import app.cash.paparazzi.VERSION
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.LibraryExtension
 import com.android.ide.common.symbols.getPackageNameFromManifest
+import org.gradle.api.Action
 import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
 import org.gradle.api.internal.artifacts.ArtifactAttributes
@@ -114,21 +116,27 @@ class PaparazziPlugin : Plugin<Project> {
 
         val paparazziProperties = project.properties.filterKeys { it.startsWith("app.cash.paparazzi") }
 
-        test.doFirst {
-          test.systemProperties["paparazzi.test.record"] = isRecordRun.get()
-          test.systemProperties["paparazzi.test.verify"] = isVerifyRun.get()
-          test.systemProperties.putAll(paparazziProperties)
-        }
+        // why not a lambda?  See: https://docs.gradle.org/7.2/userguide/validation_problems.html#implementation_unknown
+        test.doFirst(object : Action<Task> {
+          override fun execute(t: Task) {
+            test.systemProperties["paparazzi.test.record"] = isRecordRun.get()
+            test.systemProperties["paparazzi.test.verify"] = isVerifyRun.get()
+            test.systemProperties.putAll(paparazziProperties)
+          }
+        })
       }
 
       recordTaskProvider.configure { it.dependsOn(testTaskProvider) }
       verifyTaskProvider.configure { it.dependsOn(testTaskProvider) }
 
       testTaskProvider.configure { test ->
-        test.doLast {
-          val uri = reportOutputDir.get().asFile.toPath().resolve("index.html").toUri()
-          test.logger.log(LIFECYCLE, "See the Paparazzi report at: $uri")
-        }
+        // why not a lambda?  See: https://docs.gradle.org/7.2/userguide/validation_problems.html#implementation_unknown
+        test.doLast(object : Action<Task> {
+          override fun execute(t: Task) {
+            val uri = reportOutputDir.get().asFile.toPath().resolve("index.html").toUri()
+            test.logger.log(LIFECYCLE, "See the Paparazzi report at: $uri")
+          }
+        })
       }
     }
   }
