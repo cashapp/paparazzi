@@ -409,6 +409,23 @@ data class DeviceConfig(
         released = "August 20, 2020"
     )
 
+    val PIXEL_5 = DeviceConfig(
+      screenHeight = 2340,
+      screenWidth = 1080,
+      xdpi = 442,
+      ydpi = 444,
+      orientation = ScreenOrientation.PORTRAIT,
+      density = Density.DPI_440,
+      ratio = ScreenRatio.LONG,
+      size = ScreenSize.NORMAL,
+      keyboard = Keyboard.NOKEY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.SOFT,
+      softButtons = true,
+      navigation = Navigation.NONAV,
+      released = "October 15, 2020"
+    )
+
     private const val TAG_ATTR = "attr"
     private const val TAG_ENUM = "enum"
     private const val TAG_FLAG = "flag"
