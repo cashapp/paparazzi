@@ -20,9 +20,6 @@ jobs:
           - 15
 
     steps:
-      - name: (Temp) Remove Platforms 30
-        run: rm -rf $ANDROID_HOME/platforms/android-30
-
       - name: Checkout
         uses: actions/checkout@v2
 
