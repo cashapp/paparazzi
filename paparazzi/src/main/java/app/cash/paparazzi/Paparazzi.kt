@@ -389,7 +389,6 @@ class Paparazzi(
           context: Context,
           attrs: AttributeSet
         ): View? {
-
           val createViewMethod = appCompatViewInflaterClass
               .getDeclaredMethod(
                   "createView",
