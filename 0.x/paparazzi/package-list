@@ -1,5 +1,9 @@
 $dokka.format:gfm-v1
 $dokka.linkExtension:md
+$dokka.location:app.cash.paparazzi.accessibility////PointingToDeclaration/paparazzi/app.cash.paparazzi.accessibility/index.md
+$dokka.location:app.cash.paparazzi.accessibility/AccessibilityRenderExtension///PointingToDeclaration/paparazzi/app.cash.paparazzi.accessibility/-accessibility-render-extension/index.md
+$dokka.location:app.cash.paparazzi.accessibility/AccessibilityRenderExtension/AccessibilityRenderExtension/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.accessibility/-accessibility-render-extension/-accessibility-render-extension.md
+$dokka.location:app.cash.paparazzi.accessibility/AccessibilityRenderExtension/render/#app.cash.paparazzi.Snapshot#android.view.View#java.awt.image.BufferedImage/PointingToDeclaration/paparazzi/app.cash.paparazzi.accessibility/-accessibility-render-extension/render.md
 $dokka.location:app.cash.paparazzi.internal.parsers////PointingToDeclaration/paparazzi/app.cash.paparazzi.internal.parsers/index.md
 $dokka.location:app.cash.paparazzi.internal.parsers/AaptAttrParser///PointingToDeclaration/paparazzi/app.cash.paparazzi.internal.parsers/-aapt-attr-parser/index.md
 $dokka.location:app.cash.paparazzi.internal.parsers/AaptAttrParser/getAaptDeclaredAttrs/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal.parsers/-aapt-attr-parser/get-aapt-declared-attrs.md
@@ -148,6 +152,7 @@ $dokka.location:app.cash.paparazzi/TestName/className/#/PointingToDeclaration/p
 $dokka.location:app.cash.paparazzi/TestName/methodName/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-test-name/method-name.md
 $dokka.location:app.cash.paparazzi/TestName/packageName/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-test-name/package-name.md
 app.cash.paparazzi
+app.cash.paparazzi.accessibility
 app.cash.paparazzi.internal
 app.cash.paparazzi.internal.parsers
 

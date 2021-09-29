@@ -11,7 +11,7 @@
         <meta name="description" content="Android screenshots without Android">
       
       
-        <link rel="canonical" href="https://cashapp.github.io/paparazzi/0.x/paparazzi/app.cash.paparazzi/-render-extension/">
+        <link rel="canonical" href="https://cashapp.github.io/paparazzi/0.x/paparazzi/app.cash.paparazzi.accessibility/-accessibility-render-extension/">
       
       
         <meta name="author" content="Square, Inc.">
@@ -66,7 +66,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#renderextension" class="md-skip">
+        <a href="#accessibilityrenderextension" class="md-skip">
           Skip to content
         </a>
       
@@ -204,7 +204,7 @@
 
 
   <li class="md-nav__item">
-    <a href="../" title="0.x API" class="md-nav__link">
+    <a href="../../app.cash.paparazzi/" title="0.x API" class="md-nav__link">
       0.x API
     </a>
   </li>
@@ -278,13 +278,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#inheritors" class="md-nav__link">
-    Inheritors
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -297,7 +290,7 @@
             <article class="md-content__inner md-typeset">
               
                 
-                  <a href="https://github.com/cashapp/paparazzi/edit/master/docs/0.x/paparazzi/app.cash.paparazzi/-render-extension/index.md" title="Edit this page" class="md-content__button md-icon">
+                  <a href="https://github.com/cashapp/paparazzi/edit/master/docs/0.x/paparazzi/app.cash.paparazzi.accessibility/-accessibility-render-extension/index.md" title="Edit this page" class="md-content__button md-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
                   </a>
                 
@@ -305,11 +298,10 @@
                   
                 
                 
-                <p>//<a href="../../../">paparazzi</a>/<a href="../">app.cash.paparazzi</a>/<a href="./">RenderExtension</a></p>
-<h1 id="renderextension">RenderExtension<a class="headerlink" href="#renderextension" title="Permanent link">&para;</a></h1>
+                <p>//<a href="../../../">paparazzi</a>/<a href="../">app.cash.paparazzi.accessibility</a>/<a href="./">AccessibilityRenderExtension</a></p>
+<h1 id="accessibilityrenderextension">AccessibilityRenderExtension<a class="headerlink" href="#accessibilityrenderextension" title="Permanent link">&para;</a></h1>
 <p>[jvm]\
-interface <a href="./">RenderExtension</a></p>
-<p>An extension for overlaying additional information on top of each rendered frame.</p>
+class <a href="./">AccessibilityRenderExtension</a> : <a href="../../app.cash.paparazzi/-render-extension/">RenderExtension</a></p>
 <h2 id="functions">Functions<a class="headerlink" href="#functions" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -321,20 +313,7 @@ interface <a href="./">RenderExtension</a></p>
 <tbody>
 <tr>
 <td><a href="render/">render</a></td>
-<td>[jvm]<br>abstract fun <a href="render/">render</a>(snapshot: <a href="../-snapshot/">Snapshot</a>, view: View, image: <a href="https://docs.oracle.com/javase/8/docs/api/java/awt/image/BufferedImage.html">BufferedImage</a>): <a href="https://docs.oracle.com/javase/8/docs/api/java/awt/image/BufferedImage.html">BufferedImage</a></td>
-</tr>
-</tbody>
-</table>
-<h2 id="inheritors">Inheritors<a class="headerlink" href="#inheritors" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><a href="../../app.cash.paparazzi.accessibility/-accessibility-render-extension/">AccessibilityRenderExtension</a></td>
+<td>[jvm]<br>open override fun <a href="render/">render</a>(snapshot: <a href="../../app.cash.paparazzi/-snapshot/">Snapshot</a>, view: View, image: <a href="https://docs.oracle.com/javase/8/docs/api/java/awt/image/BufferedImage.html">BufferedImage</a>): <a href="https://docs.oracle.com/javase/8/docs/api/java/awt/image/BufferedImage.html">BufferedImage</a></td>
 </tr>
 </tbody>
 </table>
