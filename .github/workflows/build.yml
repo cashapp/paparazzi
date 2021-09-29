@@ -41,6 +41,7 @@ jobs:
           name: test-failures
           path: |
             **/build/reports/tests/test/
+            **/out/failures/
             paparazzi-gradle-plugin/src/test/projects/**/build/reports/paparazzi/images/
 
   publish:
