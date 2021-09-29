@@ -22,9 +22,5 @@ import java.awt.image.BufferedImage
  * An extension for overlaying additional information on top of each rendered frame.
  */
 interface RenderExtension {
-  fun render(
-    snapshot: Snapshot,
-    view: View,
-    image: BufferedImage,
-  ): BufferedImage
+  fun render(snapshot: Snapshot, view: View, image: BufferedImage): BufferedImage
 }
