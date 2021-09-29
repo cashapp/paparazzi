@@ -63,7 +63,8 @@ class Paparazzi(
   private val theme: String = "android:Theme.Material.NoActionBar.Fullscreen",
   private val appCompatEnabled: Boolean = true,
   private val maxPercentDifference: Double = 0.1,
-  private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference)
+  private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference),
+  private val renderExtensions: Set<RenderExtension> = setOf()
 ) : TestRule {
   private val THUMBNAIL_SIZE = 1000
 
@@ -73,7 +74,6 @@ class Paparazzi(
   private lateinit var renderSession: RenderSessionImpl
   private lateinit var bridgeRenderSession: RenderSession
   private var testName: TestName? = null
-  private val renderExtensions = LinkedHashSet<RenderExtension>()
 
   val layoutInflater: LayoutInflater
     get() = RenderAction.getCurrentContext().getSystemService("layout_inflater") as BridgeInflater
@@ -185,14 +185,6 @@ class Paparazzi(
     takeSnapshots(view, name, deviceConfig, theme, startNanos, fps, frameCount)
   }
 
-  fun addRenderExtension(renderExtension: RenderExtension) {
-    renderExtensions.add(renderExtension)
-  }
-
-  fun removeRenderExtension(renderExtension: RenderExtension) {
-    renderExtensions.remove(renderExtension)
-  }
-
   private fun takeSnapshots(
     view: View,
     name: String?,
@@ -248,7 +240,7 @@ class Paparazzi(
 
             var image = bridgeRenderSession.image
             renderExtensions.forEach {
-              image = it.render(snapshot = snapshot, view = view, image = image)
+              image = it.render(snapshot, view, image)
             }
             frameHandler.handle(scaleImage(image))
           }
