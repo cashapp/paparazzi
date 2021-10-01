@@ -8,13 +8,13 @@ buildscript {
   ext.layoutLibPrebuiltSha = 'ae77d65'
 
   ext.versions = [
-    kotlin: '1.5.10',
+    kotlin: '1.5.31',
     agp: '4.2.2',
     layoutlib: "4.1.0-$layoutLibPrebuiltSha", // "should" be similar to versions.agp
     androidTools: '27.1.2', // agp + 23.0.0 = androidTools
     jcodec: '0.2.5',
     moshi: '1.12.0',
-    bytebuddy: '1.11.15',
+    bytebuddy: '1.11.18',
     releasedPaparazzi: '0.7.1'
   ]
 
@@ -25,7 +25,7 @@ buildscript {
     ],
     kotlinx: [
       coroutines: [
-        core: 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1',
+        core: 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2',
       ],
     ],
     tools: [
@@ -45,7 +45,7 @@ buildscript {
         linux: "app.cash.paparazzi:layoutlib-native-linux:${versions.layoutlib}",
       ]
     ],
-    okio: 'com.squareup.okio:okio:2.10.0',
+    okio: 'com.squareup.okio:okio:3.0.0-alpha.10',
     moshi: [
       core: "com.squareup.moshi:moshi:${versions.moshi}",
       adapters: "com.squareup.moshi:moshi-adapters:${versions.moshi}",
@@ -59,10 +59,10 @@ buildscript {
       core: "net.bytebuddy:byte-buddy:${versions.bytebuddy}",
       agent: "net.bytebuddy:byte-buddy-agent:${versions.bytebuddy}",
     ],
-    guava: 'com.google.guava:guava:30.1.1-jre',
+    guava: 'com.google.guava:guava:31.0.1-jre',
     junit: 'junit:junit:4.13.2',
     truth: 'com.google.truth:truth:1.1.3',
-    assertj: 'org.assertj:assertj-core:3.20.2',
+    assertj: 'org.assertj:assertj-core:3.21.0',
     testparameterinjector: 'com.google.testparameterinjector:test-parameter-injector:1.4',
   ]
 
@@ -76,10 +76,10 @@ buildscript {
   dependencies {
     classpath deps.plugins.kotlin
     classpath deps.plugins.android
-    classpath 'com.vanniktech:gradle-maven-publish-plugin:0.17.0'
+    classpath 'com.vanniktech:gradle-maven-publish-plugin:0.18.0'
     classpath 'org.ajoberstar.grgit:grgit-gradle:4.1.0'
     classpath 'com.github.ben-manes:gradle-versions-plugin:0.39.0'
-    classpath 'org.jetbrains.dokka:dokka-gradle-plugin:1.5.0'
+    classpath 'org.jetbrains.dokka:dokka-gradle-plugin:1.5.30'
     classpath "app.cash.paparazzi:paparazzi-gradle-plugin:${versions.releasedPaparazzi}"
   }
 }
