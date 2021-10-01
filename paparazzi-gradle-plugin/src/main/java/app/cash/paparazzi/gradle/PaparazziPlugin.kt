@@ -116,6 +116,7 @@ class PaparazziPlugin : Plugin<Project> {
 
         val paparazziProperties = project.properties.filterKeys { it.startsWith("app.cash.paparazzi") }
 
+        @Suppress("ObjectLiteralToLambda")
         // why not a lambda?  See: https://docs.gradle.org/7.2/userguide/validation_problems.html#implementation_unknown
         test.doFirst(object : Action<Task> {
           override fun execute(t: Task) {
@@ -130,6 +131,7 @@ class PaparazziPlugin : Plugin<Project> {
       verifyTaskProvider.configure { it.dependsOn(testTaskProvider) }
 
       testTaskProvider.configure { test ->
+        @Suppress("ObjectLiteralToLambda")
         // why not a lambda?  See: https://docs.gradle.org/7.2/userguide/validation_problems.html#implementation_unknown
         test.doLast(object : Action<Task> {
           override fun execute(t: Task) {
