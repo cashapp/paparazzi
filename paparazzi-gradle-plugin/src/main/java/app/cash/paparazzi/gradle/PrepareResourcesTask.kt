@@ -65,19 +65,21 @@ open class PrepareResourcesTask : DefaultTask() {
 
   private val projectDirectory = project.layout.projectDirectory
 
+  @OptIn(ExperimentalStdlibApi::class)
   @TaskAction
   fun writeResourcesFile() {
     val out = paparazziResources.get().asFile
     out.delete()
 
     val mainPackage = packageName.get()
-    val resourcePackageNames = mainPackage + if (nonTransitiveRClassEnabled.get()) {
-      symbolLists.files.joinToString(separator = ",") { file ->
-        file.useLines { lines -> lines.first() }
+    val resourcePackageNames = buildList {
+      add(mainPackage)
+      if (nonTransitiveRClassEnabled.get()) {
+        symbolLists.files.map { file ->
+          file.useLines { lines -> add(lines.first()) }
+        }
       }
-    } else {
-      emptyList<String>()
-    }
+    }.joinToString(separator = ",")
 
     out.bufferedWriter()
       .use {
