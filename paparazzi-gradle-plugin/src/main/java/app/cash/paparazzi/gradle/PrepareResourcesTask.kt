@@ -71,12 +71,12 @@ open class PrepareResourcesTask : DefaultTask() {
     out.delete()
 
     val mainPackage = packageName.get()
-    val resourcePackageNames = if (nonTransitiveRClassEnabled.get()) {
+    val resourcePackageNames = mainPackage + if (nonTransitiveRClassEnabled.get()) {
       symbolLists.files.joinToString(separator = ",") { file ->
         file.useLines { lines -> lines.first() }
       }
     } else {
-      mainPackage
+      emptyList<String>()
     }
 
     out.bufferedWriter()

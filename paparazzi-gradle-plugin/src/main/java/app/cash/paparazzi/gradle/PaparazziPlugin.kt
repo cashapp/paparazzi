@@ -58,12 +58,11 @@ class PaparazziPlugin : Plugin<Project> {
         .libraryVariants
     variants.all { variant ->
       val variantSlug = variant.name.capitalize(Locale.US)
-      val testVariantSlug = variant.unitTestVariant.name.capitalize(Locale.US)
 
       val nonTransitiveRClassEnabled = (project.findProperty("android.nonTransitiveRClass") as String?)?.toBoolean() ?: false
 
-      val generateStubRFileProvider = project.tasks.named("generate${testVariantSlug}StubRFile") as Provider<GenerateLibraryRFileTask>
-      val symbolListsProvider = generateStubRFileProvider.map { it.dependencies }
+      val generateRFileProvider = project.tasks.named("generate${variantSlug}RFile") as Provider<GenerateLibraryRFileTask>
+      val symbolListsProvider = generateRFileProvider.map { it.dependencies }
       val mergeResourcesOutputDir = variant.mergeResourcesProvider.flatMap { it.outputDir }
       val mergeAssetsOutputDir = variant.mergeAssetsProvider.flatMap { it.outputDir }
       val reportOutputDir = project.layout.buildDirectory.dir("reports/paparazzi")
@@ -84,6 +83,8 @@ class PaparazziPlugin : Plugin<Project> {
         task.platformDataRoot.set(unzipConfiguration.singleFile)
         task.paparazziResources.set(project.layout.buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.txt"))
       }
+
+      val testVariantSlug = variant.unitTestVariant.name.capitalize(Locale.US)
 
       project.plugins.withType(JavaBasePlugin::class.java) {
         project.tasks.named("compile${testVariantSlug}JavaWithJavac")
@@ -134,7 +135,7 @@ class PaparazziPlugin : Plugin<Project> {
         })
       }
 
-      writeResourcesTask.configure { it.dependsOn(generateStubRFileProvider) }
+      writeResourcesTask.configure { it.dependsOn(generateRFileProvider) }
       recordTaskProvider.configure { it.dependsOn(testTaskProvider) }
       verifyTaskProvider.configure { it.dependsOn(testTaskProvider) }
 
