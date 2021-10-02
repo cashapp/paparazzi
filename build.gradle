@@ -122,6 +122,11 @@ subprojects {
           name = "projectLocalMaven"
           url = "${rootProject.buildDir}/localMaven"
         }
+        maven {
+          name = "artifactory"
+          url = "https://maven.global.square/artifactory/releases"
+          credentials(PasswordCredentials)
+        }
       }
     }
   }
