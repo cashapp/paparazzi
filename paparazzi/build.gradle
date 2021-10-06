@@ -80,7 +80,6 @@ def generateTestConfig = tasks.register("generateTestConfig") {
       writer.writeLine("platforms/android-30/")
       writer.writeLine(".")
       writer.writeLine(configurations.unzip.singleFile.path)
-      writer.writeLine("app.cash.paparazzi")
     }
   }
 }
