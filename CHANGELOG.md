@@ -1,6 +1,27 @@
 Change Log
 ==========
 
+## Version 0.8.0
+_2021-10-07_
+
+### New
+* Migrate Paparazzi to use native layoutlib for better rendering and API 30 support
+* Add new extension for rendering accessibility metadata
+* Add support for fontScale in DeviceConfig
+* Add device config for Pixel 5
+* Add tasks to Gradle task verification group
+* Migrate publishing to gradle-maven-publish-plugin
+* Migrate builds to Github Actions
+* Migrate sample test from Burst to TestParameterInjector
+* Kotlin 1.5.21
+* [Gradle Plugin] Support for configuration caching
+* [Gradle Plugin] Gradle 7.2
+
+### Fixed
+* Add method interceptor for matrix multiplication operations
+* Don't swallow FileNotFoundExceptions when overridden platform dir doesn't exist
+* [Gradle Plugin] Fix remote caching bug by referencing relative, not absolute, paths in intermediate resources file.
+
 ## Version 0.7.1
 _2021-05-17_
 
