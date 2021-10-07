@@ -124,6 +124,10 @@ subprojects {
         }
       }
     }
+
+    mavenPublish {
+      releaseSigningEnabled = hasProperty('signingKey')
+    }
   }
 
   tasks.register('emptySourcesJar', Jar) {
