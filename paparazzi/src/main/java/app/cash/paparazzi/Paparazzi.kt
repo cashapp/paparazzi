@@ -117,8 +117,7 @@ class Paparazzi(
   fun prepare(description: Description) {
     forcePlatformSdkVersion(environment.compileSdkVersion)
 
-    val layoutlibCallback =
-      PaparazziCallback(logger, environment.packageName, environment.resourcePackageNames)
+    val layoutlibCallback = PaparazziCallback(logger, environment.packageName)
     layoutlibCallback.initResources()
 
     testName = description.toTestName()
