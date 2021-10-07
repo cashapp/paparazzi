@@ -366,22 +366,15 @@ class Paparazzi(
     // See androidx.appcompat.app.AppCompatDelegateImpl#installViewFactory()
     if (layoutInflater.factory == null) {
       layoutInflater.factory2 = object : LayoutInflater.Factory2 {
-        private val appCompatViewInflaterClass =
-          Class.forName("androidx.appcompat.app.AppCompatViewInflater")
-
-        private val viewInflaterClass = try {
-          Class.forName("com.google.android.material.theme.MaterialComponentsViewInflater")
-        } catch (e: ClassNotFoundException) {
-          logger.info("MaterialComponents not found on classpath...")
-          appCompatViewInflaterClass
-        }
-
         override fun onCreateView(
           parent: View?,
           name: String,
           context: Context,
           attrs: AttributeSet
         ): View? {
+          val appCompatViewInflaterClass =
+            Class.forName("androidx.appcompat.app.AppCompatViewInflater")
+
           val createViewMethod = appCompatViewInflaterClass
               .getDeclaredMethod(
                   "createView",
@@ -401,7 +394,7 @@ class Paparazzi(
           val readAppTheme = true
           val wrapContext = true
 
-          val newAppCompatViewInflaterInstance = viewInflaterClass
+          val newAppCompatViewInflaterInstance = appCompatViewInflaterClass
               .getConstructor()
               .newInstance()
 

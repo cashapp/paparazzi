@@ -615,6 +615,7 @@ class PaparazziPluginTest {
   }
 
   @Test
+  @Ignore
   fun withMaterialComponents() {
     val fixtureRoot = File("src/test/projects/material-components-present")
 
