@@ -76,8 +76,8 @@ def generateTestConfig = tasks.register("generateTestConfig") {
     configFile.withWriter('utf-8') { writer ->
       writer.writeLine("app.cash.paparazzi")
       writer.writeLine(".")
-      writer.writeLine("30")
-      writer.writeLine("platforms/android-30/")
+      writer.writeLine("29")
+      writer.writeLine("platforms/android-29/")
       writer.writeLine(".")
       writer.writeLine(configurations.unzip.singleFile.path)
       writer.writeLine("app.cash.paparazzi")
