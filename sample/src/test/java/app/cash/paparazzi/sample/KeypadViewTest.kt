@@ -25,7 +25,7 @@ import org.junit.Test
 
 class KeypadViewTest {
   @get:Rule
-  var paparazzi = Paparazzi()
+  val paparazzi = Paparazzi()
 
   @Test
   fun testViews() {

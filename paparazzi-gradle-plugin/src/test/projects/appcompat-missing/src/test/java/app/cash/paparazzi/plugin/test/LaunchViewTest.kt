@@ -22,7 +22,7 @@ import org.junit.Test
 
 class LaunchViewTest {
   @get:Rule
-  var paparazzi = Paparazzi()
+  val paparazzi = Paparazzi()
 
   @Test
   fun testViews() {
