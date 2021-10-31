@@ -25,7 +25,7 @@ import org.junit.Test
 
 class LaunchViewTest {
   @get:Rule
-  var paparazzi = Paparazzi(deviceConfig = PIXEL_3)
+  val paparazzi = Paparazzi(deviceConfig = PIXEL_3)
 
   @Test
   fun pixel3() {

@@ -22,7 +22,7 @@ import org.junit.Test
 
 class ButtonViewTest {
   @get:Rule
-  var paparazzi = Paparazzi(theme = "Theme.MaterialComponents")
+  val paparazzi = Paparazzi(theme = "Theme.MaterialComponents")
 
   @Test
   fun testViews() {
