@@ -9,7 +9,8 @@ version = versions.layoutlib
  * https://android.googlesource.com/platform/prebuilts/studio/layoutlib/+/refs/tags/studio-4.1.0/PREBUILT
  */
 tasks.register('cloneLayoutlib') {
-  outputs.dir(repoDir)
+  it.outputs.dir(repoDir)
+  it.inputs.property('sha', layoutLibPrebuiltSha)
 
   doFirst {
     // Gradle aggressively creates outputs directories, which interferes with the git clone check
@@ -28,6 +29,8 @@ tasks.register('cloneLayoutlib') {
     def repo = grgit.open {
       dir = repoDir
     }
+
+    logger.warn("Checking out SHA $layoutLibPrebuiltSha")
     repo.checkout {
       branch = layoutLibPrebuiltSha
     }
