@@ -76,14 +76,16 @@ internal class Renderer(
     val buildProp = File(environment.platformDir, "build.prop")
     val attrs = File(platformDataResDir, "values" + File.separator + "attrs.xml")
     bridge = Bridge().apply {
-      init(
+      check(
+        init(
           DeviceConfig.loadProperties(buildProp),
           fontLocation,
           nativeLibLocation.path,
           icuLocation.path,
           DeviceConfig.getEnumMap(attrs),
           logger
-      )
+        )
+      ) { "Failed to init Bridge." }
     }
     Bridge.getLock()
         .lock()
