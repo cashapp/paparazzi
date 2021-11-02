@@ -15,6 +15,73 @@ exclude bundled Android dependencies.
 android.jetifier.ignorelist=android-base-common,common
 ```
 
+Git LFS
+--------
+It is recommended you use [Git LFS][lfs] to store your snapshots.  Here's a template to get started.
+
+#### **`.gitattributes`**
+```bash
+**/snapshots/**/*.png filter=lfs diff=lfs merge=lfs -text
+```
+
+#### **`.hooks/pre-receive`**
+```bash
+# compares files that match .gitattributes filter to those actually tracked by git-lfs
+diff <(git ls-files ':(attr:filter=lfs)' | sort) <(git lfs ls-files -n | sort) >/dev/null
+
+ret=$?
+if [[ $ret -ne 0 ]]; then
+  echo >&2 "This remote has detected files committed without using Git LFS. Run 'brew install git-lfs && git lfs install' to install it and re-commit your files.";
+  exit 1;
+fi
+```
+
+#### **`.hooks/post-checkout`**
+```bash
+# Call the git-lfs filter (except in CI)
+if [[ not CI ]]; then
+  command -v git-lfs >/dev/null 2>&1 || { echo >&2 "This repository is configured for Git LFS but 'git-lfs' was not found on your path. Run 'brew install git-lfs && git lfs install' to install it."; exit 2; }
+  git lfs post-checkout "$@"
+fi
+```
+
+#### **`.hooks/post-commit`**
+```bash
+# Call the git-lfs filter (except in CI)
+if [[ not CI ]]; then
+  command -v git-lfs >/dev/null 2>&1 || { echo >&2 "This repository is configured for Git LFS but 'git-lfs' was not found on your path. Run 'brew install git-lfs && git lfs install' to install it."; exit 2; }
+  git lfs post-commit "$@"
+fi
+```
+
+#### **`.hooks/post-merge`**
+```bash
+# Call the git-lfs filter (except in CI)
+if [[ not CI ]]; then
+  command -v git-lfs >/dev/null 2>&1 || { echo >&2 "This repository is configured for Git LFS but 'git-lfs' was not found on your path. Run 'brew install git-lfs && git lfs install' to install it."; exit 2; }
+  git lfs post-merge "$@"
+fi
+```
+
+#### **`.hooks/pre-push`**
+```bash
+# Call the git-lfs filter (except in CI)
+if [[ not CI ]]; then
+  command -v git-lfs >/dev/null 2>&1 || { echo >&2 "This repository is configured for Git LFS but 'git-lfs' was not found on your path. Run 'brew install git-lfs && git lfs install' to install it."; exit 2; }
+  git lfs pre-push "$@"
+fi
+```
+
+#### **`your CI script`**
+```bash
+  if [[ is running snapshot tests ]]; then
+    # fail fast if files not checked in using git lfs
+    "$REPO_DIR"/.hooks/pre-receive
+    git lfs install --local
+    git lfs pull
+  fi
+```
+
 Releases
 --------
 
@@ -126,3 +193,4 @@ limitations under the License.
  [paparazzi]: https://cashapp.github.io/paparazzi/
  [sample]: https://github.com/cashapp/paparazzi/tree/master/sample
  [snap]: https://oss.sonatype.org/content/repositories/snapshots/app/cash/paparazzi/
+ [lfs]: https://git-lfs.github.com/
