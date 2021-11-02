@@ -41,7 +41,12 @@ dependencies {
 
   def osName = System.getProperty("os.name").toLowerCase(Locale.US)
   if (osName.startsWith("mac")) {
-    unzip deps.layoutlib.native.macOsX
+    def osArch = System.getProperty("os.arch").toLowerCase(Locale.US)
+    if (osArch.startsWith("x86")) {
+      unzip deps.layoutlib.native.macOsX
+    } else {
+      unzip deps.layoutlib.native.macArm
+    }
   } else if (osName.startsWith("windows")) {
     unzip deps.layoutlib.native.windows
   } else {
