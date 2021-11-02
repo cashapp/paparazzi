@@ -234,6 +234,68 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#git-lfs" class="md-nav__link">
+    Git LFS
+  </a>
+  
+    <nav class="md-nav" aria-label="Git LFS">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gitattributes" class="md-nav__link">
+    .gitattributes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hookspre-receive" class="md-nav__link">
+    .hooks/pre-receive
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hookspost-checkout" class="md-nav__link">
+    .hooks/post-checkout
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hookspost-commit" class="md-nav__link">
+    .hooks/post-commit
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hookspost-merge" class="md-nav__link">
+    .hooks/post-merge
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hookspre-push" class="md-nav__link">
+    .hooks/pre-push
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#your-ci-script" class="md-nav__link">
+    your CI script
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#releases" class="md-nav__link">
     Releases
   </a>
@@ -369,6 +431,68 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#git-lfs" class="md-nav__link">
+    Git LFS
+  </a>
+  
+    <nav class="md-nav" aria-label="Git LFS">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gitattributes" class="md-nav__link">
+    .gitattributes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hookspre-receive" class="md-nav__link">
+    .hooks/pre-receive
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hookspost-checkout" class="md-nav__link">
+    .hooks/post-checkout
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hookspost-commit" class="md-nav__link">
+    .hooks/post-commit
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hookspost-merge" class="md-nav__link">
+    .hooks/post-merge
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hookspre-push" class="md-nav__link">
+    .hooks/pre-push
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#your-ci-script" class="md-nav__link">
+    your CI script
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#releases" class="md-nav__link">
     Releases
   </a>
@@ -442,6 +566,64 @@
 <p>If using Jetifier to migrate off Support libraries, add the following to your <code>gradle.properties</code> to 
 exclude bundled Android dependencies.</p>
 <div class="highlight"><pre><span></span><code><span class="n">android</span><span class="o">.</span><span class="na">jetifier</span><span class="o">.</span><span class="na">ignorelist</span><span class="o">=</span><span class="n">android</span><span class="o">-</span><span class="n">base</span><span class="o">-</span><span class="n">common</span><span class="o">,</span><span class="n">common</span>
+</code></pre></div>
+
+<h2 id="git-lfs">Git LFS<a class="headerlink" href="#git-lfs" title="Permanent link">&para;</a></h2>
+<p>It is recommended you use <a href="https://git-lfs.github.com/">Git LFS</a> to store your snapshots.  Here&rsquo;s a template to get started.</p>
+<h4 id="gitattributes"><strong><code>.gitattributes</code></strong><a class="headerlink" href="#gitattributes" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code>**/snapshots/**/*.png <span class="nv">filter</span><span class="o">=</span>lfs <span class="nv">diff</span><span class="o">=</span>lfs <span class="nv">merge</span><span class="o">=</span>lfs -text
+</code></pre></div>
+
+<h4 id="hookspre-receive"><strong><code>.hooks/pre-receive</code></strong><a class="headerlink" href="#hookspre-receive" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># compares files that match .gitattributes filter to those actually tracked by git-lfs</span>
+diff &lt;<span class="o">(</span>git ls-files <span class="s1">&#39;:(attr:filter=lfs)&#39;</span> <span class="p">|</span> sort<span class="o">)</span> &lt;<span class="o">(</span>git lfs ls-files -n <span class="p">|</span> sort<span class="o">)</span> &gt;/dev/null
+
+<span class="nv">ret</span><span class="o">=</span><span class="nv">$?</span>
+<span class="k">if</span> <span class="o">[[</span> <span class="nv">$ret</span> -ne <span class="m">0</span> <span class="o">]]</span><span class="p">;</span> <span class="k">then</span>
+  <span class="nb">echo</span> &gt;<span class="p">&amp;</span><span class="m">2</span> <span class="s2">&quot;This remote has detected files committed without using Git LFS. Run &#39;brew install git-lfs &amp;&amp; git lfs install&#39; to install it and re-commit your files.&quot;</span><span class="p">;</span>
+  <span class="nb">exit</span> <span class="m">1</span><span class="p">;</span>
+<span class="k">fi</span>
+</code></pre></div>
+
+<h4 id="hookspost-checkout"><strong><code>.hooks/post-checkout</code></strong><a class="headerlink" href="#hookspost-checkout" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># Call the git-lfs filter (except in CI)</span>
+<span class="k">if</span> <span class="o">[[</span> not CI <span class="o">]]</span><span class="p">;</span> <span class="k">then</span>
+  <span class="nb">command</span> -v git-lfs &gt;/dev/null <span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span> <span class="o">||</span> <span class="o">{</span> <span class="nb">echo</span> &gt;<span class="p">&amp;</span><span class="m">2</span> <span class="s2">&quot;This repository is configured for Git LFS but &#39;git-lfs&#39; was not found on your path. Run &#39;brew install git-lfs &amp;&amp; git lfs install&#39; to install it.&quot;</span><span class="p">;</span> <span class="nb">exit</span> <span class="m">2</span><span class="p">;</span> <span class="o">}</span>
+  git lfs post-checkout <span class="s2">&quot;</span><span class="nv">$@</span><span class="s2">&quot;</span>
+<span class="k">fi</span>
+</code></pre></div>
+
+<h4 id="hookspost-commit"><strong><code>.hooks/post-commit</code></strong><a class="headerlink" href="#hookspost-commit" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># Call the git-lfs filter (except in CI)</span>
+<span class="k">if</span> <span class="o">[[</span> not CI <span class="o">]]</span><span class="p">;</span> <span class="k">then</span>
+  <span class="nb">command</span> -v git-lfs &gt;/dev/null <span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span> <span class="o">||</span> <span class="o">{</span> <span class="nb">echo</span> &gt;<span class="p">&amp;</span><span class="m">2</span> <span class="s2">&quot;This repository is configured for Git LFS but &#39;git-lfs&#39; was not found on your path. Run &#39;brew install git-lfs &amp;&amp; git lfs install&#39; to install it.&quot;</span><span class="p">;</span> <span class="nb">exit</span> <span class="m">2</span><span class="p">;</span> <span class="o">}</span>
+  git lfs post-commit <span class="s2">&quot;</span><span class="nv">$@</span><span class="s2">&quot;</span>
+<span class="k">fi</span>
+</code></pre></div>
+
+<h4 id="hookspost-merge"><strong><code>.hooks/post-merge</code></strong><a class="headerlink" href="#hookspost-merge" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># Call the git-lfs filter (except in CI)</span>
+<span class="k">if</span> <span class="o">[[</span> not CI <span class="o">]]</span><span class="p">;</span> <span class="k">then</span>
+  <span class="nb">command</span> -v git-lfs &gt;/dev/null <span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span> <span class="o">||</span> <span class="o">{</span> <span class="nb">echo</span> &gt;<span class="p">&amp;</span><span class="m">2</span> <span class="s2">&quot;This repository is configured for Git LFS but &#39;git-lfs&#39; was not found on your path. Run &#39;brew install git-lfs &amp;&amp; git lfs install&#39; to install it.&quot;</span><span class="p">;</span> <span class="nb">exit</span> <span class="m">2</span><span class="p">;</span> <span class="o">}</span>
+  git lfs post-merge <span class="s2">&quot;</span><span class="nv">$@</span><span class="s2">&quot;</span>
+<span class="k">fi</span>
+</code></pre></div>
+
+<h4 id="hookspre-push"><strong><code>.hooks/pre-push</code></strong><a class="headerlink" href="#hookspre-push" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># Call the git-lfs filter (except in CI)</span>
+<span class="k">if</span> <span class="o">[[</span> not CI <span class="o">]]</span><span class="p">;</span> <span class="k">then</span>
+  <span class="nb">command</span> -v git-lfs &gt;/dev/null <span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span> <span class="o">||</span> <span class="o">{</span> <span class="nb">echo</span> &gt;<span class="p">&amp;</span><span class="m">2</span> <span class="s2">&quot;This repository is configured for Git LFS but &#39;git-lfs&#39; was not found on your path. Run &#39;brew install git-lfs &amp;&amp; git lfs install&#39; to install it.&quot;</span><span class="p">;</span> <span class="nb">exit</span> <span class="m">2</span><span class="p">;</span> <span class="o">}</span>
+  git lfs pre-push <span class="s2">&quot;</span><span class="nv">$@</span><span class="s2">&quot;</span>
+<span class="k">fi</span>
+</code></pre></div>
+
+<h4 id="your-ci-script"><strong><code>your CI script</code></strong><a class="headerlink" href="#your-ci-script" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code>  <span class="k">if</span> <span class="o">[[</span> is running snapshot tests <span class="o">]]</span><span class="p">;</span> <span class="k">then</span>
+    <span class="c1"># fail fast if files not checked in using git lfs</span>
+    <span class="s2">&quot;</span><span class="nv">$REPO_DIR</span><span class="s2">&quot;</span>/.hooks/pre-receive
+    git lfs install --local
+    git lfs pull
+  <span class="k">fi</span>
 </code></pre></div>
 
 <h2 id="releases">Releases<a class="headerlink" href="#releases" title="Permanent link">&para;</a></h2>
