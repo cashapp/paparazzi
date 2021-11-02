@@ -64,7 +64,7 @@ class Paparazzi(
   private val appCompatEnabled: Boolean = true,
   private val maxPercentDifference: Double = 0.1,
   private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference),
-  private val renderExtensions: Set<RenderExtension> = setOf()
+  private val renderExtensions: List<RenderExtension> = emptyList()
 ) : TestRule {
   private val THUMBNAIL_SIZE = 1000
 

@@ -21,7 +21,7 @@ class AccessibilityRenderExtensionTest {
   @get:Rule
   val paparazzi = Paparazzi(
     snapshotHandler = TestSnapshotVerifier(),
-    renderExtensions = setOf(AccessibilityRenderExtension())
+    renderExtensions = listOf(AccessibilityRenderExtension())
   )
 
   @Test
