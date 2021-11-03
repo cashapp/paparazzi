@@ -47,6 +47,7 @@ dependencies {
     unzip deps.layoutlib.native.linux
   }
 
+  testImplementation project(':paparazzi-junit4')
   testImplementation deps.assertj
 }
 

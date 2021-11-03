@@ -6,7 +6,7 @@ import org.junit.runner.Description
 import org.junit.runners.model.Statement
 
 class PaparazziRule(
-	private val paparazzi: Paparazzi = Paparazzi()
+	val paparazzi: Paparazzi = Paparazzi()
 ) : TestRule {
 
 	override fun apply(

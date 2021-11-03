@@ -35,19 +35,19 @@ import java.util.concurrent.TimeUnit
 
 class PaparazziTest {
   @get:Rule
-  val paparazzi = Paparazzi()
+  val paparazzi = PaparazziRule()
 
   @Test
   fun drawCalls() {
     val log = mutableListOf<String>()
 
-    val view = object : View(paparazzi.context) {
+    val view = object : View(paparazzi.paparazzi.context) {
       override fun onDraw(canvas: Canvas) {
         log += "onDraw time=$time"
       }
     }
 
-    paparazzi.snapshot(view)
+    paparazzi.paparazzi.snapshot(view)
 
     assertThat(log).containsExactly("onDraw time=0")
   }
@@ -67,7 +67,7 @@ class PaparazziTest {
       }
     })
 
-    val view = object : View(paparazzi.context) {
+    val view = object : View(paparazzi.paparazzi.context) {
       override fun onDraw(canvas: Canvas) {
         log += "onDraw time=$time animationElapsed=${animator.animatedValue}"
       }
@@ -85,7 +85,7 @@ class PaparazziTest {
     animator.interpolator = LinearInterpolator()
     animator.start()
 
-    paparazzi.gif(view, start = 1_000L, end = 4_000L, fps = 4)
+    paparazzi.paparazzi.gif(view, start = 1_000L, end = 4_000L, fps = 4)
 
     assertThat(log).containsExactly(
         "onDraw time=1000 animationElapsed=0.0",
@@ -109,7 +109,7 @@ class PaparazziTest {
   fun frameCallbacksExecutedAfterLayout() {
     val log = mutableListOf<String>()
 
-    val view = object : View(paparazzi.context) {
+    val view = object : View(paparazzi.paparazzi.context) {
       override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         Choreographer.getInstance()
@@ -121,21 +121,21 @@ class PaparazziTest {
       }
     }
 
-    paparazzi.snapshot(view)
+    paparazzi.paparazzi.snapshot(view)
 
     assertThat(log).containsExactly("view width=1080 height=1776")
   }
 
   @Test
   fun throwsRenderingExceptions() {
-    val view = object : View(paparazzi.context) {
+    val view = object : View(paparazzi.paparazzi.context) {
       override fun onAttachedToWindow() {
         throw Throwable("Oops")
       }
     }
 
     val thrown = try {
-      paparazzi.snapshot(view)
+      paparazzi.paparazzi.snapshot(view)
       false
     } catch (exception: Throwable) {
       true
