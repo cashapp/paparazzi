@@ -4,7 +4,7 @@ apply plugin: 'com.vanniktech.maven.publish'
 dependencies {
   implementation deps.bytebuddy.core
   implementation deps.bytebuddy.agent
-  api deps.junit
+  api deps.junit4
 
   testImplementation deps.assertj
 }

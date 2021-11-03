@@ -27,7 +27,7 @@ dependencies {
   api deps.tools.layoutlib
   api deps.tools.sdkcommon
   api deps.kxml2
-  api deps.junit
+  api deps.junit4
   api deps.androidx.annotations
   api deps.guava
   api deps.kotlinx.coroutines.core
