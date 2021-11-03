@@ -26,7 +26,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.LayoutRes
-import app.cash.paparazzi.agent.AgentTestRule
 import app.cash.paparazzi.agent.InterceptorRegistrar
 import app.cash.paparazzi.internal.EditModeInterceptor
 import app.cash.paparazzi.internal.ImageUtils
@@ -48,9 +47,6 @@ import com.android.layoutlib.bridge.BridgeRenderSession
 import com.android.layoutlib.bridge.impl.RenderAction
 import com.android.layoutlib.bridge.impl.RenderSessionImpl
 import com.android.tools.layoutlib.java.System_Delegate
-import org.junit.rules.TestRule
-import org.junit.runner.Description
-import org.junit.runners.model.Statement
 import java.awt.image.BufferedImage
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier
@@ -65,7 +61,7 @@ class Paparazzi(
   private val maxPercentDifference: Double = 0.1,
   private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference),
   private val renderExtensions: Set<RenderExtension> = setOf()
-) : TestRule {
+) {
   private val THUMBNAIL_SIZE = 1000
 
   private val logger = PaparazziLogger()
@@ -91,36 +87,13 @@ class Paparazzi(
         |              android:layout_height="match_parent"/>
         """.trimMargin()
 
-  override fun apply(
-    base: Statement,
-    description: Description
-  ): Statement {
-    val statement = object : Statement() {
-      override fun evaluate() {
-        prepare(description)
-        try {
-          base.evaluate()
-        } finally {
-          close()
-        }
-      }
-    }
-
-    registerFontLookupInterceptionIfResourceCompatDetected()
-    registerViewEditModeInterception()
-    registerMatrixMultiplyInterception()
-
-    val outerRule = AgentTestRule()
-    return outerRule.apply(statement, description)
-  }
-
-  fun prepare(description: Description) {
+  fun prepare(description: TestName) {
     forcePlatformSdkVersion(environment.compileSdkVersion)
 
     val layoutlibCallback = PaparazziCallback(logger, environment.packageName)
     layoutlibCallback.initResources()
 
-    testName = description.toTestName()
+    testName = description
 
     renderer = Renderer(environment, layoutlibCallback, logger, maxPercentDifference)
     sessionParamsBuilder = renderer.prepare()
@@ -156,7 +129,8 @@ class Paparazzi(
     snapshotHandler.close()
   }
 
-  fun <V : View> inflate(@LayoutRes layoutId: Int): V = layoutInflater.inflate(layoutId, null) as V
+  fun <V : View> inflate(@LayoutRes layoutId: Int): V =
+    layoutInflater.inflate(layoutId, null) as V
 
   fun snapshot(
     view: View,
@@ -302,13 +276,6 @@ class Paparazzi(
     return ImageUtils.scale(image, scale, scale)
   }
 
-  private fun Description.toTestName(): TestName {
-    val fullQualifiedName = className
-    val packageName = fullQualifiedName.substringBeforeLast('.', missingDelimiterValue = "")
-    val className = fullQualifiedName.substringAfterLast('.')
-    return TestName(packageName, className, methodName)
-  }
-
   private fun forcePlatformSdkVersion(compileSdkVersion: Int) {
     val modifiersField =
       try {
@@ -416,6 +383,12 @@ class Paparazzi(
         )
       }
     }
+  }
+
+  internal fun registerInterceptors() {
+    registerFontLookupInterceptionIfResourceCompatDetected()
+    registerViewEditModeInterception()
+    registerMatrixMultiplyInterception()
   }
 
   /**
