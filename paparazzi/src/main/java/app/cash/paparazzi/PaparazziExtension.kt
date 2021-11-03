@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.BeforeEachCallback
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.api.extension.ParameterContext
 import org.junit.jupiter.api.extension.ParameterResolver
+import org.junit.jupiter.api.extension.TestInstancePostProcessor
 
 /**
  * Usage:
@@ -13,6 +14,18 @@ import org.junit.jupiter.api.extension.ParameterResolver
  * class MyClassTest {
  *     @Test
  *     fun test(paparazzi: Paparazzi) {
+ *         ...
+ *     }
+ * }
+ * ```
+ * or
+ * ```
+ * @ExtendWith(PaparazziExtension::class)
+ * class MyClassTest {
+ *     private lateinit var paparazzi: Paparazzi
+ *
+ *     @Test
+ *     fun test() {
  *         ...
  *     }
  * }
@@ -34,9 +47,22 @@ class PaparazziExtension(
    * By default it creates a clean instance for every test.
    */
   private val creator: () -> Paparazzi = { Paparazzi() }
-) : BeforeEachCallback, AfterEachCallback, ParameterResolver {
-  override fun beforeEach(context: ExtensionContext) {
+) : BeforeEachCallback, AfterEachCallback, ParameterResolver, TestInstancePostProcessor {
+
+  override fun postProcessTestInstance(testInstance: Any, context: ExtensionContext) {
     val paparazzi = creator()
+    context.store.put(KEY, paparazzi)
+
+    testInstance
+      .javaClass
+      .declaredFields
+      .filter { it.type === Paparazzi::class.java }
+      .onEach { it.isAccessible = true }
+      .forEach { field -> field.set(testInstance, paparazzi) }
+  }
+
+  override fun beforeEach(context: ExtensionContext) {
+    val paparazzi = context.store.get(KEY, Paparazzi::class.java)
     paparazzi.prepare(context.toTestName())
     context.store.put(KEY, paparazzi)
   }
