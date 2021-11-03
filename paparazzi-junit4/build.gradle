@@ -1,0 +1,10 @@
+apply plugin: 'org.jetbrains.kotlin.jvm'
+apply plugin: 'com.vanniktech.maven.publish'
+
+dependencies {
+  implementation deps.bytebuddy.agent
+
+  api project(':paparazzi')
+  api project(':paparazzi-agent')
+  api deps.junit4
+}

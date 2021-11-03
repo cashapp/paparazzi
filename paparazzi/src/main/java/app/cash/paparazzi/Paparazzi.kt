@@ -385,7 +385,7 @@ class Paparazzi(
     }
   }
 
-  internal fun registerInterceptors() {
+  fun registerInterceptors() {
     registerFontLookupInterceptionIfResourceCompatDetected()
     registerViewEditModeInterception()
     registerMatrixMultiplyInterception()
