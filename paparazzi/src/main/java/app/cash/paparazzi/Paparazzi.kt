@@ -132,7 +132,7 @@ class Paparazzi(
         .copy(
             layoutPullParser = LayoutPullParser.createFromString(contentRoot),
             deviceConfig = deviceConfig,
-            renderingMode = SessionParams.RenderingMode.V_SCROLL
+            renderingMode = SessionParams.RenderingMode.NORMAL
         )
         .withTheme(theme)
 
