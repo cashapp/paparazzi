@@ -46,6 +46,7 @@ import com.android.ide.common.rendering.api.Result.Status.ERROR_UNKNOWN
 import com.android.ide.common.rendering.api.SessionParams
 import com.android.internal.lang.System_Delegate
 import com.android.layoutlib.bridge.Bridge
+import com.android.ide.common.rendering.api.SessionParams.RenderingMode
 import com.android.layoutlib.bridge.Bridge.cleanupThread
 import com.android.layoutlib.bridge.Bridge.prepareThread
 import com.android.layoutlib.bridge.BridgeRenderSession
@@ -64,6 +65,7 @@ class Paparazzi(
   private val environment: Environment = detectEnvironment(),
   private val deviceConfig: DeviceConfig = DeviceConfig.NEXUS_5,
   private val theme: String = "android:Theme.Material.NoActionBar.Fullscreen",
+  private val renderingMode: RenderingMode = RenderingMode.NORMAL,
   private val appCompatEnabled: Boolean = true,
   private val maxPercentDifference: Double = 0.1,
   private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference),
@@ -132,7 +134,7 @@ class Paparazzi(
         .copy(
             layoutPullParser = LayoutPullParser.createFromString(contentRoot),
             deviceConfig = deviceConfig,
-            renderingMode = SessionParams.RenderingMode.NORMAL
+            renderingMode = renderingMode
         )
         .withTheme(theme)
 
@@ -165,9 +167,10 @@ class Paparazzi(
     view: View,
     name: String? = null,
     deviceConfig: DeviceConfig? = null,
-    theme: String? = null
+    theme: String? = null,
+    renderingMode: RenderingMode? = null
   ) {
-    takeSnapshots(view, name, deviceConfig, theme, 0, -1, 1)
+    takeSnapshots(view, name, deviceConfig, theme, renderingMode, 0, -1, 1)
   }
 
   fun gif(
@@ -175,6 +178,7 @@ class Paparazzi(
     name: String? = null,
     deviceConfig: DeviceConfig? = null,
     theme: String? = null,
+    renderingMode: RenderingMode? = null,
     start: Long = 0L,
     end: Long = 500L,
     fps: Int = 30
@@ -185,7 +189,7 @@ class Paparazzi(
     val durationMillis = (end - start).toInt()
     val frameCount = (durationMillis * fps) / 1000 + 1
     val startNanos = TimeUnit.MILLISECONDS.toNanos(start)
-    takeSnapshots(view, name, deviceConfig, theme, startNanos, fps, frameCount)
+    takeSnapshots(view, name, deviceConfig, theme, renderingMode, startNanos, fps, frameCount)
   }
 
   private fun takeSnapshots(
@@ -193,13 +197,15 @@ class Paparazzi(
     name: String?,
     deviceConfig: DeviceConfig? = null,
     theme: String? = null,
+    renderingMode: RenderingMode? = null,
     startNanos: Long,
     fps: Int,
     frameCount: Int
   ) {
-    if (deviceConfig != null || theme != null) {
+    if (deviceConfig != null || theme != null || renderingMode != null) {
       renderSession.release()
       bridgeRenderSession.dispose()
+      cleanupThread()
 
       sessionParamsBuilder = sessionParamsBuilder
           .copy(
@@ -215,8 +221,13 @@ class Paparazzi(
         sessionParamsBuilder = sessionParamsBuilder.withTheme(theme)
       }
 
+      if (renderingMode != null) {
+        sessionParamsBuilder = sessionParamsBuilder.copy(renderingMode = renderingMode)
+      }
+
       val sessionParams = sessionParamsBuilder.build()
       renderSession = createRenderSession(sessionParams)
+      prepareThread()
       renderSession.init(sessionParams.timeout)
       Bitmap.setDefaultDensity(DisplayMetrics.DENSITY_DEVICE_STABLE)
       bridgeRenderSession = createBridgeSession(renderSession, renderSession.inflate())
