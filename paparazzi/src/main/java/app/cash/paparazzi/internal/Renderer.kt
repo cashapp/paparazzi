@@ -75,10 +75,14 @@ internal class Renderer(
     val icuLocation = File(platformDataDir, "icu")
     val buildProp = File(environment.platformDir, "build.prop")
     val attrs = File(platformDataResDir, "values" + File.separator + "attrs.xml")
+    val systemProperties = DeviceConfig.loadProperties(buildProp) + mapOf(
+      // We want Choreographer.USE_FRAME_TIME to be false so it uses System_Delegate.nanoTime()
+      "debug.choreographer.frametime" to "false"
+    )
     bridge = Bridge().apply {
       check(
         init(
-          DeviceConfig.loadProperties(buildProp),
+          systemProperties,
           fontLocation,
           nativeLibLocation.path,
           icuLocation.path,

@@ -42,7 +42,7 @@ publishing {
     mavenNativeLibrary(MavenPublication) {
       artifact(tasks.
           named("cloneLayoutlib").
-          map { new File(it.outputs.files.getSingleFile(), 'data/layoutlib_native-jdk11.jar') }
+          map { new File(it.outputs.files.getSingleFile(), 'data/layoutlib_native.jar') }
       )
       artifact emptySourcesJar
       artifact emptyJavadocJar
