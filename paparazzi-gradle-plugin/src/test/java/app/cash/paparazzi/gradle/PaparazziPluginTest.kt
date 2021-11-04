@@ -454,6 +454,27 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun verifyRenderingModes() {
+    val fixtureRoot = File("src/test/projects/verify-rendering-modes")
+
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles().apply { sortBy { it.lastModified() }}
+    assertThat(snapshots!!).hasLength(3)
+
+    val normal = File(fixtureRoot, "src/test/resources/normal.png")
+    val horizontalScroll = File(fixtureRoot, "src/test/resources/horizontal_scroll.png")
+    val verticalScroll = File(fixtureRoot, "src/test/resources/vertical_scroll.png")
+
+    assertThat(snapshots[0]).isSimilarTo(normal).withDefaultThreshold()
+    assertThat(snapshots[1]).isSimilarTo(horizontalScroll).withDefaultThreshold()
+    assertThat(snapshots[2]).isSimilarTo(verticalScroll).withDefaultThreshold()
+  }
+
+  @Test
   fun verifyResourcesGeneratedForJavaProject() {
     val fixtureRoot = File("src/test/projects/verify-resources-java")
 
