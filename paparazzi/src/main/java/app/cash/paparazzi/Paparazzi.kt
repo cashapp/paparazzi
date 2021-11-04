@@ -18,6 +18,8 @@ package app.cash.paparazzi
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Bitmap
+import android.os.Handler_Delegate
+import android.os.SystemClock_Delegate
 import android.util.AttributeSet
 import android.util.DisplayMetrics
 import android.view.BridgeInflater
@@ -42,12 +44,13 @@ import com.android.ide.common.rendering.api.RenderSession
 import com.android.ide.common.rendering.api.Result
 import com.android.ide.common.rendering.api.Result.Status.ERROR_UNKNOWN
 import com.android.ide.common.rendering.api.SessionParams
+import com.android.internal.lang.System_Delegate
+import com.android.layoutlib.bridge.Bridge
 import com.android.layoutlib.bridge.Bridge.cleanupThread
 import com.android.layoutlib.bridge.Bridge.prepareThread
 import com.android.layoutlib.bridge.BridgeRenderSession
 import com.android.layoutlib.bridge.impl.RenderAction
 import com.android.layoutlib.bridge.impl.RenderSessionImpl
-import com.android.tools.layoutlib.java.System_Delegate
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
@@ -260,9 +263,25 @@ class Paparazzi(
     // Execute the block at the requested time.
     System_Delegate.setBootTimeNanos(frameNanos)
     System_Delegate.setNanosTime(frameNanos)
-    Choreographer.getInstance().doFrame(frameNanos, 0)
+
     try {
+      val choreographer = Choreographer.getInstance()
+      val areCallbacksRunningField = choreographer::class.java.getDeclaredField("mCallbacksRunning")
+      areCallbacksRunningField.isAccessible = true
+      areCallbacksRunningField.setBoolean(choreographer, true)
+
+      // https://android.googlesource.com/platform/frameworks/layoutlib/+/d58aa4703369e109b24419548f38b422d5a44738/bridge/src/com/android/layoutlib/bridge/BridgeRenderSession.java#171
+      // BridgeRenderSession.executeCallbacks aggressively tears down the main Looper and BridgeContext, so we call the static delegates ourselves.
+      Handler_Delegate.executeCallbacks()
+      val currentTimeMs = SystemClock_Delegate.uptimeMillis()
+      val choreographerCallbacks =
+        RenderAction.getCurrentContext().sessionInteractiveData.choreographerCallbacks
+      choreographerCallbacks.execute(currentTimeMs, Bridge.getLog())
+
       block()
+    } catch (e: Throwable) {
+      Bridge.getLog().error("broken", "Failed executing Choreographer#doFrame", e, null, null)
+      throw e
     } finally {
       System_Delegate.setNanosTime(0L)
       System_Delegate.setBootTimeNanos(0L)
