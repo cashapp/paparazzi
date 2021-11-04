@@ -157,7 +157,7 @@ Paparazzi does not currently support namespaced resources. If you are seeing thi
 not present in the project's `gradle.properties`:
 `android.nonTransitiveRClass=true`
 
--------- 
+--------
 
 #### Running Tests from the IDE
 Ex:
@@ -167,6 +167,24 @@ java.lang.NullPointerException
   at app.cash.paparazzi.EnvironmentKt.detectEnvironment(Environment.kt:36)
 ```
 Running tests from the IDE requires Android Studio Arctic Fox or later. 
+
+--------
+
+#### Could not find ... resource matching value 0x... (resolved name: ...) in current configuration.
+Ex:
+```
+Could not find dimen resource matching value 0x10500C0 (resolved name: config_scrollbarSize) in current configuration.
+android.content.res.Resources$NotFoundException: Could not find dimen resource matching value 0x10500C0 (resolved name: config_scrollbarSize) in current configuration.
+
+Could not find integer resource matching value 0x10E00B4 (resolved name: config_screenshotChordKeyTimeout) in current configuration.
+android.content.res.Resources$NotFoundException: Could not find integer resource matching value 0x10E00B4 (resolved name: config_screenshotChordKeyTimeout) in current configuration.
+```
+`compileSdkVersion` has to be 29 or higher. This is a safe and independent change from `minSdkVersion` and `targetSdkVersion`, those can stay as is.
+```kotlin
+android {
+	compileSdkVersion(29)
+}
+```
 
 -------- 
 
