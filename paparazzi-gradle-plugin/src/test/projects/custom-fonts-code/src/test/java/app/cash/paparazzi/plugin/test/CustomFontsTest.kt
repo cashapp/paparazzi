@@ -31,7 +31,7 @@ import org.junit.Test
 
 class CustomFontsTest {
   @get:Rule
-  var paparazzi = Paparazzi()
+  val paparazzi = Paparazzi()
 
   @Test
   fun customFontInTextViewInCode() {

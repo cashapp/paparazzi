@@ -14,7 +14,7 @@ import org.junit.Test
 
 class AaptDrawableTest {
   @get:Rule
-  var paparazzi = Paparazzi()
+  val paparazzi = Paparazzi()
 
   @Test
   fun aaptEmbeddedDrawable() {

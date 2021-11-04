@@ -25,7 +25,7 @@ import org.junit.Test
 
 class VectorDrawableTest {
   @get:Rule
-  var paparazzi = Paparazzi()
+  val paparazzi = Paparazzi()
 
   @Test
   fun vectorDrawable() {
