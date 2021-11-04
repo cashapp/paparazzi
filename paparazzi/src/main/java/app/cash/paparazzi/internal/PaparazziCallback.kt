@@ -18,7 +18,6 @@ package app.cash.paparazzi.internal
 
 import app.cash.paparazzi.internal.parsers.LayoutPullParser
 import app.cash.paparazzi.internal.parsers.TagSnapshot
-import com.android.SdkConstants
 import com.android.ide.common.rendering.api.ActionBarCallback
 import com.android.ide.common.rendering.api.AdapterBinding
 import com.android.ide.common.rendering.api.ILayoutPullParser
@@ -60,7 +59,7 @@ internal class PaparazziCallback(
   fun initResources() {
     val rClass = Class.forName("$packageName.R")
     for (resourceClass in rClass.declaredClasses) {
-      val resourceType = ResourceType.getEnum(resourceClass.simpleName) ?: continue
+      val resourceType = ResourceType.fromClassName(resourceClass.simpleName) ?: continue
 
       for (field in resourceClass.declaredFields) {
         if (!Modifier.isStatic(field.modifiers)) continue
@@ -96,9 +95,6 @@ internal class PaparazziCallback(
     viewConstructor.isAccessible = true
     return viewConstructor.newInstance(*constructorArgs)
   }
-
-  override fun getNamespace(): String =
-    String.format(SdkConstants.NS_CUSTOM_RESOURCES_S, packageName)
 
   override fun resolveResourceId(id: Int): ResourceReference? = projectResources[id]
 
