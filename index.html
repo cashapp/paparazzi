@@ -331,6 +331,13 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#could-not-find-resource-matching-value-0x-resolved-name-in-current-configuration" class="md-nav__link">
+    Could not find ... resource matching value 0x... (resolved name: ...) in current configuration.
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -528,6 +535,13 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#could-not-find-resource-matching-value-0x-resolved-name-in-current-configuration" class="md-nav__link">
+    Could not find ... resource matching value 0x... (resolved name: ...) in current configuration.
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -688,6 +702,20 @@ not present in the project&rsquo;s <code>gradle.properties</code>:
   at app.cash.paparazzi.EnvironmentKt.detectEnvironment(Environment.kt:36)
 </code></pre></div>
 Running tests from the IDE requires Android Studio Arctic Fox or later. </p>
+<hr />
+<h4 id="could-not-find-resource-matching-value-0x-resolved-name-in-current-configuration">Could not find &hellip; resource matching value 0x&hellip; (resolved name: &hellip;) in current configuration.<a class="headerlink" href="#could-not-find-resource-matching-value-0x-resolved-name-in-current-configuration" title="Permanent link">&para;</a></h4>
+<p>Ex:
+<div class="highlight"><pre><span></span><code>Could not find dimen resource matching value 0x10500C0 (resolved name: config_scrollbarSize) in current configuration.
+android.content.res.Resources$NotFoundException: Could not find dimen resource matching value 0x10500C0 (resolved name: config_scrollbarSize) in current configuration.
+
+Could not find integer resource matching value 0x10E00B4 (resolved name: config_screenshotChordKeyTimeout) in current configuration.
+android.content.res.Resources$NotFoundException: Could not find integer resource matching value 0x10E00B4 (resolved name: config_screenshotChordKeyTimeout) in current configuration.
+</code></pre></div>
+<code>compileSdkVersion</code> has to be 29 or higher. 
+<div class="highlight"><pre><span></span><code><span class="n">android</span> <span class="p">{</span>
+  <span class="n">compileSdkVersion</span> <span class="m">29</span>
+<span class="p">}</span>
+</code></pre></div></p>
 <hr />
 <h2 id="license">License<a class="headerlink" href="#license" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>Copyright 2019 Square, Inc.
