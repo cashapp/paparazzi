@@ -179,7 +179,7 @@ android.content.res.Resources$NotFoundException: Could not find dimen resource m
 Could not find integer resource matching value 0x10E00B4 (resolved name: config_screenshotChordKeyTimeout) in current configuration.
 android.content.res.Resources$NotFoundException: Could not find integer resource matching value 0x10E00B4 (resolved name: config_screenshotChordKeyTimeout) in current configuration.
 ```
-`compileSdkVersion` has to be 29 or higher. This is a safe and independent change from `minSdkVersion` and `targetSdkVersion`, those can stay as is.
+`compileSdkVersion` has to be 29 or higher. 
 ```kotlin
 android {
 	compileSdkVersion(29)
