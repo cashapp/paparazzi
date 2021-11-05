@@ -157,7 +157,7 @@ Paparazzi does not currently support namespaced resources. If you are seeing thi
 not present in the project's `gradle.properties`:
 `android.nonTransitiveRClass=true`
 
---------
+-------
 
 #### Running Tests from the IDE
 Ex:
