@@ -34,17 +34,6 @@ fun androidHome() = System.getenv("ANDROID_SDK_ROOT")
     ?: System.getenv("ANDROID_HOME")
     ?: androidSdkPath()
 
-private fun androidSdkPath(): String {
-    val homeDir = System.getProperty("user.home")
-    val osName = System.getProperty("os.name").lowercase(Locale.US)
-    val sdkPathDir = if (osName.startsWith("windows")) {
-        "\\AppData\\Local\\Android\\Sdk"
-    } else {
-        "/Library/Android/sdk"
-    }
-    return homeDir + sdkPathDir
-}
-
 fun detectEnvironment(): Environment {
   checkInstalledJvm()
 
@@ -62,6 +51,17 @@ fun detectEnvironment(): Environment {
       compileSdkVersion = configLines[2].toInt(),
       platformDataDir = configLines[5]
   )
+}
+
+private fun androidSdkPath(): String {
+  val osName = System.getProperty("os.name").lowercase(Locale.US)
+  val sdkPathDir = if (osName.startsWith("windows")) {
+    "\\AppData\\Local\\Android\\Sdk"
+  } else {
+    "/Library/Android/sdk"
+  }
+  val homeDir = System.getProperty("user.home")
+  return homeDir + sdkPathDir
 }
 
 private fun checkInstalledJvm() {
