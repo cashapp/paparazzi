@@ -168,7 +168,7 @@ java.lang.NullPointerException
 ```
 Running tests from the IDE requires Android Studio Arctic Fox or later. 
 
---------
+-------
 
 #### Could not find ... resource matching value 0x... (resolved name: ...) in current configuration.
 Ex:
