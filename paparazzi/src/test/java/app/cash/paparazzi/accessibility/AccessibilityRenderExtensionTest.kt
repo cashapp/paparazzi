@@ -77,7 +77,7 @@ class AccessibilityRenderExtensionTest {
             relativePath = expected.path,
             image = image,
             goldenImage = ImageIO.read(expected),
-            maxPercentDifferent = 0.2,
+            maxPercentDifferent = 0.1, // Default percent used in Paparazzi constructor.
           )
         }
 
