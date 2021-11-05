@@ -182,7 +182,7 @@ android.content.res.Resources$NotFoundException: Could not find integer resource
 `compileSdkVersion` has to be 29 or higher. 
 ```kotlin
 android {
-	compileSdkVersion(29)
+  compileSdkVersion 29
 }
 ```
 
