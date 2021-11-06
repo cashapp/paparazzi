@@ -159,6 +159,16 @@ not present in the project's `gradle.properties`:
 
 -------
 
+#### Applying to an application module
+
+`Paparazzi.inflate` would return `null` because the application module merges resources into a binary format which is not supported yet.
+
+See [tracking issue](https://github.com/cashapp/paparazzi/issues/107) for more details.
+
+To work around this move the tested resources (or most of the app) into a library module and use Paparazzi on that.
+
+-------
+
 #### Running Tests from the IDE
 Ex:
 ```

@@ -50,6 +50,12 @@ class PaparazziPlugin : Plugin<Project> {
       setup(project, project.extensions.getByType(LibraryExtension::class.java).libraryVariants)
       setup = true
     }
+    project.plugins.withId("com.android.application") {
+      error(
+        "The Android Gradle Plugin must be for a library module. " +
+                "See https://github.com/cashapp/paparazzi/issues/107."
+      )
+    }
     project.afterEvaluate {
       require(setup) {
         "The Android Gradle library plugin must be applied together with Paparazzi plugin."

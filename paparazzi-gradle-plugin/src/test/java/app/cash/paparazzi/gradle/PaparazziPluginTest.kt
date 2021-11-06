@@ -36,6 +36,21 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun wrongPluginApplication() {
+    val fixtureRoot = File("src/test/projects/application-plugin")
+
+    val result = gradleRunner
+      .withArguments("preparePaparazziDebugResources", "--stacktrace")
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    assertThat(result.task(":preparePaparazziDebugResources")).isNull()
+    assertThat(result.output).contains(
+      "The Android Gradle Plugin must be for a library module. " +
+          "See https://github.com/cashapp/paparazzi/issues/107."
+    )
+  }
+
+  @Test
   fun missingPlatformDirTest() {
     val fixtureRoot = File("src/test/projects/missing-platform-dir")
 
