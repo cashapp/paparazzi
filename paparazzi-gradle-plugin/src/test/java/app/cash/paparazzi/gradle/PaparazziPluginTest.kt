@@ -50,6 +50,17 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun applyOutOfOrder() {
+    val fixtureRoot = File("src/test/projects/apply-out-of-order")
+
+    val result = gradleRunner
+      .withArguments("recordPaparazzi", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":recordPaparazzi")).isNotNull()
+  }
+
+  @Test
   fun flagDebugLinkedObjectsIsOff() {
     val fixtureRoot = File("src/test/projects/flag-debug-linked-objects-off")
 
