@@ -19,9 +19,12 @@ import app.cash.paparazzi.NATIVE_LIB_VERSION
 import app.cash.paparazzi.VERSION
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.LibraryExtension
+import com.android.build.gradle.api.BaseVariant
+import com.android.build.gradle.internal.api.TestedVariant
 import com.android.ide.common.symbols.getPackageNameFromManifest
 import org.gradle.api.Action
 import org.gradle.api.DefaultTask
+import org.gradle.api.DomainObjectSet
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -42,18 +45,26 @@ import java.util.Locale
 class PaparazziPlugin : Plugin<Project> {
   @OptIn(ExperimentalStdlibApi::class)
   override fun apply(project: Project) {
-    require(project.plugins.hasPlugin("com.android.library")) {
-      "The Android Gradle library plugin must be applied before the Paparazzi plugin."
+    var setup = false
+    project.plugins.withId("com.android.library") {
+      setup(project, project.extensions.getByType(LibraryExtension::class.java).libraryVariants)
+      setup = true
     }
+    project.afterEvaluate {
+      require(setup) {
+        "The Android Gradle library plugin must be applied together with Paparazzi plugin."
+      }
+    }
+  }
 
+  private fun <T> setup(project: Project, variants: DomainObjectSet<T>)
+      where T : BaseVariant, T : TestedVariant {
     val unzipConfiguration = project.setupPlatformDataTransform()
 
     // Create anchor tasks for all variants.
     val verifyVariants = project.tasks.register("verifyPaparazzi")
     val recordVariants = project.tasks.register("recordPaparazzi")
 
-    val variants = project.extensions.getByType(LibraryExtension::class.java)
-        .libraryVariants
     variants.all { variant ->
       val variantSlug = variant.name.capitalize(Locale.US)
 

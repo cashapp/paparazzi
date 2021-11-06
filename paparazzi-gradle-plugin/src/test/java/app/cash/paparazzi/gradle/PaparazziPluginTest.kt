@@ -31,7 +31,7 @@ class PaparazziPluginTest {
 
     assertThat(result.task(":preparePaparazziDebugResources")).isNull()
     assertThat(result.output).contains(
-        "The Android Gradle library plugin must be applied before the Paparazzi plugin."
+        "The Android Gradle library plugin must be applied together with Paparazzi plugin."
     )
   }
 
