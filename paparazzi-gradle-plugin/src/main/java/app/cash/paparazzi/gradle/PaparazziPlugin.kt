@@ -28,6 +28,7 @@ import org.gradle.api.DomainObjectSet
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.UnknownTaskException
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
 import org.gradle.api.internal.artifacts.ArtifactAttributes
@@ -45,10 +46,8 @@ import java.util.Locale
 class PaparazziPlugin : Plugin<Project> {
   @OptIn(ExperimentalStdlibApi::class)
   override fun apply(project: Project) {
-    var setup = false
     project.plugins.withId("com.android.library") {
       setup(project, project.extensions.getByType(LibraryExtension::class.java).libraryVariants)
-      setup = true
     }
     project.plugins.withId("com.android.application") {
       error(
@@ -57,8 +56,11 @@ class PaparazziPlugin : Plugin<Project> {
       )
     }
     project.afterEvaluate {
-      require(setup) {
-        "The Android Gradle library plugin must be applied together with Paparazzi plugin."
+      try {
+        // Use named instead of findByName to make sure the task doesn't get created unnecessarily.
+        it.tasks.named("verifyPaparazzi")
+      } catch(ex: UnknownTaskException) {
+        error("The Android Gradle library plugin must be applied together with Paparazzi plugin.")
       }
     }
   }
