@@ -170,7 +170,21 @@ Running tests from the IDE requires Android Studio Arctic Fox or later.
 
 -------
 
-#### Could not find ... resource matching value 0x... (resolved name: ...) in current configuration.
+#### Only runs on JDK 11+
+Ex:
+```
+Caused by: java.lang.IllegalStateException: Unsupported JRE detected! Please install and run Paparazzi test suites on JDK 11+.
+	at app.cash.paparazzi.EnvironmentKt.checkInstalledJvm(Environment.kt:66)
+	at app.cash.paparazzi.EnvironmentKt.detectEnvironment(Environment.kt:37)
+```
+Running tests with Paparazzi requires JDK 11 or later. 
+
+-------
+
+#### `compileSdkVersion` has to be 29 or higher
+
+> Could not find ... resource matching value 0x... (resolved name: ...) in current configuration.
+
 Ex:
 ```
 Could not find dimen resource matching value 0x10500C0 (resolved name: config_scrollbarSize) in current configuration.
@@ -179,7 +193,7 @@ android.content.res.Resources$NotFoundException: Could not find dimen resource m
 Could not find integer resource matching value 0x10E00B4 (resolved name: config_screenshotChordKeyTimeout) in current configuration.
 android.content.res.Resources$NotFoundException: Could not find integer resource matching value 0x10E00B4 (resolved name: config_screenshotChordKeyTimeout) in current configuration.
 ```
-`compileSdkVersion` has to be 29 or higher. 
+To fix these, change the `compileSdkVersion` to 29 or higher.
 ```kotlin
 android {
   compileSdkVersion 29
