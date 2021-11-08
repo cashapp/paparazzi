@@ -123,8 +123,7 @@ android {
 
 Git LFS
 --------
-It is recommended you use [Git LFS][lfs] to store your snapshots. Here's a template to get started.
-_Beware that on GitHub there are [limitations on size and bandwidth][lfs-limit] and using LFS may incur [additional cost][lfs-cost]._
+It is recommended you use a [Git LFS][lfs] server [implementation][lfs-impl] to store your snapshots. Here's a template to get started.
 
 #### **`.gitattributes`**
 ```bash
@@ -213,5 +212,5 @@ limitations under the License.
  [sample]: https://github.com/cashapp/paparazzi/tree/master/sample
  [snap]: https://oss.sonatype.org/content/repositories/snapshots/app/cash/paparazzi/
  [lfs]: https://git-lfs.github.com/
- [lfs-limit]: https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-storage-and-bandwidth-usage
- [lfs-cost]: https://docs.github.com/en/billing/managing-billing-for-git-large-file-storage/about-billing-for-git-large-file-storage
+ [lfs-impl]: https://github.com/git-lfs/git-lfs/wiki/Implementations
+ 
