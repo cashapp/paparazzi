@@ -13,6 +13,7 @@ gradlePlugin {
 
 dependencies {
   compileOnly gradleApi()
+  implementation platform(deps.kotlin.bom)
   implementation deps.plugins.kotlin
   implementation deps.plugins.android
 

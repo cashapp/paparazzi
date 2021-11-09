@@ -23,6 +23,9 @@ buildscript {
       android: "com.android.tools.build:gradle:${versions.agp}",
       kotlin: "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}",
     ],
+    kotlin: [
+      bom: "org.jetbrains.kotlin:kotlin-bom:${versions.kotlin}",
+    ],
     kotlinx: [
       coroutines: [
         core: 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2',
