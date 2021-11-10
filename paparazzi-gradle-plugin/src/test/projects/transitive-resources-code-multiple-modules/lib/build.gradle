@@ -1,0 +1,16 @@
+plugins {
+  id 'com.android.library'
+  id 'kotlin-android'
+}
+
+repositories {
+  mavenCentral()
+  google()
+}
+
+android {
+  compileSdkVersion 30
+  defaultConfig {
+    minSdkVersion 25
+  }
+}
