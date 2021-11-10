@@ -217,9 +217,7 @@ class PaparazziPlugin : Plugin<Project> {
 
 private const val DEFAULT_COMPILE_SDK_VERSION = 30
 
-private val artifactTypeAttribute: Attribute<String> = Attribute.of("artifactType", String::class.java)
-
-internal fun ResolvableDependencies.artifactViewFor(attrValue: String): ArtifactView = artifactView {
+private fun ResolvableDependencies.artifactViewFor(attrValue: String): ArtifactView = artifactView {
   it.isLenient = true
-  attributes.attribute(artifactTypeAttribute, attrValue)
+  attributes.attribute(Attribute.of("artifactType", String::class.java), attrValue)
 }
