@@ -25,8 +25,11 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.artifacts.ArtifactView
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.ResolvableDependencies
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
+import org.gradle.api.attributes.Attribute
 import org.gradle.api.internal.artifacts.ArtifactAttributes
 import org.gradle.api.internal.artifacts.transform.UnzipTransform
 import org.gradle.api.logging.LogLevel.LIFECYCLE
@@ -62,12 +65,21 @@ class PaparazziPlugin : Plugin<Project> {
       val reportOutputDir = project.layout.buildDirectory.dir("reports/paparazzi")
       val snapshotOutputDir = project.layout.projectDirectory.dir("src/test/snapshots")
 
+      val packageAwareRs = project.configurations.getByName("${variant.name}RuntimeClasspath")
+        .incoming
+        .artifactViewFor("android-symbol-with-package-name")
+        .artifacts
+
       val writeResourcesTask = project.tasks.register(
           "preparePaparazzi${variantSlug}Resources", PrepareResourcesTask::class.java
       ) { task ->
         val android = project.extensions.getByType(BaseExtension::class.java)
+        val nonTransitiveRClassEnabled =
+          (project.findProperty("android.nonTransitiveRClass") as String?)?.toBoolean() ?: false
 
         task.packageName.set(android.packageName())
+        task.setPackageAwareRArtifacts(packageAwareRs)
+        task.nonTransitiveRClassEnabled.set(nonTransitiveRClassEnabled)
         task.mergeResourcesOutput.set(mergeResourcesOutputDir)
         task.targetSdkVersion.set(android.targetSdkVersion())
         task.compileSdkVersion.set(android.compileSdkVersion())
@@ -204,3 +216,10 @@ class PaparazziPlugin : Plugin<Project> {
 }
 
 private const val DEFAULT_COMPILE_SDK_VERSION = 30
+
+private val artifactTypeAttribute: Attribute<String> = Attribute.of("artifactType", String::class.java)
+
+internal fun ResolvableDependencies.artifactViewFor(attrValue: String): ArtifactView = artifactView {
+  it.isLenient = true
+  attributes.attribute(artifactTypeAttribute, attrValue)
+}

@@ -27,6 +27,7 @@ data class Environment(
   val packageName: String,
   val compileSdkVersion: Int,
   val platformDataDir: String,
+  val resourcePackageNames: List<String>,
 )
 
 @Suppress("unused")
@@ -43,13 +44,14 @@ fun detectEnvironment(): Environment {
   val appTestDir = Paths.get(System.getProperty("user.dir"))
   val androidHome = Paths.get(androidHome())
   return Environment(
-      platformDir = androidHome.resolve(configLines[3]).toString(),
-      appTestDir = appTestDir.toString(),
-      resDir = appTestDir.resolve(configLines[1]).toString(),
-      assetsDir = appTestDir.resolve(configLines[4]).toString(),
-      packageName = configLines[0],
-      compileSdkVersion = configLines[2].toInt(),
-      platformDataDir = configLines[5]
+    platformDir = androidHome.resolve(configLines[3]).toString(),
+    appTestDir = appTestDir.toString(),
+    resDir = appTestDir.resolve(configLines[1]).toString(),
+    assetsDir = appTestDir.resolve(configLines[4]).toString(),
+    packageName = configLines[0],
+    compileSdkVersion = configLines[2].toInt(),
+    platformDataDir = configLines[5],
+    resourcePackageNames = configLines[6].split(",")
   )
 }
 
