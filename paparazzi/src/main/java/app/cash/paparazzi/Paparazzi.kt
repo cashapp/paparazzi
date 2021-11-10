@@ -62,7 +62,7 @@ import java.lang.reflect.Modifier
 import java.util.Date
 import java.util.concurrent.TimeUnit
 
-class Paparazzi(
+class Paparazzi @JvmOverloads constructor(
   private val environment: Environment = detectEnvironment(),
   private val deviceConfig: DeviceConfig = DeviceConfig.NEXUS_5,
   private val theme: String = "android:Theme.Material.NoActionBar.Fullscreen",
@@ -164,6 +164,7 @@ class Paparazzi(
 
   fun <V : View> inflate(@LayoutRes layoutId: Int): V = layoutInflater.inflate(layoutId, null) as V
 
+  @JvmOverloads
   fun snapshot(
     view: View,
     name: String? = null,
@@ -174,6 +175,7 @@ class Paparazzi(
     takeSnapshots(view, name, deviceConfig, theme, renderingMode, 0, -1, 1)
   }
 
+  @JvmOverloads
   fun gif(
     view: View,
     name: String? = null,
