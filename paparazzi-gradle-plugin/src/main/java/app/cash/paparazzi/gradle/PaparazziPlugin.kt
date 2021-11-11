@@ -67,7 +67,12 @@ class PaparazziPlugin : Plugin<Project> {
 
       val packageAwareRs = project.configurations.getByName("${variant.name}RuntimeClasspath")
         .incoming
-        .artifactViewFor("android-symbol-with-package-name")
+        .artifactView {
+          it.isLenient = true
+          it.attributes.attribute(
+            Attribute.of("artifactType", String::class.java), "android-symbol-with-package-name"
+          )
+        }
         .artifacts
 
       val writeResourcesTask = project.tasks.register(
@@ -78,7 +83,7 @@ class PaparazziPlugin : Plugin<Project> {
           (project.findProperty("android.nonTransitiveRClass") as String?)?.toBoolean() ?: false
 
         task.packageName.set(android.packageName())
-        task.setPackageAwareRArtifacts(packageAwareRs)
+        task.artifactFiles.from(packageAwareRs.artifactFiles)
         task.nonTransitiveRClassEnabled.set(nonTransitiveRClassEnabled)
         task.mergeResourcesOutput.set(mergeResourcesOutputDir)
         task.targetSdkVersion.set(android.targetSdkVersion())
@@ -216,8 +221,3 @@ class PaparazziPlugin : Plugin<Project> {
 }
 
 private const val DEFAULT_COMPILE_SDK_VERSION = 30
-
-private fun ResolvableDependencies.artifactViewFor(attrValue: String): ArtifactView = artifactView {
-  it.isLenient = true
-  attributes.attribute(Attribute.of("artifactType", String::class.java), attrValue)
-}

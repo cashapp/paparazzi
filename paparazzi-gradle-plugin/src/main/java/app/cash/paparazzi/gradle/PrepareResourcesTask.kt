@@ -16,10 +16,9 @@
 package app.cash.paparazzi.gradle
 
 import org.gradle.api.DefaultTask
-import org.gradle.api.artifacts.ArtifactCollection
+import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.file.FileCollection
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
@@ -58,23 +57,12 @@ open class PrepareResourcesTask : DefaultTask() {
   internal val nonTransitiveRClassEnabled: Property<Boolean> =
     project.objects.property(Boolean::class.java)
 
-  /**
-   * This is the "official" input for wiring task dependencies correctly, but is otherwise
-   * unused.
-   */
-  @PathSensitive(PathSensitivity.NAME_ONLY)
-  @InputFiles
-  internal fun getPackageAwareRArtifactFiles(): FileCollection =
-    resolvedArtifactResults.artifactFiles
+  @get:PathSensitive(PathSensitivity.NAME_ONLY)
+  @get:InputFiles
+  internal val artifactFiles: ConfigurableFileCollection = project.objects.fileCollection()
 
   @get:OutputFile
   internal val paparazziResources: RegularFileProperty = project.objects.fileProperty()
-
-  internal fun setPackageAwareRArtifacts(resources: ArtifactCollection) {
-    this.resolvedArtifactResults = resources
-  }
-
-  private lateinit var resolvedArtifactResults: ArtifactCollection
 
   private val projectDirectory = project.layout.projectDirectory
 
@@ -85,9 +73,7 @@ open class PrepareResourcesTask : DefaultTask() {
 
     val mainPackage = packageName.get()
     val resourcePackageNames = if (nonTransitiveRClassEnabled.get()) {
-      resolvedArtifactResults.mapNotNull { resolvedArtifactResult ->
-        resolvedArtifactResult.file.useLines { lines -> lines.first() }
-      }
+      artifactFiles.mapNotNull { it.useLines { lines -> lines.first() } }
         .toMutableList()
         .apply { add(0, mainPackage) }
         .joinToString(",")
