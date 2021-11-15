@@ -15,97 +15,160 @@
  */
 package app.cash.paparazzi.accessibility
 
-import android.graphics.fonts.SystemFonts
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.LayerDrawable
+import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
+import android.widget.TextView
 import app.cash.paparazzi.RenderExtension
-import app.cash.paparazzi.Snapshot
-import app.cash.paparazzi.accessibility.RenderSettings.DEFAULT_DESCRIPTION_COLOR
+import app.cash.paparazzi.accessibility.RenderSettings.DEFAULT_DESCRIPTION_BACKGROUND_COLOR
 import app.cash.paparazzi.accessibility.RenderSettings.DEFAULT_RECT_SIZE
+import app.cash.paparazzi.accessibility.RenderSettings.DEFAULT_RENDER_ALPHA
 import app.cash.paparazzi.accessibility.RenderSettings.DEFAULT_TEXT_COLOR
 import app.cash.paparazzi.accessibility.RenderSettings.DEFAULT_TEXT_SIZE
 import app.cash.paparazzi.accessibility.RenderSettings.getColor
-import java.awt.Font
-import java.awt.image.BufferedImage
+import app.cash.paparazzi.accessibility.RenderSettings.toColorInt
+import app.cash.paparazzi.accessibility.RenderSettings.withAlpha
 
 class AccessibilityRenderExtension : RenderExtension {
-  private val accessibilityTree = LinkedHashSet<View>()
 
-  // We have seen issues with the built in font rendering incorrectly on different OS (Linux, Mac OS, etc.).
-  // We will use a roboto font provided by layoutLib to render accessibility metadata.
-  private val robotoFont: Font by lazy {
-    val inputStream = SystemFonts.getAvailableFonts().first { it.file.name.contains("Roboto-Medium.ttf") }.file.inputStream()
-    inputStream.use {
-      Font.createFont(Font.TRUETYPE_FONT, it)
-    }
-  }
+  override fun renderView(
+    contentView: View,
+  ): View {
+    val accessibilityViews = contentView.findAccessibilityViews()
+    accessibilityViews.forEach { view ->
+      val color = getColor(view)
+      val colorInt = color.toColorInt()
 
-  override fun render(
-    snapshot: Snapshot,
-    view: View,
-    image: BufferedImage,
-  ): BufferedImage {
-    val location = IntArray(2)
-    accessibilityTree.clear()
-    renderAccessibility(view, image, location)
-    return renderViewInfo(image)
-  }
+      val colorDrawable = GradientDrawable(
+        GradientDrawable.Orientation.TOP_BOTTOM,
+        intArrayOf(colorInt, colorInt)
+      ).apply {
+        setStroke(2, color.withAlpha(DEFAULT_RENDER_ALPHA * 2).toColorInt())
+      }
 
-  private fun renderViewInfo(image: BufferedImage): BufferedImage {
-    if (accessibilityTree.isEmpty()) {
-      return image
+      view.foreground = view.foreground?.let { drawable ->
+        // If there is an existing foreground layer the color on top of it.
+        LayerDrawable(arrayOf(drawable, colorDrawable))
+      } ?: colorDrawable
     }
 
-    val canvasImage = BufferedImage(image.width * 2, image.height, image.type)
-
-    val graphics = canvasImage.createGraphics()
-    graphics.font = robotoFont.deriveFont(DEFAULT_TEXT_SIZE)
-    graphics.drawImage(image, 0, 0, null)
-    graphics.color = DEFAULT_DESCRIPTION_COLOR
-    graphics.fillRect(image.width, 0, image.width, image.height)
-
-    val colorRectSize = DEFAULT_RECT_SIZE
-    val drawStartX = image.width + image.margin()
-    accessibilityTree.forEachIndexed { index, view ->
-      val drawStartY = (index * colorRectSize * 1.5f).toInt() + image.margin()
-
-      graphics.color = getColor(view)
-      graphics.fillRoundRect(
-        drawStartX, drawStartY, colorRectSize, colorRectSize,
-        colorRectSize / 4, colorRectSize / 4
+    return LinearLayout(contentView.context).apply {
+      orientation = LinearLayout.HORIZONTAL
+      weightSum = 2f
+      layoutParams = ViewGroup.LayoutParams(
+        ViewGroup.LayoutParams.MATCH_PARENT,
+        ViewGroup.LayoutParams.MATCH_PARENT
       )
-      graphics.color = DEFAULT_TEXT_COLOR
-      val accessibilityText = view.iterableTextForAccessibility.toString()
 
-      graphics.drawString(
-        accessibilityText,
-        drawStartX + colorRectSize + image.margin(),
-        drawStartY + colorRectSize / 3 + graphics.fontMetrics.height / 2
+      addView(
+        contentView,
+        LinearLayout.LayoutParams(
+          contentView.layoutParams.width,
+          contentView.layoutParams.height,
+          1f
+        )
+      )
+      addView(
+        buildAccessibilityView(contentView),
+        LinearLayout.LayoutParams(
+          ViewGroup.LayoutParams.MATCH_PARENT,
+          ViewGroup.LayoutParams.MATCH_PARENT,
+          1f
+        )
       )
     }
-    return canvasImage
   }
 
-  private fun renderAccessibility(
-    view: View,
-    rootImage: BufferedImage,
-    location: IntArray
-  ) {
-    val graphics = rootImage.createGraphics()
-    view.getLocationInWindow(location)
-
-    if (view.isImportantForAccessibility && !view.iterableTextForAccessibility.isNullOrBlank()) {
-      accessibilityTree.add(view)
-      graphics.color = getColor(view)
-      graphics.fillRect(location[0], location[1], view.width, view.height)
+  private fun View.findAccessibilityViews(): List<View> {
+    val accessibilityViews = mutableListOf<View>()
+    if (isImportantForAccessibility && !iterableTextForAccessibility.isNullOrBlank()) {
+      accessibilityViews.add(this)
     }
 
-    if (view is ViewGroup) {
-      (0 until view.childCount).forEach {
-        renderAccessibility(view.getChildAt(it), rootImage, location)
+    if (this is ViewGroup) {
+      (0 until childCount).forEach {
+        accessibilityViews += getChildAt(it).findAccessibilityViews()
       }
     }
+
+    return accessibilityViews
   }
 
-  private fun BufferedImage.margin(): Int = height / 80
+  private fun buildAccessibilityView(contentView: View): View {
+    val linearLayout = LinearLayout(contentView.context).apply {
+      orientation = LinearLayout.VERTICAL
+      setBackgroundColor(DEFAULT_DESCRIPTION_BACKGROUND_COLOR.toColorInt())
+    }
+
+    fun buildAccessibilityRow(view: View, iterableTextForAccessibility: CharSequence): View {
+      val context = view.context
+      val color = getColor(view).toColorInt()
+      val margin = view.dip(8)
+      val innerMargin = view.dip(4)
+
+      fun buildLayoutParams(
+        width: Int = ViewGroup.LayoutParams.MATCH_PARENT,
+        height: Int = ViewGroup.LayoutParams.WRAP_CONTENT,
+      ): ViewGroup.LayoutParams {
+        return ViewGroup.LayoutParams(
+          width,
+          height
+        )
+      }
+
+      return LinearLayout(context).apply {
+        orientation = LinearLayout.HORIZONTAL
+        layoutParams = buildLayoutParams()
+        setPaddingRelative(margin, innerMargin, margin, innerMargin)
+
+        addView(View(context).apply {
+          layoutParams = buildLayoutParams(dip(DEFAULT_RECT_SIZE), dip(DEFAULT_RECT_SIZE))
+          background = GradientDrawable(
+            GradientDrawable.Orientation.TOP_BOTTOM,
+            intArrayOf(color, color)
+          ).apply {
+            cornerRadius = dip(DEFAULT_RECT_SIZE / 4f)
+          }
+          setPaddingRelative(innerMargin, innerMargin, innerMargin, innerMargin)
+        })
+        addView(TextView(context).apply {
+          layoutParams = buildLayoutParams()
+          text = iterableTextForAccessibility
+          textSize = DEFAULT_TEXT_SIZE
+          setTextColor(DEFAULT_TEXT_COLOR.toColorInt())
+          setPaddingRelative(innerMargin, 0, innerMargin, 0)
+        })
+      }
+    }
+
+    fun renderAccessibility(view: View) {
+      if (view.isImportantForAccessibility && !view.iterableTextForAccessibility.isNullOrBlank()) {
+        linearLayout.addView(buildAccessibilityRow(view, view.iterableTextForAccessibility))
+      }
+
+      if (view is ViewGroup) {
+        (0 until view.childCount).forEach {
+          renderAccessibility(view.getChildAt(it))
+        }
+      }
+    }
+
+    renderAccessibility(contentView)
+    return linearLayout
+  }
 }
+
+private fun View.dip(value: Float): Float =
+  TypedValue.applyDimension(
+    TypedValue.COMPLEX_UNIT_DIP,
+    value,
+    resources.displayMetrics
+  )
+
+private fun View.dip(value: Int): Int =
+  dip(value.toFloat()).toInt()

@@ -31,9 +31,9 @@ internal object RenderSettings {
     Color.PINK
   )
   val DEFAULT_TEXT_COLOR: Color = Color.BLACK
-  val DEFAULT_DESCRIPTION_COLOR: Color = Color.WHITE
-  val DEFAULT_TEXT_SIZE: Float = 30f
-  val DEFAULT_RECT_SIZE: Int = 50
+  val DEFAULT_DESCRIPTION_BACKGROUND_COLOR: Color = Color.WHITE
+  val DEFAULT_TEXT_SIZE: Float = 10f
+  val DEFAULT_RECT_SIZE: Int = 16
 
   private val colorMap = mutableMapOf<View, Color>()
   private var colorIndex = -1
@@ -46,6 +46,9 @@ internal object RenderSettings {
     }
   }
 
+  fun Color.toColorInt(): Int =
+    android.graphics.Color.argb(alpha, red, green, blue)
+
   private fun nextColor(): Color {
     if (colorIndex + 1 > DEFAULT_RENDER_COLORS.size - 1) {
       colorIndex = 0
@@ -55,7 +58,7 @@ internal object RenderSettings {
     return DEFAULT_RENDER_COLORS[colorIndex]
   }
 
-  private fun Color.withAlpha(alpha: Int): Color {
+  fun Color.withAlpha(alpha: Int): Color {
     return Color(red, green, blue, alpha)
   }
 }

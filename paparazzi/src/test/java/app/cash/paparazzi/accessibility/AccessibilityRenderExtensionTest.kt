@@ -1,12 +1,15 @@
 package app.cash.paparazzi.accessibility
 
 import android.content.Context
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
+import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Paparazzi
 import app.cash.paparazzi.Snapshot
 import app.cash.paparazzi.SnapshotHandler
@@ -20,6 +23,11 @@ import javax.imageio.ImageIO
 class AccessibilityRenderExtensionTest {
   @get:Rule
   val paparazzi = Paparazzi(
+    deviceConfig = DeviceConfig.NEXUS_5.copy(
+      // Needed to render accessibility content next to main content.
+      screenWidth = DeviceConfig.NEXUS_5.screenWidth * 2,
+      softButtons = false
+    ),
     snapshotHandler = TestSnapshotVerifier(),
     renderExtensions = setOf(AccessibilityRenderExtension())
   )
@@ -53,6 +61,16 @@ class AccessibilityRenderExtensionTest {
         contentDescription = "Margin Sample"
       })
 
+      addView(View(context).apply {
+        layoutParams = LinearLayout.LayoutParams(100, 100).apply {
+          setMarginsRelative(20, 20, 20, 20)
+        }
+        foreground = GradientDrawable(GradientDrawable.Orientation.TL_BR, intArrayOf(Color.YELLOW, Color.BLUE)).apply {
+          this.shape = GradientDrawable.OVAL
+        }
+        contentDescription = "Foreground Drawable"
+      })
+
       addView(Button(context).apply {
         layoutParams = LinearLayout.LayoutParams(
           ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -77,7 +95,7 @@ class AccessibilityRenderExtensionTest {
             relativePath = expected.path,
             image = image,
             goldenImage = ImageIO.read(expected),
-            maxPercentDifferent = 0.2,
+            maxPercentDifferent = 0.0,
           )
         }
 
