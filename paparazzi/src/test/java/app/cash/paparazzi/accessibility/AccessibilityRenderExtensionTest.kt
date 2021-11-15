@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
+import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Paparazzi
 import app.cash.paparazzi.Snapshot
 import app.cash.paparazzi.SnapshotHandler
@@ -20,6 +21,11 @@ import javax.imageio.ImageIO
 class AccessibilityRenderExtensionTest {
   @get:Rule
   val paparazzi = Paparazzi(
+    deviceConfig = DeviceConfig.NEXUS_5.copy(
+      // Needed to render accessibility content next to main content.
+      screenWidth = DeviceConfig.NEXUS_5.screenWidth * 2,
+      softButtons = false
+    ),
     snapshotHandler = TestSnapshotVerifier(),
     renderExtensions = setOf(AccessibilityRenderExtension())
   )
@@ -77,7 +83,7 @@ class AccessibilityRenderExtensionTest {
             relativePath = expected.path,
             image = image,
             goldenImage = ImageIO.read(expected),
-            maxPercentDifferent = 0.2,
+            maxPercentDifferent = 0.0,
           )
         }
 

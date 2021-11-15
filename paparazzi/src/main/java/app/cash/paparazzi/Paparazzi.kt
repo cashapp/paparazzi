@@ -238,12 +238,16 @@ class Paparazzi(
     val frameHandler = snapshotHandler.newFrameHandler(snapshot, frameCount, fps)
     frameHandler.use {
       val viewGroup = bridgeRenderSession.rootViews[0].viewObject as ViewGroup
+      val modifiedView = renderExtensions.fold(view) { view, renderExtension ->
+        renderExtension.renderView(view)
+      }
+
       try {
         withTime(0L) {
           // Initialize the choreographer at time=0.
         }
 
-        viewGroup.addView(view)
+        viewGroup.addView(modifiedView)
         for (frame in 0 until frameCount) {
           val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
           withTime(nowNanos) {
@@ -252,15 +256,12 @@ class Paparazzi(
               throw result.exception
             }
 
-            var image = bridgeRenderSession.image
-            renderExtensions.forEach {
-              image = it.render(snapshot, view, image)
-            }
+            val image = bridgeRenderSession.image
             frameHandler.handle(scaleImage(image))
           }
         }
       } finally {
-        viewGroup.removeView(view)
+        viewGroup.removeView(modifiedView)
       }
     }
   }
