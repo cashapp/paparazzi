@@ -275,10 +275,11 @@ class Paparazzi(
     System_Delegate.setBootTimeNanos(frameNanos)
     System_Delegate.setNanosTime(frameNanos)
 
+    val choreographer = Choreographer.getInstance()
+    val areCallbacksRunningField = choreographer::class.java.getDeclaredField("mCallbacksRunning")
+    areCallbacksRunningField.isAccessible = true
+
     try {
-      val choreographer = Choreographer.getInstance()
-      val areCallbacksRunningField = choreographer::class.java.getDeclaredField("mCallbacksRunning")
-      areCallbacksRunningField.isAccessible = true
       areCallbacksRunningField.setBoolean(choreographer, true)
 
       // https://android.googlesource.com/platform/frameworks/layoutlib/+/d58aa4703369e109b24419548f38b422d5a44738/bridge/src/com/android/layoutlib/bridge/BridgeRenderSession.java#171
@@ -294,8 +295,7 @@ class Paparazzi(
       Bridge.getLog().error("broken", "Failed executing Choreographer#doFrame", e, null, null)
       throw e
     } finally {
-      System_Delegate.setNanosTime(0L)
-      System_Delegate.setBootTimeNanos(0L)
+      areCallbacksRunningField.setBoolean(choreographer, false)
     }
   }
 
