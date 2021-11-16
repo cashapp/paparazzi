@@ -15,6 +15,7 @@
  */
 package app.cash.paparazzi
 
+import android.animation.AnimationHandler
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
@@ -24,6 +25,7 @@ import android.view.Choreographer
 import android.view.Choreographer.CALLBACK_ANIMATION
 import android.view.View
 import android.view.animation.LinearInterpolator
+import android.widget.Button
 import com.android.internal.lang.System_Delegate
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Ignore
@@ -48,6 +50,17 @@ class PaparazziTest {
     paparazzi.snapshot(view)
 
     assertThat(log).containsExactly("onDraw time=0")
+  }
+
+  @Test
+  fun resetsAnimationHandler() {
+    assertThat(AnimationHandler.sAnimatorHandler.get()).isNull()
+
+    // Why Button?  Because it sets a StateListAnimator on window attach
+    // See https://github.com/cashapp/paparazzi/pull/319
+    paparazzi.snapshot(Button(paparazzi.context))
+
+    assertThat(AnimationHandler.sAnimatorHandler.get()).isNull()
   }
 
   @Test

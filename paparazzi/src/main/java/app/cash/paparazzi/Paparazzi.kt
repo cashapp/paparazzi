@@ -15,6 +15,7 @@
  */
 package app.cash.paparazzi
 
+import android.animation.AnimationHandler
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Bitmap
@@ -261,6 +262,7 @@ class Paparazzi(
         }
       } finally {
         viewGroup.removeView(view)
+        AnimationHandler.sAnimatorHandler.set(null)
       }
     }
   }
