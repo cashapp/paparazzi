@@ -388,7 +388,7 @@ class Paparazzi(
 
       appCompatDelegateClass = Class.forName("androidx.appcompat.app.AppCompatDelegate")
     } catch (e: ClassNotFoundException) {
-      logger.info("AppCompat not found on classpath, exiting...")
+      logger.verbose("AppCompat not found on classpath")
       return
     }
 
@@ -464,7 +464,7 @@ class Paparazzi(
           resourcesCompatClass, "getFont", ResourcesInterceptor::class.java
       )
     } catch (e: ClassNotFoundException) {
-      logger.info("ResourceCompat not found on classpath...")
+      logger.verbose("ResourceCompat not found on classpath")
     }
   }
 
