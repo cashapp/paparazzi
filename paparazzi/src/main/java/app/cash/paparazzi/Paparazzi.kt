@@ -238,6 +238,7 @@ class Paparazzi(
     val frameHandler = snapshotHandler.newFrameHandler(snapshot, frameCount, fps)
     frameHandler.use {
       val viewGroup = bridgeRenderSession.rootViews[0].viewObject as ViewGroup
+      System_Delegate.setBootTimeNanos(0L)
       try {
         withTime(0L) {
           // Initialize the choreographer at time=0.
@@ -272,7 +273,6 @@ class Paparazzi(
     val frameNanos = TIME_OFFSET_NANOS + timeNanos
 
     // Execute the block at the requested time.
-    System_Delegate.setBootTimeNanos(frameNanos)
     System_Delegate.setNanosTime(frameNanos)
 
     try {
