@@ -102,7 +102,7 @@ internal class HtmlReportWriter(
             val goldenFile = File(goldenImagesDirectory, snapshot.toFileName("_", "png"))
             original.copyTo(goldenFile, overwrite = true)
           }
-          snapshot.copy(file = rootDirectory.toPath().relativize(original.toPath()).toString())
+          snapshot.copy(file = original.toJsonPath())
         } else {
           val hash = writeVideo(hashes, fps)
 
@@ -123,7 +123,7 @@ internal class HtmlReportWriter(
               original.copyTo(goldenFile)
             }
           }
-          snapshot.copy(file = rootDirectory.toPath().relativize(original.toPath()).toString())
+          snapshot.copy(file = original.toJsonPath())
         }
 
         shots += shot
@@ -258,6 +258,7 @@ internal class HtmlReportWriter(
   private fun File.writeAtomically(bufferedImage: BufferedImage) {
     val tmpFile = File(parentFile, "$name.tmp")
     ImageIO.write(bufferedImage, "PNG", tmpFile)
+    delete()
     tmpFile.renameTo(this)
   }
 
@@ -268,8 +269,11 @@ internal class HtmlReportWriter(
         .use { sink ->
           sink.writerAction()
         }
+    delete()
     tmpFile.renameTo(this)
   }
+
+  private fun File.toJsonPath(): String = relativeTo(rootDirectory).invariantSeparatorsPath
 }
 
 internal fun defaultRunName(): String {

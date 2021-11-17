@@ -7,20 +7,20 @@ env:
 
 jobs:
   build:
-    # Copied from SqlDelight: https://github.com/cashapp/sqldelight/blame/master/.github/workflows/PR.yml#L13-L18
-    # TL;DR looks like libraries installed on ubuntu-latest conflicts, resulting in failed builds
-    # Also, see: https://github.com/touchlab/SQLiter/pull/38#issuecomment-867171789
-    runs-on: ubuntu-18.04
-
     strategy:
       fail-fast: false
       matrix:
-        java-version:
-          - 11
-          - 12
-          - 13
-          - 14
-          - 15
+        os: [
+          macOS-latest,
+          windows-latest,
+          # Copied from SqlDelight: https://github.com/cashapp/sqldelight/blame/master/.github/workflows/PR.yml#L13-L18
+          # TL;DR looks like libraries installed on ubuntu-latest conflicts, resulting in failed builds
+          # Also, see: https://github.com/touchlab/SQLiter/pull/38#issuecomment-867171789
+          ubuntu-18.04
+        ]
+        java-version: [11, 12, 13, 14, 15]
+
+    runs-on: ${{matrix.os}}
 
     steps:
       - name: Checkout

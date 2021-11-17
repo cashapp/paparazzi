@@ -46,7 +46,7 @@ class PaparazziPluginTest {
 
     assertThat(result.task(":testDebug")).isNull()
     assertThat(result.output).contains("java.io.FileNotFoundException")
-    assertThat(result.output).contains("platforms/android-oops")
+    assertThat(result.output).contains("platforms" + File.separator + "android-oops")
   }
 
   @Test
@@ -574,10 +574,7 @@ class PaparazziPluginTest {
 
     val snapshotImage = snapshots[0]
     val goldenImage = File(fixtureRoot, "src/test/resources/launch.png")
-    val actualFileBytes = Files.readAllBytes(snapshotImage.toPath())
-    val expectedFileBytes = Files.readAllBytes(goldenImage.toPath())
-
-    assertThat(actualFileBytes).isEqualTo(expectedFileBytes)
+    assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
   }
 
   @Test
