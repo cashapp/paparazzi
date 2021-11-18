@@ -73,12 +73,12 @@ open class PrepareResourcesTask : DefaultTask() {
         it.newLine()
         it.write(projectDirectory.relativize(mergeAssetsOutput.get()))
         it.newLine()
-        it.write(platformDataRoot.get().asFile.path)
+        it.write(platformDataRoot.get().asFile.invariantSeparatorsPath)
         it.newLine()
       }
   }
 
   private fun Directory.relativize(child: Directory): String {
-    return asFile.toPath().relativize(child.asFile.toPath()).toString()
+    return asFile.toPath().relativize(child.asFile.toPath()).toFile().invariantSeparatorsPath
   }
 }
