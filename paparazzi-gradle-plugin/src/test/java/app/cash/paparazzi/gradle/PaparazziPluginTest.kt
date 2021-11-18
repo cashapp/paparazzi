@@ -753,8 +753,8 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun transitiveResourcesInCodeWithMultipleModules() {
-    val fixtureRoot = File("src/test/projects/transitive-resources-code-multiple-modules")
+  fun nonTransitiveResources() {
+    val fixtureRoot = File("src/test/projects/non-transitive-resources")
     val moduleRoot = File(fixtureRoot, "module")
 
     gradleRunner
@@ -766,7 +766,7 @@ class PaparazziPluginTest {
     assertThat(snapshots!!).hasLength(1)
 
     val snapshotImage = snapshots[0]
-    val goldenImage = File(moduleRoot, "src/test/resources/five_bucks_red.png")
+    val goldenImage = File(moduleRoot, "src/test/resources/five_bucks.png")
     assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
   }
 

@@ -63,10 +63,9 @@ class PaparazziPlugin : Plugin<Project> {
       val reportOutputDir = project.layout.buildDirectory.dir("reports/paparazzi")
       val snapshotOutputDir = project.layout.projectDirectory.dir("src/test/snapshots")
 
-      val packageAwareRs = project.configurations.getByName("${variant.name}RuntimeClasspath")
+      val packageAwareArtifacts = project.configurations.getByName("${variant.name}RuntimeClasspath")
         .incoming
         .artifactView {
-          it.isLenient = true
           it.attributes.attribute(
             Attribute.of("artifactType", String::class.java), "android-symbol-with-package-name"
           )
@@ -78,10 +77,10 @@ class PaparazziPlugin : Plugin<Project> {
       ) { task ->
         val android = project.extensions.getByType(BaseExtension::class.java)
         val nonTransitiveRClassEnabled =
-          (project.findProperty("android.nonTransitiveRClass") as String?)?.toBoolean() ?: false
+          (project.findProperty("android.nonTransitiveRClass") as? String).toBoolean()
 
         task.packageName.set(android.packageName())
-        task.artifactFiles.from(packageAwareRs.artifactFiles)
+        task.artifactFiles.from(packageAwareArtifacts.artifactFiles)
         task.nonTransitiveRClassEnabled.set(nonTransitiveRClassEnabled)
         task.mergeResourcesOutput.set(mergeResourcesOutputDir)
         task.targetSdkVersion.set(android.targetSdkVersion())

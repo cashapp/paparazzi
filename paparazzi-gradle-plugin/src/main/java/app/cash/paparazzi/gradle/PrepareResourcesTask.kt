@@ -57,7 +57,7 @@ open class PrepareResourcesTask : DefaultTask() {
   internal val nonTransitiveRClassEnabled: Property<Boolean> =
     project.objects.property(Boolean::class.java)
 
-  @get:PathSensitive(PathSensitivity.NAME_ONLY)
+  @get:PathSensitive(PathSensitivity.NONE)
   @get:InputFiles
   internal val artifactFiles: ConfigurableFileCollection = project.objects.fileCollection()
 
@@ -73,10 +73,9 @@ open class PrepareResourcesTask : DefaultTask() {
 
     val mainPackage = packageName.get()
     val resourcePackageNames = if (nonTransitiveRClassEnabled.get()) {
-      artifactFiles.mapNotNull { it.useLines { lines -> lines.first() } }
-        .toMutableList()
-        .apply { add(0, mainPackage) }
-        .joinToString(",")
+      "$mainPackage," + artifactFiles.files.joinToString(",") { file ->
+        file.useLines { lines -> lines.first() }
+      }
     } else {
       mainPackage
     }

@@ -25,7 +25,6 @@ class AmountView(context: Context) : AppCompatTextView(context) {
     text = "5.00"
     textSize = 64f
     gravity = Gravity.CENTER
-    setTextColor(ContextCompat.getColor(context, app.cash.paparazzi.plugin.test.lib.R.color.my_color))
     setBackgroundColor(
       context.getColor(androidx.appcompat.R.color.accent_material_dark)
     )
