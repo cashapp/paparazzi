@@ -25,9 +25,7 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.artifacts.ArtifactView
 import org.gradle.api.artifacts.Configuration
-import org.gradle.api.artifacts.ResolvableDependencies
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
 import org.gradle.api.attributes.Attribute
 import org.gradle.api.internal.artifacts.ArtifactAttributes
