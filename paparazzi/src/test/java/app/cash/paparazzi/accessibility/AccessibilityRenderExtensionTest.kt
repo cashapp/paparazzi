@@ -3,6 +3,8 @@ package app.cash.paparazzi.accessibility
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.GradientDrawable.OVAL
+import android.graphics.drawable.GradientDrawable.Orientation.TL_BR
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -65,8 +67,8 @@ class AccessibilityRenderExtensionTest {
         layoutParams = LinearLayout.LayoutParams(100, 100).apply {
           setMarginsRelative(20, 20, 20, 20)
         }
-        foreground = GradientDrawable(GradientDrawable.Orientation.TL_BR, intArrayOf(Color.YELLOW, Color.BLUE)).apply {
-          this.shape = GradientDrawable.OVAL
+        foreground = GradientDrawable(TL_BR, intArrayOf(Color.YELLOW, Color.BLUE)).apply {
+          shape = OVAL
         }
         contentDescription = "Foreground Drawable"
       })
@@ -95,7 +97,7 @@ class AccessibilityRenderExtensionTest {
             relativePath = expected.path,
             image = image,
             goldenImage = ImageIO.read(expected),
-            maxPercentDifferent = 0.0,
+            maxPercentDifferent = 0.1,
           )
         }
 
