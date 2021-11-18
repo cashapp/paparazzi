@@ -11,12 +11,12 @@
         <meta name="description" content="Android screenshots without Android">
       
       
-        <link rel="canonical" href="https://cashapp.github.io/paparazzi/0.x/paparazzi/app.cash.paparazzi/-device-config/-companion/">
+        <link rel="canonical" href="https://cashapp.github.io/paparazzi/0.x/paparazzi/app.cash.paparazzi/-html-report-writer/">
       
       
         <meta name="author" content="Square, Inc.">
       
-      <link rel="shortcut icon" href="../../../../../images/icon-square.png">
+      <link rel="shortcut icon" href="../../../../images/icon-square.png">
       <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-5.5.7">
     
     
@@ -25,9 +25,9 @@
       
     
     
-      <link rel="stylesheet" href="../../../../../assets/stylesheets/main.b8ac9624.min.css">
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.b8ac9624.min.css">
       
-        <link rel="stylesheet" href="../../../../../assets/stylesheets/palette.28f3ef9a.min.css">
+        <link rel="stylesheet" href="../../../../assets/stylesheets/palette.28f3ef9a.min.css">
       
       
         
@@ -45,7 +45,7 @@
     
     
     
-      <link rel="stylesheet" href="../../../../../css/app.css">
+      <link rel="stylesheet" href="../../../../css/app.css">
     
     
       
@@ -66,7 +66,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#companion" class="md-skip">
+        <a href="#htmlreportwriter" class="md-skip">
           Skip to content
         </a>
       
@@ -79,7 +79,7 @@
   <nav class="md-header-nav md-grid" aria-label="Header">
     <a href="https://cashapp.github.io/paparazzi/" title="Paparazzi" class="md-header-nav__button md-logo" aria-label="Paparazzi">
       
-  <img src="../../../../../images/icon-square.png" alt="logo">
+  <img src="../../../../images/icon-square.png" alt="logo">
 
     </a>
     <label class="md-header-nav__button md-icon" for="__drawer">
@@ -165,7 +165,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href="https://cashapp.github.io/paparazzi/" title="Paparazzi" class="md-nav__button md-logo" aria-label="Paparazzi">
       
-  <img src="../../../../../images/icon-square.png" alt="logo">
+  <img src="../../../../images/icon-square.png" alt="logo">
 
     </a>
     Paparazzi
@@ -192,7 +192,7 @@
 
 
   <li class="md-nav__item">
-    <a href="../../../../.." title="Overview" class="md-nav__link">
+    <a href="../../../.." title="Overview" class="md-nav__link">
       Overview
     </a>
   </li>
@@ -204,7 +204,7 @@
 
 
   <li class="md-nav__item">
-    <a href="../../" title="0.x API" class="md-nav__link">
+    <a href="../" title="0.x API" class="md-nav__link">
       0.x API
     </a>
   </li>
@@ -216,7 +216,7 @@
 
 
   <li class="md-nav__item">
-    <a href="../../../../../changelog/" title="Change Log" class="md-nav__link">
+    <a href="../../../../changelog/" title="Change Log" class="md-nav__link">
       Change Log
     </a>
   </li>
@@ -228,7 +228,7 @@
 
 
   <li class="md-nav__item">
-    <a href="../../../../../code_of_conduct/" title="Code of Conduct" class="md-nav__link">
+    <a href="../../../../code_of_conduct/" title="Code of Conduct" class="md-nav__link">
       Code of Conduct
     </a>
   </li>
@@ -272,15 +272,15 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#functions" class="md-nav__link">
-    Functions
+  <a href="#constructors" class="md-nav__link">
+    Constructors
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#properties" class="md-nav__link">
-    Properties
+  <a href="#functions" class="md-nav__link">
+    Functions
   </a>
   
 </li>
@@ -297,7 +297,7 @@
             <article class="md-content__inner md-typeset">
               
                 
-                  <a href="https://github.com/cashapp/paparazzi/edit/master/docs/0.x/paparazzi/app.cash.paparazzi/-device-config/-companion/index.md" title="Edit this page" class="md-content__button md-icon">
+                  <a href="https://github.com/cashapp/paparazzi/edit/master/docs/0.x/paparazzi/app.cash.paparazzi/-html-report-writer/index.md" title="Edit this page" class="md-content__button md-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
                   </a>
                 
@@ -305,12 +305,41 @@
                   
                 
                 
-                <p>//<a href="../../../../">paparazzi</a>/<a href="../../">app.cash.paparazzi</a>/<a href="../">DeviceConfig</a>/<a href="./">Companion</a></p>
-<h1 id="companion">Companion<a class="headerlink" href="#companion" title="Permanent link">&para;</a></h1>
+                <p>//<a href="../../../">paparazzi</a>/<a href="../">app.cash.paparazzi</a>/<a href="./">HtmlReportWriter</a></p>
+<h1 id="htmlreportwriter">HtmlReportWriter<a class="headerlink" href="#htmlreportwriter" title="Permanent link">&para;</a></h1>
 <p>[jvm]\
-object <a href="./">Companion</a></p>
-<p>Device specs per: <a href="https://android.googlesource.com/platform/tools/base/+/mirror-goog-studio-master-dev/sdklib/src/main/java/com/android/sdklib/devices/nexus.xml">https://android.googlesource.com/platform/tools/base/+/mirror-goog-studio-master-dev/sdklib/src/main/java/com/android/sdklib/devices/nexus.xml</a></p>
-<p>Release dates obtained from Wikipedia.</p>
+class <a href="./">HtmlReportWriter</a>@<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-overloads/index.html">JvmOverloads</a>constructor(runName: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, rootDirectory: <a href="https://docs.oracle.com/javase/8/docs/api/java/io/File.html">File</a>, snapshotRootDirectory: <a href="https://docs.oracle.com/javase/8/docs/api/java/io/File.html">File</a>) : <a href="../-snapshot-handler/">SnapshotHandler</a></p>
+<p>Creates an HTML report that avoids writing files that have already been written.</p>
+<p>Images and videos are named by hashes of their contents. Paparazzi won&rsquo;t write two images or videos with the same contents. Note that the images/ directory includes the individual frames of each video.</p>
+<p>Runs are named by their date.</p>
+<p>images\
+  088c60580f06efa95c37fd8e754074729ee74a06.png\
+  93f9a81cb594280f4b3898d90dfad8c8ea969b01.png\
+  22d37abd0841ba2a8d0bd635954baf7cbfaa269b.png\
+  a4769e43cc5901ef28c0d46c46a44ea6429cbccc.png\
+videos\
+  d1cddc5da2224053f2af51f4e69a76de4e61fc41.mov\
+runs\
+  20190626002322_b9854e.js\
+  20190626002345_b1e882.js\
+index.html\
+index.js\
+paparazzi.js</p>
+<h2 id="constructors">Constructors<a class="headerlink" href="#constructors" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="-html-report-writer/">HtmlReportWriter</a></td>
+<td>[jvm]<br>@<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-overloads/index.html">JvmOverloads</a><br>fun <a href="-html-report-writer/">HtmlReportWriter</a>(runName: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a> = defaultRunName(), rootDirectory: <a href="https://docs.oracle.com/javase/8/docs/api/java/io/File.html">File</a> = File(&ldquo;build/reports/paparazzi&rdquo;), snapshotRootDirectory: <a href="https://docs.oracle.com/javase/8/docs/api/java/io/File.html">File</a> = File(&ldquo;src/test/snapshots&rdquo;))</td>
+</tr>
+</tbody>
+</table>
 <h2 id="functions">Functions<a class="headerlink" href="#functions" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -321,99 +350,12 @@ object <a href="./">Companion</a></p>
 </thead>
 <tbody>
 <tr>
-<td><a href="get-enum-map/">getEnumMap</a></td>
-<td>[jvm]<br>fun <a href="get-enum-map/">getEnumMap</a>(path: <a href="https://docs.oracle.com/javase/8/docs/api/java/io/File.html">File</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-map/index.html">Map</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-map/index.html">Map</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>&gt;&gt;</td>
+<td><a href="close/">close</a></td>
+<td>[jvm]<br>open override fun <a href="close/">close</a>()<br>Release all resources and block until everything has been written to the file system.</td>
 </tr>
 <tr>
-<td><a href="load-properties/">loadProperties</a></td>
-<td>[jvm]<br>fun <a href="load-properties/">loadProperties</a>(path: <a href="https://docs.oracle.com/javase/8/docs/api/java/io/File.html">File</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-map/index.html">Map</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>&gt;</td>
-</tr>
-</tbody>
-</table>
-<h2 id="properties">Properties<a class="headerlink" href="#properties" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Summary</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><a href="-n-e-x-u-s_10/">NEXUS_10</a></td>
-<td>[jvm]<br>@<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-field/index.html">JvmField</a><br>val <a href="-n-e-x-u-s_10/">NEXUS_10</a>: <a href="../">DeviceConfig</a></td>
-</tr>
-<tr>
-<td><a href="-n-e-x-u-s_4/">NEXUS_4</a></td>
-<td>[jvm]<br>@<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-field/index.html">JvmField</a><br>val <a href="-n-e-x-u-s_4/">NEXUS_4</a>: <a href="../">DeviceConfig</a></td>
-</tr>
-<tr>
-<td><a href="-n-e-x-u-s_5/">NEXUS_5</a></td>
-<td>[jvm]<br>@<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-field/index.html">JvmField</a><br>val <a href="-n-e-x-u-s_5/">NEXUS_5</a>: <a href="../">DeviceConfig</a></td>
-</tr>
-<tr>
-<td><a href="-n-e-x-u-s_5_-l-a-n-d/">NEXUS_5_LAND</a></td>
-<td>[jvm]<br>@<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-field/index.html">JvmField</a><br>val <a href="-n-e-x-u-s_5_-l-a-n-d/">NEXUS_5_LAND</a>: <a href="../">DeviceConfig</a></td>
-</tr>
-<tr>
-<td><a href="-n-e-x-u-s_7/">NEXUS_7</a></td>
-<td>[jvm]<br>@<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-field/index.html">JvmField</a><br>val <a href="-n-e-x-u-s_7/">NEXUS_7</a>: <a href="../">DeviceConfig</a></td>
-</tr>
-<tr>
-<td><a href="-n-e-x-u-s_7_2012/">NEXUS_7_2012</a></td>
-<td>[jvm]<br>@<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-field/index.html">JvmField</a><br>val <a href="-n-e-x-u-s_7_2012/">NEXUS_7_2012</a>: <a href="../">DeviceConfig</a></td>
-</tr>
-<tr>
-<td><a href="-p-i-x-e-l/">PIXEL</a></td>
-<td>[jvm]<br>@<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-field/index.html">JvmField</a><br>val <a href="-p-i-x-e-l/">PIXEL</a>: <a href="../">DeviceConfig</a></td>
-</tr>
-<tr>
-<td><a href="-p-i-x-e-l_2/">PIXEL_2</a></td>
-<td>[jvm]<br>@<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-field/index.html">JvmField</a><br>val <a href="-p-i-x-e-l_2/">PIXEL_2</a>: <a href="../">DeviceConfig</a></td>
-</tr>
-<tr>
-<td><a href="-p-i-x-e-l_2_-x-l/">PIXEL_2_XL</a></td>
-<td>[jvm]<br>@<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-field/index.html">JvmField</a><br>val <a href="-p-i-x-e-l_2_-x-l/">PIXEL_2_XL</a>: <a href="../">DeviceConfig</a></td>
-</tr>
-<tr>
-<td><a href="-p-i-x-e-l_3/">PIXEL_3</a></td>
-<td>[jvm]<br>@<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-field/index.html">JvmField</a><br>val <a href="-p-i-x-e-l_3/">PIXEL_3</a>: <a href="../">DeviceConfig</a></td>
-</tr>
-<tr>
-<td><a href="-p-i-x-e-l_3_-x-l/">PIXEL_3_XL</a></td>
-<td>[jvm]<br>@<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-field/index.html">JvmField</a><br>val <a href="-p-i-x-e-l_3_-x-l/">PIXEL_3_XL</a>: <a href="../">DeviceConfig</a></td>
-</tr>
-<tr>
-<td><a href="-p-i-x-e-l_3-a/">PIXEL_3A</a></td>
-<td>[jvm]<br>@<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-field/index.html">JvmField</a><br>val <a href="-p-i-x-e-l_3-a/">PIXEL_3A</a>: <a href="../">DeviceConfig</a></td>
-</tr>
-<tr>
-<td><a href="-p-i-x-e-l_3-a_-x-l/">PIXEL_3A_XL</a></td>
-<td>[jvm]<br>@<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-field/index.html">JvmField</a><br>val <a href="-p-i-x-e-l_3-a_-x-l/">PIXEL_3A_XL</a>: <a href="../">DeviceConfig</a></td>
-</tr>
-<tr>
-<td><a href="-p-i-x-e-l_4/">PIXEL_4</a></td>
-<td>[jvm]<br>@<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-field/index.html">JvmField</a><br>val <a href="-p-i-x-e-l_4/">PIXEL_4</a>: <a href="../">DeviceConfig</a></td>
-</tr>
-<tr>
-<td><a href="-p-i-x-e-l_4_-x-l/">PIXEL_4_XL</a></td>
-<td>[jvm]<br>@<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-field/index.html">JvmField</a><br>val <a href="-p-i-x-e-l_4_-x-l/">PIXEL_4_XL</a>: <a href="../">DeviceConfig</a></td>
-</tr>
-<tr>
-<td><a href="-p-i-x-e-l_4-a/">PIXEL_4A</a></td>
-<td>[jvm]<br>@<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-field/index.html">JvmField</a><br>val <a href="-p-i-x-e-l_4-a/">PIXEL_4A</a>: <a href="../">DeviceConfig</a></td>
-</tr>
-<tr>
-<td><a href="-p-i-x-e-l_5/">PIXEL_5</a></td>
-<td>[jvm]<br>@<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-field/index.html">JvmField</a><br>val <a href="-p-i-x-e-l_5/">PIXEL_5</a>: <a href="../">DeviceConfig</a></td>
-</tr>
-<tr>
-<td><a href="-p-i-x-e-l_-c/">PIXEL_C</a></td>
-<td>[jvm]<br>@<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-field/index.html">JvmField</a><br>val <a href="-p-i-x-e-l_-c/">PIXEL_C</a>: <a href="../">DeviceConfig</a></td>
-</tr>
-<tr>
-<td><a href="-p-i-x-e-l_-x-l/">PIXEL_XL</a></td>
-<td>[jvm]<br>@<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-field/index.html">JvmField</a><br>val <a href="-p-i-x-e-l_-x-l/">PIXEL_XL</a>: <a href="../">DeviceConfig</a></td>
+<td><a href="new-frame-handler/">newFrameHandler</a></td>
+<td>[jvm]<br>open override fun <a href="new-frame-handler/">newFrameHandler</a>(snapshot: <a href="../-snapshot/">Snapshot</a>, frameCount: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, fps: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="../-snapshot-handler/-frame-handler/">SnapshotHandler.FrameHandler</a></td>
 </tr>
 </tbody>
 </table>
@@ -452,15 +394,15 @@ object <a href="./">Companion</a></p>
       
     </div>
     
-      <script src="../../../../../assets/javascripts/vendor.d1f5a259.min.js"></script>
-      <script src="../../../../../assets/javascripts/bundle.d5fec882.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
+      <script src="../../../../assets/javascripts/vendor.d1f5a259.min.js"></script>
+      <script src="../../../../assets/javascripts/bundle.d5fec882.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
       
       <script>
         app = initialize({
-          base: "../../../../..",
+          base: "../../../..",
           features: [],
           search: Object.assign({
-            worker: "../../../../../assets/javascripts/worker/search.fae956e7.min.js"
+            worker: "../../../../assets/javascripts/worker/search.fae956e7.min.js"
           }, typeof search !== "undefined" && search)
         })
       </script>
