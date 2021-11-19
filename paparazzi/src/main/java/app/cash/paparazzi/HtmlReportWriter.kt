@@ -96,6 +96,8 @@ class HtmlReportWriter @JvmOverloads constructor(
       }
 
       override fun close() {
+        if (hashes.isEmpty()) return
+
         val shot = if (hashes.size == 1) {
           val original = File(imagesDirectory, "${hashes[0]}.png")
           if (isRecording) {
