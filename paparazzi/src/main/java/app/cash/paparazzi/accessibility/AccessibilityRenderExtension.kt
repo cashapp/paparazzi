@@ -129,7 +129,7 @@ class AccessibilityRenderExtension : RenderExtension {
       orientation = LinearLayout.HORIZONTAL
       layoutParams = ViewGroup.LayoutParams(
         ViewGroup.LayoutParams.MATCH_PARENT,
-        ViewGroup.LayoutParams.MATCH_PARENT
+        ViewGroup.LayoutParams.WRAP_CONTENT
       )
       setPaddingRelative(margin, innerMargin, margin, innerMargin)
 
@@ -146,7 +146,7 @@ class AccessibilityRenderExtension : RenderExtension {
       addView(TextView(context).apply {
         layoutParams = ViewGroup.LayoutParams(
           ViewGroup.LayoutParams.MATCH_PARENT,
-          ViewGroup.LayoutParams.MATCH_PARENT
+          ViewGroup.LayoutParams.WRAP_CONTENT
         )
         text = iterableTextForAccessibility
         textSize = DEFAULT_TEXT_SIZE
