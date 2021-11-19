@@ -89,6 +89,28 @@ class HtmlReportWriterTest {
   }
 
   @Test
+  fun noSnapshotOnFailure() {
+    val htmlReportWriter = HtmlReportWriter("run_one", reportRoot.root)
+    htmlReportWriter.use {
+      val frameHandler = htmlReportWriter.newFrameHandler(
+        snapshot = Snapshot(
+          name = "loading",
+          testName = TestName("app.cash.paparazzi", "CelebrityTest", "testSettings"),
+          timestamp = Instant.parse("2019-03-20T10:27:43Z").toDate(),
+        ),
+        frameCount = 4,
+        fps = -1
+      )
+      frameHandler.use {
+        // intentionally empty, to simulate no content written on exception
+      }
+    }
+
+    assertThat(File(reportRoot.root, "images")).isEmptyDirectory
+    assertThat(File(reportRoot.root, "videos")).isEmptyDirectory
+  }
+
+  @Test
   fun alwaysOverwriteOnRecord() {
     // set record mode
     System.setProperty("paparazzi.test.record", "true")
