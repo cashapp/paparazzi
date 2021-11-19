@@ -147,18 +147,6 @@ Check out the [sample][sample].
 Known Limitations
 -------
 
-#### Resource Resolution Errors
-Ex: 
-```
-java.lang.NullPointerException
-  at com.android.ide.common.resources.ResourceResolver.getUnresolvedResource(ResourceResolver.java:421)
-```
-Paparazzi does not currently support namespaced resources. If you are seeing this error, verify that the following flag is 
-not present in the project's `gradle.properties`:
-`android.nonTransitiveRClass=true`
-
--------
-
 #### Running Tests from the IDE
 Ex:
 ```

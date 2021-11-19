@@ -27,6 +27,7 @@ data class Environment(
   val packageName: String,
   val compileSdkVersion: Int,
   val platformDataDir: String,
+  val resourcePackageNames: List<String>,
 )
 
 @Suppress("unused")
@@ -49,7 +50,8 @@ fun detectEnvironment(): Environment {
       assetsDir = appTestDir.resolve(configLines[4]).toString(),
       packageName = configLines[0],
       compileSdkVersion = configLines[2].toInt(),
-      platformDataDir = configLines[5]
+      platformDataDir = configLines[5],
+      resourcePackageNames = configLines[6].split(",")
   )
 }
 

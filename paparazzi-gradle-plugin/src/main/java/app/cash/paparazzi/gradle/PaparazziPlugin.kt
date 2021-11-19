@@ -27,6 +27,7 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
+import org.gradle.api.attributes.Attribute
 import org.gradle.api.internal.artifacts.ArtifactAttributes
 import org.gradle.api.internal.artifacts.transform.UnzipTransform
 import org.gradle.api.logging.LogLevel.LIFECYCLE
@@ -62,12 +63,25 @@ class PaparazziPlugin : Plugin<Project> {
       val reportOutputDir = project.layout.buildDirectory.dir("reports/paparazzi")
       val snapshotOutputDir = project.layout.projectDirectory.dir("src/test/snapshots")
 
+      val packageAwareArtifacts = project.configurations.getByName("${variant.name}RuntimeClasspath")
+        .incoming
+        .artifactView {
+          it.attributes.attribute(
+            Attribute.of("artifactType", String::class.java), "android-symbol-with-package-name"
+          )
+        }
+        .artifacts
+
       val writeResourcesTask = project.tasks.register(
           "preparePaparazzi${variantSlug}Resources", PrepareResourcesTask::class.java
       ) { task ->
         val android = project.extensions.getByType(BaseExtension::class.java)
+        val nonTransitiveRClassEnabled =
+          (project.findProperty("android.nonTransitiveRClass") as? String).toBoolean()
 
         task.packageName.set(android.packageName())
+        task.artifactFiles.from(packageAwareArtifacts.artifactFiles)
+        task.nonTransitiveRClassEnabled.set(nonTransitiveRClassEnabled)
         task.mergeResourcesOutput.set(mergeResourcesOutputDir)
         task.targetSdkVersion.set(android.targetSdkVersion())
         task.compileSdkVersion.set(android.compileSdkVersion())

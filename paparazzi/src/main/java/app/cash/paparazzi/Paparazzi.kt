@@ -123,7 +123,8 @@ class Paparazzi @JvmOverloads constructor(
   fun prepare(description: Description) {
     forcePlatformSdkVersion(environment.compileSdkVersion)
 
-    val layoutlibCallback = PaparazziCallback(logger, environment.packageName)
+    val layoutlibCallback =
+      PaparazziCallback(logger, environment.packageName, environment.resourcePackageNames)
     layoutlibCallback.initResources()
 
     testName = description.toTestName()
