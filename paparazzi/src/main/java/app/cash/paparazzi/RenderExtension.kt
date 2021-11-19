@@ -22,5 +22,10 @@ import java.awt.image.BufferedImage
  * An extension for overlaying additional information on top of each rendered frame.
  */
 interface RenderExtension {
-  fun render(snapshot: Snapshot, view: View, image: BufferedImage): BufferedImage
+  /**
+   * Allows this extension to modify the view hierarchy represented by [contentView].
+   *
+   * Returns the root view of the modified hierarchy.
+   */
+  fun renderView(contentView: View): View
 }
