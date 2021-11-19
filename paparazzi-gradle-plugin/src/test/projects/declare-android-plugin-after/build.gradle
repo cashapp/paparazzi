@@ -1,0 +1,19 @@
+plugins {
+  id 'app.cash.paparazzi'
+  id 'com.android.library' // intentionally declared after paparazzi plugin
+}
+
+repositories {
+  maven {
+    url "file://${projectDir.absolutePath}/../../../../../build/localMaven"
+  }
+  mavenCentral()
+  google()
+}
+
+android {
+  compileSdkVersion 30
+  defaultConfig {
+    minSdkVersion 25
+  }
+}
