@@ -401,7 +401,7 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://cashapp.github.io/paparazzi/0.x/paparazzi/app.cash.paparazzi/-render-extension/render/</loc>
+         <loc>https://cashapp.github.io/paparazzi/0.x/paparazzi/app.cash.paparazzi/-render-extension/render-view/</loc>
          <lastmod>2021-11-19</lastmod>
          <changefreq>daily</changefreq>
     </url>
@@ -521,7 +521,7 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://cashapp.github.io/paparazzi/0.x/paparazzi/app.cash.paparazzi.accessibility/-accessibility-render-extension/render/</loc>
+         <loc>https://cashapp.github.io/paparazzi/0.x/paparazzi/app.cash.paparazzi.accessibility/-accessibility-render-extension/render-view/</loc>
          <lastmod>2021-11-19</lastmod>
          <changefreq>daily</changefreq>
     </url>
