@@ -31,38 +31,37 @@ import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 
 @CacheableTask
-open class PrepareResourcesTask : DefaultTask() {
+abstract class PrepareResourcesTask : DefaultTask() {
   @get:Input
-  internal val packageName: Property<String> = project.objects.property(String::class.java)
+  abstract val packageName: Property<String>
 
   @get:InputDirectory
   @get:PathSensitive(PathSensitivity.RELATIVE)
-  internal val mergeResourcesOutput: DirectoryProperty = project.objects.directoryProperty()
+  abstract val mergeResourcesOutput: DirectoryProperty
 
   @get:Input
-  internal val targetSdkVersion: Property<String> = project.objects.property(String::class.java)
+  abstract val targetSdkVersion: Property<String>
 
   @get:Input
-  internal val compileSdkVersion: Property<String> = project.objects.property(String::class.java)
+  abstract val compileSdkVersion: Property<String>
 
   @get:InputDirectory
   @get:PathSensitive(PathSensitivity.RELATIVE)
-  internal val mergeAssetsOutput: DirectoryProperty = project.objects.directoryProperty()
+  abstract val mergeAssetsOutput: DirectoryProperty
 
   @get:InputDirectory
   @get:PathSensitive(PathSensitivity.RELATIVE)
-  internal val platformDataRoot: DirectoryProperty = project.objects.directoryProperty()
+  abstract val platformDataRoot: DirectoryProperty
 
   @get:Input
-  internal val nonTransitiveRClassEnabled: Property<Boolean> =
-    project.objects.property(Boolean::class.java)
+  abstract val nonTransitiveRClassEnabled: Property<Boolean>
 
-  @get:PathSensitive(PathSensitivity.NONE)
   @get:InputFiles
-  internal val artifactFiles: ConfigurableFileCollection = project.objects.fileCollection()
+  @get:PathSensitive(PathSensitivity.NONE)
+  abstract val artifactFiles: ConfigurableFileCollection
 
   @get:OutputFile
-  internal val paparazziResources: RegularFileProperty = project.objects.fileProperty()
+  abstract val paparazziResources: RegularFileProperty
 
   private val projectDirectory = project.layout.projectDirectory
 
