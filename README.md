@@ -3,28 +3,69 @@ Paparazzi
 
 An Android library to render your application screens without a physical device or emulator.
 
+```kotlin
+class LaunchViewTest {
+  @get:Rule
+  val paparazzi = Paparazzi(
+    deviceConfig = PIXEL_5,
+    theme = "android:Theme.Material.Light.NoActionBar"
+    // ...see docs for more options 
+  )
+ 
+  @Test
+  fun simple() {
+    val view = paparazzi.inflate<LaunchView>(R.layout.launch)
+    // or... 
+    // val view = LaunchView(paparazzi.context)
+    
+    view.setModel(LaunchModel(title = "paparazzi"))
+    paparazzi.snapshot(view)
+  }
+}
+```
+
 See the [project website][paparazzi] for documentation and APIs.
 
-Jetifier
---------
-
-If using Jetifier to migrate off Support libraries, add the following to your `gradle.properties` to 
-exclude bundled Android dependencies.
-
-```groovy
-android.jetifier.ignorelist=android-base-common,common
+Tasks
+-------
 ```
+$ ./gradlew sample:testDebug
+```
+
+Runs tests and generates an HTML report at `sample/build/reports/paparazzi/` showing all 
+test runs and snapshots. 
+
+```
+$ ./gradlew sample:recordPaparazziDebug
+```
+
+Saves snapshots as golden values to a predefined source-controlled location 
+(defaults to `src/test/snapshots`).
+
+```
+$ ./gradlew sample:verifyPaparazziDebug
+```
+
+Runs tests and verifies against previously-recorded golden values.
+
+
+For more examples, check out the [sample][sample] project.
 
 Git LFS
 --------
-It is recommended you use [Git LFS][lfs] to store your snapshots.  Here's a template to get started.
+It is recommended you use [Git LFS][lfs] to store your snapshots.  Here's a quick setup:
 
-#### **`.gitattributes`**
 ```bash
-**/snapshots/**/*.png filter=lfs diff=lfs merge=lfs -text
+$ brew install git-lfs
+$ git config core.hooksPath  # optional, confirm where your git hooks will be installed
+$ git lfs install --local
+$ git lfs track **/snapshots/**/*.png
+$ git add .gitattributes
 ```
 
-#### **`.hooks/pre-receive`**
+On CI, you might set up something like:
+
+`$HOOKS_DIR/pre-receive`
 ```bash
 # compares files that match .gitattributes filter to those actually tracked by git-lfs
 diff <(git ls-files ':(attr:filter=lfs)' | sort) <(git lfs ls-files -n | sort) >/dev/null
@@ -36,50 +77,24 @@ if [[ $ret -ne 0 ]]; then
 fi
 ```
 
-#### **`.hooks/post-checkout`**
+`your_build_script.sh`
 ```bash
-# Call the git-lfs filter (except in CI)
-if [[ not CI ]]; then
-  command -v git-lfs >/dev/null 2>&1 || { echo >&2 "This repository is configured for Git LFS but 'git-lfs' was not found on your path. Run 'brew install git-lfs && git lfs install' to install it."; exit 2; }
-  git lfs post-checkout "$@"
+if [[ is running snapshot tests ]]; then
+  # fail fast if files not checked in using git lfs
+  "$HOOKS_DIR"/pre-receive
+  git lfs install --local
+  git lfs pull
 fi
 ```
 
-#### **`.hooks/post-commit`**
-```bash
-# Call the git-lfs filter (except in CI)
-if [[ not CI ]]; then
-  command -v git-lfs >/dev/null 2>&1 || { echo >&2 "This repository is configured for Git LFS but 'git-lfs' was not found on your path. Run 'brew install git-lfs && git lfs install' to install it."; exit 2; }
-  git lfs post-commit "$@"
-fi
-```
+Jetifier
+--------
 
-#### **`.hooks/post-merge`**
-```bash
-# Call the git-lfs filter (except in CI)
-if [[ not CI ]]; then
-  command -v git-lfs >/dev/null 2>&1 || { echo >&2 "This repository is configured for Git LFS but 'git-lfs' was not found on your path. Run 'brew install git-lfs && git lfs install' to install it."; exit 2; }
-  git lfs post-merge "$@"
-fi
-```
+If using Jetifier to migrate off Support libraries, add the following to your `gradle.properties` to
+exclude bundled Android dependencies.
 
-#### **`.hooks/pre-push`**
-```bash
-# Call the git-lfs filter (except in CI)
-if [[ not CI ]]; then
-  command -v git-lfs >/dev/null 2>&1 || { echo >&2 "This repository is configured for Git LFS but 'git-lfs' was not found on your path. Run 'brew install git-lfs && git lfs install' to install it."; exit 2; }
-  git lfs pre-push "$@"
-fi
-```
-
-#### **`your CI script`**
-```bash
-  if [[ is running snapshot tests ]]; then
-    # fail fast if files not checked in using git lfs
-    "$REPO_DIR"/.hooks/pre-receive
-    git lfs install --local
-    git lfs pull
-  fi
+```text
+android.jetifier.ignorelist=android-base-common,common
 ```
 
 Releases
@@ -112,54 +127,26 @@ plugins {
 Snapshots of the development version are available in [Sonatype's `snapshots` repository][snap].
 
 ```groovy
-repositories {
-  mavenCentral()
-  maven {
-    url 'https://oss.sonatype.org/content/repositories/snapshots/'
-  }
-}
+ repositories {
+   // ...
+   maven {
+     url 'https://oss.sonatype.org/content/repositories/snapshots/'
+   }
+ }
 ```
-
-Tasks
--------
-```
-$ ./gradlew some-project:testDebug
-```
-
-Runs tests and generates an HTML report at `some-project/build/reports/paparazzi/debug/` showing all 
-test runs and snapshots. 
-
-```
-$ ./gradlew some-project:recordPaparazziDebug
-```
-
-Saves snapshots as golden values to a predefined source-controlled location 
-(default: `src/test/snapshots`).
-
-```
-$ ./gradlew some-project:verifyPaparazziDebug
-```
-
-Runs tests and verifies against previously-recorded golden values.
-
-Check out the [sample][sample].
 
 Known Limitations
 -------
 
 #### Running Tests from the IDE
-Ex:
 ```
 java.lang.NullPointerException
   at java.base/java.io.File.<init>(File.java:278)
   at app.cash.paparazzi.EnvironmentKt.detectEnvironment(Environment.kt:36)
 ```
-Running tests from the IDE requires Android Studio Arctic Fox or later. 
-
--------
+Running tests from the IDE requires Android Studio Arctic Fox or later.
 
 #### Could not find ... resource matching value 0x... (resolved name: ...) in current configuration.
-Ex:
 ```
 Could not find dimen resource matching value 0x10500C0 (resolved name: config_scrollbarSize) in current configuration.
 android.content.res.Resources$NotFoundException: Could not find dimen resource matching value 0x10500C0 (resolved name: config_scrollbarSize) in current configuration.
@@ -167,14 +154,12 @@ android.content.res.Resources$NotFoundException: Could not find dimen resource m
 Could not find integer resource matching value 0x10E00B4 (resolved name: config_screenshotChordKeyTimeout) in current configuration.
 android.content.res.Resources$NotFoundException: Could not find integer resource matching value 0x10E00B4 (resolved name: config_screenshotChordKeyTimeout) in current configuration.
 ```
-`compileSdkVersion` has to be 29 or higher. 
-```kotlin
+`compileSdkVersion` has to be 29 or higher.
+```groovy
 android {
   compileSdkVersion 29
 }
 ```
-
--------- 
 
 License
 -------
