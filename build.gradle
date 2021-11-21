@@ -157,10 +157,10 @@ subprojects {
   }
 }
 
-task clean(type: Delete) {
+tasks.register("clean", Delete).configure {
   delete rootProject.buildDir
 }
 
-tasks.wrapper {
+tasks.named("wrapper").configure {
   distributionType = Wrapper.DistributionType.ALL
 }
