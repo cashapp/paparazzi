@@ -164,3 +164,21 @@ tasks.register("clean", Delete).configure {
 tasks.named("wrapper").configure {
   distributionType = Wrapper.DistributionType.ALL
 }
+
+allprojects { project ->
+  tasks.register("mavenLocalize").configure { task ->
+    def projectRootDir = project.projectDir
+    task.doFirst {
+      projectRootDir.eachFileRecurse(groovy.io.FileType.FILES) { file ->
+        if (file.name != 'build.gradle') {
+          return
+        }
+        def text = file.text
+        file.withWriter { w ->
+          // Intentional concatenation to prevent self-replacement
+          w << text.replace("//" + "mavenLocal()", "mavenLocal()")
+        }
+      }
+    }
+  }
+}
