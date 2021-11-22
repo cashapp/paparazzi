@@ -1,6 +1,33 @@
 Change Log
 ==========
 
+## Version 0.9.0
+_2021-11-22_
+
+### New
+* Migrate Paparazzi to layoutlib Arctic Fox 2020.3.1, providing native support for M1 machines 
+* Migrate Paparazzi to layoutlib 4.2, unlocking future Compose support
+* Add support for projects enabling non-transitive resources
+* RenderExtension now visits view hierarchy pre-rendering instead of layering bitmaps post-rendering
+* Fail-fast when Bridge.init fails, usually due to native crash
+* Expose RenderingMode as a configurable option
+* Bump default compileSdk to API 30
+* Improve Java-interoperability experience
+* Kotlin 1.5.31
+
+### Fixed
+* Don't require Android plugin to be declared before Paparazzi plugin
+* Clear AnimationHandler leak after each snapshot
+* Don't generate empty mov files on snapshot failure
+* Add Kotlin platform bom to prevent classpath conflicts during test builds
+* Use correct default Android SDK path on Windows
+* Use platform-agnostic file paths in Gradle artifacts to support remote caching across platforms  
+* Use platform-agnostic file paths in Javascript for web page support on Windows  
+* Fix font scaling issue in AccessibilityRenderExtension by using bundled font
+
+Kudos to @luis-cortes, @geoff-powell and @TWiStErRob for their contributions this release!
+
+
 ## Version 0.8.0
 _2021-10-07_
 
