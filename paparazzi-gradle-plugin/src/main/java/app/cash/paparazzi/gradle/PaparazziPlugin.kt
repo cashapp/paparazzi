@@ -43,10 +43,16 @@ import java.util.Locale
 class PaparazziPlugin : Plugin<Project> {
   @OptIn(ExperimentalStdlibApi::class)
   override fun apply(project: Project) {
-    require(project.plugins.hasPlugin("com.android.library")) {
-      "The Android Gradle library plugin must be applied before the Paparazzi plugin."
+    project.afterEvaluate {
+      require(project.plugins.hasPlugin("com.android.library")) {
+        "The Android Gradle library plugin must be applied for Paparazzi to be configured."
+      }
     }
 
+    project.plugins.withId("com.android.library") { setupPaparazzi(project) }
+  }
+
+  private fun setupPaparazzi(project: Project) {
     val unzipConfiguration = project.setupPlatformDataTransform()
 
     // Create anchor tasks for all variants.

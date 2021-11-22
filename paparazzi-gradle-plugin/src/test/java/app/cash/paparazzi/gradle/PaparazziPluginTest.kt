@@ -31,8 +31,19 @@ class PaparazziPluginTest {
 
     assertThat(result.task(":preparePaparazziDebugResources")).isNull()
     assertThat(result.output).contains(
-        "The Android Gradle library plugin must be applied before the Paparazzi plugin."
+        "The Android Gradle library plugin must be applied for Paparazzi to be configured."
     )
+  }
+
+  @Test
+  fun declareAndroidPluginAfter() {
+    val fixtureRoot = File("src/test/projects/declare-android-plugin-after")
+
+    val result = gradleRunner
+        .withArguments("preparePaparazziDebugResources", "--stacktrace")
+        .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
   }
 
   @Test
