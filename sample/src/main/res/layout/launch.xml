@@ -18,7 +18,7 @@
       android:layout_height="wrap_content"
       android:gravity="center"
       android:textColor="@color/cameraBody"
-      android:text="paparazzi"
+      android:text="@string/paparazzi"
       android:textSize="70dp"
       android:textFontWeight="100"
       />
