@@ -186,7 +186,10 @@ class PaparazziPlugin : Plugin<Project> {
 
     val operatingSystem = OperatingSystem.current()
     val nativeLibraryArtifactId = when {
-      operatingSystem.isMacOsX -> "macosx"
+      operatingSystem.isMacOsX -> {
+        val osArch = System.getProperty("os.arch").lowercase(Locale.US)
+        if (osArch.startsWith("x86")) "macosx" else "macarm"
+      }
       operatingSystem.isWindows -> "win"
       else -> "linux"
     }
