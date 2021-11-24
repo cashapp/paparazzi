@@ -90,7 +90,7 @@ class Paparazzi @JvmOverloads constructor(
   val context: Context
     get() = RenderAction.getCurrentContext()
 
-  val contentRoot = """
+  private val contentRoot = """
         |<?xml version="1.0" encoding="utf-8"?>
         |<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
         |              android:layout_width="match_parent"
