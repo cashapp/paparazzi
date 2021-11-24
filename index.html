@@ -227,8 +227,8 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#jetifier" class="md-nav__link">
-    Jetifier
+  <a href="#tasks" class="md-nav__link">
+    Tasks
   </a>
   
 </li>
@@ -238,73 +238,18 @@
     Git LFS
   </a>
   
-    <nav class="md-nav" aria-label="Git LFS">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#gitattributes" class="md-nav__link">
-    .gitattributes
-  </a>
-  
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#hookspre-receive" class="md-nav__link">
-    .hooks/pre-receive
+      
+        <li class="md-nav__item">
+  <a href="#jetifier" class="md-nav__link">
+    Jetifier
   </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#hookspost-checkout" class="md-nav__link">
-    .hooks/post-checkout
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#hookspost-commit" class="md-nav__link">
-    .hooks/post-commit
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#hookspost-merge" class="md-nav__link">
-    .hooks/post-merge
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#hookspre-push" class="md-nav__link">
-    .hooks/pre-push
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#your-ci-script" class="md-nav__link">
-    your CI script
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#releases" class="md-nav__link">
     Releases
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#tasks" class="md-nav__link">
-    Tasks
   </a>
   
 </li>
@@ -424,8 +369,8 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#jetifier" class="md-nav__link">
-    Jetifier
+  <a href="#tasks" class="md-nav__link">
+    Tasks
   </a>
   
 </li>
@@ -435,73 +380,18 @@
     Git LFS
   </a>
   
-    <nav class="md-nav" aria-label="Git LFS">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#gitattributes" class="md-nav__link">
-    .gitattributes
-  </a>
-  
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#hookspre-receive" class="md-nav__link">
-    .hooks/pre-receive
+      
+        <li class="md-nav__item">
+  <a href="#jetifier" class="md-nav__link">
+    Jetifier
   </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#hookspost-checkout" class="md-nav__link">
-    .hooks/post-checkout
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#hookspost-commit" class="md-nav__link">
-    .hooks/post-commit
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#hookspost-merge" class="md-nav__link">
-    .hooks/post-merge
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#hookspre-push" class="md-nav__link">
-    .hooks/pre-push
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#your-ci-script" class="md-nav__link">
-    your CI script
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#releases" class="md-nav__link">
     Releases
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#tasks" class="md-nav__link">
-    Tasks
   </a>
   
 </li>
@@ -562,19 +452,53 @@
                 
                 <h1 id="paparazzi">Paparazzi<a class="headerlink" href="#paparazzi" title="Permanent link">&para;</a></h1>
 <p>An Android library to render your application screens without a physical device or emulator.</p>
-<h2 id="jetifier">Jetifier<a class="headerlink" href="#jetifier" title="Permanent link">&para;</a></h2>
-<p>If using Jetifier to migrate off Support libraries, add the following to your <code>gradle.properties</code> to 
-exclude bundled Android dependencies.</p>
-<div class="highlight"><pre><span></span><code><span class="n">android</span><span class="o">.</span><span class="na">jetifier</span><span class="o">.</span><span class="na">ignorelist</span><span class="o">=</span><span class="n">android</span><span class="o">-</span><span class="n">base</span><span class="o">-</span><span class="n">common</span><span class="o">,</span><span class="n">common</span>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">LaunchViewTest</span> <span class="p">{</span>
+  <span class="n">@get</span><span class="p">:</span><span class="n">Rule</span>
+  <span class="k">val</span> <span class="py">paparazzi</span> <span class="p">=</span> <span class="n">Paparazzi</span><span class="p">(</span>
+    <span class="n">deviceConfig</span> <span class="p">=</span> <span class="n">PIXEL_5</span><span class="p">,</span>
+    <span class="n">theme</span> <span class="p">=</span> <span class="s">&quot;android:Theme.Material.Light.NoActionBar&quot;</span>
+    <span class="c1">// ...see docs for more options </span>
+  <span class="p">)</span>
+
+  <span class="n">@Test</span>
+  <span class="k">fun</span> <span class="nf">simple</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">val</span> <span class="py">view</span> <span class="p">=</span> <span class="n">paparazzi</span><span class="p">.</span><span class="n">inflate</span><span class="p">&lt;</span><span class="n">LaunchView</span><span class="p">&gt;(</span><span class="n">R</span><span class="p">.</span><span class="n">layout</span><span class="p">.</span><span class="n">launch</span><span class="p">)</span>
+    <span class="c1">// or... </span>
+    <span class="c1">// val view = LaunchView(paparazzi.context)</span>
+
+    <span class="n">view</span><span class="p">.</span><span class="n">setModel</span><span class="p">(</span><span class="n">LaunchModel</span><span class="p">(</span><span class="n">title</span> <span class="p">=</span> <span class="s">&quot;paparazzi&quot;</span><span class="p">))</span>
+    <span class="n">paparazzi</span><span class="p">.</span><span class="n">snapshot</span><span class="p">(</span><span class="n">view</span><span class="p">)</span>
+  <span class="p">}</span>
+<span class="p">}</span>
 </code></pre></div>
 
+<h2 id="tasks">Tasks<a class="headerlink" href="#tasks" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>$ ./gradlew sample:testDebug
+</code></pre></div>
+
+<p>Runs tests and generates an HTML report at <code>sample/build/reports/paparazzi/</code> showing all 
+test runs and snapshots. </p>
+<div class="highlight"><pre><span></span><code>$ ./gradlew sample:recordPaparazziDebug
+</code></pre></div>
+
+<p>Saves snapshots as golden values to a predefined source-controlled location 
+(defaults to <code>src/test/snapshots</code>).</p>
+<div class="highlight"><pre><span></span><code>$ ./gradlew sample:verifyPaparazziDebug
+</code></pre></div>
+
+<p>Runs tests and verifies against previously-recorded golden values.</p>
+<p>For more examples, check out the <a href="https://github.com/cashapp/paparazzi/tree/master/sample">sample</a> project.</p>
 <h2 id="git-lfs">Git LFS<a class="headerlink" href="#git-lfs" title="Permanent link">&para;</a></h2>
-<p>It is recommended you use <a href="https://git-lfs.github.com/">Git LFS</a> to store your snapshots.  Here&rsquo;s a template to get started.</p>
-<h4 id="gitattributes"><strong><code>.gitattributes</code></strong><a class="headerlink" href="#gitattributes" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code>**/snapshots/**/*.png <span class="nv">filter</span><span class="o">=</span>lfs <span class="nv">diff</span><span class="o">=</span>lfs <span class="nv">merge</span><span class="o">=</span>lfs -text
+<p>It is recommended you use <a href="https://git-lfs.github.com/">Git LFS</a> to store your snapshots.  Here&rsquo;s a quick setup:</p>
+<div class="highlight"><pre><span></span><code>$ brew install git-lfs
+$ git config core.hooksPath  <span class="c1"># optional, confirm where your git hooks will be installed</span>
+$ git lfs install --local
+$ git lfs track **/snapshots/**/*.png
+$ git add .gitattributes
 </code></pre></div>
 
-<h4 id="hookspre-receive"><strong><code>.hooks/pre-receive</code></strong><a class="headerlink" href="#hookspre-receive" title="Permanent link">&para;</a></h4>
+<p>On CI, you might set up something like:</p>
+<p><code>$HOOKS_DIR/pre-receive</code>
 <div class="highlight"><pre><span></span><code><span class="c1"># compares files that match .gitattributes filter to those actually tracked by git-lfs</span>
 diff &lt;<span class="o">(</span>git ls-files <span class="s1">&#39;:(attr:filter=lfs)&#39;</span> <span class="p">|</span> sort<span class="o">)</span> &lt;<span class="o">(</span>git lfs ls-files -n <span class="p">|</span> sort<span class="o">)</span> &gt;/dev/null
 
@@ -583,47 +507,19 @@ diff &lt;<span class="o">(</span>git ls-files <span class="s1">&#39;:(attr:filte
   <span class="nb">echo</span> &gt;<span class="p">&amp;</span><span class="m">2</span> <span class="s2">&quot;This remote has detected files committed without using Git LFS. Run &#39;brew install git-lfs &amp;&amp; git lfs install&#39; to install it and re-commit your files.&quot;</span><span class="p">;</span>
   <span class="nb">exit</span> <span class="m">1</span><span class="p">;</span>
 <span class="k">fi</span>
-</code></pre></div>
-
-<h4 id="hookspost-checkout"><strong><code>.hooks/post-checkout</code></strong><a class="headerlink" href="#hookspost-checkout" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code><span class="c1"># Call the git-lfs filter (except in CI)</span>
-<span class="k">if</span> <span class="o">[[</span> not CI <span class="o">]]</span><span class="p">;</span> <span class="k">then</span>
-  <span class="nb">command</span> -v git-lfs &gt;/dev/null <span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span> <span class="o">||</span> <span class="o">{</span> <span class="nb">echo</span> &gt;<span class="p">&amp;</span><span class="m">2</span> <span class="s2">&quot;This repository is configured for Git LFS but &#39;git-lfs&#39; was not found on your path. Run &#39;brew install git-lfs &amp;&amp; git lfs install&#39; to install it.&quot;</span><span class="p">;</span> <span class="nb">exit</span> <span class="m">2</span><span class="p">;</span> <span class="o">}</span>
-  git lfs post-checkout <span class="s2">&quot;</span><span class="nv">$@</span><span class="s2">&quot;</span>
+</code></pre></div></p>
+<p><code>your_build_script.sh</code>
+<div class="highlight"><pre><span></span><code><span class="k">if</span> <span class="o">[[</span> is running snapshot tests <span class="o">]]</span><span class="p">;</span> <span class="k">then</span>
+  <span class="c1"># fail fast if files not checked in using git lfs</span>
+  <span class="s2">&quot;</span><span class="nv">$HOOKS_DIR</span><span class="s2">&quot;</span>/pre-receive
+  git lfs install --local
+  git lfs pull
 <span class="k">fi</span>
-</code></pre></div>
-
-<h4 id="hookspost-commit"><strong><code>.hooks/post-commit</code></strong><a class="headerlink" href="#hookspost-commit" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code><span class="c1"># Call the git-lfs filter (except in CI)</span>
-<span class="k">if</span> <span class="o">[[</span> not CI <span class="o">]]</span><span class="p">;</span> <span class="k">then</span>
-  <span class="nb">command</span> -v git-lfs &gt;/dev/null <span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span> <span class="o">||</span> <span class="o">{</span> <span class="nb">echo</span> &gt;<span class="p">&amp;</span><span class="m">2</span> <span class="s2">&quot;This repository is configured for Git LFS but &#39;git-lfs&#39; was not found on your path. Run &#39;brew install git-lfs &amp;&amp; git lfs install&#39; to install it.&quot;</span><span class="p">;</span> <span class="nb">exit</span> <span class="m">2</span><span class="p">;</span> <span class="o">}</span>
-  git lfs post-commit <span class="s2">&quot;</span><span class="nv">$@</span><span class="s2">&quot;</span>
-<span class="k">fi</span>
-</code></pre></div>
-
-<h4 id="hookspost-merge"><strong><code>.hooks/post-merge</code></strong><a class="headerlink" href="#hookspost-merge" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code><span class="c1"># Call the git-lfs filter (except in CI)</span>
-<span class="k">if</span> <span class="o">[[</span> not CI <span class="o">]]</span><span class="p">;</span> <span class="k">then</span>
-  <span class="nb">command</span> -v git-lfs &gt;/dev/null <span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span> <span class="o">||</span> <span class="o">{</span> <span class="nb">echo</span> &gt;<span class="p">&amp;</span><span class="m">2</span> <span class="s2">&quot;This repository is configured for Git LFS but &#39;git-lfs&#39; was not found on your path. Run &#39;brew install git-lfs &amp;&amp; git lfs install&#39; to install it.&quot;</span><span class="p">;</span> <span class="nb">exit</span> <span class="m">2</span><span class="p">;</span> <span class="o">}</span>
-  git lfs post-merge <span class="s2">&quot;</span><span class="nv">$@</span><span class="s2">&quot;</span>
-<span class="k">fi</span>
-</code></pre></div>
-
-<h4 id="hookspre-push"><strong><code>.hooks/pre-push</code></strong><a class="headerlink" href="#hookspre-push" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code><span class="c1"># Call the git-lfs filter (except in CI)</span>
-<span class="k">if</span> <span class="o">[[</span> not CI <span class="o">]]</span><span class="p">;</span> <span class="k">then</span>
-  <span class="nb">command</span> -v git-lfs &gt;/dev/null <span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span> <span class="o">||</span> <span class="o">{</span> <span class="nb">echo</span> &gt;<span class="p">&amp;</span><span class="m">2</span> <span class="s2">&quot;This repository is configured for Git LFS but &#39;git-lfs&#39; was not found on your path. Run &#39;brew install git-lfs &amp;&amp; git lfs install&#39; to install it.&quot;</span><span class="p">;</span> <span class="nb">exit</span> <span class="m">2</span><span class="p">;</span> <span class="o">}</span>
-  git lfs pre-push <span class="s2">&quot;</span><span class="nv">$@</span><span class="s2">&quot;</span>
-<span class="k">fi</span>
-</code></pre></div>
-
-<h4 id="your-ci-script"><strong><code>your CI script</code></strong><a class="headerlink" href="#your-ci-script" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code>  <span class="k">if</span> <span class="o">[[</span> is running snapshot tests <span class="o">]]</span><span class="p">;</span> <span class="k">then</span>
-    <span class="c1"># fail fast if files not checked in using git lfs</span>
-    <span class="s2">&quot;</span><span class="nv">$REPO_DIR</span><span class="s2">&quot;</span>/.hooks/pre-receive
-    git lfs install --local
-    git lfs pull
-  <span class="k">fi</span>
+</code></pre></div></p>
+<h2 id="jetifier">Jetifier<a class="headerlink" href="#jetifier" title="Permanent link">&para;</a></h2>
+<p>If using Jetifier to migrate off Support libraries, add the following to your <code>gradle.properties</code> to
+exclude bundled Android dependencies.</p>
+<div class="highlight"><pre><span></span><code>android.jetifier.ignorelist=android-base-common,common
 </code></pre></div>
 
 <h2 id="releases">Releases<a class="headerlink" href="#releases" title="Permanent link">&para;</a></h2>
@@ -647,53 +543,33 @@ diff &lt;<span class="o">(</span>git ls-files <span class="s1">&#39;:(attr:filte
 <span class="o">}</span>
 </code></pre></div></p>
 <p>Snapshots of the development version are available in <a href="https://oss.sonatype.org/content/repositories/snapshots/app/cash/paparazzi/">Sonatype&rsquo;s <code>snapshots</code> repository</a>.</p>
-<div class="highlight"><pre><span></span><code><span class="n">repositories</span> <span class="o">{</span>
-  <span class="n">mavenCentral</span><span class="o">()</span>
-  <span class="n">maven</span> <span class="o">{</span>
-    <span class="n">url</span> <span class="s1">&#39;https://oss.sonatype.org/content/repositories/snapshots/&#39;</span>
-  <span class="o">}</span>
-<span class="o">}</span>
+<div class="highlight"><pre><span></span><code> <span class="n">repositories</span> <span class="o">{</span>
+   <span class="c1">// ...</span>
+   <span class="n">maven</span> <span class="o">{</span>
+     <span class="n">url</span> <span class="s1">&#39;https://oss.sonatype.org/content/repositories/snapshots/&#39;</span>
+   <span class="o">}</span>
+ <span class="o">}</span>
 </code></pre></div>
 
-<h2 id="tasks">Tasks<a class="headerlink" href="#tasks" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code>$ ./gradlew some-project:testDebug
-</code></pre></div>
-
-<p>Runs tests and generates an HTML report at <code>some-project/build/reports/paparazzi/debug/</code> showing all 
-test runs and snapshots. </p>
-<div class="highlight"><pre><span></span><code>$ ./gradlew some-project:recordPaparazziDebug
-</code></pre></div>
-
-<p>Saves snapshots as golden values to a predefined source-controlled location 
-(default: <code>src/test/snapshots</code>).</p>
-<div class="highlight"><pre><span></span><code>$ ./gradlew some-project:verifyPaparazziDebug
-</code></pre></div>
-
-<p>Runs tests and verifies against previously-recorded golden values.</p>
-<p>Check out the <a href="https://github.com/cashapp/paparazzi/tree/master/sample">sample</a>.</p>
 <h2 id="known-limitations">Known Limitations<a class="headerlink" href="#known-limitations" title="Permanent link">&para;</a></h2>
 <h4 id="running-tests-from-the-ide">Running Tests from the IDE<a class="headerlink" href="#running-tests-from-the-ide" title="Permanent link">&para;</a></h4>
-<p>Ex:
-<div class="highlight"><pre><span></span><code>java.lang.NullPointerException
+<p><div class="highlight"><pre><span></span><code>java.lang.NullPointerException
   at java.base/java.io.File.&lt;init&gt;(File.java:278)
   at app.cash.paparazzi.EnvironmentKt.detectEnvironment(Environment.kt:36)
 </code></pre></div>
-Running tests from the IDE requires Android Studio Arctic Fox or later. </p>
-<hr />
+Running tests from the IDE requires Android Studio Arctic Fox or later.</p>
 <h4 id="could-not-find-resource-matching-value-0x-resolved-name-in-current-configuration">Could not find &hellip; resource matching value 0x&hellip; (resolved name: &hellip;) in current configuration.<a class="headerlink" href="#could-not-find-resource-matching-value-0x-resolved-name-in-current-configuration" title="Permanent link">&para;</a></h4>
-<p>Ex:
-<div class="highlight"><pre><span></span><code>Could not find dimen resource matching value 0x10500C0 (resolved name: config_scrollbarSize) in current configuration.
+<p><div class="highlight"><pre><span></span><code>Could not find dimen resource matching value 0x10500C0 (resolved name: config_scrollbarSize) in current configuration.
 android.content.res.Resources$NotFoundException: Could not find dimen resource matching value 0x10500C0 (resolved name: config_scrollbarSize) in current configuration.
 
 Could not find integer resource matching value 0x10E00B4 (resolved name: config_screenshotChordKeyTimeout) in current configuration.
 android.content.res.Resources$NotFoundException: Could not find integer resource matching value 0x10E00B4 (resolved name: config_screenshotChordKeyTimeout) in current configuration.
 </code></pre></div>
-<code>compileSdkVersion</code> has to be 29 or higher. 
-<div class="highlight"><pre><span></span><code><span class="n">android</span> <span class="p">{</span>
-  <span class="n">compileSdkVersion</span> <span class="m">29</span>
-<span class="p">}</span>
+<code>compileSdkVersion</code> has to be 29 or higher.
+<div class="highlight"><pre><span></span><code><span class="n">android</span> <span class="o">{</span>
+  <span class="n">compileSdkVersion</span> <span class="mi">29</span>
+<span class="o">}</span>
 </code></pre></div></p>
-<hr />
 <h2 id="license">License<a class="headerlink" href="#license" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>Copyright 2019 Square, Inc.
 
