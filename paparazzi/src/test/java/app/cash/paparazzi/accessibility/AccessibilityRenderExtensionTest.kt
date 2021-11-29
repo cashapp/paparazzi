@@ -23,6 +23,8 @@ import java.io.File
 import javax.imageio.ImageIO
 
 class AccessibilityRenderExtensionTest {
+  private val snapshotHandler = TestSnapshotVerifier()
+
   @get:Rule
   val paparazzi = Paparazzi(
     deviceConfig = DeviceConfig.NEXUS_5.copy(
@@ -30,23 +32,32 @@ class AccessibilityRenderExtensionTest {
       screenWidth = DeviceConfig.NEXUS_5.screenWidth * 2,
       softButtons = false
     ),
-    snapshotHandler = TestSnapshotVerifier(),
+    snapshotHandler = snapshotHandler,
     renderExtensions = setOf(AccessibilityRenderExtension())
   )
 
   @Test
   fun test() {
     val view = buildView(paparazzi.context)
-    paparazzi.snapshot(view)
+    paparazzi.snapshot(view, name = "accessibility")
   }
 
-  private fun buildView(context: Context) =
+  @Test
+  fun `test without layout params set`() {
+    val view = buildView(paparazzi.context, null)
+    paparazzi.snapshot(view, name = "without-layout-params")
+  }
+
+  private fun buildView(
+    context: Context,
+    rootLayoutParams: ViewGroup.LayoutParams? = ViewGroup.LayoutParams(
+      ViewGroup.LayoutParams.MATCH_PARENT,
+      ViewGroup.LayoutParams.MATCH_PARENT
+    )
+  ) =
     LinearLayout(context).apply {
       orientation = LinearLayout.VERTICAL
-      layoutParams = ViewGroup.LayoutParams(
-        ViewGroup.LayoutParams.MATCH_PARENT,
-        ViewGroup.LayoutParams.MATCH_PARENT
-      )
+      rootLayoutParams?.let { layoutParams = it }
       addView(TextView(context).apply {
         text = "Text View Sample"
       })
@@ -92,7 +103,7 @@ class AccessibilityRenderExtensionTest {
     ): SnapshotHandler.FrameHandler {
       return object : SnapshotHandler.FrameHandler {
         override fun handle(image: BufferedImage) {
-          val expected = File("src/test/resources/accessibility.png")
+          val expected = File("src/test/resources/${snapshot.name}.png")
           ImageUtils.assertImageSimilar(
             relativePath = expected.path,
             image = image,

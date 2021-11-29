@@ -63,11 +63,12 @@ class AccessibilityRenderExtension : RenderExtension {
         ViewGroup.LayoutParams.MATCH_PARENT
       )
 
+      val contentLayoutParams = contentView.layoutParams ?: generateLayoutParams(null)
       addView(
         contentView,
         LinearLayout.LayoutParams(
-          contentView.layoutParams.width,
-          contentView.layoutParams.height,
+          contentLayoutParams.width,
+          contentLayoutParams.height,
           1f
         )
       )
