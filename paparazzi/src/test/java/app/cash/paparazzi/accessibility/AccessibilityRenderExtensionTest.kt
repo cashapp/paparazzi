@@ -59,15 +59,18 @@ class AccessibilityRenderExtensionTest {
       orientation = LinearLayout.VERTICAL
       rootLayoutParams?.let { layoutParams = it }
       addView(TextView(context).apply {
+        id = 1
         text = "Text View Sample"
       })
 
       addView(View(context).apply {
+        id = 2
         layoutParams = LinearLayout.LayoutParams(100, 100)
         contentDescription = "Content Description Sample"
       })
 
       addView(View(context).apply {
+        id = 3
         layoutParams = LinearLayout.LayoutParams(100, 100).apply {
           setMarginsRelative(20, 20, 20, 20)
         }
@@ -75,6 +78,7 @@ class AccessibilityRenderExtensionTest {
       })
 
       addView(View(context).apply {
+        id = 4
         layoutParams = LinearLayout.LayoutParams(100, 100).apply {
           setMarginsRelative(20, 20, 20, 20)
         }
@@ -85,6 +89,7 @@ class AccessibilityRenderExtensionTest {
       })
 
       addView(Button(context).apply {
+        id = 5
         layoutParams = LinearLayout.LayoutParams(
           ViewGroup.LayoutParams.WRAP_CONTENT,
           ViewGroup.LayoutParams.WRAP_CONTENT
