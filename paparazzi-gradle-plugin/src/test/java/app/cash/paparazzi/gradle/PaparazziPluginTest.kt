@@ -802,6 +802,23 @@ class PaparazziPluginTest {
     assertThat(result.output).doesNotContain("java.lang.ClassNotFoundException")
   }
 
+  @Test
+  fun interceptParserFactoryCreate() {
+    val fixtureRoot = File("src/test/projects/parser-factory-intercept")
+
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()
+    assertThat(snapshots!!).hasLength(1)
+
+    val snapshotImage = snapshots[0]
+    val goldenImage = File(fixtureRoot, "src/test/resources/five_bucks.png")
+    assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
+  }
+
   private fun GradleRunner.runFixture(
     projectRoot: File,
     moduleRoot: File = projectRoot,

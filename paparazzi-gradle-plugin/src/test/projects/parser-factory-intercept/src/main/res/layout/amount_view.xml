@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<app.cash.paparazzi.plugin.test.AmountView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:text="$5.00"
+    android:textSize="64sp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"/>

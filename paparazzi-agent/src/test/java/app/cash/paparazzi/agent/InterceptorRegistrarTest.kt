@@ -3,12 +3,12 @@ package app.cash.paparazzi.agent
 import net.bytebuddy.agent.ByteBuddyAgent
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.After
-import org.junit.Before
 import org.junit.Test
 
 class InterceptorRegistrarTest {
-  @Before
-  fun setup() {
+
+  @Test
+  fun test() {
     InterceptorRegistrar.addMethodInterceptors(
       Utils::class.java,
       setOf(
@@ -19,19 +19,52 @@ class InterceptorRegistrarTest {
 
     ByteBuddyAgent.install()
     InterceptorRegistrar.registerMethodInterceptors()
-  }
 
-  @Test
-  fun test() {
     Utils.log1()
     Utils.log2()
 
     assertThat(logs).containsExactly("intercept1", "intercept2")
   }
 
+  @Test
+  fun testOverloadedMethodInterceptor() {
+    InterceptorRegistrar.addOverloadedMethodInterceptor(
+      ContainsOverloadedMethod::class.java,
+      "overloaded",
+      listOf(String::class.java),
+      OverloadedMethodInterceptor::class.java
+    )
+
+    ByteBuddyAgent.install()
+    InterceptorRegistrar.registerMethodInterceptors()
+
+    ContainsOverloadedMethod.overloaded()
+    ContainsOverloadedMethod.overloaded("ignored")
+
+    assertThat(logs).containsExactly("overloaded1", "interceptOverloaded2")
+  }
+
   @After
   fun teardown() {
+    logs.clear()
     InterceptorRegistrar.clearMethodInterceptors()
+  }
+
+  object ContainsOverloadedMethod {
+    fun overloaded() {
+      logs += "overloaded1"
+    }
+
+    fun overloaded(@Suppress("UNUSED_PARAMETER") testParam: String) {
+      logs += "overloaded2"
+    }
+  }
+
+  object OverloadedMethodInterceptor {
+    @JvmStatic
+    fun intercept(@Suppress("UNUSED_PARAMETER") testParam: String) {
+      logs += "interceptOverloaded2"
+    }
   }
 
   object Utils {

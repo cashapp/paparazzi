@@ -38,6 +38,7 @@ import app.cash.paparazzi.internal.MatrixVectorMultiplicationInterceptor
 import app.cash.paparazzi.internal.parsers.LayoutPullParser
 import app.cash.paparazzi.internal.PaparazziCallback
 import app.cash.paparazzi.internal.PaparazziLogger
+import app.cash.paparazzi.internal.ParserFactoryInterceptor
 import app.cash.paparazzi.internal.Renderer
 import app.cash.paparazzi.internal.ResourcesInterceptor
 import app.cash.paparazzi.internal.SessionParamsBuilder
@@ -115,6 +116,7 @@ class Paparazzi @JvmOverloads constructor(
     registerFontLookupInterceptionIfResourceCompatDetected()
     registerViewEditModeInterception()
     registerMatrixMultiplyInterception()
+    registerParserFactoryCreateInterception()
 
     val outerRule = AgentTestRule()
     return outerRule.apply(statement, description)
@@ -471,6 +473,20 @@ class Paparazzi @JvmOverloads constructor(
       )
     } catch (e: ClassNotFoundException) {
       logger.verbose("ResourceCompat not found on classpath")
+    }
+  }
+
+  private fun registerParserFactoryCreateInterception() {
+    try {
+      val parserFactoryClass = Class.forName("com.android.layoutlib.bridge.impl.ParserFactory")
+      InterceptorRegistrar.addOverloadedMethodInterceptor(
+        parserFactoryClass,
+        "create",
+        listOf(String::class.java, Boolean::class.java),
+        ParserFactoryInterceptor::class.java,
+      )
+    } catch (e: ClassNotFoundException) {
+      logger.verbose("ParserFactory not found on classpath")
     }
   }
 

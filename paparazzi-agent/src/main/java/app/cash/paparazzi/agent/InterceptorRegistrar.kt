@@ -1,8 +1,10 @@
 package app.cash.paparazzi.agent
 
 import net.bytebuddy.ByteBuddy
+import net.bytebuddy.description.method.MethodDescription
 import net.bytebuddy.dynamic.loading.ClassReloadingStrategy
 import net.bytebuddy.implementation.MethodDelegation
+import net.bytebuddy.matcher.ElementMatcher.Junction.Conjunction
 import net.bytebuddy.matcher.ElementMatchers
 
 object InterceptorRegistrar {
@@ -14,6 +16,26 @@ object InterceptorRegistrar {
     methodName: String,
     interceptor: Class<*>
   ) = addMethodInterceptors(receiver, setOf(methodName to interceptor))
+
+  fun addOverloadedMethodInterceptor(
+    receiver: Class<*>,
+    methodName: String,
+    arguments: List<Class<*>>,
+    interceptor: Class<*>
+  ) {
+    methodInterceptors += {
+      val methodNameMatcher = ElementMatchers.named<MethodDescription>(methodName)
+      val argumentMatchers = arguments.mapIndexed { index, clazz ->
+        ElementMatchers.takesArgument<MethodDescription>(index, clazz)
+      }
+      byteBuddy
+        .redefine(receiver)
+        .method(Conjunction(argumentMatchers + mutableListOf(methodNameMatcher)))
+        .intercept(MethodDelegation.to(interceptor))
+        .make()
+        .load(receiver.classLoader, ClassReloadingStrategy.fromInstalledAgent())
+    }
+  }
 
   fun addMethodInterceptors(
     receiver: Class<*>,
