@@ -37,7 +37,7 @@ class AccessibilityRenderExtensionTest {
   )
 
   @Test
-  fun test() {
+  fun `verify baseline`() {
     val view = buildView(paparazzi.context)
     paparazzi.snapshot(view, name = "accessibility")
   }
@@ -46,6 +46,14 @@ class AccessibilityRenderExtensionTest {
   fun `test without layout params set`() {
     val view = buildView(paparazzi.context, null)
     paparazzi.snapshot(view, name = "without-layout-params")
+  }
+
+  @Test
+  fun `verify changing view hierarchy order doesn't change accessibility colors`() {
+    val view = buildView(paparazzi.context).apply {
+      addView(View(context).apply { contentDescription = "Empty View" }, 0, LinearLayout.LayoutParams(0, 0))
+    }
+    paparazzi.snapshot(view, name = "accessibility-new-view")
   }
 
   private fun buildView(

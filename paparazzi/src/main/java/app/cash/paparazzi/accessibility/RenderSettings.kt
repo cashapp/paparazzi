@@ -36,23 +36,16 @@ internal object RenderSettings {
   const val DEFAULT_RECT_SIZE: Int = 16
 
   private val colorMap = mutableMapOf<View, Color>()
-  private var colorIndex = -1
 
   fun getColor(view: View): Color {
-    return colorMap.getOrElse(view) {
-      nextColor().withAlpha(DEFAULT_RENDER_ALPHA).apply {
-        colorMap[view] = this
-      }
+    return colorMap.getOrPut(view) {
+      nextColor(view).withAlpha(DEFAULT_RENDER_ALPHA)
     }
   }
 
-  private fun nextColor(): Color {
-    if (colorIndex + 1 > DEFAULT_RENDER_COLORS.size - 1) {
-      colorIndex = 0
-    } else {
-      colorIndex++
-    }
-    return DEFAULT_RENDER_COLORS[colorIndex]
+  private fun nextColor(view: View): Color {
+    val viewId = if (view.id != View.NO_ID) view.id else System.identityHashCode(view)
+    return DEFAULT_RENDER_COLORS[viewId % DEFAULT_RENDER_COLORS.size]
   }
 
   internal fun Color.toColorInt(): Int =
