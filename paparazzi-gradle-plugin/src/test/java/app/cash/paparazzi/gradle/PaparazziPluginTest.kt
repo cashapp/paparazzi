@@ -791,6 +791,17 @@ class PaparazziPluginTest {
     assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
   }
 
+  @Test
+  fun nonTransitiveResourcesNoDeps() {
+    val fixtureRoot = File("src/test/projects/non-transitive-resources-no-deps")
+
+    val result = gradleRunner
+      .withArguments("testDebug")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.output).doesNotContain("java.lang.ClassNotFoundException")
+  }
+
   private fun GradleRunner.runFixture(
     projectRoot: File,
     moduleRoot: File = projectRoot,
