@@ -75,9 +75,9 @@ abstract class PrepareResourcesTask : DefaultTask() {
     val resourcePackageNames = if (nonTransitiveRClassEnabled.get()) {
       buildList {
         add(mainPackage)
-        addAll(artifactFiles.files.map { file ->
-          file.useLines { lines -> lines.first() }
-        })
+        artifactFiles.files.map { file ->
+          add(file.useLines { lines -> lines.first() })
+        }
       }.joinToString(",")
     } else {
       mainPackage
