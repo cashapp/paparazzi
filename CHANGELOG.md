@@ -1,6 +1,20 @@
 Change Log
 ==========
 
+## Version 0.9.1
+_2022-01-14_
+
+### Fixed
+* Download mac arm artifact if on M1 machines
+* Support for assets from transitive dependencies
+* Add fix for ClassNotFoundException when using nonTransitiveRClass
+* Update RELEASING notes to publish plugin marker artifact
+* Avoid NPE in AccessibilityRenderExtension when layout params are not supplied
+* Use View.id to generate consistent colors for accessibility entries when views are modified
+
+Kudos to @luis-cortes, @geoff-powell, @autonomousapps and @LuK1709 for their contributions this release!
+
+
 ## Version 0.9.0
 _2021-11-22_
 
