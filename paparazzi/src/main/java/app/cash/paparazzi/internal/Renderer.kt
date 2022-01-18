@@ -107,7 +107,10 @@ internal class Renderer(
     val osName = System.getProperty("os.name").toLowerCase(Locale.US)
     val osLabel = when {
       osName.startsWith("windows") -> "win"
-      osName.startsWith("mac") -> "mac"
+      osName.startsWith("mac") -> {
+        val osArch = System.getProperty("os.arch").lowercase(Locale.US)
+        if (osArch.startsWith("x86")) "mac" else "mac-arm"
+      }
       else -> "linux"
     }
     return "$osLabel/lib64"
