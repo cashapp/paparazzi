@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-## Version 0.9.2
+## Version 0.9.3
 _2022-01-20_
 
 ### Fixed
@@ -9,6 +9,10 @@ _2022-01-20_
 * Generate fake View.id for consistent colors for accessibility entries when views are modified
 
 Kudos to @geoff-powell, @nicbell for their contributions this release!
+
+
+## Version 0.9.2 (Please ignore this release)
+_2022-01-20_
 
 
 ## Version 0.9.1
