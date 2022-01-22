@@ -43,13 +43,13 @@ class KeypadViewTest {
     paparazzi.snapshot(keypad, "five bucks")
 
     keypad.setBackgroundResource(R.color.keypadDarkGrey)
-    val darkGrey = paparazzi.resources.getColor(R.color.keypadDarkGrey)
+    val darkGrey = paparazzi.context.getColor(R.color.keypadDarkGrey)
     keypad.setBackgroundColor(darkGrey)
     amount.text = "$1.00"
     paparazzi.snapshot(keypad, "grey")
 
     keypad.setBackgroundResource(R.color.keypadDarkGrey)
-    keypad.setBackgroundColor(paparazzi.resources.getColor(R.color.bolt))
+    keypad.setBackgroundColor(paparazzi.context.getColor(R.color.bolt))
     amount.setTextColor(darkGrey)
     amount123.setTextColor(darkGrey)
     amount456.setTextColor(darkGrey)
