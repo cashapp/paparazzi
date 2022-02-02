@@ -10,5 +10,6 @@ android {
 }
 
 dependencies {
+  implementation 'androidx.core:core:1.7.0'
   testImplementation deps.testparameterinjector
 }
