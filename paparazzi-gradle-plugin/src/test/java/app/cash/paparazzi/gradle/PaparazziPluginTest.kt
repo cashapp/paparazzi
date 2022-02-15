@@ -500,7 +500,7 @@ class PaparazziPluginTest {
 
     val resourceFileContents = resourcesFile.readLines()
     assertThat(resourceFileContents[0]).isEqualTo("app.cash.paparazzi.plugin.test")
-    assertThat(resourceFileContents[1]).isEqualTo("build/intermediates/res/merged/debug")
+    assertThat(resourceFileContents[1]).isEqualTo("build/intermediates/merged_res/debug")
     assertThat(resourceFileContents[4]).isEqualTo("build/intermediates/merged_assets/debug/out")
     assertThat(resourceFileContents[6]).isEqualTo("app.cash.paparazzi.plugin.test")
   }
@@ -520,7 +520,7 @@ class PaparazziPluginTest {
 
     val resourceFileContents = resourcesFile.readLines()
     assertThat(resourceFileContents[0]).isEqualTo("app.cash.paparazzi.plugin.test")
-    assertThat(resourceFileContents[1]).isEqualTo("build/intermediates/res/merged/debug")
+    assertThat(resourceFileContents[1]).isEqualTo("build/intermediates/merged_res/debug")
     assertThat(resourceFileContents[4]).isEqualTo("build/intermediates/merged_assets/debug/out")
     assertThat(resourceFileContents[6]).isEqualTo("app.cash.paparazzi.plugin.test")
   }

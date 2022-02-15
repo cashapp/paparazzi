@@ -16,6 +16,9 @@ dependencies {
   implementation platform(deps.kotlin.bom)
   implementation deps.plugins.kotlin
   implementation deps.plugins.android
+  implementation(deps.tools.sdkcommon) {
+    because "SymbolUtils.getPackageNameFromManifest removed in AGP 7.0.  Replace?"
+  }
 
   testImplementation deps.junit
   testImplementation deps.truth

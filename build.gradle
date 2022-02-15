@@ -9,7 +9,7 @@ buildscript {
 
   ext.versions = [
     kotlin: '1.5.31',
-    agp: '4.2.2',
+    agp: '7.0.4',
     layoutlib: "2020.3.1-$layoutLibPrebuiltSha", // "should" be similar to versions.agp
     androidTools: '27.1.2', // agp + 23.0.0 = androidTools
     jcodec: '0.2.5',
