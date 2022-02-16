@@ -133,6 +133,7 @@ $dokka.location:app.cash.paparazzi/Paparazzi/layoutInflater/#/PointingToDeclarat
 $dokka.location:app.cash.paparazzi/Paparazzi/prepare/#org.junit.runner.Description/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/prepare.md
 $dokka.location:app.cash.paparazzi/Paparazzi/resources/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/resources.md
 $dokka.location:app.cash.paparazzi/Paparazzi/snapshot/#android.view.View#kotlin.String?#app.cash.paparazzi.DeviceConfig?#kotlin.String?#com.android.ide.common.rendering.api.SessionParams.RenderingMode?/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/snapshot.md
+$dokka.location:app.cash.paparazzi/Paparazzi/snapshot/#kotlin.String?#app.cash.paparazzi.DeviceConfig?#kotlin.String?#com.android.ide.common.rendering.api.SessionParams.RenderingMode?#kotlin.Function0[kotlin.Unit]/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/snapshot.md
 $dokka.location:app.cash.paparazzi/RenderExtension///PointingToDeclaration/paparazzi/app.cash.paparazzi/-render-extension/index.md
 $dokka.location:app.cash.paparazzi/RenderExtension/renderView/#android.view.View/PointingToDeclaration/paparazzi/app.cash.paparazzi/-render-extension/render-view.md
 $dokka.location:app.cash.paparazzi/Snapshot///PointingToDeclaration/paparazzi/app.cash.paparazzi/-snapshot/index.md
