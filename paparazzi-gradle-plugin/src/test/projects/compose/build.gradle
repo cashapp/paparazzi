@@ -1,0 +1,31 @@
+plugins {
+  id 'com.android.library'
+  id 'kotlin-android'
+  id 'app.cash.paparazzi'
+}
+
+repositories {
+  maven {
+    url "file://${projectDir.absolutePath}/../../../../../build/localMaven"
+  }
+  mavenCentral()
+  //mavenLocal()
+  google()
+}
+
+android {
+  compileSdkVersion 30
+  defaultConfig {
+    minSdkVersion 25
+  }
+  buildFeatures {
+    compose true
+  }
+  composeOptions {
+    kotlinCompilerExtensionVersion '1.0.5'
+  }
+}
+
+dependencies {
+  implementation 'androidx.compose.material:material:1.0.5'
+}
