@@ -802,6 +802,22 @@ class PaparazziPluginTest {
     assertThat(result.output).doesNotContain("java.lang.ClassNotFoundException")
   }
 
+  @Test
+  fun compose() {
+    val fixtureRoot = File("src/test/projects/compose")
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()
+    assertThat(snapshots!!).hasLength(1)
+
+    val snapshotImage = snapshots[0]
+    val goldenImage = File(fixtureRoot, "src/test/resources/compose_fonts.png")
+    assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
+  }
+
   private fun GradleRunner.runFixture(
     projectRoot: File,
     moduleRoot: File = projectRoot,
