@@ -82,7 +82,8 @@ class Paparazzi @JvmOverloads constructor(
   private val appCompatEnabled: Boolean = true,
   private val maxPercentDifference: Double = 0.1,
   private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference),
-  private val renderExtensions: Set<RenderExtension> = setOf()
+  private val renderExtensions: Set<RenderExtension> = setOf(),
+  private val managedRendererScope: RendererScope? = null,
 ) : TestRule {
   private val THUMBNAIL_SIZE = 1000
 
@@ -141,8 +142,21 @@ class Paparazzi @JvmOverloads constructor(
 
     testName = description.toTestName()
 
-    renderer = Renderer(environment, layoutlibCallback, logger, maxPercentDifference)
-    sessionParamsBuilder = renderer.prepare()
+    if (managedRendererScope == null) {
+      // Renderer lifecycle internally managed by Paparazzi
+      renderer = Renderer(environment, layoutlibCallback, logger, maxPercentDifference)
+      sessionParamsBuilder = renderer.prepare()
+    } else if (!managedRendererScope.isInitialized) {
+      // Renderer lifecycle externally managed by user, initialization
+      renderer = Renderer(environment, layoutlibCallback, logger, maxPercentDifference)
+      sessionParamsBuilder = renderer.prepare()
+      managedRendererScope.renderer = renderer
+      managedRendererScope.sessionParamsBuilder = sessionParamsBuilder
+    } else {
+      // Renderer lifecycle externally managed by user, potentially subsequent runs
+      renderer = managedRendererScope.renderer
+      sessionParamsBuilder = managedRendererScope.sessionParamsBuilder
+    }
 
     sessionParamsBuilder = sessionParamsBuilder
         .copy(
@@ -168,7 +182,9 @@ class Paparazzi @JvmOverloads constructor(
 
   fun close() {
     testName = null
-    renderer.close()
+    if (managedRendererScope == null) {
+      renderer.close()
+    }
     renderSession.release()
     bridgeRenderSession.dispose()
     cleanupThread()
