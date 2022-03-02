@@ -66,6 +66,7 @@ abstract class PrepareResourcesTask : DefaultTask() {
   private val projectDirectory = project.layout.projectDirectory
 
   @TaskAction
+  // TODO: figure out why this can't be removed as of Kotlin 1.6+
   @OptIn(ExperimentalStdlibApi::class)
   fun writeResourcesFile() {
     val out = paparazziResources.get().asFile

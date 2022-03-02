@@ -121,7 +121,6 @@ class ResourceParser(inputStream: InputStream) : KXmlParser() {
     return name.substring(name.indexOf(':') + 1)
   }
 
-  @OptIn(ExperimentalStdlibApi::class)
   private fun createAttributesForTag(): MutableList<AttributeSnapshot> {
     return buildList {
       for (i in 0 until attributeCount) {

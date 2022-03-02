@@ -34,7 +34,6 @@ import java.io.FileNotFoundException
 import java.io.IOError
 import java.io.InputStream
 import java.nio.charset.Charset
-import java.util.HashMap
 
 /**
  * A layout parser that holds an in-memory tree of a given resource for subsequent traversal
@@ -111,7 +110,6 @@ internal class LayoutPullParser : InMemoryParser, AaptAttrParser, ILayoutPullPar
     this.layoutNamespace = layoutNamespace
   }
 
-  @OptIn(ExperimentalStdlibApi::class)
   private fun findDeclaredAaptAttrs(tag: TagSnapshot): Map<String, TagSnapshot> {
     if (!tag.hasDeclaredAaptAttrs) {
       // Nor tag or any of the children has any aapt:attr declarations, we can stop here.

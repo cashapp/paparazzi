@@ -43,7 +43,6 @@ import java.util.Locale
 
 @Suppress("unused")
 class PaparazziPlugin : Plugin<Project> {
-  @OptIn(ExperimentalStdlibApi::class)
   override fun apply(project: Project) {
     project.afterEvaluate {
       require(project.plugins.hasPlugin("com.android.library")) {
