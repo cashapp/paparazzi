@@ -1,7 +1,11 @@
 apply plugin: 'org.ajoberstar.grgit'
 apply plugin: 'com.vanniktech.maven.publish'
 
-version = versions.layoutlib
+if (properties['VERSION_NAME'].endsWith("SNAPSHOT")) {
+  version = "${versions.layoutlib}-SNAPSHOT"
+} else {
+  version = versions.layoutlib
+}
 
 /**
  * Clone AOSP's prebuilts repo to get a prebuilt layoutlib jar. This big repo that takes a long time to clone!
