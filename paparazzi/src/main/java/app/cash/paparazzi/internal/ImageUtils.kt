@@ -201,7 +201,7 @@ internal object ImageUtils {
         assertTrue(deleted)
       }
       ImageIO.write(deltaImage, "PNG", output)
-      error += " - see details in " + output.path + "\n"
+      error += " - see details in file://" + output.path + "\n"
       error = saveImageAndAppendMessage(image, error, relativePath)
       println(error)
       fail(error)
@@ -336,7 +336,7 @@ internal object ImageUtils {
       assertTrue(deleted)
     }
     ImageIO.write(image, "PNG", output)
-    initialMessage += "Thumbnail for current rendering stored at " + output.path
+    initialMessage += "Thumbnail for current rendering stored at file://" + output.path
     //        initialMessage += "\nRun the following command to accept the changes:\n";
     //        initialMessage += String.format("mv %1$s %2$s", output.getPath(),
     //                ImageUtils.class.getResource(relativePath).getPath());
