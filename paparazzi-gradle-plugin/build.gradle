@@ -32,7 +32,14 @@ def generateVersion = tasks.register("pluginVersion") {
   def outputDir = file('src/generated/kotlin')
 
   inputs.property 'version', version
-  inputs.property 'nativeLibVersion', versions.layoutlib
+
+  def layoutLibVersion = versions.layoutlib
+  if (version.endsWith('SNAPSHOT')) {
+    // If we have a SNAPSHOT version, we should use a snapshot layoutlib
+    layoutLibVersion = "${layoutLibVersion}-SNAPSHOT"
+  }
+
+  inputs.property 'nativeLibVersion', layoutLibVersion
   outputs.dir outputDir
 
   doLast {
@@ -41,7 +48,7 @@ def generateVersion = tasks.register("pluginVersion") {
     versionFile.text = """// Generated file. Do not edit!
 package app.cash.paparazzi
 const val VERSION = "${project.version}"
-const val NATIVE_LIB_VERSION = "${project.versions.layoutlib}"
+const val NATIVE_LIB_VERSION = "${layoutLibVersion}"
 """
   }
 }
