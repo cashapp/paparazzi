@@ -52,6 +52,8 @@ $dokka.location:app.cash.paparazzi.internal.parsers/TagSnapshot/next/#/PointingT
 $dokka.location:app.cash.paparazzi.internal.parsers/TagSnapshot/prefix/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal.parsers/-tag-snapshot/prefix.md
 $dokka.location:app.cash.paparazzi.internal.parsers/TagSnapshot/printFormatted/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal.parsers/-tag-snapshot/print-formatted.md
 $dokka.location:app.cash.paparazzi.internal////PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/index.md
+$dokka.location:app.cash.paparazzi.internal/ChoreographerDelegateInterceptor///PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-choreographer-delegate-interceptor/index.md
+$dokka.location:app.cash.paparazzi.internal/ChoreographerDelegateInterceptor/intercept/#android.view.Choreographer/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-choreographer-delegate-interceptor/intercept.md
 $dokka.location:app.cash.paparazzi.internal/EditModeInterceptor///PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-edit-mode-interceptor/index.md
 $dokka.location:app.cash.paparazzi.internal/EditModeInterceptor/intercept/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-edit-mode-interceptor/intercept.md
 $dokka.location:app.cash.paparazzi.internal/MatrixMatrixMultiplicationInterceptor///PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-matrix-matrix-multiplication-interceptor/index.md
