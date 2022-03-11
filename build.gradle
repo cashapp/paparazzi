@@ -9,9 +9,8 @@ buildscript {
 
   ext.versions = [
     kotlin: '1.5.31',
-    agp: '7.0.4',
+    agp: '7.1.2',
     layoutlib: "2021.1.1-$layoutLibPrebuiltSha", // "should" be similar to versions.agp
-    androidTools: '27.1.2', // agp + 23.0.0 = androidTools
     compose: '1.0.5',
     jcodec: '0.2.5',
     moshi: '1.12.0',
@@ -36,9 +35,9 @@ buildscript {
       ],
     ],
     tools: [
-      common: "com.android.tools:common:${versions.androidTools}",
-      layoutlib: "com.android.tools.layoutlib:layoutlib-api:27.2.2",
-      sdkcommon: "com.android.tools:sdk-common:26.6.4",
+      common: 'com.android.tools:common:27.1.2',
+      layoutlib: 'com.android.tools.layoutlib:layoutlib-api:27.2.2',
+      sdkcommon: 'com.android.tools:sdk-common:26.6.4',
     ],
     kxml2: 'kxml2:kxml2:2.3.0',
     androidx: [
