@@ -53,6 +53,7 @@ import app.cash.paparazzi.internal.PaparazziLogger
 import app.cash.paparazzi.internal.Renderer
 import app.cash.paparazzi.internal.ResourcesInterceptor
 import app.cash.paparazzi.internal.SessionParamsBuilder
+import app.cash.paparazzi.internal.ChoreographerDelegateInterceptor
 import com.android.ide.common.rendering.api.RenderSession
 import com.android.ide.common.rendering.api.Result
 import com.android.ide.common.rendering.api.Result.Status.ERROR_UNKNOWN
@@ -127,6 +128,7 @@ class Paparazzi @JvmOverloads constructor(
     registerFontLookupInterceptionIfResourceCompatDetected()
     registerViewEditModeInterception()
     registerMatrixMultiplyInterception()
+    registerChoreographerDelegateInterception()
 
     val outerRule = AgentTestRule()
     return outerRule.apply(statement, description)
@@ -519,6 +521,13 @@ class Paparazzi @JvmOverloads constructor(
         "multiplyMM" to MatrixMatrixMultiplicationInterceptor::class.java,
         "multiplyMV" to MatrixVectorMultiplicationInterceptor::class.java
       )
+    )
+  }
+
+  private fun registerChoreographerDelegateInterception() {
+    val choreographerDelegateClass = Class.forName("android.view.Choreographer_Delegate")
+    InterceptorRegistrar.addMethodInterceptor(
+        choreographerDelegateClass, "getFrameTimeNanos", ChoreographerDelegateInterceptor::class.java
     )
   }
 
