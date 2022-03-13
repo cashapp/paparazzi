@@ -9,6 +9,8 @@ import org.junit.Test
 class InterceptorRegistrarTest {
   @Before
   fun setup() {
+    ByteBuddyAgent.install()
+
     InterceptorRegistrar.addMethodInterceptors(
       Utils::class.java,
       setOf(
@@ -17,7 +19,6 @@ class InterceptorRegistrarTest {
       )
     )
 
-    ByteBuddyAgent.install()
     InterceptorRegistrar.registerMethodInterceptors()
   }
 

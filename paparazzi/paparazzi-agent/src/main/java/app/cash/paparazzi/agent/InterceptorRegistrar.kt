@@ -2,12 +2,28 @@ package app.cash.paparazzi.agent
 
 import net.bytebuddy.ByteBuddy
 import net.bytebuddy.dynamic.loading.ClassReloadingStrategy
+import net.bytebuddy.dynamic.loading.ClassReloadingStrategy.Strategy.RETRANSFORMATION
 import net.bytebuddy.implementation.MethodDelegation
 import net.bytebuddy.matcher.ElementMatchers
 
 object InterceptorRegistrar {
   private val byteBuddy = ByteBuddy()
   private val methodInterceptors = mutableListOf<() -> Unit>()
+
+  fun addMethodFacade(
+    receiver: Class<*>,
+    methodName: String,
+    interceptor: Class<*>
+  ) {
+    methodInterceptors += {
+      byteBuddy
+        .subclass(receiver)
+        .method(ElementMatchers.named(methodName))
+        .intercept(MethodDelegation.to(interceptor))
+        .make()
+        .load(receiver.classLoader, ClassReloadingStrategy.fromInstalledAgent())
+    }
+  }
 
   fun addMethodInterceptor(
     receiver: Class<*>,
