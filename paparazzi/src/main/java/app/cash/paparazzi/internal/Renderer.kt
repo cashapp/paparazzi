@@ -121,6 +121,10 @@ internal class Renderer(
 
     Gc.gc()
 
+    dumpDelegates()
+  }
+
+  fun dumpDelegates() {
     if (System.getProperty(Flags.DEBUG_LINKED_OBJECTS) != null) {
       println("Objects still linked from the DelegateManager:")
       DelegateManager.dump(System.out)

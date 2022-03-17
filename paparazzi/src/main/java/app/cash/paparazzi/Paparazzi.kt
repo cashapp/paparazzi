@@ -93,8 +93,6 @@ class Paparazzi @JvmOverloads constructor(
   private val THUMBNAIL_SIZE = 1000
 
   private val logger = PaparazziLogger()
-  private lateinit var sessionParamsBuilder: SessionParamsBuilder
-  private lateinit var renderer: Renderer
   private lateinit var renderSession: RenderSessionImpl
   private lateinit var bridgeRenderSession: RenderSession
   private var testName: TestName? = null
@@ -151,8 +149,10 @@ class Paparazzi @JvmOverloads constructor(
 
     testName = description.toTestName()
 
-    renderer = Renderer(environment, layoutlibCallback, logger, maxPercentDifference)
-    sessionParamsBuilder = renderer.prepare()
+    if (!isInitialized) {
+      renderer = Renderer(environment, layoutlibCallback, logger, maxPercentDifference)
+      sessionParamsBuilder = renderer.prepare()
+    }
 
     sessionParamsBuilder = sessionParamsBuilder
         .copy(
@@ -178,11 +178,12 @@ class Paparazzi @JvmOverloads constructor(
 
   fun close() {
     testName = null
-    renderer.close()
     renderSession.release()
     bridgeRenderSession.dispose()
     cleanupThread()
     snapshotHandler.close()
+
+    renderer.dumpDelegates()
   }
 
   fun <V : View> inflate(@LayoutRes layoutId: Int): V = layoutInflater.inflate(layoutId, null) as V
@@ -600,6 +601,11 @@ class Paparazzi @JvmOverloads constructor(
   companion object {
     /** The choreographer doesn't like 0 as a frame time, so start an hour later. */
     internal val TIME_OFFSET_NANOS = TimeUnit.HOURS.toNanos(1L)
+
+    internal lateinit var renderer: Renderer
+    internal val isInitialized get() = ::renderer.isInitialized
+
+    internal lateinit var sessionParamsBuilder: SessionParamsBuilder
 
     private val isVerifying: Boolean =
       System.getProperty("paparazzi.test.verify")?.toBoolean() == true
