@@ -47,6 +47,17 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun excludeAndroidTestSourceSets() {
+    val fixtureRoot = File("src/test/projects/exclude-androidtest")
+
+    val result = gradleRunner
+        .withArguments("preparePaparazziDebugResources", "--stacktrace")
+        .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
+  }
+
+  @Test
   fun missingPlatformDirTest() {
     val fixtureRoot = File("src/test/projects/missing-platform-dir")
 
