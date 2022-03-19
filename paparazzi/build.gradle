@@ -48,7 +48,7 @@ dependencies {
   kapt deps.moshi.kotlinCodegen
   implementation deps.jcodec.core
   implementation deps.jcodec.javase
-  implementation project(':paparazzi-agent')
+  implementation projects.paparazziAgent
 
   def osName = System.getProperty("os.name").toLowerCase(Locale.US)
   if (osName.startsWith("mac")) {
