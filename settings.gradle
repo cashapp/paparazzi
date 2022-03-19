@@ -9,3 +9,5 @@ include ':libs:native-macarm'
 include ':libs:native-macosx'
 include ':libs:native-win'
 include ':libs:native-linux'
+
+enableFeaturePreview('TYPESAFE_PROJECT_ACCESSORS')
