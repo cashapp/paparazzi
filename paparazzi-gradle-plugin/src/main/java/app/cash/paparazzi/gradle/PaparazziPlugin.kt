@@ -211,6 +211,8 @@ class PaparazziPlugin : Plugin<Project> {
   }
 
   private fun BaseExtension.packageName(): String {
+    namespace?.let { return it }
+
     // TODO: explore whether AGP 7.x APIs can handle source set filtering
     sourceSets
       .filterNot { it.name.startsWith("androidTest") }
