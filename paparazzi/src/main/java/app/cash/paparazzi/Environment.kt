@@ -59,8 +59,10 @@ private fun androidSdkPath(): String {
   val osName = System.getProperty("os.name").lowercase(Locale.US)
   val sdkPathDir = if (osName.startsWith("windows")) {
     "\\AppData\\Local\\Android\\Sdk"
-  } else {
+  } else if (osName.startsWith("mac")) {
     "/Library/Android/sdk"
+  } else {
+    "/Android/Sdk"
   }
   val homeDir = System.getProperty("user.home")
   return homeDir + sdkPathDir
