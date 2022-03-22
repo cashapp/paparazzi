@@ -38,6 +38,7 @@ buildscript {
       common: 'com.android.tools:common:27.1.2',
       layoutlib: 'com.android.tools.layoutlib:layoutlib-api:27.2.2',
       sdkcommon: 'com.android.tools:sdk-common:26.6.4',
+      ninepatch: 'com.android.tools:ninepatch:30.1.2',
     ],
     kxml2: 'kxml2:kxml2:2.3.0',
     androidx: [
