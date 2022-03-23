@@ -567,7 +567,7 @@ class PaparazziPluginTest {
     assertThat(resourcesFile.exists()).isTrue()
 
     val resourceFileContents = resourcesFile.readLines()
-    assertThat(resourceFileContents[2]).isEqualTo("30")
+    assertThat(resourceFileContents[2]).isEqualTo("31")
     assertThat(resourceFileContents[3]).isEqualTo("platforms/android-31/")
   }
 
