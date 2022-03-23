@@ -22,7 +22,6 @@ import java.io.File
 import javax.imageio.ImageIO
 
 class SnapshotVerifier @JvmOverloads constructor(
-  private val maxPercentDifference: Double,
   rootDirectory: File = File("src/test/snapshots"),
 ) : SnapshotHandler {
   private val imagesDirectory: File = File(rootDirectory, "images")
@@ -51,7 +50,6 @@ class SnapshotVerifier @JvmOverloads constructor(
             relativePath = expected.path,
             image = image,
             goldenImage = goldenImage,
-            maxPercentDifferent = maxPercentDifference
         )
       }
 

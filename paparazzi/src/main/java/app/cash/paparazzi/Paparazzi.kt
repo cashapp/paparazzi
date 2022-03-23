@@ -81,8 +81,7 @@ class Paparazzi @JvmOverloads constructor(
   private val theme: String = "android:Theme.Material.NoActionBar.Fullscreen",
   private val renderingMode: RenderingMode = RenderingMode.NORMAL,
   private val appCompatEnabled: Boolean = true,
-  private val maxPercentDifference: Double = 0.1,
-  private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference),
+  private val snapshotHandler: SnapshotHandler = determineHandler(),
   private val renderExtensions: Set<RenderExtension> = setOf()
 ) : TestRule {
   private val THUMBNAIL_SIZE = 1000
@@ -143,7 +142,7 @@ class Paparazzi @JvmOverloads constructor(
 
     testName = description.toTestName()
 
-    renderer = Renderer(environment, layoutlibCallback, logger, maxPercentDifference)
+    renderer = Renderer(environment, layoutlibCallback, logger)
     sessionParamsBuilder = renderer.prepare()
 
     sessionParamsBuilder = sessionParamsBuilder
@@ -556,9 +555,9 @@ class Paparazzi @JvmOverloads constructor(
     private val isVerifying: Boolean =
       System.getProperty("paparazzi.test.verify")?.toBoolean() == true
 
-    private fun determineHandler(maxPercentDifference: Double): SnapshotHandler =
+    private fun determineHandler(): SnapshotHandler =
       if (isVerifying) {
-        SnapshotVerifier(maxPercentDifference)
+        SnapshotVerifier()
       } else {
         HtmlReportWriter()
       }

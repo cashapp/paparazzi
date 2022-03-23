@@ -39,7 +39,6 @@ internal class Renderer(
   private val environment: Environment,
   private val layoutlibCallback: PaparazziCallback,
   private val logger: PaparazziLogger,
-  private val maxPercentDifference: Double,
 ) : Closeable {
   private var bridge: Bridge? = null
   private lateinit var sessionParamsBuilder: SessionParamsBuilder
@@ -162,7 +161,7 @@ internal class Renderer(
   ) {
     try {
       val goldenImagePath = environment.appTestDir + "/golden/" + goldenImageName
-      ImageUtils.requireSimilar(goldenImagePath, image, maxPercentDifference)
+      ImageUtils.requireSimilar(goldenImagePath, image)
     } catch (e: IOException) {
       logger.error(e, e.message)
     }

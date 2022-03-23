@@ -62,16 +62,13 @@ internal object ImageUtils {
   fun requireSimilar(
     relativePath: String,
     image: BufferedImage,
-    maxPercentDifference: Double
   ) {
     val maxDimension = Math.max(image.width, image.height)
     val scale = THUMBNAIL_SIZE / maxDimension.toDouble()
     val thumbnail = scale(image, scale, scale)
 
     val `is` = ImageUtils::class.java.classLoader.getResourceAsStream(relativePath)
-    if (`is` ==
-        null
-    ) {
+    if (`is` == null) {
       var message = "Unable to load golden thumbnail: $relativePath\n"
       message = saveImageAndAppendMessage(thumbnail, message, relativePath)
       if (FAIL_ON_MISSING_THUMBNAIL) {
@@ -86,7 +83,6 @@ internal object ImageUtils {
             relativePath,
             goldenImage,
             thumbnail,
-            maxPercentDifference
         )
       } finally {
         `is`.close()
@@ -99,7 +95,6 @@ internal object ImageUtils {
     relativePath: String,
     goldenImage: BufferedImage,
     image: BufferedImage,
-    maxPercentDifferent: Double
   ) {
     var goldenImage = goldenImage
     if (goldenImage.type != TYPE_INT_ARGB) {
@@ -170,7 +165,7 @@ internal object ImageUtils {
 
     var error: String? = null
     val imageName = getName(relativePath)
-    if (percentDifference > maxPercentDifferent) {
+    if (percentDifference > 0.1) {
       error = String.format("Images differ (by %.1f%%)", percentDifference)
     } else if (Math.abs(goldenImage.width - image.width) >= 2) {
       error = "Widths differ too much for " + imageName + ": " +
