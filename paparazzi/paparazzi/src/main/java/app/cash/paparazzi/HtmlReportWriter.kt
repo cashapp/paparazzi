@@ -107,17 +107,6 @@ class HtmlReportWriter @JvmOverloads constructor(
           snapshot.copy(file = original.toJsonPath())
         } else {
           val hash = writeVideo(hashes, fps)
-
-          if (isRecording) {
-            for ((index, frameHash) in hashes.withIndex()) {
-              val originalFrame = File(imagesDirectory, "$frameHash.png")
-              val frameSnapshot = snapshot.copy(name = "${snapshot.name} $index")
-              val goldenFile = File(goldenImagesDirectory, frameSnapshot.toFileName("_", "png"))
-              if (!goldenFile.exists()) {
-                originalFrame.copyTo(goldenFile)
-              }
-            }
-          }
           val original = File(videosDirectory, "$hash.mov")
           if (isRecording) {
             val goldenFile = File(goldenVideosDirectory, snapshot.toFileName("_", "mov"))
