@@ -17,6 +17,8 @@ package app.cash.paparazzi
 
 import app.cash.paparazzi.SnapshotHandler.FrameHandler
 import app.cash.paparazzi.internal.ImageUtils
+import app.cash.paparazzi.internal.VideoUtils
+import org.jcodec.api.awt.AWTSequenceEncoder
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
@@ -39,23 +41,49 @@ class SnapshotVerifier @JvmOverloads constructor(
     fps: Int
   ): FrameHandler {
     return object : FrameHandler {
-      override fun handle(image: BufferedImage) {
-        // Note: does not handle videos or its frames at the moment
-        val expected = File(imagesDirectory, snapshot.toFileName(extension = "png"))
-        if (!expected.exists()) {
-          throw AssertionError("File $expected does not exist")
-        }
 
-        val goldenImage = ImageIO.read(expected)
-        ImageUtils.assertImageSimilar(
-            relativePath = expected.path,
-            image = image,
-            goldenImage = goldenImage,
-            maxPercentDifferent = maxPercentDifference
-        )
+      val tempVideo: File by lazy { File(videosDirectory, snapshot.toFileName(extension = "tmp.mov")) }
+      val encoder: AWTSequenceEncoder by lazy { AWTSequenceEncoder.createSequenceEncoder(tempVideo, fps) }
+
+      override fun handle(image: BufferedImage) {
+        if (fps == -1) {
+          val expected = File(imagesDirectory, snapshot.toFileName(extension = "png"))
+          if (!expected.exists()) {
+            throw AssertionError("File $expected does not exist")
+          }
+
+          val goldenImage = ImageIO.read(expected)
+          ImageUtils.assertImageSimilar(
+              relativePath = expected.path,
+              image = image,
+              goldenImage = goldenImage,
+              maxPercentDifferent = maxPercentDifference
+          )
+        } else {
+          encoder.encodeImage(image)
+        }
       }
 
-      override fun close() = Unit
+      override fun close() {
+        if (fps != -1) {
+          encoder.finish()
+
+          try {
+            val expected = File(videosDirectory, snapshot.toFileName(extension = "mov"))
+            if (!expected.exists()) {
+              throw AssertionError("File $expected does not exist")
+            }
+
+            VideoUtils.assertVideoSimilar(
+              goldenVideo = expected,
+              testVideo = tempVideo,
+              maxPercentDifferent = maxPercentDifference
+            )
+          } finally {
+            tempVideo.delete()
+          }
+        }
+      }
     }
   }
 

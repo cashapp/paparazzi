@@ -1,11 +1,15 @@
 package app.cash.paparazzi.gradle
 
 import app.cash.paparazzi.gradle.ImageSubject.Companion.assertThat
+import app.cash.paparazzi.gradle.ImageSubject.ImageAssert
 import com.google.common.truth.Truth.assertThat
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome.FROM_CACHE
 import org.gradle.testkit.runner.TaskOutcome.SUCCESS
+import org.jcodec.api.FrameGrab
+import org.jcodec.common.io.NIOUtils
+import org.jcodec.scale.AWTUtil
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
@@ -626,6 +630,51 @@ class PaparazziPluginTest {
     val snapshotImage = snapshots[0]
     val goldenImage = File(fixtureRoot, "src/test/resources/launch.png")
     assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
+  }
+
+  @Test
+  fun verifyGif() {
+    val fixtureRoot = File("src/test/projects/verify-gif")
+
+    val result = gradleRunner
+        .withArguments("testDebug", "--stacktrace")
+        .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
+    assertThat(result.task(":testDebugUnitTest")).isNotNull()
+
+    val videosDir = File(fixtureRoot, "build/reports/paparazzi/videos")
+    val videos = videosDir.listFiles()
+    assertThat(videos!!).hasLength(1)
+
+    val snapshotVideo = videos[0]
+    val goldenVideo = File(fixtureRoot, "src/test/snapshots/videos/fade.mov")
+
+    val goldenChannel = NIOUtils.readableChannel(goldenVideo)
+    val testChannel = NIOUtils.readableChannel(snapshotVideo)
+
+    try {
+      val goldenFrameGrab = FrameGrab.createFrameGrab(goldenChannel)
+      val testFrameGrab = FrameGrab.createFrameGrab(testChannel)
+
+      val goldenTotalFrames = goldenFrameGrab.videoTrack.meta.totalFrames
+      val testTotalFrames = testFrameGrab.videoTrack.meta.totalFrames
+      assertThat(testTotalFrames).isEqualTo(goldenTotalFrames)
+
+      val goldenDuration = goldenFrameGrab.videoTrack.meta.totalDuration
+      val testDuration = testFrameGrab.videoTrack.meta.totalDuration
+      assertThat(goldenDuration).isEqualTo(testDuration)
+
+      for (index in 0 until goldenTotalFrames) {
+        val goldenImage = AWTUtil.toBufferedImage(goldenFrameGrab.nativeFrame)
+        val testImage = AWTUtil.toBufferedImage(testFrameGrab.nativeFrame)
+
+        ImageAssert(testImage, goldenImage).withDefaultThreshold()
+      }
+    } finally {
+      NIOUtils.closeQuietly(goldenChannel)
+      NIOUtils.closeQuietly(testChannel)
+    }
   }
 
   @Test
