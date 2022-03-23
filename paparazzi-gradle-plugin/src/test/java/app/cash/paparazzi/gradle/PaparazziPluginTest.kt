@@ -802,6 +802,23 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun ninePatch() {
+    val fixtureRoot = File("src/test/projects/nine-patch")
+
+    gradleRunner
+        .withArguments("testDebug", "--stacktrace")
+        .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()
+    assertThat(snapshots!!).hasLength(1)
+
+    val snapshotImage = snapshots[0]
+    val goldenImage = File(fixtureRoot, "src/test/resources/nine_patch.png")
+    assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
+  }
+
+  @Test
   fun nonTransitiveResources() {
     val fixtureRoot = File("src/test/projects/non-transitive-resources")
     val moduleRoot = File(fixtureRoot, "module")

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <style name="None" />
+  <style name="Theme.App" parent="None">
+    <item name="android:listDivider">@drawable/list_divider_light</item>
+  </style>
+</resources>

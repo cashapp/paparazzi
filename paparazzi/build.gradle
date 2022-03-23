@@ -35,6 +35,7 @@ dependencies {
   api deps.layoutlib.native.jdk11
   api deps.tools.common
   api deps.tools.layoutlib
+  api deps.tools.ninepatch
   api deps.tools.sdkcommon
   api deps.kxml2
   api deps.junit
