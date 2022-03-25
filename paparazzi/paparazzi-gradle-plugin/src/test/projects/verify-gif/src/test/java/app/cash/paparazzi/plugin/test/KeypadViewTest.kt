@@ -15,27 +15,29 @@
  */
 package app.cash.paparazzi.plugin.test
 
+import android.animation.ObjectAnimator
+import android.view.View
 import android.widget.LinearLayout
+import android.widget.TextView
 import app.cash.paparazzi.Paparazzi
-import android.widget.ImageView
-import android.graphics.drawable.AnimatedVectorDrawable
 import org.junit.Rule
 import org.junit.Test
 
-class GifTest {
+class KeypadViewTest {
   @get:Rule
   val paparazzi = Paparazzi()
 
   @Test
   fun testViews() {
-    val launch = paparazzi.inflate<LinearLayout>(R.layout.launch)
-    launch.getChildAt(0)
-        .animate()
-        .alpha(0F)
-        .rotation(360F)
-        .setDuration(1_000)
-        .start()
+    val keypad = paparazzi.inflate<LinearLayout>(R.layout.keypad)
+    val amount = keypad.findViewById<TextView>(R.id.amount)
 
-    paparazzi.gif(launch, end = 1_000L, fps = 24)
+    val rotation = ObjectAnimator.ofFloat(amount, View.ROTATION, 0.0f, 360.0f).apply {
+      duration = 500
+      startDelay = 500
+    }
+    rotation.start()
+
+    paparazzi.gif(keypad, "spin", start = 500, end = 1500, fps = 30)
   }
 }

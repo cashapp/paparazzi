@@ -663,7 +663,7 @@ class PaparazziPluginTest {
     assertThat(videos!!).hasLength(1)
 
     val snapshotVideo = videos[0]
-    val goldenVideo = File(fixtureRoot, "src/test/snapshots/videos/fade.mov")
+    val goldenVideo = File(fixtureRoot, "src/test/snapshots/videos/keypad.mov")
 
     val goldenChannel = NIOUtils.readableChannel(goldenVideo)
     val testChannel = NIOUtils.readableChannel(snapshotVideo)

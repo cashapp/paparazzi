@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/bolt"
+    android:padding="30dp"
+    >
+
+  <TextView
+      android:id="@+id/amount"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:text=".01 BTC"
+      android:textSize="70dp"
+      android:gravity="center"
+      android:textColor="@color/keypadDarkGrey"
+      android:textFontWeight="100"
+      android:layout_weight="2"
+      />
+
+  <TextView
+      android:id="@+id/amount123"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:text="1      2      3"
+      android:textSize="45dp"
+      android:gravity="center"
+      android:textFontWeight="200"
+      android:textColor="@color/keypadDarkGrey"
+      android:layout_weight="1"
+      />
+  <TextView
+      android:id="@+id/amount456"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:text="4      5      6"
+      android:textFontWeight="400"
+      android:textSize="45dp"
+      android:gravity="center"
+      android:textColor="@color/keypadDarkGrey"
+      android:layout_weight="1"
+      />
+  <TextView
+      android:id="@+id/amount789"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:text="7      8      9"
+      android:textFontWeight="600"
+      android:textSize="45dp"
+      android:gravity="center"
+      android:textColor="@color/keypadDarkGrey"
+      android:layout_weight="1"
+      />
+  <TextView
+      android:id="@+id/amount0"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:text="#      0       . "
+      android:textSize="45dp"
+      android:textFontWeight="800"
+      android:gravity="center"
+      android:textColor="@color/keypadDarkGrey"
+      android:layout_weight="1"
+      />
+
+</LinearLayout>
