@@ -35,22 +35,27 @@ internal object RenderSettings {
   const val DEFAULT_TEXT_SIZE: Float = 10f
   const val DEFAULT_RECT_SIZE: Int = 16
 
-  private val colorMap = mutableMapOf<UInt, Color>()
+  private val colorMap = mutableMapOf<Int, Color>()
 
   fun getColor(view: View): Color {
-    val hashCode = "${view::class.simpleName}(${view.iterableTextForAccessibility})".hashCode().toUInt()
+    val hashCode = "${view::class.simpleName}(${view.iterableTextForAccessibility})".hashCode()
     return getColor(hashCode)
   }
 
-  private fun getColor(hashCode: UInt): Color {
+  private fun getColor(hashCode: Int): Color {
     return colorMap.getOrPut(hashCode) {
       nextColor(hashCode).withAlpha(DEFAULT_RENDER_ALPHA)
     }
   }
 
-  private fun nextColor(hashCode: UInt): Color {
-    val i = (hashCode % DEFAULT_RENDER_COLORS.size.toUInt()).toInt()
-    return DEFAULT_RENDER_COLORS[i]
+  private fun nextColor(hashCode: Int): Color {
+    return DEFAULT_RENDER_COLORS[colorIndex(hashCode)]
+  }
+
+  private fun colorIndex(hashCode: Int): Int {
+    val size = DEFAULT_RENDER_COLORS.size
+    val i = hashCode % size
+    return if (i < 0) i + size else i
   }
 
   internal fun Color.toColorInt(): Int =
