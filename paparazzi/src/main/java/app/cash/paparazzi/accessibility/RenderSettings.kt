@@ -17,11 +17,8 @@ package app.cash.paparazzi.accessibility
 
 import android.view.View
 import java.awt.Color
-import java.util.concurrent.atomic.AtomicInteger
 
 internal object RenderSettings {
-  private val nextGeneratedId = AtomicInteger(1)
-
   const val DEFAULT_RENDER_ALPHA = 40
   val DEFAULT_RENDER_COLORS = listOf(
     Color.RED,
@@ -62,6 +59,4 @@ internal object RenderSettings {
   internal fun Color.withAlpha(alpha: Int): Color {
     return Color(red, green, blue, alpha)
   }
-
-  internal fun resetGeneratedId() = nextGeneratedId.set(1)
 }

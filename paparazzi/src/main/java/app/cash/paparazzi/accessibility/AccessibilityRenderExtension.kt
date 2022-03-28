@@ -80,8 +80,6 @@ class AccessibilityRenderExtension : RenderExtension {
           1f
         )
       )
-    }.also {
-      RenderSettings.resetGeneratedId()
     }
   }
 
