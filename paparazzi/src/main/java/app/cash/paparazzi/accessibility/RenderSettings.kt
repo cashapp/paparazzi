@@ -38,23 +38,22 @@ internal object RenderSettings {
   const val DEFAULT_TEXT_SIZE: Float = 10f
   const val DEFAULT_RECT_SIZE: Int = 16
 
-  private val colorMap = mutableMapOf<Int, Color>()
+  private val colorMap = mutableMapOf<UInt, Color>()
 
   fun getColor(view: View): Color {
-    if (view.id == View.NO_ID) {
-      view.id = generateViewId()
-    }
-    return getColor(view.id)
+    val hashCode = "${view::class.simpleName}(${view.iterableTextForAccessibility})".hashCode().toUInt()
+    return getColor(hashCode)
   }
 
-  private fun getColor(viewId: Int): Color {
-    return colorMap.getOrPut(viewId) {
-      nextColor(viewId).withAlpha(DEFAULT_RENDER_ALPHA)
+  private fun getColor(hashCode: UInt): Color {
+    return colorMap.getOrPut(hashCode) {
+      nextColor(hashCode).withAlpha(DEFAULT_RENDER_ALPHA)
     }
   }
 
-  private fun nextColor(viewId: Int): Color {
-    return DEFAULT_RENDER_COLORS[viewId  % DEFAULT_RENDER_COLORS.size]
+  private fun nextColor(hashCode: UInt): Color {
+    val i = (hashCode % DEFAULT_RENDER_COLORS.size.toUInt()).toInt()
+    return DEFAULT_RENDER_COLORS[i]
   }
 
   internal fun Color.toColorInt(): Int =
@@ -65,15 +64,4 @@ internal object RenderSettings {
   }
 
   internal fun resetGeneratedId() = nextGeneratedId.set(1)
-
-  // Taken from View.generateViewId()
-  private fun generateViewId(): Int {
-    var result: Int
-    var newValue: Int
-    do {
-      result = nextGeneratedId.get()
-      newValue = result + 1
-    } while (!nextGeneratedId.compareAndSet(result, newValue))
-    return result
-  }
 }
