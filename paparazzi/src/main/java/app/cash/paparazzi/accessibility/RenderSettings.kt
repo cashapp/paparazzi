@@ -38,11 +38,12 @@ internal object RenderSettings {
   private val colorMap = mutableMapOf<Int, Color>()
 
   fun getColor(view: View): Color {
-    val hashCode = "${view::class.simpleName}(${view.iterableTextForAccessibility})".hashCode()
-    return getColor(hashCode)
+    val key = "${view::class.simpleName}(${view.iterableTextForAccessibility})"
+    return getColor(key)
   }
 
-  private fun getColor(hashCode: Int): Color {
+  private fun getColor(key: String): Color {
+    val hashCode = key.hashCode()
     return colorMap.getOrPut(hashCode) {
       nextColor(hashCode).withAlpha(DEFAULT_RENDER_ALPHA)
     }
