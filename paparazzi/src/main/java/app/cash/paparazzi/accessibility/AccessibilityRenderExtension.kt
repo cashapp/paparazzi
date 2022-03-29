@@ -31,7 +31,6 @@ import app.cash.paparazzi.accessibility.RenderSettings.DEFAULT_TEXT_SIZE
 import app.cash.paparazzi.accessibility.RenderSettings.getColor
 import app.cash.paparazzi.accessibility.RenderSettings.toColorInt
 import app.cash.paparazzi.accessibility.RenderSettings.withAlpha
-import java.util.concurrent.atomic.AtomicInteger
 
 class AccessibilityRenderExtension : RenderExtension {
   override fun renderView(
@@ -80,8 +79,6 @@ class AccessibilityRenderExtension : RenderExtension {
           1f
         )
       )
-    }.also {
-      RenderSettings.resetGeneratedId()
     }
   }
 

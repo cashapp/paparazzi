@@ -17,11 +17,8 @@ package app.cash.paparazzi.accessibility
 
 import android.view.View
 import java.awt.Color
-import java.util.concurrent.atomic.AtomicInteger
 
 internal object RenderSettings {
-  private val nextGeneratedId = AtomicInteger(1)
-
   const val DEFAULT_RENDER_ALPHA = 40
   val DEFAULT_RENDER_COLORS = listOf(
     Color.RED,
@@ -41,20 +38,25 @@ internal object RenderSettings {
   private val colorMap = mutableMapOf<Int, Color>()
 
   fun getColor(view: View): Color {
-    if (view.id == View.NO_ID) {
-      view.id = generateViewId()
-    }
-    return getColor(view.id)
+    val key = "${view::class.simpleName}(${view.iterableTextForAccessibility})"
+    return getColor(key)
   }
 
-  private fun getColor(viewId: Int): Color {
-    return colorMap.getOrPut(viewId) {
-      nextColor(viewId).withAlpha(DEFAULT_RENDER_ALPHA)
+  private fun getColor(key: String): Color {
+    val hashCode = key.hashCode()
+    return colorMap.getOrPut(hashCode) {
+      nextColor(hashCode).withAlpha(DEFAULT_RENDER_ALPHA)
     }
   }
 
-  private fun nextColor(viewId: Int): Color {
-    return DEFAULT_RENDER_COLORS[viewId  % DEFAULT_RENDER_COLORS.size]
+  private fun nextColor(hashCode: Int): Color {
+    return DEFAULT_RENDER_COLORS[colorIndex(hashCode)]
+  }
+
+  private fun colorIndex(hashCode: Int): Int {
+    val size = DEFAULT_RENDER_COLORS.size
+    val i = hashCode % size
+    return if (i < 0) i + size else i
   }
 
   internal fun Color.toColorInt(): Int =
@@ -62,18 +64,5 @@ internal object RenderSettings {
 
   internal fun Color.withAlpha(alpha: Int): Color {
     return Color(red, green, blue, alpha)
-  }
-
-  internal fun resetGeneratedId() = nextGeneratedId.set(1)
-
-  // Taken from View.generateViewId()
-  private fun generateViewId(): Int {
-    var result: Int
-    var newValue: Int
-    do {
-      result = nextGeneratedId.get()
-      newValue = result + 1
-    } while (!nextGeneratedId.compareAndSet(result, newValue))
-    return result
   }
 }
