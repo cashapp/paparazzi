@@ -21,6 +21,7 @@ import java.util.Locale
 
 data class Environment(
   val platformDir: String,
+  val reportOutputDir: String,
   val appTestDir: String,
   val resDir: String,
   val assetsDir: String,
@@ -45,6 +46,7 @@ fun detectEnvironment(): Environment {
   val androidHome = Paths.get(androidHome())
   return Environment(
       platformDir = androidHome.resolve(configLines[3]).toString(),
+      reportOutputDir = configLines[7],
       appTestDir = appTestDir.toString(),
       resDir = appTestDir.resolve(configLines[1]).toString(),
       assetsDir = appTestDir.resolve(configLines[4]).toString(),

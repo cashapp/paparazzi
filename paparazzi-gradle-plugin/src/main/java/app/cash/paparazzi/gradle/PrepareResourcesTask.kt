@@ -60,6 +60,9 @@ abstract class PrepareResourcesTask : DefaultTask() {
   @get:PathSensitive(PathSensitivity.NONE)
   abstract val artifactFiles: ConfigurableFileCollection
 
+  @get:Input
+  abstract val reportOutputPath: Property<String>
+
   @get:OutputFile
   abstract val paparazziResources: RegularFileProperty
 
@@ -100,6 +103,8 @@ abstract class PrepareResourcesTask : DefaultTask() {
         it.write(platformDataRoot.get().asFile.invariantSeparatorsPath)
         it.newLine()
         it.write(resourcePackageNames)
+        it.newLine()
+        it.write(reportOutputPath.get())
         it.newLine()
       }
   }

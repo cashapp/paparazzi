@@ -59,12 +59,12 @@ import javax.imageio.ImageIO
  */
 class HtmlReportWriter @JvmOverloads constructor(
   private val runName: String = defaultRunName(),
-  private val rootDirectory: File = File(System.getProperty("paparazzi.test.reportDir", "build/reports/paparazzi")),
+  private val reportOutputDirectory: File = File("build/reports/paparazzi"),
   snapshotRootDirectory: File = File("src/test/snapshots")
 ) : SnapshotHandler {
-  private val runsDirectory: File = File(rootDirectory, "runs")
-  private val imagesDirectory: File = File(rootDirectory, "images")
-  private val videosDirectory: File = File(rootDirectory, "videos")
+  private val runsDirectory: File = File(reportOutputDirectory, "runs")
+  private val imagesDirectory: File = File(reportOutputDirectory, "images")
+  private val videosDirectory: File = File(reportOutputDirectory, "videos")
 
   private val goldenImagesDirectory = File(snapshotRootDirectory, "images")
   private val goldenVideosDirectory = File(snapshotRootDirectory, "videos")
@@ -211,7 +211,7 @@ class HtmlReportWriter @JvmOverloads constructor(
       }
     }
 
-    File(rootDirectory, "index.js").writeAtomically {
+    File(reportOutputDirectory, "index.js").writeAtomically {
       writeUtf8("window.all_runs = ")
       PaparazziJson.listOfStringsAdapter.toJson(this, runNames)
       writeUtf8(";")
@@ -251,7 +251,7 @@ class HtmlReportWriter @JvmOverloads constructor(
 
   private fun writeStaticFiles() {
     for (staticFile in listOf("index.html", "paparazzi.js")) {
-      File(rootDirectory, staticFile).writeAtomically {
+      File(reportOutputDirectory, staticFile).writeAtomically {
         writeAll(HtmlReportWriter::class.java.classLoader.getResourceAsStream(staticFile).source())
       }
     }
@@ -275,7 +275,7 @@ class HtmlReportWriter @JvmOverloads constructor(
     tmpFile.renameTo(this)
   }
 
-  private fun File.toJsonPath(): String = relativeTo(rootDirectory).invariantSeparatorsPath
+  private fun File.toJsonPath(): String = relativeTo(reportOutputDirectory).invariantSeparatorsPath
 }
 
 internal fun defaultRunName(): String {

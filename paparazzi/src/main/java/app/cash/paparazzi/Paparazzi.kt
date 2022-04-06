@@ -70,6 +70,7 @@ import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
 import java.awt.image.BufferedImage
+import java.io.File
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier
 import java.util.Date
@@ -82,7 +83,7 @@ class Paparazzi @JvmOverloads constructor(
   private val renderingMode: RenderingMode = RenderingMode.NORMAL,
   private val appCompatEnabled: Boolean = true,
   private val maxPercentDifference: Double = 0.1,
-  private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference),
+  private val snapshotHandler: SnapshotHandler = determineHandler(environment, maxPercentDifference),
   private val renderExtensions: Set<RenderExtension> = setOf()
 ) : TestRule {
   private val THUMBNAIL_SIZE = 1000
@@ -556,11 +557,14 @@ class Paparazzi @JvmOverloads constructor(
     private val isVerifying: Boolean =
       System.getProperty("paparazzi.test.verify")?.toBoolean() == true
 
-    private fun determineHandler(maxPercentDifference: Double): SnapshotHandler =
+    private fun determineHandler(
+        environment: Environment,
+        maxPercentDifference: Double
+    ): SnapshotHandler =
       if (isVerifying) {
         SnapshotVerifier(maxPercentDifference)
       } else {
-        HtmlReportWriter()
+        HtmlReportWriter(reportOutputDirectory = File(environment.reportOutputDir))
       }
   }
 }

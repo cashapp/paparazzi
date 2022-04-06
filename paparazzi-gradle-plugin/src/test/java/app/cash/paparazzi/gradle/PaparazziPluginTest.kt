@@ -11,9 +11,14 @@ import org.junit.Ignore
 import org.junit.Test
 import java.io.File
 import java.nio.file.Files
+import org.junit.Rule
+import org.junit.rules.TemporaryFolder
 
 class PaparazziPluginTest {
   private lateinit var gradleRunner: GradleRunner
+
+  @get:Rule
+  val tempFolder: TemporaryFolder = TemporaryFolder()
 
   @Before
   fun setUp() {
@@ -551,6 +556,27 @@ class PaparazziPluginTest {
     assertThat(resourceFileContents[1]).isEqualTo("build/intermediates/merged_res/debug")
     assertThat(resourceFileContents[4]).isEqualTo("build/intermediates/assets/debug/mergeDebugAssets")
     assertThat(resourceFileContents[6]).isEqualTo("app.cash.paparazzi.plugin.test")
+  }
+
+  @Test
+  fun verifyResourcesGeneratedWithCustomBuildDirectory() {
+    val fixtureRoot = File("src/test/projects/verify-resources-custom-buildDir")
+    val buildDir = tempFolder.newFolder("customBuildDir")
+    val result = gradleRunner
+        .withArguments(
+            "compileDebugUnitTestKotlin",
+            "-Ppaparazzi.test.customBuildDir=${buildDir.absolutePath}",
+            "--stacktrace"
+        )
+        .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
+
+    val resourcesFile = File(buildDir, "intermediates/paparazzi/debug/resources.txt")
+    assertThat(resourcesFile.exists()).isTrue()
+
+    val resourceFileContents = resourcesFile.readLines()
+    assertThat(resourceFileContents[7]).isEqualTo(File(buildDir, "reports/paparazzi").absolutePath)
   }
 
   @Test

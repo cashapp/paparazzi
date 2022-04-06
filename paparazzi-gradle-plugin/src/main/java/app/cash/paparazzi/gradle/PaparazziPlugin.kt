@@ -96,6 +96,7 @@ class PaparazziPlugin : Plugin<Project> {
         task.compileSdkVersion.set(android.compileSdkVersion())
         task.mergeAssetsOutput.set(mergeAssetsOutputDir)
         task.platformDataRoot.set(unzipConfiguration.singleFile)
+        task.reportOutputPath.set(reportOutputDir.map { it.asFile.absolutePath })
         task.paparazziResources.set(project.layout.buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.txt"))
       }
 
@@ -145,7 +146,6 @@ class PaparazziPlugin : Plugin<Project> {
           override fun execute(t: Task) {
             test.systemProperties["paparazzi.test.record"] = isRecordRun.get()
             test.systemProperties["paparazzi.test.verify"] = isVerifyRun.get()
-            test.systemProperties["paparazzi.test.reportDir"] = reportOutputDir.get()
             test.systemProperties.putAll(paparazziProperties)
           }
         })
