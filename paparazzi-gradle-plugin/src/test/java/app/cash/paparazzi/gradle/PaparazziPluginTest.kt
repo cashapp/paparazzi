@@ -863,6 +863,14 @@ class PaparazziPluginTest {
     assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
   }
 
+  @Test
+  fun immSoftInputInteraction() {
+    val fixtureRoot = File("src/test/projects/imm-soft-input")
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+  }
+
   private fun GradleRunner.runFixture(
     projectRoot: File,
     moduleRoot: File = projectRoot,
