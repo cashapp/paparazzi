@@ -56,12 +56,16 @@ $dokka.location:app.cash.paparazzi.internal/ChoreographerDelegateInterceptor///P
 $dokka.location:app.cash.paparazzi.internal/ChoreographerDelegateInterceptor/intercept/#android.view.Choreographer/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-choreographer-delegate-interceptor/intercept.md
 $dokka.location:app.cash.paparazzi.internal/EditModeInterceptor///PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-edit-mode-interceptor/index.md
 $dokka.location:app.cash.paparazzi.internal/EditModeInterceptor/intercept/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-edit-mode-interceptor/intercept.md
+$dokka.location:app.cash.paparazzi.internal/IInputMethodManagerInterceptor///PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-i-input-method-manager-interceptor/index.md
+$dokka.location:app.cash.paparazzi.internal/IInputMethodManagerInterceptor/interceptAsInterface/#android.os.IBinder?/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-i-input-method-manager-interceptor/intercept-as-interface.md
 $dokka.location:app.cash.paparazzi.internal/MatrixMatrixMultiplicationInterceptor///PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-matrix-matrix-multiplication-interceptor/index.md
 $dokka.location:app.cash.paparazzi.internal/MatrixMatrixMultiplicationInterceptor/intercept/#kotlin.FloatArray#kotlin.Int#kotlin.FloatArray#kotlin.Int#kotlin.FloatArray#kotlin.Int/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-matrix-matrix-multiplication-interceptor/intercept.md
 $dokka.location:app.cash.paparazzi.internal/MatrixVectorMultiplicationInterceptor///PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-matrix-vector-multiplication-interceptor/index.md
 $dokka.location:app.cash.paparazzi.internal/MatrixVectorMultiplicationInterceptor/intercept/#kotlin.FloatArray#kotlin.Int#kotlin.FloatArray#kotlin.Int#kotlin.FloatArray#kotlin.Int/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-matrix-vector-multiplication-interceptor/intercept.md
 $dokka.location:app.cash.paparazzi.internal/ResourcesInterceptor///PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-resources-interceptor/index.md
 $dokka.location:app.cash.paparazzi.internal/ResourcesInterceptor/intercept/#android.content.Context#kotlin.Int/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-resources-interceptor/intercept.md
+$dokka.location:app.cash.paparazzi.internal/ServiceManagerInterceptor///PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-service-manager-interceptor/index.md
+$dokka.location:app.cash.paparazzi.internal/ServiceManagerInterceptor/interceptGetServiceOrThrow/#kotlin.String/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-service-manager-interceptor/intercept-get-service-or-throw.md
 $dokka.location:app.cash.paparazzi////PointingToDeclaration/paparazzi/app.cash.paparazzi/index.md
 $dokka.location:app.cash.paparazzi//androidHome/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/android-home.md
 $dokka.location:app.cash.paparazzi//detectEnvironment/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/detect-environment.md
