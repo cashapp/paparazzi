@@ -571,14 +571,14 @@ class Paparazzi @JvmOverloads constructor(
     /** The choreographer doesn't like 0 as a frame time, so start an hour later. */
     internal val TIME_OFFSET_NANOS = TimeUnit.HOURS.toNanos(1L)
 
-    private val isVerifying: Boolean =
-      System.getProperty("paparazzi.test.verify")?.toBoolean() == true
+    private val isRecording: Boolean =
+      System.getProperty("paparazzi.test.record")?.toBoolean() == true
 
     private fun determineHandler(maxPercentDifference: Double): SnapshotHandler =
-      if (isVerifying) {
-        SnapshotVerifier(maxPercentDifference)
-      } else {
+      if (isRecording) {
         HtmlReportWriter()
+      } else {
+        SnapshotVerifier(maxPercentDifference)
       }
   }
 }
