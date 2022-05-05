@@ -60,7 +60,8 @@ import javax.imageio.ImageIO
 class HtmlReportWriter @JvmOverloads constructor(
   private val runName: String = defaultRunName(),
   private val rootDirectory: File = File(System.getProperty("paparazzi.report.dir")),
-  snapshotRootDirectory: File = File(System.getProperty("paparazzi.snapshot.dir"))
+  snapshotRootDirectory: File = File(System.getProperty("paparazzi.snapshot.dir")),
+  private val isRecording: Boolean = isRecordingDefault()
 ) : SnapshotHandler {
   private val runsDirectory: File = File(rootDirectory, "runs")
   private val imagesDirectory: File = File(rootDirectory, "images")
@@ -70,9 +71,6 @@ class HtmlReportWriter @JvmOverloads constructor(
   private val goldenVideosDirectory = File(snapshotRootDirectory, "videos")
 
   private val shots = mutableListOf<Snapshot>()
-
-  private val isRecording: Boolean =
-    System.getProperty("paparazzi.test.record")?.toBoolean() == true
 
   init {
     runsDirectory.mkdirs()
@@ -292,3 +290,5 @@ internal val filenameSafeChars = CharMatcher.inRange('a', 'z')
 internal fun String.sanitizeForFilename(): String? {
   return filenameSafeChars.negate().replaceFrom(toLowerCase(Locale.US), '_')
 }
+
+private fun isRecordingDefault() = System.getProperty("paparazzi.test.record")?.toBoolean() == true
