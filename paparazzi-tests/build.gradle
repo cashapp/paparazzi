@@ -1,0 +1,14 @@
+apply plugin: 'com.android.library'
+apply plugin: 'org.jetbrains.kotlin.android'
+apply plugin: 'app.cash.paparazzi'
+
+android {
+  compileSdkVersion 29
+  defaultConfig {
+    minSdkVersion 25
+  }
+}
+
+dependencies {
+  testImplementation deps.testparameterinjector
+}
