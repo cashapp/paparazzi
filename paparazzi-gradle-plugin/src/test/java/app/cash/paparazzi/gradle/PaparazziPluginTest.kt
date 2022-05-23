@@ -871,6 +871,26 @@ class PaparazziPluginTest {
       .runFixture(fixtureRoot) { build() }
   }
 
+  @Test
+  fun configIsUpdatable() {
+    val fixtureRoot = File("src/test/projects/update-paparazzi-config")
+
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()?.sortedBy { it.lastModified() }
+    assertThat(snapshots!!).hasSize(2)
+
+    val pixel3SnapshotImage = snapshots[0]
+    val nexus7SnapshotImage = snapshots[1]
+    val pixel3GoldenImage = File(fixtureRoot, "src/test/resources/pixel_3_launch.png")
+    val nexus7GoldenImage = File(fixtureRoot, "src/test/resources/nexus_7_launch.png")
+    assertThat(pixel3SnapshotImage).isSimilarTo(pixel3GoldenImage).withDefaultThreshold()
+    assertThat(nexus7SnapshotImage).isSimilarTo(nexus7GoldenImage).withDefaultThreshold()
+  }
+
   private fun GradleRunner.runFixture(
     projectRoot: File,
     moduleRoot: File = projectRoot,

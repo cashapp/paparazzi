@@ -32,9 +32,11 @@ class RenderingModesTest {
     )}
 
     paparazzi.snapshot(view = linearLayout) // defaults to NORMAL
-    paparazzi.snapshot(view = linearLayout, renderingMode = RenderingMode.H_SCROLL)
+    paparazzi.unsafeUpdateConfig(renderingMode = RenderingMode.H_SCROLL)
+    paparazzi.snapshot(view = linearLayout)
 
+    paparazzi.unsafeUpdateConfig(renderingMode = RenderingMode.V_SCROLL)
     linearLayout.orientation = LinearLayout.VERTICAL
-    paparazzi.snapshot(view = linearLayout, renderingMode = RenderingMode.V_SCROLL)
+    paparazzi.snapshot(view = linearLayout)
   }
 }
