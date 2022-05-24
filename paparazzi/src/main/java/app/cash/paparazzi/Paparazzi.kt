@@ -183,13 +183,7 @@ class Paparazzi @JvmOverloads constructor(
 
   fun <V : View> inflate(@LayoutRes layoutId: Int): V = layoutInflater.inflate(layoutId, null) as V
 
-  fun snapshot(
-    name: String? = null,
-    deviceConfig: DeviceConfig? = null,
-    theme: String? = null,
-    renderingMode: RenderingMode? = null,
-    composable: @Composable () -> Unit
-  ) {
+  fun snapshot(name: String? = null, composable: @Composable () -> Unit) {
     val hostView = ComposeView(context)
     // During onAttachedToWindow, AbstractComposeView will attempt to resolve its parent's
     // CompositionContext, which requires first finding the "content view", then using that to
@@ -198,27 +192,18 @@ class Paparazzi @JvmOverloads constructor(
     parent.addView(hostView, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
     PaparazziComposeOwner.register(parent)
     hostView.setContent(composable)
-    snapshot(parent, name, deviceConfig, theme, renderingMode)
+    snapshot(parent, name)
   }
 
   @JvmOverloads
-  fun snapshot(
-    view: View,
-    name: String? = null,
-    deviceConfig: DeviceConfig? = null,
-    theme: String? = null,
-    renderingMode: RenderingMode? = null
-  ) {
-    takeSnapshots(view, name, deviceConfig, theme, renderingMode, 0, -1, 1)
+  fun snapshot(view: View, name: String? = null) {
+    takeSnapshots(view, name, 0, -1, 1)
   }
 
   @JvmOverloads
   fun gif(
     view: View,
     name: String? = null,
-    deviceConfig: DeviceConfig? = null,
-    theme: String? = null,
-    renderingMode: RenderingMode? = null,
     start: Long = 0L,
     end: Long = 500L,
     fps: Int = 30
@@ -229,50 +214,55 @@ class Paparazzi @JvmOverloads constructor(
     val durationMillis = (end - start).toInt()
     val frameCount = (durationMillis * fps) / 1000 + 1
     val startNanos = TimeUnit.MILLISECONDS.toNanos(start)
-    takeSnapshots(view, name, deviceConfig, theme, renderingMode, startNanos, fps, frameCount)
+    takeSnapshots(view, name, startNanos, fps, frameCount)
+  }
+
+  fun unsafeUpdateConfig(
+    deviceConfig: DeviceConfig? = null,
+    theme: String? = null,
+    renderingMode: RenderingMode? = null
+  ) {
+    require(deviceConfig != null || theme != null || renderingMode != null) {
+      "Calling unsafeUpdateConfig requires at least one non-null argument."
+    }
+
+    renderSession.release()
+    bridgeRenderSession.dispose()
+    cleanupThread()
+
+    sessionParamsBuilder = sessionParamsBuilder
+      .copy(
+        // Required to reset underlying parser stream
+        layoutPullParser = LayoutPullParser.createFromString(contentRoot)
+      )
+
+    if (deviceConfig != null) {
+      sessionParamsBuilder = sessionParamsBuilder.copy(deviceConfig = deviceConfig)
+    }
+
+    if (theme != null) {
+      sessionParamsBuilder = sessionParamsBuilder.withTheme(theme)
+    }
+
+    if (renderingMode != null) {
+      sessionParamsBuilder = sessionParamsBuilder.copy(renderingMode = renderingMode)
+    }
+
+    val sessionParams = sessionParamsBuilder.build()
+    renderSession = createRenderSession(sessionParams)
+    prepareThread()
+    renderSession.init(sessionParams.timeout)
+    Bitmap.setDefaultDensity(DisplayMetrics.DENSITY_DEVICE_STABLE)
+    bridgeRenderSession = createBridgeSession(renderSession, renderSession.inflate())
   }
 
   private fun takeSnapshots(
     view: View,
     name: String?,
-    deviceConfig: DeviceConfig? = null,
-    theme: String? = null,
-    renderingMode: RenderingMode? = null,
     startNanos: Long,
     fps: Int,
     frameCount: Int
   ) {
-    if (deviceConfig != null || theme != null || renderingMode != null) {
-      renderSession.release()
-      bridgeRenderSession.dispose()
-      cleanupThread()
-
-      sessionParamsBuilder = sessionParamsBuilder
-          .copy(
-              // Required to reset underlying parser stream
-              layoutPullParser = LayoutPullParser.createFromString(contentRoot)
-          )
-
-      if (deviceConfig != null) {
-        sessionParamsBuilder = sessionParamsBuilder.copy(deviceConfig = deviceConfig)
-      }
-
-      if (theme != null) {
-        sessionParamsBuilder = sessionParamsBuilder.withTheme(theme)
-      }
-
-      if (renderingMode != null) {
-        sessionParamsBuilder = sessionParamsBuilder.copy(renderingMode = renderingMode)
-      }
-
-      val sessionParams = sessionParamsBuilder.build()
-      renderSession = createRenderSession(sessionParams)
-      prepareThread()
-      renderSession.init(sessionParams.timeout)
-      Bitmap.setDefaultDensity(DisplayMetrics.DENSITY_DEVICE_STABLE)
-      bridgeRenderSession = createBridgeSession(renderSession, renderSession.inflate())
-    }
-
     val snapshot = Snapshot(name, testName!!, Date())
 
     val frameHandler = snapshotHandler.newFrameHandler(snapshot, frameCount, fps)
