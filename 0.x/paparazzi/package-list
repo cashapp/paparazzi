@@ -133,13 +133,14 @@ $dokka.location:app.cash.paparazzi/Paparazzi/Paparazzi/#app.cash.paparazzi.Envir
 $dokka.location:app.cash.paparazzi/Paparazzi/apply/#org.junit.runners.model.Statement#org.junit.runner.Description/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/apply.md
 $dokka.location:app.cash.paparazzi/Paparazzi/close/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/close.md
 $dokka.location:app.cash.paparazzi/Paparazzi/context/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/context.md
-$dokka.location:app.cash.paparazzi/Paparazzi/gif/#android.view.View#kotlin.String?#app.cash.paparazzi.DeviceConfig?#kotlin.String?#com.android.ide.common.rendering.api.SessionParams.RenderingMode?#kotlin.Long#kotlin.Long#kotlin.Int/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/gif.md
+$dokka.location:app.cash.paparazzi/Paparazzi/gif/#android.view.View#kotlin.String?#kotlin.Long#kotlin.Long#kotlin.Int/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/gif.md
 $dokka.location:app.cash.paparazzi/Paparazzi/inflate/#kotlin.Int/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/inflate.md
 $dokka.location:app.cash.paparazzi/Paparazzi/layoutInflater/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/layout-inflater.md
 $dokka.location:app.cash.paparazzi/Paparazzi/prepare/#org.junit.runner.Description/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/prepare.md
 $dokka.location:app.cash.paparazzi/Paparazzi/resources/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/resources.md
-$dokka.location:app.cash.paparazzi/Paparazzi/snapshot/#android.view.View#kotlin.String?#app.cash.paparazzi.DeviceConfig?#kotlin.String?#com.android.ide.common.rendering.api.SessionParams.RenderingMode?/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/snapshot.md
-$dokka.location:app.cash.paparazzi/Paparazzi/snapshot/#kotlin.String?#app.cash.paparazzi.DeviceConfig?#kotlin.String?#com.android.ide.common.rendering.api.SessionParams.RenderingMode?#kotlin.Function0[kotlin.Unit]/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/snapshot.md
+$dokka.location:app.cash.paparazzi/Paparazzi/snapshot/#android.view.View#kotlin.String?/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/snapshot.md
+$dokka.location:app.cash.paparazzi/Paparazzi/snapshot/#kotlin.String?#kotlin.Function0[kotlin.Unit]/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/snapshot.md
+$dokka.location:app.cash.paparazzi/Paparazzi/unsafeUpdateConfig/#app.cash.paparazzi.DeviceConfig?#kotlin.String?#com.android.ide.common.rendering.api.SessionParams.RenderingMode?/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/unsafe-update-config.md
 $dokka.location:app.cash.paparazzi/RenderExtension///PointingToDeclaration/paparazzi/app.cash.paparazzi/-render-extension/index.md
 $dokka.location:app.cash.paparazzi/RenderExtension/renderView/#android.view.View/PointingToDeclaration/paparazzi/app.cash.paparazzi/-render-extension/render-view.md
 $dokka.location:app.cash.paparazzi/Snapshot///PointingToDeclaration/paparazzi/app.cash.paparazzi/-snapshot/index.md
