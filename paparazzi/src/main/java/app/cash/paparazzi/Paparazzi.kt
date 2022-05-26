@@ -32,6 +32,8 @@ import android.view.ViewGroup.LayoutParams
 import android.widget.FrameLayout
 import androidx.annotation.LayoutRes
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Recomposer
+import androidx.compose.ui.platform.AndroidUiDispatcher
 import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
@@ -76,6 +78,7 @@ import java.lang.reflect.Field
 import java.lang.reflect.Modifier
 import java.util.Date
 import java.util.concurrent.TimeUnit
+import kotlin.coroutines.ContinuationInterceptor
 
 class Paparazzi @JvmOverloads constructor(
   private val environment: Environment = detectEnvironment(),
@@ -193,6 +196,8 @@ class Paparazzi @JvmOverloads constructor(
     PaparazziComposeOwner.register(parent)
     hostView.setContent(composable)
     snapshot(parent, name)
+
+    forceReleaseComposeReferenceLeaks()
   }
 
   @JvmOverloads
@@ -537,6 +542,40 @@ class Paparazzi @JvmOverloads constructor(
     InterceptorRegistrar.addMethodInterceptor(
         choreographerDelegateClass, "getFrameTimeNanos", ChoreographerDelegateInterceptor::class.java
     )
+  }
+
+  private fun forceReleaseComposeReferenceLeaks() {
+    val snapshotClass = Class.forName("androidx.compose.runtime.snapshots.SnapshotKt")
+    val applyObservers = snapshotClass
+      .getDeclaredField("applyObservers")
+      .apply { isAccessible = true }
+      .get(null) as MutableList<*>
+    val applyObserver = applyObservers.getOrNull(0)
+    if (applyObserver != null) {
+      val recomposer = applyObserver.javaClass
+        .getDeclaredField("this\$0")
+        .apply { isAccessible = true }
+        .get(applyObserver) as Recomposer
+      val compositionInvalidations = recomposer.javaClass
+        .getDeclaredField("compositionInvalidations")
+        .apply { isAccessible = true }
+        .get(recomposer) as MutableList<*>
+      val snapshotInvalidations = recomposer.javaClass
+        .getDeclaredField("snapshotInvalidations")
+        .apply { isAccessible = true }
+        .get(recomposer) as MutableList<*>
+      compositionInvalidations.clear()
+      snapshotInvalidations.clear()
+      applyObservers.clear()
+    }
+
+    val dispatcher =
+      AndroidUiDispatcher.CurrentThread[ContinuationInterceptor] as AndroidUiDispatcher
+    val toRunTrampolined = dispatcher.javaClass
+      .getDeclaredField("toRunTrampolined")
+      .apply { isAccessible = true }
+      .get(dispatcher) as ArrayDeque<*>
+    toRunTrampolined.clear()
   }
 
   private class PaparazziComposeOwner private constructor() : LifecycleOwner, SavedStateRegistryOwner {
