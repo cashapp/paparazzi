@@ -123,6 +123,7 @@ class Paparazzi @JvmOverloads constructor(
           base.evaluate()
         } finally {
           close()
+          logger.assertNoErrors()
         }
       }
     }

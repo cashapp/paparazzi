@@ -18,17 +18,18 @@ package app.cash.paparazzi.internal
 import app.cash.paparazzi.Paparazzi
 import com.android.ide.common.rendering.api.ILayoutLog
 import com.android.utils.ILogger
+import java.io.PrintStream
+import java.io.PrintWriter
 import java.util.logging.Level
 import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
 
 /**
  * This logger delegates to java.util.Logging.
- *
- * TODO: gather logged messages and fail successful tests that have unexpected errors.
  */
 internal class PaparazziLogger : ILayoutLog, ILogger {
   private val logger: Logger = getLogger(Paparazzi::class.java.name)
+  private val errors = mutableListOf<Throwable>()
 
   override fun error(
     throwable: Throwable?,
@@ -36,6 +37,9 @@ internal class PaparazziLogger : ILayoutLog, ILogger {
     vararg args: Any
   ) {
     logger.log(Level.SEVERE, format?.format(args), throwable)
+    if (throwable != null) {
+      errors += throwable
+    }
   }
 
   override fun warning(
@@ -86,6 +90,9 @@ internal class PaparazziLogger : ILayoutLog, ILogger {
     data: Any?
   ) {
     logger.log(Level.SEVERE, "$tag: $message", throwable)
+    if (throwable != null) {
+      errors += throwable
+    }
   }
 
   override fun warning(
@@ -99,5 +106,48 @@ internal class PaparazziLogger : ILayoutLog, ILogger {
 
   override fun logAndroidFramework(priority: Int, tag: String?, message: String?) {
     logger.log(Level.INFO, "$tag [$priority]: $message")
+  }
+
+  fun assertNoErrors() {
+    when (errors.size) {
+      0 -> return
+      1 -> throw errors[0]
+      else -> throw MultipleFailuresException(errors)
+    }
+  }
+
+  internal class MultipleFailuresException(private val causes: List<Throwable>) : Exception() {
+    init {
+      require(causes.isNotEmpty()) { "List of Throwables must not be empty" }
+    }
+
+    override val message: String
+      get() = buildString {
+        appendLine(String.format("There were %d errors:", causes.size))
+        causes.forEach { e ->
+          appendLine(String.format("%n  %s: %s", e.javaClass.name, e.message))
+          e.stackTrace.forEach { traceElement ->
+            appendLine("\tat $traceElement")
+          }
+        }
+      }
+
+    override fun printStackTrace() {
+      causes.forEach { e ->
+        e.printStackTrace()
+      }
+    }
+
+    override fun printStackTrace(s: PrintStream) {
+      causes.forEach { e ->
+        e.printStackTrace(s)
+      }
+    }
+
+    override fun printStackTrace(s: PrintWriter) {
+      causes.forEach { e ->
+        e.printStackTrace(s)
+      }
+    }
   }
 }
