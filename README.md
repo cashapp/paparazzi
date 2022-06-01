@@ -32,7 +32,7 @@ Tasks
 $ ./gradlew sample:testDebug
 ```
 
-Runs tests and generates an HTML report at `sample/build/reports/paparazzi/` showing all 
+Runs tests and generates an HTML report at `sample/build/reports/paparazzi/debug/` showing all 
 test runs and snapshots. 
 
 ```
