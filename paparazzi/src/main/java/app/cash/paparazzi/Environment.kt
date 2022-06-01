@@ -16,8 +16,11 @@
 package app.cash.paparazzi
 
 import java.io.File
+import java.io.FileNotFoundException
+import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.Locale
+import kotlin.io.path.exists
 
 data class Environment(
   val platformDir: String,
@@ -28,7 +31,17 @@ data class Environment(
   val compileSdkVersion: Int,
   val platformDataDir: String,
   val resourcePackageNames: List<String>,
-)
+) {
+  init {
+    val platformDirPath = Path.of(platformDir)
+    if (!platformDirPath.exists()) {
+      val elements = platformDirPath.nameCount
+      val platform = platformDirPath.subpath(elements - 1, elements)
+      val platformVersion = platform.toString().split("-").last()
+      throw FileNotFoundException("Missing platform version $platformVersion. Install with sdkmanager --install \"platforms;$platform\"")
+    }
+  }
+}
 
 @Suppress("unused")
 fun androidHome() = System.getenv("ANDROID_SDK_ROOT")

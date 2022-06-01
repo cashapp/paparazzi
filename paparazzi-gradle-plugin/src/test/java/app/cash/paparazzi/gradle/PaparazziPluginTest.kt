@@ -85,7 +85,7 @@ class PaparazziPluginTest {
 
     assertThat(result.task(":testDebug")).isNull()
     assertThat(result.output).contains("java.io.FileNotFoundException")
-    assertThat(result.output).contains("platforms" + File.separator + "android-oops")
+    assertThat(result.output).contains("Missing platform version oops")
   }
 
   @Test
