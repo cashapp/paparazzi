@@ -13,11 +13,8 @@ class AgentTestRule : TestRule {
     override fun evaluate() {
       ByteBuddyAgent.install()
       InterceptorRegistrar.registerMethodInterceptors()
-      try {
-        base.evaluate()
-      } finally {
-        InterceptorRegistrar.clearMethodInterceptors()
-      }
+      // interceptors are statically retained until test process finishes, so no need to cleanup
+      base.evaluate()
     }
   }
 }

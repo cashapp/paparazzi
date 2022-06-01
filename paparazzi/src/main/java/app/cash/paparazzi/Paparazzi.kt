@@ -45,40 +45,40 @@ import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.ViewTreeSavedStateRegistryOwner
 import app.cash.paparazzi.agent.AgentTestRule
 import app.cash.paparazzi.agent.InterceptorRegistrar
+import app.cash.paparazzi.internal.ChoreographerDelegateInterceptor
 import app.cash.paparazzi.internal.EditModeInterceptor
+import app.cash.paparazzi.internal.IInputMethodManagerInterceptor
 import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.MatrixMatrixMultiplicationInterceptor
 import app.cash.paparazzi.internal.MatrixVectorMultiplicationInterceptor
-import app.cash.paparazzi.internal.parsers.LayoutPullParser
 import app.cash.paparazzi.internal.PaparazziCallback
 import app.cash.paparazzi.internal.PaparazziLogger
 import app.cash.paparazzi.internal.Renderer
 import app.cash.paparazzi.internal.ResourcesInterceptor
-import app.cash.paparazzi.internal.SessionParamsBuilder
-import app.cash.paparazzi.internal.ChoreographerDelegateInterceptor
-import app.cash.paparazzi.internal.IInputMethodManagerInterceptor
 import app.cash.paparazzi.internal.ServiceManagerInterceptor
+import app.cash.paparazzi.internal.SessionParamsBuilder
+import app.cash.paparazzi.internal.parsers.LayoutPullParser
 import com.android.ide.common.rendering.api.RenderSession
 import com.android.ide.common.rendering.api.Result
 import com.android.ide.common.rendering.api.Result.Status.ERROR_UNKNOWN
 import com.android.ide.common.rendering.api.SessionParams
+import com.android.ide.common.rendering.api.SessionParams.RenderingMode
 import com.android.internal.lang.System_Delegate
 import com.android.layoutlib.bridge.Bridge
-import com.android.ide.common.rendering.api.SessionParams.RenderingMode
 import com.android.layoutlib.bridge.Bridge.cleanupThread
 import com.android.layoutlib.bridge.Bridge.prepareThread
 import com.android.layoutlib.bridge.BridgeRenderSession
 import com.android.layoutlib.bridge.impl.RenderAction
 import com.android.layoutlib.bridge.impl.RenderSessionImpl
-import org.junit.rules.TestRule
-import org.junit.runner.Description
-import org.junit.runners.model.Statement
 import java.awt.image.BufferedImage
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier
 import java.util.Date
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.ContinuationInterceptor
+import org.junit.rules.TestRule
+import org.junit.runner.Description
+import org.junit.runners.model.Statement
 
 class Paparazzi @JvmOverloads constructor(
   private val environment: Environment = detectEnvironment(),
@@ -129,15 +129,19 @@ class Paparazzi @JvmOverloads constructor(
       }
     }
 
-    registerFontLookupInterceptionIfResourceCompatDetected()
-    registerViewEditModeInterception()
-    registerMatrixMultiplyInterception()
-    registerChoreographerDelegateInterception()
-    registerServiceManagerInterception()
-    registerIInputMethodManagerInterception()
+    return if (!isInitialized) {
+      registerFontLookupInterceptionIfResourceCompatDetected()
+      registerViewEditModeInterception()
+      registerMatrixMultiplyInterception()
+      registerChoreographerDelegateInterception()
+      registerServiceManagerInterception()
+      registerIInputMethodManagerInterception()
 
-    val outerRule = AgentTestRule()
-    return outerRule.apply(statement, description)
+      val outerRule = AgentTestRule()
+      outerRule.apply(statement, description)
+    } else {
+      statement
+    }
   }
 
   fun prepare(description: Description) {
