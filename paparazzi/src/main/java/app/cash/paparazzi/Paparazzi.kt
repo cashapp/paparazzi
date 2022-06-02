@@ -45,40 +45,40 @@ import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.ViewTreeSavedStateRegistryOwner
 import app.cash.paparazzi.agent.AgentTestRule
 import app.cash.paparazzi.agent.InterceptorRegistrar
+import app.cash.paparazzi.internal.ChoreographerDelegateInterceptor
 import app.cash.paparazzi.internal.EditModeInterceptor
+import app.cash.paparazzi.internal.IInputMethodManagerInterceptor
 import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.MatrixMatrixMultiplicationInterceptor
 import app.cash.paparazzi.internal.MatrixVectorMultiplicationInterceptor
-import app.cash.paparazzi.internal.parsers.LayoutPullParser
 import app.cash.paparazzi.internal.PaparazziCallback
 import app.cash.paparazzi.internal.PaparazziLogger
 import app.cash.paparazzi.internal.Renderer
 import app.cash.paparazzi.internal.ResourcesInterceptor
-import app.cash.paparazzi.internal.SessionParamsBuilder
-import app.cash.paparazzi.internal.ChoreographerDelegateInterceptor
-import app.cash.paparazzi.internal.IInputMethodManagerInterceptor
 import app.cash.paparazzi.internal.ServiceManagerInterceptor
+import app.cash.paparazzi.internal.SessionParamsBuilder
+import app.cash.paparazzi.internal.parsers.LayoutPullParser
 import com.android.ide.common.rendering.api.RenderSession
 import com.android.ide.common.rendering.api.Result
 import com.android.ide.common.rendering.api.Result.Status.ERROR_UNKNOWN
 import com.android.ide.common.rendering.api.SessionParams
+import com.android.ide.common.rendering.api.SessionParams.RenderingMode
 import com.android.internal.lang.System_Delegate
 import com.android.layoutlib.bridge.Bridge
-import com.android.ide.common.rendering.api.SessionParams.RenderingMode
 import com.android.layoutlib.bridge.Bridge.cleanupThread
 import com.android.layoutlib.bridge.Bridge.prepareThread
 import com.android.layoutlib.bridge.BridgeRenderSession
 import com.android.layoutlib.bridge.impl.RenderAction
 import com.android.layoutlib.bridge.impl.RenderSessionImpl
-import org.junit.rules.TestRule
-import org.junit.runner.Description
-import org.junit.runners.model.Statement
 import java.awt.image.BufferedImage
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier
 import java.util.Date
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.ContinuationInterceptor
+import org.junit.rules.TestRule
+import org.junit.runner.Description
+import org.junit.runners.model.Statement
 
 class Paparazzi @JvmOverloads constructor(
   private val environment: Environment = detectEnvironment(),
@@ -93,8 +93,6 @@ class Paparazzi @JvmOverloads constructor(
   private val THUMBNAIL_SIZE = 1000
 
   private val logger = PaparazziLogger()
-  private lateinit var sessionParamsBuilder: SessionParamsBuilder
-  private lateinit var renderer: Renderer
   private lateinit var renderSession: RenderSessionImpl
   private lateinit var bridgeRenderSession: RenderSession
   private var testName: TestName? = null
@@ -131,15 +129,19 @@ class Paparazzi @JvmOverloads constructor(
       }
     }
 
-    registerFontLookupInterceptionIfResourceCompatDetected()
-    registerViewEditModeInterception()
-    registerMatrixMultiplyInterception()
-    registerChoreographerDelegateInterception()
-    registerServiceManagerInterception()
-    registerIInputMethodManagerInterception()
+    return if (!isInitialized) {
+      registerFontLookupInterceptionIfResourceCompatDetected()
+      registerViewEditModeInterception()
+      registerMatrixMultiplyInterception()
+      registerChoreographerDelegateInterception()
+      registerServiceManagerInterception()
+      registerIInputMethodManagerInterception()
 
-    val outerRule = AgentTestRule()
-    return outerRule.apply(statement, description)
+      val outerRule = AgentTestRule()
+      outerRule.apply(statement, description)
+    } else {
+      statement
+    }
   }
 
   fun prepare(description: Description) {
@@ -151,8 +153,10 @@ class Paparazzi @JvmOverloads constructor(
 
     testName = description.toTestName()
 
-    renderer = Renderer(environment, layoutlibCallback, logger, maxPercentDifference)
-    sessionParamsBuilder = renderer.prepare()
+    if (!isInitialized) {
+      renderer = Renderer(environment, layoutlibCallback, logger, maxPercentDifference)
+      sessionParamsBuilder = renderer.prepare()
+    }
 
     sessionParamsBuilder = sessionParamsBuilder
         .copy(
@@ -178,11 +182,12 @@ class Paparazzi @JvmOverloads constructor(
 
   fun close() {
     testName = null
-    renderer.close()
     renderSession.release()
     bridgeRenderSession.dispose()
     cleanupThread()
     snapshotHandler.close()
+
+    renderer.dumpDelegates()
   }
 
   fun <V : View> inflate(@LayoutRes layoutId: Int): V = layoutInflater.inflate(layoutId, null) as V
@@ -600,6 +605,11 @@ class Paparazzi @JvmOverloads constructor(
   companion object {
     /** The choreographer doesn't like 0 as a frame time, so start an hour later. */
     internal val TIME_OFFSET_NANOS = TimeUnit.HOURS.toNanos(1L)
+
+    internal lateinit var renderer: Renderer
+    internal val isInitialized get() = ::renderer.isInitialized
+
+    internal lateinit var sessionParamsBuilder: SessionParamsBuilder
 
     private val isVerifying: Boolean =
       System.getProperty("paparazzi.test.verify")?.toBoolean() == true
