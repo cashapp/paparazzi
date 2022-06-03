@@ -9,15 +9,15 @@ class LaunchViewTest {
   val paparazzi = Paparazzi(
     deviceConfig = PIXEL_5,
     theme = "android:Theme.Material.Light.NoActionBar"
-    // ...see docs for more options 
+    // ...see docs for more options
   )
- 
+
   @Test
   fun simple() {
     val view = paparazzi.inflate<LaunchView>(R.layout.launch)
-    // or... 
+    // or...
     // val view = LaunchView(paparazzi.context)
-    
+
     view.setModel(LaunchModel(title = "paparazzi"))
     paparazzi.snapshot(view)
   }
@@ -32,14 +32,14 @@ Tasks
 $ ./gradlew sample:testDebug
 ```
 
-Runs tests and generates an HTML report at `sample/build/reports/paparazzi/` showing all 
-test runs and snapshots. 
+Runs tests and generates an HTML report at `sample/build/reports/paparazzi/` showing all
+test runs and snapshots.
 
 ```
 $ ./gradlew sample:recordPaparazziDebug
 ```
 
-Saves snapshots as golden values to a predefined source-controlled location 
+Saves snapshots as golden values to a predefined source-controlled location
 (defaults to `src/test/snapshots`).
 
 ```
@@ -110,7 +110,7 @@ buildscript {
     google()
   }
   dependencies {
-    classpath 'app.cash.paparazzi:paparazzi-gradle-plugin:0.9.3'
+    classpath 'app.cash.paparazzi:paparazzi-gradle-plugin:1.0.0'
   }
 }
 
@@ -120,7 +120,7 @@ apply plugin: 'app.cash.paparazzi'
 Using the plugins DSL:
 ```groovy
 plugins {
-  id 'app.cash.paparazzi' version '0.9.3'
+  id 'app.cash.paparazzi' version '1.0.0'
 }
 ```
 
@@ -133,32 +133,6 @@ Snapshots of the development version are available in [Sonatype's `snapshots` re
      url 'https://oss.sonatype.org/content/repositories/snapshots/'
    }
  }
-```
-
-Known Limitations
--------
-
-#### Running Tests from the IDE
-```
-java.lang.NullPointerException
-  at java.base/java.io.File.<init>(File.java:278)
-  at app.cash.paparazzi.EnvironmentKt.detectEnvironment(Environment.kt:36)
-```
-Running tests from the IDE requires Android Studio Arctic Fox or later.
-
-#### Could not find ... resource matching value 0x... (resolved name: ...) in current configuration.
-```
-Could not find dimen resource matching value 0x10500C0 (resolved name: config_scrollbarSize) in current configuration.
-android.content.res.Resources$NotFoundException: Could not find dimen resource matching value 0x10500C0 (resolved name: config_scrollbarSize) in current configuration.
-
-Could not find integer resource matching value 0x10E00B4 (resolved name: config_screenshotChordKeyTimeout) in current configuration.
-android.content.res.Resources$NotFoundException: Could not find integer resource matching value 0x10E00B4 (resolved name: config_screenshotChordKeyTimeout) in current configuration.
-```
-`compileSdkVersion` has to be 29 or higher.
-```groovy
-android {
-  compileSdkVersion 29
-}
 ```
 
 License
@@ -180,8 +154,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
- [changelog]: https://cashapp.github.io/paparazzi/changelog/
  [paparazzi]: https://cashapp.github.io/paparazzi/
  [sample]: https://github.com/cashapp/paparazzi/tree/master/sample
- [snap]: https://oss.sonatype.org/content/repositories/snapshots/app/cash/paparazzi/
  [lfs]: https://git-lfs.github.com/
+ [changelog]: https://cashapp.github.io/paparazzi/changelog/
+ [snap]: https://oss.sonatype.org/content/repositories/snapshots/app/cash/paparazzi/

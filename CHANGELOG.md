@@ -1,6 +1,34 @@
 Change Log
 ==========
 
+## Version 1.0.0
+_2022-06-03_
+
+### New
+* Support for Composable snapshots
+* Migrate Paparazzi to layoutlib Bumblebee 2021.1.1 for better rendering and API 31 support
+* Update Paparazzi configuration via new `unsafeUpdateConfig` method instead of `snapshot`/`gif`
+* Cache Paparazzi bootstrap logic for better performance per test suite
+* Surface internally thrown exceptions from layoutlib
+* Throw a more helpful exception if Android platform is missing
+* Bump default compileSdk to API 31
+* Compose 1.1.1
+* Kotlin 1.6.10
+* [Gradle Plugin] Gradle 7.4.2
+* [Gradle Plugin] Android Gradle Plugin 7.1.2
+
+### Fixed
+* Prepend paths with file:// for clickable error output in IDE
+* Update default SDK path on Linux
+* Fix accessibility test logic to avoid unnecessary coloring changes on updated view ids
+* Fixes crash when using InputMethodManager to show/hide keyboard
+* Temporarily work around Compose runtime memory leaks
+* [Gradle Plugin] Prefer namespace DSL declaration over manifest package declaration
+* [Gradle Plugin] Publish plugin marker on snapshot builds
+* [Gradle Plugin] Exclude androidTest sourceSets during paparazzi runs
+
+Kudos to @luis-cortes, @nak5ive, @alexvanyo, @gamepro65 and others for contributions this release!
+
 ## Version 0.9.3
 _2022-01-20_
 
@@ -33,7 +61,7 @@ Kudos to @luis-cortes, @geoff-powell, @autonomousapps and @LuK1709 for their con
 _2021-11-22_
 
 ### New
-* Migrate Paparazzi to layoutlib Arctic Fox 2020.3.1, providing native support for M1 machines 
+* Migrate Paparazzi to layoutlib Arctic Fox 2020.3.1, providing native support for M1 machines
 * Migrate Paparazzi to layoutlib 4.2, unlocking future Compose support
 * Add support for projects enabling non-transitive resources
 * RenderExtension now visits view hierarchy pre-rendering instead of layering bitmaps post-rendering
@@ -49,8 +77,8 @@ _2021-11-22_
 * Don't generate empty mov files on snapshot failure
 * Add Kotlin platform bom to prevent classpath conflicts during test builds
 * Use correct default Android SDK path on Windows
-* Use platform-agnostic file paths in Gradle artifacts to support remote caching across platforms  
-* Use platform-agnostic file paths in Javascript for web page support on Windows  
+* Use platform-agnostic file paths in Gradle artifacts to support remote caching across platforms
+* Use platform-agnostic file paths in Javascript for web page support on Windows
 * Fix font scaling issue in AccessibilityRenderExtension by using bundled font
 
 Kudos to @luis-cortes, @geoff-powell and @TWiStErRob for their contributions this release!
