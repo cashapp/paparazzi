@@ -37,7 +37,8 @@ class TestParameterInjectorTest(
 
   @Test
   fun simpleWithTheme(@TestParameter theme: Theme) {
+    paparazzi.unsafeUpdateConfig(theme = theme.themeName)
     val launch = paparazzi.inflate<LinearLayout>(R.layout.launch)
-    paparazzi.snapshot(launch, theme = theme.themeName)
+    paparazzi.snapshot(launch)
   }
 }

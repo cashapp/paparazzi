@@ -3,9 +3,9 @@ apply plugin: 'org.jetbrains.kotlin.android'
 apply plugin: 'app.cash.paparazzi'
 
 android {
-  compileSdkVersion 29
+  compileSdk 31
   defaultConfig {
-    minSdkVersion 25
+    minSdk 25
   }
 }
 

@@ -35,23 +35,23 @@ class LaunchViewTest {
 
   @Test
   fun pixel3_differentThemes() {
-    val launch = paparazzi.inflate<LinearLayout>(R.layout.launch)
-    paparazzi.snapshot(
-        view = launch,
-        name = "light",
-        theme = "android:Theme.Material.Light"
-    )
-    paparazzi.snapshot(
-        view = launch,
-        name = "light no_action_bar",
-        theme = "android:Theme.Material.Light.NoActionBar"
-    )
+    paparazzi.unsafeUpdateConfig(theme = "android:Theme.Material.Light")
+    var launch = paparazzi.inflate<LinearLayout>(R.layout.launch)
+    paparazzi.snapshot(view = launch, name = "light")
+
+    paparazzi.unsafeUpdateConfig(theme = "android:Theme.Material.Light.NoActionBar")
+    launch = paparazzi.inflate(R.layout.launch)
+    paparazzi.snapshot(view = launch, name = "light no_action_bar")
   }
 
   @Test
   fun nexus5_differentOrientations() {
-    val launch = paparazzi.inflate<LinearLayout>(R.layout.launch)
-    paparazzi.snapshot(launch, "portrait", deviceConfig = NEXUS_5)
-    paparazzi.snapshot(launch, "landscape", deviceConfig = NEXUS_5_LAND)
+    paparazzi.unsafeUpdateConfig(deviceConfig = NEXUS_5)
+    var launch = paparazzi.inflate<LinearLayout>(R.layout.launch)
+    paparazzi.snapshot(launch, "portrait")
+
+    paparazzi.unsafeUpdateConfig(deviceConfig = NEXUS_5_LAND)
+    launch = paparazzi.inflate(R.layout.launch)
+    paparazzi.snapshot(launch, "landscape")
   }
 }
