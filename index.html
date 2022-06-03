@@ -255,33 +255,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#known-limitations" class="md-nav__link">
-    Known Limitations
-  </a>
-  
-    <nav class="md-nav" aria-label="Known Limitations">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#running-tests-from-the-ide" class="md-nav__link">
-    Running Tests from the IDE
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#could-not-find-resource-matching-value-0x-resolved-name-in-current-configuration" class="md-nav__link">
-    Could not find ... resource matching value 0x... (resolved name: ...) in current configuration.
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#license" class="md-nav__link">
     License
   </a>
@@ -397,33 +370,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#known-limitations" class="md-nav__link">
-    Known Limitations
-  </a>
-  
-    <nav class="md-nav" aria-label="Known Limitations">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#running-tests-from-the-ide" class="md-nav__link">
-    Running Tests from the IDE
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#could-not-find-resource-matching-value-0x-resolved-name-in-current-configuration" class="md-nav__link">
-    Could not find ... resource matching value 0x... (resolved name: ...) in current configuration.
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#license" class="md-nav__link">
     License
   </a>
@@ -457,13 +403,13 @@
   <span class="k">val</span> <span class="py">paparazzi</span> <span class="p">=</span> <span class="n">Paparazzi</span><span class="p">(</span>
     <span class="n">deviceConfig</span> <span class="p">=</span> <span class="n">PIXEL_5</span><span class="p">,</span>
     <span class="n">theme</span> <span class="p">=</span> <span class="s">&quot;android:Theme.Material.Light.NoActionBar&quot;</span>
-    <span class="c1">// ...see docs for more options </span>
+    <span class="c1">// ...see docs for more options</span>
   <span class="p">)</span>
 
   <span class="n">@Test</span>
   <span class="k">fun</span> <span class="nf">simple</span><span class="p">()</span> <span class="p">{</span>
     <span class="k">val</span> <span class="py">view</span> <span class="p">=</span> <span class="n">paparazzi</span><span class="p">.</span><span class="n">inflate</span><span class="p">&lt;</span><span class="n">LaunchView</span><span class="p">&gt;(</span><span class="n">R</span><span class="p">.</span><span class="n">layout</span><span class="p">.</span><span class="n">launch</span><span class="p">)</span>
-    <span class="c1">// or... </span>
+    <span class="c1">// or...</span>
     <span class="c1">// val view = LaunchView(paparazzi.context)</span>
 
     <span class="n">view</span><span class="p">.</span><span class="n">setModel</span><span class="p">(</span><span class="n">LaunchModel</span><span class="p">(</span><span class="n">title</span> <span class="p">=</span> <span class="s">&quot;paparazzi&quot;</span><span class="p">))</span>
@@ -476,12 +422,12 @@
 <div class="highlight"><pre><span></span><code>$ ./gradlew sample:testDebug
 </code></pre></div>
 
-<p>Runs tests and generates an HTML report at <code>sample/build/reports/paparazzi/</code> showing all 
-test runs and snapshots. </p>
+<p>Runs tests and generates an HTML report at <code>sample/build/reports/paparazzi/</code> showing all
+test runs and snapshots.</p>
 <div class="highlight"><pre><span></span><code>$ ./gradlew sample:recordPaparazziDebug
 </code></pre></div>
 
-<p>Saves snapshots as golden values to a predefined source-controlled location 
+<p>Saves snapshots as golden values to a predefined source-controlled location
 (defaults to <code>src/test/snapshots</code>).</p>
 <div class="highlight"><pre><span></span><code>$ ./gradlew sample:verifyPaparazziDebug
 </code></pre></div>
@@ -531,7 +477,7 @@ exclude bundled Android dependencies.</p>
     <span class="n">google</span><span class="o">()</span>
   <span class="o">}</span>
   <span class="n">dependencies</span> <span class="o">{</span>
-    <span class="n">classpath</span> <span class="s1">&#39;app.cash.paparazzi:paparazzi-gradle-plugin:0.9.3&#39;</span>
+    <span class="n">classpath</span> <span class="s1">&#39;app.cash.paparazzi:paparazzi-gradle-plugin:1.0.0&#39;</span>
   <span class="o">}</span>
 <span class="o">}</span>
 
@@ -539,7 +485,7 @@ exclude bundled Android dependencies.</p>
 </code></pre></div></p>
 <p>Using the plugins DSL:
 <div class="highlight"><pre><span></span><code><span class="n">plugins</span> <span class="o">{</span>
-  <span class="n">id</span> <span class="s1">&#39;app.cash.paparazzi&#39;</span> <span class="n">version</span> <span class="s1">&#39;0.9.3&#39;</span>
+  <span class="n">id</span> <span class="s1">&#39;app.cash.paparazzi&#39;</span> <span class="n">version</span> <span class="s1">&#39;1.0.0&#39;</span>
 <span class="o">}</span>
 </code></pre></div></p>
 <p>Snapshots of the development version are available in <a href="https://oss.sonatype.org/content/repositories/snapshots/app/cash/paparazzi/">Sonatype&rsquo;s <code>snapshots</code> repository</a>.</p>
@@ -551,25 +497,6 @@ exclude bundled Android dependencies.</p>
  <span class="o">}</span>
 </code></pre></div>
 
-<h2 id="known-limitations">Known Limitations<a class="headerlink" href="#known-limitations" title="Permanent link">&para;</a></h2>
-<h4 id="running-tests-from-the-ide">Running Tests from the IDE<a class="headerlink" href="#running-tests-from-the-ide" title="Permanent link">&para;</a></h4>
-<p><div class="highlight"><pre><span></span><code>java.lang.NullPointerException
-  at java.base/java.io.File.&lt;init&gt;(File.java:278)
-  at app.cash.paparazzi.EnvironmentKt.detectEnvironment(Environment.kt:36)
-</code></pre></div>
-Running tests from the IDE requires Android Studio Arctic Fox or later.</p>
-<h4 id="could-not-find-resource-matching-value-0x-resolved-name-in-current-configuration">Could not find &hellip; resource matching value 0x&hellip; (resolved name: &hellip;) in current configuration.<a class="headerlink" href="#could-not-find-resource-matching-value-0x-resolved-name-in-current-configuration" title="Permanent link">&para;</a></h4>
-<p><div class="highlight"><pre><span></span><code>Could not find dimen resource matching value 0x10500C0 (resolved name: config_scrollbarSize) in current configuration.
-android.content.res.Resources$NotFoundException: Could not find dimen resource matching value 0x10500C0 (resolved name: config_scrollbarSize) in current configuration.
-
-Could not find integer resource matching value 0x10E00B4 (resolved name: config_screenshotChordKeyTimeout) in current configuration.
-android.content.res.Resources$NotFoundException: Could not find integer resource matching value 0x10E00B4 (resolved name: config_screenshotChordKeyTimeout) in current configuration.
-</code></pre></div>
-<code>compileSdkVersion</code> has to be 29 or higher.
-<div class="highlight"><pre><span></span><code><span class="n">android</span> <span class="o">{</span>
-  <span class="n">compileSdkVersion</span> <span class="mi">29</span>
-<span class="o">}</span>
-</code></pre></div></p>
 <h2 id="license">License<a class="headerlink" href="#license" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>Copyright 2019 Square, Inc.
 
