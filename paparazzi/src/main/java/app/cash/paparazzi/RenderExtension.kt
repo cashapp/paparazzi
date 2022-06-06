@@ -16,7 +16,6 @@
 package app.cash.paparazzi
 
 import android.view.View
-import java.awt.image.BufferedImage
 
 /**
  * An extension for overlaying additional information on top of each rendered frame.
