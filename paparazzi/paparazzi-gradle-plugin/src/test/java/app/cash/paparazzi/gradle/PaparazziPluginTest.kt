@@ -62,6 +62,31 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun kotlinMultiplatformPluginWithAndroidTarget() {
+    val fixtureRoot = File("src/test/projects/multiplatform-plugin-with-android")
+
+    val result = gradleRunner
+      .withArguments("preparePaparazziDebugResources", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
+  }
+
+  @Test
+  fun kotlinMultiplatformPluginWithoutAndroidTarget() {
+    val fixtureRoot = File("src/test/projects/multiplatform-plugin-without-android")
+
+    val result = gradleRunner
+      .withArguments("preparePaparazziDebugResources", "--stacktrace")
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    assertThat(result.task(":preparePaparazziDebugResources")).isNull()
+    assertThat(result.output).contains(
+      "There must be an Android target configured when using Paparazzi with the Kotlin Multiplatform Plugin"
+    )
+  }
+
+  @Test
   fun excludeAndroidTestSourceSets() {
     val fixtureRoot = File("src/test/projects/exclude-androidtest")
 
