@@ -71,7 +71,7 @@ dependencies {
 }
 
 tasks.named("dokkaGfm").configure {
-  outputDirectory = rootProject.file("docs/0.x")
+  outputDirectory = rootProject.file("docs/1.x")
 
   dokkaSourceSets.named("main") {
     configureEach {
