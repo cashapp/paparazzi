@@ -1,7 +1,7 @@
 Paparazzi
 ========
 
-An Android library to render your application screens without a physical device or emulator.
+An Android library to render your application screens without a physical device or emulator. *Paparazzi ONLY works with library modules, and NOT app modules at this time.*
 
 ```kotlin
 class LaunchViewTest {
