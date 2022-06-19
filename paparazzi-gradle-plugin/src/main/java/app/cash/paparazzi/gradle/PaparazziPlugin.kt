@@ -45,8 +45,14 @@ import java.util.Locale
 class PaparazziPlugin : Plugin<Project> {
   override fun apply(project: Project) {
     project.afterEvaluate {
-      require(project.plugins.hasPlugin("com.android.library")) {
-        "The Android Gradle library plugin must be applied for Paparazzi to be configured."
+      check(!project.plugins.hasPlugin("com.android.application")) {
+        error(
+          "Currently, Paparazzi only works in Android library -- not application -- modules. " +
+            "See https://github.com/cashapp/paparazzi/issues/107"
+        )
+      }
+      check(project.plugins.hasPlugin("com.android.library")) {
+        "The Android Gradle library plugin must be applied for Paparazzi to work properly."
       }
     }
 

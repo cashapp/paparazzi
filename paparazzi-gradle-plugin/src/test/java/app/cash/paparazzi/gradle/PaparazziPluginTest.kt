@@ -22,8 +22,8 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun missingPlugin() {
-    val fixtureRoot = File("src/test/projects/missing-plugin")
+  fun missingAndroidLibraryPlugin() {
+    val fixtureRoot = File("src/test/projects/missing-library-plugin")
 
     val result = gradleRunner
         .withArguments("preparePaparazziDebugResources", "--stacktrace")
@@ -31,7 +31,22 @@ class PaparazziPluginTest {
 
     assertThat(result.task(":preparePaparazziDebugResources")).isNull()
     assertThat(result.output).contains(
-        "The Android Gradle library plugin must be applied for Paparazzi to be configured."
+        "The Android Gradle library plugin must be applied for Paparazzi to work properly."
+    )
+  }
+
+  @Test
+  fun invalidAndroidApplicationPlugin() {
+    val fixtureRoot = File("src/test/projects/invalid-application-plugin")
+
+    val result = gradleRunner
+        .withArguments("preparePaparazziDebugResources", "--stacktrace")
+        .runFixture(fixtureRoot) { buildAndFail() }
+
+    assertThat(result.task(":preparePaparazziDebugResources")).isNull()
+    assertThat(result.output).contains(
+      "Currently, Paparazzi only works in Android library -- not application -- modules. " +
+        "See https://github.com/cashapp/paparazzi/issues/107"
     )
   }
 
