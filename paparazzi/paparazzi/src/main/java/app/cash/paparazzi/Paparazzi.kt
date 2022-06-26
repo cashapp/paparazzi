@@ -53,6 +53,7 @@ import app.cash.paparazzi.internal.MatrixMatrixMultiplicationInterceptor
 import app.cash.paparazzi.internal.MatrixVectorMultiplicationInterceptor
 import app.cash.paparazzi.internal.PaparazziCallback
 import app.cash.paparazzi.internal.PaparazziLogger
+import app.cash.paparazzi.internal.ReflectionUtils
 import app.cash.paparazzi.internal.Renderer
 import app.cash.paparazzi.internal.ResourcesInterceptor
 import app.cash.paparazzi.internal.ServiceManagerInterceptor
@@ -74,8 +75,6 @@ import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
 import java.awt.image.BufferedImage
-import java.lang.reflect.Field
-import java.lang.reflect.Modifier
 import java.util.Date
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.ContinuationInterceptor
@@ -380,42 +379,13 @@ class Paparazzi @JvmOverloads constructor(
   }
 
   private fun forcePlatformSdkVersion(compileSdkVersion: Int) {
-    val modifiersField =
-      try {
-        Field::class.java.getDeclaredField("modifiers")
-      } catch (e: NoSuchFieldException) {
-        // Hack for Java 12+ access
-        // https://stackoverflow.com/q/56039341
-        // https://github.com/powermock/powermock/commit/66ce9f77215bae68b45f35481abc8b52a5d5b6ae#diff-21c1fc51058efd316026f11f34f51c5c
-        try {
-          val getDeclaredFields0 =
-            Class::class.java.getDeclaredMethod(
-              "getDeclaredFields0",
-              Boolean::class.javaPrimitiveType
-            )
-          getDeclaredFields0.isAccessible = true
-          val fields = getDeclaredFields0.invoke(Field::class.java, false) as Array<Field>
-          fields.find { it.name == "modifiers" } ?: throw e
-        } catch (ex: Exception) {
-          e.addSuppressed(ex)
-          throw e
-        }
-      }
-    modifiersField.isAccessible = true
-
-    val versionClass = try {
-      Paparazzi::class.java.classLoader.loadClass("android.os.Build\$VERSION")
+    val sdkField = try {
+      ReflectionUtils.getField("SDK_INT", Paparazzi::class.java.classLoader.loadClass("android.os.Build\$VERSION"))
     } catch (e: ClassNotFoundException) {
       return
-    }
+    } ?: return
 
-    versionClass
-      .getDeclaredField("SDK_INT")
-      .apply {
-        isAccessible = true
-        modifiersField.setInt(this, modifiers and Modifier.FINAL.inv())
-        setInt(null, compileSdkVersion)
-      }
+    ReflectionUtils.setField(Int::class.java, compileSdkVersion, sdkField)
   }
 
   private fun initializeAppCompatIfPresent() {
