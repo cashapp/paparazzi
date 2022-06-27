@@ -20,6 +20,7 @@ import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.internal.parsers.LayoutPullParser
 import com.android.SdkConstants
 import com.android.ide.common.rendering.api.AssetRepository
+import com.android.ide.common.rendering.api.Bridge
 import com.android.ide.common.rendering.api.ResourceNamespace
 import com.android.ide.common.rendering.api.ResourceReference
 import com.android.ide.common.rendering.api.SessionParams
@@ -28,10 +29,12 @@ import com.android.ide.common.rendering.api.SessionParams.RenderingMode
 import com.android.ide.common.resources.ResourceResolver
 import com.android.ide.common.resources.ResourceValueMap
 import com.android.ide.common.resources.deprecated.ResourceRepository
+import com.android.resources.LayoutDirection
 import com.android.resources.ResourceType
 
 /** Creates [SessionParams] objects. */
 internal data class SessionParamsBuilder(
+  private val bridge: Bridge,
   private val layoutlibCallback: PaparazziCallback,
   private val logger: PaparazziLogger,
   private val frameworkResources: ResourceRepository,
@@ -94,6 +97,15 @@ internal data class SessionParamsBuilder(
       deviceConfig.hardwareConfig, resourceResolver, layoutlibCallback, minSdk, targetSdk, logger
     )
     result.fontScale = deviceConfig.fontScale
+
+    val locale = deviceConfig.locale
+    // https://cs.android.com/android-studio/platform/tools/adt/idea/+/mirror-goog-studio-main:android/src/com/android/tools/idea/rendering/RenderTask.java;l=645
+    if (LayoutDirection.RTL == deviceConfig.layoutDirection && !bridge.isRtl(locale.tag)) {
+      result.locale = "ur"
+    } else {
+      result.locale = locale.tag
+    }
+    result.setRtlSupport(true)
 
     for ((key, value) in flags) {
       result.setFlag(key as Key<Any>, value)

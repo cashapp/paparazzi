@@ -931,6 +931,98 @@ class PaparazziPluginTest {
     assertThat(nexus7SnapshotImage).isSimilarTo(nexus7GoldenImage).withDefaultThreshold()
   }
 
+  @Test
+  fun localeQualifierCompose() {
+    val fixtureRoot = File("src/test/projects/locale-qualifier-compose")
+
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()?.sortedBy { it.lastModified() }
+    assertThat(snapshots!!).hasSize(4)
+
+    val localeDefaultSnapshotImage = snapshots[0]
+    val localeEnGBSnapshotImage = snapshots[1]
+    val localeUkSnapshotImage = snapshots[2]
+    val localeArSnapshotImage = snapshots[3]
+    val localeDefaultGoldenImage = File(fixtureRoot, "src/test/resources/locale_default.png")
+    val localeEnGBGoldenImage = File(fixtureRoot, "src/test/resources/locale_en_gb.png")
+    val localeUkGoldenImage = File(fixtureRoot, "src/test/resources/locale_uk.png")
+    val localeArGoldenImage = File(fixtureRoot, "src/test/resources/locale_ar.png")
+    assertThat(localeDefaultSnapshotImage).isSimilarTo(localeDefaultGoldenImage).withDefaultThreshold()
+    assertThat(localeEnGBSnapshotImage).isSimilarTo(localeEnGBGoldenImage).withDefaultThreshold()
+    assertThat(localeUkSnapshotImage).isSimilarTo(localeUkGoldenImage).withDefaultThreshold()
+    assertThat(localeArSnapshotImage).isSimilarTo(localeArGoldenImage).withDefaultThreshold()
+  }
+
+  @Test
+  fun localeQualifierXml() {
+    val fixtureRoot = File("src/test/projects/locale-qualifier-xml")
+
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()?.sortedBy { it.lastModified() }
+    assertThat(snapshots!!).hasSize(4)
+
+    val localeDefaultSnapshotImage = snapshots[0]
+    val localeEnGBSnapshotImage = snapshots[1]
+    val localeUkSnapshotImage = snapshots[2]
+    val localeArSnapshotImage = snapshots[3]
+    val localeDefaultGoldenImage = File(fixtureRoot, "src/test/resources/locale_default.png")
+    val localeEnGBGoldenImage = File(fixtureRoot, "src/test/resources/locale_en_gb.png")
+    val localeUkGoldenImage = File(fixtureRoot, "src/test/resources/locale_uk.png")
+    val localeArGoldenImage = File(fixtureRoot, "src/test/resources/locale_ar.png")
+    assertThat(localeDefaultSnapshotImage).isSimilarTo(localeDefaultGoldenImage).withDefaultThreshold()
+    assertThat(localeEnGBSnapshotImage).isSimilarTo(localeEnGBGoldenImage).withDefaultThreshold()
+    assertThat(localeUkSnapshotImage).isSimilarTo(localeUkGoldenImage).withDefaultThreshold()
+    assertThat(localeArSnapshotImage).isSimilarTo(localeArGoldenImage).withDefaultThreshold()
+  }
+
+  @Test
+  fun layoutDirectionCompose() {
+    val fixtureRoot = File("src/test/projects/layout-direction-compose")
+
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()?.sortedBy { it.lastModified() }
+    assertThat(snapshots!!).hasSize(2)
+
+    val localeDefaultRtlSnapshotImage = snapshots[0]
+    val localeEnGBRtlSnapshotImage = snapshots[1]
+    val localeDefaultRtlGoldenImage = File(fixtureRoot, "src/test/resources/locale_default_rtl.png")
+    val localeEnGBRtlGoldenImage = File(fixtureRoot, "src/test/resources/locale_en_gb_rtl.png")
+    assertThat(localeDefaultRtlSnapshotImage).isSimilarTo(localeDefaultRtlGoldenImage).withDefaultThreshold()
+    assertThat(localeEnGBRtlSnapshotImage).isSimilarTo(localeEnGBRtlGoldenImage).withDefaultThreshold()
+  }
+
+  @Test
+  fun layoutDirectionXml() {
+    val fixtureRoot = File("src/test/projects/layout-direction-xml")
+
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()?.sortedBy { it.lastModified() }
+    assertThat(snapshots!!).hasSize(2)
+
+    val localeDefaultRtlSnapshotImage = snapshots[0]
+    val localeEnGBRtlSnapshotImage = snapshots[1]
+    val localeDefaultRtlGoldenImage = File(fixtureRoot, "src/test/resources/locale_default_rtl.png")
+    val localeEnGBRtlGoldenImage = File(fixtureRoot, "src/test/resources/locale_en_gb_rtl.png")
+    assertThat(localeDefaultRtlSnapshotImage).isSimilarTo(localeDefaultRtlGoldenImage).withDefaultThreshold()
+    assertThat(localeEnGBRtlSnapshotImage).isSimilarTo(localeEnGBRtlGoldenImage).withDefaultThreshold()
+  }
+
   private fun GradleRunner.runFixture(
     projectRoot: File,
     moduleRoot: File = projectRoot,
