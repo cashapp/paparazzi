@@ -1,7 +1,7 @@
 Paparazzi
 ========
 
-An Android library to render your application screens without a physical device or emulator.
+An Android library to snapshot test your views or composables without a physical device or emulator.
 
 ```kotlin
 class LaunchViewTest {
@@ -13,13 +13,20 @@ class LaunchViewTest {
   )
 
   @Test
-  fun simple() {
+  fun simpleViewTest() {
     val view = paparazzi.inflate<LaunchView>(R.layout.launch)
     // or...
     // val view = LaunchView(paparazzi.context)
 
     view.setModel(LaunchModel(title = "paparazzi"))
     paparazzi.snapshot(view)
+  }
+
+  @Test
+  fun simpleComposableTest() {
+    paparazzi.snapshot {
+      MyComposable()
+    }
   }
 }
 ```
@@ -46,8 +53,7 @@ Saves snapshots as golden values to a predefined source-controlled location
 $ ./gradlew sample:verifyPaparazziDebug
 ```
 
-Runs tests and verifies against previously-recorded golden values.
-
+Runs tests and verifies against previously-recorded golden values. Snapshot test failure diffs can be found at `sample/out/failures`.
 
 For more examples, check out the [sample][sample] project.
 
