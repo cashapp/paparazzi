@@ -21,5 +21,5 @@ android {
 }
 
 dependencies {
-  implementation 'com.google.android.material:material:1.5.0-alpha03'
+  implementation 'com.google.android.material:material:1.6.1'
 }
