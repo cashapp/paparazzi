@@ -15,7 +15,7 @@ set -ex
 # Assign metadata to the file's first Markdown heading.
 # https://www.mkdocs.org/user-guide/writing-your-docs/#meta-data
 title_markdown_file() {
-  TITLE_PATTERN="s/^[#]+ *(.*)/title: \1 - SQLDelight/"
+  TITLE_PATTERN="s/^[#]+ *(.*)/title: \1 - Paprazzi/"
   echo "---"                                                     > "$1.fixed"
   cat $1 | sed -E "$TITLE_PATTERN" | grep "title: " | head -n 1 >> "$1.fixed"
   echo "---"                                                    >> "$1.fixed"
