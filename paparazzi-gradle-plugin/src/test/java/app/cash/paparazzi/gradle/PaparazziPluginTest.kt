@@ -7,7 +7,6 @@ import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome.FROM_CACHE
 import org.gradle.testkit.runner.TaskOutcome.SUCCESS
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import java.io.File
 import java.nio.file.Files
@@ -696,7 +695,7 @@ class PaparazziPluginTest {
     assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
   }
 
-  @Ignore
+  @Test
   fun withMaterialComponents() {
     val fixtureRoot = File("src/test/projects/material-components-present")
 
