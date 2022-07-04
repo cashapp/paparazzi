@@ -22,7 +22,10 @@ import org.junit.Test
 
 class ButtonViewTest {
   @get:Rule
-  val paparazzi = Paparazzi(theme = "Theme.MaterialComponents")
+  val paparazzi = Paparazzi(
+    theme = "Theme.MaterialComponents.NoActionBar",
+    appCompatViewInflaterClassName = "com.google.android.material.theme.MaterialComponentsViewInflater",
+  )
 
   @Test
   fun testViews() {

@@ -72,6 +72,7 @@ import com.android.layoutlib.bridge.impl.RenderAction
 import com.android.layoutlib.bridge.impl.RenderSessionImpl
 import java.awt.image.BufferedImage
 import java.lang.reflect.Field
+import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 import java.util.Date
 import java.util.concurrent.TimeUnit
@@ -86,6 +87,7 @@ class Paparazzi @JvmOverloads constructor(
   private val theme: String = "android:Theme.Material.NoActionBar.Fullscreen",
   private val renderingMode: RenderingMode = RenderingMode.NORMAL,
   private val appCompatEnabled: Boolean = true,
+  private val appCompatViewInflaterClassName: String = "androidx.appcompat.app.AppCompatViewInflater",
   private val maxPercentDifference: Double = 0.1,
   private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference),
   private val renderExtensions: Set<RenderExtension> = setOf()
@@ -444,22 +446,8 @@ class Paparazzi @JvmOverloads constructor(
           context: Context,
           attrs: AttributeSet
         ): View? {
-          val appCompatViewInflaterClass =
-            Class.forName("androidx.appcompat.app.AppCompatViewInflater")
-
-          val createViewMethod = appCompatViewInflaterClass
-              .getDeclaredMethod(
-                  "createView",
-                  View::class.java,
-                  String::class.java,
-                  Context::class.java,
-                  AttributeSet::class.java,
-                  Boolean::class.javaPrimitiveType,
-                  Boolean::class.javaPrimitiveType,
-                  Boolean::class.javaPrimitiveType,
-                  Boolean::class.javaPrimitiveType
-              )
-              .apply { isAccessible = true }
+          val appCompatViewInflaterClass = Class.forName(appCompatViewInflaterClassName)
+          val createViewMethod = getCreateViewMethod(appCompatViewInflaterClass) ?: throw IllegalStateException("View inflater doesn't have `createView` method")
 
           val inheritContext = true
           val readAndroidTheme = true
@@ -474,6 +462,26 @@ class Paparazzi @JvmOverloads constructor(
               newAppCompatViewInflaterInstance, parent, name, context, attrs,
               inheritContext, readAndroidTheme, readAppTheme, wrapContext
           ) as View?
+        }
+
+        fun getCreateViewMethod(clazz: Class<*>): Method? {
+          try {
+            return clazz
+              .getDeclaredMethod(
+                "createView",
+                View::class.java,
+                String::class.java,
+                Context::class.java,
+                AttributeSet::class.java,
+                Boolean::class.javaPrimitiveType,
+                Boolean::class.javaPrimitiveType,
+                Boolean::class.javaPrimitiveType,
+                Boolean::class.javaPrimitiveType
+              )
+              .apply { isAccessible = true }
+          } catch (error: NoSuchMethodException) {
+            return clazz.superclass?.let { getCreateViewMethod(it) }
+          }
         }
 
         override fun onCreateView(
