@@ -3,7 +3,9 @@ apply plugin: 'org.jetbrains.kotlin.android'
 apply plugin: 'app.cash.paparazzi'
 
 android {
-  compileSdk libs.versions.compileSdk.get() as int
+  // We test against compile Sdk 33, to verify that the pinning behavior
+  // works
+  compileSdk 33
   defaultConfig {
     minSdk libs.versions.minSdk.get() as int
   }

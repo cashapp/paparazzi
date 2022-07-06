@@ -77,10 +77,24 @@ internal class Renderer(
     val icuLocation = File(platformDataDir, "icu" + File.separator + "icudt68l.dat")
     val buildProp = File(environment.platformDir, "build.prop")
     val attrs = File(platformDataResDir, "values" + File.separator + "attrs.xml")
-    val systemProperties = DeviceConfig.loadProperties(buildProp) + mapOf(
-      // We want Choreographer.USE_FRAME_TIME to be false so it uses System_Delegate.nanoTime()
-      "debug.choreographer.frametime" to "false"
-    )
+    val systemProperties = (
+      DeviceConfig.loadProperties(buildProp) +
+        mapOf(
+          // We want Choreographer.USE_FRAME_TIME to be false so it uses System_Delegate.nanoTime()
+          "debug.choreographer.frametime" to "false"
+        )
+      ).let { props ->
+      // Workaround for https://github.com/cashapp/paparazzi/issues/486:
+      // When used in a project compiled with SDK 33, the known_codenames build prop is too long
+      // for our 'old' version of SystemProperties to handle. The SystemProperties class was
+      // updated in SDK 33 to handle this, but we need to wait until we hit a layoutlib build
+      // which matches (likely EE). The Paparazzi plugin manually forces the Build.VERSION.CODENAME
+      // value when needed.
+      // TODO: remove this once we upgrade to a layoutlib version which contains SDK 33 changes
+      val codenames = props["ro.build.version.known_codenames"]?.takeIf { it.length <= 91 }
+      props + mapOf("ro.build.version.known_codenames" to codenames)
+    }
+
     bridge = Bridge().apply {
       check(
         init(
