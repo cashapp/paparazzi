@@ -59,7 +59,7 @@ It is recommended you use [Git LFS][lfs] to store your snapshots.  Here's a quic
 $ brew install git-lfs
 $ git config core.hooksPath  # optional, confirm where your git hooks will be installed
 $ git lfs install --local
-$ git lfs track **/snapshots/**/*.png
+$ git lfs track "**/snapshots/**/*.png"
 $ git add .gitattributes
 ```
 
