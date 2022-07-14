@@ -50,7 +50,7 @@ abstract class PrepareResourcesTask : DefaultTask() {
   abstract val mergeAssetsOutput: DirectoryProperty
 
   @get:InputDirectory
-  @get:PathSensitive(PathSensitivity.RELATIVE)
+  @get:PathSensitive(PathSensitivity.ABSOLUTE)
   abstract val platformDataRoot: DirectoryProperty
 
   @get:Input
