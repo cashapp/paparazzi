@@ -181,7 +181,7 @@ class PaparazziRenderer {
         continue;
       }
       // The js loading is async so the rendering can happen in the next refresh
-      this.loadRunScript(`${runId}/run.js`);
+      this.loadRunScript(`runs/${runId}.js`);
 
       this.render(new Run(runId, window.runs[runId]));
 
