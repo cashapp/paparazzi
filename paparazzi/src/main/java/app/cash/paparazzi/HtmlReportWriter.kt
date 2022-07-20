@@ -267,10 +267,10 @@ class HtmlReportWriter @JvmOverloads constructor(
   private fun File.writeAtomically(writerAction: BufferedSink.() -> Unit) {
     val tmpFile = File(parentFile, "$name.tmp")
     tmpFile.sink()
-        .buffer()
-        .use { sink ->
-          sink.writerAction()
-        }
+      .buffer()
+      .use { sink ->
+        sink.writerAction()
+      }
     delete()
     tmpFile.renameTo(this)
   }
@@ -286,10 +286,9 @@ internal fun defaultRunName(): String {
 }
 
 internal val filenameSafeChars = CharMatcher.inRange('a', 'z')
-    .or(CharMatcher.inRange('0', '9'))
-    .or(CharMatcher.anyOf("_-.~@^()[]{}:;,"))
+  .or(CharMatcher.inRange('0', '9'))
+  .or(CharMatcher.anyOf("_-.~@^()[]{}:;,"))
 
 internal fun String.sanitizeForFilename(): String? {
   return filenameSafeChars.negate().replaceFrom(toLowerCase(Locale.US), '_')
 }
-

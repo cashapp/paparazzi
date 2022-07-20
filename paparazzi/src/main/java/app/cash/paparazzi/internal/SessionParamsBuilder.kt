@@ -74,24 +74,24 @@ internal data class SessionParamsBuilder(
 
     val folderConfiguration = deviceConfig.folderConfiguration
     val resourceResolver = ResourceResolver.create(
-        mapOf<ResourceNamespace, Map<ResourceType, ResourceValueMap>>(
-            ResourceNamespace.ANDROID to frameworkResources.getConfiguredResources(
-                folderConfiguration
-            ),
-            ResourceNamespace.TODO() to projectResources.getConfiguredResources(
-                folderConfiguration
-            )
+      mapOf<ResourceNamespace, Map<ResourceType, ResourceValueMap>>(
+        ResourceNamespace.ANDROID to frameworkResources.getConfiguredResources(
+          folderConfiguration
         ),
-        ResourceReference(
-            ResourceNamespace.fromBoolean(!isProjectTheme),
-            ResourceType.STYLE,
-            themeName
+        ResourceNamespace.TODO() to projectResources.getConfiguredResources(
+          folderConfiguration
         )
+      ),
+      ResourceReference(
+        ResourceNamespace.fromBoolean(!isProjectTheme),
+        ResourceType.STYLE,
+        themeName
+      )
     )
 
     val result = SessionParams(
-        layoutPullParser, renderingMode, projectKey /* for caching */,
-        deviceConfig.hardwareConfig, resourceResolver, layoutlibCallback, minSdk, targetSdk, logger
+      layoutPullParser, renderingMode, projectKey /* for caching */,
+      deviceConfig.hardwareConfig, resourceResolver, layoutlibCallback, minSdk, targetSdk, logger
     )
     result.fontScale = deviceConfig.fontScale
 

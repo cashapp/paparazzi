@@ -15,7 +15,6 @@
  */
 package app.cash.paparazzi.plugin.test
 
-import android.view.View
 import app.cash.paparazzi.Paparazzi
 import app.cash.paparazzi.androidHome
 import app.cash.paparazzi.detectEnvironment
@@ -26,7 +25,7 @@ class MissingPlatformDirTest {
   @get:Rule
   val paparazzi = Paparazzi(
     environment = detectEnvironment().copy(
-      platformDir = "${androidHome()}/platforms/android-oops",
+      platformDir = "${androidHome()}/platforms/android-oops"
     )
   )
 

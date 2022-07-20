@@ -27,23 +27,23 @@ import java.util.Date
 
 internal object PaparazziJson {
   val moshi = Moshi.Builder()
-      .add(Date::class.java, Rfc3339DateJsonAdapter())
-      .add(this)
-      .build()!!
+    .add(Date::class.java, Rfc3339DateJsonAdapter())
+    .add(this)
+    .build()!!
 
   val listOfShotsAdapter: JsonAdapter<List<Snapshot>> =
     moshi
-        .adapter<List<Snapshot>>(
-            Types.newParameterizedType(List::class.java, Snapshot::class.java)
-        )
-        .indent("  ")
+      .adapter<List<Snapshot>>(
+        Types.newParameterizedType(List::class.java, Snapshot::class.java)
+      )
+      .indent("  ")
 
   val listOfStringsAdapter: JsonAdapter<List<String>> =
     moshi
-        .adapter<List<String>>(
-            Types.newParameterizedType(List::class.java, String::class.java)
-        )
-        .indent("  ")
+      .adapter<List<String>>(
+        Types.newParameterizedType(List::class.java, String::class.java)
+      )
+      .indent("  ")
 
   @ToJson
   fun testNameToJson(testName: TestName): String {

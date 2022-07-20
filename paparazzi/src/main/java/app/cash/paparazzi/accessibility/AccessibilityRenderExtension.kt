@@ -133,26 +133,30 @@ class AccessibilityRenderExtension : RenderExtension {
       )
       setPaddingRelative(margin, innerMargin, margin, innerMargin)
 
-      addView(View(context).apply {
-        layoutParams = ViewGroup.LayoutParams(dip(DEFAULT_RECT_SIZE), dip(DEFAULT_RECT_SIZE))
-        background = GradientDrawable(
-          GradientDrawable.Orientation.TOP_BOTTOM,
-          intArrayOf(color, color)
-        ).apply {
-          cornerRadius = dip(DEFAULT_RECT_SIZE / 4f)
+      addView(
+        View(context).apply {
+          layoutParams = ViewGroup.LayoutParams(dip(DEFAULT_RECT_SIZE), dip(DEFAULT_RECT_SIZE))
+          background = GradientDrawable(
+            GradientDrawable.Orientation.TOP_BOTTOM,
+            intArrayOf(color, color)
+          ).apply {
+            cornerRadius = dip(DEFAULT_RECT_SIZE / 4f)
+          }
+          setPaddingRelative(innerMargin, innerMargin, innerMargin, innerMargin)
         }
-        setPaddingRelative(innerMargin, innerMargin, innerMargin, innerMargin)
-      })
-      addView(TextView(context).apply {
-        layoutParams = ViewGroup.LayoutParams(
-          ViewGroup.LayoutParams.MATCH_PARENT,
-          ViewGroup.LayoutParams.WRAP_CONTENT
-        )
-        text = iterableTextForAccessibility
-        textSize = DEFAULT_TEXT_SIZE
-        setTextColor(DEFAULT_TEXT_COLOR.toColorInt())
-        setPaddingRelative(innerMargin, 0, innerMargin, 0)
-      })
+      )
+      addView(
+        TextView(context).apply {
+          layoutParams = ViewGroup.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+          )
+          text = iterableTextForAccessibility
+          textSize = DEFAULT_TEXT_SIZE
+          setTextColor(DEFAULT_TEXT_COLOR.toColorInt())
+          setPaddingRelative(innerMargin, 0, innerMargin, 0)
+        }
+      )
     }
   }
 }

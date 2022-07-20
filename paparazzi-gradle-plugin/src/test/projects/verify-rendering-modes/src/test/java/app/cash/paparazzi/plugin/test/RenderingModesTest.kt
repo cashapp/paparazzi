@@ -1,7 +1,6 @@
 package app.cash.paparazzi.plugin.test
 
 import android.view.Gravity
-import android.view.View
 import android.view.ViewGroup.LayoutParams
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.LinearLayout
@@ -22,14 +21,16 @@ class RenderingModesTest {
       layoutParams = LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
     }
 
-    (0..2).forEach { linearLayout.addView(
-      TextView(paparazzi.context).apply {
-        text = "$it"
-        textSize = 128f
-        gravity = Gravity.CENTER
-        layoutParams = LayoutParams(DeviceConfig.NEXUS_5.screenWidth, DeviceConfig.NEXUS_5.screenHeight)
-      }
-    )}
+    (0..2).forEach {
+      linearLayout.addView(
+        TextView(paparazzi.context).apply {
+          text = "$it"
+          textSize = 128f
+          gravity = Gravity.CENTER
+          layoutParams = LayoutParams(DeviceConfig.NEXUS_5.screenWidth, DeviceConfig.NEXUS_5.screenHeight)
+        }
+      )
+    }
 
     paparazzi.snapshot(view = linearLayout) // defaults to NORMAL
     paparazzi.unsafeUpdateConfig(renderingMode = RenderingMode.H_SCROLL)

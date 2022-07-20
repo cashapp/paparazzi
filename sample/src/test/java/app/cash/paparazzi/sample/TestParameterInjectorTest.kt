@@ -14,7 +14,7 @@ class TestParameterInjectorTest(
   @TestParameter config: Config
 ) {
   enum class Config(
-    val deviceConfig: DeviceConfig,
+    val deviceConfig: DeviceConfig
   ) {
     NEXUS_4(deviceConfig = DeviceConfig.NEXUS_4),
     NEXUS_5(deviceConfig = DeviceConfig.NEXUS_5),

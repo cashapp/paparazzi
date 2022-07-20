@@ -43,7 +43,7 @@ data class TagSnapshot(
       |$name:
       |${pad(indent + 1)}attributes: ${print(attributes)}
       |${pad(indent + 1)}children: ${print(children)} 
-      """.trimMargin()
+    """.trimMargin()
     indent--
     return output
   }
@@ -53,8 +53,9 @@ data class TagSnapshot(
 
     indent++
     val output = children.joinToString(
-        prefix = "[\n${pad(indent + 1)}", separator = "\n${pad(indent + 1)}",
-        postfix = "\n${pad(indent)}]"
+      prefix = "[\n${pad(indent + 1)}",
+      separator = "\n${pad(indent + 1)}",
+      postfix = "\n${pad(indent)}]"
     )
     indent--
     return output

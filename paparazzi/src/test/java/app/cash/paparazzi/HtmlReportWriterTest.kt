@@ -43,13 +43,14 @@ class HtmlReportWriterTest {
     val htmlReportWriter = HtmlReportWriter("run_one", reportRoot.root)
     htmlReportWriter.use {
       val frameHandler = htmlReportWriter.newFrameHandler(
-          Snapshot(
-              name = "loading",
-              testName = TestName("app.cash.paparazzi", "CelebrityTest", "testSettings"),
-              timestamp = Instant.parse("2019-03-20T10:27:43Z").toDate(),
-              tags = listOf("redesign")
-          ),
-          1, -1
+        Snapshot(
+          name = "loading",
+          testName = TestName("app.cash.paparazzi", "CelebrityTest", "testSettings"),
+          timestamp = Instant.parse("2019-03-20T10:27:43Z").toDate(),
+          tags = listOf("redesign")
+        ),
+        1,
+        -1
       )
       frameHandler.use {
         frameHandler.handle(anyImage)
@@ -57,15 +58,16 @@ class HtmlReportWriterTest {
     }
 
     assertThat(File("${reportRoot.root}/index.js")).hasContent(
-        """
+      """
         |window.all_runs = [
         |  "run_one"
         |];
-        |""".trimMargin()
+        |
+      """.trimMargin()
     )
 
     assertThat(File("${reportRoot.root}/runs/run_one.js")).hasContent(
-        """
+      """
         |window.runs["run_one"] = [
         |  {
         |    "name": "loading",
@@ -77,7 +79,8 @@ class HtmlReportWriterTest {
         |    "file": "images/$anyImageHash.png"
         |  }
         |];
-        |""".trimMargin()
+        |
+      """.trimMargin()
     )
   }
 
@@ -96,7 +99,7 @@ class HtmlReportWriterTest {
         snapshot = Snapshot(
           name = "loading",
           testName = TestName("app.cash.paparazzi", "CelebrityTest", "testSettings"),
-          timestamp = Instant.parse("2019-03-20T10:27:43Z").toDate(),
+          timestamp = Instant.parse("2019-03-20T10:27:43Z").toDate()
         ),
         frameCount = 4,
         fps = -1
@@ -119,9 +122,9 @@ class HtmlReportWriterTest {
     htmlReportWriter.use {
       val now = Instant.parse("2021-02-23T10:27:43Z")
       val snapshot = Snapshot(
-          name = "test",
-          testName = TestName("app.cash.paparazzi", "HomeView", "testSettings"),
-          timestamp = now.toDate()
+        name = "test",
+        testName = TestName("app.cash.paparazzi", "HomeView", "testSettings"),
+        timestamp = now.toDate()
       )
       val file =
         File("${snapshotRoot.root}/images/app.cash.paparazzi_HomeView_testSettings_test.png")
@@ -132,9 +135,9 @@ class HtmlReportWriterTest {
 
       // take 1
       val frameHandler1 = htmlReportWriter.newFrameHandler(
-          snapshot = snapshot,
-          frameCount = 1,
-          fps = -1
+        snapshot = snapshot,
+        frameCount = 1,
+        fps = -1
       )
       frameHandler1.use { frameHandler1.handle(anyImage) }
       assertThat(golden).exists()
@@ -145,9 +148,9 @@ class HtmlReportWriterTest {
 
       // take 2
       val frameHandler2 = htmlReportWriter.newFrameHandler(
-          snapshot = snapshot.copy(timestamp = now.plusSeconds(1).toDate()),
-          frameCount = 1,
-          fps = -1
+        snapshot = snapshot.copy(timestamp = now.plusSeconds(1).toDate()),
+        frameCount = 1,
+        fps = -1
       )
       frameHandler2.use { frameHandler2.handle(anyImage) }
       assertThat(golden).exists()

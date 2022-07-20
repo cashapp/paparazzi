@@ -39,13 +39,17 @@ class TextAppearanceTest {
       setBackgroundResource(android.R.color.white)
 
       val textStyle = R.style.TextAppearance_Title
-      addView(createTextView(context).apply {
-        text = "Hello, Text Appearance!"
-        setTextAppearance(textStyle)
-      })
-      addView(createTextView(ContextThemeWrapper(context, textStyle)).apply {
-        text = "Hello, Style!"
-      })
+      addView(
+        createTextView(context).apply {
+          text = "Hello, Text Appearance!"
+          setTextAppearance(textStyle)
+        }
+      )
+      addView(
+        createTextView(ContextThemeWrapper(context, textStyle)).apply {
+          text = "Hello, Style!"
+        }
+      )
     }
     paparazzi.snapshot(view)
   }

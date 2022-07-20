@@ -80,34 +80,34 @@ data class DeviceConfig(
 ) {
   val folderConfiguration: FolderConfiguration
     get() = FolderConfiguration.createDefault()
-        .apply {
-          densityQualifier = DensityQualifier(density)
-          navigationMethodQualifier = NavigationMethodQualifier(navigation)
-          screenDimensionQualifier = when {
-            screenWidth > screenHeight -> ScreenDimensionQualifier(screenWidth, screenHeight)
-            else -> ScreenDimensionQualifier(screenHeight, screenWidth)
-          }
-          screenRatioQualifier = ScreenRatioQualifier(ratio)
-          screenSizeQualifier = ScreenSizeQualifier(size)
-          textInputMethodQualifier = TextInputMethodQualifier(keyboard)
-          touchTypeQualifier = TouchScreenQualifier(touchScreen)
-          keyboardStateQualifier = KeyboardStateQualifier(keyboardState)
-          screenOrientationQualifier = ScreenOrientationQualifier(orientation)
-
-          updateScreenWidthAndHeight()
-          uiModeQualifier = UiModeQualifier(UiMode.NORMAL)
-          nightModeQualifier = NightModeQualifier(nightMode)
-          countryCodeQualifier = CountryCodeQualifier()
-          layoutDirectionQualifier = LayoutDirectionQualifier()
-          networkCodeQualifier = NetworkCodeQualifier()
-          localeQualifier = LocaleQualifier()
-          versionQualifier = VersionQualifier()
+      .apply {
+        densityQualifier = DensityQualifier(density)
+        navigationMethodQualifier = NavigationMethodQualifier(navigation)
+        screenDimensionQualifier = when {
+          screenWidth > screenHeight -> ScreenDimensionQualifier(screenWidth, screenHeight)
+          else -> ScreenDimensionQualifier(screenHeight, screenWidth)
         }
+        screenRatioQualifier = ScreenRatioQualifier(ratio)
+        screenSizeQualifier = ScreenSizeQualifier(size)
+        textInputMethodQualifier = TextInputMethodQualifier(keyboard)
+        touchTypeQualifier = TouchScreenQualifier(touchScreen)
+        keyboardStateQualifier = KeyboardStateQualifier(keyboardState)
+        screenOrientationQualifier = ScreenOrientationQualifier(orientation)
+
+        updateScreenWidthAndHeight()
+        uiModeQualifier = UiModeQualifier(UiMode.NORMAL)
+        nightModeQualifier = NightModeQualifier(nightMode)
+        countryCodeQualifier = CountryCodeQualifier()
+        layoutDirectionQualifier = LayoutDirectionQualifier()
+        networkCodeQualifier = NetworkCodeQualifier()
+        localeQualifier = LocaleQualifier()
+        versionQualifier = VersionQualifier()
+      }
 
   val hardwareConfig: HardwareConfig
     get() = HardwareConfig(
-        screenWidth, screenHeight, density, xdpi.toFloat(), ydpi.toFloat(), size,
-        orientation, null, softButtons
+      screenWidth, screenHeight, density, xdpi.toFloat(), ydpi.toFloat(), size,
+      orientation, null, softButtons
     )
 
   /**
@@ -123,308 +123,308 @@ data class DeviceConfig(
 
     @JvmField
     val NEXUS_5 = DeviceConfig(
-        screenHeight = 1920,
-        screenWidth = 1080,
-        xdpi = 445,
-        ydpi = 445,
-        orientation = ScreenOrientation.PORTRAIT,
-        density = Density.XXHIGH,
-        ratio = ScreenRatio.NOTLONG,
-        size = ScreenSize.NORMAL,
-        keyboard = Keyboard.NOKEY,
-        touchScreen = TouchScreen.FINGER,
-        keyboardState = KeyboardState.SOFT,
-        softButtons = true,
-        navigation = Navigation.NONAV,
-        released = "October 31, 2013"
+      screenHeight = 1920,
+      screenWidth = 1080,
+      xdpi = 445,
+      ydpi = 445,
+      orientation = ScreenOrientation.PORTRAIT,
+      density = Density.XXHIGH,
+      ratio = ScreenRatio.NOTLONG,
+      size = ScreenSize.NORMAL,
+      keyboard = Keyboard.NOKEY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.SOFT,
+      softButtons = true,
+      navigation = Navigation.NONAV,
+      released = "October 31, 2013"
     )
 
     @JvmField
     val NEXUS_7 = DeviceConfig(
-        screenHeight = 1920,
-        screenWidth = 1200,
-        xdpi = 323,
-        ydpi = 323,
-        orientation = ScreenOrientation.PORTRAIT,
-        density = Density.XHIGH,
-        ratio = ScreenRatio.NOTLONG,
-        size = ScreenSize.LARGE,
-        keyboard = Keyboard.NOKEY,
-        touchScreen = TouchScreen.FINGER,
-        keyboardState = KeyboardState.SOFT,
-        softButtons = true,
-        navigation = Navigation.NONAV,
-        released = "July 26, 2013"
+      screenHeight = 1920,
+      screenWidth = 1200,
+      xdpi = 323,
+      ydpi = 323,
+      orientation = ScreenOrientation.PORTRAIT,
+      density = Density.XHIGH,
+      ratio = ScreenRatio.NOTLONG,
+      size = ScreenSize.LARGE,
+      keyboard = Keyboard.NOKEY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.SOFT,
+      softButtons = true,
+      navigation = Navigation.NONAV,
+      released = "July 26, 2013"
     )
 
     @JvmField
     val NEXUS_10 = DeviceConfig(
-        screenHeight = 1600,
-        screenWidth = 2560,
-        xdpi = 300,
-        ydpi = 300,
-        orientation = ScreenOrientation.LANDSCAPE,
-        density = Density.XHIGH,
-        ratio = ScreenRatio.NOTLONG,
-        size = ScreenSize.XLARGE,
-        keyboard = Keyboard.NOKEY,
-        touchScreen = TouchScreen.FINGER,
-        keyboardState = KeyboardState.SOFT,
-        softButtons = true,
-        navigation = Navigation.NONAV,
-        released = "November 13, 2012"
+      screenHeight = 1600,
+      screenWidth = 2560,
+      xdpi = 300,
+      ydpi = 300,
+      orientation = ScreenOrientation.LANDSCAPE,
+      density = Density.XHIGH,
+      ratio = ScreenRatio.NOTLONG,
+      size = ScreenSize.XLARGE,
+      keyboard = Keyboard.NOKEY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.SOFT,
+      softButtons = true,
+      navigation = Navigation.NONAV,
+      released = "November 13, 2012"
     )
 
     @JvmField
     val NEXUS_5_LAND = DeviceConfig(
-        screenHeight = 1080,
-        screenWidth = 1920,
-        xdpi = 445,
-        ydpi = 445,
-        orientation = ScreenOrientation.LANDSCAPE,
-        density = Density.XXHIGH,
-        ratio = ScreenRatio.NOTLONG,
-        size = ScreenSize.NORMAL,
-        keyboard = Keyboard.NOKEY,
-        touchScreen = TouchScreen.FINGER,
-        keyboardState = KeyboardState.SOFT,
-        softButtons = true,
-        navigation = Navigation.NONAV,
-        released = "October 31, 2013"
+      screenHeight = 1080,
+      screenWidth = 1920,
+      xdpi = 445,
+      ydpi = 445,
+      orientation = ScreenOrientation.LANDSCAPE,
+      density = Density.XXHIGH,
+      ratio = ScreenRatio.NOTLONG,
+      size = ScreenSize.NORMAL,
+      keyboard = Keyboard.NOKEY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.SOFT,
+      softButtons = true,
+      navigation = Navigation.NONAV,
+      released = "October 31, 2013"
     )
 
     @JvmField
     val NEXUS_7_2012 = DeviceConfig(
-        screenHeight = 1280,
-        screenWidth = 800,
-        xdpi = 195,
-        ydpi = 200,
-        orientation = ScreenOrientation.PORTRAIT,
-        density = Density.TV,
-        ratio = ScreenRatio.NOTLONG,
-        size = ScreenSize.LARGE,
-        keyboard = Keyboard.NOKEY,
-        touchScreen = TouchScreen.FINGER,
-        keyboardState = KeyboardState.SOFT,
-        softButtons = true,
-        navigation = Navigation.NONAV,
-        released = "July 13, 2012"
+      screenHeight = 1280,
+      screenWidth = 800,
+      xdpi = 195,
+      ydpi = 200,
+      orientation = ScreenOrientation.PORTRAIT,
+      density = Density.TV,
+      ratio = ScreenRatio.NOTLONG,
+      size = ScreenSize.LARGE,
+      keyboard = Keyboard.NOKEY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.SOFT,
+      softButtons = true,
+      navigation = Navigation.NONAV,
+      released = "July 13, 2012"
     )
 
     @JvmField
     val PIXEL_C = DeviceConfig(
-        screenHeight = 1800,
-        screenWidth = 2560,
-        xdpi = 308,
-        ydpi = 308,
-        orientation = ScreenOrientation.LANDSCAPE,
-        density = Density.XHIGH,
-        ratio = ScreenRatio.NOTLONG,
-        size = ScreenSize.XLARGE,
-        keyboard = Keyboard.QWERTY,
-        touchScreen = TouchScreen.FINGER,
-        keyboardState = KeyboardState.SOFT,
-        softButtons = true,
-        navigation = Navigation.NONAV,
-        released = "December 8, 2015"
+      screenHeight = 1800,
+      screenWidth = 2560,
+      xdpi = 308,
+      ydpi = 308,
+      orientation = ScreenOrientation.LANDSCAPE,
+      density = Density.XHIGH,
+      ratio = ScreenRatio.NOTLONG,
+      size = ScreenSize.XLARGE,
+      keyboard = Keyboard.QWERTY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.SOFT,
+      softButtons = true,
+      navigation = Navigation.NONAV,
+      released = "December 8, 2015"
     )
 
     @JvmField
     val PIXEL = DeviceConfig(
-        screenHeight = 1920,
-        screenWidth = 1080,
-        xdpi = 440,
-        ydpi = 440,
-        orientation = ScreenOrientation.PORTRAIT,
-        density = Density.DPI_420,
-        ratio = ScreenRatio.NOTLONG,
-        size = ScreenSize.NORMAL,
-        keyboard = Keyboard.NOKEY,
-        touchScreen = TouchScreen.FINGER,
-        keyboardState = KeyboardState.SOFT,
-        softButtons = true,
-        navigation = Navigation.NONAV,
-        released = "October 20, 2016"
+      screenHeight = 1920,
+      screenWidth = 1080,
+      xdpi = 440,
+      ydpi = 440,
+      orientation = ScreenOrientation.PORTRAIT,
+      density = Density.DPI_420,
+      ratio = ScreenRatio.NOTLONG,
+      size = ScreenSize.NORMAL,
+      keyboard = Keyboard.NOKEY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.SOFT,
+      softButtons = true,
+      navigation = Navigation.NONAV,
+      released = "October 20, 2016"
     )
 
     @JvmField
     val PIXEL_XL = DeviceConfig(
-        screenHeight = 2560,
-        screenWidth = 1440,
-        xdpi = 534,
-        ydpi = 534,
-        orientation = ScreenOrientation.PORTRAIT,
-        density = Density.DPI_560,
-        ratio = ScreenRatio.NOTLONG,
-        size = ScreenSize.NORMAL,
-        keyboard = Keyboard.NOKEY,
-        touchScreen = TouchScreen.FINGER,
-        keyboardState = KeyboardState.SOFT,
-        softButtons = true,
-        navigation = Navigation.NONAV,
-        released = "October 20, 2016"
+      screenHeight = 2560,
+      screenWidth = 1440,
+      xdpi = 534,
+      ydpi = 534,
+      orientation = ScreenOrientation.PORTRAIT,
+      density = Density.DPI_560,
+      ratio = ScreenRatio.NOTLONG,
+      size = ScreenSize.NORMAL,
+      keyboard = Keyboard.NOKEY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.SOFT,
+      softButtons = true,
+      navigation = Navigation.NONAV,
+      released = "October 20, 2016"
     )
 
     @JvmField
     val PIXEL_2 = DeviceConfig(
-        screenHeight = 1920,
-        screenWidth = 1080,
-        xdpi = 442,
-        ydpi = 443,
-        orientation = ScreenOrientation.PORTRAIT,
-        density = Density.DPI_420,
-        ratio = ScreenRatio.NOTLONG,
-        size = ScreenSize.NORMAL,
-        keyboard = Keyboard.NOKEY,
-        touchScreen = TouchScreen.FINGER,
-        keyboardState = KeyboardState.SOFT,
-        softButtons = true,
-        navigation = Navigation.NONAV,
-        released = "October 19, 2017"
+      screenHeight = 1920,
+      screenWidth = 1080,
+      xdpi = 442,
+      ydpi = 443,
+      orientation = ScreenOrientation.PORTRAIT,
+      density = Density.DPI_420,
+      ratio = ScreenRatio.NOTLONG,
+      size = ScreenSize.NORMAL,
+      keyboard = Keyboard.NOKEY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.SOFT,
+      softButtons = true,
+      navigation = Navigation.NONAV,
+      released = "October 19, 2017"
     )
 
     @JvmField
     val PIXEL_2_XL = DeviceConfig(
-        screenHeight = 2880,
-        screenWidth = 1440,
-        xdpi = 537,
-        ydpi = 537,
-        orientation = ScreenOrientation.PORTRAIT,
-        density = Density.DPI_560,
-        ratio = ScreenRatio.LONG,
-        size = ScreenSize.NORMAL,
-        keyboard = Keyboard.NOKEY,
-        touchScreen = TouchScreen.FINGER,
-        keyboardState = KeyboardState.SOFT,
-        softButtons = true,
-        navigation = Navigation.NONAV,
-        released = "October 19, 2017"
+      screenHeight = 2880,
+      screenWidth = 1440,
+      xdpi = 537,
+      ydpi = 537,
+      orientation = ScreenOrientation.PORTRAIT,
+      density = Density.DPI_560,
+      ratio = ScreenRatio.LONG,
+      size = ScreenSize.NORMAL,
+      keyboard = Keyboard.NOKEY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.SOFT,
+      softButtons = true,
+      navigation = Navigation.NONAV,
+      released = "October 19, 2017"
     )
 
     @JvmField
     val PIXEL_3 = DeviceConfig(
-        screenHeight = 2160,
-        screenWidth = 1080,
-        xdpi = 442,
-        ydpi = 442,
-        orientation = ScreenOrientation.PORTRAIT,
-        density = Density.DPI_440,
-        ratio = ScreenRatio.LONG,
-        size = ScreenSize.NORMAL,
-        keyboard = Keyboard.NOKEY,
-        touchScreen = TouchScreen.FINGER,
-        keyboardState = KeyboardState.SOFT,
-        softButtons = true,
-        navigation = Navigation.NONAV,
-        released = "October 18, 2018"
+      screenHeight = 2160,
+      screenWidth = 1080,
+      xdpi = 442,
+      ydpi = 442,
+      orientation = ScreenOrientation.PORTRAIT,
+      density = Density.DPI_440,
+      ratio = ScreenRatio.LONG,
+      size = ScreenSize.NORMAL,
+      keyboard = Keyboard.NOKEY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.SOFT,
+      softButtons = true,
+      navigation = Navigation.NONAV,
+      released = "October 18, 2018"
     )
 
     @JvmField
     val PIXEL_3_XL = DeviceConfig(
-        screenHeight = 2960,
-        screenWidth = 1440,
-        xdpi = 522,
-        ydpi = 522,
-        orientation = ScreenOrientation.PORTRAIT,
-        density = Density.DPI_560,
-        ratio = ScreenRatio.LONG,
-        size = ScreenSize.NORMAL,
-        keyboard = Keyboard.NOKEY,
-        touchScreen = TouchScreen.FINGER,
-        keyboardState = KeyboardState.SOFT,
-        softButtons = true,
-        navigation = Navigation.NONAV,
-        released = "October 18, 2018"
+      screenHeight = 2960,
+      screenWidth = 1440,
+      xdpi = 522,
+      ydpi = 522,
+      orientation = ScreenOrientation.PORTRAIT,
+      density = Density.DPI_560,
+      ratio = ScreenRatio.LONG,
+      size = ScreenSize.NORMAL,
+      keyboard = Keyboard.NOKEY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.SOFT,
+      softButtons = true,
+      navigation = Navigation.NONAV,
+      released = "October 18, 2018"
     )
 
     @JvmField
     val PIXEL_3A = DeviceConfig(
-        screenHeight = 2220,
-        screenWidth = 1080,
-        xdpi = 442,
-        ydpi = 444,
-        orientation = ScreenOrientation.PORTRAIT,
-        density = Density.DPI_440,
-        ratio = ScreenRatio.LONG,
-        size = ScreenSize.NORMAL,
-        keyboard = Keyboard.NOKEY,
-        touchScreen = TouchScreen.FINGER,
-        keyboardState = KeyboardState.SOFT,
-        softButtons = true,
-        navigation = Navigation.NONAV,
-        released = "May 7, 2019"
+      screenHeight = 2220,
+      screenWidth = 1080,
+      xdpi = 442,
+      ydpi = 444,
+      orientation = ScreenOrientation.PORTRAIT,
+      density = Density.DPI_440,
+      ratio = ScreenRatio.LONG,
+      size = ScreenSize.NORMAL,
+      keyboard = Keyboard.NOKEY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.SOFT,
+      softButtons = true,
+      navigation = Navigation.NONAV,
+      released = "May 7, 2019"
     )
 
     @JvmField
     val PIXEL_3A_XL = DeviceConfig(
-        screenHeight = 2160,
-        screenWidth = 1080,
-        xdpi = 397,
-        ydpi = 400,
-        orientation = ScreenOrientation.PORTRAIT,
-        density = Density.DPI_400,
-        ratio = ScreenRatio.LONG,
-        size = ScreenSize.NORMAL,
-        keyboard = Keyboard.NOKEY,
-        touchScreen = TouchScreen.FINGER,
-        keyboardState = KeyboardState.SOFT,
-        softButtons = true,
-        navigation = Navigation.NONAV,
-        released = "May 7, 2019"
+      screenHeight = 2160,
+      screenWidth = 1080,
+      xdpi = 397,
+      ydpi = 400,
+      orientation = ScreenOrientation.PORTRAIT,
+      density = Density.DPI_400,
+      ratio = ScreenRatio.LONG,
+      size = ScreenSize.NORMAL,
+      keyboard = Keyboard.NOKEY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.SOFT,
+      softButtons = true,
+      navigation = Navigation.NONAV,
+      released = "May 7, 2019"
     )
 
     @JvmField
     val PIXEL_4 = DeviceConfig(
-        screenHeight = 2280,
-        screenWidth = 1080,
-        xdpi = 444,
-        ydpi = 444,
-        orientation = ScreenOrientation.PORTRAIT,
-        density = Density.DPI_440,
-        ratio = ScreenRatio.LONG,
-        size = ScreenSize.NORMAL,
-        keyboard = Keyboard.NOKEY,
-        touchScreen = TouchScreen.FINGER,
-        keyboardState = KeyboardState.SOFT,
-        softButtons = true,
-        navigation = Navigation.NONAV,
-        released = "October 24, 2019"
+      screenHeight = 2280,
+      screenWidth = 1080,
+      xdpi = 444,
+      ydpi = 444,
+      orientation = ScreenOrientation.PORTRAIT,
+      density = Density.DPI_440,
+      ratio = ScreenRatio.LONG,
+      size = ScreenSize.NORMAL,
+      keyboard = Keyboard.NOKEY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.SOFT,
+      softButtons = true,
+      navigation = Navigation.NONAV,
+      released = "October 24, 2019"
     )
 
     @JvmField
     val PIXEL_4_XL = DeviceConfig(
-        screenHeight = 3040,
-        screenWidth = 1440,
-        xdpi = 537,
-        ydpi = 537,
-        orientation = ScreenOrientation.PORTRAIT,
-        density = Density.DPI_560,
-        ratio = ScreenRatio.LONG,
-        size = ScreenSize.NORMAL,
-        keyboard = Keyboard.NOKEY,
-        touchScreen = TouchScreen.FINGER,
-        keyboardState = KeyboardState.SOFT,
-        softButtons = true,
-        navigation = Navigation.NONAV,
-        released = "October 24, 2019"
+      screenHeight = 3040,
+      screenWidth = 1440,
+      xdpi = 537,
+      ydpi = 537,
+      orientation = ScreenOrientation.PORTRAIT,
+      density = Density.DPI_560,
+      ratio = ScreenRatio.LONG,
+      size = ScreenSize.NORMAL,
+      keyboard = Keyboard.NOKEY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.SOFT,
+      softButtons = true,
+      navigation = Navigation.NONAV,
+      released = "October 24, 2019"
     )
 
     @JvmField
     val PIXEL_4A = DeviceConfig(
-        screenHeight = 2340,
-        screenWidth = 1080,
-        xdpi = 442,
-        ydpi = 444,
-        orientation = ScreenOrientation.PORTRAIT,
-        density = Density.DPI_440,
-        ratio = ScreenRatio.LONG,
-        size = ScreenSize.NORMAL,
-        keyboard = Keyboard.NOKEY,
-        touchScreen = TouchScreen.FINGER,
-        keyboardState = KeyboardState.SOFT,
-        softButtons = true,
-        navigation = Navigation.NONAV,
-        released = "August 20, 2020"
+      screenHeight = 2340,
+      screenWidth = 1080,
+      xdpi = 442,
+      ydpi = 444,
+      orientation = ScreenOrientation.PORTRAIT,
+      density = Density.DPI_440,
+      ratio = ScreenRatio.LONG,
+      size = ScreenSize.NORMAL,
+      keyboard = Keyboard.NOKEY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.SOFT,
+      softButtons = true,
+      navigation = Navigation.NONAV,
+      released = "August 20, 2020"
     )
 
     @JvmField
@@ -467,7 +467,7 @@ data class DeviceConfig(
       val map = mutableMapOf<String, MutableMap<String, Int>>()
 
       val xmlPullParser = XmlPullParserFactory.newInstance()
-          .newPullParser()
+        .newPullParser()
       xmlPullParser.setInput(FileInputStream(path), null)
       var eventType = xmlPullParser.eventType
       var attr: String? = null

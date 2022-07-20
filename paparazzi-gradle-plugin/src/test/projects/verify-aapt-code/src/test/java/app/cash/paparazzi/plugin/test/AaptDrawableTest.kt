@@ -1,13 +1,12 @@
 package app.cash.paparazzi.plugin.test
 
-import android.view.Gravity.CENTER
 import android.util.TypedValue
+import android.view.Gravity.CENTER
 import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import android.widget.FrameLayout.LayoutParams
 import androidx.appcompat.widget.AppCompatImageView
-
 import app.cash.paparazzi.Paparazzi
 import org.junit.Rule
 import org.junit.Test
@@ -20,7 +19,7 @@ class AaptDrawableTest {
   fun aaptEmbeddedDrawable() {
     val imageView = AppCompatImageView(paparazzi.context).apply {
       layoutParams = LayoutParams(dip(140), dip(140))
-          .apply { gravity = CENTER }
+        .apply { gravity = CENTER }
     }
     imageView.setImageResource(R.drawable.card_chip)
     val wrapped = FrameLayout(paparazzi.context).apply {
@@ -32,8 +31,8 @@ class AaptDrawableTest {
 
   private fun View.dip(value: Int): Int =
     TypedValue.applyDimension(
-        TypedValue.COMPLEX_UNIT_DIP,
-        value.toFloat(),
-        resources.displayMetrics
+      TypedValue.COMPLEX_UNIT_DIP,
+      value.toFloat(),
+      resources.displayMetrics
     ).toInt()
 }

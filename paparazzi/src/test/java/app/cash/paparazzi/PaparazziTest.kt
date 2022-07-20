@@ -99,19 +99,19 @@ class PaparazziTest {
     paparazzi.gif(view, start = 1_000L, end = 4_000L, fps = 4)
 
     assertThat(log).containsExactly(
-        "onDraw time=1000 animationElapsed=0.0",
-        "onAnimationStart time=2000 animationElapsed=0.0",
-        "onAnimationUpdate time=2000 animationElapsed=0.0",
-        "onDraw time=2000 animationElapsed=0.0",
-        "onAnimationUpdate time=2250 animationElapsed=0.25",
-        "onDraw time=2250 animationElapsed=0.25",
-        "onAnimationUpdate time=2500 animationElapsed=0.5",
-        "onDraw time=2500 animationElapsed=0.5",
-        "onAnimationUpdate time=2750 animationElapsed=0.75",
-        "onDraw time=2750 animationElapsed=0.75",
-        "onAnimationUpdate time=3000 animationElapsed=1.0",
-        "onAnimationEnd time=3000 animationElapsed=1.0",
-        "onDraw time=3000 animationElapsed=1.0",
+      "onDraw time=1000 animationElapsed=0.0",
+      "onAnimationStart time=2000 animationElapsed=0.0",
+      "onAnimationUpdate time=2000 animationElapsed=0.0",
+      "onDraw time=2000 animationElapsed=0.0",
+      "onAnimationUpdate time=2250 animationElapsed=0.25",
+      "onDraw time=2250 animationElapsed=0.25",
+      "onAnimationUpdate time=2500 animationElapsed=0.5",
+      "onDraw time=2500 animationElapsed=0.5",
+      "onAnimationUpdate time=2750 animationElapsed=0.75",
+      "onDraw time=2750 animationElapsed=0.75",
+      "onAnimationUpdate time=3000 animationElapsed=1.0",
+      "onAnimationEnd time=3000 animationElapsed=1.0",
+      "onDraw time=3000 animationElapsed=1.0"
     )
   }
 
@@ -126,7 +126,7 @@ class PaparazziTest {
         Choreographer.getInstance()
           .postCallback(
             CALLBACK_ANIMATION,
-            { log += "view width=${width} height=${height}" },
+            { log += "view width=$width height=$height" },
             false
           )
       }
@@ -160,4 +160,3 @@ class PaparazziTest {
       return TimeUnit.NANOSECONDS.toMillis(System_Delegate.nanoTime() - Paparazzi.TIME_OFFSET_NANOS)
     }
 }
-
