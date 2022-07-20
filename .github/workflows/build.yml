@@ -35,6 +35,9 @@ jobs:
           distribution: 'zulu'
           java-version: ${{ matrix.java-version }}
 
+      - name: Run Spotless Check
+        run: ./gradlew spotlessCheck
+
       - name: Run Tests
         run: ./gradlew check
 
