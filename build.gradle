@@ -3,14 +3,14 @@ apply plugin: 'com.github.ben-manes.versions'
 buildscript {
   ext.repoDir = new File("$rootProject.buildDir/prebuilts/studio/layoutlib")
 
-  // maps to this commit: https://android.googlesource.com/platform/prebuilts/studio/layoutlib/+/573f070
+  // maps to this commit: https://android.googlesource.com/platform/prebuilts/studio/layoutlib/+/fa3aa65
   // which runs on JDK 11
-  ext.layoutLibPrebuiltSha = '573f070'
+  ext.layoutLibPrebuiltSha = 'fa3aa65'
 
   ext.versions = [
     kotlin: '1.6.10',
     agp: '7.1.2',
-    layoutlib: "2021.1.1-$layoutLibPrebuiltSha", // "should" be similar to versions.agp
+    layoutlib: "2021.2.1-patch1-$layoutLibPrebuiltSha",
     compose: '1.1.1',
     jcodec: '0.2.5',
     moshi: '1.13.0',
