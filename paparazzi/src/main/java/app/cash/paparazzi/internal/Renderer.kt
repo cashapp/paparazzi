@@ -39,7 +39,7 @@ internal class Renderer(
   private val environment: Environment,
   private val layoutlibCallback: PaparazziCallback,
   private val logger: PaparazziLogger,
-  private val maxPercentDifference: Double,
+  private val maxPercentDifference: Double
 ) : Closeable {
   private var bridge: Bridge? = null
   private lateinit var sessionParamsBuilder: SessionParamsBuilder
@@ -60,14 +60,14 @@ internal class Renderer(
     projectResources.loadResources()
 
     sessionParamsBuilder = SessionParamsBuilder(
-        layoutlibCallback = layoutlibCallback,
-        logger = logger,
-        frameworkResources = frameworkResources,
-        projectResources = projectResources,
-        assetRepository = PaparazziAssetRepository(environment.assetsDir)
+      layoutlibCallback = layoutlibCallback,
+      logger = logger,
+      frameworkResources = frameworkResources,
+      projectResources = projectResources,
+      assetRepository = PaparazziAssetRepository(environment.assetsDir)
     )
-        .plusFlag(RenderParamsFlags.FLAG_DO_NOT_RENDER_ON_CREATE, true)
-        .withTheme("AppTheme", true)
+      .plusFlag(RenderParamsFlags.FLAG_DO_NOT_RENDER_ON_CREATE, true)
+      .withTheme("AppTheme", true)
 
     val platformDataDir = File("${environment.platformDataDir}/data")
     val fontLocation = File(platformDataDir, "fonts")
@@ -92,12 +92,12 @@ internal class Renderer(
       ) { "Failed to init Bridge." }
     }
     Bridge.getLock()
-        .lock()
+      .lock()
     try {
       Bridge.setLog(logger)
     } finally {
       Bridge.getLock()
-          .unlock()
+        .unlock()
     }
 
     return sessionParamsBuilder
@@ -162,7 +162,7 @@ internal class Renderer(
   /** Compares the golden image with the passed image. */
   fun verify(
     goldenImageName: String,
-    image: BufferedImage,
+    image: BufferedImage
   ) {
     try {
       val goldenImagePath = environment.appTestDir + "/golden/" + goldenImageName
@@ -204,11 +204,11 @@ internal class Renderer(
     deviceConfig: DeviceConfig = DeviceConfig.NEXUS_5
   ): RenderResult {
     val sessionParams = sessionParamsBuilder
-        .copy(
-            layoutPullParser = createParserFromPath(layoutFileName),
-            deviceConfig = deviceConfig
-        )
-        .build()
+      .copy(
+        layoutPullParser = createParserFromPath(layoutFileName),
+        deviceConfig = deviceConfig
+      )
+      .build()
     return renderAndVerify(sessionParams, goldenFileName)
   }
 }

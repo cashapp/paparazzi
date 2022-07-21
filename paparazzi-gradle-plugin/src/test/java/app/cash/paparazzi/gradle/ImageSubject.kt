@@ -21,7 +21,7 @@ internal class ImageSubject private constructor(
     require(actual is File) // smart cast
 
     assertWithMessage("File $actual does not exist").that(actual.exists())
-        .isTrue()
+      .isTrue()
   }
 
   @CheckReturnValue
@@ -42,11 +42,11 @@ internal class ImageSubject private constructor(
 
     fun withThreshold(threshold: Double) {
       assertWithMessage("Threshold ($threshold) is less than 0.0")
-          .that(threshold)
-          .isAtLeast(0.0)
+        .that(threshold)
+        .isAtLeast(0.0)
       assertWithMessage("Threshold ($threshold) is greater than 1.0")
-          .that(threshold)
-          .isAtMost(1.0)
+        .that(threshold)
+        .isAtMost(1.0)
 
       // Based on https://rosettacode.org/wiki/Percentage_difference_between_images#Kotlin
       val percentDiff = getDifferencePercent(img1, img2)
@@ -79,11 +79,11 @@ internal class ImageSubject private constructor(
 
     private fun pixelDiff(rgb1: Int, rgb2: Int): Int {
       val r1 = (rgb1 shr 16) and 0xff
-      val g1 = (rgb1 shr 8)  and 0xff
-      val b1 =  rgb1         and 0xff
+      val g1 = (rgb1 shr 8) and 0xff
+      val b1 = rgb1 and 0xff
       val r2 = (rgb2 shr 16) and 0xff
-      val g2 = (rgb2 shr 8)  and 0xff
-      val b2 =  rgb2         and 0xff
+      val g2 = (rgb2 shr 8) and 0xff
+      val b2 = rgb2 and 0xff
       return abs(r1 - r2) + abs(g1 - g2) + abs(b1 - b2)
     }
 

@@ -17,7 +17,6 @@ package app.cash.paparazzi.plugin.test
 
 import android.content.Context
 import android.graphics.Typeface
-import android.util.AttributeSet
 import android.view.Gravity.CENTER
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.LinearLayout
@@ -41,26 +40,36 @@ class CustomFontsTest {
       orientation = VERTICAL
       gravity = CENTER
 
-      addView(createTextView(context).apply {
-        typeface = ResourcesCompat.getFont(context, R.font.cashmarket_medium)
-        text = "Normal (default)"
-      })
-      addView(createTextView(context).apply {
-        setTypeface(ResourcesCompat.getFont(context, R.font.cashmarket_medium), Typeface.NORMAL)
-        text = "Normal (styled)"
-      })
-      addView(createTextView(context).apply {
-        typeface = ResourcesCompat.getFont(context, R.font.cashmarket_medium_normal)
-        text = "Normal (explicit)"
-      })
-      addView(createTextView(context).apply {
-        setTypeface(ResourcesCompat.getFont(context, R.font.cashmarket_medium), Typeface.ITALIC)
-        text = "Italics (styled)"
-      })
-      addView(createTextView(context).apply {
-        typeface = ResourcesCompat.getFont(context, R.font.cashmarket_medium_italic)
-        text = "Italics (explicit)"
-      })
+      addView(
+        createTextView(context).apply {
+          typeface = ResourcesCompat.getFont(context, R.font.cashmarket_medium)
+          text = "Normal (default)"
+        }
+      )
+      addView(
+        createTextView(context).apply {
+          setTypeface(ResourcesCompat.getFont(context, R.font.cashmarket_medium), Typeface.NORMAL)
+          text = "Normal (styled)"
+        }
+      )
+      addView(
+        createTextView(context).apply {
+          typeface = ResourcesCompat.getFont(context, R.font.cashmarket_medium_normal)
+          text = "Normal (explicit)"
+        }
+      )
+      addView(
+        createTextView(context).apply {
+          setTypeface(ResourcesCompat.getFont(context, R.font.cashmarket_medium), Typeface.ITALIC)
+          text = "Italics (styled)"
+        }
+      )
+      addView(
+        createTextView(context).apply {
+          typeface = ResourcesCompat.getFont(context, R.font.cashmarket_medium_italic)
+          text = "Italics (explicit)"
+        }
+      )
     }
 
     paparazzi.snapshot(root, "text in code")

@@ -18,7 +18,6 @@ package app.cash.paparazzi.plugin.test
 import android.content.Context
 import android.view.Gravity
 import androidx.appcompat.widget.AppCompatTextView
-import androidx.core.content.ContextCompat
 
 class AmountView(context: Context) : AppCompatTextView(context) {
   init {

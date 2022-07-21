@@ -13,7 +13,7 @@ class InterceptorRegistrarTest {
       Utils::class.java,
       setOf(
         "log1" to Interceptor1::class.java,
-        "log2" to Interceptor2::class.java,
+        "log2" to Interceptor2::class.java
       )
     )
 

@@ -67,7 +67,7 @@ class PaparazziPlugin : Plugin<Project> {
     val recordVariants = project.tasks.register("recordPaparazzi")
 
     val variants = project.extensions.getByType(LibraryExtension::class.java)
-        .libraryVariants
+      .libraryVariants
     variants.all { variant ->
       val variantSlug = variant.name.capitalize(Locale.US)
 
@@ -82,13 +82,15 @@ class PaparazziPlugin : Plugin<Project> {
         .incoming
         .artifactView {
           it.attributes.attribute(
-            Attribute.of("artifactType", String::class.java), "android-symbol-with-package-name"
+            Attribute.of("artifactType", String::class.java),
+            "android-symbol-with-package-name"
           )
         }
         .artifacts
 
       val writeResourcesTask = project.tasks.register(
-          "preparePaparazzi${variantSlug}Resources", PrepareResourcesTask::class.java
+        "preparePaparazzi${variantSlug}Resources",
+        PrepareResourcesTask::class.java
       ) { task ->
         val android = project.extensions.getByType(BaseExtension::class.java)
         val nonTransitiveRClassEnabled =
@@ -109,19 +111,19 @@ class PaparazziPlugin : Plugin<Project> {
 
       project.plugins.withType(JavaBasePlugin::class.java) {
         project.tasks.named("compile${testVariantSlug}JavaWithJavac")
-            .configure { it.dependsOn(writeResourcesTask) }
+          .configure { it.dependsOn(writeResourcesTask) }
       }
 
       project.plugins.withType(KotlinBasePluginWrapper::class.java) {
         project.tasks.named("compile${testVariantSlug}Kotlin")
-            .configure { it.dependsOn(writeResourcesTask) }
+          .configure { it.dependsOn(writeResourcesTask) }
       }
 
-      val recordTaskProvider = project.tasks.register("recordPaparazzi${variantSlug}", PaparazziTask::class.java) {
+      val recordTaskProvider = project.tasks.register("recordPaparazzi$variantSlug", PaparazziTask::class.java) {
         it.group = VERIFICATION_GROUP
       }
       recordVariants.configure { it.dependsOn(recordTaskProvider) }
-      val verifyTaskProvider = project.tasks.register("verifyPaparazzi${variantSlug}", PaparazziTask::class.java) {
+      val verifyTaskProvider = project.tasks.register("verifyPaparazzi$variantSlug", PaparazziTask::class.java) {
         it.group = VERIFICATION_GROUP
       }
       verifyVariants.configure { it.dependsOn(verifyTaskProvider) }
@@ -134,9 +136,9 @@ class PaparazziPlugin : Plugin<Project> {
         isVerifyRun.set(graph.hasTask(verifyTaskProvider.get()))
       }
 
-      val testTaskProvider = project.tasks.named("test${testVariantSlug}", Test::class.java) { test ->
+      val testTaskProvider = project.tasks.named("test$testVariantSlug", Test::class.java) { test ->
         test.systemProperties["paparazzi.test.resources"] =
-            writeResourcesTask.flatMap { it.paparazziResources.asFile }.get().path
+          writeResourcesTask.flatMap { it.paparazziResources.asFile }.get().path
 
         test.inputs.dir(mergeResourcesOutputDir)
         test.inputs.dir(mergeAssetsOutputDir)
@@ -184,12 +186,13 @@ class PaparazziPlugin : Plugin<Project> {
 
   private fun Project.setupPlatformDataTransform(): Configuration {
     configurations.getByName("testImplementation").dependencies.add(
-        dependencies.create("app.cash.paparazzi:paparazzi:$VERSION")
+      dependencies.create("app.cash.paparazzi:paparazzi:$VERSION")
     )
 
     val unzipConfiguration = configurations.create("unzip")
     unzipConfiguration.attributes.attribute(
-        ArtifactAttributes.ARTIFACT_FORMAT, ArtifactTypeDefinition.DIRECTORY_TYPE
+      ArtifactAttributes.ARTIFACT_FORMAT,
+      ArtifactTypeDefinition.DIRECTORY_TYPE
     )
     configurations.add(unzipConfiguration)
 
@@ -203,12 +206,13 @@ class PaparazziPlugin : Plugin<Project> {
       else -> "linux"
     }
     unzipConfiguration.dependencies.add(
-        dependencies.create("app.cash.paparazzi:layoutlib-native-$nativeLibraryArtifactId:$NATIVE_LIB_VERSION")
+      dependencies.create("app.cash.paparazzi:layoutlib-native-$nativeLibraryArtifactId:$NATIVE_LIB_VERSION")
     )
     dependencies.registerTransform(UnzipTransform::class.java) { transform ->
       transform.from.attribute(ArtifactAttributes.ARTIFACT_FORMAT, ArtifactTypeDefinition.JAR_TYPE)
       transform.to.attribute(
-          ArtifactAttributes.ARTIFACT_FORMAT, ArtifactTypeDefinition.DIRECTORY_TYPE
+        ArtifactAttributes.ARTIFACT_FORMAT,
+        ArtifactTypeDefinition.DIRECTORY_TYPE
       )
     }
 

@@ -70,7 +70,7 @@ internal object ImageUtils {
 
     val `is` = ImageUtils::class.java.classLoader.getResourceAsStream(relativePath)
     if (`is` ==
-        null
+      null
     ) {
       var message = "Unable to load golden thumbnail: $relativePath\n"
       message = saveImageAndAppendMessage(thumbnail, message, relativePath)
@@ -83,10 +83,10 @@ internal object ImageUtils {
       try {
         val goldenImage = ImageIO.read(`is`)
         assertImageSimilar(
-            relativePath,
-            goldenImage,
-            thumbnail,
-            maxPercentDifference
+          relativePath,
+          goldenImage,
+          thumbnail,
+          maxPercentDifference
         )
       } finally {
         `is`.close()
@@ -104,8 +104,9 @@ internal object ImageUtils {
     var goldenImage = goldenImage
     if (goldenImage.type != TYPE_INT_ARGB) {
       val temp = BufferedImage(
-          goldenImage.width, goldenImage.height,
-          TYPE_INT_ARGB
+        goldenImage.width,
+        goldenImage.height,
+        TYPE_INT_ARGB
       )
       temp.graphics.drawImage(goldenImage, 0, 0, null)
       goldenImage = temp
@@ -156,11 +157,11 @@ internal object ImageUtils {
         deltaImage.setRGB(imageWidth + x, y, newRGB)
 
         delta += Math.abs(deltaR)
-            .toLong()
+          .toLong()
         delta += Math.abs(deltaG)
-            .toLong()
+          .toLong()
         delta += Math.abs(deltaB)
-            .toLong()
+          .toLong()
       }
     }
 
@@ -174,12 +175,12 @@ internal object ImageUtils {
       error = String.format("Images differ (by %.1f%%)", percentDifference)
     } else if (Math.abs(goldenImage.width - image.width) >= 2) {
       error = "Widths differ too much for " + imageName + ": " +
-          goldenImage.width + "x" + goldenImage.height +
-          "vs" + image.width + "x" + image.height
+        goldenImage.width + "x" + goldenImage.height +
+        "vs" + image.width + "x" + image.height
     } else if (Math.abs(goldenImage.height - image.height) >= 2) {
       error = "Heights differ too much for " + imageName + ": " +
-          goldenImage.width + "x" + goldenImage.height +
-          "vs" + image.width + "x" + image.height
+        goldenImage.width + "x" + goldenImage.height +
+        "vs" + image.width + "x" + image.height
     }
 
     if (error != null) {
@@ -328,8 +329,8 @@ internal object ImageUtils {
   ): String {
     var initialMessage = initialMessage
     val output = File(
-        failureDir,
-        getName(relativePath)
+      failureDir,
+      getName(relativePath)
     )
     if (output.exists()) {
       val deleted = output.delete()

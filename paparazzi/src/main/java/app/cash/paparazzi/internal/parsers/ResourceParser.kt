@@ -69,7 +69,12 @@ class ResourceParser(inputStream: InputStream) : KXmlParser() {
         }
         END_TAG -> {
           return TagSnapshot(
-              tagName, tagNamespace, prefix, attributes, children.toList(), hasDeclaredAaptAttrs
+            tagName,
+            tagNamespace,
+            prefix,
+            attributes,
+            children.toList(),
+            hasDeclaredAaptAttrs
           )
         }
       }
@@ -125,12 +130,12 @@ class ResourceParser(inputStream: InputStream) : KXmlParser() {
     return buildList {
       for (i in 0 until attributeCount) {
         add(
-            AttributeSnapshot(
-                getAttributeNamespace(i),
-                getAttributePrefix(i),
-                getAttributeName(i),
-                getAttributeValue(i)
-            )
+          AttributeSnapshot(
+            getAttributeNamespace(i),
+            getAttributePrefix(i),
+            getAttributeName(i),
+            getAttributeValue(i)
+          )
         )
       }
     }.toMutableList()

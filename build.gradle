@@ -90,6 +90,7 @@ buildscript {
     classpath 'com.github.ben-manes:gradle-versions-plugin:0.42.0'
     classpath 'org.jetbrains.dokka:dokka-gradle-plugin:1.6.21'
     classpath "app.cash.paparazzi:paparazzi-gradle-plugin:${versions.releasedPaparazzi}"
+    classpath 'com.diffplug.spotless:spotless-plugin-gradle:6.8.0'
   }
 }
 
@@ -159,6 +160,22 @@ subprojects {
 
   tasks.register('emptyJavadocJar', Jar) {
     archiveClassifier = 'javadoc'
+  }
+
+  apply plugin: 'com.diffplug.spotless'
+  spotless {
+    kotlin {
+      target("src/**/*.kt")
+      // ktlint doesn't honour .editorconfig yet: https://github.com/diffplug/spotless/issues/142
+      ktlint('0.46.1').editorConfigOverride([
+        'insert_final_newline': 'true',
+        'end_of_line': 'lf',
+        'charset': 'utf-8',
+        'indent_size': '2',
+        'trim_trailing_whitespace': 'true',
+        'kotlin_imports_layout': 'ascii'
+      ])
+    }
   }
 }
 

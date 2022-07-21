@@ -16,10 +16,12 @@ import androidx.compose.ui.text.style.TextDecoration
 @Composable
 fun HelloPaparazzi() {
   val text = "Hello, Paparazzi"
-  Column(Modifier
-    .background(Color.White)
-    .fillMaxSize()
-    .wrapContentSize()) {
+  Column(
+    Modifier
+      .background(Color.White)
+      .fillMaxSize()
+      .wrapContentSize()
+  ) {
     Text(text)
     Text(text, style = TextStyle(fontFamily = FontFamily.Cursive))
     Text(

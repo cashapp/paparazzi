@@ -15,7 +15,6 @@
  */
 package app.cash.paparazzi.plugin.test
 
-import android.content.Context
 import android.widget.LinearLayout
 import app.cash.paparazzi.Paparazzi
 import org.junit.Rule

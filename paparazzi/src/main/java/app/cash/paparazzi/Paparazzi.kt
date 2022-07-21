@@ -70,15 +70,15 @@ import com.android.layoutlib.bridge.Bridge.prepareThread
 import com.android.layoutlib.bridge.BridgeRenderSession
 import com.android.layoutlib.bridge.impl.RenderAction
 import com.android.layoutlib.bridge.impl.RenderSessionImpl
+import org.junit.rules.TestRule
+import org.junit.runner.Description
+import org.junit.runners.model.Statement
 import java.awt.image.BufferedImage
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier
 import java.util.Date
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.ContinuationInterceptor
-import org.junit.rules.TestRule
-import org.junit.runner.Description
-import org.junit.runners.model.Statement
 
 class Paparazzi @JvmOverloads constructor(
   private val environment: Environment = detectEnvironment(),
@@ -111,7 +111,7 @@ class Paparazzi @JvmOverloads constructor(
         |<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
         |              android:layout_width="match_parent"
         |              android:layout_height="match_parent"/>
-        """.trimMargin()
+  """.trimMargin()
 
   override fun apply(
     base: Statement,
@@ -159,12 +159,12 @@ class Paparazzi @JvmOverloads constructor(
     }
 
     sessionParamsBuilder = sessionParamsBuilder
-        .copy(
-            layoutPullParser = LayoutPullParser.createFromString(contentRoot),
-            deviceConfig = deviceConfig,
-            renderingMode = renderingMode
-        )
-        .withTheme(theme)
+      .copy(
+        layoutPullParser = LayoutPullParser.createFromString(contentRoot),
+        deviceConfig = deviceConfig,
+        renderingMode = renderingMode
+      )
+      .withTheme(theme)
 
     val sessionParams = sessionParamsBuilder.build()
     renderSession = createRenderSession(sessionParams)
@@ -346,11 +346,11 @@ class Paparazzi @JvmOverloads constructor(
     val renderSession = RenderSessionImpl(sessionParams)
     renderSession.setElapsedFrameTimeNanos(0L)
     RenderSessionImpl::class.java
-        .getDeclaredField("mFirstFrameExecuted")
-        .apply {
-          isAccessible = true
-          set(renderSession, true)
-        }
+      .getDeclaredField("mFirstFrameExecuted")
+      .apply {
+        isAccessible = true
+        set(renderSession, true)
+      }
     return renderSession
   }
 
@@ -393,7 +393,8 @@ class Paparazzi @JvmOverloads constructor(
         try {
           val getDeclaredFields0 =
             Class::class.java.getDeclaredMethod(
-                "getDeclaredFields0", Boolean::class.javaPrimitiveType
+              "getDeclaredFields0",
+              Boolean::class.javaPrimitiveType
             )
           getDeclaredFields0.isAccessible = true
           val fields = getDeclaredFields0.invoke(Field::class.java, false) as Array<Field>
@@ -412,12 +413,12 @@ class Paparazzi @JvmOverloads constructor(
     }
 
     versionClass
-        .getDeclaredField("SDK_INT")
-        .apply {
-          isAccessible = true
-          modifiersField.setInt(this, modifiers and Modifier.FINAL.inv())
-          setInt(null, compileSdkVersion)
-        }
+      .getDeclaredField("SDK_INT")
+      .apply {
+        isAccessible = true
+        modifiersField.setInt(this, modifiers and Modifier.FINAL.inv())
+        setInt(null, compileSdkVersion)
+      }
   }
 
   private fun initializeAppCompatIfPresent() {
@@ -448,18 +449,18 @@ class Paparazzi @JvmOverloads constructor(
             Class.forName("androidx.appcompat.app.AppCompatViewInflater")
 
           val createViewMethod = appCompatViewInflaterClass
-              .getDeclaredMethod(
-                  "createView",
-                  View::class.java,
-                  String::class.java,
-                  Context::class.java,
-                  AttributeSet::class.java,
-                  Boolean::class.javaPrimitiveType,
-                  Boolean::class.javaPrimitiveType,
-                  Boolean::class.javaPrimitiveType,
-                  Boolean::class.javaPrimitiveType
-              )
-              .apply { isAccessible = true }
+            .getDeclaredMethod(
+              "createView",
+              View::class.java,
+              String::class.java,
+              Context::class.java,
+              AttributeSet::class.java,
+              Boolean::class.javaPrimitiveType,
+              Boolean::class.javaPrimitiveType,
+              Boolean::class.javaPrimitiveType,
+              Boolean::class.javaPrimitiveType
+            )
+            .apply { isAccessible = true }
 
           val inheritContext = true
           val readAndroidTheme = true
@@ -467,12 +468,12 @@ class Paparazzi @JvmOverloads constructor(
           val wrapContext = true
 
           val newAppCompatViewInflaterInstance = appCompatViewInflaterClass
-              .getConstructor()
-              .newInstance()
+            .getConstructor()
+            .newInstance()
 
           return createViewMethod.invoke(
-              newAppCompatViewInflaterInstance, parent, name, context, attrs,
-              inheritContext, readAndroidTheme, readAppTheme, wrapContext
+            newAppCompatViewInflaterInstance, parent, name, context, attrs,
+            inheritContext, readAndroidTheme, readAppTheme, wrapContext
           ) as View?
         }
 
@@ -485,7 +486,7 @@ class Paparazzi @JvmOverloads constructor(
     } else {
       if (!appCompatDelegateClass.isAssignableFrom(layoutInflater.factory2::class.java)) {
         throw IllegalStateException(
-            "The LayoutInflater already has a Factory installed so we can not install AppCompat's"
+          "The LayoutInflater already has a Factory installed so we can not install AppCompat's"
         )
       }
     }
@@ -504,7 +505,9 @@ class Paparazzi @JvmOverloads constructor(
     try {
       val resourcesCompatClass = Class.forName("androidx.core.content.res.ResourcesCompat")
       InterceptorRegistrar.addMethodInterceptor(
-          resourcesCompatClass, "getFont", ResourcesInterceptor::class.java
+        resourcesCompatClass,
+        "getFont",
+        ResourcesInterceptor::class.java
       )
     } catch (e: ClassNotFoundException) {
       logger.verbose("ResourceCompat not found on classpath")
@@ -514,21 +517,27 @@ class Paparazzi @JvmOverloads constructor(
   private fun registerServiceManagerInterception() {
     val serviceManager = Class.forName("android.os.ServiceManager")
     InterceptorRegistrar.addMethodInterceptor(
-      serviceManager, "getServiceOrThrow", ServiceManagerInterceptor::class.java
+      serviceManager,
+      "getServiceOrThrow",
+      ServiceManagerInterceptor::class.java
     )
   }
 
   private fun registerIInputMethodManagerInterception() {
     val iimm = Class.forName("com.android.internal.view.IInputMethodManager\$Stub")
     InterceptorRegistrar.addMethodInterceptor(
-      iimm, "asInterface", IInputMethodManagerInterceptor::class.java
+      iimm,
+      "asInterface",
+      IInputMethodManagerInterceptor::class.java
     )
   }
 
   private fun registerViewEditModeInterception() {
     val viewClass = Class.forName("android.view.View")
     InterceptorRegistrar.addMethodInterceptor(
-        viewClass, "isInEditMode", EditModeInterceptor::class.java
+      viewClass,
+      "isInEditMode",
+      EditModeInterceptor::class.java
     )
   }
 
@@ -546,7 +555,9 @@ class Paparazzi @JvmOverloads constructor(
   private fun registerChoreographerDelegateInterception() {
     val choreographerDelegateClass = Class.forName("android.view.Choreographer_Delegate")
     InterceptorRegistrar.addMethodInterceptor(
-        choreographerDelegateClass, "getFrameTimeNanos", ChoreographerDelegateInterceptor::class.java
+      choreographerDelegateClass,
+      "getFrameTimeNanos",
+      ChoreographerDelegateInterceptor::class.java
     )
   }
 

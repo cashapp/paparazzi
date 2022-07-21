@@ -118,14 +118,14 @@ internal class LayoutPullParser : InMemoryParser, AaptAttrParser, ILayoutPullPar
 
     return buildMap {
       tag.attributes
-          .filterIsInstance<AaptAttrSnapshot>()
-          .forEach { attr ->
-            val bundledTag = attr.bundledTag
-            put(attr.id, bundledTag)
-            for (child in bundledTag.children) {
-              putAll(findDeclaredAaptAttrs(child))
-            }
+        .filterIsInstance<AaptAttrSnapshot>()
+        .forEach { attr ->
+          val bundledTag = attr.bundledTag
+          put(attr.id, bundledTag)
+          for (child in bundledTag.children) {
+            putAll(findDeclaredAaptAttrs(child))
           }
+        }
       for (child in tag.children) {
         putAll(findDeclaredAaptAttrs(child))
       }
@@ -146,13 +146,13 @@ internal class LayoutPullParser : InMemoryParser, AaptAttrParser, ILayoutPullPar
       }
 
       return LayoutPullParser(
-          LayoutPullParser::class.java.classLoader.getResourceAsStream(layoutPath)
+        LayoutPullParser::class.java.classLoader.getResourceAsStream(layoutPath)
       )
     }
 
     fun createFromString(contents: String): LayoutPullParser {
       return LayoutPullParser(
-          ByteArrayInputStream(contents.toByteArray(Charset.forName("UTF-8")))
+        ByteArrayInputStream(contents.toByteArray(Charset.forName("UTF-8")))
       )
     }
 

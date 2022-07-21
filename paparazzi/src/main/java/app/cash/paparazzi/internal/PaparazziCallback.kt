@@ -120,10 +120,10 @@ internal class PaparazziCallback(
       }
 
       return LayoutPullParser.createFromFile(File(layoutResource.value))
-          .also {
-            // For parser of elements included in this parser, publish any aapt declared values
-            aaptDeclaredResources.putAll(it.getAaptDeclaredAttrs())
-          }
+        .also {
+          // For parser of elements included in this parser, publish any aapt declared values
+          aaptDeclaredResources.putAll(it.getAaptDeclaredAttrs())
+        }
     } catch (e: FileNotFoundException) {
       return null
     }
@@ -194,7 +194,6 @@ internal class PaparazziCallback(
   fun setEnableShadow(enableShadow: Boolean) {
     this.enableShadow = enableShadow
   }
-
 
   override fun findClass(name: String): Class<*> {
     val clazz = loadedClasses[name]
