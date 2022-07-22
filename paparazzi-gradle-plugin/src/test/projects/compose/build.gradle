@@ -28,4 +28,8 @@ android {
 
 dependencies {
   implementation 'androidx.compose.material:material:1.1.1'
+
+  testImplementation 'com.squareup.leakcanary:leakcanary-object-watcher:2.7'
+  testImplementation 'com.squareup.leakcanary:shark:2.7'
+  testImplementation 'com.squareup.leakcanary:shark-android:2.7'
 }
