@@ -212,6 +212,10 @@ internal object ImageUtils {
     g.dispose()
   }
 
+  fun Double.roundToEven(): Int {
+    return (this / 2).roundToInt() * 2
+  }
+
   /**
    * Resize the given image
    *
@@ -229,8 +233,8 @@ internal object ImageUtils {
 
     var sourceWidth = source.width
     var sourceHeight = source.height
-    val destWidth = Math.max(1, (xScale * sourceWidth).roundToInt())
-    val destHeight = Math.max(1, (yScale * sourceHeight).roundToInt())
+    val destWidth = Math.max(1, (xScale * sourceWidth).roundToEven())
+    val destHeight = Math.max(1, (yScale * sourceHeight).roundToEven())
     var imageType = source.type
     if (imageType == BufferedImage.TYPE_CUSTOM) {
       imageType = BufferedImage.TYPE_INT_ARGB
