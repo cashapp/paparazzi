@@ -34,6 +34,7 @@ import java.io.File
 import java.io.File.separatorChar
 import java.io.IOException
 import javax.imageio.ImageIO
+import kotlin.math.roundToInt
 
 /**
  * Utilities related to image processing.
@@ -228,8 +229,8 @@ internal object ImageUtils {
 
     var sourceWidth = source.width
     var sourceHeight = source.height
-    val destWidth = Math.max(1, (xScale * sourceWidth).toInt())
-    val destHeight = Math.max(1, (yScale * sourceHeight).toInt())
+    val destWidth = Math.max(1, (xScale * sourceWidth).roundToInt())
+    val destHeight = Math.max(1, (yScale * sourceHeight).roundToInt())
     var imageType = source.type
     if (imageType == BufferedImage.TYPE_CUSTOM) {
       imageType = BufferedImage.TYPE_INT_ARGB
