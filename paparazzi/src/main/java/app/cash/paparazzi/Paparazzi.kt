@@ -32,9 +32,13 @@ import android.view.ViewGroup.LayoutParams
 import android.widget.FrameLayout
 import androidx.annotation.LayoutRes
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Recomposer
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.platform.AndroidUiDispatcher
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
@@ -202,6 +206,29 @@ class Paparazzi @JvmOverloads constructor(
     PaparazziComposeOwner.register(parent)
     hostView.setContent(composable)
     snapshot(parent, name)
+
+    forceReleaseComposeReferenceLeaks()
+  }
+
+  fun Paparazzi.gif(
+    name: String? = null,
+    start: Long = 0L,
+    end: Long = 500L,
+    fps: Int = 30,
+    composable: @Composable () -> Unit
+  ) {
+    val hostView = ComposeView(context)
+    // During onAttachedToWindow, AbstractComposeView will attempt to resolve its parent's
+    // CompositionContext, which requires first finding the "content view", then using that to
+    // find a root view with a ViewTreeLifecycleOwner
+    val parent = FrameLayout(context).apply { id = android.R.id.content }
+    parent.addView(hostView, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
+    PaparazziComposeOwner.register(parent)
+    hostView.setContent {
+      composable()
+    }
+
+    gif(parent, name, start, end, fps)
 
     forceReleaseComposeReferenceLeaks()
   }
@@ -595,7 +622,8 @@ class Paparazzi @JvmOverloads constructor(
     toRunTrampolined.clear()
   }
 
-  private class PaparazziComposeOwner private constructor() : LifecycleOwner, SavedStateRegistryOwner {
+  private class PaparazziComposeOwner private constructor() : LifecycleOwner,
+    SavedStateRegistryOwner {
     private val lifecycleRegistry: LifecycleRegistry = LifecycleRegistry(this)
     private val savedStateRegistryController = SavedStateRegistryController.create(this)
 

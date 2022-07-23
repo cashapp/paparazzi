@@ -14,8 +14,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 
 @Composable
-fun HelloPaparazzi() {
-  val text = "Hello, Paparazzi"
+fun HelloPaparazzi(name: String = "Paparazzi") {
+  val text = "Hello, $name"
   Column(
     Modifier
       .background(Color.White)
