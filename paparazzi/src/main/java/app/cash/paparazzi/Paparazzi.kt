@@ -32,13 +32,9 @@ import android.view.ViewGroup.LayoutParams
 import android.widget.FrameLayout
 import androidx.annotation.LayoutRes
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Recomposer
-import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.platform.AndroidUiDispatcher
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
@@ -622,7 +618,8 @@ class Paparazzi @JvmOverloads constructor(
     toRunTrampolined.clear()
   }
 
-  private class PaparazziComposeOwner private constructor() : LifecycleOwner,
+  private class PaparazziComposeOwner private constructor() :
+    LifecycleOwner,
     SavedStateRegistryOwner {
     private val lifecycleRegistry: LifecycleRegistry = LifecycleRegistry(this)
     private val savedStateRegistryController = SavedStateRegistryController.create(this)
