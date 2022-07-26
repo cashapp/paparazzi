@@ -15,7 +15,8 @@ buildscript {
     jcodec: '0.2.5',
     moshi: '1.13.0',
     bytebuddy: '1.12.10',
-    releasedPaparazzi: '1.0.0'
+    releasedPaparazzi: '1.0.0',
+    composeRuntime: '1.1.1'
   ]
 
   ext.deps = [
@@ -73,6 +74,8 @@ buildscript {
     truth: 'com.google.truth:truth:1.1.3',
     assertj: 'org.assertj:assertj-core:3.23.1',
     testparameterinjector: 'com.google.testparameterinjector:test-parameter-injector:1.8',
+    composeRuntimeUrl: "https://maven.google.com/androidx/compose/runtime/runtime/${versions.composeRuntime}/runtime-${versions.composeRuntime}.aar",
+    composeRuntime: "extracted-jars/compose-runtime-${versions.composeRuntime}.jar"
   ]
 
   repositories {

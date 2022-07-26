@@ -4,6 +4,7 @@ apply plugin: 'org.jetbrains.kotlin.jvm'
 apply plugin: 'org.jetbrains.kotlin.kapt'
 apply plugin: 'org.jetbrains.dokka'
 apply plugin: 'com.vanniktech.maven.publish'
+apply plugin:  'de.undercouch.download'
 
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
@@ -26,7 +27,7 @@ dependencies {
 dependencies {
   // Paparazzi is a Kotlin JVM module and thus cannot depend on Android library artifacts (AARs)
   // TODO: Use Gradle transforms to extract/rename classes.jar's from AARs
-  api files('libs/compose-runtime-1.1.1.jar')
+  api files(deps.composeRuntime)
   compileOnly files('libs/compose-ui-1.1.1.jar')
   compileOnly deps.androidx.lifecycleCommon
   compileOnly files('libs/lifecycle-runtime-2.4.0.jar')
@@ -120,4 +121,25 @@ tasks.withType(Test).configureEach {
     showStackTraces true
     showStandardStreams true
   }
+}
+
+task downloadComposeRuntime(type: Download) {
+  overwrite false
+  src deps.composeRuntimeUrl
+  dest new File(buildDir, "${versions.composeRuntime}.aar")
+}
+
+task unzipComposeRuntime(dependsOn: downloadComposeRuntime, type: Copy) {
+  from zipTree(downloadComposeRuntime.dest)
+  into buildDir
+}
+
+task copyComposeRuntime(dependsOn: unzipComposeRuntime, type: Copy) {
+  from "$buildDir/classes.jar"
+  into "extracted-jars"
+  rename 'classes.jar', "compose-runtime-${versions.composeRuntime}.jar"
+}
+
+tasks.named('compileKotlin').configure {
+  it.dependsOn(copyComposeRuntime)
 }
