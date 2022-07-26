@@ -19,7 +19,7 @@ class Shot {
   }
 
   static get TestMethodRegex() {
-    return /^(.*)\.(.*)#(.*)\[/;
+    return /^(.*)\.(.*)#([^\[]*)\[?.*$/;
   }
 
   addRun(runId, file, timestamp) {
