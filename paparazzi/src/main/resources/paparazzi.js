@@ -13,7 +13,7 @@ class Shot {
     this.name = name;
     this.test = test;
     
-    [this.package, this.clazz, this.method] = Shot.TestMethodRegex.exec(test);
+    [, this.package, this.clazz, this.method] = Shot.TestMethodRegex.exec(test);
 
     this.runs = [];
   }
