@@ -12,7 +12,7 @@ class Shot {
   constructor(name, test) {
     this.name = name;
     this.test = test;
-    
+
     [, this.package, this.clazz, this.method] = Shot.TestMethodRegex.exec(test);
 
     this.runs = [];
