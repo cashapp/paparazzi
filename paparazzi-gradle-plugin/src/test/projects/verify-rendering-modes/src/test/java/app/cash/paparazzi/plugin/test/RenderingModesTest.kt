@@ -21,7 +21,7 @@ class RenderingModesTest {
       layoutParams = LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
     }
 
-    (0..2).forEach {
+    (0..100).forEach {
       linearLayout.addView(
         TextView(paparazzi.context).apply {
           text = "$it"
