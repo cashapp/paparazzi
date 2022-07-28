@@ -198,8 +198,6 @@ class Paparazzi @JvmOverloads constructor(
     snapshot(hostView, name)
   }
 
-  fun getSnapshotPath: String = Snapshot()
-
   @JvmOverloads
   fun snapshot(view: View, name: String? = null, offsetMillis: Long = 0L) {
     takeSnapshots(view, name, TimeUnit.MILLISECONDS.toNanos(offsetMillis), -1, 1)
