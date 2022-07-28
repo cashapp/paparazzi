@@ -205,8 +205,6 @@ class Paparazzi @JvmOverloads constructor(
     }
   }
 
-  fun getSnapshotPath: String = Snapshot()
-
   @JvmOverloads
   fun snapshot(view: View, name: String? = null) {
     takeSnapshots(view, name, 0, -1, 1)
