@@ -21,14 +21,7 @@ import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
-import org.gradle.api.tasks.CacheableTask
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputDirectory
-import org.gradle.api.tasks.InputFiles
-import org.gradle.api.tasks.OutputFile
-import org.gradle.api.tasks.PathSensitive
-import org.gradle.api.tasks.PathSensitivity
-import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.*
 
 @CacheableTask
 abstract class PrepareResourcesTask : DefaultTask() {
@@ -48,6 +41,10 @@ abstract class PrepareResourcesTask : DefaultTask() {
   @get:InputDirectory
   @get:PathSensitive(PathSensitivity.RELATIVE)
   abstract val mergeAssetsOutput: DirectoryProperty
+
+  @get:InputDirectory
+  @get:PathSensitive(PathSensitivity.ABSOLUTE)
+  abstract val snapshotDirectory: DirectoryProperty
 
   @get:Input
   abstract val nonTransitiveRClassEnabled: Property<Boolean>
@@ -95,6 +92,8 @@ abstract class PrepareResourcesTask : DefaultTask() {
         it.write(projectDirectory.relativize(mergeAssetsOutput.get()))
         it.newLine()
         it.write(resourcePackageNames)
+        it.newLine()
+        it.write(snapshotDirectory.get().asFile.invariantSeparatorsPath)
         it.newLine()
       }
   }

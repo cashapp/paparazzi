@@ -21,6 +21,7 @@ import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.LibraryExtension
 import com.android.build.gradle.tasks.MergeSourceSetFolders
 import com.android.ide.common.symbols.getPackageNameFromManifest
+import java.io.File
 import org.gradle.api.Action
 import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
@@ -80,7 +81,10 @@ class PaparazziPlugin : Plugin<Project> {
         project.tasks.named("merge${variantSlug}Assets") as TaskProvider<MergeSourceSetFolders>
       val mergeAssetsOutputDir = mergeAssetsProvider.flatMap { it.outputDir }
       val reportOutputDir = project.layout.buildDirectory.dir("reports/paparazzi")
-      val snapshotOutputDir = project.layout.projectDirectory.dir("src/test/snapshots")
+
+      val snapshotOutputDir =
+          project.extensions.extraProperties.properties["paparazzi_snapshot_dir"] as? File
+          ?: project.layout.projectDirectory.dir("src/test/snapshots").asFile
 
       val packageAwareArtifacts = project.configurations
         .getByName("${variant.name}RuntimeClasspath")
@@ -106,6 +110,7 @@ class PaparazziPlugin : Plugin<Project> {
         task.compileSdkVersion.set(android.compileSdkVersion())
         task.mergeAssetsOutput.set(mergeAssetsOutputDir)
         task.paparazziResources.set(project.layout.buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.txt"))
+        task.snapshotDirectory.set(snapshotOutputDir)
       }
 
       val testVariantSlug = variant.unitTestVariant.name.capitalize(Locale.US)
