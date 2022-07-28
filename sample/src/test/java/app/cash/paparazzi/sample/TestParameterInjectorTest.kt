@@ -1,6 +1,7 @@
 package app.cash.paparazzi.sample
 
 import android.widget.LinearLayout
+import android.widget.TextView
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Paparazzi
 import com.google.testing.junit.testparameterinjector.TestParameter
@@ -26,6 +27,10 @@ class TestParameterInjectorTest(
     LIGHT_NO_ACTION_BAR("android:Theme.Material.Light.NoActionBar")
   }
 
+  object AmountProvider : TestParameter.TestParameterValuesProvider {
+    override fun provideValues(): List<String> = listOf("\$1.00", "\$2.00", "\$5.00", "\$10.00")
+  }
+
   @get:Rule
   val paparazzi = Paparazzi(deviceConfig = config.deviceConfig)
 
@@ -40,5 +45,13 @@ class TestParameterInjectorTest(
     paparazzi.unsafeUpdateConfig(theme = theme.themeName)
     val launch = paparazzi.inflate<LinearLayout>(R.layout.launch)
     paparazzi.snapshot(launch)
+  }
+
+  @Test
+  fun amountProviderTest(@TestParameter(valuesProvider = AmountProvider::class) amount: String) {
+    val keypad = paparazzi.inflate<LinearLayout>(R.layout.keypad)
+    val amountView = keypad.findViewById<TextView>(R.id.amount)
+    amountView.text = amount
+    paparazzi.snapshot(keypad)
   }
 }
