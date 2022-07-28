@@ -85,7 +85,7 @@ class Paparazzi @JvmOverloads constructor(
   private val renderingMode: RenderingMode = RenderingMode.NORMAL,
   private val appCompatEnabled: Boolean = true,
   private val maxPercentDifference: Double = 0.1,
-  private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference),
+  private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference, environment.snapshotDirectory),
   private val renderExtensions: Set<RenderExtension> = setOf()
 ) : TestRule {
   private val logger = PaparazziLogger()
@@ -204,6 +204,8 @@ class Paparazzi @JvmOverloads constructor(
       forceReleaseComposeReferenceLeaks()
     }
   }
+
+  fun getSnapshotPath: String = Snapshot()
 
   @JvmOverloads
   fun snapshot(view: View, name: String? = null) {
@@ -596,11 +598,11 @@ class Paparazzi @JvmOverloads constructor(
     private val isVerifying: Boolean =
       System.getProperty("paparazzi.test.verify")?.toBoolean() == true
 
-    private fun determineHandler(maxPercentDifference: Double): SnapshotHandler =
+    private fun determineHandler(maxPercentDifference: Double, snapshotDirectory: String): SnapshotHandler =
       if (isVerifying) {
-        SnapshotVerifier(maxPercentDifference)
+        SnapshotVerifier(maxPercentDifference, File(snapshotDirectory))
       } else {
-        HtmlReportWriter()
+        HtmlReportWriter(snapshotRootDirectory = File(snapshotDirectory))
       }
   }
 }
