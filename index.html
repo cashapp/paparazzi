@@ -407,13 +407,20 @@
   <span class="p">)</span>
 
   <span class="n">@Test</span>
-  <span class="k">fun</span> <span class="nf">simple</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">fun</span> <span class="nf">launchView</span><span class="p">()</span> <span class="p">{</span>
     <span class="k">val</span> <span class="py">view</span> <span class="p">=</span> <span class="n">paparazzi</span><span class="p">.</span><span class="n">inflate</span><span class="p">&lt;</span><span class="n">LaunchView</span><span class="p">&gt;(</span><span class="n">R</span><span class="p">.</span><span class="n">layout</span><span class="p">.</span><span class="n">launch</span><span class="p">)</span>
     <span class="c1">// or...</span>
     <span class="c1">// val view = LaunchView(paparazzi.context)</span>
 
     <span class="n">view</span><span class="p">.</span><span class="n">setModel</span><span class="p">(</span><span class="n">LaunchModel</span><span class="p">(</span><span class="n">title</span> <span class="p">=</span> <span class="s">&quot;paparazzi&quot;</span><span class="p">))</span>
     <span class="n">paparazzi</span><span class="p">.</span><span class="n">snapshot</span><span class="p">(</span><span class="n">view</span><span class="p">)</span>
+  <span class="p">}</span>
+
+  <span class="n">@Test</span>
+  <span class="k">fun</span> <span class="nf">launchComposable</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">paparazzi</span><span class="p">.</span><span class="n">snapshot</span> <span class="p">{</span>
+      <span class="n">MyComposable</span><span class="p">()</span>
+    <span class="p">}</span>
   <span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
@@ -432,7 +439,7 @@ test runs and snapshots.</p>
 <div class="highlight"><pre><span></span><code>$ ./gradlew sample:verifyPaparazziDebug
 </code></pre></div>
 
-<p>Runs tests and verifies against previously-recorded golden values.</p>
+<p>Runs tests and verifies against previously-recorded golden values. Failures generate diffs at <code>sample/out/failures</code>.</p>
 <p>For more examples, check out the <a href="https://github.com/cashapp/paparazzi/tree/master/sample">sample</a> project.</p>
 <h2 id="git-lfs">Git LFS<a class="headerlink" href="#git-lfs" title="Permanent link">&para;</a></h2>
 <p>It is recommended you use <a href="https://git-lfs.github.com/">Git LFS</a> to store your snapshots.  Here&rsquo;s a quick setup:</p>
