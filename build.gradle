@@ -23,12 +23,6 @@ buildscript {
 }
 
 subprojects {
-  repositories {
-    mavenCentral()
-    google()
-    //mavenLocal()
-  }
-
   group = GROUP
   version = VERSION_NAME
 

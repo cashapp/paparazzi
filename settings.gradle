@@ -1,3 +1,12 @@
+dependencyResolutionManagement {
+  repositories {
+    mavenCentral()
+    google()
+    //mavenLocal()
+  }
+  repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+}
+
 rootProject.name = 'paparazzi-parent'
 
 include ':sample'
