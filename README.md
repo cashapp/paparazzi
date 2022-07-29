@@ -13,13 +13,20 @@ class LaunchViewTest {
   )
 
   @Test
-  fun simple() {
+  fun launchView() {
     val view = paparazzi.inflate<LaunchView>(R.layout.launch)
     // or...
     // val view = LaunchView(paparazzi.context)
 
     view.setModel(LaunchModel(title = "paparazzi"))
     paparazzi.snapshot(view)
+  }
+
+  @Test
+  fun launchComposable() {
+    paparazzi.snapshot {
+      MyComposable()
+    }
   }
 }
 ```
@@ -46,8 +53,7 @@ Saves snapshots as golden values to a predefined source-controlled location
 $ ./gradlew sample:verifyPaparazziDebug
 ```
 
-Runs tests and verifies against previously-recorded golden values.
-
+Runs tests and verifies against previously-recorded golden values. Failures generate diffs at `sample/out/failures`.
 
 For more examples, check out the [sample][sample] project.
 
