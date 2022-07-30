@@ -21,7 +21,6 @@ import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.LibraryExtension
 import com.android.build.gradle.tasks.MergeSourceSetFolders
 import com.android.ide.common.symbols.getPackageNameFromManifest
-import java.io.File
 import org.gradle.api.Action
 import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
@@ -60,10 +59,13 @@ class PaparazziPlugin : Plugin<Project> {
       }
     }
 
-    project.plugins.withId("com.android.library") { setupPaparazzi(project) }
+    project.plugins.withId("com.android.library") {
+      val extension = project.extensions.create("paparazzi", PaparazziPluginExtension::class.java)
+      setupPaparazzi(project, extension)
+    }
   }
 
-  private fun setupPaparazzi(project: Project) {
+  private fun setupPaparazzi(project: Project, extension: PaparazziPluginExtension) {
     val unzipConfiguration = project.setupPlatformDataTransform()
 
     // Create anchor tasks for all variants.
@@ -82,7 +84,7 @@ class PaparazziPlugin : Plugin<Project> {
       val reportOutputDir = project.layout.buildDirectory.dir("reports/paparazzi")
 
       val snapshotOutputDir =
-          project.extensions.extraProperties.properties["paparazzi_snapshot_dir"] as? File
+          extension.snapshotRootDirectory.orNull
           ?: project.layout.projectDirectory.dir("src/test/snapshots").asFile
 
       val packageAwareArtifacts = project.configurations.getByName("${variant.name}RuntimeClasspath")
