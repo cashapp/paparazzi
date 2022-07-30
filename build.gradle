@@ -13,12 +13,12 @@ buildscript {
   dependencies {
     classpath deps.plugins.kotlin
     classpath deps.plugins.android
-    classpath 'com.vanniktech:gradle-maven-publish-plugin:0.20.0'
-    classpath 'org.ajoberstar.grgit:grgit-gradle:5.0.0'
-    classpath 'org.jetbrains.dokka:dokka-gradle-plugin:1.6.21'
     classpath deps.plugins.versions
     classpath deps.plugins.spotless
-    classpath "app.cash.paparazzi:paparazzi-gradle-plugin:${versions.releasedPaparazzi}"
+
+    // Normally you would declare a version here, but we use dependency substitution in
+    // settings.gradle to use the version built from inside the repo.
+    classpath 'app.cash.paparazzi:paparazzi-gradle-plugin'
   }
 }
 
@@ -28,9 +28,6 @@ subprojects {
     google()
     //mavenLocal()
   }
-
-  group = GROUP
-  version = VERSION_NAME
 
   tasks.withType(Test).configureEach {
     testLogging {
@@ -51,43 +48,6 @@ subprojects {
     kotlinOptions {
       jvmTarget = "1.8"
     }
-  }
-
-  plugins.withId('com.vanniktech.maven.publish') {
-    publishing {
-      repositories {
-        maven {
-          name = "projectLocalMaven"
-          url = "${rootProject.buildDir}/localMaven"
-        }
-        /**
-         * Want to push to an internal repository for testing?
-         * Set the following properties in ~/.gradle/gradle.properties.
-         *
-         * internalUrl=YOUR_INTERNAL_URL
-         * internalUsername=YOUR_USERNAME
-         * internalPassword=YOUR_PASSWORD
-         */
-        maven {
-          name = "internal"
-          url = providers.gradleProperty("internalUrl").forUseAtConfigurationTime()
-          credentials(PasswordCredentials)
-        }
-      }
-    }
-
-    mavenPublish {
-      releaseSigningEnabled = hasProperty('signingKey')
-    }
-  }
-
-  tasks.register('emptySourcesJar', Jar) {
-    // TODO: fetch sources from the corresponding AOSP repos.
-    archiveClassifier = 'sources'
-  }
-
-  tasks.register('emptyJavadocJar', Jar) {
-    archiveClassifier = 'javadoc'
   }
 
   apply plugin: 'com.diffplug.spotless'
@@ -115,20 +75,3 @@ tasks.named("wrapper").configure {
   distributionType = Wrapper.DistributionType.ALL
 }
 
-allprojects { project ->
-  tasks.register("mavenLocalize").configure { task ->
-    def projectRootDir = project.projectDir
-    task.doFirst {
-      projectRootDir.eachFileRecurse(groovy.io.FileType.FILES) { file ->
-        if (file.name != 'build.gradle') {
-          return
-        }
-        def text = file.text
-        file.withWriter { w ->
-          // Intentional concatenation to prevent self-replacement
-          w << text.replace("//" + "mavenLocal()", "mavenLocal()")
-        }
-      }
-    }
-  }
-}

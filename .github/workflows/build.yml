@@ -35,7 +35,10 @@ jobs:
           distribution: 'zulu'
           java-version: ${{ matrix.java-version }}
 
-      - name: Run Tests
+      - name: Run Paparazzi Tests
+        run: ./gradlew -p paparazzi check
+
+      - name: Run Sample Tests
         run: ./gradlew check
 
       - name: Upload Test Failures
@@ -46,7 +49,7 @@ jobs:
           path: |
             **/build/reports/tests/test/
             **/out/failures/
-            paparazzi-gradle-plugin/src/test/projects/**/build/reports/paparazzi/images/
+            paparazzi/paparazzi-gradle-plugin/src/test/projects/**/build/reports/paparazzi/images/
 
   publish:
     runs-on: ubuntu-latest
@@ -65,7 +68,7 @@ jobs:
           java-version: 11
 
       - name: Publish Artifacts
-        run: ./gradlew publishMavenPublicationToMavenCentralRepository paparazzi-gradle-plugin:publishPluginMavenPublicationToMavenCentralRepository paparazzi-gradle-plugin:publishPaparazziPluginMarkerMavenPublicationToMavenCentralRepository
+        run: ./gradlew -p paparazzi publishMavenPublicationToMavenCentralRepository paparazzi-gradle-plugin:publishPluginMavenPublicationToMavenCentralRepository paparazzi-gradle-plugin:publishPaparazziPluginMarkerMavenPublicationToMavenCentralRepository
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
