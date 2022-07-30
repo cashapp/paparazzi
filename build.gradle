@@ -11,10 +11,10 @@ buildscript {
   }
 
   dependencies {
-    classpath deps.plugins.kotlin
-    classpath deps.plugins.android
-    classpath deps.plugins.versions
-    classpath deps.plugins.spotless
+    classpath(libs.kotlinGradlePlugin)
+    classpath(libs.androidGradlePlugin)
+    classpath(libs.versionsGradlePlugin)
+    classpath(libs.spotlessGradlePlugin)
 
     // Normally you would declare a version here, but we use dependency substitution in
     // settings.gradle to use the version built from inside the repo.

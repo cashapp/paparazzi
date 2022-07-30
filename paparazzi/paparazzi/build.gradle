@@ -28,46 +28,46 @@ dependencies {
   // TODO: Use Gradle transforms to extract/rename classes.jar's from AARs
   api files('libs/compose-runtime-1.2.1.jar')
   compileOnly files('libs/compose-ui-1.2.1.jar')
-  compileOnly deps.androidx.lifecycleCommon
+  compileOnly(libs.androidxLifecycleCommon)
   compileOnly files('libs/lifecycle-runtime-2.5.0.jar')
   compileOnly files('libs/savedstate-1.2.0.jar')
 
-  api deps.layoutlib.native.jdk11
-  api deps.tools.common
-  api deps.tools.layoutlib
-  api deps.tools.ninepatch
-  api deps.tools.sdkcommon
-  api deps.kxml2
-  api deps.junit
-  api deps.androidx.annotations
-  api deps.guava
-  api deps.kotlinx.coroutines.core
-  api deps.okio
-  api platform(deps.kotlin.bom)
-  implementation deps.moshi.core
-  implementation deps.moshi.adapters
-  kapt deps.moshi.kotlinCodegen
-  implementation deps.jcodec.core
-  implementation deps.jcodec.javase
-  implementation projects.paparazziAgent
+  api(deps.layoutlib.native.jdk11)
+  api(libs.toolsCommon)
+  api(libs.toolsLayoutlib)
+  api(libs.toolsNinepatch)
+  api(libs.toolsSdkCommon)
+  api(libs.kxml2)
+  api(libs.junit)
+  api(libs.androidxAnnotations)
+  api(libs.guava)
+  api(libs.kotlinxCoroutinesCore)
+  api(libs.okio)
+  api(platform(libs.kotlinBom))
+  implementation(libs.moshiCore)
+  implementation(libs.moshiAdapters)
+  kapt(libs.moshiKotlinCodegen)
+  implementation(libs.jcodecCore)
+  implementation(libs.jcodecJavase)
+  implementation(projects.paparazziAgent)
 
   def osName = System.getProperty("os.name").toLowerCase(Locale.US)
   if (osName.startsWith("mac")) {
     def osArch = System.getProperty("os.arch").toLowerCase(Locale.US)
     if (osArch.startsWith("x86")) {
-      unzip deps.layoutlib.native.macOsX
+      unzip(deps.layoutlib.native.macOsX)
     } else {
-      unzip deps.layoutlib.native.macArm
+      unzip(deps.layoutlib.native.macArm)
     }
   } else if (osName.startsWith("windows")) {
-    unzip deps.layoutlib.native.windows
+    unzip(deps.layoutlib.native.windows)
   } else {
-    unzip deps.layoutlib.native.linux
+    unzip(deps.layoutlib.native.linux)
   }
 
-  testImplementation deps.assertj
+  testImplementation(libs.assertj)
 
-  add(KotlinPluginKt.PLUGIN_CLASSPATH_CONFIGURATION_NAME, deps.compose.compiler)
+  add(KotlinPluginKt.PLUGIN_CLASSPATH_CONFIGURATION_NAME,(libs.androidxComposeCompiler))
 }
 
 tasks.named("dokkaGfm").configure {

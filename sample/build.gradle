@@ -19,5 +19,5 @@ android {
 dependencies {
   implementation deps.composeUI.material
 
-  testImplementation deps.testparameterinjector
+  testImplementation(libs.testParameterInjector)
 }
