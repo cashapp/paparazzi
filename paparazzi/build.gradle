@@ -1,123 +1,126 @@
-import org.jetbrains.kotlin.gradle.plugin.KotlinPluginKt
+apply plugin: 'com.github.ben-manes.versions'
 
-apply plugin: 'org.jetbrains.kotlin.jvm'
-apply plugin: 'org.jetbrains.kotlin.kapt'
-apply plugin: 'org.jetbrains.dokka'
-apply plugin: 'com.vanniktech.maven.publish'
+buildscript {
+  apply from: '../gradle/dependencies.gradle'
 
-sourceCompatibility = '1.8'
-targetCompatibility = '1.8'
+  repositories {
+    mavenCentral()
+    google()
+    gradlePluginPortal()
+    //mavenLocal()
+  }
 
-def artifactType = Attribute.of('artifactType', String)
-
-configurations {
-  unzip {
-    attributes.attribute(artifactType, ArtifactTypeDefinition.DIRECTORY_TYPE)
+  dependencies {
+    classpath deps.plugins.kotlin
+    classpath deps.plugins.android
+    classpath 'com.vanniktech:gradle-maven-publish-plugin:0.20.0'
+    classpath 'org.ajoberstar.grgit:grgit-gradle:5.0.0'
+    classpath 'org.jetbrains.dokka:dokka-gradle-plugin:1.6.21'
+    classpath deps.plugins.versions
+    classpath deps.plugins.spotless
   }
 }
 
-dependencies {
-  registerTransform(org.gradle.api.internal.artifacts.transform.UnzipTransform) {
-    from.attribute(artifactType, ArtifactTypeDefinition.JAR_TYPE)
-    to.attribute(artifactType, ArtifactTypeDefinition.DIRECTORY_TYPE)
+subprojects {
+  repositories {
+    mavenCentral()
+    google()
+    //mavenLocal()
   }
-}
 
-dependencies {
-  // Paparazzi is a Kotlin JVM module and thus cannot depend on Android library artifacts (AARs)
-  // TODO: Use Gradle transforms to extract/rename classes.jar's from AARs
-  api files('libs/compose-runtime-1.1.1.jar')
-  compileOnly files('libs/compose-ui-1.1.1.jar')
-  compileOnly deps.androidx.lifecycleCommon
-  compileOnly files('libs/lifecycle-runtime-2.4.0.jar')
-  compileOnly files('libs/savedstate-1.1.0.jar')
-
-  api deps.layoutlib.native.jdk11
-  api deps.tools.common
-  api deps.tools.layoutlib
-  api deps.tools.ninepatch
-  api deps.tools.sdkcommon
-  api deps.kxml2
-  api deps.junit
-  api deps.androidx.annotations
-  api deps.guava
-  api deps.kotlinx.coroutines.core
-  api deps.okio
-  api platform(deps.kotlin.bom)
-  implementation deps.moshi.core
-  implementation deps.moshi.adapters
-  kapt deps.moshi.kotlinCodegen
-  implementation deps.jcodec.core
-  implementation deps.jcodec.javase
-  implementation projects.paparazziAgent
-
-  def osName = System.getProperty("os.name").toLowerCase(Locale.US)
-  if (osName.startsWith("mac")) {
-    def osArch = System.getProperty("os.arch").toLowerCase(Locale.US)
-    if (osArch.startsWith("x86")) {
-      unzip deps.layoutlib.native.macOsX
-    } else {
-      unzip deps.layoutlib.native.macArm
+  tasks.withType(Test).configureEach {
+    testLogging {
+      events "failed"
+      exceptionFormat "full"
+      showExceptions true
+      showStackTraces true
+      showCauses true
     }
-  } else if (osName.startsWith("windows")) {
-    unzip deps.layoutlib.native.windows
-  } else {
-    unzip deps.layoutlib.native.linux
   }
 
-  testImplementation deps.assertj
+  tasks.withType(JavaCompile).configureEach {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+  }
 
-  add(KotlinPluginKt.PLUGIN_CLASSPATH_CONFIGURATION_NAME, deps.compose.compiler)
-}
+  tasks.withType(org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile).configureEach {
+    kotlinOptions {
+      jvmTarget = "1.8"
+    }
+  }
 
-tasks.named("dokkaGfm").configure {
-  outputDirectory = rootProject.file("docs/1.x")
-
-  dokkaSourceSets.named("main") {
-    configureEach {
-      reportUndocumented = false
-      skipDeprecated = true
-      jdkVersion = 8
-      perPackageOption {
-        prefix = "app.cash.paparazzi.internal"
-        suppress = true
+  plugins.withId('com.vanniktech.maven.publish') {
+    publishing {
+      repositories {
+        maven {
+          name = "projectLocalMaven"
+          url = "${rootProject.buildDir}/localMaven"
+        }
+        /**
+         * Want to push to an internal repository for testing?
+         * Set the following properties in ~/.gradle/gradle.properties.
+         *
+         * internalUrl=YOUR_INTERNAL_URL
+         * internalUsername=YOUR_USERNAME
+         * internalPassword=YOUR_PASSWORD
+         */
+        maven {
+          name = "internal"
+          url = providers.gradleProperty("internalUrl").forUseAtConfigurationTime()
+          credentials(PasswordCredentials)
+        }
       }
     }
+
+    mavenPublish {
+      releaseSigningEnabled = hasProperty('signingKey')
+    }
   }
-}
 
-def generateTestConfig = tasks.register("generateTestConfig") {
-  def resources = "$buildDir/intermediates/paparazzi/resources.txt"
-  outputs.file(resources)
+  tasks.register('emptySourcesJar', Jar) {
+    // TODO: fetch sources from the corresponding AOSP repos.
+    archiveClassifier = 'sources'
+  }
 
-  doLast {
-    File configFile = new File(resources)
-    configFile.withWriter('utf-8') { writer ->
-      writer.writeLine("app.cash.paparazzi")
-      writer.writeLine(".")
-      writer.writeLine("31")
-      writer.writeLine("platforms/android-31/")
-      writer.writeLine(".")
-      writer.writeLine(configurations.unzip.singleFile.path)
-      writer.writeLine("app.cash.paparazzi")
+  tasks.register('emptyJavadocJar', Jar) {
+    archiveClassifier = 'javadoc'
+  }
+
+  apply plugin: 'com.diffplug.spotless'
+  spotless {
+    kotlin {
+      target("src/**/*.kt")
+      // ktlint doesn't honour .editorconfig yet: https://github.com/diffplug/spotless/issues/142
+      ktlint('0.46.1').editorConfigOverride([
+        'insert_final_newline': 'true',
+        'end_of_line': 'lf',
+        'charset': 'utf-8',
+        'indent_size': '2',
+        'trim_trailing_whitespace': 'true',
+        'kotlin_imports_layout': 'ascii'
+      ])
     }
   }
 }
 
-tasks.withType(Test).configureEach {
-  dependsOn(generateTestConfig)
-  systemProperty(
-      "paparazzi.test.resources",
-      generateTestConfig.map { it.outputs.files.singleFile }.get().path
-  )
-  // Uncomment to debug JNI issues in layoutlib
-  // jvmArgs '-Xcheck:jni'
-  testLogging {
-    events 'passed', 'failed', 'skipped', 'standardOut', 'standardError'
-    exceptionFormat 'FULL'
-    showCauses true
-    showExceptions true
-    showStackTraces true
-    showStandardStreams true
+tasks.register("clean", Delete).configure {
+  delete rootProject.buildDir
+}
+
+allprojects { project ->
+  tasks.register("mavenLocalize").configure { task ->
+    def projectRootDir = project.projectDir
+    task.doFirst {
+      projectRootDir.eachFileRecurse(groovy.io.FileType.FILES) { file ->
+        if (file.name != 'build.gradle') {
+          return
+        }
+        def text = file.text
+        file.withWriter { w ->
+          // Intentional concatenation to prevent self-replacement
+          w << text.replace("//" + "mavenLocal()", "mavenLocal()")
+        }
+      }
+    }
   }
 }
