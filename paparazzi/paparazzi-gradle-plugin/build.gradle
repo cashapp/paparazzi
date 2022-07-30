@@ -12,16 +12,16 @@ gradlePlugin {
 }
 
 dependencies {
-  compileOnly gradleApi()
-  implementation platform(deps.kotlin.bom)
-  implementation deps.plugins.kotlin
-  implementation deps.plugins.android
-  implementation(deps.tools.sdkcommon) {
+  compileOnly(gradleApi())
+  implementation(platform(libs.kotlinBom))
+  implementation(libs.kotlinGradlePlugin)
+  implementation(libs.androidGradlePlugin)
+  implementation(libs.toolsSdkCommon) {
     because "SymbolUtils.getPackageNameFromManifest removed in AGP 7.0.  Replace?"
   }
 
-  testImplementation deps.junit
-  testImplementation deps.truth
+  testImplementation(libs.junit)
+  testImplementation(libs.truth)
 }
 
 sourceSets {
