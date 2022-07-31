@@ -238,8 +238,8 @@ internal object ImageUtils {
     // "Component 1 width should be a multiple of 2 for colorspace: YUV420J"
     val destWidth = Math.max(1, (xScale * sourceWidth).roundToEven())
 
-    // Round to nearest int, rather than floor.
-    val destHeight = Math.max(1, (yScale * sourceHeight).roundToInt())
+    // Round to floor, but consider nearest int in the future.
+    val destHeight = Math.max(1, (yScale * sourceHeight).toInt())
 
     var imageType = source.type
     if (imageType == BufferedImage.TYPE_CUSTOM) {
