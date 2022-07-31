@@ -233,8 +233,14 @@ internal object ImageUtils {
 
     var sourceWidth = source.width
     var sourceHeight = source.height
+
+    // Avoid errors with jcodec
+    // "Component 1 width should be a multiple of 2 for colorspace: YUV420J"
     val destWidth = Math.max(1, (xScale * sourceWidth).roundToEven())
+
+    // Round to nearest int, rather than floor.
     val destHeight = Math.max(1, (yScale * sourceHeight).roundToInt())
+
     var imageType = source.type
     if (imageType == BufferedImage.TYPE_CUSTOM) {
       imageType = BufferedImage.TYPE_INT_ARGB
