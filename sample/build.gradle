@@ -7,8 +7,16 @@ android {
   defaultConfig {
     minSdk 25
   }
+  buildFeatures {
+    compose true
+  }
+  composeOptions {
+    kotlinCompilerExtensionVersion '1.1.1'
+  }
 }
 
 dependencies {
+  implementation 'androidx.compose.material:material:1.1.1'
+
   testImplementation deps.testparameterinjector
 }

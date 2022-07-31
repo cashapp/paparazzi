@@ -1,10 +1,6 @@
 apply plugin: 'com.vanniktech.maven.publish'
 
-if (properties['VERSION_NAME'].endsWith("SNAPSHOT")) {
-  version = "${versions.layoutlib}-SNAPSHOT"
-} else {
-  version = versions.layoutlib
-}
+version = versions.layoutlib
 
 tasks.register('linuxJar', Jar) {
   from(repoDir) {

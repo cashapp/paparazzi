@@ -1,14 +1,10 @@
 apply plugin: 'com.vanniktech.maven.publish'
 
-if (properties['VERSION_NAME'].endsWith("SNAPSHOT")) {
-  version = "${versions.layoutlib}-SNAPSHOT"
-} else {
-  version = versions.layoutlib
-}
+version = versions.layoutlib
 
-tasks.register('macArmJar', Jar) {
+tasks.register('macJar', Jar) {
   from(repoDir) {
-    include 'data/mac-arm/**'
+    include 'data/mac/**'
     include 'data/fonts/**'
     include 'data/icu/**'
     exclude '**/BUILD'
@@ -19,7 +15,7 @@ tasks.register('macArmJar', Jar) {
 publishing {
   publications {
     mavenNativeLibrary(MavenPublication) {
-      artifact macArmJar
+      artifact macJar
       artifact emptySourcesJar
       artifact emptyJavadocJar
     }
