@@ -30,7 +30,7 @@ data class Environment(
   val packageName: String,
   val compileSdkVersion: Int,
   val resourcePackageNames: List<String>,
-  val snapshotDirectory: String
+  val snapshotDirectory: String?
 ) {
   init {
     val platformDirPath = Path.of(platformDir)
@@ -64,7 +64,7 @@ fun detectEnvironment(): Environment {
     packageName = configLines[0],
     compileSdkVersion = configLines[2].toInt(),
     resourcePackageNames = configLines[5].split(","),
-    snapshotDirectory = configLines[7]
+    snapshotDirectory = configLines.getOrNull(7)
   )
 }
 
