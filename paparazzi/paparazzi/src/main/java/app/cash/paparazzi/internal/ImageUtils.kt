@@ -34,6 +34,7 @@ import java.io.File
 import java.io.File.separatorChar
 import java.io.IOException
 import javax.imageio.ImageIO
+import kotlin.math.max
 
 /**
  * Utilities related to image processing.
@@ -47,7 +48,7 @@ internal object ImageUtils {
    */
   private val FAIL_ON_MISSING_THUMBNAIL = true
 
-  private val THUMBNAIL_SIZE = 1000
+  private const val THUMBNAIL_SIZE = 1000
 
   /** Directory where to write the thumbnails and deltas. */
   private val failureDir: File
@@ -64,8 +65,7 @@ internal object ImageUtils {
     image: BufferedImage,
     maxPercentDifference: Double
   ) {
-    val maxDimension = Math.max(image.width, image.height)
-    val scale = THUMBNAIL_SIZE / maxDimension.toDouble()
+    val scale = getThumbnailScale(image)
     val thumbnail = scale(image, scale, scale)
 
     val `is` = ImageUtils::class.java.classLoader.getResourceAsStream(relativePath)
@@ -310,6 +310,11 @@ internal object ImageUtils {
       }
       return scaled
     }
+  }
+
+  fun getThumbnailScale(image: BufferedImage): Double {
+    val maxDimension = max(image.width, image.height)
+    return THUMBNAIL_SIZE / maxDimension.toDouble()
   }
 
   private fun setRenderingHints(g2: Graphics2D) {
