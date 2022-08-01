@@ -596,11 +596,13 @@ class Paparazzi @JvmOverloads constructor(
     private val isVerifying: Boolean =
       System.getProperty("paparazzi.test.verify")?.toBoolean() == true
 
-    private fun determineHandler(maxPercentDifference: Double, snapshotDirectory: String): SnapshotHandler =
-      if (isVerifying) {
-        SnapshotVerifier(maxPercentDifference, File(snapshotDirectory))
-      } else {
-        HtmlReportWriter(snapshotRootDirectory = File(snapshotDirectory))
+    private fun determineHandler(maxPercentDifference: Double, snapshotDirectory: String?): SnapshotHandler =
+      (snapshotDirectory ?: "src/test/snapshots").let { outputDir ->
+        if (isVerifying) {
+          SnapshotVerifier(maxPercentDifference, File(outputDir))
+        } else {
+          HtmlReportWriter(snapshotRootDirectory = File(outputDir))
+        }
       }
   }
 }
