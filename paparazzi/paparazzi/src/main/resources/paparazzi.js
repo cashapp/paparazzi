@@ -117,7 +117,10 @@ class Shot {
     overlayDiv.appendChild(packageP);
     overlayDiv.appendChild(timestampP);
 
-    nameP.innerText = `${this.method} ${this.name}`;
+    nameP.innerText = this.method;
+    if (this.name !== undefined) {
+      nameP.innerText += ` ${this.name}`;
+    }
     classP.innerText = this.clazz;
     packageP.innerText = this.package;
 
