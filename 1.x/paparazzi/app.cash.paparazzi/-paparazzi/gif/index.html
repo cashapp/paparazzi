@@ -11,23 +11,23 @@
         <meta name="description" content="Android screenshots without Android">
       
       
-        <link rel="canonical" href="https://cashapp.github.io/paparazzi/releasing/">
+        <link rel="canonical" href="https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi/-paparazzi/gif/">
       
       
         <meta name="author" content="Square, Inc.">
       
-      <link rel="shortcut icon" href="../images/icon-square.png">
+      <link rel="shortcut icon" href="../../../../../images/icon-square.png">
       <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-5.5.7">
     
     
       
-        <title>Releasing - Paparazzi</title>
+        <title>gif - Paparazzi - Paparazzi</title>
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.b8ac9624.min.css">
+      <link rel="stylesheet" href="../../../../../assets/stylesheets/main.b8ac9624.min.css">
       
-        <link rel="stylesheet" href="../assets/stylesheets/palette.28f3ef9a.min.css">
+        <link rel="stylesheet" href="../../../../../assets/stylesheets/palette.28f3ef9a.min.css">
       
       
         
@@ -45,7 +45,7 @@
     
     
     
-      <link rel="stylesheet" href="../css/app.css">
+      <link rel="stylesheet" href="../../../../../css/app.css">
     
     
       
@@ -66,7 +66,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#releasing" class="md-skip">
+        <a href="#gif" class="md-skip">
           Skip to content
         </a>
       
@@ -79,7 +79,7 @@
   <nav class="md-header-nav md-grid" aria-label="Header">
     <a href="https://cashapp.github.io/paparazzi/" title="Paparazzi" class="md-header-nav__button md-logo" aria-label="Paparazzi">
       
-  <img src="../images/icon-square.png" alt="logo">
+  <img src="../../../../../images/icon-square.png" alt="logo">
 
     </a>
     <label class="md-header-nav__button md-icon" for="__drawer">
@@ -93,7 +93,7 @@
           </span>
           <span class="md-header-nav__topic md-ellipsis">
             
-              Releasing
+              gif - Paparazzi
             
           </span>
         </div>
@@ -165,7 +165,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href="https://cashapp.github.io/paparazzi/" title="Paparazzi" class="md-nav__button md-logo" aria-label="Paparazzi">
       
-  <img src="../images/icon-square.png" alt="logo">
+  <img src="../../../../../images/icon-square.png" alt="logo">
 
     </a>
     Paparazzi
@@ -192,7 +192,7 @@
 
 
   <li class="md-nav__item">
-    <a href=".." title="Overview" class="md-nav__link">
+    <a href="../../../../.." title="Overview" class="md-nav__link">
       Overview
     </a>
   </li>
@@ -204,7 +204,7 @@
 
 
   <li class="md-nav__item">
-    <a href="../1.x/paparazzi/app.cash.paparazzi/index.md" title="1.x API" class="md-nav__link">
+    <a href="../../" title="1.x API" class="md-nav__link">
       1.x API
     </a>
   </li>
@@ -216,7 +216,7 @@
 
 
   <li class="md-nav__item">
-    <a href="../changelog/" title="Change Log" class="md-nav__link">
+    <a href="../../../../../changelog/" title="Change Log" class="md-nav__link">
       Change Log
     </a>
   </li>
@@ -228,7 +228,7 @@
 
 
   <li class="md-nav__item">
-    <a href="../code_of_conduct/" title="Code of Conduct" class="md-nav__link">
+    <a href="../../../../../code_of_conduct/" title="Code of Conduct" class="md-nav__link">
       Code of Conduct
     </a>
   </li>
@@ -263,23 +263,6 @@
     
   
   
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
-      </span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#prerequisites" class="md-nav__link">
-    Prerequisites
-  </a>
-  
-</li>
-      
-    </ul>
-  
 </nav>
                   </div>
                 </div>
@@ -290,7 +273,7 @@
             <article class="md-content__inner md-typeset">
               
                 
-                  <a href="https://github.com/cashapp/paparazzi/edit/master/docs/releasing.md" title="Edit this page" class="md-content__button md-icon">
+                  <a href="https://github.com/cashapp/paparazzi/edit/master/docs/1.x/paparazzi/app.cash.paparazzi/-paparazzi/gif.md" title="Edit this page" class="md-content__button md-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
                   </a>
                 
@@ -298,52 +281,13 @@
                   
                 
                 
-                <h1 id="releasing">Releasing<a class="headerlink" href="#releasing" title="Permanent link">&para;</a></h1>
-<ol>
-<li>
-<p>Update <code>CHANGELOG.md</code>.</p>
-</li>
-<li>
-<p>Set versions:</p>
-<div class="highlight"><pre><span></span><code>export RELEASE_VERSION=X.Y.Z
-export NEXT_VERSION=X.Y.Z-SNAPSHOT
-</code></pre></div>
-
-</li>
-<li>
-<p>Update, build, and upload:</p>
-<div class="highlight"><pre><span></span><code>sed -i &quot;&quot; \
-  &quot;s/VERSION_NAME=.*/VERSION_NAME=$RELEASE_VERSION/g&quot; \
-  gradle.properties
-sed -i &quot;&quot; \
-  &quot;s/\&quot;app.cash.paparazzi:\([^\:]*\):[^\&quot;]*\&quot;/\&quot;app.cash.paparazzi:\1:$RELEASE_VERSION\&quot;/g&quot; \
-  `find . -name &quot;README.md&quot;`
-./gradlew clean uploadArchives
-</code></pre></div>
-
-</li>
-<li>
-<p>Visit <a href="https://oss.sonatype.org/">Sonatype Nexus</a> to promote the artifact. Or drop it if there is a problem!</p>
-</li>
-<li>
-<p>Tag the release, prepare for the next one, and push to GitHub.</p>
-<div class="highlight"><pre><span></span><code>git commit -am &quot;Prepare for release $RELEASE_VERSION.&quot;
-git tag -a parent-$RELEASE_VERSION -m &quot;Version $RELEASE_VERSION&quot;
-sed -i &quot;&quot; \
-  &quot;s/VERSION_NAME=.*/VERSION_NAME=$NEXT_VERSION/g&quot; \
-  gradle.properties
-git commit -am &quot;Prepare next development version.&quot;
-git push &amp;&amp; git push --tags
-</code></pre></div>
-
-</li>
-</ol>
-<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
-<p>In <code>~/.gradle/gradle.properties</code>, set the following:</p>
-<ul>
-<li><code>mavenCentralUsername</code> - Sonatype username for releasing to <code>app.cash</code>.</li>
-<li><code>mavenCentralPassword</code> - Sonatype password for releasing to <code>app.cash</code>.</li>
-</ul>
+                <p>//<a href="../../../../">paparazzi</a>/<a href="../../">app.cash.paparazzi</a>/<a href="../">Paparazzi</a>/<a href="./">gif</a></p>
+<h1 id="gif">gif<a class="headerlink" href="#gif" title="Permanent link">&para;</a></h1>
+<p>[jvm]\</p>
+<p>@<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-overloads/index.html">JvmOverloads</a></p>
+<p>fun <a href="./">gif</a>(view: View, name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>? = null, start: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html">Long</a> = 0, end: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html">Long</a> = 500, fps: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a> = 30)</p>
+                
+                  
                 
               
               
@@ -379,15 +323,15 @@ git push &amp;&amp; git push --tags
       
     </div>
     
-      <script src="../assets/javascripts/vendor.d1f5a259.min.js"></script>
-      <script src="../assets/javascripts/bundle.d5fec882.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
+      <script src="../../../../../assets/javascripts/vendor.d1f5a259.min.js"></script>
+      <script src="../../../../../assets/javascripts/bundle.d5fec882.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
       
       <script>
         app = initialize({
-          base: "..",
+          base: "../../../../..",
           features: [],
           search: Object.assign({
-            worker: "../assets/javascripts/worker/search.fae956e7.min.js"
+            worker: "../../../../../assets/javascripts/worker/search.fae956e7.min.js"
           }, typeof search !== "undefined" && search)
         })
       </script>
