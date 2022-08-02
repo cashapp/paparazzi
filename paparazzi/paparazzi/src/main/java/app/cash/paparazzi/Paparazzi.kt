@@ -73,6 +73,7 @@ import org.junit.runner.Description
 import org.junit.runners.model.Statement
 import java.awt.geom.Ellipse2D
 import java.awt.image.BufferedImage
+import java.io.File
 import java.util.Date
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.ContinuationInterceptor
