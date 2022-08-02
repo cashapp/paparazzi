@@ -84,8 +84,8 @@ class PaparazziPlugin : Plugin<Project> {
       val reportOutputDir = project.layout.buildDirectory.dir("reports/paparazzi")
 
       val snapshotOutputDir =
-          extension.snapshotRootDirectory.orNull
-          ?: project.layout.projectDirectory.dir("src/test/snapshots").asFile
+        extension.snapshotRootDirectory.orNull
+        ?: project.layout.projectDirectory.dir("src/test/snapshots").asFile
       snapshotOutputDir.mkdirs()
 
       val packageAwareArtifacts = project.configurations.getByName("${variant.name}RuntimeClasspath")
