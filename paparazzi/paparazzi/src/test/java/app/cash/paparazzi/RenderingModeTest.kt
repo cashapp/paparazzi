@@ -11,11 +11,11 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import app.cash.paparazzi.internal.ImageUtils
 import com.android.ide.common.rendering.api.SessionParams
+import org.junit.Test
+import org.junit.runner.Description
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
-import org.junit.Test
-import org.junit.runner.Description
 
 class RenderingModeTest {
 
@@ -78,48 +78,57 @@ class RenderingModeTest {
     LinearLayout(context).apply {
       orientation = LinearLayout.VERTICAL
       rootLayoutParams?.let { layoutParams = it }
-      addView(TextView(context).apply {
-        id = 1
-        text = "Text View Sample"
-      })
-
-      addView(View(context).apply {
-        id = 2
-        layoutParams = LinearLayout.LayoutParams(100, 100)
-        contentDescription = "Content Description Sample"
-      })
-
-      addView(View(context).apply {
-        id = 3
-        layoutParams = LinearLayout.LayoutParams(100, 100).apply {
-          setMarginsRelative(20, 20, 20, 20)
+      addView(
+        TextView(context).apply {
+          id = 1
+          text = "Text View Sample"
         }
-        contentDescription = "Margin Sample"
-      })
+      )
 
-      addView(View(context).apply {
-        id = 4
-        layoutParams = LinearLayout.LayoutParams(100, 100).apply {
-          setMarginsRelative(20, 20, 20, 20)
+      addView(
+        View(context).apply {
+          id = 2
+          layoutParams = LinearLayout.LayoutParams(100, 100)
+          contentDescription = "Content Description Sample"
         }
-        foreground = GradientDrawable(GradientDrawable.Orientation.TL_BR, intArrayOf(Color.YELLOW, Color.BLUE)).apply {
-          shape = GradientDrawable.OVAL
-        }
-        contentDescription = "Foreground Drawable"
-      })
+      )
 
-      addView(Button(context).apply {
-        id = 5
-        layoutParams = LinearLayout.LayoutParams(
-          ViewGroup.LayoutParams.WRAP_CONTENT,
-          ViewGroup.LayoutParams.WRAP_CONTENT
-        ).apply {
-          gravity = Gravity.CENTER
+      addView(
+        View(context).apply {
+          id = 3
+          layoutParams = LinearLayout.LayoutParams(100, 100).apply {
+            setMarginsRelative(20, 20, 20, 20)
+          }
+          contentDescription = "Margin Sample"
         }
-        text = "Button Sample"
-      })
+      )
+
+      addView(
+        View(context).apply {
+          id = 4
+          layoutParams = LinearLayout.LayoutParams(100, 100).apply {
+            setMarginsRelative(20, 20, 20, 20)
+          }
+          foreground = GradientDrawable(GradientDrawable.Orientation.TL_BR, intArrayOf(Color.YELLOW, Color.BLUE)).apply {
+            shape = GradientDrawable.OVAL
+          }
+          contentDescription = "Foreground Drawable"
+        }
+      )
+
+      addView(
+        Button(context).apply {
+          id = 5
+          layoutParams = LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+          ).apply {
+            gravity = Gravity.CENTER
+          }
+          text = "Button Sample"
+        }
+      )
     }
-
 }
 
 private class TestSnapshotVerifier(val writeImages: Boolean = false) : SnapshotHandler {
@@ -138,7 +147,7 @@ private class TestSnapshotVerifier(val writeImages: Boolean = false) : SnapshotH
             relativePath = expected.path,
             image = image,
             goldenImage = ImageIO.read(expected),
-            maxPercentDifferent = 0.1,
+            maxPercentDifferent = 0.1
           )
         }
       }
