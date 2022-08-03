@@ -61,7 +61,7 @@ subprojects {
         'charset': 'utf-8',
         'indent_size': '2',
         'trim_trailing_whitespace': 'true',
-        'kotlin_imports_layout': 'ascii'
+        'ij_kotlin_imports_layout': '*,java.**,javax.**,kotlin.**,kotlinx.**,^'
       ])
     }
   }
