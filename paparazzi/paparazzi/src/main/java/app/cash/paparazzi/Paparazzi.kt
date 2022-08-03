@@ -70,15 +70,15 @@ import com.android.layoutlib.bridge.Bridge.prepareThread
 import com.android.layoutlib.bridge.BridgeRenderSession
 import com.android.layoutlib.bridge.impl.RenderAction
 import com.android.layoutlib.bridge.impl.RenderSessionImpl
-import org.junit.rules.TestRule
-import org.junit.runner.Description
-import org.junit.runners.model.Statement
 import java.awt.image.BufferedImage
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier
 import java.util.Date
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.ContinuationInterceptor
+import org.junit.rules.TestRule
+import org.junit.runner.Description
+import org.junit.runners.model.Statement
 
 class Paparazzi @JvmOverloads constructor(
   private val environment: Environment = detectEnvironment(),
@@ -104,11 +104,16 @@ class Paparazzi @JvmOverloads constructor(
   val context: Context
     get() = RenderAction.getCurrentContext()
 
+  /**
+   * The root layout that test views will be placed into. The FrameLayout is dynamically set to
+   * `wrap_content` if the `renderMode` is `RenderingMode.SizeAction.SHRINK` in the appropriate
+   * direction, otherwise it is set to `match_parent`.
+   */
   private val contentRoot = """
         |<?xml version="1.0" encoding="utf-8"?>
         |<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        |              android:layout_width="match_parent"
-        |              android:layout_height="match_parent"/>
+        |              android:layout_width="${if (renderingMode.horizAction == RenderingMode.SizeAction.SHRINK) "wrap_content" else "match_parent"}"
+        |              android:layout_height="${if (renderingMode.vertAction == RenderingMode.SizeAction.SHRINK) "wrap_content" else "match_parent"}"/>
   """.trimMargin()
 
   override fun apply(
@@ -196,7 +201,11 @@ class Paparazzi @JvmOverloads constructor(
     // CompositionContext, which requires first finding the "content view", then using that to
     // find a root view with a ViewTreeLifecycleOwner
     val parent = FrameLayout(context).apply { id = android.R.id.content }
-    parent.addView(hostView, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
+    parent.addView(
+      hostView,
+      if (renderingMode.horizAction == RenderingMode.SizeAction.SHRINK) LayoutParams.WRAP_CONTENT else LayoutParams.MATCH_PARENT,
+      if (renderingMode.vertAction == RenderingMode.SizeAction.SHRINK) LayoutParams.WRAP_CONTENT else LayoutParams.MATCH_PARENT
+    )
     PaparazziComposeOwner.register(parent)
     hostView.setContent(composable)
     snapshot(parent, name)
@@ -369,7 +378,8 @@ class Paparazzi @JvmOverloads constructor(
 
   private fun scaleImage(image: BufferedImage): BufferedImage {
     val scale = ImageUtils.getThumbnailScale(image)
-    return ImageUtils.scale(image, scale, scale)
+    // Only scale images down so we don't waste storage space enlarging smaller layouts.
+    return if (scale < 1f) ImageUtils.scale(image, scale, scale) else image
   }
 
   private fun Description.toTestName(): TestName {
