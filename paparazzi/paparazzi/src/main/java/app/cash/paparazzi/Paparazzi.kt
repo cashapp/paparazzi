@@ -189,15 +189,16 @@ class Paparazzi @JvmOverloads constructor(
   fun <V : View> inflate(@LayoutRes layoutId: Int): V = layoutInflater.inflate(layoutId, null) as V
 
   fun snapshot(name: String? = null, composable: @Composable () -> Unit) {
+    val hostView = ComposeView(context)
+    // During onAttachedToWindow, AbstractComposeView will attempt to resolve its parent's
+    // CompositionContext, which requires first finding the "content view", then using that to
+    // find a root view with a ViewTreeLifecycleOwner
+    val parent = FrameLayout(context).apply { id = android.R.id.content }
+    parent.addView(hostView, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
+    PaparazziComposeOwner.register(parent)
+    hostView.setContent(composable)
+
     try {
-      val hostView = ComposeView(context)
-      // During onAttachedToWindow, AbstractComposeView will attempt to resolve its parent's
-      // CompositionContext, which requires first finding the "content view", then using that to
-      // find a root view with a ViewTreeLifecycleOwner
-      val parent = FrameLayout(context).apply { id = android.R.id.content }
-      parent.addView(hostView, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
-      PaparazziComposeOwner.register(parent)
-      hostView.setContent(composable)
       snapshot(parent, name)
     } finally {
       forceReleaseComposeReferenceLeaks()
