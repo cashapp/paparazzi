@@ -197,9 +197,12 @@ class Paparazzi @JvmOverloads constructor(
     parent.addView(hostView, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
     PaparazziComposeOwner.register(parent)
     hostView.setContent(composable)
-    snapshot(parent, name)
 
-    forceReleaseComposeReferenceLeaks()
+    try {
+      snapshot(parent, name)
+    } finally {
+      forceReleaseComposeReferenceLeaks()
+    }
   }
 
   @JvmOverloads
