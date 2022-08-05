@@ -13,7 +13,7 @@ buildscript {
   dependencies {
     classpath deps.plugins.kotlin
     classpath deps.plugins.android
-    classpath 'com.vanniktech:gradle-maven-publish-plugin:0.20.0'
+    classpath 'com.vanniktech:gradle-maven-publish-plugin:0.21.0'
     classpath 'org.ajoberstar.grgit:grgit-gradle:5.0.0'
     classpath 'org.jetbrains.dokka:dokka-gradle-plugin:1.7.10'
     classpath deps.plugins.versions
@@ -70,10 +70,6 @@ subprojects {
           credentials(PasswordCredentials)
         }
       }
-    }
-
-    mavenPublish {
-      releaseSigningEnabled = hasProperty('signingKey')
     }
   }
 
