@@ -2,37 +2,30 @@ package app.cash.paparazzi.plugin.test
 
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Paparazzi
-import com.android.ide.common.resources.configuration.LocaleQualifier
+import com.google.testing.junit.testparameterinjector.TestParameter
+import com.google.testing.junit.testparameterinjector.TestParameterInjector
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
 
-class LocaleQualifierXmlTest {
+@RunWith(TestParameterInjector::class)
+class LocaleQualifierXmlTest(
+  @TestParameter locale: Locale
+) {
+
+  enum class Locale(val tag: String?) {
+    Default(null), GB("en-rGB");
+  }
+
   @get:Rule
-  val paparazzi = Paparazzi()
+  val paparazzi = Paparazzi(
+    deviceConfig = DeviceConfig.NEXUS_5.copy(
+      locale = locale.tag
+    )
+  )
 
   @Test
-  fun localeQualifierXml() {
-    paparazzi.unsafeUpdateConfig(
-      deviceConfig = DeviceConfig.NEXUS_5,
-    )
-    paparazzi.snapshot(paparazzi.inflate(R.layout.title_color))
-    paparazzi.unsafeUpdateConfig(
-      deviceConfig = DeviceConfig.NEXUS_5.copy(
-        locale = LocaleQualifier.getQualifier("en-rGB"),
-      ),
-    )
-    paparazzi.snapshot(paparazzi.inflate(R.layout.title_color))
-    paparazzi.unsafeUpdateConfig(
-      deviceConfig = DeviceConfig.NEXUS_5.copy(
-        locale = LocaleQualifier.getQualifier("uk"),
-      ),
-    )
-    paparazzi.snapshot(paparazzi.inflate(R.layout.title_color))
-    paparazzi.unsafeUpdateConfig(
-      deviceConfig = DeviceConfig.NEXUS_5.copy(
-        locale = LocaleQualifier.getQualifier("ar"),
-      ),
-    )
+  fun locale() {
     paparazzi.snapshot(paparazzi.inflate(R.layout.title_color))
   }
 }
