@@ -15,11 +15,11 @@ class LayoutDirectionXmlTest(
 ) {
 
   enum class LocaleAndDirection(
-    val tag: String?,
+    val tag: String,
     val direction: LayoutDirection,
   ) {
     DefaultRtl(
-      tag = null,
+      tag = "",
       direction = LayoutDirection.RTL
     ),
     AR(

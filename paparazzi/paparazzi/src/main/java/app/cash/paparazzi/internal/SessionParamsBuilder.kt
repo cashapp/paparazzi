@@ -27,7 +27,6 @@ import com.android.ide.common.rendering.api.SessionParams.Key
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode
 import com.android.ide.common.resources.ResourceResolver
 import com.android.ide.common.resources.ResourceValueMap
-import com.android.ide.common.resources.configuration.LocaleQualifier
 import com.android.ide.common.resources.deprecated.ResourceRepository
 import com.android.layoutlib.bridge.Bridge
 import com.android.resources.LayoutDirection
@@ -98,7 +97,7 @@ internal data class SessionParamsBuilder(
     )
     result.fontScale = deviceConfig.fontScale
 
-    val locale = deviceConfig.locale?.let(LocaleQualifier::getQualifier) ?: LocaleQualifier()
+    val locale = deviceConfig.localeQualifier
     // https://cs.android.com/android-studio/platform/tools/adt/idea/+/mirror-goog-studio-main:android/src/com/android/tools/idea/rendering/RenderTask.java;l=645
     if (LayoutDirection.RTL == deviceConfig.layoutDirection && !Bridge.isLocaleRtl(locale.tag)) {
       result.locale = "ur"

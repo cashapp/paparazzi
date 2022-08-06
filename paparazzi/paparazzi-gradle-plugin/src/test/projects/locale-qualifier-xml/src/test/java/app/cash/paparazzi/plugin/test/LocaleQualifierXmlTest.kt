@@ -13,8 +13,8 @@ class LocaleQualifierXmlTest(
   @TestParameter locale: Locale
 ) {
 
-  enum class Locale(val tag: String?) {
-    Default(null), GB("en-rGB");
+  enum class Locale(val tag: String) {
+    Default(""), GB("en-rGB");
   }
 
   @get:Rule
