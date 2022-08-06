@@ -2,21 +2,21 @@ package app.cash.paparazzi.plugin.test
 
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Paparazzi
+import com.android.resources.LayoutDirection
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
-import com.android.resources.LayoutDirection
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(TestParameterInjector::class)
 class LayoutDirectionXmlTest(
-  @TestParameter localeAndDirection: LocaleAndDirection,
+  @TestParameter localeAndDirection: LocaleAndDirection
 ) {
 
   enum class LocaleAndDirection(
     val tag: String,
-    val direction: LayoutDirection,
+    val direction: LayoutDirection
   ) {
     DefaultRtl(
       tag = "",
@@ -32,8 +32,8 @@ class LayoutDirectionXmlTest(
   val paparazzi = Paparazzi(
     deviceConfig = DeviceConfig.NEXUS_5.copy(
       layoutDirection = localeAndDirection.direction,
-      locale = localeAndDirection.tag,
-    ),
+      locale = localeAndDirection.tag
+    )
   )
 
   @Test
