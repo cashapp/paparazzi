@@ -933,7 +933,7 @@ class PaparazziPluginTest {
 
   @Test
   fun localeQualifier() {
-    val fixtureRoot = File("src/test/projects/locale-qualifier-xml")
+    val fixtureRoot = File("src/test/projects/locale-qualifier")
 
     gradleRunner
       .withArguments("testDebug", "--stacktrace")
@@ -953,7 +953,7 @@ class PaparazziPluginTest {
 
   @Test
   fun layoutDirection() {
-    val fixtureRoot = File("src/test/projects/layout-direction-xml")
+    val fixtureRoot = File("src/test/projects/layout-direction")
 
     gradleRunner
       .withArguments("testDebug", "--stacktrace")

@@ -71,7 +71,7 @@ data class DeviceConfig(
   val density: Density = Density.XHIGH,
   val fontScale: Float = 1f,
   val layoutDirection: LayoutDirection = LayoutDirection.LTR,
-  val locale: String = "",
+  val locale: String? = null,
   val ratio: ScreenRatio = ScreenRatio.NOTLONG,
   val size: ScreenSize = ScreenSize.NORMAL,
   val keyboard: Keyboard = Keyboard.NOKEY,
@@ -103,7 +103,7 @@ data class DeviceConfig(
         countryCodeQualifier = CountryCodeQualifier()
         layoutDirectionQualifier = LayoutDirectionQualifier(layoutDirection)
         networkCodeQualifier = NetworkCodeQualifier()
-        localeQualifier = this@DeviceConfig.localeQualifier
+        localeQualifier = if (locale != null) LocaleQualifier.getQualifier(locale) else LocaleQualifier(LocaleQualifier.FAKE_VALUE)
         versionQualifier = VersionQualifier()
       }
 
@@ -112,10 +112,6 @@ data class DeviceConfig(
       screenWidth, screenHeight, density, xdpi.toFloat(), ydpi.toFloat(), size,
       orientation, null, softButtons
     )
-
-  internal val localeQualifier: LocaleQualifier
-    get() = locale.takeIf { tag -> tag.isNotEmpty() }
-      ?.let(LocaleQualifier::getQualifier) ?: LocaleQualifier()
 
   /**
    * Device specs per:
