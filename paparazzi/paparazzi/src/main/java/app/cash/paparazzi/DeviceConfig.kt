@@ -467,8 +467,8 @@ data class DeviceConfig(
     val PIXEL_6_PRO = DeviceConfig(
       screenHeight = 3120,
       screenWidth = 1440,
-      xdpi = 515,
-      ydpi = 511,
+      xdpi = 512,
+      ydpi = 512,
       orientation = ScreenOrientation.PORTRAIT,
       density = Density.DPI_560,
       ratio = ScreenRatio.LONG,
