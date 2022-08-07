@@ -445,6 +445,42 @@ data class DeviceConfig(
       released = "October 15, 2020"
     )
 
+    @JvmField
+    val PIXEL_6 = DeviceConfig(
+      screenHeight = 2400,
+      screenWidth = 1080,
+      xdpi = 409,
+      ydpi = 412,
+      orientation = ScreenOrientation.PORTRAIT,
+      density = Density.DPI_420,
+      ratio = ScreenRatio.LONG,
+      size = ScreenSize.NORMAL,
+      keyboard = Keyboard.NOKEY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.SOFT,
+      softButtons = true,
+      navigation = Navigation.NONAV,
+      released = "October 28, 2021"
+    )
+
+    @JvmField
+    val PIXEL_6_PRO = DeviceConfig(
+      screenHeight = 3120,
+      screenWidth = 1440,
+      xdpi = 515,
+      ydpi = 511,
+      orientation = ScreenOrientation.PORTRAIT,
+      density = Density.DPI_560,
+      ratio = ScreenRatio.LONG,
+      size = ScreenSize.NORMAL,
+      keyboard = Keyboard.NOKEY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.SOFT,
+      softButtons = true,
+      navigation = Navigation.NONAV,
+      released = "October 28, 2021"
+    )
+
     private const val TAG_ATTR = "attr"
     private const val TAG_ENUM = "enum"
     private const val TAG_FLAG = "flag"
