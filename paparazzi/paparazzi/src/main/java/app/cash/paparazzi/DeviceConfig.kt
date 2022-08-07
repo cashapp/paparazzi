@@ -449,8 +449,8 @@ data class DeviceConfig(
     val PIXEL_6 = DeviceConfig(
       screenHeight = 2400,
       screenWidth = 1080,
-      xdpi = 409,
-      ydpi = 412,
+      xdpi = 406,
+      ydpi = 411,
       orientation = ScreenOrientation.PORTRAIT,
       density = Density.DPI_420,
       ratio = ScreenRatio.LONG,
