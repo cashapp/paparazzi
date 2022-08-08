@@ -76,6 +76,16 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi/-device-config/layout-direction/</loc>
+         <lastmod>2022-08-08</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi/-device-config/locale/</loc>
+         <lastmod>2022-08-08</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi/-device-config/navigation/</loc>
          <lastmod>2022-08-08</lastmod>
          <changefreq>daily</changefreq>
