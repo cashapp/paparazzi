@@ -12,7 +12,6 @@ import org.junit.runner.RunWith
 class LocaleQualifierTest(
   @TestParameter locale: Locale
 ) {
-
   enum class Locale(val tag: String?) {
     Default(null), GB("en-rGB");
   }

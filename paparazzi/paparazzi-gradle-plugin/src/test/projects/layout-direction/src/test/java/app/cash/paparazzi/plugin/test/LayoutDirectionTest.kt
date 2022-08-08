@@ -13,7 +13,6 @@ import org.junit.runner.RunWith
 class LayoutDirectionTest(
   @TestParameter localeAndDirection: LocaleAndDirection
 ) {
-
   enum class LocaleAndDirection(
     val tag: String?,
     val direction: LayoutDirection
@@ -37,7 +36,7 @@ class LayoutDirectionTest(
   )
 
   @Test
-  fun rtlXml() {
+  fun layoutDirection() {
     paparazzi.snapshot(paparazzi.inflate(R.layout.title_color))
   }
 }
