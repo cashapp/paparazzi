@@ -20,6 +20,8 @@ dependencies {
     because "SymbolUtils.getPackageNameFromManifest removed in AGP 7.0.  Replace?"
   }
 
+  testImplementation deps.jcodec.core
+  testImplementation deps.jcodec.javase
   testImplementation deps.junit
   testImplementation deps.truth
 }

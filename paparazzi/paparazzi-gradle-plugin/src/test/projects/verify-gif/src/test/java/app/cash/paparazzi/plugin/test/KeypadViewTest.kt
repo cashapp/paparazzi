@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package app.cash.paparazzi.sample
+package app.cash.paparazzi.plugin.test
 
 import android.animation.ObjectAnimator
 import android.view.View
@@ -31,33 +31,6 @@ class KeypadViewTest {
   fun testViews() {
     val keypad = paparazzi.inflate<LinearLayout>(R.layout.keypad)
     val amount = keypad.findViewById<TextView>(R.id.amount)
-    val amount123 = keypad.findViewById<TextView>(R.id.amount123)
-    val amount456 = keypad.findViewById<TextView>(R.id.amount456)
-    val amount789 = keypad.findViewById<TextView>(R.id.amount789)
-    val amount0 = keypad.findViewById<TextView>(R.id.amount0)
-
-    amount.text = "$0"
-    paparazzi.snapshot(keypad, "zero dollars")
-
-    amount.text = "$5.00"
-    paparazzi.snapshot(keypad, "five bucks")
-
-    keypad.setBackgroundResource(R.color.keypadDarkGrey)
-    val darkGrey = paparazzi.context.getColor(R.color.keypadDarkGrey)
-    keypad.setBackgroundColor(darkGrey)
-    amount.text = "$1.00"
-    paparazzi.snapshot(keypad, "grey")
-
-    keypad.setBackgroundResource(R.color.keypadDarkGrey)
-    keypad.setBackgroundColor(paparazzi.context.getColor(R.color.bolt))
-    amount.setTextColor(darkGrey)
-    amount123.setTextColor(darkGrey)
-    amount456.setTextColor(darkGrey)
-    amount789.setTextColor(darkGrey)
-    amount0.setTextColor(darkGrey)
-    amount.text = ".01 BTC"
-
-    paparazzi.snapshot(keypad, "bolt")
 
     val rotation = ObjectAnimator.ofFloat(amount, View.ROTATION, 0.0f, 360.0f).apply {
       duration = 500
