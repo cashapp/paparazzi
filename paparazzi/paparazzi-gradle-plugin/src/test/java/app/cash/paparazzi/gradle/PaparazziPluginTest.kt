@@ -931,6 +931,46 @@ class PaparazziPluginTest {
     assertThat(nexus7SnapshotImage).isSimilarTo(nexus7GoldenImage).withDefaultThreshold()
   }
 
+  @Test
+  fun localeQualifier() {
+    val fixtureRoot = File("src/test/projects/locale-qualifier")
+
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()?.sortedBy { it.lastModified() }
+    assertThat(snapshots!!).hasSize(2)
+
+    val localeDefaultSnapshotImage = snapshots[0]
+    val localeEnGBSnapshotImage = snapshots[1]
+    val localeDefaultGoldenImage = File(fixtureRoot, "src/test/resources/locale_default.png")
+    val localeEnGBGoldenImage = File(fixtureRoot, "src/test/resources/locale_en_gb.png")
+    assertThat(localeDefaultSnapshotImage).isSimilarTo(localeDefaultGoldenImage).withDefaultThreshold()
+    assertThat(localeEnGBSnapshotImage).isSimilarTo(localeEnGBGoldenImage).withDefaultThreshold()
+  }
+
+  @Test
+  fun layoutDirection() {
+    val fixtureRoot = File("src/test/projects/layout-direction")
+
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()?.sortedBy { it.lastModified() }
+    assertThat(snapshots!!).hasSize(2)
+
+    val localeDefaultRtlSnapshotImage = snapshots[0]
+    val localeArSnapshotImage = snapshots[1]
+    val localeDefaultRtlGoldenImage = File(fixtureRoot, "src/test/resources/locale_default_rtl.png")
+    val localeArGoldenImage = File(fixtureRoot, "src/test/resources/locale_ar.png")
+    assertThat(localeDefaultRtlSnapshotImage).isSimilarTo(localeDefaultRtlGoldenImage).withDefaultThreshold()
+    assertThat(localeArSnapshotImage).isSimilarTo(localeArGoldenImage).withDefaultThreshold()
+  }
+
   private fun GradleRunner.runFixture(
     projectRoot: File,
     moduleRoot: File = projectRoot,

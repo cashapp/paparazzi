@@ -37,6 +37,7 @@ import com.android.ide.common.resources.configuration.VersionQualifier
 import com.android.resources.Density
 import com.android.resources.Keyboard
 import com.android.resources.KeyboardState
+import com.android.resources.LayoutDirection
 import com.android.resources.Navigation
 import com.android.resources.NightMode
 import com.android.resources.NightMode.NOTNIGHT
@@ -69,6 +70,8 @@ data class DeviceConfig(
   val nightMode: NightMode = NOTNIGHT,
   val density: Density = Density.XHIGH,
   val fontScale: Float = 1f,
+  val layoutDirection: LayoutDirection = LayoutDirection.LTR,
+  val locale: String? = null,
   val ratio: ScreenRatio = ScreenRatio.NOTLONG,
   val size: ScreenSize = ScreenSize.NORMAL,
   val keyboard: Keyboard = Keyboard.NOKEY,
@@ -98,9 +101,9 @@ data class DeviceConfig(
         uiModeQualifier = UiModeQualifier(UiMode.NORMAL)
         nightModeQualifier = NightModeQualifier(nightMode)
         countryCodeQualifier = CountryCodeQualifier()
-        layoutDirectionQualifier = LayoutDirectionQualifier()
+        layoutDirectionQualifier = LayoutDirectionQualifier(layoutDirection)
         networkCodeQualifier = NetworkCodeQualifier()
-        localeQualifier = LocaleQualifier()
+        localeQualifier = if (locale != null) LocaleQualifier.getQualifier(locale) else LocaleQualifier(LocaleQualifier.FAKE_VALUE)
         versionQualifier = VersionQualifier()
       }
 
