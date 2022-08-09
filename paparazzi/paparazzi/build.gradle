@@ -17,13 +17,6 @@ configurations {
 }
 
 dependencies {
-  registerTransform(org.gradle.api.internal.artifacts.transform.UnzipTransform) {
-    from.attribute(artifactType, ArtifactTypeDefinition.JAR_TYPE)
-    to.attribute(artifactType, ArtifactTypeDefinition.DIRECTORY_TYPE)
-  }
-}
-
-dependencies {
   // Paparazzi is a Kotlin JVM module and thus cannot depend on Android library artifacts (AARs)
   // TODO: Use Gradle transforms to extract/rename classes.jar's from AARs
   api files('libs/compose-runtime-1.1.1.jar')
