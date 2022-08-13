@@ -86,7 +86,8 @@ class Paparazzi @JvmOverloads constructor(
   private val appCompatEnabled: Boolean = true,
   private val maxPercentDifference: Double = 0.1,
   private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference),
-  private val renderExtensions: Set<RenderExtension> = setOf()
+  private val renderExtensions: Set<RenderExtension> = setOf(),
+  private val imageSize: ImageSize = ImageSize.Limit()
 ) : TestRule {
   private val logger = PaparazziLogger()
   private lateinit var renderSession: RenderSessionImpl
@@ -369,8 +370,13 @@ class Paparazzi @JvmOverloads constructor(
   }
 
   private fun scaleImage(image: BufferedImage): BufferedImage {
-    val scale = ImageUtils.getThumbnailScale(image)
-    return ImageUtils.scale(image, scale, scale)
+    return when (imageSize) {
+      ImageSize.FullBleed -> image
+      is ImageSize.Limit -> {
+        val scale = ImageUtils.getThumbnailScale(image, imageSize.height)
+        return ImageUtils.scale(image, scale, scale)
+      }
+    }
   }
 
   private fun Description.toTestName(): TestName {
