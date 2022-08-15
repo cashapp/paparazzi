@@ -1,0 +1,9 @@
+apply plugin: 'org.jetbrains.kotlin.jvm'
+apply plugin: 'com.vanniktech.maven.publish'
+
+dependencies {
+  implementation deps.ksp.api
+  implementation deps.kotlinpoet.core
+  implementation deps.kotlinpoet.ksp
+  implementation projects.paparazziApi
+}
