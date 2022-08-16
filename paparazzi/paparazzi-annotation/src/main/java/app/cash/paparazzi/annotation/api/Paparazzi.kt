@@ -25,6 +25,12 @@ annotation class Paparazzi(
   val name: String = "",
   val composableWrapper: KClass<out ComposableWrapper> = ComposableWrapper::class,
 
+  // basic
+  val theme: String = "",
+  val renderingMode: RenderingMode = RenderingMode.DEFAULT,
+  val maxPercentDifference: Double = -1.0,
+  val appCompatEnabled: Boolean = true,
+
   // environment
   val platformDir: String = "",
   val appTestDir: String = "",
@@ -52,11 +58,5 @@ annotation class Paparazzi(
   val keyboardState: KeyboardState = KeyboardState.DEFAULT,
   val softButtons: Boolean = true,
   val navigation: Navigation = Navigation.DEFAULT,
-  val released: String = "",
-
-  // misc
-  val theme: String = "",
-  val renderingMode: RenderingMode = RenderingMode.DEFAULT,
-  val maxPercentDifference: Double = -1.0,
-  val appCompatEnabled: Boolean = true
+  val released: String = ""
 )
