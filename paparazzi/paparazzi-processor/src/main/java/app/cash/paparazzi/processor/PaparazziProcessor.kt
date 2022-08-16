@@ -53,8 +53,6 @@ class PaparazziProcessor(
     val dependencies = Dependencies(false, *resolver.getAllFiles().toList().toTypedArray())
 
     models.forEachIndexed { i, model ->
-      logger.info("papa - Building Paparazzi test for ${model.functionName}")
-
       val file = PaparazziPoet.buildFile(model, i)
 
       val fileOS = codeGenerator.createNewFile(dependencies, file.packageName, file.name)

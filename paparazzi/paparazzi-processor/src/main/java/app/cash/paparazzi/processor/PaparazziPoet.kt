@@ -1,6 +1,7 @@
 package app.cash.paparazzi.processor
 
 import app.cash.paparazzi.api.Paparazzi
+import app.cash.paparazzi.api.types.DeviceConfig
 import com.squareup.kotlinpoet.AnnotationSpec
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.CodeBlock
@@ -29,9 +30,14 @@ object PaparazziPoet {
   private val navigationClassName = ClassName("com.android.resources", "Navigation")
   private val nightModeClassName = ClassName("com.android.resources", "NightMode")
 
-  private val renderingModeClassName = ClassName("com.android.ide.common.rendering.api.SessionParams", "RenderingMode")
+  private val renderingModeClassName =
+    ClassName("com.android.ide.common.rendering.api.SessionParams", "RenderingMode")
 
-  fun buildFile(model: PaparazziModel, index: Int): FileSpec {
+
+  fun buildFile(
+    model: PaparazziModel,
+    index: Int
+  ): FileSpec {
     val className = model.functionName + "Test$index"
 
     return FileSpec.builder(model.packageName, "${Paparazzi::class.simpleName}_$className")
@@ -49,22 +55,9 @@ object PaparazziPoet {
       .useSiteTarget(AnnotationSpec.UseSiteTarget.GET)
       .build()
 
-    val codeBlock = CodeBlock.builder()
-      .addStatement("%T(", paparazziClassName)
-      .indent()
-      .environment(model.environment)
-      .device(model.device)
-      .addStatement("theme = \"${model.theme}\",")
-      .addStatement("renderingMode = %T.${model.renderingMode},", renderingModeClassName)
-      .addStatement("appCompatEnabled = ${model.appCompatEnabled},")
-      .addStatement("maxPercentDifference = ${model.maxPercentDifference},")
-      .unindent()
-      .addStatement(")")
-      .build()
-
     return PropertySpec.builder("paparazzi", paparazziClassName)
       .addAnnotation(ruleAnnotation)
-      .initializer(codeBlock)
+      .initializer(model.buildInitializer())
       .build()
   }
 
@@ -75,7 +68,9 @@ object PaparazziPoet {
 
     if (model.previewParamProvider != null) {
       codeBuilder
-        .addStatement("%T().values.forEachIndexed { i, value ->", model.previewParamProvider.toTypeName())
+        .addStatement(
+          "%T().values.forEachIndexed { i, value ->", model.previewParamProvider.toTypeName()
+        )
         .indent()
         .addStatement("paparazzi.snapshot(\"${model.previewParamTypeName}[\$i]\") {")
         .indent()
@@ -117,66 +112,163 @@ object PaparazziPoet {
         .addStatement("}")
     }
 
-    return FunSpec.builder(model.testName)
+    return FunSpec.builder(model.testName.ifEmpty { "default" })
       .addAnnotation(testAnnotationClassName)
       .addCode(codeBuilder.build())
       .build()
   }
 
-  private fun CodeBlock.Builder.environment(model: EnvironmentModel) = apply {
-    addStatement("environment = %M().copy(", detectEnvironmentName)
-    indent()
+  private fun PaparazziModel.buildInitializer(): CodeBlock {
+    val overrides = CodeBlock.builder()
+      .also {
+        it.add(environment.buildOverride())
+        it.add(device.buildOverride())
+        if (theme.isNotEmpty()) {
+          it.addStatement("theme = \"$theme\",")
+        }
+        if (renderingMode.isNotEmpty()) {
+          it.addStatement("renderingMode = %T.$renderingMode,", renderingModeClassName)
+        }
+        if (!appCompatEnabled) {
+          it.addStatement("appCompatEnabled = false,")
+        }
+        if (maxPercentDifference > -1.0) {
+          it.addStatement("maxPercentDifference = $maxPercentDifference,")
+        }
+        // TODO snapshotHandler
+        // TODO renderExtensions
+      }
+      .build()
 
-    if (model.platformDir.isNotEmpty()) {
-      addStatement("platformDir = \"${model.platformDir}\",")
-    }
-    if (model.appTestDir.isNotEmpty()) {
-      addStatement("appTestDir = \"${model.appTestDir}\",")
-    }
-    if (model.resDir.isNotEmpty()) {
-      addStatement("resDir = \"${model.resDir}\",")
-    }
-    if (model.assetsDir.isNotEmpty()) {
-      addStatement("assetsDir = \"${model.assetsDir}\",")
-    }
-    if (model.packageName.isNotEmpty()) {
-      addStatement("packageName = \"${model.packageName}\",")
-    }
-    if (model.compileSdkVersion > -1) {
-      addStatement("compileSdkVersion = ${model.compileSdkVersion},")
-    }
-    if (model.platformDataDir.isNotEmpty()) {
-      addStatement("platformDataDir = \"${model.platformDataDir}\",")
-    }
-    if (model.resourcePackageNames.isNotEmpty()) {
-      val stringList = model.resourcePackageNames.joinToString(prefix = "\"", separator = "\", \"", postfix = "\"")
-      addStatement("resourcePackageNames = listOf($stringList),")
-    }
-
-    unindent()
-    addStatement("),")
+    return CodeBlock.builder()
+      .also {
+        if (overrides.isEmpty()) {
+          it.addStatement("%T()", paparazziClassName)
+        } else {
+          it.addStatement("%T(", paparazziClassName)
+          it.indent()
+          it.add(overrides)
+          it.unindent()
+          it.addStatement(")")
+        }
+      }
+      .build()
   }
 
-  private fun CodeBlock.Builder.device(model: DeviceModel) = apply {
-    addStatement("deviceConfig = %T.${model.config}.copy(", deviceConfigClassName)
-    indent()
-    addStatement("screenHeight = ${model.screenHeight},")
-    addStatement("screenWidth = ${model.screenWidth},")
-    addStatement("xdpi = ${model.xdpi},")
-    addStatement("ydpi = ${model.ydpi},")
-    addStatement("orientation = %T.${model.orientation},", screenOrientationClassName)
-    addStatement("nightMode = %T.${model.nightMode},", nightModeClassName)
-    addStatement("density = %T.${model.density},", densityClassName)
-    addStatement("fontScale = ${model.fontScale}f,")
-    addStatement("ratio = %T.${model.ratio},", screenRatioClassName)
-    addStatement("size = %T.${model.size},", screenSizeClassName)
-    addStatement("keyboard = %T.${model.keyboard},", keyboardClassName)
-    addStatement("touchScreen = %T.${model.touchScreen},", touchScreenClassName)
-    addStatement("keyboardState = %T.${model.keyboardState},", keyboardStateClassName)
-    addStatement("softButtons = ${model.softButtons},")
-    addStatement("navigation = %T.${model.navigation},", navigationClassName)
-    addStatement("released = \"${model.released}\",")
-    unindent()
-    addStatement("),")
+  private fun EnvironmentModel.buildOverride(): CodeBlock {
+    val overrides = CodeBlock.builder()
+      .also {
+        if (platformDir.isNotEmpty()) {
+          it.addStatement("platformDir = \"$platformDir\",")
+        }
+        if (appTestDir.isNotEmpty()) {
+          it.addStatement("appTestDir = \"$appTestDir\",")
+        }
+        if (resDir.isNotEmpty()) {
+          it.addStatement("resDir = \"$resDir\",")
+        }
+        if (assetsDir.isNotEmpty()) {
+          it.addStatement("assetsDir = \"$assetsDir\",")
+        }
+        if (packageName.isNotEmpty()) {
+          it.addStatement("packageName = \"$packageName\",")
+        }
+        if (compileSdkVersion > -1) {
+          it.addStatement("compileSdkVersion = $compileSdkVersion,")
+        }
+        if (platformDataDir.isNotEmpty()) {
+          it.addStatement("platformDataDir = \"$platformDataDir\",")
+        }
+        if (resourcePackageNames.isNotEmpty()) {
+          val stringList =
+            resourcePackageNames.joinToString(prefix = "\"", separator = "\", \"", postfix = "\"")
+          it.addStatement("resourcePackageNames = listOf($stringList),")
+        }
+      }
+      .build()
+
+    return CodeBlock.builder()
+      .also {
+        if (overrides.isNotEmpty()) {
+          it.addStatement("environment = %M().copy(", detectEnvironmentName)
+          it.indent()
+          it.add(overrides)
+          it.unindent()
+          it.addStatement("),")
+        }
+      }
+      .build()
+  }
+
+  private fun DeviceModel.buildOverride(): CodeBlock {
+    val overrides = CodeBlock.builder()
+      .also {
+        if (screenHeight > -1) {
+          it.addStatement("screenHeight = $screenHeight,")
+        }
+        if (screenWidth > -1) {
+          it.addStatement("screenWidth = $screenWidth,")
+        }
+        if (xdpi > -1) {
+          it.addStatement("xdpi = $xdpi,")
+        }
+        if (ydpi > -1) {
+          it.addStatement("ydpi = $ydpi,")
+        }
+        if (orientation.isNotEmpty()) {
+          it.addStatement("orientation = %T.$orientation,", screenOrientationClassName)
+        }
+        if (nightMode.isNotEmpty()) {
+          it.addStatement("nightMode = %T.$nightMode,", nightModeClassName)
+        }
+        if (density.isNotEmpty()) {
+          it.addStatement("density = %T.$density,", densityClassName)
+        }
+        if (fontScale > -1.0f) {
+          it.addStatement("fontScale = ${fontScale}f,")
+        }
+        if (ratio.isNotEmpty()) {
+          it.addStatement("ratio = %T.$ratio,", screenRatioClassName)
+        }
+        if (size.isNotEmpty()) {
+          it.addStatement("size = %T.$size,", screenSizeClassName)
+        }
+        if (keyboard.isNotEmpty()) {
+          it.addStatement("keyboard = %T.$keyboard,", keyboardClassName)
+        }
+        if (touchScreen.isNotEmpty()) {
+          it.addStatement("touchScreen = %T.$touchScreen,", touchScreenClassName)
+        }
+        if (keyboardState.isNotEmpty()) {
+          it.addStatement("keyboardState = %T.$keyboardState,", keyboardStateClassName)
+        }
+        if (!softButtons) {
+          it.addStatement("softButtons = false,")
+        }
+        if (navigation.isNotEmpty()) {
+          it.addStatement("navigation = %T.$navigation,", navigationClassName)
+        }
+        if (released.isNotEmpty()) {
+          it.addStatement("released = \"$released\",")
+        }
+      }
+      .build()
+
+    return CodeBlock.builder()
+      .also {
+        if (overrides.isEmpty()) {
+          if (config.isNotEmpty()) {
+            it.addStatement("deviceConfig = %T.$config,", deviceConfigClassName)
+          }
+        } else {
+          val baseConfig = config.ifEmpty { DeviceConfig.NEXUS_5 }
+          it.addStatement("deviceConfig = %T.$baseConfig.copy(", deviceConfigClassName)
+          it.indent()
+          it.add(overrides)
+          it.unindent()
+          it.addStatement("),")
+        }
+      }
+      .build()
   }
 }

@@ -25,37 +25,37 @@ class PaparazziVisitor(private val logger: KSPLogger) : KSEmptyVisitor<Unit, Seq
         testName = annotation.getArgument("name"),
         composableWrapper = annotation.composableWrapper(),
         environment = EnvironmentModel(
-          platformDir = annotation.getArgument("envPlatformDir"),
-          appTestDir = annotation.getArgument("envAppTestDir"),
-          resDir = annotation.getArgument("envResDir"),
-          assetsDir = annotation.getArgument("envAssetsDir"),
-          packageName = annotation.getArgument("envPackageName"),
-          compileSdkVersion = annotation.getArgument("envCompileSdkVersion"),
-          platformDataDir = annotation.getArgument("envPlatformDataDir"),
-          resourcePackageNames = annotation.getList("envResourcePackageNames")
+          platformDir = annotation.getArgument("platformDir"),
+          appTestDir = annotation.getArgument("appTestDir"),
+          resDir = annotation.getArgument("resDir"),
+          assetsDir = annotation.getArgument("assetsDir"),
+          packageName = annotation.getArgument("packageName"),
+          compileSdkVersion = annotation.getArgument("compileSdkVersion"),
+          platformDataDir = annotation.getArgument("platformDataDir"),
+          resourcePackageNames = annotation.getList("resourcePackageNames")
         ),
         device = DeviceModel(
-          config = annotation.getEnum("deviceConfig"),
-          screenHeight = annotation.getArgument("deviceScreenHeight"),
-          screenWidth = annotation.getArgument("deviceScreenWidth"),
-          xdpi = annotation.getArgument("deviceXdpi"),
-          ydpi = annotation.getArgument("deviceYdpi"),
-          orientation = annotation.getEnum("deviceScreenOrientation"),
-          nightMode = annotation.getEnum("deviceNightMode"),
-          density = annotation.getEnum("deviceDensity"),
-          fontScale = annotation.getArgument("deviceFontScale"),
-          ratio = annotation.getEnum("deviceRatio"),
-          size = annotation.getEnum("deviceSize"),
-          keyboard = annotation.getEnum("deviceKeyboard"),
-          touchScreen = annotation.getEnum("deviceTouchScreen"),
-          keyboardState = annotation.getEnum("deviceKeyboardState"),
-          softButtons = annotation.getArgument("deviceSoftButtons"),
-          navigation = annotation.getEnum("deviceNavigation"),
-          released = annotation.getArgument("deviceReleased")
+          config = annotation.getArgument("deviceConfig"),
+          screenHeight = annotation.getArgument("screenHeight"),
+          screenWidth = annotation.getArgument("screenWidth"),
+          xdpi = annotation.getArgument("xdpi"),
+          ydpi = annotation.getArgument("ydpi"),
+          orientation = annotation.getArgument("orientation"),
+          nightMode = annotation.getArgument("nightMode"),
+          density = annotation.getArgument("density"),
+          fontScale = annotation.getArgument("fontScale"),
+          ratio = annotation.getArgument("ratio"),
+          size = annotation.getArgument("size"),
+          keyboard = annotation.getArgument("keyboard"),
+          touchScreen = annotation.getArgument("touchScreen"),
+          keyboardState = annotation.getArgument("keyboardState"),
+          softButtons = annotation.getArgument("softButtons"),
+          navigation = annotation.getArgument("navigation"),
+          released = annotation.getArgument("released")
         ),
 
         theme = annotation.getArgument("theme"),
-        renderingMode = annotation.getEnum("renderingMode"),
+        renderingMode = annotation.getArgument("renderingMode"),
         appCompatEnabled = annotation.getArgument("appCompatEnabled"),
         maxPercentDifference = annotation.getArgument("maxPercentDifference"),
 
@@ -87,10 +87,6 @@ class PaparazziVisitor(private val logger: KSPLogger) : KSEmptyVisitor<Unit, Seq
 
   private fun KSAnnotation.composableWrapper() = getArgument<KSType>("composableWrapper")
     .takeIf { it.declaration.qualifiedName?.asString() != ComposableWrapper::class.qualifiedName.toString() }
-
-  private inline fun <reified T : Enum<T>> KSAnnotation.getEnum(name: String): T = getArgument<KSType>(name)
-    .declaration.simpleName.asString()
-    .let(::enumValueOf)
 
   private fun <T> KSAnnotation.getList(name: String) = getArgument<ArrayList<T>>(name).toList()
 
