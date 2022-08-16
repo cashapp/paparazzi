@@ -242,8 +242,8 @@ class PaparazziPlugin : Plugin<Project> {
     project.pluginManager.apply(KspGradleSubplugin::class.java)
 
     // add required dependencies
-    project.dependencies.add("implementation", "app.cash.paparazzi:paparazzi-api:$VERSION")
-    project.dependencies.add("ksp", "app.cash.paparazzi:paparazzi-processor:$VERSION")
+    project.dependencies.add("implementation", "app.cash.paparazzi:paparazzi-annotation:$VERSION")
+    project.dependencies.add("ksp", "app.cash.paparazzi:paparazzi-annotation-processor:$VERSION")
 
     // add source sets
     val android = project.extensions.getByType(BaseExtension::class.java)

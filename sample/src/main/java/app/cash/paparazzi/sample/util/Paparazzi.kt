@@ -1,9 +1,8 @@
 package app.cash.paparazzi.sample.util
 
 import androidx.compose.runtime.Composable
-import app.cash.paparazzi.api.ComposableWrapper
-import app.cash.paparazzi.api.Paparazzi
-import app.cash.paparazzi.api.types.ScreenOrientation
+import app.cash.paparazzi.annotation.api.ComposableWrapper
+import app.cash.paparazzi.annotation.api.Paparazzi
 
 @Paparazzi(
   name = "Light Normal",
