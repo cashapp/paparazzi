@@ -14,20 +14,22 @@ import com.squareup.kotlinpoet.ksp.toTypeName
 object PaparazziPoet {
 
   private val ruleClassName = ClassName("org.junit", "Rule")
+
   private val paparazziClassName = ClassName("app.cash.paparazzi", "Paparazzi")
   private val deviceConfigClassName = ClassName("app.cash.paparazzi", "DeviceConfig")
-  private val screenOrientationClassName = ClassName("app.cash.paparazzi", "ScreenOrientation")
-  private val densityClassName = ClassName("app.cash.paparazzi", "Density")
-  private val screenRatioClassName = ClassName("app.cash.paparazzi", "ScreenRatio")
-  private val screenSizeClassName = ClassName("app.cash.paparazzi", "ScreenSize")
-  private val keyboardClassName = ClassName("app.cash.paparazzi", "Keyboard")
-  private val keyboardStateClassName = ClassName("app.cash.paparazzi", "KeyboardState")
-  private val touchScreenClassName = ClassName("app.cash.paparazzi", "TouchScreen")
-  private val navigationClassName = ClassName("app.cash.paparazzi", "Navigation")
-  private val nightModeClassName = ClassName("app.cash.paparazzi", "NightMode")
-  private val renderingModeClassName = ClassName("app.cash.paparazzi", "RenderingMode")
-
   private val detectEnvironmentName = MemberName("app.cash.paparazzi", "detectEnvironment")
+
+  private val screenOrientationClassName = ClassName("com.android.resources", "ScreenOrientation")
+  private val densityClassName = ClassName("com.android.resources", "Density")
+  private val screenRatioClassName = ClassName("com.android.resources", "ScreenRatio")
+  private val screenSizeClassName = ClassName("com.android.resources", "ScreenSize")
+  private val keyboardClassName = ClassName("com.android.resources", "Keyboard")
+  private val keyboardStateClassName = ClassName("com.android.resources", "KeyboardState")
+  private val touchScreenClassName = ClassName("com.android.resources", "TouchScreen")
+  private val navigationClassName = ClassName("com.android.resources", "Navigation")
+  private val nightModeClassName = ClassName("com.android.resources", "NightMode")
+
+  private val renderingModeClassName = ClassName("com.android.ide.common.rendering.api.SessionParams", "RenderingMode")
 
   fun buildFile(model: PaparazziModel, index: Int): FileSpec {
     val className = model.functionName + "Test$index"
