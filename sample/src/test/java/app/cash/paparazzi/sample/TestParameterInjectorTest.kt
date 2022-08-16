@@ -1,9 +1,9 @@
 package app.cash.paparazzi.sample
 
 import android.widget.LinearLayout
-import android.widget.TextView
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Paparazzi
+import app.cash.paparazzi.sample.databinding.KeypadBinding
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
 import org.junit.Rule
@@ -49,9 +49,8 @@ class TestParameterInjectorTest(
 
   @Test
   fun amountProviderTest(@TestParameter(valuesProvider = AmountProvider::class) amount: String) {
-    val keypad = paparazzi.inflate<LinearLayout>(R.layout.keypad)
-    val amountView = keypad.findViewById<TextView>(R.id.amount)
-    amountView.text = amount
-    paparazzi.snapshot(keypad)
+    val binding = KeypadBinding.inflate(paparazzi.layoutInflater)
+    binding.amount.text = amount
+    paparazzi.snapshot(binding.root)
   }
 }
