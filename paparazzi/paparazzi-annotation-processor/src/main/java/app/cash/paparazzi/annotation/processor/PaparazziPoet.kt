@@ -44,7 +44,6 @@ object PaparazziPoet {
   private val renderingModeClassName =
     ClassName("com.android.ide.common.rendering.api.SessionParams", "RenderingMode")
 
-
   fun buildFile(
     model: PaparazziModel,
     index: Int
@@ -78,7 +77,8 @@ object PaparazziPoet {
     if (model.previewParamProvider != null) {
       codeBuilder
         .addStatement(
-          "%T().values.forEachIndexed { i, value ->", model.previewParamProvider.toTypeName()
+          "%T().values.forEachIndexed { i, value ->",
+          model.previewParamProvider.toTypeName()
         )
         .indent()
         .addStatement("paparazzi.snapshot(\"${model.previewParamTypeName}[\$i]\") {")

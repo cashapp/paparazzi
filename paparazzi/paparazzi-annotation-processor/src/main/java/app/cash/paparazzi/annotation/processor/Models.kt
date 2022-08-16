@@ -25,7 +25,7 @@ data class PaparazziModel(
   val appCompatEnabled: Boolean,
   val maxPercentDifference: Double,
   val previewParamTypeName: String?,
-  val previewParamProvider: KSType?,
+  val previewParamProvider: KSType?
 )
 
 data class EnvironmentModel(
@@ -36,7 +36,7 @@ data class EnvironmentModel(
   val packageName: String,
   val compileSdkVersion: Int,
   val platformDataDir: String,
-  val resourcePackageNames: List<String>,
+  val resourcePackageNames: List<String>
 )
 
 data class DeviceModel(
@@ -56,5 +56,5 @@ data class DeviceModel(
   val keyboardState: KeyboardState,
   val softButtons: Boolean,
   val navigation: Navigation,
-  val released: String,
+  val released: String
 )
