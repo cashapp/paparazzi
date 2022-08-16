@@ -1,7 +1,10 @@
 package app.cash.paparazzi.annotation.processor
 
 import app.cash.paparazzi.annotation.api.Paparazzi
-import app.cash.paparazzi.annotation.api.types.ComposableWrapper
+import app.cash.paparazzi.annotation.api.config.ComposableWrapper
+import app.cash.paparazzi.annotation.processor.models.DeviceModel
+import app.cash.paparazzi.annotation.processor.models.EnvironmentModel
+import app.cash.paparazzi.annotation.processor.models.PaparazziModel
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSAnnotation
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration

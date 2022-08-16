@@ -1,17 +1,17 @@
 package app.cash.paparazzi.annotation.api
 
-import app.cash.paparazzi.annotation.api.types.ComposableWrapper
-import app.cash.paparazzi.annotation.api.types.Density
-import app.cash.paparazzi.annotation.api.types.DeviceConfig
-import app.cash.paparazzi.annotation.api.types.Keyboard
-import app.cash.paparazzi.annotation.api.types.KeyboardState
-import app.cash.paparazzi.annotation.api.types.Navigation
-import app.cash.paparazzi.annotation.api.types.NightMode
-import app.cash.paparazzi.annotation.api.types.RenderingMode
-import app.cash.paparazzi.annotation.api.types.ScreenOrientation
-import app.cash.paparazzi.annotation.api.types.ScreenRatio
-import app.cash.paparazzi.annotation.api.types.ScreenSize
-import app.cash.paparazzi.annotation.api.types.TouchScreen
+import app.cash.paparazzi.annotation.api.config.ComposableWrapper
+import app.cash.paparazzi.annotation.api.config.Density
+import app.cash.paparazzi.annotation.api.config.DeviceConfig
+import app.cash.paparazzi.annotation.api.config.Keyboard
+import app.cash.paparazzi.annotation.api.config.KeyboardState
+import app.cash.paparazzi.annotation.api.config.Navigation
+import app.cash.paparazzi.annotation.api.config.NightMode
+import app.cash.paparazzi.annotation.api.config.RenderingMode
+import app.cash.paparazzi.annotation.api.config.ScreenOrientation
+import app.cash.paparazzi.annotation.api.config.ScreenRatio
+import app.cash.paparazzi.annotation.api.config.ScreenSize
+import app.cash.paparazzi.annotation.api.config.TouchScreen
 import kotlin.reflect.KClass
 
 @Target(

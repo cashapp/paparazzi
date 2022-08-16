@@ -1,4 +1,4 @@
-package app.cash.paparazzi.annotation.api.types
+package app.cash.paparazzi.annotation.api.config
 
 import androidx.compose.runtime.Composable
 

@@ -1,7 +1,7 @@
 package app.cash.paparazzi.sample.util
 
 import androidx.compose.runtime.Composable
-import app.cash.paparazzi.annotation.api.types.ComposableWrapper
+import app.cash.paparazzi.annotation.api.config.ComposableWrapper
 import app.cash.paparazzi.annotation.api.Paparazzi
 
 @Paparazzi(
