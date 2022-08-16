@@ -1,22 +1,9 @@
 package app.cash.paparazzi.annotation.api.types
 
-import androidx.annotation.StringDef
+enum class KeyboardState {
+  DEFAULT,
 
-object KeyboardState {
-  const val DEFAULT = ""
-
-  const val EXPOSED = "EXPOSED"
-  const val HIDDEN = "HIDDEN"
-  const val SOFT = "SOFT"
+  EXPOSED,
+  HIDDEN,
+  SOFT,
 }
-
-@Retention(AnnotationRetention.SOURCE)
-@StringDef(
-  value = [
-    KeyboardState.DEFAULT,
-    KeyboardState.EXPOSED,
-    KeyboardState.HIDDEN,
-    KeyboardState.SOFT,
-  ]
-)
-annotation class DeviceKeyboardState

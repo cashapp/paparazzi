@@ -1,20 +1,8 @@
 package app.cash.paparazzi.annotation.api.types
 
-import androidx.annotation.StringDef
+enum class NightMode {
+  DEFAULT,
 
-object NightMode {
-  const val DEFAULT = ""
-
-  const val NOTNIGHT = "NOTNIGHT"
-  const val NIGHT = "NIGHT"
+  NOTNIGHT,
+  NIGHT,
 }
-
-@Retention(AnnotationRetention.SOURCE)
-@StringDef(
-  value = [
-    NightMode.DEFAULT,
-    NightMode.NOTNIGHT,
-    NightMode.NIGHT,
-  ]
-)
-annotation class DeviceNightMode

@@ -1,5 +1,16 @@
 package app.cash.paparazzi.annotation.processor
 
+import app.cash.paparazzi.annotation.api.types.Density
+import app.cash.paparazzi.annotation.api.types.DeviceConfig
+import app.cash.paparazzi.annotation.api.types.Keyboard
+import app.cash.paparazzi.annotation.api.types.KeyboardState
+import app.cash.paparazzi.annotation.api.types.Navigation
+import app.cash.paparazzi.annotation.api.types.NightMode
+import app.cash.paparazzi.annotation.api.types.RenderingMode
+import app.cash.paparazzi.annotation.api.types.ScreenOrientation
+import app.cash.paparazzi.annotation.api.types.ScreenRatio
+import app.cash.paparazzi.annotation.api.types.ScreenSize
+import app.cash.paparazzi.annotation.api.types.TouchScreen
 import com.google.devtools.ksp.symbol.KSType
 
 data class PaparazziModel(
@@ -10,7 +21,7 @@ data class PaparazziModel(
   val environment: EnvironmentModel,
   val device: DeviceModel,
   val theme: String,
-  val renderingMode: String,
+  val renderingMode: RenderingMode,
   val appCompatEnabled: Boolean,
   val maxPercentDifference: Double,
   val previewParamTypeName: String?,
@@ -29,21 +40,21 @@ data class EnvironmentModel(
 )
 
 data class DeviceModel(
-  val config: String,
+  val config: DeviceConfig,
   val screenHeight: Int,
   val screenWidth: Int,
   val xdpi: Int,
   val ydpi: Int,
-  val orientation: String,
-  val nightMode: String,
-  val density: String,
+  val orientation: ScreenOrientation,
+  val nightMode: NightMode,
+  val density: Density,
   val fontScale: Float,
-  val ratio: String,
-  val size: String,
-  val keyboard: String,
-  val touchScreen: String,
-  val keyboardState: String,
+  val ratio: ScreenRatio,
+  val size: ScreenSize,
+  val keyboard: Keyboard,
+  val touchScreen: TouchScreen,
+  val keyboardState: KeyboardState,
   val softButtons: Boolean,
-  val navigation: String,
+  val navigation: Navigation,
   val released: String,
 )

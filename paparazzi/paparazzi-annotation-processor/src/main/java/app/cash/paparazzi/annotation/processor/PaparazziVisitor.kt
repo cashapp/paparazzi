@@ -1,6 +1,6 @@
 package app.cash.paparazzi.annotation.processor
 
-import app.cash.paparazzi.annotation.api.ComposableWrapper
+import app.cash.paparazzi.annotation.api.types.ComposableWrapper
 import app.cash.paparazzi.annotation.api.Paparazzi
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSAnnotation
@@ -35,27 +35,27 @@ class PaparazziVisitor(private val logger: KSPLogger) : KSEmptyVisitor<Unit, Seq
           resourcePackageNames = annotation.getList("resourcePackageNames")
         ),
         device = DeviceModel(
-          config = annotation.getArgument("deviceConfig"),
+          config = annotation.getEnum("deviceConfig"),
           screenHeight = annotation.getArgument("screenHeight"),
           screenWidth = annotation.getArgument("screenWidth"),
           xdpi = annotation.getArgument("xdpi"),
           ydpi = annotation.getArgument("ydpi"),
-          orientation = annotation.getArgument("orientation"),
-          nightMode = annotation.getArgument("nightMode"),
-          density = annotation.getArgument("density"),
+          orientation = annotation.getEnum("orientation"),
+          nightMode = annotation.getEnum("nightMode"),
+          density = annotation.getEnum("density"),
           fontScale = annotation.getArgument("fontScale"),
-          ratio = annotation.getArgument("ratio"),
-          size = annotation.getArgument("size"),
-          keyboard = annotation.getArgument("keyboard"),
-          touchScreen = annotation.getArgument("touchScreen"),
-          keyboardState = annotation.getArgument("keyboardState"),
+          ratio = annotation.getEnum("ratio"),
+          size = annotation.getEnum("size"),
+          keyboard = annotation.getEnum("keyboard"),
+          touchScreen = annotation.getEnum("touchScreen"),
+          keyboardState = annotation.getEnum("keyboardState"),
           softButtons = annotation.getArgument("softButtons"),
-          navigation = annotation.getArgument("navigation"),
+          navigation = annotation.getEnum("navigation"),
           released = annotation.getArgument("released")
         ),
 
         theme = annotation.getArgument("theme"),
-        renderingMode = annotation.getArgument("renderingMode"),
+        renderingMode = annotation.getEnum("renderingMode"),
         appCompatEnabled = annotation.getArgument("appCompatEnabled"),
         maxPercentDifference = annotation.getArgument("maxPercentDifference"),
 
@@ -89,6 +89,10 @@ class PaparazziVisitor(private val logger: KSPLogger) : KSEmptyVisitor<Unit, Seq
     .takeIf { it.declaration.qualifiedName?.asString() != ComposableWrapper::class.qualifiedName.toString() }
 
   private fun <T> KSAnnotation.getList(name: String) = getArgument<ArrayList<T>>(name).toList()
+
+  private inline fun <reified T : Enum<T>> KSAnnotation.getEnum(name: String): T = getArgument<KSType>(name)
+    .declaration.simpleName.asString()
+    .let(::enumValueOf)
 
   private fun <T> KSAnnotation.getArgument(name: String) = arguments
     .first { it.name?.asString() == name }

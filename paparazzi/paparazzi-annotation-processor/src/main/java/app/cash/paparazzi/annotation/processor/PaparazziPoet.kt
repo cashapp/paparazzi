@@ -1,7 +1,17 @@
 package app.cash.paparazzi.annotation.processor
 
 import app.cash.paparazzi.annotation.api.Paparazzi
+import app.cash.paparazzi.annotation.api.types.Density
 import app.cash.paparazzi.annotation.api.types.DeviceConfig
+import app.cash.paparazzi.annotation.api.types.Keyboard
+import app.cash.paparazzi.annotation.api.types.KeyboardState
+import app.cash.paparazzi.annotation.api.types.Navigation
+import app.cash.paparazzi.annotation.api.types.NightMode
+import app.cash.paparazzi.annotation.api.types.RenderingMode
+import app.cash.paparazzi.annotation.api.types.ScreenOrientation
+import app.cash.paparazzi.annotation.api.types.ScreenRatio
+import app.cash.paparazzi.annotation.api.types.ScreenSize
+import app.cash.paparazzi.annotation.api.types.TouchScreen
 import com.squareup.kotlinpoet.AnnotationSpec
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.CodeBlock
@@ -125,7 +135,7 @@ object PaparazziPoet {
         if (theme.isNotEmpty()) {
           it.addStatement("theme = \"$theme\",")
         }
-        if (renderingMode.isNotEmpty()) {
+        if (renderingMode != RenderingMode.DEFAULT) {
           it.addStatement("renderingMode = %T.$renderingMode,", renderingModeClassName)
         }
         if (!appCompatEnabled) {
@@ -214,37 +224,37 @@ object PaparazziPoet {
         if (ydpi > -1) {
           it.addStatement("ydpi = $ydpi,")
         }
-        if (orientation.isNotEmpty()) {
+        if (orientation != ScreenOrientation.DEFAULT) {
           it.addStatement("orientation = %T.$orientation,", screenOrientationClassName)
         }
-        if (nightMode.isNotEmpty()) {
+        if (nightMode != NightMode.DEFAULT) {
           it.addStatement("nightMode = %T.$nightMode,", nightModeClassName)
         }
-        if (density.isNotEmpty()) {
+        if (density != Density.DEFAULT) {
           it.addStatement("density = %T.$density,", densityClassName)
         }
         if (fontScale > -1.0f) {
           it.addStatement("fontScale = ${fontScale}f,")
         }
-        if (ratio.isNotEmpty()) {
+        if (ratio != ScreenRatio.DEFAULT) {
           it.addStatement("ratio = %T.$ratio,", screenRatioClassName)
         }
-        if (size.isNotEmpty()) {
+        if (size != ScreenSize.DEFAULT) {
           it.addStatement("size = %T.$size,", screenSizeClassName)
         }
-        if (keyboard.isNotEmpty()) {
+        if (keyboard != Keyboard.DEFAULT) {
           it.addStatement("keyboard = %T.$keyboard,", keyboardClassName)
         }
-        if (touchScreen.isNotEmpty()) {
+        if (touchScreen != TouchScreen.DEFAULT) {
           it.addStatement("touchScreen = %T.$touchScreen,", touchScreenClassName)
         }
-        if (keyboardState.isNotEmpty()) {
+        if (keyboardState != KeyboardState.DEFAULT) {
           it.addStatement("keyboardState = %T.$keyboardState,", keyboardStateClassName)
         }
         if (!softButtons) {
           it.addStatement("softButtons = false,")
         }
-        if (navigation.isNotEmpty()) {
+        if (navigation != Navigation.DEFAULT) {
           it.addStatement("navigation = %T.$navigation,", navigationClassName)
         }
         if (released.isNotEmpty()) {
@@ -256,11 +266,11 @@ object PaparazziPoet {
     return CodeBlock.builder()
       .also {
         if (overrides.isEmpty()) {
-          if (config.isNotEmpty()) {
+          if (config != DeviceConfig.DEFAULT) {
             it.addStatement("deviceConfig = %T.$config,", deviceConfigClassName)
           }
         } else {
-          val baseConfig = config.ifEmpty { DeviceConfig.NEXUS_5 }
+          val baseConfig = if (config == DeviceConfig.DEFAULT) DeviceConfig.NEXUS_5 else config
           it.addStatement("deviceConfig = %T.$baseConfig.copy(", deviceConfigClassName)
           it.indent()
           it.add(overrides)

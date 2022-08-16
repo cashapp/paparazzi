@@ -1,19 +1,8 @@
 package app.cash.paparazzi.annotation.api
 
-import androidx.annotation.FloatRange
-import androidx.annotation.IntRange
-import app.cash.paparazzi.annotation.api.types.Config
+import app.cash.paparazzi.annotation.api.types.ComposableWrapper
 import app.cash.paparazzi.annotation.api.types.Density
 import app.cash.paparazzi.annotation.api.types.DeviceConfig
-import app.cash.paparazzi.annotation.api.types.DeviceDensity
-import app.cash.paparazzi.annotation.api.types.DeviceKeyboard
-import app.cash.paparazzi.annotation.api.types.DeviceKeyboardState
-import app.cash.paparazzi.annotation.api.types.DeviceNavigation
-import app.cash.paparazzi.annotation.api.types.DeviceNightMode
-import app.cash.paparazzi.annotation.api.types.DeviceOrientation
-import app.cash.paparazzi.annotation.api.types.DeviceScreenRatio
-import app.cash.paparazzi.annotation.api.types.DeviceScreenSize
-import app.cash.paparazzi.annotation.api.types.DeviceTouchScreen
 import app.cash.paparazzi.annotation.api.types.Keyboard
 import app.cash.paparazzi.annotation.api.types.KeyboardState
 import app.cash.paparazzi.annotation.api.types.Navigation
@@ -22,7 +11,6 @@ import app.cash.paparazzi.annotation.api.types.RenderingMode
 import app.cash.paparazzi.annotation.api.types.ScreenOrientation
 import app.cash.paparazzi.annotation.api.types.ScreenRatio
 import app.cash.paparazzi.annotation.api.types.ScreenSize
-import app.cash.paparazzi.annotation.api.types.SessionRenderingMode
 import app.cash.paparazzi.annotation.api.types.TouchScreen
 import kotlin.reflect.KClass
 
@@ -43,32 +31,32 @@ annotation class Paparazzi(
   val resDir: String = "",
   val assetsDir: String = "",
   val packageName: String = "",
-  @IntRange(from = 1) val compileSdkVersion: Int = -1,
+  val compileSdkVersion: Int = -1,
   val platformDataDir: String = "",
   val resourcePackageNames: Array<String> = [],
 
   // device
-  @Config val deviceConfig: String = DeviceConfig.DEFAULT,
-  @IntRange(from = 1) val screenHeight: Int = -1,
-  @IntRange(from = 1) val screenWidth: Int = -1,
-  @IntRange(from = 1) val xdpi: Int = -1,
-  @IntRange(from = 1) val ydpi: Int = -1,
-  @DeviceOrientation val orientation: String = ScreenOrientation.DEFAULT,
-  @DeviceNightMode val nightMode: String = NightMode.DEFAULT,
-  @DeviceDensity val density: String = Density.DEFAULT,
-  @FloatRange(from = 0.01) val fontScale: Float = -1.0f,
-  @DeviceScreenRatio val ratio: String = ScreenRatio.DEFAULT,
-  @DeviceScreenSize val size: String = ScreenSize.DEFAULT,
-  @DeviceKeyboard val keyboard: String = Keyboard.DEFAULT,
-  @DeviceTouchScreen val touchScreen: String = TouchScreen.DEFAULT,
-  @DeviceKeyboardState val keyboardState: String = KeyboardState.DEFAULT,
+  val deviceConfig: DeviceConfig = DeviceConfig.DEFAULT,
+  val screenHeight: Int = -1,
+  val screenWidth: Int = -1,
+  val xdpi: Int = -1,
+  val ydpi: Int = -1,
+  val orientation: ScreenOrientation = ScreenOrientation.DEFAULT,
+  val nightMode: NightMode = NightMode.DEFAULT,
+  val density: Density = Density.DEFAULT,
+  val fontScale: Float = -1.0f,
+  val ratio: ScreenRatio = ScreenRatio.DEFAULT,
+  val size: ScreenSize = ScreenSize.DEFAULT,
+  val keyboard: Keyboard = Keyboard.DEFAULT,
+  val touchScreen: TouchScreen = TouchScreen.DEFAULT,
+  val keyboardState: KeyboardState = KeyboardState.DEFAULT,
   val softButtons: Boolean = true,
-  @DeviceNavigation val navigation: String = Navigation.DEFAULT,
+  val navigation: Navigation = Navigation.DEFAULT,
   val released: String = "",
 
   // misc
   val theme: String = "",
-  @SessionRenderingMode val renderingMode: String = RenderingMode.DEFAULT,
-  @FloatRange(from = 0.0) val maxPercentDifference: Double = -1.0,
+  val renderingMode: RenderingMode = RenderingMode.DEFAULT,
+  val maxPercentDifference: Double = -1.0,
   val appCompatEnabled: Boolean = true
 )
