@@ -13,35 +13,34 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 
-
 data class SimpleCardModel(
-    val title: String,
-    val desc: String,
+  val title: String,
+  val desc: String
 )
 
 @Composable
 fun SimpleCard(
-    modifier: Modifier = Modifier,
-    model: SimpleCardModel
+  modifier: Modifier = Modifier,
+  model: SimpleCardModel
 ) {
-    Card(modifier = modifier.wrapContentSize(), backgroundColor = MaterialTheme.colors.background) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(model.title, style = MaterialTheme.typography.h6)
-            Text(model.desc, modifier = Modifier.padding(top = 8.dp), style = MaterialTheme.typography.body1)
-        }
+  Card(modifier = modifier.wrapContentSize(), backgroundColor = MaterialTheme.colors.background) {
+    Column(modifier = Modifier.padding(16.dp)) {
+      Text(model.title, style = MaterialTheme.typography.h6)
+      Text(model.desc, modifier = Modifier.padding(top = 8.dp), style = MaterialTheme.typography.body1)
     }
+  }
 }
 
 @ThemedScaledPaparazzi
 @Preview
 @Composable
 fun SimpleCardPreview() {
-    val model = SimpleCardModel(
-        title = "Hello World",
-        desc = "This is a preview",
-    )
+  val model = SimpleCardModel(
+    title = "Hello World",
+    desc = "This is a preview"
+  )
 
-    SimpleCard(model = model)
+  SimpleCard(model = model)
 }
 
 @ThemedScaledPaparazzi
@@ -54,14 +53,14 @@ internal fun SimpleCardPreviewProvided(
 }
 
 class ModelProvider : PreviewParameterProvider<SimpleCardModel> {
-    override val values: Sequence<SimpleCardModel> = sequenceOf(
-        SimpleCardModel(
-            title = "Hello World",
-            desc = "This is forward",
-        ),
-        SimpleCardModel(
-            title = "Hello World".reversed(),
-            desc = "This is backwards".reversed(),
-        )
+  override val values: Sequence<SimpleCardModel> = sequenceOf(
+    SimpleCardModel(
+      title = "Hello World",
+      desc = "This is forward"
+    ),
+    SimpleCardModel(
+      title = "Hello World".reversed(),
+      desc = "This is backwards".reversed()
     )
+  )
 }
