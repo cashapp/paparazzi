@@ -6,10 +6,10 @@ buildscript {
   ext.layoutLibPrebuiltSha = 'fa3aa65'
 
   ext.versions = [
-    kotlin: '1.6.10',
+    kotlin: '1.7.0',
     agp: '7.1.2',
     layoutlib: "2021.2.1-patch1-$layoutLibPrebuiltSha",
-    compose: '1.1.1',
+    compose: '1.2.0',
     jcodec: '0.2.5',
     moshi: '1.13.0',
     bytebuddy: '1.12.10',
@@ -24,6 +24,7 @@ buildscript {
     ],
     compose: [
       compiler: "androidx.compose.compiler:compiler:${versions.compose}",
+      material: "androidx.compose.material:material:${versions.compose}",
     ],
     kotlin: [
       bom: "org.jetbrains.kotlin:kotlin-bom:${versions.kotlin}",

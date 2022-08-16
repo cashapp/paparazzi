@@ -26,11 +26,11 @@ dependencies {
 dependencies {
   // Paparazzi is a Kotlin JVM module and thus cannot depend on Android library artifacts (AARs)
   // TODO: Use Gradle transforms to extract/rename classes.jar's from AARs
-  api files('libs/compose-runtime-1.1.1.jar')
-  compileOnly files('libs/compose-ui-1.1.1.jar')
+  api files('libs/compose-runtime-1.2.0.jar')
+  compileOnly files('libs/compose-ui-1.2.0.jar')
   compileOnly deps.androidx.lifecycleCommon
-  compileOnly files('libs/lifecycle-runtime-2.4.0.jar')
-  compileOnly files('libs/savedstate-1.1.0.jar')
+  compileOnly files('libs/lifecycle-runtime-2.5.0.jar')
+  compileOnly files('libs/savedstate-1.2.0.jar')
 
   api deps.layoutlib.native.jdk11
   api deps.tools.common
