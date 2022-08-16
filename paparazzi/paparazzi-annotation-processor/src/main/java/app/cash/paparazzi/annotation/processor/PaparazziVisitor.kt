@@ -68,10 +68,24 @@ class PaparazziVisitor(private val logger: KSPLogger) : KSEmptyVisitor<Unit, Seq
     }
   }
 
-  private fun Sequence<KSAnnotation>.findPaparazzi(): Sequence<KSAnnotation> {
+  /**
+   * when the same annotations are applied higher in the tree, an endless recursive lookup can occur
+   * using a stack to keep to a record of each symbol lets us break when we hit one we've already encountered
+   *
+   * ie:
+   * @Bottom
+   * annotation class Top
+   *
+   * @Top
+   * annotation class Bottom
+   *
+   * @Bottom
+   * fun SomeFun()
+   */
+  private fun Sequence<KSAnnotation>.findPaparazzi(stack: Set<KSAnnotation> = setOf()): Sequence<KSAnnotation> {
     val direct = filter { it.isPaparazzi() }
-    val indirect = filterNot { it.isPaparazzi() || it.isSystem() }
-      .map { it.parentAnnotations().findPaparazzi() }
+    val indirect = filterNot { it.isPaparazzi() || stack.contains(it) }
+      .map { it.parentAnnotations().findPaparazzi(stack.plus(it)) }
       .flatten()
     return direct.plus(indirect)
   }
@@ -81,10 +95,6 @@ class PaparazziVisitor(private val logger: KSPLogger) : KSEmptyVisitor<Unit, Seq
   private fun KSAnnotation.qualifiedName() = declaration().qualifiedName?.asString() ?: ""
 
   private fun KSAnnotation.isPaparazzi() = qualifiedName() == Paparazzi::class.qualifiedName.toString()
-
-  private fun KSAnnotation.isSystem() = qualifiedName().let {
-    it.startsWith("kotlin.") || it.startsWith("androidx.")
-  }
 
   private fun KSAnnotation.parentAnnotations() = declaration().annotations
 
