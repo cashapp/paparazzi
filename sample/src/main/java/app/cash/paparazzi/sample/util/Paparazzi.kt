@@ -5,22 +5,22 @@ import app.cash.paparazzi.annotation.api.ComposableWrapper
 import app.cash.paparazzi.annotation.api.Paparazzi
 
 @Paparazzi(
-  name = "Light Normal",
+  name = "Light,Normal",
   fontScale = 1.0f,
   composableWrapper = LightThemeComposableWrapper::class,
 )
 @Paparazzi(
-  name = "Light Large",
+  name = "Light,Large",
   fontScale = 2.0f,
   composableWrapper = LightThemeComposableWrapper::class,
 )
 @Paparazzi(
-  name = "Dark Normal",
+  name = "Dark,Normal",
   fontScale = 1.0f,
   composableWrapper = DarkThemeComposableWrapper::class,
 )
 @Paparazzi(
-  name = "Dark Large",
+  name = "Dark,Large",
   fontScale = 2.0f,
   composableWrapper = DarkThemeComposableWrapper::class,
 )

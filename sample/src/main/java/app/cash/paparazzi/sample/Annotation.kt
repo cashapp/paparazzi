@@ -27,7 +27,9 @@ fun SimpleCard(
   Card(modifier = modifier.wrapContentSize(), backgroundColor = MaterialTheme.colors.background) {
     Column(modifier = Modifier.padding(16.dp)) {
       Text(model.title, style = MaterialTheme.typography.h6)
-      Text(model.desc, modifier = Modifier.padding(top = 8.dp), style = MaterialTheme.typography.body1)
+      Text(
+        model.desc, modifier = Modifier.padding(top = 8.dp), style = MaterialTheme.typography.body1
+      )
     }
   }
 }
@@ -47,8 +49,8 @@ fun SimpleCardPreview() {
 @ThemedScaledPaparazzi
 @Preview
 @Composable
-internal fun SimpleCardPreviewProvided(
-  @PreviewParameter(provider = ModelProvider::class) model: SimpleCardModel
+internal fun SimpleCardPreviewProvider(
+  @PreviewParameter(ModelProvider::class) model: SimpleCardModel
 ) {
   SimpleCard(model = model)
 }
@@ -61,7 +63,7 @@ class ModelProvider : PreviewParameterProvider<SimpleCardModel> {
     ),
     SimpleCardModel(
       title = "Hello World".reversed(),
-      desc = "This is backwards".reversed()
+      desc = "This is backwards"
     )
   )
 }

@@ -15,6 +15,7 @@ import com.squareup.kotlinpoet.ksp.toTypeName
 object PaparazziPoet {
 
   private val ruleClassName = ClassName("org.junit", "Rule")
+  private val testAnnotationClassName = ClassName("org.junit", "Test")
 
   private val paparazziClassName = ClassName("app.cash.paparazzi", "Paparazzi")
   private val deviceConfigClassName = ClassName("app.cash.paparazzi", "DeviceConfig")
@@ -62,8 +63,6 @@ object PaparazziPoet {
   }
 
   private fun buildTestFunction(model: PaparazziModel): FunSpec {
-    val testAnnotationClassName = ClassName("org.junit", "Test")
-
     val codeBuilder = CodeBlock.builder()
 
     if (model.previewParamProvider != null) {
@@ -112,7 +111,7 @@ object PaparazziPoet {
         .addStatement("}")
     }
 
-    return FunSpec.builder(model.testName.ifEmpty { "default" })
+    return FunSpec.builder(model.testName.ifEmpty { "default" }.lowercase())
       .addAnnotation(testAnnotationClassName)
       .addCode(codeBuilder.build())
       .build()
