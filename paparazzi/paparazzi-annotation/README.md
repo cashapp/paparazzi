@@ -166,7 +166,7 @@ class MyThemeComposableWrapper : ComposableWrapper<MyTheme> {
 
 @Paparazzi(
   name = "themed",
-  composableWrapper = ThemeComposableWrapper::class
+  composableWrapper = MyThemeComposableWrapper::class
 )
 @Preview
 @Composable
