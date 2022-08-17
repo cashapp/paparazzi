@@ -92,7 +92,7 @@ class BlueBoxComposableWrapper : DefaultComposableWrapper() {
     Box(
       modifier = Modifier
         .wrapContentSize()
-        .background(Color.Green)
+        .background(Color.Blue)
         .padding(24.dp)
     ) {
       content()
