@@ -56,6 +56,7 @@ class PaparazziVisitor(private val logger: KSPLogger) : KSEmptyVisitor<Unit, Seq
           nightMode = annotation.getEnum("nightMode"),
           density = annotation.getEnum("density"),
           fontScale = annotation.getArgument("fontScale"),
+          fontScales = annotation.getList("fontScales"),
           ratio = annotation.getEnum("ratio"),
           size = annotation.getEnum("size"),
           keyboard = annotation.getEnum("keyboard"),

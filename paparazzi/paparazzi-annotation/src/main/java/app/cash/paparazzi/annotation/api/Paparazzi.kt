@@ -51,6 +51,7 @@ annotation class Paparazzi(
   val nightMode: NightMode = NightMode.DEFAULT,
   val density: Density = Density.DEFAULT,
   val fontScale: Float = -1.0f,
+  val fontScales: FloatArray = [],
   val ratio: ScreenRatio = ScreenRatio.DEFAULT,
   val size: ScreenSize = ScreenSize.DEFAULT,
   val keyboard: Keyboard = Keyboard.DEFAULT,

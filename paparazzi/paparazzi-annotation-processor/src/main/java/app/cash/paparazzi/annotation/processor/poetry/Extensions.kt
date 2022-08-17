@@ -23,6 +23,7 @@ import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
+import com.squareup.kotlinpoet.asTypeName
 import com.squareup.kotlinpoet.ksp.toTypeName
 
 fun PaparazziModel.buildConstructorParams(): Triple<List<ParameterSpec>, List<PropertySpec>, List<TypeSpec>> {
@@ -60,6 +61,22 @@ fun PaparazziModel.buildConstructorParams(): Triple<List<ParameterSpec>, List<Pr
       .let(properties::add)
 
     buildValuesProvider(providerName, providerStatement, previewParam.provider.toTypeName())
+      .let(types::add)
+  }
+
+  if (device.fontScales.isNotEmpty()) {
+    val paramName = "fontScale"
+    val providerName = "FontScaleValuesProvider"
+
+    ParameterSpec.builder(paramName, Float::class)
+      .build()
+      .let(params::add)
+
+    buildConstructorProperty(paramName, providerName, Float::class.asTypeName())
+      .let(properties::add)
+
+    val statement = "return listOf(${device.fontScales.map { "${it}f" }.joinToString()})"
+    buildValuesProvider(providerName, statement)
       .let(types::add)
   }
 
@@ -201,7 +218,9 @@ fun DeviceModel.buildOverride(): CodeBlock {
       if (density != Density.DEFAULT) {
         it.addStatement("density = %T.$density,", Imports.Config.density)
       }
-      if (fontScale > -1.0f) {
+      if (fontScales.isNotEmpty()) {
+        it.addStatement("fontScale = fontScale,")
+      } else if (fontScale > -1.0f) {
         it.addStatement("fontScale = ${fontScale}f,")
       }
       if (ratio != ScreenRatio.DEFAULT) {

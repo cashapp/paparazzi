@@ -13,8 +13,8 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import app.cash.paparazzi.sample.util.GreenPaparazzi
-import app.cash.paparazzi.sample.util.ScaledPaparazzi
 import app.cash.paparazzi.sample.util.ThemedPaparazzi
+import app.cash.paparazzi.sample.util.ThemedScaledPaparazzi
 
 data class SimpleCardModel(
   val title: String,
@@ -38,10 +38,10 @@ fun SimpleCard(
   }
 }
 
-@ScaledPaparazzi
+@ThemedScaledPaparazzi
 @Preview
 @Composable
-fun SimpleCardPreview() {
+fun ThemedScaledPreview() {
   val model = SimpleCardModel(
     title = "Hello World",
     desc = "This is a preview"
@@ -53,7 +53,7 @@ fun SimpleCardPreview() {
 @GreenPaparazzi
 @Preview
 @Composable
-fun GreenCardPreview() {
+fun GreenPreview() {
   val model = SimpleCardModel(
     title = "Hello World",
     desc = "I should be in a green box"
@@ -65,7 +65,7 @@ fun GreenCardPreview() {
 @ThemedPaparazzi
 @Preview
 @Composable
-fun SimpleCardPreviewProvider(
+fun ThemedProviderPreview(
   @PreviewParameter(TitleProvider::class) title: String
 ) {
   SimpleCard(

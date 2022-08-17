@@ -15,20 +15,17 @@ import app.cash.paparazzi.sample.util.DesignTheme.DARK
 import app.cash.paparazzi.sample.util.DesignTheme.LIGHT
 
 @Paparazzi(
-  name = "Normal",
-  fontScale = 1.0f
-)
-@Paparazzi(
-  name = "Large",
-  fontScale = 2.0f
-)
-annotation class ScaledPaparazzi
-
-@Paparazzi(
   name = "themed",
   composableWrapper = ThemeComposableWrapper::class
 )
 annotation class ThemedPaparazzi
+
+@Paparazzi(
+  name = "themed",
+  fontScales = [1.0f, 2.0f],
+  composableWrapper = ThemeComposableWrapper::class
+)
+annotation class ThemedScaledPaparazzi
 
 @Paparazzi(
   name = "green",

@@ -21,6 +21,7 @@ data class DeviceModel(
   val nightMode: NightMode,
   val density: Density,
   val fontScale: Float,
+  val fontScales: List<Float>,
   val ratio: ScreenRatio,
   val size: ScreenSize,
   val keyboard: Keyboard,
