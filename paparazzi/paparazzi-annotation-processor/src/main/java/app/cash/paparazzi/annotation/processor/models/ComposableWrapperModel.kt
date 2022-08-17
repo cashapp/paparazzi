@@ -4,5 +4,5 @@ import com.google.devtools.ksp.symbol.KSType
 
 data class ComposableWrapperModel(
   val wrapper: KSType,
-  val value: KSType
+  val value: KSType?
 )

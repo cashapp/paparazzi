@@ -28,11 +28,13 @@ class PaparazziVisitor(private val logger: KSPLogger) : KSEmptyVisitor<Unit, Seq
     data: Unit
   ): Sequence<PaparazziModel> {
     val annotations = function.annotations.findPaparazzi()
+    val showClassIndex = annotations.count() > 1
 
     return annotations.map { annotation ->
       PaparazziModel(
         functionName = function.simpleName.asString(),
         packageName = function.packageName.asString(),
+        showClassIndex = showClassIndex,
         testName = annotation.getArgument("name"),
         environment = EnvironmentModel(
           platformDir = annotation.getArgument("platformDir"),
@@ -78,7 +80,7 @@ class PaparazziVisitor(private val logger: KSPLogger) : KSEmptyVisitor<Unit, Seq
         composableWrapper = annotation.composableWrapper()?.let {
           val valueType = it.getSuperGenericType()
           logger.info("papa - ${it.declaration.qualifiedName?.asString()}")
-          logger.info("papa - value type: ${valueType.declaration.qualifiedName?.asString()}")
+          logger.info("papa - value type: ${valueType?.declaration?.qualifiedName?.asString()}")
           ComposableWrapperModel(
             wrapper = it,
             value = valueType
@@ -146,8 +148,7 @@ class PaparazziVisitor(private val logger: KSPLogger) : KSEmptyVisitor<Unit, Seq
     .first { arg -> arg.name?.asString() == "provider" }
     .let { it.value as KSType }
 
-  private fun KSType.getSuperGenericType(): KSType {
-    return (declaration as KSClassDeclaration).superTypes.first()
-      .resolve().arguments.first().type!!.resolve()
-  }
+  private fun KSType.getSuperGenericType(): KSType? =
+    (declaration as KSClassDeclaration).superTypes.first()
+      .resolve().arguments.firstOrNull()?.type?.resolve()
 }

@@ -3,9 +3,8 @@ package app.cash.paparazzi.annotation.processor
 import app.cash.paparazzi.annotation.api.Paparazzi
 import app.cash.paparazzi.annotation.processor.models.PaparazziModel
 import app.cash.paparazzi.annotation.processor.poetry.Imports
-import app.cash.paparazzi.annotation.processor.poetry.buildConstructorProperty
+import app.cash.paparazzi.annotation.processor.poetry.buildConstructorParams
 import app.cash.paparazzi.annotation.processor.poetry.buildInitializer
-import app.cash.paparazzi.annotation.processor.poetry.buildProviderClass
 import com.squareup.kotlinpoet.AnnotationSpec
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FileSpec
@@ -20,7 +19,7 @@ object PaparazziPoet {
     model: PaparazziModel,
     index: Int
   ): FileSpec {
-    val className = model.functionName + "Test${if (index > 0) index else ""}"
+    val className = model.functionName + "Test${if (model.showClassIndex) "_$index" else ""}"
 
     return FileSpec.builder(model.packageName, "${Paparazzi::class.simpleName}_$className")
       .addType(
@@ -41,31 +40,15 @@ object PaparazziPoet {
   )
 
   private fun TypeSpec.Builder.addInjectedConstructor(model: PaparazziModel) = apply {
-    val primaryConstructorBuilder = FunSpec.constructorBuilder()
-    val constructorProperties = mutableListOf<PropertySpec>()
+    model.buildConstructorParams().let { (params, properties, types) ->
+      FunSpec.constructorBuilder()
+        .addParameters(params)
+        .build()
+        .let(::primaryConstructor)
 
-    if (model.composableWrapper != null) {
-      addType(model.composableWrapper.buildProviderClass())
-
-      primaryConstructorBuilder.addParameter(
-        "wrapperParam",
-        model.composableWrapper.value.toTypeName()
-      )
-      constructorProperties.add(model.composableWrapper.buildConstructorProperty())
+      addProperties(properties)
+      addTypes(types)
     }
-
-    if (model.previewParam != null) {
-      addType(model.previewParam.buildProviderClass())
-
-      primaryConstructorBuilder.addParameter(
-        "previewParam",
-        model.previewParam.type.toTypeName()
-      )
-      constructorProperties.add(model.previewParam.buildConstructorProperty())
-    }
-
-    primaryConstructor(primaryConstructorBuilder.build())
-    addProperties(constructorProperties)
   }
 
   private fun TypeSpec.Builder.addPaparazziProperty(model: PaparazziModel) = apply {
@@ -88,7 +71,8 @@ object PaparazziPoet {
       .indent()
       .apply {
         if (model.composableWrapper != null) {
-          addStatement("%T().wrap(wrapperParam) {", model.composableWrapper.wrapper.toTypeName())
+          val wrapperParam = if (model.composableWrapper.value == null) "Unit" else "wrapperParam"
+          addStatement("%T().wrap($wrapperParam) {", model.composableWrapper.wrapper.toTypeName())
           indent()
         }
       }
@@ -107,15 +91,6 @@ object PaparazziPoet {
 
     FunSpec.builder(model.testName.ifEmpty { "default" }.lowercase())
       .addAnnotation(Imports.JUnit.test)
-      // .apply {
-      //   if (model.wrapperGeneric != null) {
-      //     addParameter(
-      //       ParameterSpec.builder("param", model.wrapperGeneric.toTypeName())
-      //         .addAnnotation(Imports.TestInject.testParameter)
-      //         .build()
-      //     )
-      //   }
-      // }
       .addCode(codeBuilder.build())
       .build()
       .let(::addFunction)

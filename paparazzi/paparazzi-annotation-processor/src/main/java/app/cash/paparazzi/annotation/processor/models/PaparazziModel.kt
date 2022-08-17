@@ -4,6 +4,7 @@ import app.cash.paparazzi.annotation.api.config.RenderingMode
 
 data class PaparazziModel(
   val functionName: String,
+  val showClassIndex: Boolean,
   val packageName: String,
   val testName: String,
   val environment: EnvironmentModel,

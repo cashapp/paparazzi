@@ -12,6 +12,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
+import app.cash.paparazzi.sample.util.GreenPaparazzi
 import app.cash.paparazzi.sample.util.ScaledPaparazzi
 import app.cash.paparazzi.sample.util.ThemedPaparazzi
 
@@ -29,12 +30,13 @@ fun SimpleCard(
     Column(modifier = Modifier.padding(16.dp)) {
       Text(model.title, style = MaterialTheme.typography.h6)
       Text(
-        model.desc, modifier = Modifier.padding(top = 8.dp), style = MaterialTheme.typography.body1
+        model.desc,
+        modifier = Modifier.padding(top = 8.dp),
+        style = MaterialTheme.typography.body1
       )
     }
   }
 }
-
 
 @ScaledPaparazzi
 @Preview
@@ -48,21 +50,35 @@ fun SimpleCardPreview() {
   SimpleCard(model = model)
 }
 
+@GreenPaparazzi
+@Preview
+@Composable
+fun GreenCardPreview() {
+  val model = SimpleCardModel(
+    title = "Hello World",
+    desc = "I should be in a green box"
+  )
+
+  SimpleCard(model = model)
+}
+
 @ThemedPaparazzi
 @Preview
 @Composable
-internal fun SimpleCardPreviewProvider(
+fun SimpleCardPreviewProvider(
   @PreviewParameter(TitleProvider::class) title: String
 ) {
-  SimpleCard(model = SimpleCardModel(
-    title = title,
-    desc = "This is a provided title"
-  ))
+  SimpleCard(
+    model = SimpleCardModel(
+      title = title,
+      desc = "This is a provided title"
+    )
+  )
 }
 
 class TitleProvider : PreviewParameterProvider<String> {
   override val values: Sequence<String> = sequenceOf(
-      "Hello World", "Hello World".reversed(),
+    "Hello World",
+    "Hello World".reversed()
   )
 }
-
