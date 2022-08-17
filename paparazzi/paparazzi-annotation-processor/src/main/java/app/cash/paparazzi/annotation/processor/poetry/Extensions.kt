@@ -36,7 +36,7 @@ fun PaparazziModel.buildConstructorParams(): Triple<List<ParameterSpec>, List<Pr
   // only build test injector for the composable wrapper if it has a value type
   if (composableWrapper?.value != null) {
     val paramName = "wrapperParam"
-    val providerName = "WrapperParamValuesProvider"
+    val providerName = "WrapperProvider"
 
     ParameterSpec.builder(paramName, composableWrapper.value.toTypeName())
       .build()
@@ -51,7 +51,7 @@ fun PaparazziModel.buildConstructorParams(): Triple<List<ParameterSpec>, List<Pr
 
   if (previewParam != null) {
     val paramName = "previewParam"
-    val providerName = "PreviewParamValuesProvider"
+    val providerName = "PreviewProvider"
 
     ParameterSpec.builder(paramName, previewParam.type.toTypeName())
       .build()
@@ -66,7 +66,7 @@ fun PaparazziModel.buildConstructorParams(): Triple<List<ParameterSpec>, List<Pr
 
   if (device.fontScales.isNotEmpty()) {
     val paramName = "fontScale"
-    val providerName = "FontScaleValuesProvider"
+    val providerName = "FontScaleProvider"
 
     ParameterSpec.builder(paramName, Float::class)
       .build()
