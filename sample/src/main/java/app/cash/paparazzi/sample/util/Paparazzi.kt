@@ -3,43 +3,37 @@ package app.cash.paparazzi.sample.util
 import androidx.compose.runtime.Composable
 import app.cash.paparazzi.annotation.api.config.ComposableWrapper
 import app.cash.paparazzi.annotation.api.Paparazzi
+import app.cash.paparazzi.sample.util.DesignTheme.DARK
+import app.cash.paparazzi.sample.util.DesignTheme.LIGHT
+
 
 @Paparazzi(
-  name = "Light,Normal",
+  name = "Normal",
   fontScale = 1.0f,
-  composableWrapper = LightThemeComposableWrapper::class,
 )
 @Paparazzi(
-  name = "Light,Large",
+  name = "Large",
   fontScale = 2.0f,
-  composableWrapper = LightThemeComposableWrapper::class,
 )
+annotation class ScaledPaparazzi
+
+
 @Paparazzi(
-  name = "Dark,Normal",
-  fontScale = 1.0f,
-  composableWrapper = DarkThemeComposableWrapper::class,
+  name = "themed",
+  composableWrapper = ThemeComposableWrapper::class
 )
-@Paparazzi(
-  name = "Dark,Large",
-  fontScale = 2.0f,
-  composableWrapper = DarkThemeComposableWrapper::class,
-)
-annotation class ThemedScaledPaparazzi
+annotation class ThemedPaparazzi
 
 
-class LightThemeComposableWrapper : ComposableWrapper {
+class ThemeComposableWrapper: ComposableWrapper<DesignTheme> {
+  override val values: List<DesignTheme> = listOf(LIGHT, DARK)
+
   @Composable
-  override fun wrap(content: @Composable () -> Unit) {
-    SimpleTheme(DesignTheme.LIGHT) {
-      content()
-    }
-  }
-}
-
-class DarkThemeComposableWrapper : ComposableWrapper {
-  @Composable
-  override fun wrap(content: @Composable () -> Unit) {
-    SimpleTheme(DesignTheme.DARK) {
+  override fun wrap(
+    value: DesignTheme,
+    content: @Composable () -> Unit
+  ) {
+    SimpleTheme(value) {
       content()
     }
   }

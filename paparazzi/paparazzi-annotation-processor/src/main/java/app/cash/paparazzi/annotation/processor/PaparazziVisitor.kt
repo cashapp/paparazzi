@@ -2,11 +2,14 @@ package app.cash.paparazzi.annotation.processor
 
 import app.cash.paparazzi.annotation.api.Paparazzi
 import app.cash.paparazzi.annotation.api.config.ComposableWrapper
+import app.cash.paparazzi.annotation.processor.models.ComposableWrapperModel
 import app.cash.paparazzi.annotation.processor.models.DeviceModel
 import app.cash.paparazzi.annotation.processor.models.EnvironmentModel
 import app.cash.paparazzi.annotation.processor.models.PaparazziModel
+import app.cash.paparazzi.annotation.processor.models.PreviewParamModel
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSAnnotation
+import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSNode
 import com.google.devtools.ksp.symbol.KSType
@@ -15,18 +18,22 @@ import com.google.devtools.ksp.visitor.KSEmptyVisitor
 
 class PaparazziVisitor(private val logger: KSPLogger) : KSEmptyVisitor<Unit, Sequence<PaparazziModel>>() {
 
-  override fun defaultHandler(node: KSNode, data: Unit) = sequenceOf<PaparazziModel>()
+  override fun defaultHandler(
+    node: KSNode,
+    data: Unit
+  ) = sequenceOf<PaparazziModel>()
 
-  override fun visitFunctionDeclaration(function: KSFunctionDeclaration, data: Unit): Sequence<PaparazziModel> {
+  override fun visitFunctionDeclaration(
+    function: KSFunctionDeclaration,
+    data: Unit
+  ): Sequence<PaparazziModel> {
     val annotations = function.annotations.findPaparazzi()
-    val previewParam = function.previewParam()
 
     return annotations.map { annotation ->
       PaparazziModel(
         functionName = function.simpleName.asString(),
         packageName = function.packageName.asString(),
         testName = annotation.getArgument("name"),
-        composableWrapper = annotation.composableWrapper(),
         environment = EnvironmentModel(
           platformDir = annotation.getArgument("platformDir"),
           appTestDir = annotation.getArgument("appTestDir"),
@@ -62,8 +69,21 @@ class PaparazziVisitor(private val logger: KSPLogger) : KSEmptyVisitor<Unit, Seq
         appCompatEnabled = annotation.getArgument("appCompatEnabled"),
         maxPercentDifference = annotation.getArgument("maxPercentDifference"),
 
-        previewParamTypeName = previewParam?.typeName(),
-        previewParamProvider = previewParam?.previewParamProvider()
+        previewParam = function.previewParam()?.let {
+          PreviewParamModel(
+            type = it.type(),
+            provider = it.previewParamProvider()
+          )
+        },
+        composableWrapper = annotation.composableWrapper()?.let {
+          val valueType = it.getSuperGenericType()
+          logger.info("papa - ${it.declaration.qualifiedName?.asString()}")
+          logger.info("papa - value type: ${valueType.declaration.qualifiedName?.asString()}")
+          ComposableWrapperModel(
+            wrapper = it,
+            value = valueType
+          )
+        }
       )
     }
   }
@@ -94,7 +114,8 @@ class PaparazziVisitor(private val logger: KSPLogger) : KSEmptyVisitor<Unit, Seq
 
   private fun KSAnnotation.qualifiedName() = declaration().qualifiedName?.asString() ?: ""
 
-  private fun KSAnnotation.isPaparazzi() = qualifiedName() == Paparazzi::class.qualifiedName.toString()
+  private fun KSAnnotation.isPaparazzi() =
+    qualifiedName() == Paparazzi::class.qualifiedName.toString()
 
   private fun KSAnnotation.parentAnnotations() = declaration().annotations
 
@@ -103,9 +124,10 @@ class PaparazziVisitor(private val logger: KSPLogger) : KSEmptyVisitor<Unit, Seq
 
   private fun <T> KSAnnotation.getList(name: String) = getArgument<ArrayList<T>>(name).toList()
 
-  private inline fun <reified T : Enum<T>> KSAnnotation.getEnum(name: String): T = getArgument<KSType>(name)
-    .declaration.simpleName.asString()
-    .let(::enumValueOf)
+  private inline fun <reified T : Enum<T>> KSAnnotation.getEnum(name: String): T =
+    getArgument<KSType>(name)
+      .declaration.simpleName.asString()
+      .let(::enumValueOf)
 
   private fun <T> KSAnnotation.getArgument(name: String) = arguments
     .first { it.name?.asString() == name }
@@ -115,11 +137,17 @@ class PaparazziVisitor(private val logger: KSPLogger) : KSEmptyVisitor<Unit, Seq
     param.annotations.any { it.shortName.asString() == "PreviewParameter" }
   }
 
-  private fun KSValueParameter.typeName() = type.resolve().declaration.simpleName.asString()
+  private fun KSValueParameter.type() = type.resolve()
+  private fun KSValueParameter.typeName() = type().declaration.simpleName.asString()
 
   private fun KSValueParameter.previewParamProvider() = annotations
-    .firstOrNull { it.shortName.asString() == "PreviewParameter" }
-    ?.arguments
-    ?.firstOrNull { arg -> arg.name?.asString() == "provider" }
-    ?.let { it.value as KSType }
+    .first { it.shortName.asString() == "PreviewParameter" }
+    .arguments
+    .first { arg -> arg.name?.asString() == "provider" }
+    .let { it.value as KSType }
+
+  private fun KSType.getSuperGenericType(): KSType {
+    return (declaration as KSClassDeclaration).superTypes.first()
+      .resolve().arguments.first().type!!.resolve()
+  }
 }
