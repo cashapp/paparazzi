@@ -62,7 +62,7 @@ fun GreenPreview() {
   SimpleCard(model = model)
 }
 
-@ThemedPaparazzi
+@ThemedScaledPaparazzi
 @Preview
 @Composable
 fun ThemedProviderPreview(

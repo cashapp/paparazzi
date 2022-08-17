@@ -10,5 +10,5 @@ interface ComposableWrapper<T> {
 }
 
 abstract class DefaultComposableWrapper : ComposableWrapper<Unit> {
-  override val values = sequenceOf(Unit)
+  override val values = sequenceOf<Unit>()
 }

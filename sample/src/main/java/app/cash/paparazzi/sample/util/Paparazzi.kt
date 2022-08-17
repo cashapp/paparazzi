@@ -21,7 +21,7 @@ import app.cash.paparazzi.sample.util.DesignTheme.LIGHT
 annotation class ThemedPaparazzi
 
 @Paparazzi(
-  name = "themed",
+  name = "themed,scaled",
   fontScales = [1.0f, 2.0f],
   composableWrapper = ThemeComposableWrapper::class
 )
