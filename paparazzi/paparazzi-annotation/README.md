@@ -10,7 +10,7 @@ Example:
 @Preview
 @Composable
 fun MyViewPreview() {
-  MyView(title = "Hello World")
+  MyView(title = "Hello Paparazzi")
 }
 ```
 
@@ -51,7 +51,7 @@ annotation class MyPaparazzi
 @Preview
 @Composable
 fun MyViewPreview() {
-  MyView(title = "Hello World")
+  MyView(title = "Hello Paparazzi, in multiple ways")
 }
 ```
 This style of composition can even be nested, if you desire.
@@ -107,7 +107,7 @@ class BlueBoxComposableWrapper : DefaultComposableWrapper() {
 @Preview
 @Composable
 fun MyViewPreview() {
-  MyView(title = "Hello World, in a blue box")
+  MyView(title = "Hello Paparazzi, in a blue box")
 }
 ```
 *You might notice the `wrap()` function is accepting `value: Unit` as a parameter. See below for examples on providing that wrapper with custom configuration.*
@@ -139,7 +139,7 @@ fun MyViewPreview(@PreviewParameter(MyTitleProvider::class) title: String) {
 }
 
 class MyTitleProvider : PreviewParameterProvider<String> {
-  override val values: Sequence<String> = sequenceOf("Hello", "World")
+  override val values: Sequence<String> = sequenceOf("Hello", "Paparazzi")
 }
 ```
 
@@ -171,7 +171,7 @@ class MyThemeComposableWrapper : ComposableWrapper<MyTheme> {
 @Preview
 @Composable
 fun MyViewPreview() {
-  MyView(title = "Hello World")
+  MyView(title = "Hello Paparazzi, wrapped in different themes")
 }
 ```
 
