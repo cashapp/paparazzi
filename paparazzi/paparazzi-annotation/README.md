@@ -54,7 +54,7 @@ fun MyViewPreview() {
   MyView(title = "Hello Paparazzi, in multiple ways")
 }
 ```
-This style of composition can even be nested, if you desire.
+This style of composition can even be nested, if desired.
 
 Example:
 ```kotlin
