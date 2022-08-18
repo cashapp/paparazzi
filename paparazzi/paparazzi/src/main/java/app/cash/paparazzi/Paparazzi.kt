@@ -186,7 +186,10 @@ class Paparazzi @JvmOverloads constructor(
     renderer.dumpDelegates()
   }
 
-  fun <V : View> inflate(@LayoutRes layoutId: Int): V = layoutInflater.inflate(layoutId, null) as V
+  fun <V : View> inflate(@LayoutRes layoutId: Int): V {
+    val rootView = bridgeRenderSession.rootViews[0].viewObject as ViewGroup
+    return layoutInflater.inflate(layoutId, rootView, false) as V
+  }
 
   fun snapshot(name: String? = null, composable: @Composable () -> Unit) {
     val hostView = ComposeView(context)
