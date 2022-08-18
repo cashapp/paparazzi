@@ -15,5 +15,4 @@ class DisplayViewTest {
     val launch = paparazzi.inflate<ConstraintLayout>(R.layout.display)
     paparazzi.snapshot(launch)
   }
-
 }
