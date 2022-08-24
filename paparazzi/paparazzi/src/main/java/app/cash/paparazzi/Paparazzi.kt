@@ -252,10 +252,10 @@ class Paparazzi @JvmOverloads constructor(
   fun unsafeUpdateConfig(
     deviceConfig: DeviceConfig? = null,
     theme: String? = null,
-    updatedRenderingMode: RenderingMode? = null,
+    renderingMode: RenderingMode? = null,
     shrinkDirection: ShrinkDirection? = null
   ) {
-    require(deviceConfig != null || theme != null || updatedRenderingMode != null || shrinkDirection != null) {
+    require(deviceConfig != null || theme != null || renderingMode != null || shrinkDirection != null) {
       "Calling unsafeUpdateConfig requires at least one non-null argument."
     }
 
@@ -266,7 +266,7 @@ class Paparazzi @JvmOverloads constructor(
     sessionParamsBuilder = sessionParamsBuilder
       .copy(
         // Required to reset underlying parser stream
-        layoutPullParser = LayoutPullParser.createFromString(getContentRoot(updatedRenderingMode ?: renderingMode, shrinkDirection))
+        layoutPullParser = LayoutPullParser.createFromString(getContentRoot(renderingMode ?: this.renderingMode, shrinkDirection))
       )
 
     if (deviceConfig != null) {
@@ -277,11 +277,11 @@ class Paparazzi @JvmOverloads constructor(
       sessionParamsBuilder = sessionParamsBuilder.withTheme(theme)
     }
 
-    if (updatedRenderingMode != null) {
-      sessionParamsBuilder = sessionParamsBuilder.copy(renderingMode = updatedRenderingMode)
+    if (renderingMode != null) {
+      sessionParamsBuilder = sessionParamsBuilder.copy(renderingMode = renderingMode)
     }
 
-    if (shrinkDirection != null || updatedRenderingMode == RenderingMode.SHRINK) {
+    if (shrinkDirection != null || renderingMode == RenderingMode.SHRINK) {
       sessionParamsBuilder = sessionParamsBuilder.copy(decor = false)
     }
 
