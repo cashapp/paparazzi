@@ -86,7 +86,8 @@ class Paparazzi @JvmOverloads constructor(
   private val appCompatEnabled: Boolean = true,
   private val maxPercentDifference: Double = 0.1,
   private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference),
-  private val renderExtensions: Set<RenderExtension> = setOf()
+  private val renderExtensions: Set<RenderExtension> = setOf(),
+  private val shrinkDirection: ShrinkDirection? = null
 ) : TestRule {
   private val logger = PaparazziLogger()
   private lateinit var renderSession: RenderSessionImpl
@@ -102,12 +103,24 @@ class Paparazzi @JvmOverloads constructor(
   val context: Context
     get() = RenderAction.getCurrentContext()
 
-  private val contentRoot = """
-        |<?xml version="1.0" encoding="utf-8"?>
-        |<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        |              android:layout_width="match_parent"
-        |              android:layout_height="match_parent"/>
-  """.trimMargin()
+  private fun getContentRoot(renderingMode: RenderingMode?, shrinkDirection: ShrinkDirection? = null): String {
+    val layoutWidth = if (renderingMode == RenderingMode.SHRINK && (shrinkDirection == null || shrinkDirection == ShrinkDirection.HORIZONTAL)) {
+      "wrap_content"
+    } else {
+      "match_parent"
+    }
+    val layoutHeight = if (renderingMode == RenderingMode.SHRINK && (shrinkDirection == null || shrinkDirection == ShrinkDirection.VERTICAL)) {
+      "wrap_content"
+    } else {
+      "match_parent"
+    }
+    return """
+          |<?xml version="1.0" encoding="utf-8"?>
+          |<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+          |              android:layout_width="$layoutWidth"
+          |              android:layout_height="$layoutHeight"/>
+    """.trimMargin()
+  }
 
   override fun apply(
     base: Statement,
@@ -156,9 +169,10 @@ class Paparazzi @JvmOverloads constructor(
 
     sessionParamsBuilder = sessionParamsBuilder
       .copy(
-        layoutPullParser = LayoutPullParser.createFromString(contentRoot),
+        layoutPullParser = LayoutPullParser.createFromString(getContentRoot(renderingMode, shrinkDirection)),
         deviceConfig = deviceConfig,
-        renderingMode = renderingMode
+        renderingMode = renderingMode,
+        decor = renderingMode != RenderingMode.SHRINK
       )
       .withTheme(theme)
 
@@ -197,7 +211,8 @@ class Paparazzi @JvmOverloads constructor(
     // CompositionContext, which requires first finding the "content view", then using that to
     // find a root view with a ViewTreeLifecycleOwner
     val parent = FrameLayout(context).apply { id = android.R.id.content }
-    parent.addView(hostView, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
+    parent.addView(hostView, shrinkDirection?.layoutWidth
+      ?: LayoutParams.MATCH_PARENT, shrinkDirection?.layoutHeight ?: LayoutParams.MATCH_PARENT)
     PaparazziComposeOwner.register(parent)
     hostView.setContent(composable)
 
@@ -233,9 +248,10 @@ class Paparazzi @JvmOverloads constructor(
   fun unsafeUpdateConfig(
     deviceConfig: DeviceConfig? = null,
     theme: String? = null,
-    renderingMode: RenderingMode? = null
+    updatedRenderingMode: RenderingMode? = null,
+    shrinkDirection: ShrinkDirection? = null
   ) {
-    require(deviceConfig != null || theme != null || renderingMode != null) {
+    require(deviceConfig != null || theme != null || updatedRenderingMode != null || shrinkDirection != null) {
       "Calling unsafeUpdateConfig requires at least one non-null argument."
     }
 
@@ -246,7 +262,7 @@ class Paparazzi @JvmOverloads constructor(
     sessionParamsBuilder = sessionParamsBuilder
       .copy(
         // Required to reset underlying parser stream
-        layoutPullParser = LayoutPullParser.createFromString(contentRoot)
+        layoutPullParser = LayoutPullParser.createFromString(getContentRoot(updatedRenderingMode ?: renderingMode, shrinkDirection))
       )
 
     if (deviceConfig != null) {
@@ -257,8 +273,12 @@ class Paparazzi @JvmOverloads constructor(
       sessionParamsBuilder = sessionParamsBuilder.withTheme(theme)
     }
 
-    if (renderingMode != null) {
-      sessionParamsBuilder = sessionParamsBuilder.copy(renderingMode = renderingMode)
+    if (updatedRenderingMode != null) {
+      sessionParamsBuilder = sessionParamsBuilder.copy(renderingMode = updatedRenderingMode)
+    }
+
+    if (shrinkDirection != null || updatedRenderingMode == RenderingMode.SHRINK) {
+      sessionParamsBuilder = sessionParamsBuilder.copy(decor = false)
     }
 
     val sessionParams = sessionParamsBuilder.build()
