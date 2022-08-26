@@ -23,7 +23,7 @@ import kotlin.reflect.KClass
 annotation class Paparazzi(
   // test
   val name: String = "",
-  val composableWrapper: KClass<out ComposableWrapper<*>> = ComposableWrapper::class,
+  val composableWrapper: KClass<out ComposableWrapper> = ComposableWrapper::class,
 
   // basic
   val theme: String = "",

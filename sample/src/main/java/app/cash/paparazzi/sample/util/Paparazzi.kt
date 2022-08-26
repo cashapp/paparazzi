@@ -10,7 +10,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import app.cash.paparazzi.annotation.api.Paparazzi
 import app.cash.paparazzi.annotation.api.config.ComposableWrapper
-import app.cash.paparazzi.annotation.api.config.DefaultComposableWrapper
+import app.cash.paparazzi.annotation.api.config.ValuesComposableWrapper
 import app.cash.paparazzi.sample.util.DesignTheme.DARK
 import app.cash.paparazzi.sample.util.DesignTheme.LIGHT
 
@@ -33,7 +33,7 @@ annotation class ThemedScaledPaparazzi
 )
 annotation class GreenPaparazzi
 
-class ThemeComposableWrapper : ComposableWrapper<DesignTheme> {
+class ThemeComposableWrapper : ValuesComposableWrapper<DesignTheme>() {
   override val values = sequenceOf(LIGHT, DARK)
 
   @Composable
@@ -47,10 +47,9 @@ class ThemeComposableWrapper : ComposableWrapper<DesignTheme> {
   }
 }
 
-class GreenBoxComposableWrapper : DefaultComposableWrapper() {
+class GreenBoxComposableWrapper : ComposableWrapper {
   @Composable
   override fun wrap(
-    value: Unit,
     content: @Composable () -> Unit
   ) {
     Box(

@@ -71,8 +71,8 @@ object PaparazziPoet {
       .indent()
       .apply {
         if (model.composableWrapper != null) {
-          val wrapperParam = if (model.composableWrapper.value == null) "Unit" else "wrapperParam"
-          addStatement("%T().wrap($wrapperParam) {", model.composableWrapper.wrapper.toTypeName())
+          val wrapCall = if (model.composableWrapper.value == null) "wrap" else "wrap(wrapperParam)"
+          addStatement("%T().$wrapCall {", model.composableWrapper.wrapper.toTypeName())
           indent()
         }
       }

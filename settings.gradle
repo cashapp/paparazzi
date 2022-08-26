@@ -6,6 +6,8 @@ includeBuild('paparazzi') {
   dependencySubstitution {
     substitute module('app.cash.paparazzi:paparazzi') using project(':paparazzi')
     substitute module('app.cash.paparazzi:paparazzi-agent') using project(':paparazzi-agent')
+    substitute module('app.cash.paparazzi:paparazzi-annotation') using project(':paparazzi-annotation')
+    substitute module('app.cash.paparazzi:paparazzi-annotation-processor') using project(':paparazzi-annotation-processor')
     substitute module('app.cash.paparazzi:paparazzi-gradle-plugin') using project(':paparazzi-gradle-plugin')
   }
 }

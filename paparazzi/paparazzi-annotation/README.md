@@ -79,16 +79,13 @@ annotation class MyHugePaparazzi
 ## Composable Wrapping
 It might be necessary for you to wrap your composable with additional logic to prepare it for the Paparazzi test.
 In this case, a configuration param called `composableWrapper` can be set to do just that.
-The easiest way to do this is to extend the provided `DefaultComposableWrapper` class and implement the `wrap()` function.
+The easiest way to do this is to implement the provided `ComposableWrapper` interface.
 
 Example:
 ```kotlin
-class BlueBoxComposableWrapper : DefaultComposableWrapper() {
+class BlueBoxComposableWrapper : ComposableWrapper {
   @Composable
-  override fun wrap(
-    value: Unit,
-    content: @Composable () -> Unit
-  ) {
+  override fun wrap(content: @Composable () -> Unit) {
     Box(
       modifier = Modifier
         .wrapContentSize()
@@ -110,7 +107,6 @@ fun MyViewPreview() {
   MyView(title = "Hello Paparazzi, in a blue box")
 }
 ```
-*You might notice the `wrap()` function is accepting `value: Unit` as a parameter. See below for examples on providing that wrapper with custom configuration.*
 
 ## Test Parameter Injection
 The `@Paparazzi` annotation also utilizes `TestParameterInjector` to conveniently execute multiple tests on a handful of configuration parameters.
@@ -144,13 +140,13 @@ class MyTitleProvider : PreviewParameterProvider<String> {
 ```
 
 ### Composable Wrapper
-You can alternatively create a composable wrapper by simply implementing the base `ComposableWrapper<T>` interface.
+You can alternatively create a composable wrapper by extending the `ValuesComposableWrapper<T>` class.
 This allows you to provide a set of values to your wrapper, similar to how you would with `PreviewParameterProvider`.
 These values are mapped to an injected parameter in your test and passed into your composable wrapper.
 
 Example:
 ```kotlin
-class MyThemeComposableWrapper : ComposableWrapper<MyTheme> {
+class MyThemeComposableWrapper : ValuesComposableWrapper<MyTheme>() {
   override val values = sequenceOf(MyTheme.LIGHT, MyTheme.DARK)
 
   @Composable
