@@ -276,6 +276,41 @@ class Paparazzi @JvmOverloads constructor(
     val frameHandler = snapshotHandler.newFrameHandler(snapshot, frameCount, fps)
     frameHandler.use {
       val viewGroup = bridgeRenderSession.rootViews[0].viewObject as ViewGroup
+      if (hasComposeRuntime) {
+        // During onAttachedToWindow, AbstractComposeView will attempt to resolve its parent's
+        // CompositionContext, which requires first finding the "content view", then using that
+        // to find a root view with a ViewTreeLifecycleOwner
+        viewGroup.id = android.R.id.content
+      }
+
+      if (hasLifecycleOwnerRuntime) {
+        val lifecycleOwner = PaparazziLifecycleOwner()
+        ViewTreeLifecycleOwner.set(modifiedView, lifecycleOwner)
+
+        if (hasSavedStateRegistryOwnerRuntime) {
+          modifiedView.setViewTreeSavedStateRegistryOwner(PaparazziSavedStateRegistryOwner(lifecycleOwner))
+        }
+        if (hasAndroidxActivityRuntime) {
+          modifiedView.setViewTreeOnBackPressedDispatcherOwner(PaparazziOnBackPressedDispatcherOwner(lifecycleOwner))
+        }
+        // Must be changed after the SavedStateRegistryOwner above has finished restoring its state.
+        lifecycleOwner.registry.currentState = Lifecycle.State.RESUMED
+      }
+
+      val measureRenderExtensions = renderExtensions.filter {
+        it.requiresMeasure
+      }
+      val requiresPreMeasure = measureRenderExtensions.isNotEmpty()
+
+      if (requiresPreMeasure) {
+        viewGroup.addView(view)
+        renderSession.measure()
+        renderExtensions.forEach {
+          it.measureView(view)
+        }
+        viewGroup.removeView(view)
+      }
+
       val modifiedView = renderExtensions.fold(view) { view, renderExtension ->
         renderExtension.renderView(view)
       }
@@ -284,27 +319,6 @@ class Paparazzi @JvmOverloads constructor(
       try {
         withTime(0L) {
           // Initialize the choreographer at time=0.
-        }
-
-        if (hasComposeRuntime) {
-          // During onAttachedToWindow, AbstractComposeView will attempt to resolve its parent's
-          // CompositionContext, which requires first finding the "content view", then using that
-          // to find a root view with a ViewTreeLifecycleOwner
-          viewGroup.id = android.R.id.content
-        }
-
-        if (hasLifecycleOwnerRuntime) {
-          val lifecycleOwner = PaparazziLifecycleOwner()
-          ViewTreeLifecycleOwner.set(modifiedView, lifecycleOwner)
-
-          if (hasSavedStateRegistryOwnerRuntime) {
-            modifiedView.setViewTreeSavedStateRegistryOwner(PaparazziSavedStateRegistryOwner(lifecycleOwner))
-          }
-          if (hasAndroidxActivityRuntime) {
-            modifiedView.setViewTreeOnBackPressedDispatcherOwner(PaparazziOnBackPressedDispatcherOwner(lifecycleOwner))
-          }
-          // Must be changed after the SavedStateRegistryOwner above has finished restoring its state.
-          lifecycleOwner.registry.currentState = Lifecycle.State.RESUMED
         }
 
         viewGroup.addView(modifiedView)

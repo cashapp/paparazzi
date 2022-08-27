@@ -15,10 +15,9 @@
  */
 package app.cash.paparazzi.accessibility
 
-import android.view.View
 import java.awt.Color
 
-internal object RenderSettings {
+object RenderSettings {
   const val DEFAULT_RENDER_ALPHA = 40
   val DEFAULT_RENDER_COLORS = listOf(
     Color.RED,
@@ -37,12 +36,7 @@ internal object RenderSettings {
 
   private val colorMap = mutableMapOf<Int, Color>()
 
-  fun getColor(view: View): Color {
-    val key = "${view::class.simpleName}(${view.iterableTextForAccessibility})"
-    return getColor(key)
-  }
-
-  private fun getColor(key: String): Color {
+  fun getColor(key: String): Color {
     val hashCode = key.hashCode()
     return colorMap.getOrPut(hashCode) {
       nextColor(hashCode).withAlpha(DEFAULT_RENDER_ALPHA)

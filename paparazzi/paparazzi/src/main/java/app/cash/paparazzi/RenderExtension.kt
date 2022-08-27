@@ -21,6 +21,14 @@ import android.view.View
  * An extension for overlaying additional information on top of each rendered frame.
  */
 interface RenderExtension {
+
+  val requiresMeasure: Boolean
+
+  /**
+   * Allows this extension to react to the view under test after measurement.
+   */
+  fun measureView(contentView: View)
+
   /**
    * Allows this extension to modify the view hierarchy represented by [contentView].
    *

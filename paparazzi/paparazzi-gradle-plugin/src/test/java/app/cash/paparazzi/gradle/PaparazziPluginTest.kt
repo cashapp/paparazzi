@@ -1107,6 +1107,22 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun complexA11y() {
+    val fixtureRoot = File("src/test/projects/complex-a11y")
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()
+    assertThat(snapshots!!).hasLength(1)
+
+    val snapshotImage = snapshots[0]
+    val goldenImage = File(fixtureRoot, "src/test/resources/complex_a11y.png")
+    assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
+  }
+
+  @Test
   fun immSoftInputInteraction() {
     val fixtureRoot = File("src/test/projects/imm-soft-input")
     gradleRunner

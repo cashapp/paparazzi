@@ -15,45 +15,35 @@
  */
 package app.cash.paparazzi.accessibility
 
+import android.content.Context
 import android.graphics.drawable.GradientDrawable
-import android.graphics.drawable.LayerDrawable
 import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
 import app.cash.paparazzi.RenderExtension
 import app.cash.paparazzi.accessibility.RenderSettings.DEFAULT_DESCRIPTION_BACKGROUND_COLOR
 import app.cash.paparazzi.accessibility.RenderSettings.DEFAULT_RECT_SIZE
-import app.cash.paparazzi.accessibility.RenderSettings.DEFAULT_RENDER_ALPHA
 import app.cash.paparazzi.accessibility.RenderSettings.DEFAULT_TEXT_COLOR
 import app.cash.paparazzi.accessibility.RenderSettings.DEFAULT_TEXT_SIZE
 import app.cash.paparazzi.accessibility.RenderSettings.getColor
 import app.cash.paparazzi.accessibility.RenderSettings.toColorInt
-import app.cash.paparazzi.accessibility.RenderSettings.withAlpha
 
 class AccessibilityRenderExtension : RenderExtension {
+  private lateinit var accessibilityState: AccessibilityState
+
+  override val requiresMeasure: Boolean = true
+
+  override fun measureView(contentView: View) {
+    // Fetch accessibility state to render legend in renderView()
+    accessibilityState = contentView.accessibilityState()
+  }
+
   override fun renderView(
     contentView: View
   ): View {
-    val accessibilityViews = contentView.findAccessibilityViews()
-    accessibilityViews.forEach { view ->
-      val color = getColor(view)
-      val colorInt = color.toColorInt()
-
-      val colorDrawable = GradientDrawable(
-        GradientDrawable.Orientation.TOP_BOTTOM,
-        intArrayOf(colorInt, colorInt)
-      ).apply {
-        setStroke(2, color.withAlpha(DEFAULT_RENDER_ALPHA * 2).toColorInt())
-      }
-
-      view.foreground = view.foreground?.let { drawable ->
-        // If there is an existing foreground layer the color on top of it.
-        LayerDrawable(arrayOf(drawable, colorDrawable))
-      } ?: colorDrawable
-    }
-
     return LinearLayout(contentView.context).apply {
       orientation = LinearLayout.HORIZONTAL
       weightSum = 2f
@@ -62,68 +52,67 @@ class AccessibilityRenderExtension : RenderExtension {
         ViewGroup.LayoutParams.MATCH_PARENT
       )
 
-      val contentLayoutParams = contentView.layoutParams ?: generateLayoutParams(null)
-      addView(
-        contentView,
-        LinearLayout.LayoutParams(
-          contentLayoutParams.width,
-          contentLayoutParams.height,
-          1f
+      val overlay = AccessibilityOverlayView(context).apply {
+        val contentLayoutParams = contentView.layoutParams ?: generateLayoutParams(null)
+        this.addView(
+          contentView,
+          FrameLayout.LayoutParams(
+            contentLayoutParams.width,
+            contentLayoutParams.height
+          )
         )
-      )
+      }
+
       addView(
-        buildAccessibilityView(contentView),
+        overlay,
         LinearLayout.LayoutParams(
           ViewGroup.LayoutParams.MATCH_PARENT,
           ViewGroup.LayoutParams.MATCH_PARENT,
           1f
         )
       )
-    }
-  }
 
-  private fun View.findAccessibilityViews(): List<View> {
-    val accessibilityViews = mutableListOf<View>()
-    if (isImportantForAccessibility && !iterableTextForAccessibility.isNullOrBlank()) {
-      accessibilityViews.add(this)
-    }
+      val accessibilityLegend = LinearLayout(context).apply {
+        orientation = LinearLayout.VERTICAL
+        setBackgroundColor(DEFAULT_DESCRIPTION_BACKGROUND_COLOR.toColorInt())
 
-    if (this is ViewGroup) {
-      (0 until childCount).forEach {
-        accessibilityViews += getChildAt(it).findAccessibilityViews()
-      }
-    }
-
-    return accessibilityViews
-  }
-
-  private fun buildAccessibilityView(contentView: View): View {
-    val linearLayout = LinearLayout(contentView.context).apply {
-      orientation = LinearLayout.VERTICAL
-      setBackgroundColor(DEFAULT_DESCRIPTION_BACKGROUND_COLOR.toColorInt())
-    }
-
-    fun renderAccessibility(view: View) {
-      if (view.isImportantForAccessibility && !view.iterableTextForAccessibility.isNullOrBlank()) {
-        linearLayout.addView(buildAccessibilityRow(view, view.iterableTextForAccessibility))
-      }
-
-      if (view is ViewGroup) {
-        (0 until view.childCount).forEach {
-          renderAccessibility(view.getChildAt(it))
+        accessibilityState.elements.forEach {
+          addView(buildAccessibilityRow(context, it))
         }
       }
-    }
+      addView(
+        accessibilityLegend,
+        LinearLayout.LayoutParams(
+          ViewGroup.LayoutParams.MATCH_PARENT,
+          ViewGroup.LayoutParams.MATCH_PARENT,
+          1f
+        )
+      )
 
-    renderAccessibility(contentView)
-    return linearLayout
+      // Since Accessibility tests may use 2x rendering width, our accessibility state has incorrect view bounds.
+      // If we process the state after layout and before rendering, we get the correct view bounds.
+      contentView.viewTreeObserver.addOnPreDrawListener {
+        val accessibilityState = contentView.accessibilityState()
+        overlay.addElements(
+          accessibilityState.elements.map {
+            AccessibilityOverlayView.AccessibilityElement(
+              color = getColor(it.id),
+              bounds = it.displayBounds
+            )
+          }
+        )
+        true
+      }
+    }
   }
 
-  private fun buildAccessibilityRow(view: View, iterableTextForAccessibility: CharSequence): View {
-    val context = view.context
-    val color = getColor(view).toColorInt()
-    val margin = view.dip(8)
-    val innerMargin = view.dip(4)
+  private fun buildAccessibilityRow(
+    context: Context,
+    element: AccessibilityState.Element
+  ): View {
+    val color = getColor(element.id).toColorInt()
+    val margin = context.dip(8)
+    val innerMargin = context.dip(4)
 
     return LinearLayout(context).apply {
       orientation = LinearLayout.HORIZONTAL
@@ -135,12 +124,17 @@ class AccessibilityRenderExtension : RenderExtension {
 
       addView(
         View(context).apply {
-          layoutParams = ViewGroup.LayoutParams(dip(DEFAULT_RECT_SIZE), dip(DEFAULT_RECT_SIZE))
+          layoutParams = ViewGroup.LayoutParams(
+            context.dip(DEFAULT_RECT_SIZE),
+            context.dip(
+              DEFAULT_RECT_SIZE
+            )
+          )
           background = GradientDrawable(
             GradientDrawable.Orientation.TOP_BOTTOM,
             intArrayOf(color, color)
           ).apply {
-            cornerRadius = dip(DEFAULT_RECT_SIZE / 4f)
+            cornerRadius = context.dip(DEFAULT_RECT_SIZE / 4f)
           }
           setPaddingRelative(innerMargin, innerMargin, innerMargin, innerMargin)
         }
@@ -151,7 +145,7 @@ class AccessibilityRenderExtension : RenderExtension {
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.WRAP_CONTENT
           )
-          text = iterableTextForAccessibility
+          text = element.renderString()
           textSize = DEFAULT_TEXT_SIZE
           setTextColor(DEFAULT_TEXT_COLOR.toColorInt())
           setPaddingRelative(innerMargin, 0, innerMargin, 0)
@@ -161,11 +155,11 @@ class AccessibilityRenderExtension : RenderExtension {
   }
 }
 
-private fun View.dip(value: Float): Float =
+private fun Context.dip(value: Float): Float =
   TypedValue.applyDimension(
     TypedValue.COMPLEX_UNIT_DIP,
     value,
     resources.displayMetrics
   )
 
-private fun View.dip(value: Int): Int = dip(value.toFloat()).toInt()
+private fun Context.dip(value: Int): Int = dip(value.toFloat()).toInt()
