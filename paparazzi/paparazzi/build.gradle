@@ -28,6 +28,8 @@ dependencies {
   // TODO: Use Gradle transforms to extract/rename classes.jar's from AARs
   api files('libs/compose-runtime-1.1.1.jar')
   compileOnly files('libs/compose-ui-1.1.1.jar')
+  compileOnly files('libs/ui-geometry-1.1.1.jar')
+  compileOnly files('libs/ui-unit-1.1.1.jar')
   compileOnly deps.androidx.lifecycleCommon
   compileOnly files('libs/lifecycle-runtime-2.4.0.jar')
   compileOnly files('libs/savedstate-1.1.0.jar')
