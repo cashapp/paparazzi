@@ -20,6 +20,7 @@ import android.content.Context
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.os.Handler_Delegate
+import android.os.Looper
 import android.os.SystemClock_Delegate
 import android.util.AttributeSet
 import android.util.DisplayMetrics
@@ -31,6 +32,7 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
 import android.widget.FrameLayout
 import androidx.annotation.LayoutRes
+import androidx.annotation.MainThread
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Recomposer
 import androidx.compose.ui.platform.AndroidUiDispatcher
@@ -188,7 +190,7 @@ class Paparazzi @JvmOverloads constructor(
 
   fun <V : View> inflate(@LayoutRes layoutId: Int): V = layoutInflater.inflate(layoutId, null) as V
 
-  fun snapshot(name: String? = null, composable: @Composable () -> Unit) {
+  fun snapshot(name: String? = null, ready: () -> Boolean = { true }, composable: @Composable () -> Unit) {
     val hostView = ComposeView(context)
     // During onAttachedToWindow, AbstractComposeView will attempt to resolve its parent's
     // CompositionContext, which requires first finding the "content view", then using that to
@@ -199,7 +201,7 @@ class Paparazzi @JvmOverloads constructor(
     hostView.setContent(composable)
 
     try {
-      snapshot(parent, name)
+      takeSnapshots(view = parent, name = name, startNanos = 0, fps = -1, frameCount = 1, ready = ready)
     } finally {
       forceReleaseComposeReferenceLeaks()
     }
@@ -271,7 +273,8 @@ class Paparazzi @JvmOverloads constructor(
     name: String?,
     startNanos: Long,
     fps: Int,
-    frameCount: Int
+    frameCount: Int,
+    ready: () -> Boolean = { true }
   ) {
     val snapshot = Snapshot(name, testName!!, Date())
 
@@ -289,16 +292,26 @@ class Paparazzi @JvmOverloads constructor(
         }
 
         viewGroup.addView(modifiedView)
-        for (frame in 0 until frameCount) {
+        var frame = 0
+        var framesTaken = 0
+        while (framesTaken <  frameCount) {
           val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
           withTime(nowNanos) {
+            println(androidx.compose.runtime.snapshots.Snapshot.current.hasPendingChanges())
+//            println(Looper.getMainLooper().thread == Thread.currentThread())
+
             val result = renderSession.render(true)
             if (result.status == ERROR_UNKNOWN) {
               throw result.exception
             }
 
-            val image = bridgeRenderSession.image
-            frameHandler.handle(scaleImage(image))
+            if (ready()) {
+              val image = bridgeRenderSession.image
+              frameHandler.handle(scaleImage(image))
+              framesTaken++
+            }
+
+            frame++
           }
         }
       } finally {
