@@ -904,6 +904,18 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun composeDispatcher() {
+    val fixtureRoot = File("src/test/projects/compose-dispatcher")
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()
+    assertThat(snapshots!!).hasLength(1)
+  }
+
+  @Test
   fun immSoftInputInteraction() {
     val fixtureRoot = File("src/test/projects/imm-soft-input")
     gradleRunner
