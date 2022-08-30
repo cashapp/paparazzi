@@ -36,7 +36,7 @@ class A11ySnapshotHandler(
   private val legendRenderer: (AccessibilityState, BufferedImage) -> BufferedImage =
     { accessibilityState, image ->
       drawLegend(accessibilityState, image)
-    },
+    }
 ) : SnapshotHandler {
 
   override fun close() {
