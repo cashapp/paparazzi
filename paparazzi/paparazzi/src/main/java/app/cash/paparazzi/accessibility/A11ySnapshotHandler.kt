@@ -18,7 +18,11 @@ package app.cash.paparazzi.accessibility
 
 import app.cash.paparazzi.Snapshot
 import app.cash.paparazzi.SnapshotHandler
-import java.awt.*
+import java.awt.AlphaComposite
+import java.awt.BasicStroke
+import java.awt.Color
+import java.awt.Composite
+import java.awt.Graphics2D
 import java.awt.image.BufferedImage
 import kotlin.math.max
 
@@ -65,10 +69,24 @@ class A11ySnapshotHandler(
 
   companion object {
     private val colors =
-      listOf(Color.BLUE, Color.CYAN, Color.GREEN, Color.GRAY, Color.PINK, Color.MAGENTA, Color.YELLOW, Color.ORANGE)
+      listOf(
+        Color.BLUE,
+        Color.CYAN,
+        Color.GREEN,
+        Color.GRAY,
+        Color.PINK,
+        Color.MAGENTA,
+        Color.YELLOW,
+        Color.ORANGE
+      )
 
-    private fun concatImages(overlay: BufferedImage, legend: BufferedImage, image: BufferedImage): BufferedImage {
-      val modifiedImage = BufferedImage(overlay.width + legend.width, max(overlay.height, legend.height), image.type)
+    private fun concatImages(
+      overlay: BufferedImage,
+      legend: BufferedImage,
+      image: BufferedImage
+    ): BufferedImage {
+      val modifiedImage =
+        BufferedImage(overlay.width + legend.width, max(overlay.height, legend.height), image.type)
 
       modifiedImage.withGraphics2D {
         drawImage(overlay, 0, 0, overlay.width, overlay.height, null)
@@ -98,7 +116,10 @@ class A11ySnapshotHandler(
       return this
     }
 
-    internal fun drawBoxes(accessibilityState: AccessibilityState, image: BufferedImage): BufferedImage {
+    internal fun drawBoxes(
+      accessibilityState: AccessibilityState,
+      image: BufferedImage
+    ): BufferedImage {
       val modifiedImage = BufferedImage(image.width, image.height, image.type)
 
       val scale = 1000f / max(accessibilityState.height, accessibilityState.width)
@@ -137,7 +158,10 @@ class A11ySnapshotHandler(
       }
     }
 
-    internal fun drawLegend(accessibilityState: AccessibilityState, image: BufferedImage): BufferedImage {
+    internal fun drawLegend(
+      accessibilityState: AccessibilityState,
+      image: BufferedImage
+    ): BufferedImage {
       val modifiedImage = BufferedImage(600, image.height, image.type)
 
       return modifiedImage.withGraphics2D {
@@ -154,7 +178,7 @@ class A11ySnapshotHandler(
           val start = index
           if (it.role != null || it.disabled) {
             val role = if (it.role != null) "Role " + it.role + " " else ""
-            val heading = if (it.heading != null) "Heading " else ""
+            val heading = if (it.heading) "Heading " else ""
             val disabled = if (it.disabled) "Disabled" else ""
             drawString(role + heading + disabled, 50f, 28f * index++)
           }
