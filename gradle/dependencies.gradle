@@ -3,12 +3,12 @@ buildscript {
 
   // maps to this commit: https://android.googlesource.com/platform/prebuilts/studio/layoutlib/+/be0280d
   // which runs on JDK 11
-  ext.layoutLibPrebuiltSha = 'be0280d'
+  ext.layoutLibPrebuiltSha = 'f5f9f71'
 
   ext.versions = [
     kotlin: '1.6.10',
     agp: '7.1.2',
-    layoutlib: "2021.3.1-beta-$layoutLibPrebuiltSha",
+    layoutlib: "2022.1.1-canary-$layoutLibPrebuiltSha",
     compose: '1.1.1',
     jcodec: '0.2.5',
     moshi: '1.13.0',
