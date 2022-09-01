@@ -43,7 +43,6 @@ import java.lang.reflect.Modifier
 
 internal class PaparazziCallback(
   private val logger: PaparazziLogger,
-  private val packageName: String,
   private val resourcePackageNames: List<String>
 ) : LayoutlibCallback() {
   private val projectResources = mutableMapOf<Int, ResourceReference>()
