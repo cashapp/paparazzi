@@ -35,6 +35,9 @@ jobs:
           distribution: 'zulu'
           java-version: ${{ matrix.java-version }}
 
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+
       - name: Run Paparazzi Tests
         run: ./gradlew -p paparazzi check
 
