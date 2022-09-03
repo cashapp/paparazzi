@@ -145,8 +145,8 @@ class PaparazziPlugin : Plugin<Project> {
       val isVerifyRun = project.objects.property(Boolean::class.java)
 
       project.gradle.taskGraph.whenReady { graph ->
-        isRecordRun.set(graph.hasTask(recordTaskProvider.get()))
-        isVerifyRun.set(graph.hasTask(verifyTaskProvider.get()))
+        isRecordRun.set(recordTaskProvider.map { graph.hasTask(it) })
+        isVerifyRun.set(verifyTaskProvider.map { graph.hasTask(it) })
       }
 
       val testTaskProvider = project.tasks.named("test$testVariantSlug", Test::class.java) { test ->
