@@ -57,6 +57,16 @@ Runs tests and verifies against previously-recorded golden values. Failures gene
 
 For more examples, check out the [sample][sample] project.
 
+> **Note**: If running on JDK 16+, you must add the following two JVM args to your `Test` task.
+> ```kotlin
+> tasks.withType<Test>().configureEach {
+>   jvmArgs(
+>     "--add-opens=java.base/java.lang=ALL-UNNAMED",
+>     "--add-opens=java.base/java.lang.reflect=ALL-UNNAMED",
+>   )
+> }
+> ```
+
 Git LFS
 --------
 It is recommended you use [Git LFS][lfs] to store your snapshots.  Here's a quick setup:
