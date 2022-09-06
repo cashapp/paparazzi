@@ -16,7 +16,7 @@ android {
 }
 
 dependencies {
-  implementation deps.compose.material
+  implementation deps.composeUI.material
 
   testImplementation deps.testparameterinjector
 }
