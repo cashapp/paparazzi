@@ -564,6 +564,16 @@ class Paparazzi @JvmOverloads constructor(
       .apply { isAccessible = true }
       .get(dispatcher) as ArrayDeque<*>
     toRunTrampolined.clear()
+    // Upon reference leaks being fixed, verify we don't need to reset these values for
+    // AndroidUiDispatcher to continue dispatching between tests.
+    dispatcher.javaClass
+      .getDeclaredField("scheduledTrampolineDispatch")
+      .apply { isAccessible = true }
+      .set(dispatcher, false)
+    dispatcher.javaClass
+      .getDeclaredField("scheduledFrameDispatch")
+      .apply { isAccessible = true }
+      .set(dispatcher, false)
   }
 
   private class PaparazziComposeOwner private constructor() : LifecycleOwner, SavedStateRegistryOwner {
