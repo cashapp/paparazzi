@@ -91,7 +91,8 @@ class Paparazzi @JvmOverloads constructor(
   private val renderExtensions: Set<RenderExtension> = setOf(),
   private val supportsRtl: Boolean = false,
   private val showSystemUi: Boolean = false,
-  private val validateAccessibility: Boolean = false
+  private val validateAccessibility: Boolean = false,
+  private val thumbnailScale: ThumbnailScale = ThumbnailScale.ScaleMaxSideTo(DEFAULT_THUMBNAIL_SIZE)
 ) : TestRule {
   private val logger = PaparazziLogger()
   private lateinit var renderSession: RenderSessionImpl
@@ -154,7 +155,11 @@ class Paparazzi @JvmOverloads constructor(
     testName = description.toTestName()
 
     if (!isInitialized) {
-      renderer = Renderer(environment, layoutlibCallback, logger)
+      renderer = Renderer(
+        environment = environment,
+        layoutlibCallback = layoutlibCallback,
+        logger = logger
+      )
       sessionParamsBuilder = renderer.prepare()
     }
     forcePlatformSdkVersion(environment.compileSdkVersion)
@@ -408,7 +413,7 @@ class Paparazzi @JvmOverloads constructor(
   }
 
   private fun scaleImage(image: BufferedImage): BufferedImage {
-    val scale = ImageUtils.getThumbnailScale(image)
+    val scale = ImageUtils.getThumbnailScale(image, thumbnailScale)
     // Only scale images down so we don't waste storage space enlarging smaller layouts.
     return if (scale < 1f) ImageUtils.scale(image, scale, scale) else image
   }
@@ -617,6 +622,8 @@ class Paparazzi @JvmOverloads constructor(
   }
 
   companion object {
+    internal const val DEFAULT_THUMBNAIL_SIZE = 1000
+
     /** The choreographer doesn't like 0 as a frame time, so start an hour later. */
     internal val TIME_OFFSET_NANOS = TimeUnit.HOURS.toNanos(1L)
 

@@ -16,6 +16,7 @@
 
 package app.cash.paparazzi.internal
 
+import app.cash.paparazzi.ThumbnailScale
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
@@ -48,8 +49,6 @@ internal object ImageUtils {
    */
   private val FAIL_ON_MISSING_THUMBNAIL = true
 
-  private const val THUMBNAIL_SIZE = 1000
-
   /** Directory where to write the thumbnails and deltas. */
   private val failureDir: File
     get() {
@@ -63,9 +62,10 @@ internal object ImageUtils {
   fun requireSimilar(
     relativePath: String,
     image: BufferedImage,
-    maxPercentDifference: Double
+    maxPercentDifference: Double,
+    thumbnailScale: ThumbnailScale
   ) {
-    val scale = getThumbnailScale(image)
+    val scale = getThumbnailScale(image, thumbnailScale)
     val thumbnail = scale(image, scale, scale)
 
     val `is` = ImageUtils::class.java.classLoader.getResourceAsStream(relativePath)
@@ -312,9 +312,16 @@ internal object ImageUtils {
     }
   }
 
-  fun getThumbnailScale(image: BufferedImage): Double {
+  fun getThumbnailScale(image: BufferedImage, thumbnailScale: ThumbnailScale): Double {
+    return when (thumbnailScale) {
+      is ThumbnailScale.NoScale -> 1.0
+      is ThumbnailScale.ScaleMaxSideTo -> getThumbnailScale(image, thumbnailScale.size)
+    }
+  }
+
+  fun getThumbnailScale(image: BufferedImage, thumbnailSize: Int): Double {
     val maxDimension = max(image.width, image.height)
-    return THUMBNAIL_SIZE / maxDimension.toDouble()
+    return thumbnailSize / maxDimension.toDouble()
   }
 
   private fun setRenderingHints(g2: Graphics2D) {
