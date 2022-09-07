@@ -53,6 +53,10 @@ abstract class PrepareResourcesTask : DefaultTask() {
   @get:PathSensitive(PathSensitivity.RELATIVE)
   abstract val platformDataRoot: DirectoryProperty
 
+  @get:InputDirectory
+  @get:PathSensitive(PathSensitivity.ABSOLUTE)
+  abstract val snapshotDirectory: DirectoryProperty
+
   @get:Input
   abstract val nonTransitiveRClassEnabled: Property<Boolean>
 
@@ -100,6 +104,8 @@ abstract class PrepareResourcesTask : DefaultTask() {
         it.write(platformDataRoot.get().asFile.invariantSeparatorsPath)
         it.newLine()
         it.write(resourcePackageNames)
+        it.newLine()
+        it.write(snapshotDirectory.get().asFile.invariantSeparatorsPath)
         it.newLine()
       }
   }

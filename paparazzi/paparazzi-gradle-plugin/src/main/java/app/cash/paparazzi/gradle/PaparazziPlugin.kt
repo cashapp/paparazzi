@@ -59,10 +59,13 @@ class PaparazziPlugin : Plugin<Project> {
       }
     }
 
-    project.plugins.withId("com.android.library") { setupPaparazzi(project) }
+    project.plugins.withId("com.android.library") {
+      val extension = project.extensions.create("paparazzi", PaparazziPluginExtension::class.java)
+      setupPaparazzi(project, extension)
+    }
   }
 
-  private fun setupPaparazzi(project: Project) {
+  private fun setupPaparazzi(project: Project, extension: PaparazziPluginExtension) {
     val unzipConfiguration = project.setupPlatformDataTransform()
 
     // Create anchor tasks for all variants.
@@ -79,7 +82,11 @@ class PaparazziPlugin : Plugin<Project> {
         project.tasks.named("merge${variantSlug}Assets") as TaskProvider<MergeSourceSetFolders>
       val mergeAssetsOutputDir = mergeAssetsProvider.flatMap { it.outputDir }
       val reportOutputDir = project.layout.buildDirectory.dir("reports/paparazzi")
-      val snapshotOutputDir = project.layout.projectDirectory.dir("src/test/snapshots")
+
+      val snapshotOutputDir =
+        extension.snapshotRootDirectory.orNull
+          ?: project.layout.projectDirectory.dir("src/test/snapshots").asFile
+      snapshotOutputDir.mkdirs()
 
       val packageAwareArtifacts = project.configurations.getByName("${variant.name}RuntimeClasspath")
         .incoming
@@ -108,6 +115,7 @@ class PaparazziPlugin : Plugin<Project> {
         task.mergeAssetsOutput.set(mergeAssetsOutputDir)
         task.platformDataRoot.set(unzipConfiguration.singleFile)
         task.paparazziResources.set(project.layout.buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.txt"))
+        task.snapshotDirectory.set(snapshotOutputDir)
       }
 
       val testVariantSlug = variant.unitTestVariant.name.capitalize(Locale.US)

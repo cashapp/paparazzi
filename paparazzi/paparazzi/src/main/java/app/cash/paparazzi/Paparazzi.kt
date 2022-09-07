@@ -74,6 +74,7 @@ import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
 import java.awt.image.BufferedImage
+import java.io.File
 import java.util.Date
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.ContinuationInterceptor
@@ -85,7 +86,7 @@ class Paparazzi @JvmOverloads constructor(
   private val renderingMode: RenderingMode = RenderingMode.NORMAL,
   private val appCompatEnabled: Boolean = true,
   private val maxPercentDifference: Double = 0.1,
-  private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference),
+  private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference, environment.snapshotDirectory),
   private val renderExtensions: Set<RenderExtension> = setOf()
 ) : TestRule {
   private val logger = PaparazziLogger()
@@ -606,11 +607,13 @@ class Paparazzi @JvmOverloads constructor(
     private val isVerifying: Boolean =
       System.getProperty("paparazzi.test.verify")?.toBoolean() == true
 
-    private fun determineHandler(maxPercentDifference: Double): SnapshotHandler =
-      if (isVerifying) {
-        SnapshotVerifier(maxPercentDifference)
-      } else {
-        HtmlReportWriter()
+    private fun determineHandler(maxPercentDifference: Double, snapshotDirectory: String?): SnapshotHandler =
+      (snapshotDirectory ?: "src/test/snapshots").let { outputDir ->
+        if (isVerifying) {
+          SnapshotVerifier(maxPercentDifference, File(outputDir))
+        } else {
+          HtmlReportWriter(snapshotRootDirectory = File(outputDir))
+        }
       }
   }
 }
