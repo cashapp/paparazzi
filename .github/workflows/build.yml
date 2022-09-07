@@ -71,7 +71,7 @@ jobs:
           java-version: 11
 
       - name: Publish Artifacts
-        run: ./gradlew -p paparazzi publishMavenPublicationToMavenCentralRepository paparazzi-gradle-plugin:publishPluginMavenPublicationToMavenCentralRepository paparazzi-gradle-plugin:publishPaparazziPluginMarkerMavenPublicationToMavenCentralRepository
+        run: ./gradlew -p paparazzi publishMavenPublicationToMavenCentralRepository paparazzi-gradle-plugin:publishPluginMavenPublicationToMavenCentralRepository paparazzi-gradle-plugin:publishPaparazziPluginMarkerMavenPublicationToMavenCentralRepository --no-parallel
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
