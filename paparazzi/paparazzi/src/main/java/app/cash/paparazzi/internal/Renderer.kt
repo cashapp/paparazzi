@@ -69,7 +69,9 @@ internal class Renderer(
       .plusFlag(RenderParamsFlags.FLAG_DO_NOT_RENDER_ON_CREATE, true)
       .withTheme("AppTheme", true)
 
-    val platformDataDir = File("${environment.platformDataDir}/data")
+    val platformDataRoot = System.getProperty("paparazzi.platform.data.root")
+      ?: throw RuntimeException("Missing system property for 'paparazzi.platform.data.root'")
+    val platformDataDir = File(platformDataRoot, "data")
     val fontLocation = File(platformDataDir, "fonts")
     val nativeLibLocation = File(platformDataDir, getNativeLibDir())
     val icuLocation = File(platformDataDir, "icu" + File.separator + "icudt68l.dat")

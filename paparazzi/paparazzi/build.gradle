@@ -98,7 +98,6 @@ def generateTestConfig = tasks.register("generateTestConfig") {
       writer.writeLine("31")
       writer.writeLine("platforms/android-31/")
       writer.writeLine(".")
-      writer.writeLine(configurations.unzip.singleFile.path)
       writer.writeLine("app.cash.paparazzi")
     }
   }
@@ -107,8 +106,12 @@ def generateTestConfig = tasks.register("generateTestConfig") {
 tasks.withType(Test).configureEach {
   dependsOn(generateTestConfig)
   systemProperty(
-      "paparazzi.test.resources",
-      generateTestConfig.map { it.outputs.files.singleFile }.get().path
+    "paparazzi.test.resources",
+    generateTestConfig.map { it.outputs.files.singleFile }.get().path
+  )
+  systemProperty(
+    "paparazzi.platform.data.root",
+    configurations.unzip.singleFile.absolutePath
   )
   // Uncomment to debug JNI issues in layoutlib
   // jvmArgs '-Xcheck:jni'

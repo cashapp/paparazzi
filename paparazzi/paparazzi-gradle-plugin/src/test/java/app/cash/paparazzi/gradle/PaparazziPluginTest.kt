@@ -570,7 +570,7 @@ class PaparazziPluginTest {
     assertThat(resourceFileContents[0]).isEqualTo("app.cash.paparazzi.plugin.test")
     assertThat(resourceFileContents[1]).isEqualTo("build/intermediates/merged_res/debug")
     assertThat(resourceFileContents[4]).isEqualTo("build/intermediates/assets/debug/mergeDebugAssets")
-    assertThat(resourceFileContents[6]).isEqualTo("app.cash.paparazzi.plugin.test")
+    assertThat(resourceFileContents[5]).isEqualTo("app.cash.paparazzi.plugin.test")
   }
 
   @Test
@@ -590,7 +590,7 @@ class PaparazziPluginTest {
     assertThat(resourceFileContents[0]).isEqualTo("app.cash.paparazzi.plugin.test")
     assertThat(resourceFileContents[1]).isEqualTo("build/intermediates/merged_res/debug")
     assertThat(resourceFileContents[4]).isEqualTo("build/intermediates/assets/debug/mergeDebugAssets")
-    assertThat(resourceFileContents[6]).isEqualTo("app.cash.paparazzi.plugin.test")
+    assertThat(resourceFileContents[5]).isEqualTo("app.cash.paparazzi.plugin.test")
   }
 
   @Test
