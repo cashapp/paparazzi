@@ -296,11 +296,6 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi/-environment/platform-data-dir/</loc>
-         <lastmod>2022-09-07</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
          <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi/-environment/platform-dir/</loc>
          <lastmod>2022-09-07</lastmod>
          <changefreq>daily</changefreq>
