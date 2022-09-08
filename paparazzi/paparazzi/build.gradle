@@ -5,8 +5,8 @@ apply plugin: 'org.jetbrains.kotlin.kapt'
 apply plugin: 'org.jetbrains.dokka'
 apply plugin: 'com.vanniktech.maven.publish'
 
-sourceCompatibility = '1.8'
-targetCompatibility = '1.8'
+sourceCompatibility = libs.versions.java.target.get()
+targetCompatibility = libs.versions.java.target.get()
 
 def artifactType = Attribute.of('artifactType', String)
 

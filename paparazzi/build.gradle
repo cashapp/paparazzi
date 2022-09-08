@@ -37,13 +37,13 @@ subprojects {
   }
 
   tasks.withType(JavaCompile).configureEach {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = libs.versions.java.target.get()
+    targetCompatibility = libs.versions.java.target.get()
   }
 
   tasks.withType(org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile).configureEach {
     kotlinOptions {
-      jvmTarget = "1.8"
+      jvmTarget = libs.versions.java.target.get()
     }
   }
 
@@ -85,7 +85,7 @@ subprojects {
     kotlin {
       target("src/**/*.kt")
       // ktlint doesn't honour .editorconfig yet: https://github.com/diffplug/spotless/issues/142
-      ktlint('0.46.1').editorConfigOverride([
+      ktlint(libs.versions.ktlint.get()).editorConfigOverride([
         'insert_final_newline': 'true',
         'end_of_line': 'lf',
         'charset': 'utf-8',
