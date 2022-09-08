@@ -11,13 +11,13 @@ buildscript {
   }
 
   dependencies {
-    classpath(libs.kotlinGradlePlugin)
-    classpath(libs.androidGradlePlugin)
-    classpath(libs.mavenPublishGradlePlugin)
-    classpath(libs.grgitGradlePlugin)
-    classpath(libs.dokkaGradlePlugin)
-    classpath(libs.versionsGradlePlugin)
-    classpath(libs.spotlessGradlePlugin)
+    classpath(libs.plugin.kotlin)
+    classpath(libs.plugin.android)
+    classpath(libs.plugin.mavenPublish)
+    classpath(libs.plugin.grgit)
+    classpath(libs.plugin.dokka)
+    classpath(libs.plugin.versions)
+    classpath(libs.plugin.spotless)
   }
 }
 

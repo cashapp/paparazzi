@@ -2,8 +2,8 @@ apply plugin: 'org.jetbrains.kotlin.jvm'
 apply plugin: 'com.vanniktech.maven.publish'
 
 dependencies {
-  implementation(libs.bytebuddyCore)
-  implementation(libs.bytebuddyAgent)
+  implementation(libs.bytebuddy.core)
+  implementation(libs.bytebuddy.agent)
   api(libs.junit)
 
   testImplementation(libs.assertj)

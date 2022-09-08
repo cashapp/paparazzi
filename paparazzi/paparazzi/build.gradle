@@ -28,27 +28,27 @@ dependencies {
   // TODO: Use Gradle transforms to extract/rename classes.jar's from AARs
   api files('libs/compose-runtime-1.2.1.jar')
   compileOnly files('libs/compose-ui-1.2.1.jar')
-  compileOnly(libs.androidxLifecycleCommon)
+  compileOnly(libs.androidx.lifecycle.common)
   compileOnly files('libs/lifecycle-runtime-2.5.0.jar')
   compileOnly files('libs/savedstate-1.2.0.jar')
 
   api(deps.layoutlib.native.jdk11)
-  api(libs.toolsCommon)
-  api(libs.toolsLayoutlib)
-  api(libs.toolsNinepatch)
-  api(libs.toolsSdkCommon)
+  api(libs.tools.common)
+  api(libs.tools.layoutlib)
+  api(libs.tools.ninepatch)
+  api(libs.tools.sdkCommon)
   api(libs.kxml2)
   api(libs.junit)
-  api(libs.androidxAnnotations)
+  api(libs.androidx.annotations)
   api(libs.guava)
-  api(libs.kotlinxCoroutinesCore)
+  api(libs.kotlinx.coroutines.core)
   api(libs.okio)
-  api(platform(libs.kotlinBom))
-  implementation(libs.moshiCore)
-  implementation(libs.moshiAdapters)
-  kapt(libs.moshiKotlinCodegen)
-  implementation(libs.jcodecCore)
-  implementation(libs.jcodecJavase)
+  api(platform(libs.kotlin.bom))
+  implementation(libs.moshi.core)
+  implementation(libs.moshi.adapters)
+  kapt(libs.moshi.kotlin)
+  implementation(libs.jcodec.core)
+  implementation(libs.jcodec.javase)
   implementation(projects.paparazziAgent)
 
   def osName = System.getProperty("os.name").toLowerCase(Locale.US)
@@ -67,7 +67,7 @@ dependencies {
 
   testImplementation(libs.assertj)
 
-  add(KotlinPluginKt.PLUGIN_CLASSPATH_CONFIGURATION_NAME,(libs.androidxComposeCompiler))
+  add(KotlinPluginKt.PLUGIN_CLASSPATH_CONFIGURATION_NAME,(libs.androidx.compose.compiler))
 }
 
 tasks.named("dokkaGfm").configure {
