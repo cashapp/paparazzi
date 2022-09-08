@@ -1,6 +1,6 @@
 apply plugin: 'com.vanniktech.maven.publish'
 
-version = libs.versions.layoutlib
+version = libs.versions.layoutlib.get()
 
 tasks.register('linuxJar', Jar) {
   from(repoDir) {

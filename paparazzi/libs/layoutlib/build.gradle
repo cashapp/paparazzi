@@ -1,7 +1,7 @@
 apply plugin: 'org.ajoberstar.grgit'
 apply plugin: 'com.vanniktech.maven.publish'
 
-version = libs.versions.layoutlib
+version = libs.versions.layoutlib.get()
 
 /**
  * Clone AOSP's prebuilts repo to get a prebuilt layoutlib jar. This big repo that takes a long time to clone!
@@ -30,9 +30,9 @@ tasks.register('cloneLayoutlib') {
       dir = repoDir
     }
 
-    logger.warn("Checking out SHA ${libs.versions.layoutLibPrebuiltSha}")
+    logger.warn("Checking out SHA ${libs.versions.layoutLibPrebuiltSha.get()}")
     repo.checkout {
-      branch = libs.versions.layoutLibPrebuiltSha
+      branch = libs.versions.layoutLibPrebuiltSha.get()
     }
   }
 }

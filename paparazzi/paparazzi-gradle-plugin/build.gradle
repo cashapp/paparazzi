@@ -41,7 +41,7 @@ def generateVersion = tasks.register("pluginVersion") {
     versionFile.text = """// Generated file. Do not edit!
 package app.cash.paparazzi
 const val VERSION = "${project.version}"
-const val NATIVE_LIB_VERSION = "${libs.versions.layoutlib}"
+const val NATIVE_LIB_VERSION = "${libs.versions.layoutlib.get()}"
 """
   }
 }
