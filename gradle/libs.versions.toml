@@ -35,14 +35,6 @@ truth = "1.1.3"
 assertj = "3.23.1"
 
 [libraries]
-plugin-android = { module = "com.android.tools.build:gradle", version.ref = "agp" }
-plugin-dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "kotlin" }
-plugin-grgit = { module = "org.ajoberstar.grgit:grgit-gradle", version.ref = "grgit" }
-plugin-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
-plugin-mavenPublish = { module = "com.vanniktech:gradle-maven-publish-plugin", version.ref = "mavenPublish" }
-plugin-spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.ref = "spotless" }
-plugin-versions = { module = "com.github.ben-manes:gradle-versions-plugin", version.ref = "gradle-versions" }
-
 layoutlib-native-jdk11 = { module = "app.cash.paparazzi:layoutlib-native-jdk11", version.ref = "layoutlib" }
 layoutlib-native-macArm = { module = "app.cash.paparazzi:layoutlib-native-macarm", version.ref = "layoutlib" }
 layoutlib-native-macOsX = { module = "app.cash.paparazzi:layoutlib-native-macosx", version.ref = "layoutlib" }
@@ -79,3 +71,14 @@ junit = { module = "junit:junit", version.ref = "junit" }
 testParameterInjector = { module = "com.google.testparameterinjector:test-parameter-injector", version.ref = "testParameterInjector" }
 truth = { module = "com.google.truth:truth", version.ref = "truth" }
 assertj = { module = "org.assertj:assertj-core", version.ref = "assertj" }
+
+plugin-android = { module = "com.android.tools.build:gradle", version.ref = "agp" }
+plugin-dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "kotlin" }
+plugin-grgit = { module = "org.ajoberstar.grgit:grgit-gradle", version.ref = "grgit" }
+plugin-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+plugin-mavenPublish = { module = "com.vanniktech:gradle-maven-publish-plugin", version.ref = "mavenPublish" }
+plugin-spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.ref = "spotless" }
+plugin-versions = { module = "com.github.ben-manes:gradle-versions-plugin", version.ref = "gradle-versions" }
+
+[plugins]
+# No plugins, because ?, see plugin-* under [libraries].
