@@ -1,8 +1,6 @@
 apply plugin: 'com.github.ben-manes.versions'
 
 buildscript {
-  apply from: 'gradle/dependencies.gradle'
-
   repositories {
     mavenCentral()
     google()
