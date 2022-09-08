@@ -11,13 +11,13 @@ buildscript {
   }
 
   dependencies {
-    classpath(libs.plugin.kotlin)
-    classpath(libs.plugin.android)
-    classpath(libs.plugin.mavenPublish)
-    classpath(libs.plugin.grgit)
-    classpath(libs.plugin.dokka)
-    classpath(libs.plugin.versions)
-    classpath(libs.plugin.spotless)
+    classpath libs.plugin.kotlin
+    classpath libs.plugin.android
+    classpath libs.plugin.mavenPublish
+    classpath libs.plugin.grgit
+    classpath libs.plugin.dokka
+    classpath libs.plugin.versions
+    classpath libs.plugin.spotless
   }
 }
 
