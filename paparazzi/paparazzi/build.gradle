@@ -32,7 +32,7 @@ dependencies {
   compileOnly files('libs/lifecycle-runtime-2.5.0.jar')
   compileOnly files('libs/savedstate-1.2.0.jar')
 
-  api deps.layoutlib.native.jdk11
+  api libs.layoutlib.native.jdk11
   api libs.tools.common
   api libs.tools.layoutlib
   api libs.tools.ninepatch
@@ -55,14 +55,14 @@ dependencies {
   if (osName.startsWith("mac")) {
     def osArch = System.getProperty("os.arch").toLowerCase(Locale.US)
     if (osArch.startsWith("x86")) {
-      unzip deps.layoutlib.native.macOsX
+      unzip libs.layoutlib.native.macOsX
     } else {
-      unzip deps.layoutlib.native.macArm
+      unzip libs.layoutlib.native.macArm
     }
   } else if (osName.startsWith("windows")) {
-    unzip deps.layoutlib.native.windows
+    unzip libs.layoutlib.native.windows
   } else {
-    unzip deps.layoutlib.native.linux
+    unzip libs.layoutlib.native.linux
   }
 
   testImplementation libs.assertj
