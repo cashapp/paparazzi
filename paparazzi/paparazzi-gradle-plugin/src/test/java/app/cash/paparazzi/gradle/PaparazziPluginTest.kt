@@ -570,7 +570,7 @@ class PaparazziPluginTest {
     assertThat(resourceFileContents[0]).isEqualTo("app.cash.paparazzi.plugin.test")
     assertThat(resourceFileContents[1]).isEqualTo("build/intermediates/merged_res/debug")
     assertThat(resourceFileContents[4]).isEqualTo("build/intermediates/assets/debug/mergeDebugAssets")
-    assertThat(resourceFileContents[6]).isEqualTo("app.cash.paparazzi.plugin.test")
+    assertThat(resourceFileContents[5]).isEqualTo("app.cash.paparazzi.plugin.test")
   }
 
   @Test
@@ -590,7 +590,7 @@ class PaparazziPluginTest {
     assertThat(resourceFileContents[0]).isEqualTo("app.cash.paparazzi.plugin.test")
     assertThat(resourceFileContents[1]).isEqualTo("build/intermediates/merged_res/debug")
     assertThat(resourceFileContents[4]).isEqualTo("build/intermediates/assets/debug/mergeDebugAssets")
-    assertThat(resourceFileContents[6]).isEqualTo("app.cash.paparazzi.plugin.test")
+    assertThat(resourceFileContents[5]).isEqualTo("app.cash.paparazzi.plugin.test")
   }
 
   @Test
@@ -901,6 +901,18 @@ class PaparazziPluginTest {
     val snapshotImage = snapshots[0]
     val goldenImage = File(fixtureRoot, "src/test/resources/compose_fonts.png")
     assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
+  }
+
+  @Test
+  fun composeDispatcher() {
+    val fixtureRoot = File("src/test/projects/compose-dispatcher")
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()
+    assertThat(snapshots!!).hasLength(1)
   }
 
   @Test

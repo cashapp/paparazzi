@@ -49,10 +49,6 @@ abstract class PrepareResourcesTask : DefaultTask() {
   @get:PathSensitive(PathSensitivity.RELATIVE)
   abstract val mergeAssetsOutput: DirectoryProperty
 
-  @get:InputDirectory
-  @get:PathSensitive(PathSensitivity.RELATIVE)
-  abstract val platformDataRoot: DirectoryProperty
-
   @get:Input
   abstract val nonTransitiveRClassEnabled: Property<Boolean>
 
@@ -96,8 +92,6 @@ abstract class PrepareResourcesTask : DefaultTask() {
         it.write("platforms/android-${compileSdkVersion.get()}/")
         it.newLine()
         it.write(projectDirectory.relativize(mergeAssetsOutput.get()))
-        it.newLine()
-        it.write(platformDataRoot.get().asFile.invariantSeparatorsPath)
         it.newLine()
         it.write(resourcePackageNames)
         it.newLine()

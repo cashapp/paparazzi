@@ -6,11 +6,12 @@ buildscript {
   ext.layoutLibPrebuiltSha = 'fa3aa65'
 
   ext.versions = [
-    kotlin: '1.6.10',
-    ksp: '1.6.10-1.0.4',
+    kotlin: '1.7.10',
+    ksp: '1.7.10-1.0.6',
     agp: '7.1.2',
     layoutlib: "2021.2.1-patch1-$layoutLibPrebuiltSha",
-    compose: '1.1.1',
+    composeCompiler:'1.3.0',
+    composeUI: '1.2.1',
     jcodec: '0.2.5',
     moshi: '1.13.0',
     bytebuddy: '1.12.10',
@@ -26,14 +27,19 @@ buildscript {
       ksp: "com.google.devtools.ksp:symbol-processing-gradle-plugin:${versions.ksp}",
     ],
     compose: [
-      compiler: "androidx.compose.compiler:compiler:${versions.compose}",
+      compiler: "androidx.compose.compiler:compiler:${versions.composeCompiler}"
+    ],
+    composeUI: [
+      material: "androidx.compose.material:material:${versions.composeUI}",
+      ui: "androidx.compose.ui:ui:${versions.composeUI}",
+      uiTooling: "androidx.compose.ui:ui-tooling:${versions.composeUI}",
     ],
     kotlin: [
       bom: "org.jetbrains.kotlin:kotlin-bom:${versions.kotlin}",
     ],
     kotlinx: [
       coroutines: [
-        core: 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.2',
+        core: 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4',
       ],
     ],
     ksp: [

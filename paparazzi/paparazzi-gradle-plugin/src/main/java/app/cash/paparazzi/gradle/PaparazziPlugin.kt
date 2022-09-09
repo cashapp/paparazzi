@@ -27,15 +27,15 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
 import org.gradle.api.attributes.Attribute
-import org.gradle.api.internal.artifacts.ArtifactAttributes
+import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.artifacts.transform.UnzipTransform
 import org.gradle.api.logging.LogLevel.LIFECYCLE
 import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.Delete
+import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.options.Option
 import org.gradle.api.tasks.testing.Test
@@ -66,7 +66,8 @@ class PaparazziPlugin : Plugin<Project> {
   }
 
   private fun setupPaparazzi(project: Project) {
-    val unzipConfiguration = project.setupPlatformDataTransform()
+    project.addTestDependency()
+    val nativePlatformFileCollection = project.setupNativePlatformDependency()
 
     project.setupAnnotationProcessor()
 
@@ -86,13 +87,11 @@ class PaparazziPlugin : Plugin<Project> {
       val reportOutputDir = project.layout.buildDirectory.dir("reports/paparazzi")
       val snapshotOutputDir = project.layout.projectDirectory.dir("src/test/snapshots")
 
-      val packageAwareArtifacts = project.configurations.getByName("${variant.name}RuntimeClasspath")
+      val packageAwareArtifacts = project.configurations
+        .getByName("${variant.name}RuntimeClasspath")
         .incoming
         .artifactView {
-          it.attributes.attribute(
-            Attribute.of("artifactType", String::class.java),
-            "android-symbol-with-package-name"
-          )
+          it.attributes.attribute(ARTIFACT_TYPE_ATTRIBUTE, "android-symbol-with-package-name")
         }
         .artifacts
 
@@ -111,7 +110,6 @@ class PaparazziPlugin : Plugin<Project> {
         task.targetSdkVersion.set(android.targetSdkVersion())
         task.compileSdkVersion.set(android.compileSdkVersion())
         task.mergeAssetsOutput.set(mergeAssetsOutputDir)
-        task.platformDataRoot.set(unzipConfiguration.singleFile)
         task.paparazziResources.set(project.layout.buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.txt"))
       }
 
@@ -150,8 +148,8 @@ class PaparazziPlugin : Plugin<Project> {
       val isVerifyRun = project.objects.property(Boolean::class.java)
 
       project.gradle.taskGraph.whenReady { graph ->
-        isRecordRun.set(graph.hasTask(recordTaskProvider.get()))
-        isVerifyRun.set(graph.hasTask(verifyTaskProvider.get()))
+        isRecordRun.set(recordTaskProvider.map { graph.hasTask(it) })
+        isVerifyRun.set(verifyTaskProvider.map { graph.hasTask(it) })
       }
 
       val testTaskProvider = project.tasks.named("test$testVariantSlug", Test::class.java) { test ->
@@ -160,6 +158,10 @@ class PaparazziPlugin : Plugin<Project> {
 
         test.inputs.dir(mergeResourcesOutputDir)
         test.inputs.dir(mergeAssetsOutputDir)
+        test.inputs.files(nativePlatformFileCollection)
+          .withPropertyName("paparazzi.nativePlatform")
+          .withPathSensitivity(PathSensitivity.NONE)
+
         test.outputs.dir(reportOutputDir)
         test.outputs.dir(snapshotOutputDir)
 
@@ -169,6 +171,8 @@ class PaparazziPlugin : Plugin<Project> {
         // why not a lambda?  See: https://docs.gradle.org/7.2/userguide/validation_problems.html#implementation_unknown
         test.doFirst(object : Action<Task> {
           override fun execute(t: Task) {
+            test.systemProperties["paparazzi.platform.data.root"] =
+              nativePlatformFileCollection.singleFile.absolutePath
             test.systemProperties["paparazzi.test.record"] = isRecordRun.get()
             test.systemProperties["paparazzi.test.verify"] = isVerifyRun.get()
             test.systemProperties.putAll(paparazziProperties)
@@ -202,17 +206,9 @@ class PaparazziPlugin : Plugin<Project> {
     }
   }
 
-  private fun Project.setupPlatformDataTransform(): Configuration {
-    configurations.getByName("testImplementation").dependencies.add(
-      dependencies.create("app.cash.paparazzi:paparazzi:$VERSION")
-    )
-
-    val unzipConfiguration = configurations.create("unzip")
-    unzipConfiguration.attributes.attribute(
-      ArtifactAttributes.ARTIFACT_FORMAT,
-      ArtifactTypeDefinition.DIRECTORY_TYPE
-    )
-    configurations.add(unzipConfiguration)
+  private fun Project.setupNativePlatformDependency(): FileCollection {
+    val nativePlatformConfiguration = configurations.create("nativePlatform")
+    configurations.add(nativePlatformConfiguration)
 
     val operatingSystem = OperatingSystem.current()
     val nativeLibraryArtifactId = when {
@@ -223,18 +219,26 @@ class PaparazziPlugin : Plugin<Project> {
       operatingSystem.isWindows -> "win"
       else -> "linux"
     }
-    unzipConfiguration.dependencies.add(
+    nativePlatformConfiguration.dependencies.add(
       dependencies.create("app.cash.paparazzi:layoutlib-native-$nativeLibraryArtifactId:$NATIVE_LIB_VERSION")
     )
     dependencies.registerTransform(UnzipTransform::class.java) { transform ->
-      transform.from.attribute(ArtifactAttributes.ARTIFACT_FORMAT, ArtifactTypeDefinition.JAR_TYPE)
-      transform.to.attribute(
-        ArtifactAttributes.ARTIFACT_FORMAT,
-        ArtifactTypeDefinition.DIRECTORY_TYPE
-      )
+      transform.from.attribute(ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.JAR_TYPE)
+      transform.to.attribute(ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.DIRECTORY_TYPE)
     }
 
-    return unzipConfiguration
+    return nativePlatformConfiguration
+      .incoming
+      .artifactView {
+        it.attributes.attribute(ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.DIRECTORY_TYPE)
+      }
+      .files
+  }
+
+  private fun Project.addTestDependency() {
+    configurations.getByName("testImplementation").dependencies.add(
+      dependencies.create("app.cash.paparazzi:paparazzi:$VERSION")
+    )
   }
 
   private fun Project.setupAnnotationProcessor() {
@@ -322,6 +326,9 @@ class PaparazziPlugin : Plugin<Project> {
   }
 }
 
+// TODO: Migrate to ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE when Gradle 7.3 is
+//  acceptable as the minimum supported version
+private val ARTIFACT_TYPE_ATTRIBUTE = Attribute.of("artifactType", String::class.java)
 private const val DEFAULT_COMPILE_SDK_VERSION = 31
 
 // annotation processor

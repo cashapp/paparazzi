@@ -42,7 +42,7 @@ import androidx.lifecycle.ViewTreeLifecycleOwner
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
-import androidx.savedstate.ViewTreeSavedStateRegistryOwner
+import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import app.cash.paparazzi.agent.AgentTestRule
 import app.cash.paparazzi.agent.InterceptorRegistrar
 import app.cash.paparazzi.internal.ChoreographerDelegateInterceptor
@@ -564,6 +564,16 @@ class Paparazzi @JvmOverloads constructor(
       .apply { isAccessible = true }
       .get(dispatcher) as ArrayDeque<*>
     toRunTrampolined.clear()
+    // Upon reference leaks being fixed, verify we don't need to reset these values for
+    // AndroidUiDispatcher to continue dispatching between tests.
+    dispatcher.javaClass
+      .getDeclaredField("scheduledTrampolineDispatch")
+      .apply { isAccessible = true }
+      .set(dispatcher, false)
+    dispatcher.javaClass
+      .getDeclaredField("scheduledFrameDispatch")
+      .apply { isAccessible = true }
+      .set(dispatcher, false)
   }
 
   private class PaparazziComposeOwner private constructor() : LifecycleOwner, SavedStateRegistryOwner {
@@ -571,7 +581,7 @@ class Paparazzi @JvmOverloads constructor(
     private val savedStateRegistryController = SavedStateRegistryController.create(this)
 
     override fun getLifecycle(): Lifecycle = lifecycleRegistry
-    override fun getSavedStateRegistry(): SavedStateRegistry = savedStateRegistryController.savedStateRegistry
+    override val savedStateRegistry: SavedStateRegistry = savedStateRegistryController.savedStateRegistry
 
     companion object {
       fun register(view: View) {
@@ -579,7 +589,7 @@ class Paparazzi @JvmOverloads constructor(
         owner.savedStateRegistryController.performRestore(null)
         owner.lifecycleRegistry.currentState = Lifecycle.State.CREATED
         ViewTreeLifecycleOwner.set(view, owner)
-        ViewTreeSavedStateRegistryOwner.set(view, owner)
+        view.setViewTreeSavedStateRegistryOwner(owner)
       }
     }
   }

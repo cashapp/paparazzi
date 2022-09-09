@@ -26,11 +26,11 @@ dependencies {
 dependencies {
   // Paparazzi is a Kotlin JVM module and thus cannot depend on Android library artifacts (AARs)
   // TODO: Use Gradle transforms to extract/rename classes.jar's from AARs
-  api files('libs/compose-runtime-1.1.1.jar')
-  compileOnly files('libs/compose-ui-1.1.1.jar')
+  api files('libs/compose-runtime-1.2.1.jar')
+  compileOnly files('libs/compose-ui-1.2.1.jar')
   compileOnly deps.androidx.lifecycleCommon
-  compileOnly files('libs/lifecycle-runtime-2.4.0.jar')
-  compileOnly files('libs/savedstate-1.1.0.jar')
+  compileOnly files('libs/lifecycle-runtime-2.5.0.jar')
+  compileOnly files('libs/savedstate-1.2.0.jar')
 
   api deps.layoutlib.native.jdk11
   api deps.tools.common
@@ -98,7 +98,6 @@ def generateTestConfig = tasks.register("generateTestConfig") {
       writer.writeLine("31")
       writer.writeLine("platforms/android-31/")
       writer.writeLine(".")
-      writer.writeLine(configurations.unzip.singleFile.path)
       writer.writeLine("app.cash.paparazzi")
     }
   }
@@ -107,8 +106,12 @@ def generateTestConfig = tasks.register("generateTestConfig") {
 tasks.withType(Test).configureEach {
   dependsOn(generateTestConfig)
   systemProperty(
-      "paparazzi.test.resources",
-      generateTestConfig.map { it.outputs.files.singleFile }.get().path
+    "paparazzi.test.resources",
+    generateTestConfig.map { it.outputs.files.singleFile }.get().path
+  )
+  systemProperty(
+    "paparazzi.platform.data.root",
+    configurations.unzip.singleFile.absolutePath
   )
   // Uncomment to debug JNI issues in layoutlib
   // jvmArgs '-Xcheck:jni'
