@@ -1,24 +1,18 @@
 # `@Paparazzi`
-An annotation to turn `@Preview` (or no-arg) composable functions into Paparazzi tests.
+An annotation to generate Paparazzi tests for composable functions.
 
 ## Basic Usage
-If you're already using preview functions to visualize your composable UI, then you can simply annotate that function to create a test!
+In your test directory, define a composable method and apply the annotation. The annotation processor will handle generating a test class for this composable without you having to worry about all the boilerplate.
 
-Example:
 ```kotlin
 @Paparazzi
-@Preview
-@Composable
-fun MyViewPreview() {
-  MyView(title = "Hello Paparazzi")
+fun MyViewTest() {
+  MyView(title = "Hello, Annotation")
 }
 ```
 
-*Note: It's not required to be a preview function. Any no-arg `@Composable fun` will work.*
-
 The annotation exposes a [number of parameters](./src/main/java/app/cash/paparazzi/annotation/api/Paparazzi.kt) to configure Paparazzi as you see fit.
 
-Example:
 ```kotlin
 @Paparazzi(
   name = "big text pixel scroll",
@@ -29,13 +23,26 @@ Example:
 )
 ```
 
+## Composable Previews
+If you're already using preview functions to visualize your composable UI, then you can simply annotate that function to create a test.
+
+```kotlin
+@Paparazzi
+@Preview
+@Composable
+fun MyViewPreview() {
+  MyView(title = "Hello, Annotation")
+}
+```
+
+*A word of caution about this approach: Previews are meant as a developer tool and can change to help visualize different scenarios. Changing a preview will likely invalidate a test and could create confusion.*
+
 ## Annotation Composition
 Want to create more than one test for a composable function?
 Do you have a highly-configured annotation that you want to re-use on multiple functions?
 
-If you answered *yes* to either of those questions, you should consider defining a custom annotation as a fixture to hold your `@Paparazzi` definitions!
+If you answered *yes* to either of those questions, you should consider defining a custom annotation as a fixture to hold your `@Paparazzi` definitions.
 
-Example:
 ```kotlin
 @Paparazzi(
   name = "pixel5",
@@ -48,15 +55,13 @@ Example:
 annotation class MyPaparazzi
 
 @MyPaparazzi
-@Preview
 @Composable
-fun MyViewPreview() {
+fun MyViewTest() {
   MyView(title = "Hello Paparazzi, in multiple ways")
 }
 ```
 This style of composition can even be nested, if desired.
 
-Example:
 ```kotlin
 @Paparazzi(
   name = "pixel5",
@@ -79,9 +84,8 @@ annotation class MyHugePaparazzi
 ## Composable Wrapping
 It might be necessary for you to wrap your composable with additional logic to prepare it for the Paparazzi test.
 In this case, a configuration param called `composableWrapper` can be set to do just that.
-The easiest way to do this is to implement the provided `ComposableWrapper` interface.
+To do this, implement the provided `ComposableWrapper` interface.
 
-Example:
 ```kotlin
 class BlueBoxComposableWrapper : ComposableWrapper {
   @Composable
@@ -101,9 +105,8 @@ class BlueBoxComposableWrapper : ComposableWrapper {
   name = "blue box",
   composableWrapper = BlueBoxComposableWrapper::class
 )
-@Preview
 @Composable
-fun MyViewPreview() {
+fun MyViewTest() {
   MyView(title = "Hello Paparazzi, in a blue box")
 }
 ```
@@ -114,7 +117,6 @@ The `@Paparazzi` annotation also utilizes `TestParameterInjector` to convenientl
 ### Font Scaling
 The annotation exposes the `fontScales` configuration which accepts an array of `Float` values. Setting this parameter will override the value set in the (non-plural) `fontScale` parameter.
 
-Example:
 ```kotlin
 @Paparazzi(
   name = "fontScaling",
@@ -125,7 +127,6 @@ Example:
 ### `@PreviewParameter`
 If you've applied the annotation to a `@Preview` function that accepts a parameter using `@PreviewParameter`, then the values of that provider will be converted to injected parameters sent through your test.
 
-Example:
 ```kotlin
 @Paparazzi
 @Preview
@@ -139,12 +140,11 @@ class MyTitleProvider : PreviewParameterProvider<String> {
 }
 ```
 
-### Composable Wrapper
+### Values Composable Wrapper
 You can alternatively create a composable wrapper by extending the `ValuesComposableWrapper<T>` class.
 This allows you to provide a set of values to your wrapper, similar to how you would with `PreviewParameterProvider`.
 These values are mapped to an injected parameter in your test and passed into your composable wrapper.
 
-Example:
 ```kotlin
 class MyThemeComposableWrapper : ValuesComposableWrapper<MyTheme>() {
   override val values = sequenceOf(MyTheme.LIGHT, MyTheme.DARK)
@@ -164,9 +164,8 @@ class MyThemeComposableWrapper : ValuesComposableWrapper<MyTheme>() {
   name = "themed",
   composableWrapper = MyThemeComposableWrapper::class
 )
-@Preview
 @Composable
-fun MyViewPreview() {
+fun MyViewTest() {
   MyView(title = "Hello Paparazzi, wrapped in different themes")
 }
 ```

@@ -27,10 +27,6 @@ class HelloComposeTest {
 }
 
 @Suppress("TestFunctionName")
-@app.cash.paparazzi.annotation.api.Paparazzi(
-  name = "annotationScaled",
-  fontScales = [1.0f, 2.0f],
-)
 @Composable
 fun HelloPaparazzi() {
   val text = "Hello, Paparazzi"
