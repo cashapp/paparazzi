@@ -19,7 +19,9 @@ object PaparazziPoet {
     model: PaparazziModel,
     index: Int
   ): FileSpec {
-    val className = model.functionName + "Test${if (model.showClassIndex) "_$index" else ""}"
+    val testSuffix = if (model.functionName.endsWith("Test")) "" else "Test"
+    val classIndexSuffix = if (model.showClassIndex) "_$index" else ""
+    val className = "${model.functionName}$testSuffix$classIndexSuffix"
 
     return FileSpec.builder(model.packageName, "${Paparazzi::class.simpleName}_$className")
       .addType(
