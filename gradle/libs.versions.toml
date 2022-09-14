@@ -10,7 +10,7 @@ moshi = "1.13.0"
 # Maps to this commit: https://android.googlesource.com/platform/prebuilts/studio/layoutlib/+/fa3aa65
 # which runs on JDK 11.
 layoutlib = "2021.2.1-patch1-fa3aa65"
-layoutlib-prebuiltSha = 'fa3aa65'
+layoutlibPrebuiltSha = 'fa3aa65'
 
 # Note: there are some compose/androidx versions left hardcoded in `paparazzi/paparazzi/build.gradle`,
 # because they refer to JAR files names in the `paparazzi/paparazzi/libs` folder.

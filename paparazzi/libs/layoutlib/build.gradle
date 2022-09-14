@@ -10,7 +10,7 @@ version = libs.versions.layoutlib.get()
  */
 tasks.register('cloneLayoutlib') {
   it.outputs.dir(repoDir)
-  it.inputs.property('sha', libs.versions.layoutlib.prebuiltSha)
+  it.inputs.property('sha', libs.versions.layoutlibPrebuiltSha)
 
   doFirst {
     // Gradle aggressively creates outputs directories, which interferes with the git clone check
@@ -30,9 +30,9 @@ tasks.register('cloneLayoutlib') {
       dir = repoDir
     }
 
-    logger.warn("Checking out SHA ${libs.versions.layoutlib.prebuiltSha.get()}")
+    logger.warn("Checking out SHA ${libs.versions.layoutlibPrebuiltSha.get()}")
     repo.checkout {
-      branch = libs.versions.layoutlib.prebuiltSha.get()
+      branch = libs.versions.layoutlibPrebuiltSha.get()
     }
   }
 }
