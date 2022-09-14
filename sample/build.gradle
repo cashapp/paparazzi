@@ -12,12 +12,12 @@ android {
     viewBinding true
   }
   composeOptions {
-    kotlinCompilerExtensionVersion libs.versions.androidx.compose.compiler.get()
+    kotlinCompilerExtensionVersion libs.versions.compose.compiler.get()
   }
 }
 
 dependencies {
-  implementation libs.androidx.compose.ui.material
+  implementation libs.composeUi.material
 
   testImplementation libs.testParameterInjector
 }

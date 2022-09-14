@@ -28,7 +28,7 @@ dependencies {
   // TODO: Use Gradle transforms to extract/rename classes.jar's from AARs
   api files('libs/compose-runtime-1.2.1.jar')
   compileOnly files('libs/compose-ui-1.2.1.jar')
-  compileOnly libs.androidx.lifecycle.common
+  compileOnly libs.androidx.lifecycleCommon
   compileOnly files('libs/lifecycle-runtime-2.5.0.jar')
   compileOnly files('libs/savedstate-1.2.0.jar')
 
@@ -67,7 +67,7 @@ dependencies {
 
   testImplementation libs.assertj
 
-  add(KotlinPluginKt.PLUGIN_CLASSPATH_CONFIGURATION_NAME, libs.androidx.compose.compiler)
+  add(KotlinPluginKt.PLUGIN_CLASSPATH_CONFIGURATION_NAME, libs.compose.compiler)
 }
 
 tasks.named("dokkaGfm").configure {
