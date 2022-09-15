@@ -86,7 +86,8 @@ class Paparazzi @JvmOverloads constructor(
   private val appCompatEnabled: Boolean = true,
   private val maxPercentDifference: Double = 0.1,
   private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference),
-  private val renderExtensions: Set<RenderExtension> = setOf()
+  private val renderExtensions: Set<RenderExtension> = setOf(),
+  private val supportsRtl: Boolean = false
 ) : TestRule {
   private val logger = PaparazziLogger()
   private lateinit var renderSession: RenderSessionImpl
@@ -158,7 +159,8 @@ class Paparazzi @JvmOverloads constructor(
       .copy(
         layoutPullParser = LayoutPullParser.createFromString(contentRoot),
         deviceConfig = deviceConfig,
-        renderingMode = renderingMode
+        renderingMode = renderingMode,
+        supportsRtl = supportsRtl
       )
       .withTheme(theme)
 
