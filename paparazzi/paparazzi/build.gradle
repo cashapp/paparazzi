@@ -5,8 +5,8 @@ apply plugin: 'org.jetbrains.kotlin.kapt'
 apply plugin: 'org.jetbrains.dokka'
 apply plugin: 'com.vanniktech.maven.publish'
 
-sourceCompatibility = libs.versions.java.target.get()
-targetCompatibility = libs.versions.java.target.get()
+sourceCompatibility = libs.versions.javaTarget.get()
+targetCompatibility = libs.versions.javaTarget.get()
 
 def artifactType = Attribute.of('artifactType', String)
 
@@ -46,7 +46,7 @@ dependencies {
   api platform(libs.kotlin.bom)
   implementation libs.moshi.core
   implementation libs.moshi.adapters
-  kapt libs.moshi.kotlin
+  kapt libs.moshi.kotlinCodegen
   implementation libs.jcodec.core
   implementation libs.jcodec.javase
   implementation projects.paparazziAgent

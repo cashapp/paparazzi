@@ -38,13 +38,13 @@ subprojects {
   }
 
   tasks.withType(JavaCompile).configureEach {
-    sourceCompatibility = libs.versions.java.target.get()
-    targetCompatibility = libs.versions.java.target.get()
+    sourceCompatibility = libs.versions.javaTarget.get()
+    targetCompatibility = libs.versions.javaTarget.get()
   }
 
   tasks.withType(org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile).configureEach {
     kotlinOptions {
-      jvmTarget = libs.versions.java.target.get()
+      jvmTarget = libs.versions.javaTarget.get()
     }
   }
 
@@ -72,4 +72,3 @@ tasks.register("clean", Delete).configure {
 tasks.named("wrapper").configure {
   distributionType = Wrapper.DistributionType.ALL
 }
-
