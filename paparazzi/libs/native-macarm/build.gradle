@@ -1,6 +1,6 @@
 apply plugin: 'com.vanniktech.maven.publish'
 
-version = versions.layoutlib
+version = libs.versions.layoutlib.get()
 
 tasks.register('macArmJar', Jar) {
   from(repoDir) {

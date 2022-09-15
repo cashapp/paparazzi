@@ -1,8 +1,6 @@
 apply plugin: 'com.github.ben-manes.versions'
 
 buildscript {
-  apply from: '../gradle/dependencies.gradle'
-
   repositories {
     mavenCentral()
     google()
@@ -11,13 +9,13 @@ buildscript {
   }
 
   dependencies {
-    classpath deps.plugins.kotlin
-    classpath deps.plugins.android
-    classpath 'com.vanniktech:gradle-maven-publish-plugin:0.21.0'
-    classpath 'org.ajoberstar.grgit:grgit-gradle:5.0.0'
-    classpath 'org.jetbrains.dokka:dokka-gradle-plugin:1.7.10'
-    classpath deps.plugins.versions
-    classpath deps.plugins.spotless
+    classpath libs.plugin.kotlin
+    classpath libs.plugin.android
+    classpath libs.plugin.mavenPublish
+    classpath libs.plugin.grgit
+    classpath libs.plugin.dokka
+    classpath libs.plugin.versions
+    classpath libs.plugin.spotless
   }
 }
 
@@ -39,13 +37,13 @@ subprojects {
   }
 
   tasks.withType(JavaCompile).configureEach {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = libs.versions.javaTarget.get()
+    targetCompatibility = libs.versions.javaTarget.get()
   }
 
   tasks.withType(org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile).configureEach {
     kotlinOptions {
-      jvmTarget = "1.8"
+      jvmTarget = libs.versions.javaTarget.get()
     }
   }
 
@@ -87,7 +85,7 @@ subprojects {
     kotlin {
       target("src/**/*.kt")
       // ktlint doesn't honour .editorconfig yet: https://github.com/diffplug/spotless/issues/142
-      ktlint('0.46.1').editorConfigOverride([
+      ktlint(libs.versions.ktlint.get()).editorConfigOverride([
         'insert_final_newline': 'true',
         'end_of_line': 'lf',
         'charset': 'utf-8',
