@@ -983,6 +983,26 @@ class PaparazziPluginTest {
     assertThat(localeArSnapshotImage).isSimilarTo(localeArGoldenImage).withDefaultThreshold()
   }
 
+  @Test
+  fun nightModeCompose() {
+    val fixtureRoot = File("src/test/projects/night-mode-compose")
+
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()?.sortedBy { it.lastModified() }
+    assertThat(snapshots!!).hasSize(2)
+
+    val lightModeSnapshotImage = snapshots[0]
+    val darkModeSnapshotImage = snapshots[1]
+    val lightModeGoldenImage = File(fixtureRoot, "src/test/resources/light_mode.png")
+    val darkModeGoldenImage = File(fixtureRoot, "src/test/resources/dark_mode.png")
+    assertThat(lightModeSnapshotImage).isSimilarTo(lightModeGoldenImage).withDefaultThreshold()
+    assertThat(darkModeSnapshotImage).isSimilarTo(darkModeGoldenImage).withDefaultThreshold()
+  }
+
   private fun GradleRunner.runFixture(
     projectRoot: File,
     moduleRoot: File = projectRoot,
