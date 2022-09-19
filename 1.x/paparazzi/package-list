@@ -94,7 +94,7 @@ $dokka.location:app.cash.paparazzi/DeviceConfig.Companion/PIXEL_XL/#/PointingToD
 $dokka.location:app.cash.paparazzi/DeviceConfig.Companion/getEnumMap/#java.io.File/PointingToDeclaration/paparazzi/app.cash.paparazzi/-device-config/-companion/get-enum-map.md
 $dokka.location:app.cash.paparazzi/DeviceConfig.Companion/loadProperties/#java.io.File/PointingToDeclaration/paparazzi/app.cash.paparazzi/-device-config/-companion/load-properties.md
 $dokka.location:app.cash.paparazzi/DeviceConfig///PointingToDeclaration/paparazzi/app.cash.paparazzi/-device-config/index.md
-$dokka.location:app.cash.paparazzi/DeviceConfig/DeviceConfig/#kotlin.Int#kotlin.Int#kotlin.Int#kotlin.Int#com.android.resources.ScreenOrientation#com.android.resources.NightMode#com.android.resources.Density#kotlin.Float#com.android.resources.LayoutDirection#kotlin.String?#com.android.resources.ScreenRatio#com.android.resources.ScreenSize#com.android.resources.Keyboard#com.android.resources.TouchScreen#com.android.resources.KeyboardState#kotlin.Boolean#com.android.resources.Navigation#kotlin.String/PointingToDeclaration/paparazzi/app.cash.paparazzi/-device-config/-device-config.md
+$dokka.location:app.cash.paparazzi/DeviceConfig/DeviceConfig/#kotlin.Int#kotlin.Int#kotlin.Int#kotlin.Int#com.android.resources.ScreenOrientation#com.android.resources.UiMode#com.android.resources.NightMode#com.android.resources.Density#kotlin.Float#com.android.resources.LayoutDirection#kotlin.String?#com.android.resources.ScreenRatio#com.android.resources.ScreenSize#com.android.resources.Keyboard#com.android.resources.TouchScreen#com.android.resources.KeyboardState#kotlin.Boolean#com.android.resources.Navigation#kotlin.String/PointingToDeclaration/paparazzi/app.cash.paparazzi/-device-config/-device-config.md
 $dokka.location:app.cash.paparazzi/DeviceConfig/density/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-device-config/density.md
 $dokka.location:app.cash.paparazzi/DeviceConfig/folderConfiguration/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-device-config/folder-configuration.md
 $dokka.location:app.cash.paparazzi/DeviceConfig/fontScale/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-device-config/font-scale.md
@@ -113,6 +113,8 @@ $dokka.location:app.cash.paparazzi/DeviceConfig/screenWidth/#/PointingToDeclarat
 $dokka.location:app.cash.paparazzi/DeviceConfig/size/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-device-config/size.md
 $dokka.location:app.cash.paparazzi/DeviceConfig/softButtons/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-device-config/soft-buttons.md
 $dokka.location:app.cash.paparazzi/DeviceConfig/touchScreen/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-device-config/touch-screen.md
+$dokka.location:app.cash.paparazzi/DeviceConfig/uiMode/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-device-config/ui-mode.md
+$dokka.location:app.cash.paparazzi/DeviceConfig/uiModeMask/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-device-config/ui-mode-mask.md
 $dokka.location:app.cash.paparazzi/DeviceConfig/xdpi/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-device-config/xdpi.md
 $dokka.location:app.cash.paparazzi/DeviceConfig/ydpi/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-device-config/ydpi.md
 $dokka.location:app.cash.paparazzi/Environment///PointingToDeclaration/paparazzi/app.cash.paparazzi/-environment/index.md
