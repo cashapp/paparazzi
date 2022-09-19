@@ -16,7 +16,6 @@
 
 package app.cash.paparazzi.internal
 
-import android.content.res.Configuration
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.internal.parsers.LayoutPullParser
 import com.android.SdkConstants
@@ -31,7 +30,6 @@ import com.android.ide.common.resources.ResourceValueMap
 import com.android.ide.common.resources.deprecated.ResourceRepository
 import com.android.layoutlib.bridge.Bridge
 import com.android.resources.LayoutDirection
-import com.android.resources.NightMode
 import com.android.resources.ResourceType
 
 /** Creates [SessionParams] objects. */
@@ -99,6 +97,7 @@ internal data class SessionParamsBuilder(
       deviceConfig.hardwareConfig, resourceResolver, layoutlibCallback, minSdk, targetSdk, logger
     )
     result.fontScale = deviceConfig.fontScale
+    result.uiMode = deviceConfig.uiModeMask
 
     val localeQualifier = folderConfiguration.localeQualifier
     val layoutDirectionQualifier = folderConfiguration.layoutDirectionQualifier
@@ -109,13 +108,6 @@ internal data class SessionParamsBuilder(
       result.locale = localeQualifier.tag
     }
     result.setRtlSupport(supportsRtl)
-
-    val nightModeFlag = if (NightMode.NIGHT == folderConfiguration.nightModeQualifier.value) {
-      Configuration.UI_MODE_NIGHT_YES
-    } else {
-      Configuration.UI_MODE_NIGHT_NO
-    }
-    result.uiMode = (result.uiMode and Configuration.UI_MODE_NIGHT_MASK.inv()) or nightModeFlag
 
     for ((key, value) in flags) {
       result.setFlag(key as Key<Any>, value)
