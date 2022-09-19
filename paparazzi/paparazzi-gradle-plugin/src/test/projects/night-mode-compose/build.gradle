@@ -28,5 +28,6 @@ android {
 
 dependencies {
   implementation 'androidx.compose.material:material:1.2.1'
-  implementation 'com.google.testparameterinjector:test-parameter-injector:1.8'
+
+  testImplementation 'com.google.testparameterinjector:test-parameter-injector:1.8'
 }
