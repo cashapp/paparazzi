@@ -10,21 +10,16 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(TestParameterInjector::class)
-class NightModeComposeTest(
+class NightModeTest(
   @TestParameter nightMode: NightMode
 ) {
-
   @get:Rule
   val paparazzi = Paparazzi(
-    deviceConfig = DeviceConfig.NEXUS_5.copy(
-      nightMode = nightMode
-    )
+    deviceConfig = DeviceConfig.NEXUS_5.copy(nightMode = nightMode)
   )
 
   @Test
-  fun nightModeSupport() {
-    paparazzi.snapshot {
-      LightDark()
-    }
+  fun xml() {
+    paparazzi.snapshot(paparazzi.inflate(R.layout.layout))
   }
 }
