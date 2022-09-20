@@ -149,27 +149,27 @@ class PaparazziTest {
 
     paparazzi.snapshot(view, timeNanos = 0L)
     assertThat(log).containsExactly(
-      "onDraw text=",
+      "onDraw text="
     )
     log.clear()
 
     paparazzi.snapshot(view, timeNanos = 2_000_000_000L)
     assertThat(log).containsExactly(
       "onAnimationStart uptimeMillis=2000",
-      "onDraw text=0.0",
+      "onDraw text=0.0"
     )
     log.clear()
 
     paparazzi.snapshot(view, timeNanos = 2_500_000_000L)
     assertThat(log).containsExactly(
-      "onDraw text=0.5",
+      "onDraw text=0.5"
     )
     log.clear()
 
     paparazzi.snapshot(view, timeNanos = 3_000_000_000L)
     assertThat(log).containsExactly(
       "onAnimationEnd uptimeMillis=3000",
-      "onDraw text=1.0",
+      "onDraw text=1.0"
     )
     assertThat(AnimationHandler.getAnimationCount()).isEqualTo(0)
     log.clear()
