@@ -842,6 +842,23 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun verifyAaptAttrResourceParsingInCompose() {
+    val fixtureRoot = File("src/test/projects/verify-aapt-compose")
+
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()
+    assertThat(snapshots!!).hasLength(1)
+
+    val snapshotImage = snapshots[0]
+    val goldenImage = File(fixtureRoot, "src/test/resources/compose_card_chip.png")
+    assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
+  }
+
+  @Test
   fun ninePatch() {
     val fixtureRoot = File("src/test/projects/nine-patch")
 
