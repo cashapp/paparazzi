@@ -70,9 +70,11 @@ import com.android.layoutlib.bridge.Bridge.prepareThread
 import com.android.layoutlib.bridge.BridgeRenderSession
 import com.android.layoutlib.bridge.impl.RenderAction
 import com.android.layoutlib.bridge.impl.RenderSessionImpl
+import com.android.resources.ScreenRound
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
+import java.awt.geom.Ellipse2D
 import java.awt.image.BufferedImage
 import java.util.Date
 import java.util.concurrent.TimeUnit
@@ -300,7 +302,7 @@ class Paparazzi @JvmOverloads constructor(
             }
 
             val image = bridgeRenderSession.image
-            frameHandler.handle(scaleImage(image))
+            frameHandler.handle(scaleImage(frameImage(image)))
           }
         }
       } finally {
@@ -368,6 +370,18 @@ class Paparazzi @JvmOverloads constructor(
     } catch (e: Exception) {
       throw RuntimeException(e)
     }
+  }
+
+  private fun frameImage(image: BufferedImage): BufferedImage {
+    if (deviceConfig.screenRound == ScreenRound.ROUND) {
+      val newImage = BufferedImage(image.width, image.height, image.type)
+      val g = newImage.createGraphics()
+      g.clip = Ellipse2D.Float(0f, 0f, image.height.toFloat(), image.width.toFloat())
+      g.drawImage(image, 0, 0, image.width, image.height, null)
+      return newImage
+    }
+
+    return image
   }
 
   private fun scaleImage(image: BufferedImage): BufferedImage {
