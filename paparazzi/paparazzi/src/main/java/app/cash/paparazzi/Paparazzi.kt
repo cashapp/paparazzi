@@ -208,8 +208,8 @@ class Paparazzi @JvmOverloads constructor(
   }
 
   @JvmOverloads
-  fun snapshot(view: View, name: String? = null) {
-    takeSnapshots(view, name, 0, -1, 1)
+  fun snapshot(view: View, name: String? = null, timeNanos: Long = 0L) {
+    takeSnapshots(view, name, timeNanos, -1, 1)
   }
 
   @JvmOverloads
