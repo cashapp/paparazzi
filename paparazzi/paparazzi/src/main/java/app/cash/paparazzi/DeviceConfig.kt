@@ -43,6 +43,7 @@ import com.android.resources.Navigation
 import com.android.resources.NightMode
 import com.android.resources.ScreenOrientation
 import com.android.resources.ScreenRatio
+import com.android.resources.ScreenRound
 import com.android.resources.ScreenSize
 import com.android.resources.TouchScreen
 import com.android.resources.UiMode
@@ -80,6 +81,7 @@ data class DeviceConfig(
   val keyboardState: KeyboardState = KeyboardState.SOFT,
   val softButtons: Boolean = true,
   val navigation: Navigation = Navigation.NONAV,
+  val screenRound: com.android.resources.ScreenRound? = null,
   val released: String = "November 13, 2012"
 ) {
   val folderConfiguration: FolderConfiguration
@@ -111,7 +113,7 @@ data class DeviceConfig(
   val hardwareConfig: HardwareConfig
     get() = HardwareConfig(
       screenWidth, screenHeight, density, xdpi.toFloat(), ydpi.toFloat(), size,
-      orientation, null, softButtons
+      orientation, screenRound, softButtons
     )
 
   val uiModeMask: Int
@@ -465,6 +467,65 @@ data class DeviceConfig(
       keyboardState = KeyboardState.SOFT,
       softButtons = true,
       navigation = Navigation.NONAV,
+      released = "October 15, 2020"
+    )
+
+    // https://android.googlesource.com/platform/tools/base/+/mirror-goog-studio-master-dev/sdklib/src/main/java/com/android/sdklib/devices/wear.xml
+    @JvmField
+    val WEAR_OS_SMALL_ROUND: DeviceConfig = DeviceConfig(
+      screenHeight = 384,
+      screenWidth = 384,
+      xdpi = 320,
+      ydpi = 320,
+      orientation = ScreenOrientation.PORTRAIT,
+      density = Density.XHIGH,
+      ratio = ScreenRatio.LONG,
+      size = ScreenSize.SMALL,
+      keyboard = Keyboard.NOKEY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.HIDDEN,
+      softButtons = false,
+      navigation = Navigation.NONAV,
+      screenRound = ScreenRound.ROUND,
+      released = "June 7, 2014"
+    )
+
+    // https://android.googlesource.com/platform/tools/base/+/mirror-goog-studio-master-dev/sdklib/src/main/java/com/android/sdklib/devices/wear.xml
+    @JvmField
+    val WEAR_OS_SQUARE: DeviceConfig = DeviceConfig(
+      screenHeight = 280,
+      screenWidth = 280,
+      xdpi = 240,
+      ydpi = 240,
+      orientation = ScreenOrientation.PORTRAIT,
+      density = Density.HIGH,
+      ratio = ScreenRatio.LONG,
+      size = ScreenSize.SMALL,
+      keyboard = Keyboard.NOKEY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.HIDDEN,
+      softButtons = false,
+      navigation = Navigation.NONAV,
+      screenRound = ScreenRound.NOTROUND,
+      released = "June 7, 2014"
+    )
+
+    // https://www.techidence.com/galaxy-watch4-features-reviews-and-price/
+    val GALAXY_WATCH4_CLASSIC_LARGE: DeviceConfig = DeviceConfig(
+      screenHeight = 454,
+      screenWidth = 454,
+      xdpi = 320,
+      ydpi = 320,
+      orientation = ScreenOrientation.PORTRAIT,
+      density = Density.XHIGH,
+      ratio = ScreenRatio.NOTLONG,
+      size = ScreenSize.SMALL,
+      keyboard = Keyboard.NOKEY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.HIDDEN,
+      softButtons = false,
+      navigation = Navigation.NONAV,
+      screenRound = ScreenRound.ROUND,
       released = "October 15, 2020"
     )
 
