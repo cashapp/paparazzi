@@ -147,7 +147,7 @@ $dokka.location:app.cash.paparazzi/Paparazzi/inflate/#kotlin.Int/PointingToDecla
 $dokka.location:app.cash.paparazzi/Paparazzi/layoutInflater/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/layout-inflater.md
 $dokka.location:app.cash.paparazzi/Paparazzi/prepare/#org.junit.runner.Description/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/prepare.md
 $dokka.location:app.cash.paparazzi/Paparazzi/resources/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/resources.md
-$dokka.location:app.cash.paparazzi/Paparazzi/snapshot/#android.view.View#kotlin.String?/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/snapshot.md
+$dokka.location:app.cash.paparazzi/Paparazzi/snapshot/#android.view.View#kotlin.String?#kotlin.Long/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/snapshot.md
 $dokka.location:app.cash.paparazzi/Paparazzi/snapshot/#kotlin.String?#kotlin.Function0[kotlin.Unit]/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/snapshot.md
 $dokka.location:app.cash.paparazzi/Paparazzi/unsafeUpdateConfig/#app.cash.paparazzi.DeviceConfig?#kotlin.String?#com.android.ide.common.rendering.api.SessionParams.RenderingMode?/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/unsafe-update-config.md
 $dokka.location:app.cash.paparazzi/RenderExtension///PointingToDeclaration/paparazzi/app.cash.paparazzi/-render-extension/index.md
