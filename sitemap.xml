@@ -116,6 +116,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi/-device-config/screen-round/</loc>
+         <lastmod>2022-09-20</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi/-device-config/screen-width/</loc>
          <lastmod>2022-09-20</lastmod>
          <changefreq>daily</changefreq>
@@ -157,6 +162,11 @@
     </url>
     <url>
          <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi/-device-config/-companion/</loc>
+         <lastmod>2022-09-20</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi/-device-config/-companion/-g-a-l-a-x-y_-w-a-t-c-h4_-c-l-a-s-s-i-c_-l-a-r-g-e/</loc>
          <lastmod>2022-09-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
@@ -262,6 +272,16 @@
     </url>
     <url>
          <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi/-device-config/-companion/-p-i-x-e-l_6_-p-r-o/</loc>
+         <lastmod>2022-09-20</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi/-device-config/-companion/-w-e-a-r_-o-s_-s-m-a-l-l_-r-o-u-n-d/</loc>
+         <lastmod>2022-09-20</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi/-device-config/-companion/-w-e-a-r_-o-s_-s-q-u-a-r-e/</loc>
          <lastmod>2022-09-20</lastmod>
          <changefreq>daily</changefreq>
     </url>
