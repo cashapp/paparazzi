@@ -42,6 +42,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinAndroidPluginWrapper
 import org.jetbrains.kotlin.gradle.plugin.KotlinMultiplatformPluginWrapper
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
+import java.io.File
 import java.util.Locale
 
 @Suppress("unused")
@@ -183,6 +184,81 @@ class PaparazziPlugin : Plugin<Project> {
         // why not a lambda?  See: https://docs.gradle.org/7.2/userguide/validation_problems.html#implementation_unknown
         test.doLast(object : Action<Task> {
           override fun execute(t: Task) {
+            /**
+             * Compare the Index Lines
+             *    Match?
+             *      Compare run and golden run
+             *        - Match?
+             *          + good - test class is current
+             *        - In Run, but not in Golden?
+             *          + good - new test
+             *        - In Golden, but not in Run?
+             *          + bad - a test has been deleted.
+             *
+             *    In Run, but not in Golden?
+             *        + good - new test class
+             *
+             *    In Golden, but not Run?
+             *         + bad - Entire class hs been deleted.
+             *
+             */
+            val runIndexFile = File("${reportOutputDir.get()}/ledger", "index.js")
+            val runIndices = readIndexFile(runIndexFile)
+            val goldenIndexFile = ensureGoldenDirectoryExists(File("$snapshotOutputDir"))
+            val goldenRunIndices = readIndexFile(goldenIndexFile)
+            val both = emptyList<String>().toMutableList()
+
+            val runIterator = runIndices.iterator()
+            while(runIterator.hasNext()) {
+              val next = runIterator.next()
+              if (goldenRunIndices.contains(next)) {
+                goldenRunIndices.remove(next)
+                runIterator.remove()
+                both.add(next)
+              }
+            }
+
+            // New test class added, save them as golden values
+            runIndices.forEach { runIndex ->
+              val runFile = File("${reportOutputDir.get()}/ledger", "$runIndex.js")
+              runFile.copyTo(File("$snapshotOutputDir/ledger", "$runIndex.js"), overwrite = true)
+              // Should we also confirm that new screenshots are there?
+              // Probably not since that is record's job?
+            }
+
+            // entire class has been deleted, delete screenshots.
+            goldenRunIndices.forEach { goldenIndex ->
+              // read goldenRun's screenshot location, and delete it.
+              // val file = File("${reportOutputDir.get()}/ledger", goldenIndex)
+              // val snaps = readIndexFile(file)
+              // snaps.forEach {
+              //   // Delete snapshot file
+              // }
+            }
+
+            //go into run file and compare
+            both.forEach { matchingIndex ->
+              //find snapshot in golden and & run dir
+              val runFile = File("${reportOutputDir.get()}/ledger", "$matchingIndex.js")
+              val goldenFile = File("${snapshotOutputDir}/ledger", "$matchingIndex.js")
+
+              val runSnaps = readSnapshotFile(runFile)
+              val goldenSnaps = readSnapshotFile(goldenFile)
+
+              // compare runSnaps and goldenSnaps
+              val runSnapsIterator = runSnaps.iterator()
+              while (runIterator.hasNext()) {
+                val next = runIterator.next()
+              }
+            }
+            // Save the new index file at the end
+            runIndexFile.copyTo(goldenIndexFile, overwrite = true)
+          }
+        })
+        @Suppress("ObjectLiteralToLambda")
+        // why not a lambda?  See: https://docs.gradle.org/7.2/userguide/validation_problems.html#implementation_unknown
+        test.doLast(object : Action<Task> {
+          override fun execute(t: Task) {
             val uri = reportOutputDir.get().asFile.toPath().resolve("index.html").toUri()
             test.logger.log(LIFECYCLE, "See the Paparazzi report at: $uri")
           }
@@ -199,6 +275,61 @@ class PaparazziPlugin : Plugin<Project> {
       }
       return this
     }
+  }
+  private fun readIndexFile(file: File): MutableList<String> {
+    if (!file.canRead()) {
+      return emptyList<String>().toMutableList()
+    }
+    val raw = file.readLines().toMutableList()
+    val runs = mutableListOf<String>()
+    // Remove [ and ];
+    if (raw.isEmpty()) {
+      return raw
+    }
+    raw.removeFirst()
+    raw.removeLast()
+    for (run in raw) {
+      //strip out only the file name
+      val afterFirstQuote = run.indexOf("\"") + 1
+      runs.add(run.substring(afterFirstQuote, run.indexOf("\"", afterFirstQuote)))
+    }
+    return runs
+  }
+
+  private fun readSnapshotFile(file: File): List<Snapshot> {
+    println("reading file: $file")
+    val fileContents = file.readText()
+
+    return PluginJson.listOfShotsAdapter.fromJson(fileContents) ?: emptyList()
+  }
+
+  private fun ensureGoldenDirectoryExists(snapshotDirectory: File): File {
+    // If they have never saved golden values, we need to create the directory
+    if (!snapshotDirectory.exists()) {
+      snapshotDirectory.mkdirs()
+    }
+    val ledgerDirectory = File("$snapshotDirectory", "ledger")
+    if (!ledgerDirectory.exists()) {
+      ledgerDirectory.mkdirs()
+    }
+    return File(ledgerDirectory, "index.js")
+  }
+
+  private fun areSnapshotsEqual(goldenSnap: Snapshot, newSnap: Snapshot): Boolean {
+    //We have to ignore time stamps because they will be different
+    if (goldenSnap.name != newSnap.name) {
+      return false
+    }
+    if (goldenSnap.file != newSnap.file) {
+      return false
+    }
+    if (goldenSnap.tags != newSnap.tags) {
+      return false
+    }
+    if (goldenSnap.testName != newSnap.testName) {
+      return false
+    }
+    return true
   }
 
   private fun Project.setupNativePlatformDependency(): FileCollection {

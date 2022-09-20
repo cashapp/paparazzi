@@ -65,6 +65,7 @@ class HtmlReportWriter @JvmOverloads constructor(
   private val runsDirectory: File = File(rootDirectory, "runs")
   private val imagesDirectory: File = File(rootDirectory, "images")
   private val videosDirectory: File = File(rootDirectory, "videos")
+  private val ledgerDirectory: File = File(rootDirectory, "ledger")
 
   private val goldenImagesDirectory = File(snapshotRootDirectory, "images")
   private val goldenVideosDirectory = File(snapshotRootDirectory, "videos")
@@ -190,6 +191,10 @@ class HtmlReportWriter @JvmOverloads constructor(
   /** Release all resources and block until everything has been written to the file system. */
   override fun close() {
     writeRunJs()
+    if (isRecording) {
+      writeLedgerJsFiles()
+      writeLedgerIndex()
+    }
   }
 
   /**
@@ -215,6 +220,32 @@ class HtmlReportWriter @JvmOverloads constructor(
       writeUtf8("window.all_runs = ")
       PaparazziJson.listOfStringsAdapter.toJson(this, runNames)
       writeUtf8(";")
+    }
+  }
+
+  private fun writeLedgerIndex() {
+    val runNames = mutableListOf<String>()
+    val runs = ledgerDirectory.list()?.sorted() ?: emptyList()
+    for (run in runs) {
+      if (run.endsWith(".js") && !run.equals("index.js")) {
+        runNames += run.substring(0, run.length - 3)
+      }
+    }
+    File(ledgerDirectory, "index.js").writeAtomically {
+      writeUtf8("recording.all_runs = ")
+      PaparazziJson.listOfStringsAdapter.toJson(this, runNames)
+      writeUtf8(";")
+    }
+  }
+
+  private fun writeLedgerJsFiles() {
+    if (!ledgerDirectory.exists()) {
+      ledgerDirectory.mkdirs()
+    }
+    val name = PaparazziJson.testNameToJson(shots[0].testName)
+    val runJs = File(ledgerDirectory, "$name.js")
+    runJs.writeAtomically {
+      PaparazziJson.listOfShotsAdapter.toJson(this, shots)
     }
   }
 

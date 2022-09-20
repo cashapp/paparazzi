@@ -1,4 +1,5 @@
 apply plugin: 'org.jetbrains.kotlin.jvm'
+apply plugin: 'org.jetbrains.kotlin.kapt'
 apply plugin: 'java-gradle-plugin'
 apply plugin: 'com.vanniktech.maven.publish'
 
@@ -16,6 +17,10 @@ dependencies {
   implementation platform(libs.kotlin.bom)
   implementation libs.plugin.kotlin
   implementation libs.plugin.android
+  implementation("com.squareup.moshi:moshi:1.14.0")
+  implementation("com.squareup.moshi:moshi-kotlin:1.14.0")
+  implementation("com.squareup.moshi:moshi-adapters:1.14.0")
+  kapt("com.squareup.moshi:moshi-kotlin-codegen:1.14.0")
   implementation(libs.tools.sdkCommon) {
     because "SymbolUtils.getPackageNameFromManifest removed in AGP 7.0.  Replace?"
   }
