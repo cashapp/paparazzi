@@ -25,6 +25,7 @@ import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
@@ -37,6 +38,7 @@ abstract class PrepareResourcesTask : DefaultTask() {
 
   @get:InputDirectory
   @get:PathSensitive(PathSensitivity.RELATIVE)
+  @get:Optional
   abstract val mergeResourcesOutput: DirectoryProperty
 
   @get:Input
@@ -51,6 +53,9 @@ abstract class PrepareResourcesTask : DefaultTask() {
 
   @get:Input
   abstract val nonTransitiveRClassEnabled: Property<Boolean>
+
+  @get:Input
+  abstract val androidResourcesEnabled: Property<Boolean>
 
   @get:InputFiles
   @get:PathSensitive(PathSensitivity.NONE)
@@ -76,25 +81,31 @@ abstract class PrepareResourcesTask : DefaultTask() {
           add(file.useLines { lines -> lines.first() })
         }
       }.joinToString(",")
+    } else if (!androidResourcesEnabled.get()) {
+      ""
     } else {
       mainPackage
     }
 
+    println("JROD: resourcePackageNames = $resourcePackageNames")
+
     out.bufferedWriter()
-      .use {
-        it.write(mainPackage)
-        it.newLine()
-        it.write(projectDirectory.relativize(mergeResourcesOutput.get()))
-        it.newLine()
-        it.write(targetSdkVersion.get())
-        it.newLine()
+      .use { bw ->
+        bw.write(mainPackage)
+        bw.newLine()
+        bw.write(
+          mergeResourcesOutput.orNull?.let { projectDirectory.relativize(it) } ?: "NO_RESOURCES"
+        )
+        bw.newLine()
+        bw.write(targetSdkVersion.get())
+        bw.newLine()
         // Use compileSdkVersion for system framework resources.
-        it.write("platforms/android-${compileSdkVersion.get()}/")
-        it.newLine()
-        it.write(projectDirectory.relativize(mergeAssetsOutput.get()))
-        it.newLine()
-        it.write(resourcePackageNames)
-        it.newLine()
+        bw.write("platforms/android-${compileSdkVersion.get()}/")
+        bw.newLine()
+        bw.write(projectDirectory.relativize(mergeAssetsOutput.get()))
+        bw.newLine()
+        bw.write(resourcePackageNames)
+        bw.newLine()
       }
   }
 

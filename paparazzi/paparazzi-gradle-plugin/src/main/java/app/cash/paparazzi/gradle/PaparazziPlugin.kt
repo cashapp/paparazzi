@@ -28,10 +28,12 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
 import org.gradle.api.attributes.Attribute
+import org.gradle.api.file.Directory
 import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.artifacts.transform.UnzipTransform
 import org.gradle.api.logging.LogLevel.LIFECYCLE
 import org.gradle.api.plugins.JavaBasePlugin
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.options.Option
@@ -42,6 +44,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinAndroidPluginWrapper
 import org.jetbrains.kotlin.gradle.plugin.KotlinMultiplatformPluginWrapper
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
+import org.jetbrains.kotlin.gradle.plugin.mpp.pm20.distsDirectory
 import java.util.Locale
 
 @Suppress("unused")
@@ -70,12 +73,18 @@ class PaparazziPlugin : Plugin<Project> {
     val verifyVariants = project.tasks.register("verifyPaparazzi")
     val recordVariants = project.tasks.register("recordPaparazzi")
 
-    val variants = project.extensions.getByType(LibraryExtension::class.java)
-      .libraryVariants
+    val libraryExtension = project.extensions.getByType(LibraryExtension::class.java)
+
+    val variants = libraryExtension.libraryVariants
     variants.all { variant ->
       val variantSlug = variant.name.capitalize(Locale.US)
-
-      val mergeResourcesOutputDir = variant.mergeResourcesProvider.flatMap { it.outputDir }
+      val androidResourcesEnabled = libraryExtension.buildFeatures.androidResources != false
+      println("JROD: for variant ${variant.name}, androidResourcesEnabled = $androidResourcesEnabled")
+      val mergeResourcesOutputDir = if (androidResourcesEnabled) {
+        variant.mergeResourcesProvider.flatMap { it.outputDir }
+      } else {
+        project.provider { null }
+      }
       val mergeAssetsProvider =
         project.tasks.named("merge${variantSlug}Assets") as TaskProvider<MergeSourceSetFolders>
       val mergeAssetsOutputDir = mergeAssetsProvider.flatMap { it.outputDir }
@@ -101,6 +110,7 @@ class PaparazziPlugin : Plugin<Project> {
         task.packageName.set(android.packageName())
         task.artifactFiles.from(packageAwareArtifacts.artifactFiles)
         task.nonTransitiveRClassEnabled.set(nonTransitiveRClassEnabled)
+        task.androidResourcesEnabled.set(androidResourcesEnabled)
         task.mergeResourcesOutput.set(mergeResourcesOutputDir)
         task.targetSdkVersion.set(android.targetSdkVersion())
         task.compileSdkVersion.set(android.compileSdkVersion())
@@ -151,7 +161,7 @@ class PaparazziPlugin : Plugin<Project> {
         test.systemProperties["paparazzi.test.resources"] =
           writeResourcesTask.flatMap { it.paparazziResources.asFile }.get().path
 
-        test.inputs.dir(mergeResourcesOutputDir)
+        test.inputs.dir(mergeResourcesOutputDir).optional()
         test.inputs.dir(mergeAssetsOutputDir)
         test.inputs.files(nativePlatformFileCollection)
           .withPropertyName("paparazzi.nativePlatform")

@@ -1,0 +1,23 @@
+apply plugin: 'com.android.library'
+apply plugin: 'org.jetbrains.kotlin.android'
+apply plugin: 'app.cash.paparazzi'
+
+android {
+  compileSdk 31
+  defaultConfig {
+    minSdk 25
+  }
+  buildFeatures {
+    compose true
+    androidResources false
+  }
+  composeOptions {
+    kotlinCompilerExtensionVersion libs.versions.composeCompiler.get()
+  }
+}
+
+dependencies {
+  implementation libs.composeUi.material
+
+  testImplementation libs.testParameterInjector
+}

@@ -32,6 +32,8 @@ data class Environment(
   val resourcePackageNames: List<String>
 ) {
   init {
+    println("JROD: resourcePackageNames = $resourcePackageNames")
+
     val platformDirPath = Path.of(platformDir)
     if (!platformDirPath.exists()) {
       val elements = platformDirPath.nameCount
@@ -62,7 +64,7 @@ fun detectEnvironment(): Environment {
     assetsDir = appTestDir.resolve(configLines[4]).toString(),
     packageName = configLines[0],
     compileSdkVersion = configLines[2].toInt(),
-    resourcePackageNames = configLines[5].split(",")
+    resourcePackageNames = configLines[5].run { if (isEmpty()) emptyList() else split(",") }
   )
 }
 
