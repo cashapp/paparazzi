@@ -31,11 +31,12 @@ import org.junit.runners.model.Statement
  */
 class InstantAnimationsRule : TestRule {
   private val getDurationScale = ValueAnimator::class.java.getDeclaredMethod(
-    "getDurationScale",
+    "getDurationScale"
   )
 
   private val setDurationScale = ValueAnimator::class.java.getDeclaredMethod(
-    "setDurationScale", Float::class.javaPrimitiveType
+    "setDurationScale",
+    Float::class.javaPrimitiveType
   )
 
   private var durationScale: Float
