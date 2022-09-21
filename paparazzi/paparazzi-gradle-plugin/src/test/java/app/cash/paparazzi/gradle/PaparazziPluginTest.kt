@@ -1044,6 +1044,7 @@ class PaparazziPluginTest {
     val settings = File(projectRoot, "settings.gradle")
     if (!settings.exists()) {
       settings.createNewFile()
+      settings.writeText("apply from: \"../test.settings.gradle\"")
       settings.deleteOnExit()
     }
 

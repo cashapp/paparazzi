@@ -3,9 +3,9 @@ apply plugin: 'org.jetbrains.kotlin.android'
 apply plugin: 'app.cash.paparazzi'
 
 android {
-  compileSdk 31
+  compileSdk libs.versions.compileSdk.get() as int
   defaultConfig {
-    minSdk 25
+    minSdk libs.versions.minSdk.get() as int
   }
   buildFeatures {
     compose true
