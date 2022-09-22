@@ -13,10 +13,10 @@ repositories {
 }
 
 android {
-  compileSdkVersion 31
+  compileSdk libs.versions.compileSdk.get() as int
   defaultConfig {
-    minSdkVersion 25
+    minSdk libs.versions.minSdk.get() as int
     //noinspection OldTargetApi
     targetSdkVersion 29
   }
-} 
+}

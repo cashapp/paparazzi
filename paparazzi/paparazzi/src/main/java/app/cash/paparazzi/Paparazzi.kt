@@ -42,7 +42,7 @@ import androidx.lifecycle.ViewTreeLifecycleOwner
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
-import androidx.savedstate.ViewTreeSavedStateRegistryOwner
+import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import app.cash.paparazzi.agent.AgentTestRule
 import app.cash.paparazzi.agent.InterceptorRegistrar
 import app.cash.paparazzi.internal.ChoreographerDelegateInterceptor
@@ -70,12 +70,12 @@ import com.android.layoutlib.bridge.Bridge.prepareThread
 import com.android.layoutlib.bridge.BridgeRenderSession
 import com.android.layoutlib.bridge.impl.RenderAction
 import com.android.layoutlib.bridge.impl.RenderSessionImpl
+import com.android.resources.ScreenRound
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
+import java.awt.geom.Ellipse2D
 import java.awt.image.BufferedImage
-import java.lang.reflect.Field
-import java.lang.reflect.Modifier
 import java.util.Date
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.ContinuationInterceptor
@@ -88,10 +88,9 @@ class Paparazzi @JvmOverloads constructor(
   private val appCompatEnabled: Boolean = true,
   private val maxPercentDifference: Double = 0.1,
   private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference),
-  private val renderExtensions: Set<RenderExtension> = setOf()
+  private val renderExtensions: Set<RenderExtension> = setOf(),
+  private val supportsRtl: Boolean = false
 ) : TestRule {
-  private val THUMBNAIL_SIZE = 1000
-
   private val logger = PaparazziLogger()
   private lateinit var renderSession: RenderSessionImpl
   private lateinit var bridgeRenderSession: RenderSession
@@ -162,7 +161,8 @@ class Paparazzi @JvmOverloads constructor(
       .copy(
         layoutPullParser = LayoutPullParser.createFromString(contentRoot),
         deviceConfig = deviceConfig,
-        renderingMode = renderingMode
+        renderingMode = renderingMode,
+        supportsRtl = supportsRtl
       )
       .withTheme(theme)
 
@@ -201,14 +201,17 @@ class Paparazzi @JvmOverloads constructor(
     parent.addView(hostView, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
     PaparazziComposeOwner.register(parent)
     hostView.setContent(composable)
-    snapshot(parent, name)
 
-    forceReleaseComposeReferenceLeaks()
+    try {
+      snapshot(parent, name)
+    } finally {
+      forceReleaseComposeReferenceLeaks()
+    }
   }
 
   @JvmOverloads
-  fun snapshot(view: View, name: String? = null) {
-    takeSnapshots(view, name, 0, -1, 1)
+  fun snapshot(view: View, name: String? = null, offsetMillis: Long = 0L) {
+    takeSnapshots(view, name, TimeUnit.MILLISECONDS.toNanos(offsetMillis), -1, 1)
   }
 
   @JvmOverloads
@@ -299,7 +302,7 @@ class Paparazzi @JvmOverloads constructor(
             }
 
             val image = bridgeRenderSession.image
-            frameHandler.handle(scaleImage(image))
+            frameHandler.handle(scaleImage(frameImage(image)))
           }
         }
       } finally {
@@ -369,9 +372,20 @@ class Paparazzi @JvmOverloads constructor(
     }
   }
 
+  private fun frameImage(image: BufferedImage): BufferedImage {
+    if (deviceConfig.screenRound == ScreenRound.ROUND) {
+      val newImage = BufferedImage(image.width, image.height, image.type)
+      val g = newImage.createGraphics()
+      g.clip = Ellipse2D.Float(0f, 0f, image.height.toFloat(), image.width.toFloat())
+      g.drawImage(image, 0, 0, image.width, image.height, null)
+      return newImage
+    }
+
+    return image
+  }
+
   private fun scaleImage(image: BufferedImage): BufferedImage {
-    val maxDimension = Math.max(image.width, image.height)
-    val scale = THUMBNAIL_SIZE / maxDimension.toDouble()
+    val scale = ImageUtils.getThumbnailScale(image)
     return ImageUtils.scale(image, scale, scale)
   }
 
@@ -383,42 +397,15 @@ class Paparazzi @JvmOverloads constructor(
   }
 
   private fun forcePlatformSdkVersion(compileSdkVersion: Int) {
-    val modifiersField =
-      try {
-        Field::class.java.getDeclaredField("modifiers")
-      } catch (e: NoSuchFieldException) {
-        // Hack for Java 12+ access
-        // https://stackoverflow.com/q/56039341
-        // https://github.com/powermock/powermock/commit/66ce9f77215bae68b45f35481abc8b52a5d5b6ae#diff-21c1fc51058efd316026f11f34f51c5c
-        try {
-          val getDeclaredFields0 =
-            Class::class.java.getDeclaredMethod(
-              "getDeclaredFields0",
-              Boolean::class.javaPrimitiveType
-            )
-          getDeclaredFields0.isAccessible = true
-          val fields = getDeclaredFields0.invoke(Field::class.java, false) as Array<Field>
-          fields.find { it.name == "modifiers" } ?: throw e
-        } catch (ex: Exception) {
-          e.addSuppressed(ex)
-          throw e
-        }
-      }
-    modifiersField.isAccessible = true
-
-    val versionClass = try {
+    val buildVersionClass = try {
       Paparazzi::class.java.classLoader.loadClass("android.os.Build\$VERSION")
     } catch (e: ClassNotFoundException) {
+      // Project unit tests don't load Android platform code
       return
     }
-
-    versionClass
-      .getDeclaredField("SDK_INT")
-      .apply {
-        isAccessible = true
-        modifiersField.setInt(this, modifiers and Modifier.FINAL.inv())
-        setInt(null, compileSdkVersion)
-      }
+    buildVersionClass
+      .getFieldReflectively("SDK_INT")
+      .setStaticValue(compileSdkVersion)
   }
 
   private fun initializeAppCompatIfPresent() {
@@ -593,6 +580,16 @@ class Paparazzi @JvmOverloads constructor(
       .apply { isAccessible = true }
       .get(dispatcher) as ArrayDeque<*>
     toRunTrampolined.clear()
+    // Upon reference leaks being fixed, verify we don't need to reset these values for
+    // AndroidUiDispatcher to continue dispatching between tests.
+    dispatcher.javaClass
+      .getDeclaredField("scheduledTrampolineDispatch")
+      .apply { isAccessible = true }
+      .set(dispatcher, false)
+    dispatcher.javaClass
+      .getDeclaredField("scheduledFrameDispatch")
+      .apply { isAccessible = true }
+      .set(dispatcher, false)
   }
 
   private class PaparazziComposeOwner private constructor() : LifecycleOwner, SavedStateRegistryOwner {
@@ -600,7 +597,7 @@ class Paparazzi @JvmOverloads constructor(
     private val savedStateRegistryController = SavedStateRegistryController.create(this)
 
     override fun getLifecycle(): Lifecycle = lifecycleRegistry
-    override fun getSavedStateRegistry(): SavedStateRegistry = savedStateRegistryController.savedStateRegistry
+    override val savedStateRegistry: SavedStateRegistry = savedStateRegistryController.savedStateRegistry
 
     companion object {
       fun register(view: View) {
@@ -608,7 +605,7 @@ class Paparazzi @JvmOverloads constructor(
         owner.savedStateRegistryController.performRestore(null)
         owner.lifecycleRegistry.currentState = Lifecycle.State.CREATED
         ViewTreeLifecycleOwner.set(view, owner)
-        ViewTreeSavedStateRegistryOwner.set(view, owner)
+        view.setViewTreeSavedStateRegistryOwner(owner)
       }
     }
   }

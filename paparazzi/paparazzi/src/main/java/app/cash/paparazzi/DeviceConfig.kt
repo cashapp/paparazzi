@@ -16,6 +16,7 @@
 
 package app.cash.paparazzi
 
+import android.content.res.Configuration
 import com.android.ide.common.rendering.api.HardwareConfig
 import com.android.ide.common.resources.configuration.CountryCodeQualifier
 import com.android.ide.common.resources.configuration.DensityQualifier
@@ -37,11 +38,12 @@ import com.android.ide.common.resources.configuration.VersionQualifier
 import com.android.resources.Density
 import com.android.resources.Keyboard
 import com.android.resources.KeyboardState
+import com.android.resources.LayoutDirection
 import com.android.resources.Navigation
 import com.android.resources.NightMode
-import com.android.resources.NightMode.NOTNIGHT
 import com.android.resources.ScreenOrientation
 import com.android.resources.ScreenRatio
+import com.android.resources.ScreenRound
 import com.android.resources.ScreenSize
 import com.android.resources.TouchScreen
 import com.android.resources.UiMode
@@ -66,9 +68,12 @@ data class DeviceConfig(
   val xdpi: Int = 320,
   val ydpi: Int = 320,
   val orientation: ScreenOrientation = ScreenOrientation.PORTRAIT,
-  val nightMode: NightMode = NOTNIGHT,
+  val uiMode: UiMode = UiMode.NORMAL,
+  val nightMode: NightMode = NightMode.NOTNIGHT,
   val density: Density = Density.XHIGH,
   val fontScale: Float = 1f,
+  val layoutDirection: LayoutDirection = LayoutDirection.LTR,
+  val locale: String? = null,
   val ratio: ScreenRatio = ScreenRatio.NOTLONG,
   val size: ScreenSize = ScreenSize.NORMAL,
   val keyboard: Keyboard = Keyboard.NOKEY,
@@ -76,6 +81,7 @@ data class DeviceConfig(
   val keyboardState: KeyboardState = KeyboardState.SOFT,
   val softButtons: Boolean = true,
   val navigation: Navigation = Navigation.NONAV,
+  val screenRound: com.android.resources.ScreenRound? = null,
   val released: String = "November 13, 2012"
 ) {
   val folderConfiguration: FolderConfiguration
@@ -95,20 +101,39 @@ data class DeviceConfig(
         screenOrientationQualifier = ScreenOrientationQualifier(orientation)
 
         updateScreenWidthAndHeight()
-        uiModeQualifier = UiModeQualifier(UiMode.NORMAL)
+        uiModeQualifier = UiModeQualifier(uiMode)
         nightModeQualifier = NightModeQualifier(nightMode)
         countryCodeQualifier = CountryCodeQualifier()
-        layoutDirectionQualifier = LayoutDirectionQualifier()
+        layoutDirectionQualifier = LayoutDirectionQualifier(layoutDirection)
         networkCodeQualifier = NetworkCodeQualifier()
-        localeQualifier = LocaleQualifier()
+        localeQualifier = if (locale != null) LocaleQualifier.getQualifier(locale) else LocaleQualifier(LocaleQualifier.FAKE_VALUE)
         versionQualifier = VersionQualifier()
       }
 
   val hardwareConfig: HardwareConfig
     get() = HardwareConfig(
       screenWidth, screenHeight, density, xdpi.toFloat(), ydpi.toFloat(), size,
-      orientation, null, softButtons
+      orientation, screenRound, softButtons
     )
+
+  val uiModeMask: Int
+    get() {
+      val nightMask = if (nightMode == NightMode.NIGHT) {
+        Configuration.UI_MODE_NIGHT_YES
+      } else {
+        Configuration.UI_MODE_NIGHT_NO
+      }
+      val typeMask = when (uiMode) {
+        UiMode.NORMAL -> Configuration.UI_MODE_TYPE_NORMAL
+        UiMode.DESK -> Configuration.UI_MODE_TYPE_DESK
+        UiMode.CAR -> Configuration.UI_MODE_TYPE_CAR
+        UiMode.TELEVISION -> Configuration.UI_MODE_TYPE_TELEVISION
+        UiMode.APPLIANCE -> Configuration.UI_MODE_TYPE_APPLIANCE
+        UiMode.WATCH -> Configuration.UI_MODE_TYPE_WATCH
+        UiMode.VR_HEADSET -> Configuration.UI_MODE_TYPE_VR_HEADSET
+      }
+      return nightMask or typeMask
+    }
 
   /**
    * Device specs per:
@@ -443,6 +468,101 @@ data class DeviceConfig(
       softButtons = true,
       navigation = Navigation.NONAV,
       released = "October 15, 2020"
+    )
+
+    // https://android.googlesource.com/platform/tools/base/+/mirror-goog-studio-master-dev/sdklib/src/main/java/com/android/sdklib/devices/wear.xml
+    @JvmField
+    val WEAR_OS_SMALL_ROUND: DeviceConfig = DeviceConfig(
+      screenHeight = 384,
+      screenWidth = 384,
+      xdpi = 320,
+      ydpi = 320,
+      orientation = ScreenOrientation.PORTRAIT,
+      density = Density.XHIGH,
+      ratio = ScreenRatio.LONG,
+      size = ScreenSize.SMALL,
+      keyboard = Keyboard.NOKEY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.HIDDEN,
+      softButtons = false,
+      navigation = Navigation.NONAV,
+      screenRound = ScreenRound.ROUND,
+      released = "June 7, 2014"
+    )
+
+    // https://android.googlesource.com/platform/tools/base/+/mirror-goog-studio-master-dev/sdklib/src/main/java/com/android/sdklib/devices/wear.xml
+    @JvmField
+    val WEAR_OS_SQUARE: DeviceConfig = DeviceConfig(
+      screenHeight = 280,
+      screenWidth = 280,
+      xdpi = 240,
+      ydpi = 240,
+      orientation = ScreenOrientation.PORTRAIT,
+      density = Density.HIGH,
+      ratio = ScreenRatio.LONG,
+      size = ScreenSize.SMALL,
+      keyboard = Keyboard.NOKEY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.HIDDEN,
+      softButtons = false,
+      navigation = Navigation.NONAV,
+      screenRound = ScreenRound.NOTROUND,
+      released = "June 7, 2014"
+    )
+
+    // https://www.techidence.com/galaxy-watch4-features-reviews-and-price/
+    val GALAXY_WATCH4_CLASSIC_LARGE: DeviceConfig = DeviceConfig(
+      screenHeight = 454,
+      screenWidth = 454,
+      xdpi = 320,
+      ydpi = 320,
+      orientation = ScreenOrientation.PORTRAIT,
+      density = Density.XHIGH,
+      ratio = ScreenRatio.NOTLONG,
+      size = ScreenSize.SMALL,
+      keyboard = Keyboard.NOKEY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.HIDDEN,
+      softButtons = false,
+      navigation = Navigation.NONAV,
+      screenRound = ScreenRound.ROUND,
+      released = "October 15, 2020"
+    )
+
+    @JvmField
+    val PIXEL_6 = DeviceConfig(
+      screenHeight = 2400,
+      screenWidth = 1080,
+      xdpi = 406,
+      ydpi = 411,
+      orientation = ScreenOrientation.PORTRAIT,
+      density = Density.DPI_420,
+      ratio = ScreenRatio.LONG,
+      size = ScreenSize.NORMAL,
+      keyboard = Keyboard.NOKEY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.SOFT,
+      softButtons = true,
+      navigation = Navigation.NONAV,
+      released = "October 28, 2021"
+    )
+
+    @JvmField
+    val PIXEL_6_PRO = DeviceConfig(
+      screenHeight = 3120,
+      screenWidth = 1440,
+      xdpi = 512,
+      ydpi = 512,
+      orientation = ScreenOrientation.PORTRAIT,
+      density = Density.DPI_560,
+      ratio = ScreenRatio.LONG,
+      size = ScreenSize.NORMAL,
+      keyboard = Keyboard.NOKEY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.SOFT,
+      softButtons = true,
+      navigation = Navigation.NONAV,
+      released = "October 28, 2021"
     )
 
     private const val TAG_ATTR = "attr"

@@ -38,6 +38,7 @@ class InterceptorRegistrarTest {
     fun log1() {
       logs += "original1"
     }
+
     fun log2() {
       logs += "original2"
     }

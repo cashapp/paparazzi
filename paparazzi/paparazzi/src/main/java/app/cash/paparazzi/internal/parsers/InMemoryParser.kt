@@ -17,7 +17,6 @@ package app.cash.paparazzi.internal.parsers
 
 import org.kxml2.io.KXmlParser
 import org.xmlpull.v1.XmlPullParserException
-import java.lang.IndexOutOfBoundsException
 
 /**
  * Derived from https://cs.android.com/android-studio/platform/tools/adt/idea/+/858f81bb7c350bc7a05daad36edefd21f74c8cef:android/src/com/android/tools/idea/rendering/parsers/LayoutPullParser.java;bpv=0;bpt=0

@@ -62,6 +62,31 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun kotlinMultiplatformPluginWithAndroidTarget() {
+    val fixtureRoot = File("src/test/projects/multiplatform-plugin-with-android")
+
+    val result = gradleRunner
+      .withArguments("preparePaparazziDebugResources", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
+  }
+
+  @Test
+  fun kotlinMultiplatformPluginWithoutAndroidTarget() {
+    val fixtureRoot = File("src/test/projects/multiplatform-plugin-without-android")
+
+    val result = gradleRunner
+      .withArguments("preparePaparazziDebugResources", "--stacktrace")
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    assertThat(result.task(":preparePaparazziDebugResources")).isNull()
+    assertThat(result.output).contains(
+      "There must be an Android target configured when using Paparazzi with the Kotlin Multiplatform Plugin"
+    )
+  }
+
+  @Test
   fun excludeAndroidTestSourceSets() {
     val fixtureRoot = File("src/test/projects/exclude-androidtest")
 
@@ -545,7 +570,7 @@ class PaparazziPluginTest {
     assertThat(resourceFileContents[0]).isEqualTo("app.cash.paparazzi.plugin.test")
     assertThat(resourceFileContents[1]).isEqualTo("build/intermediates/merged_res/debug")
     assertThat(resourceFileContents[4]).isEqualTo("build/intermediates/assets/debug/mergeDebugAssets")
-    assertThat(resourceFileContents[6]).isEqualTo("app.cash.paparazzi.plugin.test")
+    assertThat(resourceFileContents[5]).isEqualTo("app.cash.paparazzi.plugin.test")
   }
 
   @Test
@@ -565,7 +590,7 @@ class PaparazziPluginTest {
     assertThat(resourceFileContents[0]).isEqualTo("app.cash.paparazzi.plugin.test")
     assertThat(resourceFileContents[1]).isEqualTo("build/intermediates/merged_res/debug")
     assertThat(resourceFileContents[4]).isEqualTo("build/intermediates/assets/debug/mergeDebugAssets")
-    assertThat(resourceFileContents[6]).isEqualTo("app.cash.paparazzi.plugin.test")
+    assertThat(resourceFileContents[5]).isEqualTo("app.cash.paparazzi.plugin.test")
   }
 
   @Test
@@ -817,6 +842,23 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun verifyAaptAttrResourceParsingInCompose() {
+    val fixtureRoot = File("src/test/projects/verify-aapt-compose")
+
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()
+    assertThat(snapshots!!).hasLength(1)
+
+    val snapshotImage = snapshots[0]
+    val goldenImage = File(fixtureRoot, "src/test/resources/compose_card_chip.png")
+    assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
+  }
+
+  @Test
   fun ninePatch() {
     val fixtureRoot = File("src/test/projects/nine-patch")
 
@@ -879,6 +921,34 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun composeDispatcher() {
+    val fixtureRoot = File("src/test/projects/compose-dispatcher")
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()
+    assertThat(snapshots!!).hasLength(1)
+  }
+
+  @Test
+  fun composeWear() {
+    val fixtureRoot = File("src/test/projects/compose-wear")
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()
+    assertThat(snapshots!!).hasLength(1)
+
+    val snapshotImage = snapshots[0]
+    val goldenImage = File(fixtureRoot, "src/test/resources/compose_wear.png")
+    assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
+  }
+
+  @Test
   fun immSoftInputInteraction() {
     val fixtureRoot = File("src/test/projects/imm-soft-input")
     gradleRunner
@@ -906,6 +976,66 @@ class PaparazziPluginTest {
     assertThat(nexus7SnapshotImage).isSimilarTo(nexus7GoldenImage).withDefaultThreshold()
   }
 
+  @Test
+  fun localeQualifier() {
+    val fixtureRoot = File("src/test/projects/locale-qualifier")
+
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()?.sortedBy { it.lastModified() }
+    assertThat(snapshots!!).hasSize(2)
+
+    val localeDefaultSnapshotImage = snapshots[0]
+    val localeEnGBSnapshotImage = snapshots[1]
+    val localeDefaultGoldenImage = File(fixtureRoot, "src/test/resources/locale_default.png")
+    val localeEnGBGoldenImage = File(fixtureRoot, "src/test/resources/locale_en_gb.png")
+    assertThat(localeDefaultSnapshotImage).isSimilarTo(localeDefaultGoldenImage).withDefaultThreshold()
+    assertThat(localeEnGBSnapshotImage).isSimilarTo(localeEnGBGoldenImage).withDefaultThreshold()
+  }
+
+  @Test
+  fun layoutDirection() {
+    val fixtureRoot = File("src/test/projects/layout-direction")
+
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()?.sortedBy { it.lastModified() }
+    assertThat(snapshots!!).hasSize(2)
+
+    val localeDefaultRtlSnapshotImage = snapshots[0]
+    val localeArSnapshotImage = snapshots[1]
+    val localeDefaultRtlGoldenImage = File(fixtureRoot, "src/test/resources/locale_default_rtl.png")
+    val localeArGoldenImage = File(fixtureRoot, "src/test/resources/locale_ar.png")
+    assertThat(localeDefaultRtlSnapshotImage).isSimilarTo(localeDefaultRtlGoldenImage).withDefaultThreshold()
+    assertThat(localeArSnapshotImage).isSimilarTo(localeArGoldenImage).withDefaultThreshold()
+  }
+
+  @Test
+  fun nightModeCompose() {
+    val fixtureRoot = File("src/test/projects/night-mode-compose")
+
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()?.sortedBy { it.lastModified() }
+    assertThat(snapshots!!).hasSize(2)
+
+    val lightModeSnapshotImage = snapshots[0]
+    val darkModeSnapshotImage = snapshots[1]
+    val lightModeGoldenImage = File(fixtureRoot, "src/test/resources/light_mode.png")
+    val darkModeGoldenImage = File(fixtureRoot, "src/test/resources/dark_mode.png")
+    assertThat(lightModeSnapshotImage).isSimilarTo(lightModeGoldenImage).withDefaultThreshold()
+    assertThat(darkModeSnapshotImage).isSimilarTo(darkModeGoldenImage).withDefaultThreshold()
+  }
+
   private fun GradleRunner.runFixture(
     projectRoot: File,
     moduleRoot: File = projectRoot,
@@ -914,6 +1044,7 @@ class PaparazziPluginTest {
     val settings = File(projectRoot, "settings.gradle")
     if (!settings.exists()) {
       settings.createNewFile()
+      settings.writeText("apply from: \"../test.settings.gradle\"")
       settings.deleteOnExit()
     }
 

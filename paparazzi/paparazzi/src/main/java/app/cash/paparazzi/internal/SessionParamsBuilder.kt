@@ -28,6 +28,8 @@ import com.android.ide.common.rendering.api.SessionParams.RenderingMode
 import com.android.ide.common.resources.ResourceResolver
 import com.android.ide.common.resources.ResourceValueMap
 import com.android.ide.common.resources.deprecated.ResourceRepository
+import com.android.layoutlib.bridge.Bridge
+import com.android.resources.LayoutDirection
 import com.android.resources.ResourceType
 
 /** Creates [SessionParams] objects. */
@@ -46,7 +48,8 @@ internal data class SessionParamsBuilder(
   private val layoutPullParser: LayoutPullParser? = null,
   private val projectKey: Any? = null,
   private val minSdk: Int = 0,
-  private val decor: Boolean = true
+  private val decor: Boolean = true,
+  private val supportsRtl: Boolean = false
 ) {
   fun withTheme(
     themeName: String,
@@ -94,6 +97,17 @@ internal data class SessionParamsBuilder(
       deviceConfig.hardwareConfig, resourceResolver, layoutlibCallback, minSdk, targetSdk, logger
     )
     result.fontScale = deviceConfig.fontScale
+    result.uiMode = deviceConfig.uiModeMask
+
+    val localeQualifier = folderConfiguration.localeQualifier
+    val layoutDirectionQualifier = folderConfiguration.layoutDirectionQualifier
+    // https://cs.android.com/android-studio/platform/tools/adt/idea/+/mirror-goog-studio-main:android/src/com/android/tools/idea/rendering/RenderTask.java;l=645
+    if (LayoutDirection.RTL == layoutDirectionQualifier.value && !Bridge.isLocaleRtl(localeQualifier.tag)) {
+      result.locale = "ur"
+    } else {
+      result.locale = localeQualifier.tag
+    }
+    result.setRtlSupport(supportsRtl)
 
     for ((key, value) in flags) {
       result.setFlag(key as Key<Any>, value)

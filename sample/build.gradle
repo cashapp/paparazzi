@@ -3,20 +3,21 @@ apply plugin: 'org.jetbrains.kotlin.android'
 apply plugin: 'app.cash.paparazzi'
 
 android {
-  compileSdk 31
+  compileSdk libs.versions.compileSdk.get() as int
   defaultConfig {
-    minSdk 25
+    minSdk libs.versions.minSdk.get() as int
   }
   buildFeatures {
     compose true
+    viewBinding true
   }
   composeOptions {
-    kotlinCompilerExtensionVersion '1.1.1'
+    kotlinCompilerExtensionVersion libs.versions.composeCompiler.get()
   }
 }
 
 dependencies {
-  implementation 'androidx.compose.material:material:1.1.1'
+  implementation libs.composeUi.material
 
-  testImplementation deps.testparameterinjector
+  testImplementation libs.testParameterInjector
 }

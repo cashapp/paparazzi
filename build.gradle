@@ -1,8 +1,6 @@
 apply plugin: 'com.github.ben-manes.versions'
 
 buildscript {
-  apply from: 'gradle/dependencies.gradle'
-
   repositories {
     mavenCentral()
     google()
@@ -11,10 +9,10 @@ buildscript {
   }
 
   dependencies {
-    classpath deps.plugins.kotlin
-    classpath deps.plugins.android
-    classpath deps.plugins.versions
-    classpath deps.plugins.spotless
+    classpath libs.plugin.kotlin
+    classpath libs.plugin.android
+    classpath libs.plugin.versions
+    classpath libs.plugin.spotless
 
     // Normally you would declare a version here, but we use dependency substitution in
     // settings.gradle to use the version built from inside the repo.
@@ -40,13 +38,13 @@ subprojects {
   }
 
   tasks.withType(JavaCompile).configureEach {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = libs.versions.javaTarget.get()
+    targetCompatibility = libs.versions.javaTarget.get()
   }
 
   tasks.withType(org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile).configureEach {
     kotlinOptions {
-      jvmTarget = "1.8"
+      jvmTarget = libs.versions.javaTarget.get()
     }
   }
 
@@ -55,13 +53,13 @@ subprojects {
     kotlin {
       target("src/**/*.kt")
       // ktlint doesn't honour .editorconfig yet: https://github.com/diffplug/spotless/issues/142
-      ktlint('0.46.1').editorConfigOverride([
+      ktlint(libs.versions.ktlint.get()).editorConfigOverride([
         'insert_final_newline': 'true',
         'end_of_line': 'lf',
         'charset': 'utf-8',
         'indent_size': '2',
         'trim_trailing_whitespace': 'true',
-        'kotlin_imports_layout': 'ascii'
+        'ij_kotlin_imports_layout': '*,java.**,javax.**,kotlin.**,kotlinx.**,^'
       ])
     }
   }
@@ -74,4 +72,3 @@ tasks.register("clean", Delete).configure {
 tasks.named("wrapper").configure {
   distributionType = Wrapper.DistributionType.ALL
 }
-
