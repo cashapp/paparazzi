@@ -1017,6 +1017,19 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun wearGif() {
+    val fixtureRoot = File("src/test/projects/wear-gif")
+
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()?.sortedBy { it.lastModified() }
+    assertThat(snapshots!!).hasSize(1)
+  }
+
+  @Test
   fun nightModeCompose() {
     val fixtureRoot = File("src/test/projects/night-mode-compose")
 
