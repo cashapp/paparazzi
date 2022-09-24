@@ -50,17 +50,9 @@ tasks.named('compileKotlin').configure {
   it.dependsOn(generateVersion)
 }
 
-test {
+tasks.withType(Test).configureEach {
   dependsOn(':paparazzi:publishMavenPublicationToProjectLocalMavenRepository')
   dependsOn(':paparazzi-agent:publishMavenPublicationToProjectLocalMavenRepository')
-
-  testLogging {
-    events 'passed', 'failed', 'skipped'
-    exceptionFormat 'full'
-    showExceptions true
-    showStackTraces true
-    showCauses true
-  }
 }
 
 // When cleaning this project, we also want to clean the test projects.
