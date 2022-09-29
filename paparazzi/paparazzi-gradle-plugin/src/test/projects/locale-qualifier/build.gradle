@@ -14,13 +14,14 @@ repositories {
 }
 
 android {
-  compileSdkVersion 31
+  compileSdk libs.versions.compileSdk.get() as int
   defaultConfig {
-    minSdkVersion 25
+    minSdk libs.versions.minSdk.get() as int
   }
 }
 
 dependencies {
-  implementation 'androidx.appcompat:appcompat:1.4.2'
-  implementation 'com.google.testparameterinjector:test-parameter-injector:1.8'
+  implementation libs.androidx.appcompat
+
+  testImplementation libs.testParameterInjector
 }

@@ -48,7 +48,8 @@ internal data class SessionParamsBuilder(
   private val layoutPullParser: LayoutPullParser? = null,
   private val projectKey: Any? = null,
   private val minSdk: Int = 0,
-  private val decor: Boolean = true
+  private val decor: Boolean = true,
+  private val supportsRtl: Boolean = false
 ) {
   fun withTheme(
     themeName: String,
@@ -96,6 +97,7 @@ internal data class SessionParamsBuilder(
       deviceConfig.hardwareConfig, resourceResolver, layoutlibCallback, minSdk, targetSdk, logger
     )
     result.fontScale = deviceConfig.fontScale
+    result.uiMode = deviceConfig.uiModeMask
 
     val localeQualifier = folderConfiguration.localeQualifier
     val layoutDirectionQualifier = folderConfiguration.layoutDirectionQualifier
@@ -105,7 +107,7 @@ internal data class SessionParamsBuilder(
     } else {
       result.locale = localeQualifier.tag
     }
-    result.setRtlSupport(true)
+    result.setRtlSupport(supportsRtl)
 
     for ((key, value) in flags) {
       result.setFlag(key as Key<Any>, value)

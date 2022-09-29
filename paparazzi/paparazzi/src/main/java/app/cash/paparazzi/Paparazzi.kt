@@ -70,9 +70,11 @@ import com.android.layoutlib.bridge.Bridge.prepareThread
 import com.android.layoutlib.bridge.BridgeRenderSession
 import com.android.layoutlib.bridge.impl.RenderAction
 import com.android.layoutlib.bridge.impl.RenderSessionImpl
+import com.android.resources.ScreenRound
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
+import java.awt.geom.Ellipse2D
 import java.awt.image.BufferedImage
 import java.util.Date
 import java.util.concurrent.TimeUnit
@@ -86,7 +88,8 @@ class Paparazzi @JvmOverloads constructor(
   private val appCompatEnabled: Boolean = true,
   private val maxPercentDifference: Double = 0.1,
   private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference),
-  private val renderExtensions: Set<RenderExtension> = setOf()
+  private val renderExtensions: Set<RenderExtension> = setOf(),
+  private val supportsRtl: Boolean = false
 ) : TestRule {
   private val logger = PaparazziLogger()
   private lateinit var renderSession: RenderSessionImpl
@@ -158,7 +161,8 @@ class Paparazzi @JvmOverloads constructor(
       .copy(
         layoutPullParser = LayoutPullParser.createFromString(contentRoot),
         deviceConfig = deviceConfig,
-        renderingMode = renderingMode
+        renderingMode = renderingMode,
+        supportsRtl = supportsRtl
       )
       .withTheme(theme)
 
@@ -206,8 +210,8 @@ class Paparazzi @JvmOverloads constructor(
   }
 
   @JvmOverloads
-  fun snapshot(view: View, name: String? = null) {
-    takeSnapshots(view, name, 0, -1, 1)
+  fun snapshot(view: View, name: String? = null, offsetMillis: Long = 0L) {
+    takeSnapshots(view, name, TimeUnit.MILLISECONDS.toNanos(offsetMillis), -1, 1)
   }
 
   @JvmOverloads
@@ -298,7 +302,7 @@ class Paparazzi @JvmOverloads constructor(
             }
 
             val image = bridgeRenderSession.image
-            frameHandler.handle(scaleImage(image))
+            frameHandler.handle(scaleImage(frameImage(image)))
           }
         }
       } finally {
@@ -366,6 +370,18 @@ class Paparazzi @JvmOverloads constructor(
     } catch (e: Exception) {
       throw RuntimeException(e)
     }
+  }
+
+  private fun frameImage(image: BufferedImage): BufferedImage {
+    if (deviceConfig.screenRound == ScreenRound.ROUND) {
+      val newImage = BufferedImage(image.width, image.height, image.type)
+      val g = newImage.createGraphics()
+      g.clip = Ellipse2D.Float(0f, 0f, image.height.toFloat(), image.width.toFloat())
+      g.drawImage(image, 0, 0, image.width, image.height, null)
+      return newImage
+    }
+
+    return image
   }
 
   private fun scaleImage(image: BufferedImage): BufferedImage {

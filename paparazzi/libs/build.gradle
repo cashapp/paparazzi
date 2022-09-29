@@ -1,0 +1,1 @@
+ext.repoDir = new File("$rootProject.buildDir/prebuilts/studio/layoutlib")

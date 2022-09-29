@@ -50,6 +50,7 @@ internal class PaparazziCallback(
   private val resources = mutableMapOf<ResourceReference, Int>()
   private val actionBarCallback = ActionBarCallback()
   private val aaptDeclaredResources = mutableMapOf<String, TagSnapshot>()
+  private val dynamicResourceIdManager = DynamicResourceIdManager()
 
   private var adaptiveIconMaskPath: String? = null
   private var highQualityShadow = false
@@ -99,7 +100,8 @@ internal class PaparazziCallback(
     return viewConstructor.newInstance(*constructorArgs)
   }
 
-  override fun resolveResourceId(id: Int): ResourceReference? = projectResources[id]
+  override fun resolveResourceId(id: Int): ResourceReference? =
+    projectResources[id] ?: dynamicResourceIdManager.findById(id)
 
   override fun getOrGenerateResourceId(resource: ResourceReference): Int {
     // Workaround: We load our resource map from fields in R.class, which are named using Java
@@ -108,7 +110,7 @@ internal class PaparazziCallback(
     // Long-term: Perhaps parse and load resource names from file system directly?
     val resourceKey =
       if (resource.resourceType == STYLE) resource.transformStyleResource() else resource
-    return resources[resourceKey] ?: 0
+    return resources[resourceKey] ?: dynamicResourceIdManager.getOrGenerateId(resourceKey)
   }
 
   override fun getParser(layoutResource: ResourceValue): ILayoutPullParser? {

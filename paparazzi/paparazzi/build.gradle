@@ -5,8 +5,8 @@ apply plugin: 'org.jetbrains.kotlin.kapt'
 apply plugin: 'org.jetbrains.dokka'
 apply plugin: 'com.vanniktech.maven.publish'
 
-sourceCompatibility = '1.8'
-targetCompatibility = '1.8'
+sourceCompatibility = libs.versions.javaTarget.get()
+targetCompatibility = libs.versions.javaTarget.get()
 
 def artifactType = Attribute.of('artifactType', String)
 
@@ -28,46 +28,46 @@ dependencies {
   // TODO: Use Gradle transforms to extract/rename classes.jar's from AARs
   api files('libs/compose-runtime-1.2.1.jar')
   compileOnly files('libs/compose-ui-1.2.1.jar')
-  compileOnly deps.androidx.lifecycleCommon
+  compileOnly libs.androidx.lifecycleCommon
   compileOnly files('libs/lifecycle-runtime-2.5.0.jar')
   compileOnly files('libs/savedstate-1.2.0.jar')
 
-  api deps.layoutlib.native.jdk11
-  api deps.tools.common
-  api deps.tools.layoutlib
-  api deps.tools.ninepatch
-  api deps.tools.sdkcommon
-  api deps.kxml2
-  api deps.junit
-  api deps.androidx.annotations
-  api deps.guava
-  api deps.kotlinx.coroutines.core
-  api deps.okio
-  api platform(deps.kotlin.bom)
-  implementation deps.moshi.core
-  implementation deps.moshi.adapters
-  kapt deps.moshi.kotlinCodegen
-  implementation deps.jcodec.core
-  implementation deps.jcodec.javase
+  api libs.layoutlib.native.jdk11
+  api libs.tools.common
+  api libs.tools.layoutlib
+  api libs.tools.ninepatch
+  api libs.tools.sdkCommon
+  api libs.kxml2
+  api libs.junit
+  api libs.androidx.annotations
+  api libs.guava
+  api libs.kotlinx.coroutines.core
+  api libs.okio
+  api platform(libs.kotlin.bom)
+  implementation libs.moshi.core
+  implementation libs.moshi.adapters
+  kapt libs.moshi.kotlinCodegen
+  implementation libs.jcodec.core
+  implementation libs.jcodec.javase
   implementation projects.paparazziAgent
 
   def osName = System.getProperty("os.name").toLowerCase(Locale.US)
   if (osName.startsWith("mac")) {
     def osArch = System.getProperty("os.arch").toLowerCase(Locale.US)
     if (osArch.startsWith("x86")) {
-      unzip deps.layoutlib.native.macOsX
+      unzip libs.layoutlib.native.macOsX
     } else {
-      unzip deps.layoutlib.native.macArm
+      unzip libs.layoutlib.native.macArm
     }
   } else if (osName.startsWith("windows")) {
-    unzip deps.layoutlib.native.windows
+    unzip libs.layoutlib.native.windows
   } else {
-    unzip deps.layoutlib.native.linux
+    unzip libs.layoutlib.native.linux
   }
 
-  testImplementation deps.assertj
+  testImplementation libs.assertj
 
-  add(KotlinPluginKt.PLUGIN_CLASSPATH_CONFIGURATION_NAME, deps.compose.compiler)
+  add(KotlinPluginKt.PLUGIN_CLASSPATH_CONFIGURATION_NAME, libs.compose.compiler)
 }
 
 tasks.named("dokkaGfm").configure {
@@ -108,6 +108,10 @@ tasks.withType(Test).configureEach {
   systemProperty(
     "paparazzi.test.resources",
     generateTestConfig.map { it.outputs.files.singleFile }.get().path
+  )
+  systemProperty(
+    "paparazzi.build.dir",
+    project.layout.buildDirectory.get().toString()
   )
   systemProperty(
     "paparazzi.platform.data.root",

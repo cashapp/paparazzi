@@ -13,16 +13,16 @@ gradlePlugin {
 
 dependencies {
   compileOnly gradleApi()
-  implementation platform(deps.kotlin.bom)
-  implementation deps.plugins.kotlin
-  implementation deps.plugins.android
-  implementation deps.plugins.ksp
-  implementation(deps.tools.sdkcommon) {
+  implementation platform(libs.kotlin.bom)
+  implementation libs.plugin.kotlin
+  implementation libs.plugin.android
+  implementation libs.plugin.ksp
+  implementation(libs.tools.sdkCommon) {
     because "SymbolUtils.getPackageNameFromManifest removed in AGP 7.0.  Replace?"
   }
 
-  testImplementation deps.junit
-  testImplementation deps.truth
+  testImplementation libs.junit
+  testImplementation libs.truth
 }
 
 sourceSets {
@@ -33,7 +33,7 @@ def generateVersion = tasks.register("pluginVersion") {
   def outputDir = file('src/generated/kotlin')
 
   inputs.property 'version', version
-  inputs.property 'nativeLibVersion', versions.layoutlib
+  inputs.property 'nativeLibVersion', libs.versions.layoutlib
   outputs.dir outputDir
 
   doLast {
@@ -42,7 +42,7 @@ def generateVersion = tasks.register("pluginVersion") {
     versionFile.text = """// Generated file. Do not edit!
 package app.cash.paparazzi
 const val VERSION = "${project.version}"
-const val NATIVE_LIB_VERSION = "${project.versions.layoutlib}"
+const val NATIVE_LIB_VERSION = "${libs.versions.layoutlib.get()}"
 """
   }
 }
@@ -51,17 +51,9 @@ tasks.named('compileKotlin').configure {
   it.dependsOn(generateVersion)
 }
 
-test {
+tasks.withType(Test).configureEach {
   dependsOn(':paparazzi:publishMavenPublicationToProjectLocalMavenRepository')
   dependsOn(':paparazzi-agent:publishMavenPublicationToProjectLocalMavenRepository')
-
-  testLogging {
-    events 'passed', 'failed', 'skipped'
-    exceptionFormat 'full'
-    showExceptions true
-    showStackTraces true
-    showCauses true
-  }
 }
 
 // When cleaning this project, we also want to clean the test projects.

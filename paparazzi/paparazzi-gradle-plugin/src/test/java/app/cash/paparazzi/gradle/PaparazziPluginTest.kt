@@ -568,8 +568,8 @@ class PaparazziPluginTest {
 
     val resourceFileContents = resourcesFile.readLines()
     assertThat(resourceFileContents[0]).isEqualTo("app.cash.paparazzi.plugin.test")
-    assertThat(resourceFileContents[1]).isEqualTo("build/intermediates/merged_res/debug")
-    assertThat(resourceFileContents[4]).isEqualTo("build/intermediates/assets/debug/mergeDebugAssets")
+    assertThat(resourceFileContents[1]).isEqualTo("intermediates/merged_res/debug")
+    assertThat(resourceFileContents[4]).isEqualTo("intermediates/assets/debug/mergeDebugAssets")
     assertThat(resourceFileContents[5]).isEqualTo("app.cash.paparazzi.plugin.test")
   }
 
@@ -588,8 +588,8 @@ class PaparazziPluginTest {
 
     val resourceFileContents = resourcesFile.readLines()
     assertThat(resourceFileContents[0]).isEqualTo("app.cash.paparazzi.plugin.test")
-    assertThat(resourceFileContents[1]).isEqualTo("build/intermediates/merged_res/debug")
-    assertThat(resourceFileContents[4]).isEqualTo("build/intermediates/assets/debug/mergeDebugAssets")
+    assertThat(resourceFileContents[1]).isEqualTo("intermediates/merged_res/debug")
+    assertThat(resourceFileContents[4]).isEqualTo("intermediates/assets/debug/mergeDebugAssets")
     assertThat(resourceFileContents[5]).isEqualTo("app.cash.paparazzi.plugin.test")
   }
 
@@ -842,6 +842,23 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun verifyAaptAttrResourceParsingInCompose() {
+    val fixtureRoot = File("src/test/projects/verify-aapt-compose")
+
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()
+    assertThat(snapshots!!).hasLength(1)
+
+    val snapshotImage = snapshots[0]
+    val goldenImage = File(fixtureRoot, "src/test/resources/compose_card_chip.png")
+    assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
+  }
+
+  @Test
   fun ninePatch() {
     val fixtureRoot = File("src/test/projects/nine-patch")
 
@@ -916,6 +933,22 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun composeWear() {
+    val fixtureRoot = File("src/test/projects/compose-wear")
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()
+    assertThat(snapshots!!).hasLength(1)
+
+    val snapshotImage = snapshots[0]
+    val goldenImage = File(fixtureRoot, "src/test/resources/compose_wear.png")
+    assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
+  }
+
+  @Test
   fun immSoftInputInteraction() {
     val fixtureRoot = File("src/test/projects/imm-soft-input")
     gradleRunner
@@ -983,6 +1016,26 @@ class PaparazziPluginTest {
     assertThat(localeArSnapshotImage).isSimilarTo(localeArGoldenImage).withDefaultThreshold()
   }
 
+  @Test
+  fun nightModeCompose() {
+    val fixtureRoot = File("src/test/projects/night-mode-compose")
+
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()?.sortedBy { it.lastModified() }
+    assertThat(snapshots!!).hasSize(2)
+
+    val lightModeSnapshotImage = snapshots[0]
+    val darkModeSnapshotImage = snapshots[1]
+    val lightModeGoldenImage = File(fixtureRoot, "src/test/resources/light_mode.png")
+    val darkModeGoldenImage = File(fixtureRoot, "src/test/resources/dark_mode.png")
+    assertThat(lightModeSnapshotImage).isSimilarTo(lightModeGoldenImage).withDefaultThreshold()
+    assertThat(darkModeSnapshotImage).isSimilarTo(darkModeGoldenImage).withDefaultThreshold()
+  }
+
   private fun GradleRunner.runFixture(
     projectRoot: File,
     moduleRoot: File = projectRoot,
@@ -991,6 +1044,7 @@ class PaparazziPluginTest {
     val settings = File(projectRoot, "settings.gradle")
     if (!settings.exists()) {
       settings.createNewFile()
+      settings.writeText("apply from: \"../test.settings.gradle\"")
       settings.deleteOnExit()
     }
 

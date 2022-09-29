@@ -32,7 +32,8 @@ class LayoutDirectionTest(
     deviceConfig = DeviceConfig.NEXUS_5.copy(
       layoutDirection = localeAndDirection.direction,
       locale = localeAndDirection.tag
-    )
+    ),
+    supportsRtl = true
   )
 
   @Test
