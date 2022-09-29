@@ -150,6 +150,8 @@ class PaparazziPlugin : Plugin<Project> {
       val testTaskProvider = project.tasks.named("test$testVariantSlug", Test::class.java) { test ->
         test.systemProperties["paparazzi.test.resources"] =
           writeResourcesTask.flatMap { it.paparazziResources.asFile }.get().path
+        test.systemProperties["paparazzi.build.dir"] =
+          project.layout.buildDirectory.get().toString()
 
         test.inputs.dir(mergeResourcesOutputDir)
         test.inputs.dir(mergeAssetsOutputDir)
