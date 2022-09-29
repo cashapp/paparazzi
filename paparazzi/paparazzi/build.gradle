@@ -110,6 +110,10 @@ tasks.withType(Test).configureEach {
     generateTestConfig.map { it.outputs.files.singleFile }.get().path
   )
   systemProperty(
+    "paparazzi.build.dir",
+    project.layout.buildDirectory.get().toString()
+  )
+  systemProperty(
     "paparazzi.platform.data.root",
     configurations.unzip.singleFile.absolutePath
   )

@@ -53,7 +53,7 @@ fun detectEnvironment(): Environment {
   val resourcesFile = File(System.getProperty("paparazzi.test.resources"))
   val configLines = resourcesFile.readLines()
 
-  val appTestDir = Paths.get(System.getProperty("user.dir"))
+  val appTestDir = Paths.get(System.getProperty("paparazzi.build.dir"))
   val androidHome = Paths.get(androidHome())
   return Environment(
     platformDir = androidHome.resolve(configLines[3]).toString(),
