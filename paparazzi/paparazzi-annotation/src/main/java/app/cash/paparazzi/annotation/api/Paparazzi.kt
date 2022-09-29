@@ -16,7 +16,7 @@ import kotlin.reflect.KClass
 
 @Target(
   AnnotationTarget.ANNOTATION_CLASS,
-  AnnotationTarget.FUNCTION
+  AnnotationTarget.FUNCTION,
 )
 @Retention(AnnotationRetention.SOURCE)
 @Repeatable

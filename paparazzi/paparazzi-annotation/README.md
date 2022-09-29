@@ -2,10 +2,11 @@
 An annotation to generate Paparazzi tests for composable functions.
 
 ## Basic Usage
-In your test directory, define a composable method and apply the annotation. The annotation processor will handle generating a test class for this composable without you having to worry about all the boilerplate.
+In your test directory, define a composable method and apply the annotation. The annotation processor will generate a test class for this composable.
 
 ```kotlin
 @Paparazzi
+@Composable
 fun MyViewTest() {
   MyView(title = "Hello, Annotation")
 }
@@ -38,10 +39,7 @@ fun MyViewPreview() {
 *A word of caution about this approach: Previews are meant as a developer tool and can change to help visualize different scenarios. Changing a preview will likely invalidate a test and could create confusion.*
 
 ## Annotation Composition
-Want to create more than one test for a composable function?
-Do you have a highly-configured annotation that you want to re-use on multiple functions?
-
-If you answered *yes* to either of those questions, you should consider defining a custom annotation as a fixture to hold your `@Paparazzi` definitions.
+If you want to create more than one test class for a composable function, or have a highly-configured annotation that you want to re-use on multiple functions, then you can define a custom annotation as a fixture to hold your `@Paparazzi` definitions. Each annotation creates a separate test class.
 
 ```kotlin
 @Paparazzi(
@@ -74,17 +72,15 @@ This style of composition can even be nested, if desired.
 annotation class MyPaparazzi
 
 @Paparazzi(
-  name = "huge text",
-  fontScale = 4.0f,
+  name = "landscape",
+  orientation = ScreenOrientation.LANDSCAPE,
 )
 @MyPaparazzi
-annotation class MyHugePaparazzi
+annotation class MyAlsoLandscapePaparazzi
 ```
 
 ## Composable Wrapping
-It might be necessary for you to wrap your composable with additional logic to prepare it for the Paparazzi test.
-In this case, a configuration param called `composableWrapper` can be set to do just that.
-To do this, implement the provided `ComposableWrapper` interface.
+It might be necessary for you to wrap your composable with additional logic to prepare it for the Paparazzi test. To do this, implement the provided `ComposableWrapper` interface.
 
 ```kotlin
 class BlueBoxComposableWrapper : ComposableWrapper {
@@ -105,14 +101,10 @@ class BlueBoxComposableWrapper : ComposableWrapper {
   name = "blue box",
   composableWrapper = BlueBoxComposableWrapper::class
 )
-@Composable
-fun MyViewTest() {
-  MyView(title = "Hello Paparazzi, in a blue box")
-}
 ```
 
 ## Test Parameter Injection
-The `@Paparazzi` annotation also utilizes `TestParameterInjector` to conveniently execute multiple tests on a handful of configuration parameters.
+The `@Paparazzi` annotation also leverages `TestParameterInjector` to execute multiple tests on a handful of configuration parameters.
 
 ### Font Scaling
 The annotation exposes the `fontScales` configuration which accepts an array of `Float` values. Setting this parameter will override the value set in the (non-plural) `fontScale` parameter.
@@ -142,8 +134,7 @@ class MyTitleProvider : PreviewParameterProvider<String> {
 
 ### Values Composable Wrapper
 You can alternatively create a composable wrapper by extending the `ValuesComposableWrapper<T>` class.
-This allows you to provide a set of values to your wrapper, similar to how you would with `PreviewParameterProvider`.
-These values are mapped to an injected parameter in your test and passed into your composable wrapper.
+This allows you to provide a set of values to your wrapper, similar to how you would with `PreviewParameterProvider`. These values are mapped to an injected parameter in your test and passed into your composable wrapper.
 
 ```kotlin
 class MyThemeComposableWrapper : ValuesComposableWrapper<MyTheme>() {
@@ -164,10 +155,6 @@ class MyThemeComposableWrapper : ValuesComposableWrapper<MyTheme>() {
   name = "themed",
   composableWrapper = MyThemeComposableWrapper::class
 )
-@Composable
-fun MyViewTest() {
-  MyView(title = "Hello Paparazzi, wrapped in different themes")
-}
 ```
 
 ## Sample
