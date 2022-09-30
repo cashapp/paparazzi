@@ -80,6 +80,10 @@ import java.util.Date
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.ContinuationInterceptor
 
+/**
+ * @param viewOnly true to omit the device frame. Use this with [RenderingMode.V_SCROLL] or
+ *   [RenderingMode.FULL_EXPAND] to fit the snapshot's size to the view.
+ */
 class Paparazzi @JvmOverloads constructor(
   private val environment: Environment = detectEnvironment(),
   private val deviceConfig: DeviceConfig = DeviceConfig.NEXUS_5,
@@ -89,7 +93,8 @@ class Paparazzi @JvmOverloads constructor(
   private val maxPercentDifference: Double = 0.1,
   private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference),
   private val renderExtensions: Set<RenderExtension> = setOf(),
-  private val supportsRtl: Boolean = false
+  private val supportsRtl: Boolean = false,
+  private val viewOnly: Boolean = false
 ) : TestRule {
   private val logger = PaparazziLogger()
   private lateinit var renderSession: RenderSessionImpl
@@ -105,12 +110,21 @@ class Paparazzi @JvmOverloads constructor(
   val context: Context
     get() = RenderAction.getCurrentContext()
 
-  private val contentRoot = """
-        |<?xml version="1.0" encoding="utf-8"?>
-        |<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        |              android:layout_width="match_parent"
-        |              android:layout_height="match_parent"/>
-  """.trimMargin()
+  private val contentRoot = run {
+    val mode = when {
+      viewOnly -> "wrap_content"
+      else -> "match_parent"
+    }
+
+    return@run """
+      |<?xml version="1.0" encoding="utf-8"?>
+      |<FrameLayout
+      | xmlns:android="http://schemas.android.com/apk/res/android"
+      | android:layout_width="$mode"
+      | android:layout_height="$mode"
+      |/>
+    """.trimMargin()
+  }
 
   override fun apply(
     base: Statement,
@@ -162,7 +176,8 @@ class Paparazzi @JvmOverloads constructor(
         layoutPullParser = LayoutPullParser.createFromString(contentRoot),
         deviceConfig = deviceConfig,
         renderingMode = renderingMode,
-        supportsRtl = supportsRtl
+        supportsRtl = supportsRtl,
+        viewOnly = viewOnly
       )
       .withTheme(theme)
 

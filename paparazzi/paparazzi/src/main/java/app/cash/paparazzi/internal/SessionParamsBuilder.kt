@@ -20,11 +20,13 @@ import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.internal.parsers.LayoutPullParser
 import com.android.SdkConstants
 import com.android.ide.common.rendering.api.AssetRepository
+import com.android.ide.common.rendering.api.HardwareConfig
 import com.android.ide.common.rendering.api.ResourceNamespace
 import com.android.ide.common.rendering.api.ResourceReference
 import com.android.ide.common.rendering.api.SessionParams
 import com.android.ide.common.rendering.api.SessionParams.Key
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode
+import com.android.ide.common.rendering.api.SessionParams.RenderingMode.SizeAction.EXPAND
 import com.android.ide.common.resources.ResourceResolver
 import com.android.ide.common.resources.ResourceValueMap
 import com.android.ide.common.resources.deprecated.ResourceRepository
@@ -48,8 +50,8 @@ internal data class SessionParamsBuilder(
   private val layoutPullParser: LayoutPullParser? = null,
   private val projectKey: Any? = null,
   private val minSdk: Int = 0,
-  private val decor: Boolean = true,
-  private val supportsRtl: Boolean = false
+  private val supportsRtl: Boolean = false,
+  private val viewOnly: Boolean = true
 ) {
   fun withTheme(
     themeName: String,
@@ -92,9 +94,14 @@ internal data class SessionParamsBuilder(
       )
     )
 
+    val hardwareConfig = when {
+      viewOnly -> viewOnlyHardwareConfig
+      else -> deviceConfig.hardwareConfig
+    }
+
     val result = SessionParams(
       layoutPullParser, renderingMode, projectKey /* for caching */,
-      deviceConfig.hardwareConfig, resourceResolver, layoutlibCallback, minSdk, targetSdk, logger
+      hardwareConfig, resourceResolver, layoutlibCallback, minSdk, targetSdk, logger
     )
     result.fontScale = deviceConfig.fontScale
     result.uiMode = deviceConfig.uiModeMask
@@ -114,10 +121,40 @@ internal data class SessionParamsBuilder(
     }
     result.setAssetRepository(assetRepository)
 
-    if (!decor) {
+    if (viewOnly) {
       result.setForceNoDecor()
     }
 
     return result
   }
+
+  /**
+   * If we're rendering a view and not a full device frame, make a canvas size that fits the view
+   * snugly.
+   *
+   * For [RenderingMode.FULL_EXPAND], this returns a 1x1 canvas that'll expand to fit the rendered
+   * view.
+   *
+   * For [RenderingMode.V_SCROLL], this returns a canvas that's 1px tall and as wide as the regular
+   * device width. Symmetrically, for [RenderingMode.H_SCROLL], this returns a canvas that's 1px
+   * wide and as tall as the regular device height.
+   *
+   * Most users will prefer one of the scrolling modes over [RenderingMode.FULL_EXPAND]; otherwise
+   * text never wraps and isn't representative of real UIs.
+   */
+  private val viewOnlyHardwareConfig: HardwareConfig
+    get() {
+      val screenHeight = when (renderingMode.vertAction) {
+        EXPAND -> 1
+        else -> deviceConfig.screenHeight
+      }
+      val screenWidth = when (renderingMode.horizAction) {
+        EXPAND -> 1
+        else -> deviceConfig.screenWidth
+      }
+      return deviceConfig.copy(
+        screenHeight = screenHeight,
+        screenWidth = screenWidth
+      ).hardwareConfig
+    }
 }
