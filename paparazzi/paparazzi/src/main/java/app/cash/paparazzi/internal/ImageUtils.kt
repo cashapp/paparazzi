@@ -34,7 +34,6 @@ import java.io.File
 import java.io.File.separatorChar
 import java.io.IOException
 import javax.imageio.ImageIO
-import kotlin.math.max
 
 /**
  * Utilities related to image processing.
@@ -42,13 +41,11 @@ import kotlin.math.max
 internal object ImageUtils {
   /**
    * Normally, this test will fail when there is a missing thumbnail. However, when
-   * you create creating a new test, it's useful to be able to turn this off such that
+   * you create a new test, it's useful to be able to turn this off such that
    * you can generate all the missing thumbnails in one go, rather than having to run
    * the test repeatedly to get to each new render assertion generating its thumbnail.
    */
   private val FAIL_ON_MISSING_THUMBNAIL = true
-
-  private const val THUMBNAIL_SIZE = 1000
 
   /** Directory where to write the thumbnails and deltas. */
   private val failureDir: File
@@ -65,15 +62,12 @@ internal object ImageUtils {
     image: BufferedImage,
     maxPercentDifference: Double
   ) {
-    val scale = getThumbnailScale(image)
-    val thumbnail = scale(image, scale, scale)
-
     val `is` = ImageUtils::class.java.classLoader.getResourceAsStream(relativePath)
     if (`is` ==
       null
     ) {
       var message = "Unable to load golden thumbnail: $relativePath\n"
-      message = saveImageAndAppendMessage(thumbnail, message, relativePath)
+      message = saveImageAndAppendMessage(image, message, relativePath)
       if (FAIL_ON_MISSING_THUMBNAIL) {
         fail(message)
       } else {
@@ -85,7 +79,7 @@ internal object ImageUtils {
         assertImageSimilar(
           relativePath,
           goldenImage,
-          thumbnail,
+          image,
           maxPercentDifference
         )
       } finally {
@@ -221,15 +215,18 @@ internal object ImageUtils {
    */
   fun scale(
     source: BufferedImage,
-    xScale: Double,
-    yScale: Double
+    destWidth: Int,
+    destHeight: Int,
   ): BufferedImage {
-    var source = source
+    require(destWidth >= 1 && destHeight >= 1) {
+      "cannot scale to $destWidth x $destHeight"
+    }
 
+    var source = source
     var sourceWidth = source.width
     var sourceHeight = source.height
-    val destWidth = Math.max(1, (xScale * sourceWidth).toInt())
-    val destHeight = Math.max(1, (yScale * sourceHeight).toInt())
+    val xScale = destWidth.toDouble() / sourceWidth
+    val yScale = destHeight.toDouble() / sourceHeight
     var imageType = source.type
     if (imageType == BufferedImage.TYPE_CUSTOM) {
       imageType = BufferedImage.TYPE_INT_ARGB
@@ -240,7 +237,7 @@ internal object ImageUtils {
       g2.composite = AlphaComposite.Src
       g2.color = Color(0, true)
       g2.fillRect(0, 0, destWidth, destHeight)
-      if (xScale == 1.0 && yScale == 1.0) {
+      if (source.width == destWidth && source.height == destHeight) {
         g2.drawImage(source, 0, 0, null)
       } else {
         setRenderingHints(g2)
@@ -310,11 +307,6 @@ internal object ImageUtils {
       }
       return scaled
     }
-  }
-
-  fun getThumbnailScale(image: BufferedImage): Double {
-    val maxDimension = max(image.width, image.height)
-    return THUMBNAIL_SIZE / maxDimension.toDouble()
   }
 
   private fun setRenderingHints(g2: Graphics2D) {

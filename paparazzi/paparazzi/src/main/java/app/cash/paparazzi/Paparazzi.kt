@@ -43,12 +43,12 @@ import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import app.cash.paparazzi.Interceptor.Chain
 import app.cash.paparazzi.agent.AgentTestRule
 import app.cash.paparazzi.agent.InterceptorRegistrar
 import app.cash.paparazzi.internal.ChoreographerDelegateInterceptor
 import app.cash.paparazzi.internal.EditModeInterceptor
 import app.cash.paparazzi.internal.IInputMethodManagerInterceptor
-import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.MatrixMatrixMultiplicationInterceptor
 import app.cash.paparazzi.internal.MatrixVectorMultiplicationInterceptor
 import app.cash.paparazzi.internal.PaparazziCallback
@@ -74,7 +74,6 @@ import com.android.resources.ScreenRound
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
-import java.awt.geom.Ellipse2D
 import java.awt.image.BufferedImage
 import java.util.Date
 import java.util.concurrent.TimeUnit
@@ -88,9 +87,12 @@ class Paparazzi @JvmOverloads constructor(
   private val appCompatEnabled: Boolean = true,
   private val maxPercentDifference: Double = 0.1,
   private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference),
-  private val renderExtensions: Set<RenderExtension> = setOf(),
-  private val supportsRtl: Boolean = false
+  renderExtensions: Set<RenderExtension> = setOf(),
+  private val supportsRtl: Boolean = false,
+  interceptors: List<Interceptor> = defaultInterceptors(deviceConfig)
 ) : TestRule {
+  private val renderExtensions = renderExtensions.toSet() // Defensive copy for immutability.
+  private val interceptors = interceptors.toList() // Defensive copy for immutability.
   private val logger = PaparazziLogger()
   private lateinit var renderSession: RenderSessionImpl
   private lateinit var bridgeRenderSession: RenderSession
@@ -282,9 +284,7 @@ class Paparazzi @JvmOverloads constructor(
     val frameHandler = snapshotHandler.newFrameHandler(snapshot, frameCount, fps)
     frameHandler.use {
       val viewGroup = bridgeRenderSession.rootViews[0].viewObject as ViewGroup
-      val modifiedView = renderExtensions.fold(view) { view, renderExtension ->
-        renderExtension.renderView(view)
-      }
+      val allInterceptors = interceptorsToRun(last = RenderViewToBitmapInterceptor(viewGroup, startNanos))
 
       System_Delegate.setBootTimeNanos(0L)
       try {
@@ -292,30 +292,66 @@ class Paparazzi @JvmOverloads constructor(
           // Initialize the choreographer at time=0.
         }
 
-        viewGroup.addView(modifiedView)
         for (frame in 0 until frameCount) {
-          val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
-          withTime(nowNanos) {
-            val result = renderSession.render(true)
-            if (result.status == ERROR_UNKNOWN) {
-              throw result.exception
-            }
-
-            val image = bridgeRenderSession.image
-            frameHandler.handle(scaleImage(frameImage(image)))
-          }
+          val chain = RealChain(
+            nextIndex = 0,
+            interceptors = allInterceptors,
+            deviceConfig = deviceConfig,
+            view = view,
+            snapshot = snapshot,
+            frameIndex = frame,
+            frameCount = frameCount,
+            fps = fps
+          )
+          val image = chain.proceed(view)
+          frameHandler.handle(image)
         }
       } finally {
-        viewGroup.removeView(modifiedView)
+        viewGroup.removeAllViews()
         AnimationHandler.sAnimatorHandler.set(null)
       }
     }
   }
 
-  private fun withTime(
+  private fun interceptorsToRun(last: Interceptor): List<Interceptor> {
+    return buildList {
+      this += interceptors
+      for (renderExtension in renderExtensions) {
+        this += renderExtension.asInterceptor()
+      }
+      this += last
+    }
+  }
+
+  private fun RenderExtension.asInterceptor() = object : Interceptor {
+    override fun intercept(chain: Chain) = chain.proceed(renderView(chain.view))
+  }
+
+  /** At the end of the interceptor chain this does the actual render. */
+  inner class RenderViewToBitmapInterceptor(
+    private val viewGroup: ViewGroup,
+    private val startNanos: Long,
+  ) : Interceptor {
+    override fun intercept(chain: Chain): BufferedImage {
+      if (viewGroup.childCount != 1 || viewGroup.getChildAt(0) != chain.view) {
+        viewGroup.removeAllViews()
+        viewGroup.addView(chain.view)
+      }
+      val nowNanos = (startNanos + (chain.frameIndex * 1_000_000_000.0 / chain.fps)).toLong()
+      return withTime(nowNanos) {
+        val result = renderSession.render(true)
+        if (result.status == ERROR_UNKNOWN) {
+          throw result.exception
+        }
+        return@withTime bridgeRenderSession.image
+      }
+    }
+  }
+
+  private fun <T> withTime(
     timeNanos: Long,
-    block: () -> Unit
-  ) {
+    block: () -> T
+  ): T {
     val frameNanos = TIME_OFFSET_NANOS + timeNanos
 
     // Execute the block at the requested time.
@@ -336,7 +372,7 @@ class Paparazzi @JvmOverloads constructor(
         RenderAction.getCurrentContext().sessionInteractiveData.choreographerCallbacks
       choreographerCallbacks.execute(currentTimeMs, Bridge.getLog())
 
-      block()
+      return block()
     } catch (e: Throwable) {
       Bridge.getLog().error("broken", "Failed executing Choreographer#doFrame", e, null, null)
       throw e
@@ -370,23 +406,6 @@ class Paparazzi @JvmOverloads constructor(
     } catch (e: Exception) {
       throw RuntimeException(e)
     }
-  }
-
-  private fun frameImage(image: BufferedImage): BufferedImage {
-    if (deviceConfig.screenRound == ScreenRound.ROUND) {
-      val newImage = BufferedImage(image.width, image.height, image.type)
-      val g = newImage.createGraphics()
-      g.clip = Ellipse2D.Float(0f, 0f, image.height.toFloat(), image.width.toFloat())
-      g.drawImage(image, 0, 0, image.width, image.height, null)
-      return newImage
-    }
-
-    return image
-  }
-
-  private fun scaleImage(image: BufferedImage): BufferedImage {
-    val scale = ImageUtils.getThumbnailScale(image)
-    return ImageUtils.scale(image, scale, scale)
   }
 
   private fun Description.toTestName(): TestName {
@@ -628,5 +647,14 @@ class Paparazzi @JvmOverloads constructor(
       } else {
         HtmlReportWriter()
       }
+
+    fun defaultInterceptors(deviceConfig: DeviceConfig): List<Interceptor> {
+      return buildList {
+        this += ResizeInterceptor.maxAnyDimension(1_000)
+        if (deviceConfig.screenRound == ScreenRound.ROUND) {
+          this += RoundFrameInterceptor
+        }
+      }
+    }
   }
 }
