@@ -330,7 +330,7 @@ class Paparazzi @JvmOverloads constructor(
   /** At the end of the interceptor chain this does the actual render. */
   inner class RenderViewToBitmapInterceptor(
     private val viewGroup: ViewGroup,
-    private val startNanos: Long,
+    private val startNanos: Long
   ) : Interceptor {
     override fun intercept(chain: Chain): BufferedImage {
       if (viewGroup.childCount != 1 || viewGroup.getChildAt(0) != chain.view) {

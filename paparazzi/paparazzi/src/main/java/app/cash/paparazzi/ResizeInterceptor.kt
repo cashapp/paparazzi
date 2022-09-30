@@ -20,7 +20,7 @@ import app.cash.paparazzi.internal.ImageUtils
 import java.awt.image.BufferedImage
 
 class ResizeInterceptor private constructor(
-  val size: (Size) -> Size,
+  val size: (Size) -> Size
 ) : Interceptor {
   override fun intercept(chain: Interceptor.Chain): BufferedImage {
     val rendered = chain.proceed(chain.view)
@@ -37,7 +37,7 @@ class ResizeInterceptor private constructor(
         val scale = size.toDouble() / maxDimension
         Size(
           maxOf(1, (scale * sourceSize.width).toInt()),
-          maxOf(1, (scale * sourceSize.height).toInt()),
+          maxOf(1, (scale * sourceSize.height).toInt())
         )
       }
     }

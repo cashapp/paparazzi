@@ -216,7 +216,7 @@ internal object ImageUtils {
   fun scale(
     source: BufferedImage,
     destWidth: Int,
-    destHeight: Int,
+    destHeight: Int
   ): BufferedImage {
     require(destWidth >= 1 && destHeight >= 1) {
       "cannot scale to $destWidth x $destHeight"
