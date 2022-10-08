@@ -619,10 +619,14 @@ class Paparazzi @JvmOverloads constructor(
 
     internal lateinit var sessionParamsBuilder: SessionParamsBuilder
 
-    private val isVerifying: Boolean =
+    /** Whether we are running in verify mode or report mode */
+    val isVerifying: Boolean =
       System.getProperty("paparazzi.test.verify")?.toBoolean() == true
 
-    private fun determineHandler(maxPercentDifference: Double): SnapshotHandler =
+    /**
+     * Build the default handler.
+     */
+    fun determineHandler(maxPercentDifference: Double): SnapshotHandler =
       if (isVerifying) {
         SnapshotVerifier(maxPercentDifference)
       } else {
