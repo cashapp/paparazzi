@@ -59,7 +59,7 @@ import javax.imageio.ImageIO
  */
 class HtmlReportWriter @JvmOverloads constructor(
   private val runName: String = defaultRunName(),
-  private val rootDirectory: File = File("build/reports/paparazzi"),
+  private val rootDirectory: File = File("${System.getProperty("paparazzi.build.dir", "build")}/reports/paparazzi"),
   snapshotRootDirectory: File = File("src/test/snapshots")
 ) : SnapshotHandler {
   private val runsDirectory: File = File(rootDirectory, "runs")
