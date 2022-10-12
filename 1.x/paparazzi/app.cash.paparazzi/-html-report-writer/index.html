@@ -308,7 +308,7 @@
                 <p>//<a href="../../../">paparazzi</a>/<a href="../">app.cash.paparazzi</a>/<a href="./">HtmlReportWriter</a></p>
 <h1 id="htmlreportwriter">HtmlReportWriter<a class="headerlink" href="#htmlreportwriter" title="Permanent link">&para;</a></h1>
 <p>[jvm]\
-class <a href="./">HtmlReportWriter</a>@<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-overloads/index.html">JvmOverloads</a>constructor(runName: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a> = defaultRunName(), rootDirectory: <a href="https://docs.oracle.com/javase/8/docs/api/java/io/File.html">File</a> = File(&quot;build/reports/paparazzi&quot;), snapshotRootDirectory: <a href="https://docs.oracle.com/javase/8/docs/api/java/io/File.html">File</a> = File(&quot;src/test/snapshots&quot;)) : <a href="../-snapshot-handler/">SnapshotHandler</a></p>
+class <a href="./">HtmlReportWriter</a>@<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-overloads/index.html">JvmOverloads</a>constructor(runName: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a> = defaultRunName(), rootDirectory: <a href="https://docs.oracle.com/javase/8/docs/api/java/io/File.html">File</a> = File(&quot;${System.getProperty(&quot;paparazzi.build.dir&quot;, &quot;build&quot;)}/reports/paparazzi&quot;), snapshotRootDirectory: <a href="https://docs.oracle.com/javase/8/docs/api/java/io/File.html">File</a> = File(&quot;src/test/snapshots&quot;)) : <a href="../-snapshot-handler/">SnapshotHandler</a></p>
 <p>Creates an HTML report that avoids writing files that have already been written.</p>
 <p>Images and videos are named by hashes of their contents. Paparazzi won&rsquo;t write two images or videos with the same contents. Note that the images/ directory includes the individual frames of each video.</p>
 <p>Runs are named by their date.</p>
@@ -338,7 +338,7 @@ class <a href="./">HtmlReportWriter</a>@<a href="https://kotlinlang.org/api/late
 <tbody>
 <tr>
 <td><a href="-html-report-writer/">HtmlReportWriter</a></td>
-<td>[jvm]<br>@<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-overloads/index.html">JvmOverloads</a><br>fun <a href="-html-report-writer/">HtmlReportWriter</a>(runName: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a> = defaultRunName(), rootDirectory: <a href="https://docs.oracle.com/javase/8/docs/api/java/io/File.html">File</a> = File(&quot;build/reports/paparazzi&quot;), snapshotRootDirectory: <a href="https://docs.oracle.com/javase/8/docs/api/java/io/File.html">File</a> = File(&quot;src/test/snapshots&quot;))</td>
+<td>[jvm]<br>@<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-overloads/index.html">JvmOverloads</a><br>fun <a href="-html-report-writer/">HtmlReportWriter</a>(runName: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a> = defaultRunName(), rootDirectory: <a href="https://docs.oracle.com/javase/8/docs/api/java/io/File.html">File</a> = File(&quot;${System.getProperty(&quot;paparazzi.build.dir&quot;, &quot;build&quot;)}/reports/paparazzi&quot;), snapshotRootDirectory: <a href="https://docs.oracle.com/javase/8/docs/api/java/io/File.html">File</a> = File(&quot;src/test/snapshots&quot;))</td>
 </tr>
 </tbody>
 </table>
