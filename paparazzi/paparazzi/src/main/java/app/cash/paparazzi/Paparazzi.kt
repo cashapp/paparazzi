@@ -149,6 +149,9 @@ class Paparazzi @JvmOverloads constructor(
       // the compileSdkVersion down to 32
       forceBuildVersionProp("SDK_INT", 32)
       forceBuildVersionProp("CODENAME", "Sv2")
+    } else {
+      // Otherwise we just pass through the compile sdk
+      forceBuildVersionProp("SDK_INT", environment.compileSdkVersion)
     }
 
     val layoutlibCallback =
