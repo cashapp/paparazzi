@@ -15,7 +15,7 @@ _2022-10-12_
 * Google Wear DeviceConfig support
 * Expose an API for offsetting frame capture time
 * Add InstantAnimationsRule to delay snapshot capture until the last frame.
-* Compose 1.1.1
+* Compose 1.3.0
 * Kotlin 1.7.10
 * [Gradle Plugin] Gradle 7.5.1
 
