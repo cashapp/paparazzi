@@ -30,7 +30,7 @@ object InterceptorRegistrar {
           builder: DynamicType.Builder<*>,
           typeDescription: TypeDescription,
           classLoader: ClassLoader?,
-          module: JavaModule?,
+          module: JavaModule?
         ): DynamicType.Builder<*> {
           var builder = ByteBuddy().redefine(receiver)
           methodNamesToInterceptors.forEach {
