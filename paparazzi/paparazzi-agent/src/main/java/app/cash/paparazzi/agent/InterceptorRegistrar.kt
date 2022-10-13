@@ -9,7 +9,6 @@ import net.bytebuddy.matcher.ElementMatchers.`is`
 import net.bytebuddy.matcher.ElementMatchers.named
 import net.bytebuddy.matcher.ElementMatchers.none
 import net.bytebuddy.utility.JavaModule
-import java.security.ProtectionDomain
 
 object InterceptorRegistrar {
 
