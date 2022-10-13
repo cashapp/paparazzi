@@ -20,6 +20,23 @@ buildscript {
   }
 }
 
+gradleEnterprise {
+  buildScan {
+    termsOfServiceUrl = "https://gradle.com/terms-of-service"
+    termsOfServiceAgree = "yes"
+    // Capturing task input files increases the amount of data transmitted to the build scan server
+    // at the end of the build. If the network connection to the build scan server is poor,
+    // it may increase the time required to transmit. Disable the setting below if it has a
+    // noticeable effect on build scan upload speed, and subsequently build speed, on CI.
+    captureTaskInputFiles = true
+    uploadInBackground = false
+
+    publishAlwaysIf isCi()
+  }
+}
+
+private static boolean isCi() { return System.getenv('GITHUB_ACTIONS') != null }
+
 subprojects {
   repositories {
     mavenCentral()
