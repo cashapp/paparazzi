@@ -1,12 +1,18 @@
 package app.cash.paparazzi.agent
 
 import net.bytebuddy.ByteBuddy
-import net.bytebuddy.dynamic.loading.ClassReloadingStrategy
+import net.bytebuddy.agent.builder.AgentBuilder
+import net.bytebuddy.description.type.TypeDescription
+import net.bytebuddy.dynamic.DynamicType
 import net.bytebuddy.implementation.MethodDelegation
-import net.bytebuddy.matcher.ElementMatchers
+import net.bytebuddy.matcher.ElementMatchers.`is`
+import net.bytebuddy.matcher.ElementMatchers.named
+import net.bytebuddy.matcher.ElementMatchers.none
+import net.bytebuddy.utility.JavaModule
+import java.security.ProtectionDomain
 
 object InterceptorRegistrar {
-  private val byteBuddy = ByteBuddy()
+
   private val methodInterceptors = mutableListOf<() -> Unit>()
 
   fun addMethodInterceptor(
@@ -20,18 +26,32 @@ object InterceptorRegistrar {
     methodNamesToInterceptors: Set<Pair<String, Class<*>>>
   ) {
     methodInterceptors += {
-      var builder = byteBuddy
-        .redefine(receiver)
+      val transformer = object : AgentBuilder.Transformer {
+        override fun transform(
+          builder: DynamicType.Builder<*>,
+          typeDescription: TypeDescription,
+          classLoader: ClassLoader?,
+          module: JavaModule?,
+        ): DynamicType.Builder<*> {
+          var builder = ByteBuddy().redefine(receiver)
+          methodNamesToInterceptors.forEach {
+            builder = builder
+              .method(named(it.first))
+              .intercept(MethodDelegation.to(it.second))
+          }
 
-      methodNamesToInterceptors.forEach {
-        builder = builder
-          .method(ElementMatchers.named(it.first))
-          .intercept(MethodDelegation.to(it.second))
+          return builder
+        }
       }
 
-      builder
-        .make()
-        .load(receiver.classLoader, ClassReloadingStrategy.fromInstalledAgent())
+      AgentBuilder.Default()
+        .ignore(none())
+        .with(AgentBuilder.InitializationStrategy.NoOp.INSTANCE)
+        .with(AgentBuilder.TypeStrategy.Default.REDEFINE)
+        .with(AgentBuilder.RedefinitionStrategy.REDEFINITION)
+        .type(`is`(receiver))
+        .transform(transformer)
+        .installOnByteBuddyAgent()
     }
   }
 
