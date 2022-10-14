@@ -373,7 +373,8 @@ class Paparazzi @JvmOverloads constructor(
   }
 
   private fun frameImage(image: BufferedImage): BufferedImage {
-    if (deviceConfig.screenRound == ScreenRound.ROUND) {
+    // On device sized screenshot, we should apply any device specific shapes.
+    if (renderingMode == RenderingMode.NORMAL && deviceConfig.screenRound == ScreenRound.ROUND) {
       val newImage = BufferedImage(image.width, image.height, image.type)
       val g = newImage.createGraphics()
       g.clip = Ellipse2D.Float(0f, 0f, image.height.toFloat(), image.width.toFloat())
