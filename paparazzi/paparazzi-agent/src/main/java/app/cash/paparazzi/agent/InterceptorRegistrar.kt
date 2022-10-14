@@ -12,6 +12,7 @@ import net.bytebuddy.utility.JavaModule
 
 object InterceptorRegistrar {
 
+  private val byteBuddy = ByteBuddy()
   private val methodInterceptors = mutableListOf<() -> Unit>()
 
   fun addMethodInterceptor(
@@ -32,7 +33,7 @@ object InterceptorRegistrar {
           classLoader: ClassLoader?,
           module: JavaModule?
         ): DynamicType.Builder<*> {
-          var builder = ByteBuddy().redefine(receiver)
+          var builder = byteBuddy.redefine(receiver)
           methodNamesToInterceptors.forEach {
             builder = builder
               .method(named(it.first))
