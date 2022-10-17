@@ -18,7 +18,7 @@ import kotlin.reflect.KClass
   AnnotationTarget.ANNOTATION_CLASS,
   AnnotationTarget.FUNCTION,
 )
-@Retention(AnnotationRetention.SOURCE)
+@Retention(AnnotationRetention.BINARY)
 @Repeatable
 annotation class Paparazzi(
   // test

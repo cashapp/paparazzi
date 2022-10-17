@@ -10,7 +10,7 @@ import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.processing.SymbolProcessorProvider
 import com.google.devtools.ksp.symbol.KSAnnotated
-import com.google.devtools.ksp.symbol.KSClassDeclaration
+import com.google.devtools.ksp.symbol.KSAnnotation
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.validate
 import java.io.OutputStreamWriter
@@ -28,27 +28,21 @@ class PaparazziProcessor(
 ) : SymbolProcessor {
 
   override fun process(resolver: Resolver): List<KSAnnotated> {
-    return resolver.findFunctions(Paparazzi::class.qualifiedName.toString())
-      .onEach { function ->
-        val models = function.accept(PaparazziVisitor(logger), Unit)
+    return resolver.findPaparazziFunctions()
+      .map { (function, annotations) ->
+        val models = function.accept(PaparazziVisitor(annotations, logger), Unit)
         writeFiles(models, resolver)
+        function
       }
       .filterNot { it.validate() }
       .toList()
   }
 
-  private fun Resolver.findFunctions(annotationName: String): Sequence<KSFunctionDeclaration> {
-    val symbols = getSymbolsWithAnnotation(annotationName)
-
-    val direct = symbols.filterIsInstance<KSFunctionDeclaration>()
-
-    // combined annotations are indirectly applied to a function via ANNOTATION_CLASS targets
-    val indirect = symbols.filterIsInstance<KSClassDeclaration>()
-      .map { findFunctions(it.qualifiedName!!.asString()) }
-      .flatten()
-
-    return direct.plus(indirect).distinct()
-  }
+  private fun Resolver.findPaparazziFunctions() =
+    getSymbolsWithAnnotation("androidx.compose.runtime.Composable")
+      .filterIsInstance<KSFunctionDeclaration>()
+      .map { Pair(it, it.annotations.findPaparazzi()) }
+      .filter { (_, annotations) -> annotations.count() > 0 }
 
   private fun writeFiles(models: Sequence<PaparazziModel>, resolver: Resolver) {
     val dependencies = Dependencies(false, *resolver.getAllFiles().toList().toTypedArray())
@@ -60,4 +54,35 @@ class PaparazziProcessor(
       OutputStreamWriter(fileOS, StandardCharsets.UTF_8).use(file::writeTo)
     }
   }
+
+  /**
+   * when the same annotations are applied higher in the tree, an endless recursive lookup can occur.
+   * using a stack to keep to a record of each symbol lets us break when we hit one we've already encountered
+   *
+   * ie:
+   * @Bottom
+   * annotation class Top
+   *
+   * @Top
+   * annotation class Bottom
+   *
+   * @Bottom
+   * fun SomeFun()
+   */
+  private fun Sequence<KSAnnotation>.findPaparazzi(stack: Set<KSAnnotation> = setOf()): Sequence<KSAnnotation> {
+    val direct = filter { it.isPaparazzi() }
+    val indirect = filterNot { it.isPaparazzi() || stack.contains(it) }
+      .map { it.parentAnnotations().findPaparazzi(stack.plus(it)) }
+      .flatten()
+    return direct.plus(indirect)
+  }
+
+  private fun KSAnnotation.parentAnnotations() = declaration().annotations
+
+  private fun KSAnnotation.isPaparazzi() =
+    qualifiedName() == Paparazzi::class.qualifiedName.toString()
+
+  private fun KSAnnotation.qualifiedName() = declaration().qualifiedName?.asString() ?: ""
+
+  private fun KSAnnotation.declaration() = annotationType.resolve().declaration
 }

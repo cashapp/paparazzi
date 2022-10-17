@@ -1,6 +1,5 @@
 package app.cash.paparazzi.annotation.processor
 
-import app.cash.paparazzi.annotation.api.Paparazzi
 import app.cash.paparazzi.annotation.api.config.ComposableWrapper
 import app.cash.paparazzi.annotation.processor.models.ComposableWrapperModel
 import app.cash.paparazzi.annotation.processor.models.DeviceModel
@@ -16,7 +15,10 @@ import com.google.devtools.ksp.symbol.KSType
 import com.google.devtools.ksp.symbol.KSValueParameter
 import com.google.devtools.ksp.visitor.KSEmptyVisitor
 
-class PaparazziVisitor(private val logger: KSPLogger) : KSEmptyVisitor<Unit, Sequence<PaparazziModel>>() {
+class PaparazziVisitor(
+  private val annotations: Sequence<KSAnnotation>,
+  private val logger: KSPLogger
+  ) : KSEmptyVisitor<Unit, Sequence<PaparazziModel>>() {
 
   override fun defaultHandler(
     node: KSNode,
@@ -27,7 +29,6 @@ class PaparazziVisitor(private val logger: KSPLogger) : KSEmptyVisitor<Unit, Seq
     function: KSFunctionDeclaration,
     data: Unit
   ): Sequence<PaparazziModel> {
-    val annotations = function.annotations.findPaparazzi()
     val showClassIndex = annotations.count() > 1
 
     return annotations.map { annotation ->
@@ -90,37 +91,6 @@ class PaparazziVisitor(private val logger: KSPLogger) : KSEmptyVisitor<Unit, Seq
       )
     }
   }
-
-  /**
-   * when the same annotations are applied higher in the tree, an endless recursive lookup can occur
-   * using a stack to keep to a record of each symbol lets us break when we hit one we've already encountered
-   *
-   * ie:
-   * @Bottom
-   * annotation class Top
-   *
-   * @Top
-   * annotation class Bottom
-   *
-   * @Bottom
-   * fun SomeFun()
-   */
-  private fun Sequence<KSAnnotation>.findPaparazzi(stack: Set<KSAnnotation> = setOf()): Sequence<KSAnnotation> {
-    val direct = filter { it.isPaparazzi() }
-    val indirect = filterNot { it.isPaparazzi() || stack.contains(it) }
-      .map { it.parentAnnotations().findPaparazzi(stack.plus(it)) }
-      .flatten()
-    return direct.plus(indirect)
-  }
-
-  private fun KSAnnotation.declaration() = annotationType.resolve().declaration
-
-  private fun KSAnnotation.qualifiedName() = declaration().qualifiedName?.asString() ?: ""
-
-  private fun KSAnnotation.isPaparazzi() =
-    qualifiedName() == Paparazzi::class.qualifiedName.toString()
-
-  private fun KSAnnotation.parentAnnotations() = declaration().annotations
 
   private fun KSAnnotation.composableWrapper() = getArgument<KSType>("composableWrapper")
     .takeIf { it.declaration.qualifiedName?.asString() != ComposableWrapper::class.qualifiedName.toString() }
