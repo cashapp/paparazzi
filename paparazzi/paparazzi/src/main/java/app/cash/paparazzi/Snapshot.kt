@@ -19,8 +19,15 @@ import com.squareup.moshi.JsonClass
 import java.util.Date
 import java.util.Locale
 
-@JsonClass(generateAdapter = true)
 data class Snapshot(
+  val name: String?,
+  val timestamp: Date,
+  val tags: List<String> = listOf(),
+  val file: String? = null
+)
+
+@JsonClass(generateAdapter = true)
+data class TestSnapshot(
   val name: String?,
   val testName: TestName,
   val timestamp: Date,
@@ -29,6 +36,7 @@ data class Snapshot(
 )
 
 internal fun Snapshot.toFileName(
+  testName: TestName,
   delimiter: String = "_",
   extension: String
 ): String {

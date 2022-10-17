@@ -58,8 +58,16 @@ import javax.imageio.ImageIO
  * ```
  */
 class HtmlReportWriter @JvmOverloads constructor(
+  private val testName: TestName,
   private val runName: String = defaultRunName(),
-  private val rootDirectory: File = File("${System.getProperty("paparazzi.build.dir", "build")}/reports/paparazzi"),
+  private val rootDirectory: File = File(
+    "${
+    System.getProperty(
+      "paparazzi.build.dir",
+      "build"
+    )
+    }/reports/paparazzi"
+  ),
   snapshotRootDirectory: File = File("src/test/snapshots")
 ) : SnapshotHandler {
   private val runsDirectory: File = File(rootDirectory, "runs")
@@ -101,7 +109,7 @@ class HtmlReportWriter @JvmOverloads constructor(
         val shot = if (hashes.size == 1) {
           val original = File(imagesDirectory, "${hashes[0]}.png")
           if (isRecording) {
-            val goldenFile = File(goldenImagesDirectory, snapshot.toFileName("_", "png"))
+            val goldenFile = File(goldenImagesDirectory, snapshot.toFileName(testName, "_", "png"))
             original.copyTo(goldenFile, overwrite = true)
           }
           snapshot.copy(file = original.toJsonPath())
@@ -112,7 +120,8 @@ class HtmlReportWriter @JvmOverloads constructor(
             for ((index, frameHash) in hashes.withIndex()) {
               val originalFrame = File(imagesDirectory, "$frameHash.png")
               val frameSnapshot = snapshot.copy(name = "${snapshot.name} $index")
-              val goldenFile = File(goldenImagesDirectory, frameSnapshot.toFileName("_", "png"))
+              val goldenFile =
+                File(goldenImagesDirectory, frameSnapshot.toFileName(testName, "_", "png"))
               if (!goldenFile.exists()) {
                 originalFrame.copyTo(goldenFile)
               }
@@ -120,7 +129,7 @@ class HtmlReportWriter @JvmOverloads constructor(
           }
           val original = File(videosDirectory, "$hash.mov")
           if (isRecording) {
-            val goldenFile = File(goldenVideosDirectory, snapshot.toFileName("_", "mov"))
+            val goldenFile = File(goldenVideosDirectory, snapshot.toFileName(testName, "_", "mov"))
             if (!goldenFile.exists()) {
               original.copyTo(goldenFile)
             }
@@ -244,7 +253,10 @@ class HtmlReportWriter @JvmOverloads constructor(
     val runJs = File(runsDirectory, "${runName.sanitizeForFilename()}.js")
     runJs.writeAtomically {
       writeUtf8("window.runs[\"$runName\"] = ")
-      PaparazziJson.listOfShotsAdapter.toJson(this, shots)
+      PaparazziJson.listOfShotsAdapter.toJson(
+        this,
+        shots.map { TestSnapshot(it.name, testName, it.timestamp, it.tags, it.file) }
+      )
       writeUtf8(";")
     }
   }

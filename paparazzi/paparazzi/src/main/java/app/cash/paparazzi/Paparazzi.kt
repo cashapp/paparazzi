@@ -87,10 +87,10 @@ class Paparazzi @JvmOverloads constructor(
   private val renderingMode: RenderingMode = RenderingMode.NORMAL,
   private val appCompatEnabled: Boolean = true,
   private val maxPercentDifference: Double = 0.1,
-  private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference),
   private val renderExtensions: Set<RenderExtension> = setOf(),
   private val supportsRtl: Boolean = false
 ) : TestRule {
+  lateinit var snapshotHandler: SnapshotHandler
   private val logger = PaparazziLogger()
   private lateinit var renderSession: RenderSessionImpl
   private lateinit var bridgeRenderSession: RenderSession
@@ -151,6 +151,9 @@ class Paparazzi @JvmOverloads constructor(
     layoutlibCallback.initResources()
 
     testName = description.toTestName()
+    if (!this::snapshotHandler.isInitialized) {
+      snapshotHandler = determineHandler(maxPercentDifference, testName!!)
+    }
 
     if (!isInitialized) {
       renderer = Renderer(environment, layoutlibCallback, logger)
@@ -277,7 +280,7 @@ class Paparazzi @JvmOverloads constructor(
     fps: Int,
     frameCount: Int
   ) {
-    val snapshot = Snapshot(name, testName!!, Date())
+    val snapshot = Snapshot(name, Date())
 
     val frameHandler = snapshotHandler.newFrameHandler(snapshot, frameCount, fps)
     frameHandler.use {
@@ -622,11 +625,11 @@ class Paparazzi @JvmOverloads constructor(
     private val isVerifying: Boolean =
       System.getProperty("paparazzi.test.verify")?.toBoolean() == true
 
-    private fun determineHandler(maxPercentDifference: Double): SnapshotHandler =
+    private fun determineHandler(maxPercentDifference: Double, testName: TestName): SnapshotHandler =
       if (isVerifying) {
-        SnapshotVerifier(maxPercentDifference)
+        SnapshotVerifier(testName, maxPercentDifference)
       } else {
-        HtmlReportWriter()
+        HtmlReportWriter(testName)
       }
   }
 }

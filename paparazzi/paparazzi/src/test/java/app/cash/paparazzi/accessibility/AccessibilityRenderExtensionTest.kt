@@ -16,6 +16,7 @@ import app.cash.paparazzi.Paparazzi
 import app.cash.paparazzi.Snapshot
 import app.cash.paparazzi.SnapshotHandler
 import app.cash.paparazzi.internal.ImageUtils
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import java.awt.image.BufferedImage
@@ -32,9 +33,14 @@ class AccessibilityRenderExtensionTest {
       screenWidth = DeviceConfig.NEXUS_5.screenWidth * 2,
       softButtons = false
     ),
-    snapshotHandler = snapshotHandler,
+
     renderExtensions = setOf(AccessibilityRenderExtension())
   )
+
+  @Before
+  fun before() {
+    paparazzi.snapshotHandler = snapshotHandler
+  }
 
   @Test
   fun `verify baseline`() {
