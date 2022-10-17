@@ -15,6 +15,7 @@ import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Paparazzi
 import app.cash.paparazzi.Snapshot
 import app.cash.paparazzi.SnapshotHandler
+import app.cash.paparazzi.SnapshotHandler.FileNameProvider
 import app.cash.paparazzi.internal.ImageUtils
 import org.junit.Rule
 import org.junit.Test
@@ -119,6 +120,16 @@ class AccessibilityRenderExtensionTest {
     }
 
   private class TestSnapshotVerifier : SnapshotHandler {
+    val fileNameProvider = object : FileNameProvider {
+      override fun computeFileName(
+        snapshot: Snapshot,
+        extension: String,
+        delimiter: String
+      ): String {
+        return "src/test/resources/${snapshot.name}.$extension"
+      }
+    }
+
     override fun newFrameHandler(
       snapshot: Snapshot,
       frameCount: Int,
@@ -126,7 +137,7 @@ class AccessibilityRenderExtensionTest {
     ): SnapshotHandler.FrameHandler {
       return object : SnapshotHandler.FrameHandler {
         override fun handle(image: BufferedImage) {
-          val expected = File("src/test/resources/${snapshot.name}.png")
+          val expected = File(fileNameProvider.computeFileName(snapshot, "png"))
           ImageUtils.assertImageSimilar(
             relativePath = expected.path,
             image = image,

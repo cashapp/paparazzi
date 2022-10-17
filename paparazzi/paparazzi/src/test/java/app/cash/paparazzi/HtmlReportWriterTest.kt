@@ -40,12 +40,18 @@ class HtmlReportWriterTest {
 
   @Test
   fun happyPath() {
-    val htmlReportWriter = HtmlReportWriter("run_one", reportRoot.root)
+    val htmlReportWriter = HtmlReportWriter(
+      TestFileNameProvider().also {
+        it.testName = TestName("app.cash.paparazzi", "CelebrityTest", "testSettings")
+      },
+      "run_one",
+      reportRoot.root
+    )
+
     htmlReportWriter.use {
       val frameHandler = htmlReportWriter.newFrameHandler(
         Snapshot(
           name = "loading",
-          testName = TestName("app.cash.paparazzi", "CelebrityTest", "testSettings"),
           timestamp = Instant.parse("2019-03-20T10:27:43Z").toDate(),
           tags = listOf("redesign")
         ),
@@ -93,12 +99,18 @@ class HtmlReportWriterTest {
 
   @Test
   fun noSnapshotOnFailure() {
-    val htmlReportWriter = HtmlReportWriter("run_one", reportRoot.root)
+    val htmlReportWriter = HtmlReportWriter(
+      TestFileNameProvider().also {
+        it.testName = TestName("app.cash.paparazzi", "CelebrityTest", "testSettings")
+      },
+      "run_one",
+      reportRoot.root
+    )
+
     htmlReportWriter.use {
       val frameHandler = htmlReportWriter.newFrameHandler(
         snapshot = Snapshot(
           name = "loading",
-          testName = TestName("app.cash.paparazzi", "CelebrityTest", "testSettings"),
           timestamp = Instant.parse("2019-03-20T10:27:43Z").toDate()
         ),
         frameCount = 4,
@@ -118,12 +130,19 @@ class HtmlReportWriterTest {
     // set record mode
     System.setProperty("paparazzi.test.record", "true")
 
-    val htmlReportWriter = HtmlReportWriter("record_run", reportRoot.root, snapshotRoot.root)
+    val htmlReportWriter = HtmlReportWriter(
+      TestFileNameProvider().also {
+        it.testName = TestName("app.cash.paparazzi", "HomeView", "testSettings")
+      },
+      "record_run",
+      reportRoot.root,
+      snapshotRoot.root
+    )
+
     htmlReportWriter.use {
       val now = Instant.parse("2021-02-23T10:27:43Z")
       val snapshot = Snapshot(
         name = "test",
-        testName = TestName("app.cash.paparazzi", "HomeView", "testSettings"),
         timestamp = now.toDate()
       )
       val file =

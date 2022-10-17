@@ -19,6 +19,7 @@ import java.awt.image.BufferedImage
 import java.io.Closeable
 
 interface SnapshotHandler : Closeable {
+
   fun newFrameHandler(
     snapshot: Snapshot,
     frameCount: Int,
@@ -27,5 +28,14 @@ interface SnapshotHandler : Closeable {
 
   interface FrameHandler : Closeable {
     fun handle(image: BufferedImage)
+  }
+
+  interface FileNameProvider {
+
+    fun computeFileName(
+      snapshot: Snapshot,
+      extension: String,
+      delimiter: String = "_"
+    ): String
   }
 }

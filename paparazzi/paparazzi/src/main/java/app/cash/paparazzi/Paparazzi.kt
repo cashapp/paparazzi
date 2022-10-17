@@ -94,8 +94,6 @@ class Paparazzi @JvmOverloads constructor(
   private val logger = PaparazziLogger()
   private lateinit var renderSession: RenderSessionImpl
   private lateinit var bridgeRenderSession: RenderSession
-  private var testName: TestName? = null
-
   val layoutInflater: LayoutInflater
     get() = RenderAction.getCurrentContext().getSystemService("layout_inflater") as BridgeInflater
 
@@ -116,9 +114,10 @@ class Paparazzi @JvmOverloads constructor(
     base: Statement,
     description: Description
   ): Statement {
+    fileNameProvider.testName = description.toTestName()
     val statement = object : Statement() {
       override fun evaluate() {
-        prepare(description)
+        prepare()
         try {
           base.evaluate()
         } finally {
@@ -143,14 +142,12 @@ class Paparazzi @JvmOverloads constructor(
     }
   }
 
-  fun prepare(description: Description) {
+  fun prepare() {
     forcePlatformSdkVersion(environment.compileSdkVersion)
 
     val layoutlibCallback =
       PaparazziCallback(logger, environment.packageName, environment.resourcePackageNames)
     layoutlibCallback.initResources()
-
-    testName = description.toTestName()
 
     if (!isInitialized) {
       renderer = Renderer(environment, layoutlibCallback, logger)
@@ -181,7 +178,6 @@ class Paparazzi @JvmOverloads constructor(
   }
 
   fun close() {
-    testName = null
     renderSession.release()
     bridgeRenderSession.dispose()
     cleanupThread()
@@ -277,7 +273,7 @@ class Paparazzi @JvmOverloads constructor(
     fps: Int,
     frameCount: Int
   ) {
-    val snapshot = Snapshot(name, testName!!, Date())
+    val snapshot = Snapshot(name, Date())
 
     val frameHandler = snapshotHandler.newFrameHandler(snapshot, frameCount, fps)
     frameHandler.use {
@@ -622,11 +618,15 @@ class Paparazzi @JvmOverloads constructor(
     private val isVerifying: Boolean =
       System.getProperty("paparazzi.test.verify")?.toBoolean() == true
 
-    private fun determineHandler(maxPercentDifference: Double): SnapshotHandler =
+    private val fileNameProvider = TestFileNameProvider()
+
+    private fun determineHandler(
+      maxPercentDifference: Double
+    ): SnapshotHandler =
       if (isVerifying) {
-        SnapshotVerifier(maxPercentDifference)
+        SnapshotVerifier(fileNameProvider, maxPercentDifference)
       } else {
-        HtmlReportWriter()
+        HtmlReportWriter(fileNameProvider)
       }
   }
 }

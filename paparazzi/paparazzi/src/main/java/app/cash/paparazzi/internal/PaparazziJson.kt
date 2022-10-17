@@ -15,15 +15,24 @@
  */
 package app.cash.paparazzi.internal
 
-import app.cash.paparazzi.Snapshot
 import app.cash.paparazzi.TestName
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.JsonAdapter
+import com.squareup.moshi.JsonClass
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.ToJson
 import com.squareup.moshi.Types
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter
 import java.util.Date
+
+@JsonClass(generateAdapter = true)
+data class HtmlReportJson(
+  val name: String?,
+  val testName: TestName,
+  val timestamp: Date,
+  val tags: List<String> = listOf(),
+  val file: String? = null
+)
 
 internal object PaparazziJson {
   val moshi = Moshi.Builder()
@@ -31,10 +40,10 @@ internal object PaparazziJson {
     .add(this)
     .build()!!
 
-  val listOfShotsAdapter: JsonAdapter<List<Snapshot>> =
+  val listOfHtmlReportAdapter: JsonAdapter<List<HtmlReportJson>> =
     moshi
-      .adapter<List<Snapshot>>(
-        Types.newParameterizedType(List::class.java, Snapshot::class.java)
+      .adapter<List<HtmlReportJson>>(
+        Types.newParameterizedType(List::class.java, HtmlReportJson::class.java)
       )
       .indent("  ")
 
