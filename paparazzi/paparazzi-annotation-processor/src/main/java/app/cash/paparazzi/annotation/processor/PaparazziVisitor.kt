@@ -18,7 +18,7 @@ import com.google.devtools.ksp.visitor.KSEmptyVisitor
 class PaparazziVisitor(
   private val annotations: Sequence<KSAnnotation>,
   private val logger: KSPLogger
-  ) : KSEmptyVisitor<Unit, Sequence<PaparazziModel>>() {
+) : KSEmptyVisitor<Unit, Sequence<PaparazziModel>>() {
 
   override fun defaultHandler(
     node: KSNode,

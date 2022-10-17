@@ -9,7 +9,7 @@ import app.cash.paparazzi.sample.util.DesignTheme.LIGHT
 @Paparazzi(
   name = "themed,scaled",
   fontScales = [1.0f, 2.0f],
-  composableWrapper = ThemeComposableWrapper::class,
+  composableWrapper = ThemeComposableWrapper::class
 )
 annotation class MyPaparazzi
 
