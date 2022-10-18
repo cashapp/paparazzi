@@ -153,7 +153,7 @@ class Paparazzi @JvmOverloads constructor(
     testName = description.toTestName()
 
     if (!isInitialized) {
-      renderer = Renderer(environment, layoutlibCallback, logger, maxPercentDifference)
+      renderer = Renderer(environment, layoutlibCallback, logger)
       sessionParamsBuilder = renderer.prepare()
     }
 
