@@ -1,0 +1,6 @@
+<resources>
+
+    <style name="CustomTheme" parent="Theme.MaterialComponents.Light.NoActionBar.Bridge">
+        <item name="CustomButton">@style/CustomButton</item>
+    </style>
+</resources>

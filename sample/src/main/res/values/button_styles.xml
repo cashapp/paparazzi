@@ -1,0 +1,9 @@
+<resources>
+  <style name="CustomButton">
+    <item name="android:layout_width">wrap_content</item>
+    <item name="android:layout_height">wrap_content</item>
+    <item name="customButtonTextColor">#FFFFFF</item>
+    <item name="customColor">#FFFFFF</item>
+    <item name="customButtonPressedTextColor">#FFFFFF</item>
+  </style>
+</resources>

@@ -1,9 +1,14 @@
+/** Apply following to Test CustomButton in MainActivity **/
+//apply plugin: 'com.android.application'
+//apply plugin: 'org.jetbrains.kotlin.android'
+
+/** Apply following to Test Paparazzi and comment out above **/
 apply plugin: 'com.android.library'
 apply plugin: 'org.jetbrains.kotlin.android'
 apply plugin: 'app.cash.paparazzi'
 
 android {
-  compileSdk 31
+  compileSdk 32
   defaultConfig {
     minSdk 25
   }
@@ -18,6 +23,10 @@ android {
 
 dependencies {
   implementation deps.composeUI.material
+  implementation "androidx.activity:activity-compose:1.3.0"
+  implementation 'androidx.appcompat:appcompat:1.3.0'
+  implementation 'com.google.android.material:material:1.4.0'
+  implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 
   testImplementation deps.testparameterinjector
 }
