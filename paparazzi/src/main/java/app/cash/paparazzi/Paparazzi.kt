@@ -193,16 +193,25 @@ class Paparazzi @JvmOverloads constructor(
 
   fun <V : View> inflate(@LayoutRes layoutId: Int): V = layoutInflater.inflate(layoutId, null) as V
 
-  fun snapshot(name: String? = null, composable: @Composable () -> Unit) {
+  fun snapshot(
+    name: String? = null,
+    imageModifier: SnapshotImageModifier = ThumbnailScaleImageModifier,
+    composable: @Composable () -> Unit
+  ) {
     val hostView = ComposeView(context)
     hostView.setContent(composable)
 
-    snapshot(hostView, name)
+    snapshot(hostView, name, imageModifier = imageModifier)
   }
 
   @JvmOverloads
-  fun snapshot(view: View, name: String? = null, offsetMillis: Long = 0L) {
-    takeSnapshots(view, name, TimeUnit.MILLISECONDS.toNanos(offsetMillis), -1, 1)
+  fun snapshot(
+    view: View,
+    name: String? = null,
+    offsetMillis: Long = 0L,
+    imageModifier: SnapshotImageModifier = ThumbnailScaleImageModifier
+  ) {
+    takeSnapshots(view, name, TimeUnit.MILLISECONDS.toNanos(offsetMillis), -1, 1, imageModifier)
   }
 
   @JvmOverloads
@@ -211,7 +220,8 @@ class Paparazzi @JvmOverloads constructor(
     name: String? = null,
     start: Long = 0L,
     end: Long = 500L,
-    fps: Int = 30
+    fps: Int = 30,
+    imageModifier: SnapshotImageModifier = ThumbnailScaleImageModifier
   ) {
     // Add one to the frame count so we get the last frame. Otherwise a 1 second, 60 FPS animation
     // our 60th frame will be at time 983 ms, and we want our last frame to be 1,000 ms. This gets
@@ -219,7 +229,7 @@ class Paparazzi @JvmOverloads constructor(
     val durationMillis = (end - start).toInt()
     val frameCount = (durationMillis * fps) / 1000 + 1
     val startNanos = TimeUnit.MILLISECONDS.toNanos(start)
-    takeSnapshots(view, name, startNanos, fps, frameCount)
+    takeSnapshots(view, name, startNanos, fps, frameCount, imageModifier)
   }
 
   fun unsafeUpdateConfig(
@@ -267,7 +277,8 @@ class Paparazzi @JvmOverloads constructor(
     name: String?,
     startNanos: Long,
     fps: Int,
-    frameCount: Int
+    frameCount: Int,
+    imageModifier: SnapshotImageModifier
   ) {
     val snapshot = Snapshot(name, testName!!, Date())
 
@@ -321,7 +332,8 @@ class Paparazzi @JvmOverloads constructor(
               }
               validateLayoutAccessibility(modifiedView, image)
             }
-            frameHandler.handle(scaleImage(frameImage(image)))
+            val framedImage = frameImage(image)
+            frameHandler.handle(imageModifier.modifyImage(framedImage))
           }
         }
       } finally {
