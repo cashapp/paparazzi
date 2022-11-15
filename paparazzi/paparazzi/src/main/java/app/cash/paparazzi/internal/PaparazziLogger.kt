@@ -116,6 +116,10 @@ internal class PaparazziLogger : ILayoutLog, ILogger {
     }
   }
 
+  fun flushErrors() {
+    errors.clear()
+  }
+
   internal class MultipleFailuresException(private val causes: List<Throwable>) : Exception() {
     init {
       require(causes.isNotEmpty()) { "List of Throwables must not be empty" }

@@ -47,4 +47,12 @@ class PaparazziLoggerTest {
       assertThat(ignored.message).contains("java.lang.IllegalStateException: error2")
     }
   }
+
+  @Test
+  fun testFlushErrors() {
+    val logger = PaparazziLogger()
+    logger.error(FileNotFoundException("error1"), null)
+    logger.flushErrors()
+    logger.assertNoErrors()
+  }
 }

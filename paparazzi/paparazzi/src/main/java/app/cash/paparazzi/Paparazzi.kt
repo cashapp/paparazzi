@@ -240,6 +240,7 @@ class Paparazzi @JvmOverloads constructor(
       "Calling unsafeUpdateConfig requires at least one non-null argument."
     }
 
+    logger.flushErrors()
     renderSession.release()
     bridgeRenderSession.dispose()
     cleanupThread()
