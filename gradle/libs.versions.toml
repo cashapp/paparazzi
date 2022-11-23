@@ -27,7 +27,7 @@ bytebuddy-core = { module = "net.bytebuddy:byte-buddy", version.ref = "bytebuddy
 compose-compiler = { module = "androidx.compose.compiler:compiler", version.ref = "composeCompiler" }
 composeUi-material = { module = "androidx.compose.material:material", version = "1.2.1" }
 
-guava = { module = "com.google.guava:guava", version = "31.0.1-jre" }
+guava = { module = "com.google.guava:guava", version = "31.1-jre" }
 
 jcodec-core = { module = "org.jcodec:jcodec", version.ref = "jcodec" }
 jcodec-javase = { module = "org.jcodec:jcodec-javase", version.ref = "jcodec" }
