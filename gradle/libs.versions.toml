@@ -49,10 +49,12 @@ moshi-kotlinCodegen = { module = "com.squareup.moshi:moshi-kotlin-codegen", vers
 
 okio = { module = "com.squareup.okio:okio", version = "3.1.0" }
 
-tools-common = { module = "com.android.tools:common", version = "27.1.2" }
+tools-common = { module = "com.android.tools:common", version = "30.1.3" }
 tools-layoutlib = { module = "com.android.tools.layoutlib:layoutlib-api", version = "27.2.2" }
-tools-ninepatch = { module = "com.android.tools:ninepatch", version = "30.1.2" }
-tools-sdkCommon = { module = "com.android.tools:sdk-common", version = "26.6.4" }
+tools-ninepatch = { module = "com.android.tools:ninepatch", version = "30.1.3" }
+tools-sdkCommon = { module = "com.android.tools:sdk-common", version = "30.1.3" }
+
+trove4j = { module = "org.jetbrains.intellij.deps:trove4j", version = "1.0.20200330" }
 
 # Test libraries
 assertj = { module = "org.assertj:assertj-core", version = "3.23.1" }

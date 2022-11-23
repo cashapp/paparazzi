@@ -17,6 +17,7 @@
 package app.cash.paparazzi.internal
 
 import app.cash.paparazzi.DeviceConfig
+import app.cash.paparazzi.deprecated.com.android.ide.common.resources.deprecated.ResourceRepository
 import app.cash.paparazzi.internal.parsers.LayoutPullParser
 import com.android.SdkConstants
 import com.android.ide.common.rendering.api.AssetRepository
@@ -27,7 +28,6 @@ import com.android.ide.common.rendering.api.SessionParams.Key
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode
 import com.android.ide.common.resources.ResourceResolver
 import com.android.ide.common.resources.ResourceValueMap
-import com.android.ide.common.resources.deprecated.ResourceRepository
 import com.android.layoutlib.bridge.Bridge
 import com.android.resources.LayoutDirection
 import com.android.resources.ResourceType

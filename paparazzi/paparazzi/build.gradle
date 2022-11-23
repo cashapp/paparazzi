@@ -32,6 +32,7 @@ dependencies {
   compileOnly files('libs/lifecycle-runtime-2.5.0.jar')
   compileOnly files('libs/savedstate-1.2.0.jar')
 
+  implementation libs.trove4j
   api libs.layoutlib.native.jdk11
   api libs.tools.common
   api libs.tools.layoutlib
