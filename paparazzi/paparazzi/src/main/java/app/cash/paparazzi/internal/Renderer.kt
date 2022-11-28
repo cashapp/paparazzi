@@ -19,10 +19,10 @@ package app.cash.paparazzi.internal
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Environment
 import app.cash.paparazzi.Flags
-import com.android.ide.common.resources.deprecated.FrameworkResources
-import com.android.ide.common.resources.deprecated.ResourceItem
-import com.android.ide.common.resources.deprecated.ResourceRepository
-import com.android.io.FolderWrapper
+import app.cash.paparazzi.deprecated.com.android.ide.common.resources.deprecated.FrameworkResources
+import app.cash.paparazzi.deprecated.com.android.ide.common.resources.deprecated.ResourceItem
+import app.cash.paparazzi.deprecated.com.android.ide.common.resources.deprecated.ResourceRepository
+import app.cash.paparazzi.deprecated.com.android.io.FolderWrapper
 import com.android.layoutlib.bridge.Bridge
 import com.android.layoutlib.bridge.android.RenderParamsFlags
 import com.android.layoutlib.bridge.impl.DelegateManager
