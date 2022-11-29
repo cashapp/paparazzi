@@ -265,4 +265,4 @@ class PaparazziPlugin : Plugin<Project> {
 // TODO: Migrate to ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE when Gradle 7.3 is
 //  acceptable as the minimum supported version
 private val ARTIFACT_TYPE_ATTRIBUTE = Attribute.of("artifactType", String::class.java)
-private const val DEFAULT_COMPILE_SDK_VERSION = 31
+private const val DEFAULT_COMPILE_SDK_VERSION = 32
