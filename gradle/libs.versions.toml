@@ -10,7 +10,7 @@ ktlint = "0.46.1"
 moshi = "1.13.0"
 
 minSdk = "25"
-compileSdk = "31"
+compileSdk = "32"
 
 # Maps to this commit: https://android.googlesource.com/platform/prebuilts/studio/layoutlib/+/fa3aa65
 # which runs on JDK 11.
