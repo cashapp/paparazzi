@@ -1,7 +1,7 @@
 apply plugin: 'org.ajoberstar.grgit'
 apply plugin: 'com.vanniktech.maven.publish'
 
-version = versions.layoutlib
+version = libs.versions.layoutlib.get()
 
 /**
  * Clone AOSP's prebuilts repo to get a prebuilt layoutlib jar. This big repo that takes a long time to clone!
@@ -10,7 +10,7 @@ version = versions.layoutlib
  */
 tasks.register('cloneLayoutlib') {
   it.outputs.dir(repoDir)
-  it.inputs.property('sha', layoutLibPrebuiltSha)
+  it.inputs.property('sha', libs.versions.layoutlibPrebuiltSha)
 
   doFirst {
     // Gradle aggressively creates outputs directories, which interferes with the git clone check
@@ -30,9 +30,9 @@ tasks.register('cloneLayoutlib') {
       dir = repoDir
     }
 
-    logger.warn("Checking out SHA $layoutLibPrebuiltSha")
+    logger.warn("Checking out SHA ${libs.versions.layoutlibPrebuiltSha.get()}")
     repo.checkout {
-      branch = layoutLibPrebuiltSha
+      branch = libs.versions.layoutlibPrebuiltSha.get()
     }
   }
 }

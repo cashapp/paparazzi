@@ -26,6 +26,7 @@ import android.view.Choreographer.CALLBACK_ANIMATION
 import android.view.View
 import android.view.animation.LinearInterpolator
 import android.widget.Button
+import android.widget.TextView
 import com.android.internal.lang.System_Delegate
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Ignore
@@ -113,6 +114,65 @@ class PaparazziTest {
       "onAnimationEnd time=3000 animationElapsed=1.0",
       "onDraw time=3000 animationElapsed=1.0"
     )
+  }
+
+  @Test
+  fun animationCallbacksForStaticSnapshots() {
+    val log = mutableListOf<String>()
+
+    val view = object : TextView(paparazzi.context) {
+      override fun onDraw(canvas: Canvas) {
+        log += "onDraw text=$text"
+      }
+    }
+
+    val animator = ValueAnimator.ofInt(200, 300)
+    animator.addUpdateListener {
+      view.text = it.animatedFraction.toString()
+    }
+    animator.addListener(object : AnimatorListenerAdapter() {
+      override fun onAnimationStart(animation: Animator?, isReverse: Boolean) {
+        log += "onAnimationStart uptimeMillis=$time"
+      }
+
+      override fun onAnimationEnd(animator: Animator) {
+        log += "onAnimationEnd uptimeMillis=$time"
+      }
+    })
+
+    animator.startDelay = 2_000L
+    animator.duration = 1_000L
+    animator.interpolator = LinearInterpolator()
+    assertThat(AnimationHandler.getAnimationCount()).isEqualTo(0)
+    animator.start()
+    assertThat(AnimationHandler.getAnimationCount()).isEqualTo(1)
+
+    paparazzi.snapshot(view, offsetMillis = 0L)
+    assertThat(log).containsExactly(
+      "onDraw text="
+    )
+    log.clear()
+
+    paparazzi.snapshot(view, offsetMillis = 2_000L)
+    assertThat(log).containsExactly(
+      "onAnimationStart uptimeMillis=2000",
+      "onDraw text=0.0"
+    )
+    log.clear()
+
+    paparazzi.snapshot(view, offsetMillis = 2_500L)
+    assertThat(log).containsExactly(
+      "onDraw text=0.5"
+    )
+    log.clear()
+
+    paparazzi.snapshot(view, offsetMillis = 3_000L)
+    assertThat(log).containsExactly(
+      "onAnimationEnd uptimeMillis=3000",
+      "onDraw text=1.0"
+    )
+    assertThat(AnimationHandler.getAnimationCount()).isEqualTo(0)
+    log.clear()
   }
 
   @Test

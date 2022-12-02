@@ -24,16 +24,19 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3.0.2
+        uses: actions/checkout@v3.1.0
 
       - name: Validate Gradle Wrapper
-        uses: gradle/wrapper-validation-action@v1.0.4
+        uses: gradle/wrapper-validation-action@v1.0.5
 
       - name: Configure JDK
         uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
           java-version: ${{ matrix.java-version }}
+
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
 
       - name: Run Paparazzi Tests
         run: ./gradlew -p paparazzi check
@@ -59,7 +62,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3.0.2
+        uses: actions/checkout@v3.1.0
 
       - name: Configure JDK
         uses: actions/setup-java@v3
@@ -68,7 +71,7 @@ jobs:
           java-version: 11
 
       - name: Publish Artifacts
-        run: ./gradlew -p paparazzi publishMavenPublicationToMavenCentralRepository paparazzi-gradle-plugin:publishPluginMavenPublicationToMavenCentralRepository paparazzi-gradle-plugin:publishPaparazziPluginMarkerMavenPublicationToMavenCentralRepository
+        run: ./gradlew -p paparazzi publishMavenPublicationToMavenCentralRepository paparazzi-gradle-plugin:publishPluginMavenPublicationToMavenCentralRepository paparazzi-gradle-plugin:publishPaparazziPluginMarkerMavenPublicationToMavenCentralRepository --no-parallel
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}

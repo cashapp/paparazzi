@@ -25,8 +25,6 @@ import com.android.ide.common.rendering.api.LayoutlibCallback
 import com.android.ide.common.rendering.api.ResourceNamespace.RES_AUTO
 import com.android.ide.common.rendering.api.ResourceReference
 import com.android.ide.common.rendering.api.ResourceValue
-import com.android.ide.common.rendering.api.SessionParams.Key
-import com.android.layoutlib.bridge.android.RenderParamsFlags
 import com.android.resources.ResourceType
 import com.android.resources.ResourceType.STYLE
 import com.google.common.io.ByteStreams
@@ -50,10 +48,8 @@ internal class PaparazziCallback(
   private val resources = mutableMapOf<ResourceReference, Int>()
   private val actionBarCallback = ActionBarCallback()
   private val aaptDeclaredResources = mutableMapOf<String, TagSnapshot>()
+  private val dynamicResourceIdManager = DynamicResourceIdManager()
 
-  private var adaptiveIconMaskPath: String? = null
-  private var highQualityShadow = false
-  private var enableShadow = true
   private val loadedClasses = mutableMapOf<String, Class<*>>()
 
   @Throws(ClassNotFoundException::class)
@@ -99,7 +95,8 @@ internal class PaparazziCallback(
     return viewConstructor.newInstance(*constructorArgs)
   }
 
-  override fun resolveResourceId(id: Int): ResourceReference? = projectResources[id]
+  override fun resolveResourceId(id: Int): ResourceReference? =
+    projectResources[id] ?: dynamicResourceIdManager.findById(id)
 
   override fun getOrGenerateResourceId(resource: ResourceReference): Int {
     // Workaround: We load our resource map from fields in R.class, which are named using Java
@@ -108,7 +105,7 @@ internal class PaparazziCallback(
     // Long-term: Perhaps parse and load resource names from file system directly?
     val resourceKey =
       if (resource.resourceType == STYLE) resource.transformStyleResource() else resource
-    return resources[resourceKey] ?: 0
+    return resources[resourceKey] ?: dynamicResourceIdManager.getOrGenerateId(resourceKey)
   }
 
   override fun getParser(layoutResource: ResourceValue): ILayoutPullParser? {
@@ -173,27 +170,9 @@ internal class PaparazziCallback(
 
   override fun createXmlParser(): XmlPullParser = KXmlParser()
 
-  override fun <T> getFlag(key: Key<T>?): T? {
-    return when (key) {
-      RenderParamsFlags.FLAG_KEY_APPLICATION_PACKAGE -> packageName as T
-      RenderParamsFlags.FLAG_KEY_ADAPTIVE_ICON_MASK_PATH -> adaptiveIconMaskPath as T?
-      RenderParamsFlags.FLAG_RENDER_HIGH_QUALITY_SHADOW -> highQualityShadow as T
-      RenderParamsFlags.FLAG_ENABLE_SHADOW -> enableShadow as T
-      else -> null
-    }
-  }
+  override fun getApplicationId(): String = packageName
 
-  fun setAdaptiveIconMaskPath(adaptiveIconMaskPath: String) {
-    this.adaptiveIconMaskPath = adaptiveIconMaskPath
-  }
-
-  fun setHighQualityShadow(highQualityShadow: Boolean) {
-    this.highQualityShadow = highQualityShadow
-  }
-
-  fun setEnableShadow(enableShadow: Boolean) {
-    this.enableShadow = enableShadow
-  }
+  override fun getResourcePackage(): String = packageName
 
   override fun findClass(name: String): Class<*> {
     val clazz = loadedClasses[name]

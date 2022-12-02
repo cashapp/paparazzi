@@ -1,6 +1,36 @@
 Change Log
 ==========
 
+## Version 1.1.0
+_2022-10-12_
+
+### New
+* Migrate Paparazzi to layoutlib Chipmunk 2021.2.1
+* Add support for multiplatform plugin
+* Add support for JDKs 16+
+* Add support for locales and layout direction (LTR/RTL)
+* Add Pixel 6 & Pixel 6 Pro device configs
+* Enable night mode for legacy views and composables
+* Enable ui mode to support form factors other than phones/tablets, e.g., auto, watches, etc.
+* Google Wear DeviceConfig support
+* Expose an API for offsetting frame capture time
+* Add InstantAnimationsRule to delay snapshot capture until the last frame.
+* Compose 1.3.0
+* Kotlin 1.7.10
+* [Gradle Plugin] Gradle 7.5.1
+
+### Fixed
+* Generate resource ids to support aapt inline resources in composables
+* Reset AndroidUiDispatcher between compose snapshots
+* Fix OOM error when a large number of compose snapshots are verified
+* Fix HTML report in development mode
+* Honor customization of Gradle's build output directory
+* [Gradle Plugin] Configure native platform transformed path directly in test task to reduce cache misses
+* [Gradle Plugin] Fix accidental eager task creation reducing memory pressure
+* [Gradle Plugin] Fail explicitly when applying Android application plugin
+
+Kudos to @chris-horner, @swankjesse, @yschimke, @dniHze, @TWiStErRob, @gamepro65, @liutikas and others for contributions this release!
+
 ## Version 1.0.0
 _2022-06-03_
 
