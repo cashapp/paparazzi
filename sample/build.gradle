@@ -18,7 +18,8 @@ android {
 
 dependencies {
   implementation libs.composeUi.material
-  implementation 'androidx.compose.ui:ui-geometry:1.1.1'
+  implementation 'org.jetbrains.compose.ui:ui-geometry:1.2.1'
+
 
   testImplementation libs.testParameterInjector
 }

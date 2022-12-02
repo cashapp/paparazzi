@@ -16,9 +16,9 @@
 
 package app.cash.paparazzi.accessibility
 
-import android.graphics.Rect
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.ui.graphics.toAndroidRect
 import androidx.compose.ui.node.RootForTest
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewRootForTest
@@ -28,6 +28,14 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import app.cash.paparazzi.RenderExtension
 
+/**
+ * Paparazzi Render Extension that collects Accessibility information for Compose
+ * hierarchies.
+ *
+ * Currently captures Content Description, State Description, On Click, Role, Disabled,
+ * Heading, Custom Actions, Text, and Progress.  These are saved as AccessibilityState.Element in
+ * the [accessibilityState] list.
+ */
 class ComposeA11yExtension : RenderExtension {
   lateinit var accessibilityState: AccessibilityState
 
@@ -48,7 +56,10 @@ class ComposeA11yExtension : RenderExtension {
     }
   }
 
-  private fun processAccessibleChildren(p0: SemanticsNode, fn: (AccessibilityState.Element) -> Unit) {
+  private fun processAccessibleChildren(
+    p0: SemanticsNode,
+    fn: (AccessibilityState.Element) -> Unit
+  ) {
     val contentDescription = p0.config.getOrNull(SemanticsProperties.ContentDescription)
     val stateDescription = p0.config.getOrNull(SemanticsProperties.StateDescription)
     val onClickLabel = p0.config.getOrNull(SemanticsActions.OnClick)?.label
@@ -56,21 +67,28 @@ class ComposeA11yExtension : RenderExtension {
     val disabled = p0.config.getOrNull(SemanticsProperties.Disabled) != null
     val heading = p0.config.getOrNull(SemanticsProperties.Heading) != null
     val customActions = p0.config.getOrNull(SemanticsActions.CustomActions)
+    val text = p0.config.getOrNull(SemanticsProperties.Text)
+    val progress = p0.config.getOrNull(SemanticsProperties.ProgressBarRangeInfo)
+    val hasProgressAction = p0.config.getOrNull(SemanticsActions.SetProgress) != null
 
-    if (contentDescription != null || stateDescription != null || onClickLabel != null || role != null) {
+    if (contentDescription != null || stateDescription != null || onClickLabel != null || role != null || progress != null || text != null) {
       val position = p0.boundsInRoot.toAndroidRect()
       val touchBounds = p0.touchBoundsInRoot.toAndroidRect()
       fn(
         AccessibilityState.Element(
           position,
           if (touchBounds != position) touchBounds else null,
+          text?.map { it.toString() },
           contentDescription,
           stateDescription,
           onClickLabel,
           role,
           disabled,
           heading,
-          customActions
+          customActions?.map { AccessibilityState.CustomAction(label = it.label) },
+          progress?.let {
+            AccessibilityState.Progress(it.current, it.range, it.steps, hasProgressAction)
+          }
         )
       )
     }
@@ -100,10 +118,10 @@ class ComposeA11yExtension : RenderExtension {
         add(it)
       }
     }
-    accessibilityState = AccessibilityState(rootSemanticsNode.size.width, rootSemanticsNode.size.height, elements)
+    accessibilityState = AccessibilityState(
+      rootSemanticsNode.size.width,
+      rootSemanticsNode.size.height,
+      elements
+    )
   }
-}
-
-private fun androidx.compose.ui.geometry.Rect.toAndroidRect(): Rect {
-  return Rect(left.toInt(), top.toInt(), right.toInt(), bottom.toInt())
 }

@@ -26,6 +26,10 @@ import java.awt.Graphics2D
 import java.awt.image.BufferedImage
 import kotlin.math.max
 
+/**
+ * A Paparazzi SnapshotHandler that renders the snapshot, with a light coloured overlay,
+ * and adjacent to a legend with matching colours.
+ */
 class A11ySnapshotHandler(
   private val delegate: SnapshotHandler,
   private val accessibilityStateFn: () -> AccessibilityState,
@@ -67,7 +71,7 @@ class A11ySnapshotHandler(
     }
   }
 
-  companion object {
+  public companion object {
     private val colors =
       listOf(
         Color.BLUE,
@@ -86,7 +90,11 @@ class A11ySnapshotHandler(
       image: BufferedImage
     ): BufferedImage {
       val modifiedImage =
-        BufferedImage(overlay.width + legend.width, max(overlay.height, legend.height), image.type)
+        BufferedImage(
+          overlay.width + legend.width,
+          max(overlay.height, legend.height),
+          image.type
+        )
 
       modifiedImage.withGraphics2D {
         drawImage(overlay, 0, 0, overlay.width, overlay.height, null)
@@ -125,7 +133,7 @@ class A11ySnapshotHandler(
       val scale = 1000f / max(accessibilityState.height, accessibilityState.width)
 
       return modifiedImage.withGraphics2D {
-        withComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f)) {
+        withComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.7f)) {
           drawImage(image, 0, 0, image.width, image.height, null)
         }
 
@@ -139,7 +147,7 @@ class A11ySnapshotHandler(
             element.displayBounds.width(),
             element.displayBounds.height()
           )
-          paint = Color(color.red, color.green, color.blue, 255 / 3)
+          paint = Color(color.red, color.green, color.blue, 255 / 4)
           fillRect(
             element.displayBounds.left,
             element.displayBounds.top,
@@ -172,32 +180,38 @@ class A11ySnapshotHandler(
         stroke = BasicStroke(3f)
 
         var index = 1
+
+        fun drawItem(s: String) {
+          drawString(s, 50f, 28f * index++)
+        }
+
         accessibilityState.elements.forEachIndexed { i, it ->
           paint = Color.BLACK
 
           val start = index
-          if (it.role != null || it.disabled) {
+          if (it.role != null || it.disabled || it.heading) {
             val role = if (it.role != null) "Role " + it.role + " " else ""
             val heading = if (it.heading) "Heading " else ""
             val disabled = if (it.disabled) "Disabled" else ""
-            drawString(role + heading + disabled, 50f, 28f * index++)
+            drawItem(role + heading + disabled)
           }
           if (it.contentDescription != null) {
-            drawString(
-              "Content Description " + it.contentDescription.joinToString(", "),
-              1050f,
-              28f * index++
-            )
+            drawItem("Content Description \"${it.contentDescription.joinToString(", ")}\"")
+          } else if (it.text != null) {
+            drawItem("Text \"${it.text.joinToString(", ")}\"")
           }
           if (it.stateDescription != null) {
-            drawString("State Description " + it.stateDescription, 50f, 28f * index++)
+            drawItem("State Description \"${it.stateDescription}\"")
           }
           if (it.onClickLabel != null) {
-            drawString("On Click " + it.onClickLabel, 50f, 28f * index++)
+            drawItem("On Click \"${it.onClickLabel}\"")
+          }
+          if (it.progress != null) {
+            drawItem("Progress \"${it.progress}\"")
           }
           if (it.customActions != null) {
             it.customActions.forEach {
-              drawString("Custom Action " + it.label, 50f, 28f * index++)
+              drawItem("Custom Action \"${it.label}\"")
             }
           }
           val end = index

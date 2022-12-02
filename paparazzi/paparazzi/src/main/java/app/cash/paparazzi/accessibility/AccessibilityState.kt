@@ -17,7 +17,6 @@
 package app.cash.paparazzi.accessibility
 
 import android.graphics.Rect
-import androidx.compose.ui.semantics.CustomAccessibilityAction
 
 /**
  * Shared representation of the accessibility elements in a Compose view.
@@ -31,20 +30,43 @@ data class AccessibilityState(
   data class Element(
     val displayBounds: Rect,
     val touchBounds: Rect?,
+    val text: List<String>?,
     val contentDescription: List<String>?,
     val stateDescription: String?,
     val onClickLabel: String?,
     val role: String?,
     val disabled: Boolean,
     val heading: Boolean,
-    val customActions: List<CustomAccessibilityAction>?
+    val customActions: List<CustomAction>?,
+    val progress: Progress?
   ) {
     fun scaleBy(scale: Float): Element {
-      return copy(displayBounds = displayBounds * scale, touchBounds = touchBounds?.times(scale))
+      return copy(
+        displayBounds = displayBounds * scale,
+        touchBounds = touchBounds?.times(scale)
+      )
     }
 
     internal operator fun Rect.times(scale: Float): Rect {
-      return Rect((left * scale).toInt(), (top * scale).toInt(), (right * scale).toInt(), (bottom * scale).toInt())
+      return Rect(
+        (left * scale).toInt(),
+        (top * scale).toInt(),
+        (right * scale).toInt(),
+        (bottom * scale).toInt()
+      )
+    }
+  }
+
+  data class CustomAction(val label: String)
+
+  data class Progress(
+    val current: Float,
+    val range: ClosedRange<Float>,
+    val steps: Int,
+    val hasAction: Boolean
+  ) {
+    override fun toString(): String {
+      return "$current [$range] ${if (hasAction) "Action" else ""}"
     }
   }
 }
