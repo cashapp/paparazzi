@@ -18,13 +18,15 @@ import androidx.wear.compose.material.TimeText
 @Composable
 fun VolumeScreen() {
   Scaffold(modifier = Modifier.fillMaxSize(), timeText = {
-    TimeText(timeSource = object : TimeSource {
-      override val currentTime: String
-        @Composable get() = "11:02 AM"
-    })
+    TimeText(
+      timeSource = object : TimeSource {
+        override val currentTime: String
+          @Composable get() = "11:02 AM"
+      }
+    )
   }, positionIndicator = {
-    PositionIndicator(value = { 0.5f })
-  }) {
+      PositionIndicator(value = { 0.5f })
+    }) {
     Stepper(
       value = 5,
       onValueChange = {},
