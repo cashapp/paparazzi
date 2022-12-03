@@ -18,6 +18,7 @@ package app.cash.paparazzi.internal
 
 import app.cash.paparazzi.internal.parsers.LayoutPullParser
 import app.cash.paparazzi.internal.parsers.TagSnapshot
+import com.android.SdkConstants.CLASS_RECYCLER_VIEW_ADAPTER
 import com.android.ide.common.rendering.api.ActionBarCallback
 import com.android.ide.common.rendering.api.AdapterBinding
 import com.android.ide.common.rendering.api.ILayoutPullParser
@@ -88,11 +89,26 @@ internal class PaparazziCallback(
     name: String,
     constructorSignature: Array<Class<*>>,
     constructorArgs: Array<Any>
+  ): Any? = createNewInstance(name, constructorSignature, constructorArgs)
+
+  override fun loadClass(
+    name: String,
+    constructorSignature: Array<Class<*>>,
+    constructorArgs: Array<Any>
   ): Any? {
-    val viewClass = Class.forName(name)
-    val viewConstructor = viewClass.getConstructor(*constructorSignature)
-    viewConstructor.isAccessible = true
-    return viewConstructor.newInstance(*constructorArgs)
+    // RecyclerView.Adapter is an abstract class, but its instance is needed for RecyclerView to work correctly.
+    // So, when LayoutLib asks for its instance, we define a new class which extends the Adapter class.
+    // We check whether the class being loaded is the support or the androidx one and use the appropriate adapter that references to the
+    // right namespace.
+    return try {
+      when (name) {
+        CLASS_RECYCLER_VIEW_ADAPTER.newName() -> createNewInstance(CN_ANDROIDX_CUSTOM_ADAPTER, EMPTY_CLASS_ARRAY, EMPTY_OBJECT_ARRAY)
+        CLASS_RECYCLER_VIEW_ADAPTER.oldName() -> createNewInstance(CN_SUPPORT_CUSTOM_ADAPTER, EMPTY_CLASS_ARRAY, EMPTY_OBJECT_ARRAY)
+        else -> createNewInstance(name, constructorSignature, constructorArgs)
+      }
+    } catch (e: ClassNotFoundException) {
+      null
+    }
   }
 
   override fun resolveResourceId(id: Int): ResourceReference? =
@@ -197,4 +213,22 @@ internal class PaparazziCallback(
 
   private fun ResourceReference.transformStyleResource() =
     ResourceReference.style(namespace, name.replace('.', '_'))
+
+  private fun createNewInstance(
+    name: String,
+    constructorSignature: Array<Class<*>>,
+    constructorArgs: Array<Any>
+  ): Any? {
+    val anyClass = Class.forName(name)
+    val anyConstructor = anyClass.getConstructor(*constructorSignature)
+    anyConstructor.isAccessible = true
+    return anyConstructor.newInstance(*constructorArgs)
+  }
+
+  private companion object {
+    private val EMPTY_CLASS_ARRAY = emptyArray<Class<*>>()
+    private val EMPTY_OBJECT_ARRAY = emptyArray<Any>()
+    private const val CN_ANDROIDX_CUSTOM_ADAPTER = "com.android.layoutlib.bridge.android.androidx.Adapter"
+    private const val CN_SUPPORT_CUSTOM_ADAPTER = "com.android.layoutlib.bridge.android.support.Adapter"
+  }
 }

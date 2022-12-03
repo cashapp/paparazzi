@@ -706,6 +706,23 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun verifyRecyclerView() {
+    val fixtureRoot = File("src/test/projects/verify-recyclerview")
+
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()
+    assertThat(snapshots!!).hasLength(1)
+
+    val snapshotImage = snapshots[0]
+    val goldenImage = File(fixtureRoot, "src/test/resources/recycler_view.png")
+    assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
+  }
+
+  @Test
   fun withoutAppCompat() {
     val fixtureRoot = File("src/test/projects/appcompat-missing")
 
