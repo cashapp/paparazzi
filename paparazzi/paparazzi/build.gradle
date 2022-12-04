@@ -41,6 +41,7 @@ dependencies {
   api libs.kxml2
   api libs.junit
   api libs.androidx.annotations
+  api libs.androidx.appcompat
   api libs.guava
   api libs.kotlinx.coroutines.core
   api libs.okio
