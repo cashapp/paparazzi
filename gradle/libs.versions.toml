@@ -1,21 +1,21 @@
 [versions]
-agp = "7.3.1"
-androidTools = "30.3.1" # == 23.0.0 + agp version
+agp = "7.4.0-rc01"
+androidTools = "30.4.0-rc01" # == 23.0.0 + agp version
 bytebuddy = "1.12.10"
 composeCompiler = "1.3.0"
-javaTarget = "1.8"
+javaTarget = "11"
 jcodec = "0.2.5"
 kotlin = "1.7.10"
 ktlint = "0.46.1"
 moshi = "1.13.0"
 
 minSdk = "25"
-compileSdk = "32"
+compileSdk = "33"
 
-# Maps to this commit: https://android.googlesource.com/platform/prebuilts/studio/layoutlib/+/be0280d
+# Maps to this commit: https://android.googlesource.com/platform/prebuilts/studio/layoutlib/+/f5f9f71
 # which runs on JDK 11.
-layoutlib = "2021.3.1-be0280d"
-layoutlibPrebuiltSha = "be0280d"
+layoutlib = "2022.1.1-beta4-f5f9f71"
+layoutlibPrebuiltSha = "f5f9f71"
 
 [libraries]
 androidx-annotations = { module = "androidx.annotation:annotation", version = "1.3.0" }
