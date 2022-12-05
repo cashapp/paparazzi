@@ -328,9 +328,14 @@ class Paparazzi @JvmOverloads constructor(
     try {
       areCallbacksRunningField.setBoolean(choreographer, true)
 
-      // https://android.googlesource.com/platform/frameworks/layoutlib/+/d58aa4703369e109b24419548f38b422d5a44738/bridge/src/com/android/layoutlib/bridge/BridgeRenderSession.java#171
-      // BridgeRenderSession.executeCallbacks aggressively tears down the main Looper and BridgeContext, so we call the static delegates ourselves.
-      Handler_Delegate.executeCallbacks()
+      // Avoid ConcurrentModificationException in
+      // RenderAction.currentContext.sessionInteractiveData.handlerMessageQueue.runnablesMap which is a WeakHashMap
+      // https://android.googlesource.com/platform/tools/adt/idea/+/c331c9b2f4334748c55c29adec3ad1cd67e45df2/designer/src/com/android/tools/idea/uibuilder/scene/LayoutlibSceneManager.java#1558
+      synchronized(this) {
+        // https://android.googlesource.com/platform/frameworks/layoutlib/+/d58aa4703369e109b24419548f38b422d5a44738/bridge/src/com/android/layoutlib/bridge/BridgeRenderSession.java#171
+        // BridgeRenderSession.executeCallbacks aggressively tears down the main Looper and BridgeContext, so we call the static delegates ourselves.
+        Handler_Delegate.executeCallbacks()
+      }
       val currentTimeMs = SystemClock_Delegate.uptimeMillis()
       val choreographerCallbacks =
         RenderAction.getCurrentContext().sessionInteractiveData.choreographerCallbacks
