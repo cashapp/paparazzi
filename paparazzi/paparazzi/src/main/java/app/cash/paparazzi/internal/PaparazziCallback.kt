@@ -18,7 +18,7 @@ package app.cash.paparazzi.internal
 
 import app.cash.paparazzi.internal.parsers.LayoutPullParser
 import app.cash.paparazzi.internal.parsers.TagSnapshot
-import com.android.SdkConstants.CLASS_RECYCLER_VIEW_ADAPTER
+import com.android.AndroidXConstants.CLASS_RECYCLER_VIEW_ADAPTER
 import com.android.ide.common.rendering.api.ActionBarCallback
 import com.android.ide.common.rendering.api.AdapterBinding
 import com.android.ide.common.rendering.api.ILayoutPullParser
