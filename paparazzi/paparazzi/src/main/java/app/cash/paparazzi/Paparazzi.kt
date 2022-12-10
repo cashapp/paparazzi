@@ -572,7 +572,7 @@ class Paparazzi @JvmOverloads constructor(
       val snapshotInvalidations = recomposer.javaClass
         .getDeclaredField("snapshotInvalidations")
         .apply { isAccessible = true }
-        .get(recomposer) as MutableList<*>
+        .get(recomposer) as MutableCollection<*>
       compositionInvalidations.clear()
       snapshotInvalidations.clear()
       applyObservers.clear()
