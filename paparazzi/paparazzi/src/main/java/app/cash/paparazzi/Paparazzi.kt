@@ -104,11 +104,6 @@ class Paparazzi @JvmOverloads constructor(
   val context: Context
     get() = RenderAction.getCurrentContext()
 
-  /**
-   * The root layout that test views will be placed into. The FrameLayout is dynamically set to
-   * `wrap_content` if the `renderMode` is `RenderingMode.SizeAction.SHRINK` in the appropriate
-   * direction, otherwise it is set to `match_parent`.
-   */
   private val contentRoot = """
         |<?xml version="1.0" encoding="utf-8"?>
         |<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
