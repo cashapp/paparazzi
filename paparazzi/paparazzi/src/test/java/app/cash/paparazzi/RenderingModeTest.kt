@@ -18,7 +18,6 @@ import java.io.File
 import javax.imageio.ImageIO
 
 class RenderingModeTest {
-
   @Test
   fun `shrinks to wrap view`() {
     Paparazzi(
