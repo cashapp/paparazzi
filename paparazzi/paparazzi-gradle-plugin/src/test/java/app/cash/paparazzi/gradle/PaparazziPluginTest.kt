@@ -574,6 +574,24 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun widgets() {
+    val fixtureRoot = File("src/test/projects/widgets")
+
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()?.sortedBy { it.lastModified() }
+    assertThat(snapshots!!).hasSize(2)
+
+    val widgetImage = File(fixtureRoot, "src/test/resources/widget.png")
+    val fullScreenImage = File(fixtureRoot, "src/test/resources/full_screen.png")
+    assertThat(snapshots[0]).isSimilarTo(widgetImage).withDefaultThreshold()
+    assertThat(snapshots[1]).isSimilarTo(fullScreenImage).withDefaultThreshold()
+  }
+
+  @Test
   fun verifyResourcesGeneratedForJavaProject() {
     val fixtureRoot = File("src/test/projects/verify-resources-java")
 
