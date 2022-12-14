@@ -574,6 +574,24 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun widgets() {
+    val fixtureRoot = File("src/test/projects/widgets")
+
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()?.sortedBy { it.lastModified() }
+    assertThat(snapshots!!).hasSize(2)
+
+    val widgetImage = File(fixtureRoot, "src/test/resources/widget.png")
+    val fullScreenImage = File(fixtureRoot, "src/test/resources/full_screen.png")
+    assertThat(snapshots[0]).isSimilarTo(widgetImage).withDefaultThreshold()
+    assertThat(snapshots[1]).isSimilarTo(fullScreenImage).withDefaultThreshold()
+  }
+
+  @Test
   fun verifyResourcesGeneratedForJavaProject() {
     val fixtureRoot = File("src/test/projects/verify-resources-java")
 
@@ -627,8 +645,8 @@ class PaparazziPluginTest {
     assertThat(resourcesFile.exists()).isTrue()
 
     val resourceFileContents = resourcesFile.readLines()
-    assertThat(resourceFileContents[2]).isEqualTo("32")
-    assertThat(resourceFileContents[3]).isEqualTo("platforms/android-32/")
+    assertThat(resourceFileContents[2]).isEqualTo("33")
+    assertThat(resourceFileContents[3]).isEqualTo("platforms/android-33/")
   }
 
   @Test
@@ -646,7 +664,7 @@ class PaparazziPluginTest {
 
     val resourceFileContents = resourcesFile.readLines()
     assertThat(resourceFileContents[2]).isEqualTo("29")
-    assertThat(resourceFileContents[3]).isEqualTo("platforms/android-32/")
+    assertThat(resourceFileContents[3]).isEqualTo("platforms/android-33/")
   }
 
   @Test
@@ -702,6 +720,23 @@ class PaparazziPluginTest {
 
     val snapshotImage = snapshots[0]
     val goldenImage = File(fixtureRoot, "src/test/resources/arrow_up.png")
+    assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
+  }
+
+  @Test
+  fun verifyRecyclerView() {
+    val fixtureRoot = File("src/test/projects/verify-recyclerview")
+
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()
+    assertThat(snapshots!!).hasLength(1)
+
+    val snapshotImage = snapshots[0]
+    val goldenImage = File(fixtureRoot, "src/test/resources/recycler_view.png")
     assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
   }
 
