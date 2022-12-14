@@ -19,8 +19,9 @@ import org.junit.Test
 class WidgetTest {
   @get:Rule
   val paparazzi = Paparazzi(
-    deviceConfig = DeviceConfig.PIXEL_3.copy(softButtons = false),
-    renderingMode = SessionParams.RenderingMode.SHRINK
+    deviceConfig = DeviceConfig.PIXEL_3,
+    renderingMode = SessionParams.RenderingMode.SHRINK,
+    showSystemUi = false
   )
 
   @Test fun default() {

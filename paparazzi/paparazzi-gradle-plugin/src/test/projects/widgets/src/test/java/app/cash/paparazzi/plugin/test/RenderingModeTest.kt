@@ -27,8 +27,9 @@ class RenderingModeTest(
 ) {
   @get:Rule
   val paparazzi = Paparazzi(
-    deviceConfig = DeviceConfig.PIXEL_3.copy(softButtons = false),
-    renderingMode = mode.renderingMode
+    deviceConfig = DeviceConfig.PIXEL_3,
+    renderingMode = mode.renderingMode,
+    showSystemUi = mode.showSystemUi
   )
 
   @Test fun default() {
@@ -36,10 +37,11 @@ class RenderingModeTest(
   }
 
   enum class Mode(
-    val renderingMode: RenderingMode
+    val renderingMode: RenderingMode,
+    val showSystemUi: Boolean
   ) {
-    WIDGET(renderingMode = SHRINK),
-    FULL_SCREEN(renderingMode = NORMAL)
+    WIDGET(renderingMode = SHRINK, showSystemUi = false),
+    FULL_SCREEN(renderingMode = NORMAL, showSystemUi = true)
   }
 
   private fun buildView(context: Context): View {
