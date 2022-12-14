@@ -89,7 +89,8 @@ class Paparazzi @JvmOverloads constructor(
   private val maxPercentDifference: Double = 0.1,
   private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference),
   private val renderExtensions: Set<RenderExtension> = setOf(),
-  private val supportsRtl: Boolean = false
+  private val supportsRtl: Boolean = false,
+  private val showSystemUi: Boolean = true
 ) : TestRule {
   private val logger = PaparazziLogger()
   private lateinit var renderSession: RenderSessionImpl
@@ -162,7 +163,8 @@ class Paparazzi @JvmOverloads constructor(
         layoutPullParser = LayoutPullParser.createFromString(contentRoot),
         deviceConfig = deviceConfig,
         renderingMode = renderingMode,
-        supportsRtl = supportsRtl
+        supportsRtl = supportsRtl,
+        decor = showSystemUi
       )
       .withTheme(theme)
 
