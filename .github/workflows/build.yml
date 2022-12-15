@@ -13,10 +13,7 @@ jobs:
         os: [
           macOS-latest,
           windows-latest,
-          # Copied from SqlDelight: https://github.com/cashapp/sqldelight/blame/master/.github/workflows/PR.yml#L13-L18
-          # TL;DR looks like libraries installed on ubuntu-latest conflicts, resulting in failed builds
-          # Also, see: https://github.com/touchlab/SQLiter/pull/38#issuecomment-867171789
-          ubuntu-18.04
+          ubuntu-latest
         ]
         java-version: [11, 12, 16, 18]
 
