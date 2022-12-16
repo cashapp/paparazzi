@@ -28,7 +28,6 @@ import android.view.Choreographer
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewGroup.LayoutParams
 import android.widget.FrameLayout
 import androidx.annotation.LayoutRes
 import androidx.compose.runtime.Composable
@@ -200,11 +199,7 @@ class Paparazzi @JvmOverloads constructor(
     // CompositionContext, which requires first finding the "content view", then using that to
     // find a root view with a ViewTreeLifecycleOwner
     val parent = FrameLayout(context).apply { id = android.R.id.content }
-    parent.addView(
-      hostView,
-      if (renderingMode.horizAction == RenderingMode.SizeAction.SHRINK) LayoutParams.WRAP_CONTENT else LayoutParams.MATCH_PARENT,
-      if (renderingMode.vertAction == RenderingMode.SizeAction.SHRINK) LayoutParams.WRAP_CONTENT else LayoutParams.MATCH_PARENT
-    )
+    parent.addView(hostView)
     PaparazziComposeOwner.register(parent)
     hostView.setContent(composable)
 

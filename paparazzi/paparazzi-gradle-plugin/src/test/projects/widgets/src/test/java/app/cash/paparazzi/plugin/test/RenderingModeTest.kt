@@ -10,6 +10,8 @@ import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.viewinterop.AndroidView
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Paparazzi
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode
@@ -33,7 +35,13 @@ class RenderingModeTest(
   )
 
   @Test fun default() {
-    paparazzi.snapshot(buildView(paparazzi.context))
+    paparazzi.snapshot {
+      Box {
+        AndroidView(
+          factory = { buildView(paparazzi.context) }
+        )
+      }
+    }
   }
 
   enum class Mode(
