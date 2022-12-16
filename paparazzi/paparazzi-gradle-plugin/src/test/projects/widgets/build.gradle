@@ -18,8 +18,15 @@ android {
   defaultConfig {
     minSdk libs.versions.minSdk.get() as int
   }
+  buildFeatures {
+    compose true
+  }
+  composeOptions {
+    kotlinCompilerExtensionVersion libs.versions.composeCompiler.get()
+  }
 }
 
 dependencies {
+  testImplementation libs.composeUi.material
   testImplementation libs.testParameterInjector
 }
