@@ -28,7 +28,6 @@ import android.view.Choreographer
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import androidx.annotation.LayoutRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Recomposer
@@ -195,19 +194,9 @@ class Paparazzi @JvmOverloads constructor(
 
   fun snapshot(name: String? = null, composable: @Composable () -> Unit) {
     val hostView = ComposeView(context)
-    // During onAttachedToWindow, AbstractComposeView will attempt to resolve its parent's
-    // CompositionContext, which requires first finding the "content view", then using that to
-    // find a root view with a ViewTreeLifecycleOwner
-    val parent = FrameLayout(context).apply { id = android.R.id.content }
-    parent.addView(hostView)
-    PaparazziComposeOwner.register(parent)
     hostView.setContent(composable)
 
-    try {
-      snapshot(parent, name)
-    } finally {
-      forceReleaseComposeReferenceLeaks()
-    }
+    snapshot(hostView, name)
   }
 
   @JvmOverloads
@@ -294,6 +283,14 @@ class Paparazzi @JvmOverloads constructor(
           // Initialize the choreographer at time=0.
         }
 
+        if (hasComposeRuntime) {
+          // During onAttachedToWindow, AbstractComposeView will attempt to resolve its parent's
+          // CompositionContext, which requires first finding the "content view", then using that
+          // to find a root view with a ViewTreeLifecycleOwner
+          viewGroup.id = android.R.id.content
+          PaparazziComposeOwner.register(viewGroup)
+        }
+
         viewGroup.addView(modifiedView)
         for (frame in 0 until frameCount) {
           val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
@@ -310,6 +307,9 @@ class Paparazzi @JvmOverloads constructor(
       } finally {
         viewGroup.removeView(modifiedView)
         AnimationHandler.sAnimatorHandler.set(null)
+        if (hasComposeRuntime) {
+          forceReleaseComposeReferenceLeaks()
+        }
       }
     }
   }
@@ -630,6 +630,15 @@ class Paparazzi @JvmOverloads constructor(
 
     private val isVerifying: Boolean =
       System.getProperty("paparazzi.test.verify")?.toBoolean() == true
+
+    private val hasComposeRuntime: Boolean =
+      try {
+        Class.forName("androidx.compose.runtime.snapshots.SnapshotKt")
+        Class.forName("androidx.lifecycle.LifecycleOwner")
+        true
+      } catch (e: ClassNotFoundException) {
+        false
+      }
 
     private fun determineHandler(maxPercentDifference: Double): SnapshotHandler =
       if (isVerifying) {
