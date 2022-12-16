@@ -634,7 +634,7 @@ class Paparazzi @JvmOverloads constructor(
     private val hasComposeRuntime: Boolean =
       try {
         Class.forName("androidx.compose.runtime.snapshots.SnapshotKt")
-        Class.forName("androidx.lifecycle.LifecycleOwner")
+        Class.forName("androidx.compose.ui.platform.AndroidUiDispatcher")
         true
       } catch (e: ClassNotFoundException) {
         false
