@@ -236,8 +236,11 @@ internal object ImageUtils {
 
     // Avoid errors with jcodec
     // "Component 1 width should be a multiple of 2 for colorspace: YUV420J"
-    val destWidth = (xScale * sourceWidth).roundToEven().coerceAtLeast(1)
-    val destHeight = (yScale * sourceHeight).roundToEven().coerceAtLeast(1)
+//    val destWidth = (xScale * sourceWidth).roundToEven().coerceAtLeast(1)
+//    val destHeight = (yScale * sourceHeight).roundToEven().coerceAtLeast(1)
+
+    val destWidth = max(1, (xScale * sourceWidth).toInt())
+    val destHeight = max(1, (yScale * sourceHeight).toInt())
 
     var imageType = source.type
     if (imageType == BufferedImage.TYPE_CUSTOM) {
