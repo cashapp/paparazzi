@@ -18,6 +18,7 @@ package app.cash.paparazzi.internal
 
 import app.cash.paparazzi.internal.parsers.LayoutPullParser
 import app.cash.paparazzi.internal.parsers.TagSnapshot
+import com.android.AndroidXConstants.CLASS_RECYCLER_VIEW_ADAPTER
 import com.android.ide.common.rendering.api.ActionBarCallback
 import com.android.ide.common.rendering.api.AdapterBinding
 import com.android.ide.common.rendering.api.ILayoutPullParser
@@ -25,8 +26,6 @@ import com.android.ide.common.rendering.api.LayoutlibCallback
 import com.android.ide.common.rendering.api.ResourceNamespace.RES_AUTO
 import com.android.ide.common.rendering.api.ResourceReference
 import com.android.ide.common.rendering.api.ResourceValue
-import com.android.ide.common.rendering.api.SessionParams.Key
-import com.android.layoutlib.bridge.android.RenderParamsFlags
 import com.android.resources.ResourceType
 import com.android.resources.ResourceType.STYLE
 import com.google.common.io.ByteStreams
@@ -52,9 +51,6 @@ internal class PaparazziCallback(
   private val aaptDeclaredResources = mutableMapOf<String, TagSnapshot>()
   private val dynamicResourceIdManager = DynamicResourceIdManager()
 
-  private var adaptiveIconMaskPath: String? = null
-  private var highQualityShadow = false
-  private var enableShadow = true
   private val loadedClasses = mutableMapOf<String, Class<*>>()
 
   @Throws(ClassNotFoundException::class)
@@ -93,11 +89,26 @@ internal class PaparazziCallback(
     name: String,
     constructorSignature: Array<Class<*>>,
     constructorArgs: Array<Any>
+  ): Any? = createNewInstance(name, constructorSignature, constructorArgs)
+
+  override fun loadClass(
+    name: String,
+    constructorSignature: Array<Class<*>>,
+    constructorArgs: Array<Any>
   ): Any? {
-    val viewClass = Class.forName(name)
-    val viewConstructor = viewClass.getConstructor(*constructorSignature)
-    viewConstructor.isAccessible = true
-    return viewConstructor.newInstance(*constructorArgs)
+    // RecyclerView.Adapter is an abstract class, but its instance is needed for RecyclerView to work correctly.
+    // So, when LayoutLib asks for its instance, we define a new class which extends the Adapter class.
+    // We check whether the class being loaded is the support or the androidx one and use the appropriate adapter that references to the
+    // right namespace.
+    return try {
+      when (name) {
+        CLASS_RECYCLER_VIEW_ADAPTER.newName() -> createNewInstance(CN_ANDROIDX_CUSTOM_ADAPTER, EMPTY_CLASS_ARRAY, EMPTY_OBJECT_ARRAY)
+        CLASS_RECYCLER_VIEW_ADAPTER.oldName() -> createNewInstance(CN_SUPPORT_CUSTOM_ADAPTER, EMPTY_CLASS_ARRAY, EMPTY_OBJECT_ARRAY)
+        else -> createNewInstance(name, constructorSignature, constructorArgs)
+      }
+    } catch (e: ClassNotFoundException) {
+      null
+    }
   }
 
   override fun resolveResourceId(id: Int): ResourceReference? =
@@ -175,27 +186,9 @@ internal class PaparazziCallback(
 
   override fun createXmlParser(): XmlPullParser = KXmlParser()
 
-  override fun <T> getFlag(key: Key<T>?): T? {
-    return when (key) {
-      RenderParamsFlags.FLAG_KEY_APPLICATION_PACKAGE -> packageName as T
-      RenderParamsFlags.FLAG_KEY_ADAPTIVE_ICON_MASK_PATH -> adaptiveIconMaskPath as T?
-      RenderParamsFlags.FLAG_RENDER_HIGH_QUALITY_SHADOW -> highQualityShadow as T
-      RenderParamsFlags.FLAG_ENABLE_SHADOW -> enableShadow as T
-      else -> null
-    }
-  }
+  override fun getApplicationId(): String = packageName
 
-  fun setAdaptiveIconMaskPath(adaptiveIconMaskPath: String) {
-    this.adaptiveIconMaskPath = adaptiveIconMaskPath
-  }
-
-  fun setHighQualityShadow(highQualityShadow: Boolean) {
-    this.highQualityShadow = highQualityShadow
-  }
-
-  fun setEnableShadow(enableShadow: Boolean) {
-    this.enableShadow = enableShadow
-  }
+  override fun getResourcePackage(): String = packageName
 
   override fun findClass(name: String): Class<*> {
     val clazz = loadedClasses[name]
@@ -220,4 +213,22 @@ internal class PaparazziCallback(
 
   private fun ResourceReference.transformStyleResource() =
     ResourceReference.style(namespace, name.replace('.', '_'))
+
+  private fun createNewInstance(
+    name: String,
+    constructorSignature: Array<Class<*>>,
+    constructorArgs: Array<Any>
+  ): Any? {
+    val anyClass = Class.forName(name)
+    val anyConstructor = anyClass.getConstructor(*constructorSignature)
+    anyConstructor.isAccessible = true
+    return anyConstructor.newInstance(*constructorArgs)
+  }
+
+  private companion object {
+    private val EMPTY_CLASS_ARRAY = emptyArray<Class<*>>()
+    private val EMPTY_OBJECT_ARRAY = emptyArray<Any>()
+    private const val CN_ANDROIDX_CUSTOM_ADAPTER = "com.android.layoutlib.bridge.android.androidx.Adapter"
+    private const val CN_SUPPORT_CUSTOM_ADAPTER = "com.android.layoutlib.bridge.android.support.Adapter"
+  }
 }

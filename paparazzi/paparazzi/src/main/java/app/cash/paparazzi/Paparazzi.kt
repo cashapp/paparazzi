@@ -28,8 +28,6 @@ import android.view.Choreographer
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewGroup.LayoutParams
-import android.widget.FrameLayout
 import androidx.annotation.LayoutRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Recomposer
@@ -89,7 +87,8 @@ class Paparazzi @JvmOverloads constructor(
   private val maxPercentDifference: Double = 0.1,
   private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference),
   private val renderExtensions: Set<RenderExtension> = setOf(),
-  private val supportsRtl: Boolean = false
+  private val supportsRtl: Boolean = false,
+  private val showSystemUi: Boolean = true
 ) : TestRule {
   private val logger = PaparazziLogger()
   private lateinit var renderSession: RenderSessionImpl
@@ -108,8 +107,8 @@ class Paparazzi @JvmOverloads constructor(
   private val contentRoot = """
         |<?xml version="1.0" encoding="utf-8"?>
         |<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        |              android:layout_width="match_parent"
-        |              android:layout_height="match_parent"/>
+        |              android:layout_width="${if (renderingMode.horizAction == RenderingMode.SizeAction.SHRINK) "wrap_content" else "match_parent"}"
+        |              android:layout_height="${if (renderingMode.vertAction == RenderingMode.SizeAction.SHRINK) "wrap_content" else "match_parent"}"/>
   """.trimMargin()
 
   override fun apply(
@@ -153,7 +152,7 @@ class Paparazzi @JvmOverloads constructor(
     testName = description.toTestName()
 
     if (!isInitialized) {
-      renderer = Renderer(environment, layoutlibCallback, logger, maxPercentDifference)
+      renderer = Renderer(environment, layoutlibCallback, logger)
       sessionParamsBuilder = renderer.prepare()
     }
 
@@ -162,7 +161,8 @@ class Paparazzi @JvmOverloads constructor(
         layoutPullParser = LayoutPullParser.createFromString(contentRoot),
         deviceConfig = deviceConfig,
         renderingMode = renderingMode,
-        supportsRtl = supportsRtl
+        supportsRtl = supportsRtl,
+        decor = showSystemUi
       )
       .withTheme(theme)
 
@@ -194,19 +194,9 @@ class Paparazzi @JvmOverloads constructor(
 
   fun snapshot(name: String? = null, composable: @Composable () -> Unit) {
     val hostView = ComposeView(context)
-    // During onAttachedToWindow, AbstractComposeView will attempt to resolve its parent's
-    // CompositionContext, which requires first finding the "content view", then using that to
-    // find a root view with a ViewTreeLifecycleOwner
-    val parent = FrameLayout(context).apply { id = android.R.id.content }
-    parent.addView(hostView, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
-    PaparazziComposeOwner.register(parent)
     hostView.setContent(composable)
 
-    try {
-      snapshot(parent, name)
-    } finally {
-      forceReleaseComposeReferenceLeaks()
-    }
+    snapshot(hostView, name)
   }
 
   @JvmOverloads
@@ -240,6 +230,7 @@ class Paparazzi @JvmOverloads constructor(
       "Calling unsafeUpdateConfig requires at least one non-null argument."
     }
 
+    logger.flushErrors()
     renderSession.release()
     bridgeRenderSession.dispose()
     cleanupThread()
@@ -292,6 +283,14 @@ class Paparazzi @JvmOverloads constructor(
           // Initialize the choreographer at time=0.
         }
 
+        if (hasComposeRuntime) {
+          // During onAttachedToWindow, AbstractComposeView will attempt to resolve its parent's
+          // CompositionContext, which requires first finding the "content view", then using that
+          // to find a root view with a ViewTreeLifecycleOwner
+          viewGroup.id = android.R.id.content
+          PaparazziComposeOwner.register(viewGroup)
+        }
+
         viewGroup.addView(modifiedView)
         for (frame in 0 until frameCount) {
           val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
@@ -308,6 +307,9 @@ class Paparazzi @JvmOverloads constructor(
       } finally {
         viewGroup.removeView(modifiedView)
         AnimationHandler.sAnimatorHandler.set(null)
+        if (hasComposeRuntime) {
+          forceReleaseComposeReferenceLeaks()
+        }
       }
     }
   }
@@ -328,9 +330,14 @@ class Paparazzi @JvmOverloads constructor(
     try {
       areCallbacksRunningField.setBoolean(choreographer, true)
 
-      // https://android.googlesource.com/platform/frameworks/layoutlib/+/d58aa4703369e109b24419548f38b422d5a44738/bridge/src/com/android/layoutlib/bridge/BridgeRenderSession.java#171
-      // BridgeRenderSession.executeCallbacks aggressively tears down the main Looper and BridgeContext, so we call the static delegates ourselves.
-      Handler_Delegate.executeCallbacks()
+      // Avoid ConcurrentModificationException in
+      // RenderAction.currentContext.sessionInteractiveData.handlerMessageQueue.runnablesMap which is a WeakHashMap
+      // https://android.googlesource.com/platform/tools/adt/idea/+/c331c9b2f4334748c55c29adec3ad1cd67e45df2/designer/src/com/android/tools/idea/uibuilder/scene/LayoutlibSceneManager.java#1558
+      synchronized(this) {
+        // https://android.googlesource.com/platform/frameworks/layoutlib/+/d58aa4703369e109b24419548f38b422d5a44738/bridge/src/com/android/layoutlib/bridge/BridgeRenderSession.java#171
+        // BridgeRenderSession.executeCallbacks aggressively tears down the main Looper and BridgeContext, so we call the static delegates ourselves.
+        Handler_Delegate.executeCallbacks()
+      }
       val currentTimeMs = SystemClock_Delegate.uptimeMillis()
       val choreographerCallbacks =
         RenderAction.getCurrentContext().sessionInteractiveData.choreographerCallbacks
@@ -373,7 +380,8 @@ class Paparazzi @JvmOverloads constructor(
   }
 
   private fun frameImage(image: BufferedImage): BufferedImage {
-    if (deviceConfig.screenRound == ScreenRound.ROUND) {
+    // On device sized screenshot, we should apply any device specific shapes.
+    if (renderingMode == RenderingMode.NORMAL && deviceConfig.screenRound == ScreenRound.ROUND) {
       val newImage = BufferedImage(image.width, image.height, image.type)
       val g = newImage.createGraphics()
       g.clip = Ellipse2D.Float(0f, 0f, image.height.toFloat(), image.width.toFloat())
@@ -386,7 +394,8 @@ class Paparazzi @JvmOverloads constructor(
 
   private fun scaleImage(image: BufferedImage): BufferedImage {
     val scale = ImageUtils.getThumbnailScale(image)
-    return ImageUtils.scale(image, scale, scale)
+    // Only scale images down so we don't waste storage space enlarging smaller layouts.
+    return if (scale < 1f) ImageUtils.scale(image, scale, scale) else image
   }
 
   private fun Description.toTestName(): TestName {
@@ -567,7 +576,7 @@ class Paparazzi @JvmOverloads constructor(
       val snapshotInvalidations = recomposer.javaClass
         .getDeclaredField("snapshotInvalidations")
         .apply { isAccessible = true }
-        .get(recomposer) as MutableList<*>
+        .get(recomposer) as MutableCollection<*>
       compositionInvalidations.clear()
       snapshotInvalidations.clear()
       applyObservers.clear()
@@ -621,6 +630,15 @@ class Paparazzi @JvmOverloads constructor(
 
     private val isVerifying: Boolean =
       System.getProperty("paparazzi.test.verify")?.toBoolean() == true
+
+    private val hasComposeRuntime: Boolean =
+      try {
+        Class.forName("androidx.compose.runtime.snapshots.SnapshotKt")
+        Class.forName("androidx.compose.ui.platform.AndroidUiDispatcher")
+        true
+      } catch (e: ClassNotFoundException) {
+        false
+      }
 
     private fun determineHandler(maxPercentDifference: Double): SnapshotHandler =
       if (isVerifying) {

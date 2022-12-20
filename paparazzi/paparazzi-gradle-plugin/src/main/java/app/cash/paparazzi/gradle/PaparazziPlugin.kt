@@ -150,6 +150,8 @@ class PaparazziPlugin : Plugin<Project> {
       val testTaskProvider = project.tasks.named("test$testVariantSlug", Test::class.java) { test ->
         test.systemProperties["paparazzi.test.resources"] =
           writeResourcesTask.flatMap { it.paparazziResources.asFile }.get().path
+        test.systemProperties["paparazzi.build.dir"] =
+          project.layout.buildDirectory.get().toString()
 
         test.inputs.dir(mergeResourcesOutputDir)
         test.inputs.dir(mergeAssetsOutputDir)
@@ -263,4 +265,4 @@ class PaparazziPlugin : Plugin<Project> {
 // TODO: Migrate to ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE when Gradle 7.3 is
 //  acceptable as the minimum supported version
 private val ARTIFACT_TYPE_ATTRIBUTE = Attribute.of("artifactType", String::class.java)
-private const val DEFAULT_COMPILE_SDK_VERSION = 31
+private const val DEFAULT_COMPILE_SDK_VERSION = 33

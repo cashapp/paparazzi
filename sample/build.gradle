@@ -3,6 +3,8 @@ apply plugin: 'org.jetbrains.kotlin.android'
 apply plugin: 'app.cash.paparazzi'
 
 android {
+  namespace 'app.cash.paparazzi.sample'
+
   compileSdk libs.versions.compileSdk.get() as int
   defaultConfig {
     minSdk libs.versions.minSdk.get() as int
