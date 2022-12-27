@@ -1,4 +1,13 @@
-rootProject.name = 'paparazzi-libs'
+/**
+ * Set the root project name to `paparazzi` when building from Intellij or Android Studio so that run executions created
+ * via context actions resolve to the task that matches the actual project directory structure. This is a workaround for
+ * https://github.com/gradle/gradle/issues/16608.
+ */
+if (System.getProperty("idea.active")) {
+  rootProject.name = 'paparazzi'
+} else {
+  rootProject.name = 'paparazzi-libs'
+}
 
 include ':paparazzi'
 include ':paparazzi-agent'
