@@ -34,12 +34,7 @@ import androidx.compose.runtime.Recomposer
 import androidx.compose.ui.platform.AndroidUiDispatcher
 import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.ViewTreeLifecycleOwner
-import androidx.savedstate.SavedStateRegistry
-import androidx.savedstate.SavedStateRegistryController
-import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import app.cash.paparazzi.agent.AgentTestRule
 import app.cash.paparazzi.agent.InterceptorRegistrar
@@ -50,7 +45,9 @@ import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.MatrixMatrixMultiplicationInterceptor
 import app.cash.paparazzi.internal.MatrixVectorMultiplicationInterceptor
 import app.cash.paparazzi.internal.PaparazziCallback
+import app.cash.paparazzi.internal.PaparazziLifecycleOwner
 import app.cash.paparazzi.internal.PaparazziLogger
+import app.cash.paparazzi.internal.PaparazziSavedStateRegistryOwner
 import app.cash.paparazzi.internal.Renderer
 import app.cash.paparazzi.internal.ResourcesInterceptor
 import app.cash.paparazzi.internal.ServiceManagerInterceptor
@@ -288,7 +285,17 @@ class Paparazzi @JvmOverloads constructor(
           // CompositionContext, which requires first finding the "content view", then using that
           // to find a root view with a ViewTreeLifecycleOwner
           viewGroup.id = android.R.id.content
-          PaparazziComposeOwner.register(viewGroup)
+        }
+
+        if (hasLifecycleOwnerRuntime) {
+          val lifecycleOwner = PaparazziLifecycleOwner()
+          ViewTreeLifecycleOwner.set(view, lifecycleOwner)
+
+          if (hasSavedStateRegistryOwnerRuntime) {
+            view.setViewTreeSavedStateRegistryOwner(PaparazziSavedStateRegistryOwner(lifecycleOwner))
+          }
+          // Must be changed after the SavedStateRegistryOwner above has finished restoring its state.
+          lifecycleOwner.registry.currentState = Lifecycle.State.CREATED
         }
 
         viewGroup.addView(modifiedView)
@@ -601,24 +608,6 @@ class Paparazzi @JvmOverloads constructor(
       .set(dispatcher, false)
   }
 
-  private class PaparazziComposeOwner private constructor() : LifecycleOwner, SavedStateRegistryOwner {
-    private val lifecycleRegistry: LifecycleRegistry = LifecycleRegistry(this)
-    private val savedStateRegistryController = SavedStateRegistryController.create(this)
-
-    override fun getLifecycle(): Lifecycle = lifecycleRegistry
-    override val savedStateRegistry: SavedStateRegistry = savedStateRegistryController.savedStateRegistry
-
-    companion object {
-      fun register(view: View) {
-        val owner = PaparazziComposeOwner()
-        owner.savedStateRegistryController.performRestore(null)
-        owner.lifecycleRegistry.currentState = Lifecycle.State.CREATED
-        ViewTreeLifecycleOwner.set(view, owner)
-        view.setViewTreeSavedStateRegistryOwner(owner)
-      }
-    }
-  }
-
   companion object {
     /** The choreographer doesn't like 0 as a frame time, so start an hour later. */
     internal val TIME_OFFSET_NANOS = TimeUnit.HOURS.toNanos(1L)
@@ -631,14 +620,27 @@ class Paparazzi @JvmOverloads constructor(
     private val isVerifying: Boolean =
       System.getProperty("paparazzi.test.verify")?.toBoolean() == true
 
-    private val hasComposeRuntime: Boolean =
-      try {
-        Class.forName("androidx.compose.runtime.snapshots.SnapshotKt")
-        Class.forName("androidx.compose.ui.platform.AndroidUiDispatcher")
+    private val hasComposeRuntime: Boolean = isPresentInClasspath(
+      "androidx.compose.runtime.snapshots.SnapshotKt",
+      "androidx.compose.ui.platform.AndroidUiDispatcher"
+    )
+    private val hasLifecycleOwnerRuntime = isPresentInClasspath(
+      "androidx.lifecycle.LifecycleOwner"
+    )
+    private val hasSavedStateRegistryOwnerRuntime = isPresentInClasspath(
+      "androidx.savedstate.SavedStateRegistryOwner"
+    )
+
+    private fun isPresentInClasspath(vararg classNames: String): Boolean {
+      return try {
+        for (className in classNames) {
+          Class.forName(className)
+        }
         true
       } catch (e: ClassNotFoundException) {
         false
       }
+    }
 
     private fun determineHandler(maxPercentDifference: Double): SnapshotHandler =
       if (isVerifying) {
