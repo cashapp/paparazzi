@@ -1,5 +1,7 @@
 package app.cash.paparazzi.internal
 
+import androidx.activity.OnBackPressedDispatcher
+import androidx.activity.OnBackPressedDispatcherOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
@@ -17,4 +19,12 @@ internal class PaparazziSavedStateRegistryOwner(
 ) : SavedStateRegistryOwner, LifecycleOwner by lifecycleOwner {
   private val controller = SavedStateRegistryController.create(this).apply { performRestore(null) }
   override val savedStateRegistry: SavedStateRegistry = controller.savedStateRegistry
+}
+
+internal class PaparazziOnBackPressedDispatcherOwner(
+  private val lifecycleOwner: LifecycleOwner
+) : OnBackPressedDispatcherOwner, LifecycleOwner by lifecycleOwner {
+  override fun getOnBackPressedDispatcher(): OnBackPressedDispatcher {
+    return OnBackPressedDispatcher { /* Swallow all back-presses. */ }
+  }
 }
