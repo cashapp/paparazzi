@@ -17,6 +17,10 @@ package app.cash.paparazzi.gradle
 
 import app.cash.paparazzi.NATIVE_LIB_VERSION
 import app.cash.paparazzi.VERSION
+import com.android.build.api.instrumentation.FramesComputationMode
+import com.android.build.api.instrumentation.FramesComputationMode.COMPUTE_FRAMES_FOR_INSTRUMENTED_METHODS
+import com.android.build.api.instrumentation.InstrumentationScope
+import com.android.build.api.variant.AndroidComponentsExtension
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.LibraryExtension
 import com.android.build.gradle.tasks.MergeSourceSetFolders
@@ -69,6 +73,17 @@ class PaparazziPlugin : Plugin<Project> {
     // Create anchor tasks for all variants.
     val verifyVariants = project.tasks.register("verifyPaparazzi")
     val recordVariants = project.tasks.register("recordPaparazzi")
+
+    val componentsExtension =
+      project.extensions.getByType(AndroidComponentsExtension::class.java)
+    componentsExtension.onVariants { variant ->
+      val testInstrumentation = variant.unitTest?.instrumentation ?: return@onVariants
+      testInstrumentation.transformClassesWith(
+        ResourceCompatVisitorFactory::class.java,
+        InstrumentationScope.ALL,
+      ) { }
+      testInstrumentation.setAsmFramesComputationMode(COMPUTE_FRAMES_FOR_INSTRUMENTED_METHODS)
+    }
 
     val variants = project.extensions.getByType(LibraryExtension::class.java)
       .libraryVariants
