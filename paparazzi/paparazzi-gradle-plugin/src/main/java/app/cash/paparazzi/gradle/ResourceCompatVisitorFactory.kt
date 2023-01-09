@@ -43,13 +43,13 @@ abstract class ResourceCompatVisitorFactory :
       exceptions: Array<out String>?
     ): MethodVisitor {
       val mv = super.visitMethod(access, name, descriptor, signature, exceptions)
-      if (isResourcesCompatClass && name == "loadFont"
-        && descriptor == "(Landroid/content/Context;Landroid/content/res/Resources;Landroid/util/TypedValue;II" +
+      if (isResourcesCompatClass && name == "loadFont" &&
+        descriptor == "(Landroid/content/Context;Landroid/content/res/Resources;Landroid/util/TypedValue;II" +
         "Landroidx/core/content/res/ResourcesCompat\$FontCallback;Landroid/os/Handler;ZZ)Landroid/graphics/Typeface;"
       ) {
         return LoadFontVisitor(apiVersion, mv)
       }
-      return mv;
+      return mv
     }
 
     class LoadFontVisitor(apiVersion: Int, nextMethodVisitor: MethodVisitor) :

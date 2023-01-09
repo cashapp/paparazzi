@@ -17,7 +17,6 @@ package app.cash.paparazzi.gradle
 
 import app.cash.paparazzi.NATIVE_LIB_VERSION
 import app.cash.paparazzi.VERSION
-import com.android.build.api.instrumentation.FramesComputationMode
 import com.android.build.api.instrumentation.FramesComputationMode.COMPUTE_FRAMES_FOR_INSTRUMENTED_METHODS
 import com.android.build.api.instrumentation.InstrumentationScope
 import com.android.build.api.variant.AndroidComponentsExtension
@@ -80,7 +79,7 @@ class PaparazziPlugin : Plugin<Project> {
       val testInstrumentation = variant.unitTest?.instrumentation ?: return@onVariants
       testInstrumentation.transformClassesWith(
         ResourceCompatVisitorFactory::class.java,
-        InstrumentationScope.ALL,
+        InstrumentationScope.ALL
       ) { }
       testInstrumentation.setAsmFramesComputationMode(COMPUTE_FRAMES_FOR_INSTRUMENTED_METHODS)
     }
