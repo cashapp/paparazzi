@@ -49,7 +49,6 @@ import app.cash.paparazzi.internal.PaparazziLifecycleOwner
 import app.cash.paparazzi.internal.PaparazziLogger
 import app.cash.paparazzi.internal.PaparazziSavedStateRegistryOwner
 import app.cash.paparazzi.internal.Renderer
-import app.cash.paparazzi.internal.ResourcesInterceptor
 import app.cash.paparazzi.internal.ServiceManagerInterceptor
 import app.cash.paparazzi.internal.SessionParamsBuilder
 import app.cash.paparazzi.internal.parsers.LayoutPullParser
