@@ -28,6 +28,7 @@ import android.view.Choreographer
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.setViewTreeOnBackPressedDispatcherOwner
 import androidx.annotation.LayoutRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Recomposer
@@ -47,6 +48,7 @@ import app.cash.paparazzi.internal.MatrixVectorMultiplicationInterceptor
 import app.cash.paparazzi.internal.PaparazziCallback
 import app.cash.paparazzi.internal.PaparazziLifecycleOwner
 import app.cash.paparazzi.internal.PaparazziLogger
+import app.cash.paparazzi.internal.PaparazziOnBackPressedDispatcherOwner
 import app.cash.paparazzi.internal.PaparazziSavedStateRegistryOwner
 import app.cash.paparazzi.internal.Renderer
 import app.cash.paparazzi.internal.ResourcesInterceptor
@@ -293,6 +295,9 @@ class Paparazzi @JvmOverloads constructor(
 
           if (hasSavedStateRegistryOwnerRuntime) {
             view.setViewTreeSavedStateRegistryOwner(PaparazziSavedStateRegistryOwner(lifecycleOwner))
+          }
+          if (hasAndroidxActivityRuntime) {
+            view.setViewTreeOnBackPressedDispatcherOwner(PaparazziOnBackPressedDispatcherOwner(lifecycleOwner))
           }
           // Must be changed after the SavedStateRegistryOwner above has finished restoring its state.
           lifecycleOwner.registry.currentState = Lifecycle.State.CREATED
@@ -629,6 +634,9 @@ class Paparazzi @JvmOverloads constructor(
     )
     private val hasSavedStateRegistryOwnerRuntime = isPresentInClasspath(
       "androidx.savedstate.SavedStateRegistryOwner"
+    )
+    private val hasAndroidxActivityRuntime = isPresentInClasspath(
+      "androidx.activity.OnBackPressedDispatcherOwner"
     )
 
     private fun isPresentInClasspath(vararg classNames: String): Boolean {
