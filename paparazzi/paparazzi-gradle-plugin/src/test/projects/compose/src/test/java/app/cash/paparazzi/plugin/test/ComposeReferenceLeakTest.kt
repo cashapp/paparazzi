@@ -25,7 +25,6 @@ class ComposeReferenceLeakTest {
   }
 
   companion object {
-
     private lateinit var weakComposeView: WeakReference<ComposeView>
 
     @AfterClass
