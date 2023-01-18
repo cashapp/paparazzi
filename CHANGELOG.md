@@ -1,6 +1,32 @@
 Change Log
 ==========
 
+## Version 1.2.0
+_2023-01-18_
+
+### New
+* Migrate Paparazzi to layoutlib Electric Eel 2022.1.1
+* Add support for RenderingMode.SHRINK to allow view-only screenshots
+* Expose flag to show/hide system ui
+* Register a default OnBackPressedDispatcherOwner if its present in classpath
+* Bump default compileSdk to API 33
+* Compose 1.3.1
+* Kotlin 1.7.20
+* [Gradle Plugin] Gradle 7.6
+* [Gradle Plugin] Android Gradle Plugin 7.4.0
+
+### Fixed
+* Flush errors on unsafeUpdateConfig
+* Only apply wear circle shape to full device screenshots
+* Synchronize access to Handler_Delegate.queue
+* Apply compose hooks to all snapshot calls
+* Register LifecycleOwner and SavedStateRegistryOwner to all views
+* Execute Handler callbacks after snapshots to clean up Compose references
+* Fix RecyclerView issue due to layoutlib Dolphin update
+* Keep AGP and tools dependencies aligned
+
+Kudos to @gamepro65, @saket, @rharter and others for contributions this release!
+
 ## Version 1.1.0
 _2022-10-12_
 
