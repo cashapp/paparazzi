@@ -169,6 +169,7 @@ class PaparazziPlugin : Plugin<Project> {
         test.outputs.dir(snapshotOutputDir)
 
         val paparazziProperties = project.properties.filterKeys { it.startsWith("app.cash.paparazzi") }
+        test.systemProperties.putAll(paparazziProperties)
 
         // Explicitly register these as inputs so that they are considered when determining up-to-date.
         // The properties become resolvable after the last afterEvaluate runs.
@@ -184,7 +185,6 @@ class PaparazziPlugin : Plugin<Project> {
             test.systemProperties["paparazzi.test.record"] = isRecordRun.get()
             test.systemProperties["paparazzi.test.verify"] = isVerifyRun.get()
             test.systemProperties["kotlinx.coroutines.main.delay"] = true
-            test.systemProperties.putAll(paparazziProperties)
           }
         })
       }
