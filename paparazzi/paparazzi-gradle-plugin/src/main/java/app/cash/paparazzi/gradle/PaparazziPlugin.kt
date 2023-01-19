@@ -170,6 +170,11 @@ class PaparazziPlugin : Plugin<Project> {
 
         val paparazziProperties = project.properties.filterKeys { it.startsWith("app.cash.paparazzi") }
 
+        // Explicitly register these as inputs so that they are considered when determining up-to-date.
+        // The properties become resolvable after the last afterEvaluate runs.
+        test.inputs.property("paparazzi.test.record", isRecordRun)
+        test.inputs.property("paparazzi.test.verify", isVerifyRun)
+
         @Suppress("ObjectLiteralToLambda")
         // why not a lambda?  See: https://docs.gradle.org/7.2/userguide/validation_problems.html#implementation_unknown
         test.doFirst(object : Action<Task> {

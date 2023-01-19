@@ -522,6 +522,60 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun rerunTestsOnRecordPropertyChange() {
+    val fixtureRoot = File("src/test/projects/rerun-after-test-record")
+
+    // Take 1
+    val firstRunResult = gradleRunner
+      .withArguments("testDebugUnitTest", "--stacktrace")
+      .forwardOutput()
+      .runFixture(fixtureRoot) { build() }
+
+    with(firstRunResult.task(":testDebugUnitTest")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(SUCCESS)
+    }
+
+    // Take 2
+    val secondRunResult = gradleRunner
+      .withArguments("recordPaparazziDebug", "--stacktrace")
+      .forwardOutput()
+      .runFixture(fixtureRoot) { build() }
+
+    with(secondRunResult.task(":testDebugUnitTest")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(SUCCESS) // not UP-TO-DATE
+    }
+  }
+
+  @Test
+  fun rerunTestsOnVerifyPropertyChange() {
+    val fixtureRoot = File("src/test/projects/rerun-after-test-verify")
+
+    // Take 1
+    val firstRunResult = gradleRunner
+      .withArguments("testDebugUnitTest", "--stacktrace")
+      .forwardOutput()
+      .runFixture(fixtureRoot) { build() }
+
+    with(firstRunResult.task(":testDebugUnitTest")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(SUCCESS)
+    }
+
+    // Take 2
+    val secondRunResult = gradleRunner
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .forwardOutput()
+      .runFixture(fixtureRoot) { build() }
+
+    with(secondRunResult.task(":testDebugUnitTest")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(SUCCESS) // not UP-TO-DATE
+    }
+  }
+
+  @Test
   fun verifySuccess() {
     val fixtureRoot = File("src/test/projects/verify-mode-success")
 
