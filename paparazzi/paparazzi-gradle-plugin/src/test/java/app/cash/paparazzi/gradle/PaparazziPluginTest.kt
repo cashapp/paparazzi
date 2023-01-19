@@ -174,6 +174,9 @@ class PaparazziPluginTest {
   fun cacheable() {
     val fixtureRoot = File("src/test/projects/cacheable")
 
+    fixtureRoot.resolve("build").deleteRecursively()
+    fixtureRoot.resolve("build-cache").deleteRecursively()
+
     val firstRun = gradleRunner
       .withArguments("testDebug", "--build-cache", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
@@ -193,8 +196,6 @@ class PaparazziPluginTest {
       assertThat(this).isNotNull()
       assertThat(this!!.outcome).isEqualTo(FROM_CACHE)
     }
-
-    fixtureRoot.resolve("build-cache").deleteRecursively()
   }
 
   @Test
