@@ -13,6 +13,7 @@ repositories {
 }
 
 android {
+  namespace 'app.cash.paparazzi.plugin.test.module'
   compileSdk libs.versions.compileSdk.get() as int
   defaultConfig {
     minSdk libs.versions.minSdk.get() as int
