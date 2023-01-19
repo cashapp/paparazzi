@@ -260,7 +260,7 @@ class PaparazziPluginTest {
 
     val result = gradleRunner
       .withArguments("module:recordPaparazziDebug", "--stacktrace")
-      .runFixture(fixtureRoot, moduleRoot) { build() }
+      .runFixture(fixtureRoot) { build() }
 
     assertThat(result.task(":module:testDebugUnitTest")).isNotNull()
 
@@ -282,7 +282,7 @@ class PaparazziPluginTest {
 
     val result = gradleRunner
       .withArguments("module:recordPaparazziDebug", "--tests=*recordSecond", "--stacktrace")
-      .runFixture(fixtureRoot, moduleRoot) { build() }
+      .runFixture(fixtureRoot) { build() }
 
     assertThat(result.task(":module:testDebugUnitTest")).isNotNull()
 
@@ -522,11 +522,10 @@ class PaparazziPluginTest {
   @Test
   fun verifySuccessMultiModule() {
     val fixtureRoot = File("src/test/projects/verify-mode-success-multiple-modules")
-    val moduleRoot = File(fixtureRoot, "module")
 
     val result = gradleRunner
       .withArguments("module:verifyPaparazziDebug", "--stacktrace")
-      .runFixture(fixtureRoot, moduleRoot) { build() }
+      .runFixture(fixtureRoot) { build() }
 
     assertThat(result.task(":module:testDebugUnitTest")).isNotNull()
   }
@@ -538,7 +537,7 @@ class PaparazziPluginTest {
 
     val result = gradleRunner
       .withArguments("module:verifyPaparazziDebug", "--stacktrace")
-      .runFixture(fixtureRoot, moduleRoot) { buildAndFail() }
+      .runFixture(fixtureRoot) { buildAndFail() }
 
     assertThat(result.task(":module:testDebugUnitTest")).isNotNull()
 
@@ -692,11 +691,10 @@ class PaparazziPluginTest {
   @Test
   fun openTransitiveAssets() {
     val fixtureRoot = File("src/test/projects/open-transitive-assets")
-    val moduleRoot = File(fixtureRoot, "consumer")
 
     gradleRunner
       .withArguments("consumer:testDebug", "--stacktrace")
-      .runFixture(fixtureRoot, moduleRoot) { build() }
+      .runFixture(fixtureRoot) { build() }
   }
 
   @Test
@@ -950,7 +948,7 @@ class PaparazziPluginTest {
 
     gradleRunner
       .withArguments("module:testDebug", "--stacktrace")
-      .runFixture(fixtureRoot, moduleRoot) { build() }
+      .runFixture(fixtureRoot) { build() }
 
     val snapshotsDir = File(moduleRoot, "build/reports/paparazzi/images")
     val snapshots = snapshotsDir.listFiles()
@@ -1106,7 +1104,6 @@ class PaparazziPluginTest {
 
   private fun GradleRunner.runFixture(
     projectRoot: File,
-    moduleRoot: File = projectRoot,
     action: GradleRunner.() -> BuildResult
   ): BuildResult {
     val settings = File(projectRoot, "settings.gradle")
@@ -1114,15 +1111,6 @@ class PaparazziPluginTest {
       settings.createNewFile()
       settings.writeText("apply from: \"../test.settings.gradle\"")
       settings.deleteOnExit()
-    }
-
-    val mainSourceRoot = File(moduleRoot, "src/main")
-    val manifest = File(mainSourceRoot, "AndroidManifest.xml")
-    if (!mainSourceRoot.exists() || !manifest.exists()) {
-      mainSourceRoot.mkdirs()
-      manifest.createNewFile()
-      manifest.writeText("""<manifest package="app.cash.paparazzi.plugin.test"/>""")
-      manifest.deleteOnExit()
     }
 
     val gradleProperties = File(projectRoot, "gradle.properties")
