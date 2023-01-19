@@ -1,17 +1,5 @@
-# Source code
-*.kt            text eol=lf
-*.java          text eol=lf
-*.xml           text eol=lf
+* text=auto eol=lf
 
-# Gradle files
-*.gradle        text eol=lf
-*.properties    text eol=lf
-*.bat           text eol=crlf
-
-# GitHub stuff
-*.md            text eol=lf
-*.yml           text eol=lf
-
-# Binaries
-*.png           binary
-*.jar           binary
+*.bat text eol=crlf
+*.jar binary
+*.png binary
