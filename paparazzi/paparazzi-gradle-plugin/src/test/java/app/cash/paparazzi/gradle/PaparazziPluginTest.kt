@@ -151,6 +151,7 @@ class PaparazziPluginTest {
   @Test
   fun flagDebugLinkedObjectsIsOff() {
     val fixtureRoot = File("src/test/projects/flag-debug-linked-objects-off")
+    fixtureRoot.resolve("build").deleteRecursively()
 
     val result = gradleRunner
       .withArguments("testDebug", "--stacktrace")
@@ -162,6 +163,7 @@ class PaparazziPluginTest {
   @Test
   fun flagDebugLinkedObjectsIsOn() {
     val fixtureRoot = File("src/test/projects/flag-debug-linked-objects-on")
+    fixtureRoot.resolve("build").deleteRecursively()
 
     val result = gradleRunner
       .withArguments("testDebug", "--stacktrace")
