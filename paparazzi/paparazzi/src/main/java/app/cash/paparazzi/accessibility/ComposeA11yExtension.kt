@@ -17,7 +17,6 @@
 package app.cash.paparazzi.accessibility
 
 import android.view.View
-import android.view.ViewGroup
 import androidx.compose.ui.graphics.toAndroidRect
 import androidx.compose.ui.node.RootForTest
 import androidx.compose.ui.platform.ComposeView
