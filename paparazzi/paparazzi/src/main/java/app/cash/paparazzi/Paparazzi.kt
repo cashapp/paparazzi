@@ -28,20 +28,12 @@ import android.view.Choreographer
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewGroup.LayoutParams
-import android.widget.FrameLayout
+import androidx.activity.setViewTreeOnBackPressedDispatcherOwner
 import androidx.annotation.LayoutRes
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Recomposer
-import androidx.compose.ui.platform.AndroidUiDispatcher
 import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.ViewTreeLifecycleOwner
-import androidx.savedstate.SavedStateRegistry
-import androidx.savedstate.SavedStateRegistryController
-import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import app.cash.paparazzi.agent.AgentTestRule
 import app.cash.paparazzi.agent.InterceptorRegistrar
@@ -52,7 +44,10 @@ import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.MatrixMatrixMultiplicationInterceptor
 import app.cash.paparazzi.internal.MatrixVectorMultiplicationInterceptor
 import app.cash.paparazzi.internal.PaparazziCallback
+import app.cash.paparazzi.internal.PaparazziLifecycleOwner
 import app.cash.paparazzi.internal.PaparazziLogger
+import app.cash.paparazzi.internal.PaparazziOnBackPressedDispatcherOwner
+import app.cash.paparazzi.internal.PaparazziSavedStateRegistryOwner
 import app.cash.paparazzi.internal.Renderer
 import app.cash.paparazzi.internal.ResourcesInterceptor
 import app.cash.paparazzi.internal.ServiceManagerInterceptor
@@ -78,7 +73,6 @@ import java.awt.geom.Ellipse2D
 import java.awt.image.BufferedImage
 import java.util.Date
 import java.util.concurrent.TimeUnit
-import kotlin.coroutines.ContinuationInterceptor
 
 class Paparazzi @JvmOverloads constructor(
   private val environment: Environment = detectEnvironment(),
@@ -89,7 +83,8 @@ class Paparazzi @JvmOverloads constructor(
   private val maxPercentDifference: Double = 0.1,
   private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference),
   private val renderExtensions: Set<RenderExtension> = setOf(),
-  private val supportsRtl: Boolean = false
+  private val supportsRtl: Boolean = false,
+  private val showSystemUi: Boolean = true
 ) : TestRule {
   private val logger = PaparazziLogger()
   private lateinit var renderSession: RenderSessionImpl
@@ -108,8 +103,8 @@ class Paparazzi @JvmOverloads constructor(
   private val contentRoot = """
         |<?xml version="1.0" encoding="utf-8"?>
         |<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        |              android:layout_width="match_parent"
-        |              android:layout_height="match_parent"/>
+        |              android:layout_width="${if (renderingMode.horizAction == RenderingMode.SizeAction.SHRINK) "wrap_content" else "match_parent"}"
+        |              android:layout_height="${if (renderingMode.vertAction == RenderingMode.SizeAction.SHRINK) "wrap_content" else "match_parent"}"/>
   """.trimMargin()
 
   override fun apply(
@@ -162,7 +157,8 @@ class Paparazzi @JvmOverloads constructor(
         layoutPullParser = LayoutPullParser.createFromString(contentRoot),
         deviceConfig = deviceConfig,
         renderingMode = renderingMode,
-        supportsRtl = supportsRtl
+        supportsRtl = supportsRtl,
+        decor = showSystemUi
       )
       .withTheme(theme)
 
@@ -194,19 +190,9 @@ class Paparazzi @JvmOverloads constructor(
 
   fun snapshot(name: String? = null, composable: @Composable () -> Unit) {
     val hostView = ComposeView(context)
-    // During onAttachedToWindow, AbstractComposeView will attempt to resolve its parent's
-    // CompositionContext, which requires first finding the "content view", then using that to
-    // find a root view with a ViewTreeLifecycleOwner
-    val parent = FrameLayout(context).apply { id = android.R.id.content }
-    parent.addView(hostView, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
-    PaparazziComposeOwner.register(parent)
     hostView.setContent(composable)
 
-    try {
-      snapshot(parent, name)
-    } finally {
-      forceReleaseComposeReferenceLeaks()
-    }
+    snapshot(hostView, name)
   }
 
   @JvmOverloads
@@ -240,6 +226,7 @@ class Paparazzi @JvmOverloads constructor(
       "Calling unsafeUpdateConfig requires at least one non-null argument."
     }
 
+    logger.flushErrors()
     renderSession.release()
     bridgeRenderSession.dispose()
     cleanupThread()
@@ -292,6 +279,27 @@ class Paparazzi @JvmOverloads constructor(
           // Initialize the choreographer at time=0.
         }
 
+        if (hasComposeRuntime) {
+          // During onAttachedToWindow, AbstractComposeView will attempt to resolve its parent's
+          // CompositionContext, which requires first finding the "content view", then using that
+          // to find a root view with a ViewTreeLifecycleOwner
+          viewGroup.id = android.R.id.content
+        }
+
+        if (hasLifecycleOwnerRuntime) {
+          val lifecycleOwner = PaparazziLifecycleOwner()
+          ViewTreeLifecycleOwner.set(modifiedView, lifecycleOwner)
+
+          if (hasSavedStateRegistryOwnerRuntime) {
+            modifiedView.setViewTreeSavedStateRegistryOwner(PaparazziSavedStateRegistryOwner(lifecycleOwner))
+          }
+          if (hasAndroidxActivityRuntime) {
+            modifiedView.setViewTreeOnBackPressedDispatcherOwner(PaparazziOnBackPressedDispatcherOwner(lifecycleOwner))
+          }
+          // Must be changed after the SavedStateRegistryOwner above has finished restoring its state.
+          lifecycleOwner.registry.currentState = Lifecycle.State.CREATED
+        }
+
         viewGroup.addView(modifiedView)
         for (frame in 0 until frameCount) {
           val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
@@ -308,6 +316,9 @@ class Paparazzi @JvmOverloads constructor(
       } finally {
         viewGroup.removeView(modifiedView)
         AnimationHandler.sAnimatorHandler.set(null)
+        if (hasComposeRuntime) {
+          forceReleaseComposeReferenceLeaks()
+        }
       }
     }
   }
@@ -328,9 +339,7 @@ class Paparazzi @JvmOverloads constructor(
     try {
       areCallbacksRunningField.setBoolean(choreographer, true)
 
-      // https://android.googlesource.com/platform/frameworks/layoutlib/+/d58aa4703369e109b24419548f38b422d5a44738/bridge/src/com/android/layoutlib/bridge/BridgeRenderSession.java#171
-      // BridgeRenderSession.executeCallbacks aggressively tears down the main Looper and BridgeContext, so we call the static delegates ourselves.
-      Handler_Delegate.executeCallbacks()
+      executeHandlerCallbacks()
       val currentTimeMs = SystemClock_Delegate.uptimeMillis()
       val choreographerCallbacks =
         RenderAction.getCurrentContext().sessionInteractiveData.choreographerCallbacks
@@ -373,7 +382,8 @@ class Paparazzi @JvmOverloads constructor(
   }
 
   private fun frameImage(image: BufferedImage): BufferedImage {
-    if (deviceConfig.screenRound == ScreenRound.ROUND) {
+    // On device sized screenshot, we should apply any device specific shapes.
+    if (renderingMode == RenderingMode.NORMAL && deviceConfig.screenRound == ScreenRound.ROUND) {
       val newImage = BufferedImage(image.width, image.height, image.type)
       val g = newImage.createGraphics()
       g.clip = Ellipse2D.Float(0f, 0f, image.height.toFloat(), image.width.toFloat())
@@ -386,7 +396,8 @@ class Paparazzi @JvmOverloads constructor(
 
   private fun scaleImage(image: BufferedImage): BufferedImage {
     val scale = ImageUtils.getThumbnailScale(image)
-    return ImageUtils.scale(image, scale, scale)
+    // Only scale images down so we don't waste storage space enlarging smaller layouts.
+    return if (scale < 1f) ImageUtils.scale(image, scale, scale) else image
   }
 
   private fun Description.toTestName(): TestName {
@@ -549,64 +560,19 @@ class Paparazzi @JvmOverloads constructor(
   }
 
   private fun forceReleaseComposeReferenceLeaks() {
-    val snapshotClass = Class.forName("androidx.compose.runtime.snapshots.SnapshotKt")
-    val applyObservers = snapshotClass
-      .getDeclaredField("applyObservers")
-      .apply { isAccessible = true }
-      .get(null) as MutableList<*>
-    val applyObserver = applyObservers.getOrNull(0)
-    if (applyObserver != null) {
-      val recomposer = applyObserver.javaClass
-        .getDeclaredField("this\$0")
-        .apply { isAccessible = true }
-        .get(applyObserver) as Recomposer
-      val compositionInvalidations = recomposer.javaClass
-        .getDeclaredField("compositionInvalidations")
-        .apply { isAccessible = true }
-        .get(recomposer) as MutableList<*>
-      val snapshotInvalidations = recomposer.javaClass
-        .getDeclaredField("snapshotInvalidations")
-        .apply { isAccessible = true }
-        .get(recomposer) as MutableList<*>
-      compositionInvalidations.clear()
-      snapshotInvalidations.clear()
-      applyObservers.clear()
-    }
-
-    val dispatcher =
-      AndroidUiDispatcher.CurrentThread[ContinuationInterceptor] as AndroidUiDispatcher
-    val toRunTrampolined = dispatcher.javaClass
-      .getDeclaredField("toRunTrampolined")
-      .apply { isAccessible = true }
-      .get(dispatcher) as ArrayDeque<*>
-    toRunTrampolined.clear()
-    // Upon reference leaks being fixed, verify we don't need to reset these values for
-    // AndroidUiDispatcher to continue dispatching between tests.
-    dispatcher.javaClass
-      .getDeclaredField("scheduledTrampolineDispatch")
-      .apply { isAccessible = true }
-      .set(dispatcher, false)
-    dispatcher.javaClass
-      .getDeclaredField("scheduledFrameDispatch")
-      .apply { isAccessible = true }
-      .set(dispatcher, false)
+    // AndroidUiDispatcher is backed by a Handler, by executing one last time
+    // we give the dispatcher the ability to clean-up / release its callbacks.
+    executeHandlerCallbacks()
   }
 
-  private class PaparazziComposeOwner private constructor() : LifecycleOwner, SavedStateRegistryOwner {
-    private val lifecycleRegistry: LifecycleRegistry = LifecycleRegistry(this)
-    private val savedStateRegistryController = SavedStateRegistryController.create(this)
-
-    override fun getLifecycle(): Lifecycle = lifecycleRegistry
-    override val savedStateRegistry: SavedStateRegistry = savedStateRegistryController.savedStateRegistry
-
-    companion object {
-      fun register(view: View) {
-        val owner = PaparazziComposeOwner()
-        owner.savedStateRegistryController.performRestore(null)
-        owner.lifecycleRegistry.currentState = Lifecycle.State.CREATED
-        ViewTreeLifecycleOwner.set(view, owner)
-        view.setViewTreeSavedStateRegistryOwner(owner)
-      }
+  private fun executeHandlerCallbacks() {
+    // Avoid ConcurrentModificationException in
+    // RenderAction.currentContext.sessionInteractiveData.handlerMessageQueue.runnablesMap which is a WeakHashMap
+    // https://android.googlesource.com/platform/tools/adt/idea/+/c331c9b2f4334748c55c29adec3ad1cd67e45df2/designer/src/com/android/tools/idea/uibuilder/scene/LayoutlibSceneManager.java#1558
+    synchronized(this) {
+      // https://android.googlesource.com/platform/frameworks/layoutlib/+/d58aa4703369e109b24419548f38b422d5a44738/bridge/src/com/android/layoutlib/bridge/BridgeRenderSession.java#171
+      // BridgeRenderSession.executeCallbacks aggressively tears down the main Looper and BridgeContext, so we call the static delegates ourselves.
+      Handler_Delegate.executeCallbacks()
     }
   }
 
@@ -621,6 +587,31 @@ class Paparazzi @JvmOverloads constructor(
 
     private val isVerifying: Boolean =
       System.getProperty("paparazzi.test.verify")?.toBoolean() == true
+
+    private val hasComposeRuntime: Boolean = isPresentInClasspath(
+      "androidx.compose.runtime.snapshots.SnapshotKt",
+      "androidx.compose.ui.platform.AndroidUiDispatcher"
+    )
+    private val hasLifecycleOwnerRuntime = isPresentInClasspath(
+      "androidx.lifecycle.ViewTreeLifecycleOwner"
+    )
+    private val hasSavedStateRegistryOwnerRuntime = isPresentInClasspath(
+      "androidx.savedstate.ViewTreeSavedStateRegistryOwner"
+    )
+    private val hasAndroidxActivityRuntime = isPresentInClasspath(
+      "androidx.activity.ViewTreeOnBackPressedDispatcherOwner"
+    )
+
+    private fun isPresentInClasspath(vararg classNames: String): Boolean {
+      return try {
+        for (className in classNames) {
+          Class.forName(className)
+        }
+        true
+      } catch (e: ClassNotFoundException) {
+        false
+      }
+    }
 
     fun determineHandler(maxPercentDifference: Double): SnapshotHandler =
       if (isVerifying) {

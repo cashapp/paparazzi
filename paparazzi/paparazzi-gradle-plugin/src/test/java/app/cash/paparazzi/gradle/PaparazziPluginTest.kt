@@ -260,7 +260,7 @@ class PaparazziPluginTest {
 
     val result = gradleRunner
       .withArguments("module:recordPaparazziDebug", "--stacktrace")
-      .runFixture(fixtureRoot, moduleRoot) { build() }
+      .runFixture(fixtureRoot) { build() }
 
     assertThat(result.task(":module:testDebugUnitTest")).isNotNull()
 
@@ -282,7 +282,7 @@ class PaparazziPluginTest {
 
     val result = gradleRunner
       .withArguments("module:recordPaparazziDebug", "--tests=*recordSecond", "--stacktrace")
-      .runFixture(fixtureRoot, moduleRoot) { build() }
+      .runFixture(fixtureRoot) { build() }
 
     assertThat(result.task(":module:testDebugUnitTest")).isNotNull()
 
@@ -522,11 +522,10 @@ class PaparazziPluginTest {
   @Test
   fun verifySuccessMultiModule() {
     val fixtureRoot = File("src/test/projects/verify-mode-success-multiple-modules")
-    val moduleRoot = File(fixtureRoot, "module")
 
     val result = gradleRunner
       .withArguments("module:verifyPaparazziDebug", "--stacktrace")
-      .runFixture(fixtureRoot, moduleRoot) { build() }
+      .runFixture(fixtureRoot) { build() }
 
     assertThat(result.task(":module:testDebugUnitTest")).isNotNull()
   }
@@ -538,7 +537,7 @@ class PaparazziPluginTest {
 
     val result = gradleRunner
       .withArguments("module:verifyPaparazziDebug", "--stacktrace")
-      .runFixture(fixtureRoot, moduleRoot) { buildAndFail() }
+      .runFixture(fixtureRoot) { buildAndFail() }
 
     assertThat(result.task(":module:testDebugUnitTest")).isNotNull()
 
@@ -571,6 +570,37 @@ class PaparazziPluginTest {
     assertThat(snapshots[0]).isSimilarTo(normal).withDefaultThreshold()
     assertThat(snapshots[1]).isSimilarTo(horizontalScroll).withDefaultThreshold()
     assertThat(snapshots[2]).isSimilarTo(verticalScroll).withDefaultThreshold()
+  }
+
+  @Test
+  fun widgets() {
+    val fixtureRoot = File("src/test/projects/widgets")
+
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()?.sortedBy { it.lastModified() }
+    assertThat(snapshots!!).hasSize(2)
+
+    val widgetImage = File(fixtureRoot, "src/test/resources/widget.png")
+    val fullScreenImage = File(fixtureRoot, "src/test/resources/full_screen.png")
+    assertThat(snapshots[0]).isSimilarTo(widgetImage).withDefaultThreshold()
+    assertThat(snapshots[1]).isSimilarTo(fullScreenImage).withDefaultThreshold()
+  }
+
+  @Test
+  fun lifecycleOwnerUsages() {
+    val fixtureRoot = File("src/test/projects/lifecycle-usages")
+
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()
+    assertThat(snapshots!!).hasLength(1)
   }
 
   @Test
@@ -627,8 +657,8 @@ class PaparazziPluginTest {
     assertThat(resourcesFile.exists()).isTrue()
 
     val resourceFileContents = resourcesFile.readLines()
-    assertThat(resourceFileContents[2]).isEqualTo("32")
-    assertThat(resourceFileContents[3]).isEqualTo("platforms/android-32/")
+    assertThat(resourceFileContents[2]).isEqualTo("33")
+    assertThat(resourceFileContents[3]).isEqualTo("platforms/android-33/")
   }
 
   @Test
@@ -646,7 +676,7 @@ class PaparazziPluginTest {
 
     val resourceFileContents = resourcesFile.readLines()
     assertThat(resourceFileContents[2]).isEqualTo("29")
-    assertThat(resourceFileContents[3]).isEqualTo("platforms/android-32/")
+    assertThat(resourceFileContents[3]).isEqualTo("platforms/android-33/")
   }
 
   @Test
@@ -661,11 +691,10 @@ class PaparazziPluginTest {
   @Test
   fun openTransitiveAssets() {
     val fixtureRoot = File("src/test/projects/open-transitive-assets")
-    val moduleRoot = File(fixtureRoot, "consumer")
 
     gradleRunner
       .withArguments("consumer:testDebug", "--stacktrace")
-      .runFixture(fixtureRoot, moduleRoot) { build() }
+      .runFixture(fixtureRoot) { build() }
   }
 
   @Test
@@ -702,6 +731,23 @@ class PaparazziPluginTest {
 
     val snapshotImage = snapshots[0]
     val goldenImage = File(fixtureRoot, "src/test/resources/arrow_up.png")
+    assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
+  }
+
+  @Test
+  fun verifyRecyclerView() {
+    val fixtureRoot = File("src/test/projects/verify-recyclerview")
+
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()
+    assertThat(snapshots!!).hasLength(1)
+
+    val snapshotImage = snapshots[0]
+    val goldenImage = File(fixtureRoot, "src/test/resources/recycler_view.png")
     assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
   }
 
@@ -902,7 +948,7 @@ class PaparazziPluginTest {
 
     gradleRunner
       .withArguments("module:testDebug", "--stacktrace")
-      .runFixture(fixtureRoot, moduleRoot) { build() }
+      .runFixture(fixtureRoot) { build() }
 
     val snapshotsDir = File(moduleRoot, "build/reports/paparazzi/images")
     val snapshots = snapshotsDir.listFiles()
@@ -941,8 +987,8 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun composeDispatcher() {
-    val fixtureRoot = File("src/test/projects/compose-dispatcher")
+  fun composeViewTreeLifecycle() {
+    val fixtureRoot = File("src/test/projects/compose-lifecycle-owner")
     gradleRunner
       .withArguments("testDebug", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
@@ -1075,7 +1121,6 @@ class PaparazziPluginTest {
 
   private fun GradleRunner.runFixture(
     projectRoot: File,
-    moduleRoot: File = projectRoot,
     action: GradleRunner.() -> BuildResult
   ): BuildResult {
     val settings = File(projectRoot, "settings.gradle")
@@ -1083,15 +1128,6 @@ class PaparazziPluginTest {
       settings.createNewFile()
       settings.writeText("apply from: \"../test.settings.gradle\"")
       settings.deleteOnExit()
-    }
-
-    val mainSourceRoot = File(moduleRoot, "src/main")
-    val manifest = File(mainSourceRoot, "AndroidManifest.xml")
-    if (!mainSourceRoot.exists() || !manifest.exists()) {
-      mainSourceRoot.mkdirs()
-      manifest.createNewFile()
-      manifest.writeText("""<manifest package="app.cash.paparazzi.plugin.test"/>""")
-      manifest.deleteOnExit()
     }
 
     val gradleProperties = File(projectRoot, "gradle.properties")

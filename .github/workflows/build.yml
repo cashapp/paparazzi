@@ -13,10 +13,7 @@ jobs:
         os: [
           macOS-latest,
           windows-latest,
-          # Copied from SqlDelight: https://github.com/cashapp/sqldelight/blame/master/.github/workflows/PR.yml#L13-L18
-          # TL;DR looks like libraries installed on ubuntu-latest conflicts, resulting in failed builds
-          # Also, see: https://github.com/touchlab/SQLiter/pull/38#issuecomment-867171789
-          ubuntu-18.04
+          ubuntu-latest
         ]
         java-version: [11, 12, 16, 18]
 
@@ -24,7 +21,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3.1.0
+        uses: actions/checkout@v3.3.0
 
       - name: Validate Gradle Wrapper
         uses: gradle/wrapper-validation-action@v1.0.5
@@ -50,7 +47,7 @@ jobs:
         with:
           name: test-failures
           path: |
-            **/build/reports/tests/test/
+            **/build/reports/tests/*/
             **/out/failures/
             paparazzi/paparazzi-gradle-plugin/src/test/projects/**/build/reports/paparazzi/images/
 
@@ -62,7 +59,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3.1.0
+        uses: actions/checkout@v3.3.0
 
       - name: Configure JDK
         uses: actions/setup-java@v3
