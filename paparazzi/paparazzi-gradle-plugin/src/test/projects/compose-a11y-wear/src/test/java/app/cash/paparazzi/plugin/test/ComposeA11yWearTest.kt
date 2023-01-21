@@ -10,7 +10,7 @@ import org.junit.Test
 
 class ComposeA11yWearTest {
   private val composeA11yExtension = ComposeA11yExtension()
-  private val maxPercentDifference = 1.0
+  private val maxPercentDifference = 0.1
 
   @get:Rule
   val paparazzi = Paparazzi(
