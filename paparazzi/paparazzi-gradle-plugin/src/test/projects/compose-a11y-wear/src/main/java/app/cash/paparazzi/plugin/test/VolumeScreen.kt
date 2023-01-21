@@ -45,13 +45,6 @@ fun VolumeScreen() {
           contentDescription = "Increase Volume"
         )
       }
-    ) {
-//      Text(
-//        "Volume",
-//        style = MaterialTheme.typography.button,
-//        maxLines = 1,
-//        overflow = TextOverflow.Clip
-//      )
-    }
+    )
   }
 }
