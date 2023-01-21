@@ -10,7 +10,8 @@ import org.junit.Test
 
 class ComposeA11yWearTest {
   private val composeA11yExtension = ComposeA11yExtension()
-  private val maxPercentDifference = 0.1
+  // 3 percent - the overlay code in A11ySnapshotHandler is platform dependent
+  private val maxPercentDifference = 3
 
   @get:Rule
   val paparazzi = Paparazzi(
