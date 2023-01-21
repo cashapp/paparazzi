@@ -137,10 +137,9 @@ class A11ySnapshotHandler(
           drawImage(image, 0, 0, image.width, image.height, null)
         }
 
-        accessibilityState.elements.forEachIndexed { i, it ->
+        accessibilityState.elements.forEachIndexed { i, element ->
           paint = colorForIndex(i)
           stroke = BasicStroke(3f)
-          val element = it.scaleBy(scale)
           drawRect(
             element.displayBounds.left,
             element.displayBounds.top,

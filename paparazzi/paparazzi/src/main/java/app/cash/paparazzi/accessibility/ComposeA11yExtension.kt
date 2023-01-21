@@ -99,7 +99,7 @@ class ComposeA11yExtension : RenderExtension {
   }
 
   override fun renderView(contentView: View): View {
-    val composeView = (contentView as ViewGroup).getChildAt(0) as ComposeView
+    val composeView = contentView as ComposeView
 
     // Capture the accessibility elements during the drawing phase after
     // measurement and layout has occurred

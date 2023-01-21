@@ -32,7 +32,7 @@ import app.cash.paparazzi.accessibility.RenderSettings.getColor
 import app.cash.paparazzi.accessibility.RenderSettings.toColorInt
 import app.cash.paparazzi.accessibility.RenderSettings.withAlpha
 
-public class AccessibilityRenderExtension : RenderExtension {
+class AccessibilityRenderExtension : RenderExtension {
   override fun renderView(
     contentView: View
   ): View {

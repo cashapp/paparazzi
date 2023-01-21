@@ -39,23 +39,7 @@ data class AccessibilityState(
     val heading: Boolean,
     val customActions: List<CustomAction>?,
     val progress: Progress?
-  ) {
-    fun scaleBy(scale: Float): Element {
-      return copy(
-        displayBounds = displayBounds * scale,
-        touchBounds = touchBounds?.times(scale)
-      )
-    }
-
-    internal operator fun Rect.times(scale: Float): Rect {
-      return Rect(
-        (left * scale).toInt(),
-        (top * scale).toInt(),
-        (right * scale).toInt(),
-        (bottom * scale).toInt()
-      )
-    }
-  }
+  )
 
   data class CustomAction(val label: String)
 
