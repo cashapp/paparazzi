@@ -17,7 +17,6 @@ package app.cash.paparazzi.gradle
 
 import app.cash.paparazzi.NATIVE_LIB_VERSION
 import app.cash.paparazzi.VERSION
-import app.cash.paparazzi.gradle.instrumentation.Platform
 import app.cash.paparazzi.gradle.instrumentation.Platform.UnixLike
 import app.cash.paparazzi.gradle.instrumentation.Platform.Windows
 import app.cash.paparazzi.gradle.instrumentation.ResourcesCompatVisitorFactory
