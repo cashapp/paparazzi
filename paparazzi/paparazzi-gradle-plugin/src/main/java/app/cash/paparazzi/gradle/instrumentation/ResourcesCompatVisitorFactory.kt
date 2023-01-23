@@ -1,24 +1,35 @@
-package app.cash.paparazzi.gradle
+package app.cash.paparazzi.gradle.instrumentation
 
 import com.android.build.api.instrumentation.AsmClassVisitorFactory
 import com.android.build.api.instrumentation.ClassContext
 import com.android.build.api.instrumentation.ClassData
 import com.android.build.api.instrumentation.InstrumentationParameters
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Input
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.MethodVisitor
 
-abstract class ResourceCompatVisitorFactory :
-  AsmClassVisitorFactory<InstrumentationParameters.None> {
+abstract class ResourcesCompatVisitorFactory :
+  AsmClassVisitorFactory<ResourcesCompatVisitorFactory.Parameters> {
+
+  interface Parameters : InstrumentationParameters {
+    @get:Input
+    val platform: Property<Platform>
+  }
+
+  private val platform: Platform
+    get() = parameters.get().platform.get()
+
   override fun createClassVisitor(
     classContext: ClassContext,
     nextClassVisitor: ClassVisitor
   ): ClassVisitor {
-    return ResourceCompatVisitor(instrumentationContext.apiVersion.get(), nextClassVisitor)
+    return ResourcesCompatVisitor(instrumentationContext.apiVersion.get(), nextClassVisitor, platform)
   }
 
   override fun isInstrumentable(classData: ClassData): Boolean = true
 
-  class ResourceCompatVisitor(private val apiVersion: Int, nextClassVisitor: ClassVisitor) :
+  class ResourcesCompatVisitor(private val apiVersion: Int, nextClassVisitor: ClassVisitor, private val platform: Platform) :
     ClassVisitor(apiVersion, nextClassVisitor) {
 
     private var isResourcesCompatClass: Boolean = false
@@ -47,13 +58,15 @@ abstract class ResourceCompatVisitorFactory :
         descriptor == "(Landroid/content/Context;Landroid/content/res/Resources;Landroid/util/TypedValue;II" +
         "Landroidx/core/content/res/ResourcesCompat\$FontCallback;Landroid/os/Handler;ZZ)Landroid/graphics/Typeface;"
       ) {
-        return LoadFontVisitor(apiVersion, mv)
+        return LoadFontVisitor(apiVersion, mv, platform)
       }
       return mv
     }
 
-    class LoadFontVisitor(apiVersion: Int, nextMethodVisitor: MethodVisitor) :
+    class LoadFontVisitor(apiVersion: Int, nextMethodVisitor: MethodVisitor, private val platform: Platform) :
       MethodVisitor(apiVersion, nextMethodVisitor) {
+
+      private var isStartsWithMethod: Boolean = false
 
       override fun visitMethodInsn(
         opcode: Int,
@@ -62,7 +75,8 @@ abstract class ResourceCompatVisitorFactory :
         descriptor: String?,
         isInterface: Boolean
       ) {
-        if ("startsWith" == name) {
+        isStartsWithMethod = "startsWith" == name
+        if (isStartsWithMethod) {
           super.visitMethodInsn(
             opcode,
             owner,
@@ -72,6 +86,14 @@ abstract class ResourceCompatVisitorFactory :
           )
         } else {
           super.visitMethodInsn(opcode, owner, name, descriptor, isInterface)
+        }
+      }
+
+      override fun visitLdcInsn(value: Any?) {
+        if (isStartsWithMethod && value == "res/" && platform == Platform.Windows) {
+          super.visitLdcInsn("res\\")
+        } else {
+          super.visitLdcInsn(value)
         }
       }
     }

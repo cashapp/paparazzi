@@ -17,6 +17,10 @@ package app.cash.paparazzi.gradle
 
 import app.cash.paparazzi.NATIVE_LIB_VERSION
 import app.cash.paparazzi.VERSION
+import app.cash.paparazzi.gradle.instrumentation.Platform
+import app.cash.paparazzi.gradle.instrumentation.Platform.UnixLike
+import app.cash.paparazzi.gradle.instrumentation.Platform.Windows
+import app.cash.paparazzi.gradle.instrumentation.ResourcesCompatVisitorFactory
 import com.android.build.api.instrumentation.FramesComputationMode.COMPUTE_FRAMES_FOR_INSTRUMENTED_METHODS
 import com.android.build.api.instrumentation.InstrumentationScope
 import com.android.build.api.variant.AndroidComponentsExtension
@@ -41,6 +45,7 @@ import org.gradle.api.tasks.options.Option
 import org.gradle.api.tasks.testing.Test
 import org.gradle.internal.os.OperatingSystem
 import org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
+import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinAndroidPluginWrapper
 import org.jetbrains.kotlin.gradle.plugin.KotlinMultiplatformPluginWrapper
@@ -78,9 +83,16 @@ class PaparazziPlugin : Plugin<Project> {
     componentsExtension.onVariants { variant ->
       val testInstrumentation = variant.unitTest?.instrumentation ?: return@onVariants
       testInstrumentation.transformClassesWith(
-        ResourceCompatVisitorFactory::class.java,
+        ResourcesCompatVisitorFactory::class.java,
         InstrumentationScope.ALL
-      ) { }
+      ) {
+        val os = DefaultNativePlatform.getCurrentOperatingSystem()
+        val platform = when {
+          os.isWindows -> Windows
+          else -> UnixLike
+        }
+        it.platform.set(platform)
+      }
       testInstrumentation.setAsmFramesComputationMode(COMPUTE_FRAMES_FOR_INSTRUMENTED_METHODS)
     }
 
