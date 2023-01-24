@@ -1,5 +1,6 @@
 package app.cash.paparazzi.gradle.instrumentation
 
+import app.cash.paparazzi.gradle.instrumentation.Platform.Windows
 import com.android.build.api.instrumentation.AsmClassVisitorFactory
 import com.android.build.api.instrumentation.ClassContext
 import com.android.build.api.instrumentation.ClassData
@@ -66,8 +67,6 @@ abstract class ResourcesCompatVisitorFactory :
     class LoadFontVisitor(apiVersion: Int, nextMethodVisitor: MethodVisitor, private val platform: Platform) :
       MethodVisitor(apiVersion, nextMethodVisitor) {
 
-      private var isStartsWithMethod: Boolean = false
-
       override fun visitMethodInsn(
         opcode: Int,
         owner: String?,
@@ -75,8 +74,7 @@ abstract class ResourcesCompatVisitorFactory :
         descriptor: String?,
         isInterface: Boolean
       ) {
-        isStartsWithMethod = "startsWith" == name
-        if (isStartsWithMethod) {
+        if ("startsWith" == name) {
           super.visitMethodInsn(
             opcode,
             owner,
@@ -90,7 +88,7 @@ abstract class ResourcesCompatVisitorFactory :
       }
 
       override fun visitLdcInsn(value: Any?) {
-        if (isStartsWithMethod && value == "res/" && platform == Platform.Windows) {
+        if (value == "res/" && platform == Windows) {
           super.visitLdcInsn("res\\")
         } else {
           super.visitLdcInsn(value)
