@@ -88,6 +88,7 @@ abstract class ResourcesCompatVisitorFactory :
       }
 
       override fun visitLdcInsn(value: Any?) {
+        println("value: $value ${value == "res/"} platform: $platform")
         if (value == "res/" && platform == Windows) {
           super.visitLdcInsn("res\\")
         } else {
