@@ -600,7 +600,7 @@ class PaparazziPluginTest {
 
     val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
     val snapshots = snapshotsDir.listFiles()
-    assertThat(snapshots!!).hasLength(1)
+    assertThat(snapshots!!).hasLength(3)
   }
 
   @Test
