@@ -596,7 +596,7 @@ class Paparazzi @JvmOverloads constructor(
       "androidx.lifecycle.ViewTreeLifecycleOwner"
     )
     private val hasSavedStateRegistryOwnerRuntime = isPresentInClasspath(
-      "androidx.savedstate.ViewTreeSavedStateRegistryOwner"
+      "androidx.savedstate.SavedStateRegistryController\$Companion"
     )
     private val hasAndroidxActivityRuntime = isPresentInClasspath(
       "androidx.activity.ViewTreeOnBackPressedDispatcherOwner"
