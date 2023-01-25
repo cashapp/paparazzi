@@ -604,19 +604,6 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun compatibilityWithOldSavedStateVersion() {
-    val fixtureRoot = File("src/test/projects/old-savedstate-version")
-
-    gradleRunner
-      .withArguments("testDebug", "--stacktrace")
-      .runFixture(fixtureRoot) { build() }
-
-    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
-    val snapshots = snapshotsDir.listFiles()
-    assertThat(snapshots!!).hasLength(1)
-  }
-
-  @Test
   fun verifyResourcesGeneratedForJavaProject() {
     val fixtureRoot = File("src/test/projects/verify-resources-java")
 
