@@ -13,25 +13,25 @@ class ComposeReferenceLeakTest {
 
   @Test
   fun cleansUpComposeReferences() {
-    weakComposeView = WeakReference(
-      ComposeView(paparazzi.context).apply {
-        setContent {
-          HelloPaparazzi()
-        }
-
-        paparazzi.snapshot(this)
+    composeView = ComposeView(paparazzi.context).apply {
+      setContent {
+        HelloPaparazzi()
       }
-    )
+
+      paparazzi.snapshot(this)
+    }
   }
 
   companion object {
-    private lateinit var weakComposeView: WeakReference<ComposeView>
+    private var composeView: ComposeView? = null
 
     @AfterClass
     @JvmStatic
     fun teardown() {
-      assert(weakComposeView.get() != null)
+      assert(composeView != null)
+      val weakComposeView = WeakReference(composeView)
 
+      composeView = null
       System.gc()
 
       assert(weakComposeView.get() == null)
