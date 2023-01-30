@@ -1102,6 +1102,14 @@ class PaparazziPluginTest {
     assertThat(darkModeSnapshotImage).isSimilarTo(darkModeGoldenImage).withDefaultThreshold()
   }
 
+  @Test
+  fun disabledUnitTestVariant() {
+    val fixtureRoot = File("src/test/projects/disabled-unit-test-variant")
+    gradleRunner
+      .withArguments("testDebug")
+      .runFixture(fixtureRoot) { build() }
+  }
+
   private fun GradleRunner.runFixture(
     projectRoot: File,
     action: GradleRunner.() -> BuildResult

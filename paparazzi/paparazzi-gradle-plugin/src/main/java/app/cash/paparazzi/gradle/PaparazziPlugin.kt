@@ -74,6 +74,8 @@ class PaparazziPlugin : Plugin<Project> {
       .libraryVariants
     variants.all { variant ->
       val variantSlug = variant.name.capitalize(Locale.US)
+      val testVariantSlug = variant.unitTestVariant?.name?.capitalize(Locale.US)
+        ?: return@all
 
       val mergeResourcesOutputDir = variant.mergeResourcesProvider.flatMap { it.outputDir }
       val mergeAssetsProvider =
@@ -107,8 +109,6 @@ class PaparazziPlugin : Plugin<Project> {
         task.mergeAssetsOutput.set(mergeAssetsOutputDir)
         task.paparazziResources.set(project.layout.buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.txt"))
       }
-
-      val testVariantSlug = variant.unitTestVariant.name.capitalize(Locale.US)
 
       project.plugins.withType(JavaBasePlugin::class.java) {
         project.tasks.named("compile${testVariantSlug}JavaWithJavac")
