@@ -73,6 +73,7 @@ class PaparazziPlugin : Plugin<Project> {
     val variants = project.extensions.getByType(LibraryExtension::class.java)
       .libraryVariants
     variants.all { variant ->
+      if (variant.unitTestVariant == null) return@all
       val variantSlug = variant.name.capitalize(Locale.US)
 
       val mergeResourcesOutputDir = variant.mergeResourcesProvider.flatMap { it.outputDir }
