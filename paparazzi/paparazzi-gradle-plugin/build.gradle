@@ -31,7 +31,7 @@ sourceSets {
 def generateVersion = tasks.register("pluginVersion") {
   def outputDir = file('src/generated/kotlin')
 
-  inputs.property 'version', version
+  inputs.property 'version', project.property("VERSION_NAME")
   inputs.property 'nativeLibVersion', libs.versions.layoutlib
   outputs.dir outputDir
 
@@ -40,7 +40,7 @@ def generateVersion = tasks.register("pluginVersion") {
     versionFile.parentFile.mkdirs()
     versionFile.text = """// Generated file. Do not edit!
 package app.cash.paparazzi
-const val VERSION = "${project.version}"
+const val VERSION = "${project.property("VERSION_NAME")}"
 const val NATIVE_LIB_VERSION = "${libs.versions.layoutlib.get()}"
 """
   }
