@@ -33,6 +33,7 @@ tasks.register('cloneLayoutlib') {
       }
     }
     grgit.withCloseable { repo ->
+      repo.fetch()
       logger.warn("Checking out SHA ${libs.versions.layoutlibPrebuiltSha.get()}")
       repo.checkout {
         branch = libs.versions.layoutlibPrebuiltSha.get()
