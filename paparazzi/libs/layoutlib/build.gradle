@@ -1,4 +1,5 @@
-apply plugin: 'org.ajoberstar.grgit'
+import org.ajoberstar.grgit.Grgit
+
 apply plugin: 'com.vanniktech.maven.publish'
 
 version = libs.versions.layoutlib.get()
@@ -17,22 +18,25 @@ tasks.register('cloneLayoutlib') {
     if (repoDir.exists() && !repoDir.list()) {
       repoDir.delete()
     }
+    Grgit grgit
     if (!repoDir.exists()) {
       logger.warn('Cloning prebuilt layoutlib: this make take a few minutes...')
-      grgit.clone {
+      grgit = Grgit.clone {
         dir = repoDir
         uri = "https://android.googlesource.com/platform/prebuilts/studio/layoutlib"
       }
       logger.warn('Cloned prebuilt layoutlib.')
+    } else {
+      logger.warn('Using existing prebuilt layoutlib clone.')
+      grgit = Grgit.open {
+        dir = repoDir
+      }
     }
-
-    def repo = grgit.open {
-      dir = repoDir
-    }
-
-    logger.warn("Checking out SHA ${libs.versions.layoutlibPrebuiltSha.get()}")
-    repo.checkout {
-      branch = libs.versions.layoutlibPrebuiltSha.get()
+    grgit.withCloseable { repo ->
+      logger.warn("Checking out SHA ${libs.versions.layoutlibPrebuiltSha.get()}")
+      repo.checkout {
+        branch = libs.versions.layoutlibPrebuiltSha.get()
+      }
     }
   }
 }
