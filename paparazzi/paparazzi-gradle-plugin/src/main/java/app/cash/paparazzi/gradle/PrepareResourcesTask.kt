@@ -33,6 +33,9 @@ import org.gradle.api.tasks.TaskAction
 @CacheableTask
 abstract class PrepareResourcesTask : DefaultTask() {
   @get:Input
+  abstract val variantName: Property<String>
+
+  @get:Input
   abstract val packageName: Property<String>
 
   @get:InputDirectory

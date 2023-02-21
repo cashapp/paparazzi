@@ -99,6 +99,7 @@ class PaparazziPlugin : Plugin<Project> {
         val nonTransitiveRClassEnabled =
           (project.findProperty("android.nonTransitiveRClass") as? String).toBoolean()
 
+        task.variantName.set(variant.name)
         task.packageName.set(android.packageName())
         task.artifactFiles.from(packageAwareArtifacts.artifactFiles)
         task.nonTransitiveRClassEnabled.set(nonTransitiveRClassEnabled)
