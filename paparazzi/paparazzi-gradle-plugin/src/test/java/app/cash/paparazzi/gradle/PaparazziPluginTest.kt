@@ -115,6 +115,53 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun prepareResourcesCaching() {
+    val fixtureRoot = File("src/test/projects/prepare-resources-task-caching")
+
+    val firstRun = gradleRunner
+      .withArguments("testRelease", "testDebug", "--build-cache", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    println(firstRun.output)
+
+    with(firstRun.task(":preparePaparazziDebugResources")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isNotEqualTo(FROM_CACHE)
+    }
+
+    with(firstRun.task(":preparePaparazziReleaseResources")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isNotEqualTo(FROM_CACHE)
+    }
+
+    var resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/debug/resources.txt")
+    assertThat(resourcesFile.exists()).isTrue()
+    var resourceFileContents = resourcesFile.readLines()
+    assertThat(resourceFileContents.any { it.contains("release") }).isFalse()
+
+    resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/release/resources.txt")
+    assertThat(resourcesFile.exists()).isTrue()
+    resourceFileContents = resourcesFile.readLines()
+    assertThat(resourceFileContents.any { it.contains("debug") }).isFalse()
+
+    fixtureRoot.resolve("build").deleteRecursively()
+
+    val secondRun = gradleRunner
+      .withArguments("testDebug", "--build-cache", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    with(secondRun.task(":preparePaparazziDebugResources")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(FROM_CACHE)
+    }
+
+    resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/debug/resources.txt")
+    assertThat(resourcesFile.exists()).isTrue()
+    resourceFileContents = resourcesFile.readLines()
+    assertThat(resourceFileContents.any { it.contains("release") }).isFalse()
+  }
+
+  @Test
   fun customBuildDir() {
     val fixtureRoot = File("src/test/projects/custom-build-dir")
 
