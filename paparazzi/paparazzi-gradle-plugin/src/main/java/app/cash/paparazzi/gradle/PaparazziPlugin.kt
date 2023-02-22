@@ -28,10 +28,13 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
 import org.gradle.api.attributes.Attribute
+import org.gradle.api.file.Directory
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.artifacts.transform.UnzipTransform
 import org.gradle.api.logging.LogLevel.LIFECYCLE
 import org.gradle.api.plugins.JavaBasePlugin
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.options.Option
@@ -43,6 +46,7 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinAndroidPluginWrapper
 import org.jetbrains.kotlin.gradle.plugin.KotlinMultiplatformPluginWrapper
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
 import java.util.Locale
+import kotlin.io.path.invariantSeparatorsPathString
 
 @Suppress("unused")
 class PaparazziPlugin : Plugin<Project> {
@@ -95,18 +99,24 @@ class PaparazziPlugin : Plugin<Project> {
         "preparePaparazzi${variantSlug}Resources",
         PrepareResourcesTask::class.java
       ) { task ->
+        fun DirectoryProperty.asRelativePathString(childDirectory: Provider<Directory>): Provider<String> =
+          flatMap { buildDir ->
+            childDirectory.map { childDir ->
+              buildDir.asFile.toPath().relativize(childDir.asFile.toPath()).invariantSeparatorsPathString
+            }
+          }
+
         val android = project.extensions.getByType(BaseExtension::class.java)
         val nonTransitiveRClassEnabled =
           (project.findProperty("android.nonTransitiveRClass") as? String).toBoolean()
 
-        task.variantName.set(variant.name)
         task.packageName.set(android.packageName())
         task.artifactFiles.from(packageAwareArtifacts.artifactFiles)
         task.nonTransitiveRClassEnabled.set(nonTransitiveRClassEnabled)
-        task.mergeResourcesOutput.set(mergeResourcesOutputDir)
+        task.mergeResourcesOutput.set(project.layout.buildDirectory.asRelativePathString(mergeResourcesOutputDir))
         task.targetSdkVersion.set(android.targetSdkVersion())
         task.compileSdkVersion.set(android.compileSdkVersion())
-        task.mergeAssetsOutput.set(mergeAssetsOutputDir)
+        task.mergeAssetsOutput.set(project.layout.buildDirectory.asRelativePathString(mergeAssetsOutputDir))
         task.paparazziResources.set(project.layout.buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.txt"))
       }
 

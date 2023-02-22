@@ -122,8 +122,6 @@ class PaparazziPluginTest {
       .withArguments("testRelease", "testDebug", "--build-cache", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
 
-    println(firstRun.output)
-
     with(firstRun.task(":preparePaparazziDebugResources")) {
       assertThat(this).isNotNull()
       assertThat(this!!.outcome).isNotEqualTo(FROM_CACHE)
