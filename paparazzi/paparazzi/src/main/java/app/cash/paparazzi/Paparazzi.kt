@@ -27,6 +27,7 @@ import android.view.BridgeInflater
 import android.view.Choreographer
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.NO_ID
 import android.view.ViewGroup
 import androidx.activity.setViewTreeOnBackPressedDispatcherOwner
 import androidx.annotation.LayoutRes
@@ -35,6 +36,7 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import app.cash.paparazzi.accessibility.AccessibilityCheckConfig
 import app.cash.paparazzi.agent.AgentTestRule
 import app.cash.paparazzi.agent.InterceptorRegistrar
 import app.cash.paparazzi.internal.ChoreographerDelegateInterceptor
@@ -66,12 +68,17 @@ import com.android.layoutlib.bridge.BridgeRenderSession
 import com.android.layoutlib.bridge.impl.RenderAction
 import com.android.layoutlib.bridge.impl.RenderSessionImpl
 import com.android.resources.ScreenRound
+import com.android.tools.idea.validator.LayoutValidator
+import com.android.tools.idea.validator.ValidatorData.Level
+import com.android.tools.idea.validator.ValidatorData.Policy
+import com.android.tools.idea.validator.ValidatorData.Type
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
 import java.awt.geom.Ellipse2D
 import java.awt.image.BufferedImage
 import java.util.Date
+import java.util.EnumSet
 import java.util.concurrent.TimeUnit
 
 class Paparazzi @JvmOverloads constructor(
@@ -84,7 +91,10 @@ class Paparazzi @JvmOverloads constructor(
   private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference),
   private val renderExtensions: Set<RenderExtension> = setOf(),
   private val supportsRtl: Boolean = false,
-  private val showSystemUi: Boolean = true
+  private val showSystemUi: Boolean = true,
+  private val accessibilityCheckConfig: AccessibilityCheckConfig = AccessibilityCheckConfig(
+    shouldValidate = false
+  ),
 ) : TestRule {
   private val logger = PaparazziLogger()
   private lateinit var renderSession: RenderSessionImpl
@@ -310,6 +320,9 @@ class Paparazzi @JvmOverloads constructor(
             }
 
             val image = bridgeRenderSession.image
+            if (accessibilityCheckConfig.shouldValidate && renderExtensions.isEmpty()) {
+              validateLayoutAccessibility(modifiedView, image)
+            }
             frameHandler.handle(scaleImage(frameImage(image)))
           }
         }
@@ -398,6 +411,36 @@ class Paparazzi @JvmOverloads constructor(
     val scale = ImageUtils.getThumbnailScale(image)
     // Only scale images down so we don't waste storage space enlarging smaller layouts.
     return if (scale < 1f) ImageUtils.scale(image, scale, scale) else image
+  }
+
+  /**
+   * Runs accessibility checks using the provided [View] and [BufferedImage] as inputs.
+   */
+  private fun validateLayoutAccessibility(view: View, image: BufferedImage? = null) {
+    LayoutValidator.updatePolicy(
+      Policy(
+        EnumSet.of(Type.ACCESSIBILITY, Type.RENDER, Type.INTERNAL_ERROR),
+        EnumSet.of(Level.ERROR, Level.WARNING)
+      )
+    )
+
+    val validationResults = LayoutValidator.validate(view, image, 1f, 1f)
+    validationResults.issues.forEach { issue ->
+      val issueViewId = validationResults.srcMap[issue.mSrcId]?.id ?: NO_ID
+      val issueViewName = if (issueViewId != NO_ID) {
+        view.resources.getResourceName(issueViewId)
+      } else {
+        "no-id"
+      }
+
+      logger.warning(
+        format = "\u001B[33mAccessibility issue of type {0} on {1}:\u001B[0m {2} \nSee: {3}",
+        issue.mCategory,
+        issueViewName,
+        issue.mMsg,
+        issue.mHelpfulUrl
+      )
+    }
   }
 
   private fun Description.toTestName(): TestName {
