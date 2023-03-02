@@ -43,6 +43,7 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinAndroidPluginWrapper
 import org.jetbrains.kotlin.gradle.plugin.KotlinMultiplatformPluginWrapper
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
 import java.util.Locale
+import kotlin.io.path.exists
 
 @Suppress("unused")
 class PaparazziPlugin : Plugin<Project> {
@@ -186,8 +187,12 @@ class PaparazziPlugin : Plugin<Project> {
         // why not a lambda?  See: https://docs.gradle.org/7.2/userguide/validation_problems.html#implementation_unknown
         test.doLast(object : Action<Task> {
           override fun execute(t: Task) {
-            val uri = reportOutputDir.get().asFile.toPath().resolve("index.html").toUri()
-            test.logger.log(LIFECYCLE, "See the Paparazzi report at: $uri")
+            val path = reportOutputDir.get().asFile.toPath().resolve("index.html")
+            if (path.exists()) {
+              test.logger.log(LIFECYCLE, "See the Paparazzi report at: ${path.toUri()}")
+            } else {
+              test.logger.log(LIFECYCLE, "Paparazzi failure report not generated.")
+            }
           }
         })
       }
