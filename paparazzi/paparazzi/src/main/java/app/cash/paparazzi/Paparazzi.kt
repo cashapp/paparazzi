@@ -35,7 +35,6 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
-import app.cash.paparazzi.agent.AgentTestRule
 import app.cash.paparazzi.agent.InterceptorRegistrar
 import app.cash.paparazzi.internal.ChoreographerDelegateInterceptor
 import app.cash.paparazzi.internal.EditModeInterceptor
@@ -66,9 +65,6 @@ import com.android.layoutlib.bridge.BridgeRenderSession
 import com.android.layoutlib.bridge.impl.RenderAction
 import com.android.layoutlib.bridge.impl.RenderSessionImpl
 import com.android.resources.ScreenRound
-import org.junit.rules.TestRule
-import org.junit.runner.Description
-import org.junit.runners.model.Statement
 import java.awt.geom.Ellipse2D
 import java.awt.image.BufferedImage
 import java.util.Date
@@ -80,25 +76,24 @@ class Paparazzi @JvmOverloads constructor(
   private val theme: String = "android:Theme.Material.NoActionBar.Fullscreen",
   private val renderingMode: RenderingMode = RenderingMode.NORMAL,
   private val appCompatEnabled: Boolean = true,
-  private val maxPercentDifference: Double = 0.1,
-  private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference),
   private val renderExtensions: Set<RenderExtension> = setOf(),
   private val supportsRtl: Boolean = false,
   private val showSystemUi: Boolean = true
-) : TestRule {
+) {
   private val logger = PaparazziLogger()
   private lateinit var renderSession: RenderSessionImpl
   private lateinit var bridgeRenderSession: RenderSession
-  private var testName: TestName? = null
 
-  val layoutInflater: LayoutInflater
-    get() = RenderAction.getCurrentContext().getSystemService("layout_inflater") as BridgeInflater
+  val layoutInflater: LayoutInflater by lazy {
+    RenderAction.getCurrentContext().getSystemService("layout_inflater") as BridgeInflater
+  }
+  val resources: Resources by lazy {
+    RenderAction.getCurrentContext().resources
+  }
 
-  val resources: Resources
-    get() = RenderAction.getCurrentContext().resources
-
-  val context: Context
-    get() = RenderAction.getCurrentContext()
+  val context: Context by lazy {
+    RenderAction.getCurrentContext()
+  }
 
   private val contentRoot = """
         |<?xml version="1.0" encoding="utf-8"?>
@@ -107,45 +102,21 @@ class Paparazzi @JvmOverloads constructor(
         |              android:layout_height="${if (renderingMode.vertAction == RenderingMode.SizeAction.SHRINK) "wrap_content" else "match_parent"}"/>
   """.trimMargin()
 
-  override fun apply(
-    base: Statement,
-    description: Description
-  ): Statement {
-    val statement = object : Statement() {
-      override fun evaluate() {
-        prepare(description)
-        try {
-          base.evaluate()
-        } finally {
-          close()
-          logger.assertNoErrors()
-        }
-      }
-    }
-
-    return if (!isInitialized) {
-      registerFontLookupInterceptionIfResourceCompatDetected()
-      registerViewEditModeInterception()
-      registerMatrixMultiplyInterception()
-      registerChoreographerDelegateInterception()
-      registerServiceManagerInterception()
-      registerIInputMethodManagerInterception()
-
-      val outerRule = AgentTestRule()
-      outerRule.apply(statement, description)
-    } else {
-      statement
-    }
+  init {
+    registerFontLookupInterceptionIfResourceCompatDetected()
+    registerViewEditModeInterception()
+    registerMatrixMultiplyInterception()
+    registerChoreographerDelegateInterception()
+    registerServiceManagerInterception()
+    registerIInputMethodManagerInterception()
   }
 
-  fun prepare(description: Description) {
+  fun prepare() {
     forcePlatformSdkVersion(environment.compileSdkVersion)
 
     val layoutlibCallback =
       PaparazziCallback(logger, environment.packageName, environment.resourcePackageNames)
     layoutlibCallback.initResources()
-
-    testName = description.toTestName()
 
     if (!isInitialized) {
       renderer = Renderer(environment, layoutlibCallback, logger)
@@ -177,44 +148,42 @@ class Paparazzi @JvmOverloads constructor(
   }
 
   fun close() {
-    testName = null
     renderSession.release()
     bridgeRenderSession.dispose()
     cleanupThread()
-    snapshotHandler.close()
 
     renderer.dumpDelegates()
   }
 
   fun <V : View> inflate(@LayoutRes layoutId: Int): V = layoutInflater.inflate(layoutId, null) as V
 
-  fun snapshot(name: String? = null, composable: @Composable () -> Unit) {
+  fun snapshot(composable: @Composable () -> Unit) : BufferedImage {
     val hostView = ComposeView(context)
     hostView.setContent(composable)
 
-    snapshot(hostView, name)
+    return snapshot(hostView)
   }
 
   @JvmOverloads
-  fun snapshot(view: View, name: String? = null, offsetMillis: Long = 0L) {
-    takeSnapshots(view, name, TimeUnit.MILLISECONDS.toNanos(offsetMillis), -1, 1)
+  fun snapshot(view: View, offsetMillis: Long = 0L) : BufferedImage {
+    // TODO: is this array access dumb? It feels like it but maybe we just want to throw if there's a failure
+    return takeSnapshots(view, TimeUnit.MILLISECONDS.toNanos(offsetMillis), -1, 1)[0]
   }
 
   @JvmOverloads
   fun gif(
     view: View,
-    name: String? = null,
     start: Long = 0L,
     end: Long = 500L,
     fps: Int = 30
-  ) {
+  ) : List<BufferedImage> {
     // Add one to the frame count so we get the last frame. Otherwise a 1 second, 60 FPS animation
     // our 60th frame will be at time 983 ms, and we want our last frame to be 1,000 ms. This gets
     // us 61 frames for a 1 second animation, 121 frames for a 2 second animation, etc.
     val durationMillis = (end - start).toInt()
     val frameCount = (durationMillis * fps) / 1000 + 1
     val startNanos = TimeUnit.MILLISECONDS.toNanos(start)
-    takeSnapshots(view, name, startNanos, fps, frameCount)
+    return takeSnapshots(view, startNanos, fps, frameCount)
   }
 
   fun unsafeUpdateConfig(
@@ -259,68 +228,66 @@ class Paparazzi @JvmOverloads constructor(
 
   private fun takeSnapshots(
     view: View,
-    name: String?,
     startNanos: Long,
     fps: Int,
     frameCount: Int
-  ) {
-    val snapshot = Snapshot(name, testName!!, Date())
+  ) : List<BufferedImage> {
+    val images = mutableListOf<BufferedImage>()
 
-    val frameHandler = snapshotHandler.newFrameHandler(snapshot, frameCount, fps)
-    frameHandler.use {
-      val viewGroup = bridgeRenderSession.rootViews[0].viewObject as ViewGroup
-      val modifiedView = renderExtensions.fold(view) { view, renderExtension ->
-        renderExtension.renderView(view)
+    val viewGroup = bridgeRenderSession.rootViews[0].viewObject as ViewGroup
+    val modifiedView = renderExtensions.fold(view) { view, renderExtension ->
+      renderExtension.renderView(view)
+    }
+
+    System_Delegate.setBootTimeNanos(0L)
+    try {
+      withTime(0L) {
+        // Initialize the choreographer at time=0.
       }
 
-      System_Delegate.setBootTimeNanos(0L)
-      try {
-        withTime(0L) {
-          // Initialize the choreographer at time=0.
+      if (hasComposeRuntime) {
+        // During onAttachedToWindow, AbstractComposeView will attempt to resolve its parent's
+        // CompositionContext, which requires first finding the "content view", then using that
+        // to find a root view with a ViewTreeLifecycleOwner
+        viewGroup.id = android.R.id.content
+      }
+
+      if (hasLifecycleOwnerRuntime) {
+        val lifecycleOwner = PaparazziLifecycleOwner()
+        ViewTreeLifecycleOwner.set(modifiedView, lifecycleOwner)
+
+        if (hasSavedStateRegistryOwnerRuntime) {
+          modifiedView.setViewTreeSavedStateRegistryOwner(PaparazziSavedStateRegistryOwner(lifecycleOwner))
         }
-
-        if (hasComposeRuntime) {
-          // During onAttachedToWindow, AbstractComposeView will attempt to resolve its parent's
-          // CompositionContext, which requires first finding the "content view", then using that
-          // to find a root view with a ViewTreeLifecycleOwner
-          viewGroup.id = android.R.id.content
+        if (hasAndroidxActivityRuntime) {
+          modifiedView.setViewTreeOnBackPressedDispatcherOwner(PaparazziOnBackPressedDispatcherOwner(lifecycleOwner))
         }
+        // Must be changed after the SavedStateRegistryOwner above has finished restoring its state.
+        lifecycleOwner.registry.currentState = Lifecycle.State.CREATED
+      }
 
-        if (hasLifecycleOwnerRuntime) {
-          val lifecycleOwner = PaparazziLifecycleOwner()
-          ViewTreeLifecycleOwner.set(modifiedView, lifecycleOwner)
-
-          if (hasSavedStateRegistryOwnerRuntime) {
-            modifiedView.setViewTreeSavedStateRegistryOwner(PaparazziSavedStateRegistryOwner(lifecycleOwner))
+      viewGroup.addView(modifiedView)
+      for (frame in 0 until frameCount) {
+        val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
+        withTime(nowNanos) {
+          val result = renderSession.render(true)
+          if (result.status == ERROR_UNKNOWN) {
+            throw result.exception
           }
-          if (hasAndroidxActivityRuntime) {
-            modifiedView.setViewTreeOnBackPressedDispatcherOwner(PaparazziOnBackPressedDispatcherOwner(lifecycleOwner))
-          }
-          // Must be changed after the SavedStateRegistryOwner above has finished restoring its state.
-          lifecycleOwner.registry.currentState = Lifecycle.State.CREATED
-        }
 
-        viewGroup.addView(modifiedView)
-        for (frame in 0 until frameCount) {
-          val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
-          withTime(nowNanos) {
-            val result = renderSession.render(true)
-            if (result.status == ERROR_UNKNOWN) {
-              throw result.exception
-            }
-
-            val image = bridgeRenderSession.image
-            frameHandler.handle(scaleImage(frameImage(image)))
-          }
+          val image = bridgeRenderSession.image
+          images.add(scaleImage(frameImage(image)))
         }
-      } finally {
-        viewGroup.removeView(modifiedView)
-        AnimationHandler.sAnimatorHandler.set(null)
-        if (hasComposeRuntime) {
-          forceReleaseComposeReferenceLeaks()
-        }
+      }
+    } finally {
+      viewGroup.removeView(modifiedView)
+      AnimationHandler.sAnimatorHandler.set(null)
+      if (hasComposeRuntime) {
+        forceReleaseComposeReferenceLeaks()
       }
     }
+
+    return images
   }
 
   private fun withTime(
@@ -398,13 +365,6 @@ class Paparazzi @JvmOverloads constructor(
     val scale = ImageUtils.getThumbnailScale(image)
     // Only scale images down so we don't waste storage space enlarging smaller layouts.
     return if (scale < 1f) ImageUtils.scale(image, scale, scale) else image
-  }
-
-  private fun Description.toTestName(): TestName {
-    val fullQualifiedName = className
-    val packageName = fullQualifiedName.substringBeforeLast('.', missingDelimiterValue = "")
-    val className = fullQualifiedName.substringAfterLast('.')
-    return TestName(packageName, className, methodName)
   }
 
   private fun forcePlatformSdkVersion(compileSdkVersion: Int) {
@@ -612,12 +572,5 @@ class Paparazzi @JvmOverloads constructor(
         false
       }
     }
-
-    private fun determineHandler(maxPercentDifference: Double): SnapshotHandler =
-      if (isVerifying) {
-        SnapshotVerifier(maxPercentDifference)
-      } else {
-        HtmlReportWriter()
-      }
   }
 }

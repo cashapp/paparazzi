@@ -29,14 +29,25 @@ import android.widget.Button
 import android.widget.TextView
 import com.android.internal.lang.System_Delegate
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.After
+import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import java.util.concurrent.TimeUnit
 
 class PaparazziTest {
-  @get:Rule
-  val paparazzi = Paparazzi()
+  private val paparazzi = Paparazzi()
+
+  @Before
+  fun setup() {
+    paparazzi.prepare()
+  }
+
+  @After
+  fun tearDown() {
+    paparazzi.close()
+  }
 
   @Test
   fun drawCalls() {
@@ -48,9 +59,10 @@ class PaparazziTest {
       }
     }
 
-    paparazzi.snapshot(view)
+    val image = paparazzi.snapshot(view)
 
     assertThat(log).containsExactly("onDraw time=0")
+    assertThat(image).isNotNull
   }
 
   @Test
@@ -59,9 +71,10 @@ class PaparazziTest {
 
     // Why Button?  Because it sets a StateListAnimator on window attach
     // See https://github.com/cashapp/paparazzi/pull/319
-    paparazzi.snapshot(Button(paparazzi.context))
+    val image = paparazzi.snapshot(Button(paparazzi.context))
 
     assertThat(AnimationHandler.sAnimatorHandler.get()).isNull()
+    assertThat(image).isNotNull
   }
 
   @Test
@@ -97,7 +110,7 @@ class PaparazziTest {
     animator.interpolator = LinearInterpolator()
     animator.start()
 
-    paparazzi.gif(view, start = 1_000L, end = 4_000L, fps = 4)
+    val images = paparazzi.gif(view, start = 1_000L, end = 4_000L, fps = 4)
 
     assertThat(log).containsExactly(
       "onDraw time=1000 animationElapsed=0.0",
@@ -114,6 +127,7 @@ class PaparazziTest {
       "onAnimationEnd time=3000 animationElapsed=1.0",
       "onDraw time=3000 animationElapsed=1.0"
     )
+    assertThat(images.size).isEqualTo(12)
   }
 
   @Test
