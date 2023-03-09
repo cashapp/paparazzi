@@ -74,7 +74,7 @@ internal class PaparazziCallback(
             } else if (type.isArray && type.componentType == Int::class.javaPrimitiveType) {
               // Ignore.
             } else {
-              logger.error(null, "Unknown field type in R class: $type")
+              logger.error(null, "Unknown field type ($type) in R class: $field")
             }
           } catch (e: IllegalAccessException) {
             logger.error(e, "Malformed R class: %1\$s", "$rPackageName.R")
