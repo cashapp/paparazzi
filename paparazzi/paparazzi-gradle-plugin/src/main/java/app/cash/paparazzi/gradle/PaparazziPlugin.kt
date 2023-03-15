@@ -59,8 +59,8 @@ class PaparazziPlugin : Plugin<Project> {
       }
     }
 
+    val extension = project.extensions.create("paparazzi", PaparazziPluginExtension::class.java)
     project.plugins.withId("com.android.library") {
-      val extension = project.extensions.create("paparazzi", PaparazziPluginExtension::class.java)
       setupPaparazzi(project, extension)
     }
   }
