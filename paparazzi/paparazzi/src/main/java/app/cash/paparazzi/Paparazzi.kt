@@ -652,10 +652,10 @@ class Paparazzi @JvmOverloads constructor(
     }
 
     private fun determineHandler(maxPercentDifference: Double, snapshotDirectory: String): SnapshotHandler =
-        if (isVerifying) {
-          SnapshotVerifier(maxPercentDifference, File(snapshotDirectory))
-        } else {
-          HtmlReportWriter(snapshotRootDirectory = File(snapshotDirectory))
-        }
+      if (isVerifying) {
+        SnapshotVerifier(maxPercentDifference, File(snapshotDirectory))
+      } else {
+        HtmlReportWriter(snapshotRootDirectory = File(snapshotDirectory))
+      }
   }
 }
