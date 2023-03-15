@@ -42,7 +42,6 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinAndroidPluginWrapper
 import org.jetbrains.kotlin.gradle.plugin.KotlinMultiplatformPluginWrapper
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
-import java.io.File
 import java.util.Locale
 
 @Suppress("unused")
@@ -85,11 +84,6 @@ class PaparazziPlugin : Plugin<Project> {
       val mergeAssetsOutputDir = mergeAssetsProvider.flatMap { it.outputDir }
       val reportOutputDir = project.layout.buildDirectory.dir("reports/paparazzi")
 
-      val snapshotOutputDir: File =
-        extension.snapshotRootDirectory.orNull?.asFile
-          ?: project.layout.projectDirectory.dir("src/test/snapshots").asFile
-      snapshotOutputDir.mkdirs()
-
       val packageAwareArtifacts = project.configurations
         .getByName("${variant.name}RuntimeClasspath")
         .incoming
@@ -114,7 +108,7 @@ class PaparazziPlugin : Plugin<Project> {
         task.compileSdkVersion.set(android.compileSdkVersion())
         task.mergeAssetsOutput.set(mergeAssetsOutputDir)
         task.paparazziResources.set(project.layout.buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.txt"))
-        task.snapshotDirectory.set(snapshotOutputDir)
+        task.snapshotDirectory.set(extension.snapshotDirectory.map { it.asFile.path })
       }
 
       val testVariantSlug = variant.unitTestVariant.name.capitalize(Locale.US)
@@ -169,7 +163,7 @@ class PaparazziPlugin : Plugin<Project> {
           .withPathSensitivity(PathSensitivity.NONE)
 
         test.outputs.dir(reportOutputDir)
-        test.outputs.dir(snapshotOutputDir)
+        test.outputs.dir(extension.snapshotDirectory)
 
         val paparazziProperties = project.properties.filterKeys { it.startsWith("app.cash.paparazzi") }
 
