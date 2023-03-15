@@ -42,6 +42,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinAndroidPluginWrapper
 import org.jetbrains.kotlin.gradle.plugin.KotlinMultiplatformPluginWrapper
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
+import java.io.File
 import java.util.Locale
 
 @Suppress("unused")
@@ -84,8 +85,8 @@ class PaparazziPlugin : Plugin<Project> {
       val mergeAssetsOutputDir = mergeAssetsProvider.flatMap { it.outputDir }
       val reportOutputDir = project.layout.buildDirectory.dir("reports/paparazzi")
 
-      val snapshotOutputDir =
-        extension.snapshotRootDirectory.orNull
+      val snapshotOutputDir: File =
+        extension.snapshotRootDirectory.orNull?.asFile
           ?: project.layout.projectDirectory.dir("src/test/snapshots").asFile
       snapshotOutputDir.mkdirs()
 

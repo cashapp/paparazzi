@@ -1,8 +1,8 @@
 package app.cash.paparazzi.gradle
 
-import org.gradle.api.provider.Property
-import java.io.File
+import org.gradle.api.file.DirectoryProperty
 
 interface PaparazziPluginExtension {
-  val snapshotRootDirectory: Property<File?>
+
+  val snapshotRootDirectory: DirectoryProperty
 }
