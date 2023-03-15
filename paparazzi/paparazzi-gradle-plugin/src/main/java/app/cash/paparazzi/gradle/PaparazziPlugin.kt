@@ -60,6 +60,7 @@ class PaparazziPlugin : Plugin<Project> {
     }
 
     val extension = project.extensions.create("paparazzi", PaparazziPluginExtension::class.java)
+    extension.snapshotDirectory.convention(project.layout.projectDirectory.dir("src/test/snapshots"))
     project.plugins.withId("com.android.library") {
       setupPaparazzi(project, extension)
     }
