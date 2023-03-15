@@ -109,9 +109,10 @@ class PaparazziPlugin : Plugin<Project> {
         task.compileSdkVersion.set(android.compileSdkVersion())
         task.mergeAssetsOutput.set(mergeAssetsOutputDir)
         task.paparazziResources.set(project.layout.buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.txt"))
-        val snapshotDir = extension.snapshotDirectory.map {
-          it.asFile.relativeTo(project.projectDir).path
-        }
+        val snapshotDir =
+          project.provider {
+            extension.snapshotDirectory.get().asFile.relativeTo(project.projectDir).path
+          }
         task.snapshotDirectory.set(snapshotDir)
       }
 
