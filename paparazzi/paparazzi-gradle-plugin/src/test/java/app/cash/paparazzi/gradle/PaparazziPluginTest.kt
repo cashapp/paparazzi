@@ -218,6 +218,24 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun extension() {
+    val fixtureRoot = File("src/test/projects/extension")
+
+    val result = gradleRunner
+      .withArguments("recordPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":testDebugUnitTest")).isNotNull()
+
+    val snapshotsDir = File(fixtureRoot, "src/test/custom")
+
+    val snapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_PaparazziExtensionTest_custom.png")
+    assertThat(snapshot.exists()).isTrue()
+
+    snapshotsDir.deleteRecursively()
+  }
+
+  @Test
   fun record() {
     val fixtureRoot = File("src/test/projects/record-mode")
 
