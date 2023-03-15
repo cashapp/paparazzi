@@ -109,7 +109,10 @@ class PaparazziPlugin : Plugin<Project> {
         task.compileSdkVersion.set(android.compileSdkVersion())
         task.mergeAssetsOutput.set(mergeAssetsOutputDir)
         task.paparazziResources.set(project.layout.buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.txt"))
-        task.snapshotDirectory.set(extension.snapshotDirectory.map { it.asFile.path })
+        val snapshotDir = extension.snapshotDirectory.map {
+          it.asFile.relativeTo(project.projectDir).path
+        }
+        task.snapshotDirectory.set(snapshotDir)
       }
 
       val testVariantSlug = variant.unitTestVariant.name.capitalize(Locale.US)
