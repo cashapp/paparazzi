@@ -21,7 +21,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3.3.0
+        uses: actions/checkout@v3.4.0
 
       - name: Validate Gradle Wrapper
         uses: gradle/wrapper-validation-action@v1.0.5
@@ -59,7 +59,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3.3.0
+        uses: actions/checkout@v3.4.0
 
       - name: Configure JDK
         uses: actions/setup-java@v3
