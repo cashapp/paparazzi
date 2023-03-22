@@ -297,7 +297,7 @@ class Paparazzi @JvmOverloads constructor(
             modifiedView.setViewTreeOnBackPressedDispatcherOwner(PaparazziOnBackPressedDispatcherOwner(lifecycleOwner))
           }
           // Must be changed after the SavedStateRegistryOwner above has finished restoring its state.
-          lifecycleOwner.registry.currentState = Lifecycle.State.CREATED
+          lifecycleOwner.registry.currentState = Lifecycle.State.RESUMED
         }
 
         viewGroup.addView(modifiedView)

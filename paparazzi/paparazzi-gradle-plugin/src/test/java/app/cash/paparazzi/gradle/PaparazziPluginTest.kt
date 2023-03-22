@@ -987,6 +987,15 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun composeRecomposition() {
+    val fixtureRoot = File("src/test/projects/compose-recomposition")
+
+    gradleRunner
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+  }
+
+  @Test
   fun composeViewTreeLifecycle() {
     val fixtureRoot = File("src/test/projects/compose-lifecycle-owner")
     gradleRunner
