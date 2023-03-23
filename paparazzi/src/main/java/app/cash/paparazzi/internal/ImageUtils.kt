@@ -22,6 +22,7 @@ import org.junit.Assert.fail
 import java.awt.AlphaComposite
 import java.awt.Color
 import java.awt.Graphics2D
+import java.awt.Rectangle
 import java.awt.RenderingHints.KEY_ANTIALIASING
 import java.awt.RenderingHints.KEY_INTERPOLATION
 import java.awt.RenderingHints.KEY_RENDERING
@@ -51,7 +52,7 @@ internal object ImageUtils {
   private const val THUMBNAIL_SIZE = 1000
 
   /** Directory where to write the thumbnails and deltas. */
-  private val failureDir: File
+  internal val failureDir: File
     get() {
       val buildDirString = System.getProperty("paparazzi.build.dir")
       val failureDir = File(buildDirString, "paparazzi/failures")
@@ -101,6 +102,41 @@ internal object ImageUtils {
     image: BufferedImage,
     maxPercentDifferent: Double
   ) {
+    val (deltaImage, percentDifference) = compareImages(goldenImage, image)
+
+    var error: String? = null
+    val imageName = getName(relativePath)
+    if (percentDifference > maxPercentDifferent) {
+      error = String.format("Images differ (by %.1f%%)", percentDifference)
+    } else if (Math.abs(goldenImage.width - image.width) >= 2) {
+      error = "Widths differ too much for " + imageName + ": " +
+        goldenImage.width + "x" + goldenImage.height +
+        "vs" + image.width + "x" + image.height
+    } else if (Math.abs(goldenImage.height - image.height) >= 2) {
+      error = "Heights differ too much for " + imageName + ": " +
+        goldenImage.width + "x" + goldenImage.height +
+        "vs" + image.width + "x" + image.height
+    }
+
+    if (error != null) {
+      val output = File(failureDir, "delta-$imageName")
+      if (output.exists()) {
+        val deleted = output.delete()
+        assertTrue(deleted)
+      }
+      ImageIO.write(deltaImage, "PNG", output)
+      error += " - see details in file://" + output.path + "\n"
+      error = saveImageAndAppendMessage(image, error, relativePath)
+      println(error)
+      fail(error)
+    }
+  }
+
+  @Throws(IOException::class)
+  fun compareImages(
+    goldenImage: BufferedImage,
+    image: BufferedImage
+  ): Pair<BufferedImage, Float> {
     var goldenImage = goldenImage
     if (goldenImage.type != TYPE_INT_ARGB) {
       val temp = BufferedImage(
@@ -165,50 +201,25 @@ internal object ImageUtils {
       }
     }
 
+    // Expected on the left
+    // Golden on the right
+    g.drawImage(goldenImage, 0, 0, null)
+    g.drawImage(image, 2 * imageWidth, 0, null)
+
+    // Labels
+    if (imageWidth > 80) {
+      g.color = Color.RED
+      g.drawString("Expected", 10, 20)
+      g.drawString("Actual", 2 * imageWidth + 10, 20)
+    }
+
+    g.dispose()
+
     // 3 different colors, 256 color levels
     val total = imageHeight.toLong() * imageWidth.toLong() * 3L * 256L
     val percentDifference = (delta * 100 / total.toDouble()).toFloat()
 
-    var error: String? = null
-    val imageName = getName(relativePath)
-    if (percentDifference > maxPercentDifferent) {
-      error = String.format("Images differ (by %.1f%%)", percentDifference)
-    } else if (Math.abs(goldenImage.width - image.width) >= 2) {
-      error = "Widths differ too much for " + imageName + ": " +
-        goldenImage.width + "x" + goldenImage.height +
-        "vs" + image.width + "x" + image.height
-    } else if (Math.abs(goldenImage.height - image.height) >= 2) {
-      error = "Heights differ too much for " + imageName + ": " +
-        goldenImage.width + "x" + goldenImage.height +
-        "vs" + image.width + "x" + image.height
-    }
-
-    if (error != null) {
-      // Expected on the left
-      // Golden on the right
-      g.drawImage(goldenImage, 0, 0, null)
-      g.drawImage(image, 2 * imageWidth, 0, null)
-
-      // Labels
-      if (imageWidth > 80) {
-        g.color = Color.RED
-        g.drawString("Expected", 10, 20)
-        g.drawString("Actual", 2 * imageWidth + 10, 20)
-      }
-
-      val output = File(failureDir, "delta-$imageName")
-      if (output.exists()) {
-        val deleted = output.delete()
-        assertTrue(deleted)
-      }
-      ImageIO.write(deltaImage, "PNG", output)
-      error += " - see details in file://" + output.path + "\n"
-      error = saveImageAndAppendMessage(image, error, relativePath)
-      println(error)
-      fail(error)
-    }
-
-    g.dispose()
+    return deltaImage to percentDifference
   }
 
   /**
@@ -309,6 +320,50 @@ internal object ImageUtils {
         iterations--
       }
       return scaled
+    }
+  }
+
+  fun smallestDiffRect(firstImage: BufferedImage, secondImage: BufferedImage): Rectangle? {
+    var rect: Rectangle? = null
+    val width = max(firstImage.width, secondImage.width)
+    val height = max(firstImage.height, secondImage.height)
+
+    for (y in 0 until height) {
+      for (x in 0 until width) {
+        val firstRgb = if (x < firstImage.width && y < firstImage.height) firstImage.getRGB(x, y) else 0
+        val secondRgb = if (x < secondImage.width && y < secondImage.height) secondImage.getRGB(x, y) else 0
+        if (firstRgb != secondRgb) {
+          rect = if (rect == null) {
+            Rectangle(x, y, 1, 1)
+          } else {
+            rect.union(Rectangle(x, y, 1, 1))
+          }
+        }
+      }
+    }
+
+    return rect
+  }
+
+  fun resize(
+    firstImage: BufferedImage,
+    secondImage: BufferedImage
+  ): Pair<BufferedImage, BufferedImage> {
+    val width = Integer.max(firstImage.width, secondImage.width)
+    val height = Integer.max(firstImage.height, secondImage.height)
+
+    return firstImage.resize(width, height) to secondImage.resize(width, height)
+  }
+
+  fun BufferedImage.resize(targetWidth: Int, targetHeight: Int): BufferedImage {
+    if (width == targetWidth && height == targetHeight) {
+      return this
+    }
+
+    return BufferedImage(targetWidth, targetHeight, type).apply {
+      val g = graphics
+      g.drawImage(this@resize, 0, 0, null)
+      g.dispose()
     }
   }
 

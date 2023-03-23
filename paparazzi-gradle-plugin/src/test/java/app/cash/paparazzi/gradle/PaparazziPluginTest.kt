@@ -10,7 +10,6 @@ import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
 import java.io.File
-import java.nio.file.Files
 
 class PaparazziPluginTest {
   private lateinit var gradleRunner: GradleRunner
@@ -932,6 +931,18 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun verifyGif() {
+    val fixtureRoot = File("src/test/projects/verify-gif")
+
+    val result = gradleRunner
+      .withArguments("verifyPaparazzi", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
+    assertThat(result.task(":testDebugUnitTest")).isNotNull()
+  }
+
+  @Test
   fun verifyVectorDrawables() {
     val fixtureRoot = File("src/test/projects/verify-svgs")
 
@@ -974,14 +985,11 @@ class PaparazziPluginTest {
       .runFixture(fixtureRoot) { build() }
 
     val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/debug/images")
-    val snapshotFile = File(snapshotsDir, "9d3c31a9c79a363c26dc352b59e9e77083c300a7.png")
+    val snapshotFile = File(snapshotsDir, "a2095a4d9f78335277b48a4bda336c1437d44295.png")
     assertThat(snapshotFile.exists()).isTrue()
 
     val goldenImage = File(fixtureRoot, "src/test/resources/arrow_missing.png")
-    val actualFileBytes = Files.readAllBytes(snapshotFile.toPath())
-    val expectedFileBytes = Files.readAllBytes(goldenImage.toPath())
-
-    assertThat(actualFileBytes).isEqualTo(expectedFileBytes)
+    assertThat(goldenImage).isSimilarTo(snapshotFile).withDefaultThreshold()
   }
 
   @Test

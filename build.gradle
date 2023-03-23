@@ -92,6 +92,7 @@ subprojects {
   spotless {
     kotlin {
       target("src/**/*.kt")
+      targetExclude("src/main/java/app/cash/paparazzi/internal/apng/PngConsts.kt")
       // ktlint doesn't honour .editorconfig yet: https://github.com/diffplug/spotless/issues/142
       ktlint(libs.versions.ktlint.get()).editorConfigOverride([
         'insert_final_newline': 'true',
