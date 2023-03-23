@@ -1119,6 +1119,17 @@ class PaparazziPluginTest {
       .runFixture(fixtureRoot) { build() }
   }
 
+  @Test
+  fun verifyCoroutineDelay() {
+    val fixtureRoot = File("src/test/projects/coroutine-delay-main")
+
+    val result = gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":testDebugUnitTest")).isNotNull()
+  }
+
   private fun GradleRunner.runFixture(
     projectRoot: File,
     action: GradleRunner.() -> BuildResult

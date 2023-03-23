@@ -173,6 +173,7 @@ class PaparazziPlugin : Plugin<Project> {
               nativePlatformFileCollection.singleFile.absolutePath
             test.systemProperties["paparazzi.test.record"] = isRecordRun.get()
             test.systemProperties["paparazzi.test.verify"] = isVerifyRun.get()
+            test.systemProperties["kotlinx.coroutines.main.delay"] = true
             test.systemProperties.putAll(paparazziProperties)
           }
         })
