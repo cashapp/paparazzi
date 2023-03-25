@@ -28,10 +28,13 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
 import org.gradle.api.attributes.Attribute
+import org.gradle.api.file.Directory
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.artifacts.transform.UnzipTransform
 import org.gradle.api.logging.LogLevel.LIFECYCLE
 import org.gradle.api.plugins.JavaBasePlugin
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.options.Option
@@ -43,6 +46,7 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinAndroidPluginWrapper
 import org.jetbrains.kotlin.gradle.plugin.KotlinMultiplatformPluginWrapper
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
 import java.util.Locale
+import kotlin.io.path.invariantSeparatorsPathString
 
 @Suppress("unused")
 class PaparazziPlugin : Plugin<Project> {
@@ -80,7 +84,8 @@ class PaparazziPlugin : Plugin<Project> {
       val mergeAssetsProvider =
         project.tasks.named("merge${variantSlug}Assets") as TaskProvider<MergeSourceSetFolders>
       val mergeAssetsOutputDir = mergeAssetsProvider.flatMap { it.outputDir }
-      val reportOutputDir = project.layout.buildDirectory.dir("reports/paparazzi")
+      val buildDirectory = project.layout.buildDirectory
+      val reportOutputDir = buildDirectory.dir("reports/paparazzi")
       val snapshotOutputDir = project.layout.projectDirectory.dir("src/test/snapshots")
 
       val packageAwareArtifacts = project.configurations
@@ -102,11 +107,11 @@ class PaparazziPlugin : Plugin<Project> {
         task.packageName.set(android.packageName())
         task.artifactFiles.from(packageAwareArtifacts.artifactFiles)
         task.nonTransitiveRClassEnabled.set(nonTransitiveRClassEnabled)
-        task.mergeResourcesOutput.set(mergeResourcesOutputDir)
+        task.mergeResourcesOutputDir.set(buildDirectory.asRelativePathString(mergeResourcesOutputDir))
         task.targetSdkVersion.set(android.targetSdkVersion())
         task.compileSdkVersion.set(android.compileSdkVersion())
-        task.mergeAssetsOutput.set(mergeAssetsOutputDir)
-        task.paparazziResources.set(project.layout.buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.txt"))
+        task.mergeAssetsOutputDir.set(buildDirectory.asRelativePathString(mergeAssetsOutputDir))
+        task.paparazziResources.set(buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.txt"))
       }
 
       val testVariantSlug = testVariant.name.capitalize(Locale.US)
@@ -152,7 +157,7 @@ class PaparazziPlugin : Plugin<Project> {
         test.systemProperties["paparazzi.test.resources"] =
           writeResourcesTask.flatMap { it.paparazziResources.asFile }.get().path
         test.systemProperties["paparazzi.build.dir"] =
-          project.layout.buildDirectory.get().toString()
+          buildDirectory.get().toString()
 
         test.inputs.dir(mergeResourcesOutputDir)
         test.inputs.dir(mergeAssetsOutputDir)
@@ -263,6 +268,13 @@ class PaparazziPlugin : Plugin<Project> {
       ?: DEFAULT_COMPILE_SDK_VERSION.toString()
   }
 }
+
+private fun Directory.relativize(child: Directory): String {
+  return asFile.toPath().relativize(child.asFile.toPath()).invariantSeparatorsPathString
+}
+
+private fun DirectoryProperty.asRelativePathString(child: Provider<Directory>): Provider<String> =
+  flatMap { root -> child.map { root.relativize(it) } }
 
 // TODO: Migrate to ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE when Gradle 7.3 is
 //  acceptable as the minimum supported version
