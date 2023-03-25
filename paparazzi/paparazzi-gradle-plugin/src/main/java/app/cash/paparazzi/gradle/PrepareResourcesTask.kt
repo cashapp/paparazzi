@@ -29,12 +29,11 @@ import org.gradle.api.tasks.TaskAction
 
 @CacheableTask
 abstract class PrepareResourcesTask : DefaultTask() {
-
   @get:Input
   abstract val packageName: Property<String>
 
   @get:Input
-  abstract val mergeResourcesOutput: Property<String>
+  abstract val mergeResourcesOutputDir: Property<String>
 
   @get:Input
   abstract val targetSdkVersion: Property<String>
@@ -43,7 +42,7 @@ abstract class PrepareResourcesTask : DefaultTask() {
   abstract val compileSdkVersion: Property<String>
 
   @get:Input
-  abstract val mergeAssetsOutput: Property<String>
+  abstract val mergeAssetsOutputDir: Property<String>
 
   @get:Input
   abstract val nonTransitiveRClassEnabled: Property<Boolean>
@@ -78,14 +77,14 @@ abstract class PrepareResourcesTask : DefaultTask() {
       .use {
         it.write(mainPackage)
         it.newLine()
-        it.write(mergeResourcesOutput.get())
+        it.write(mergeResourcesOutputDir.get())
         it.newLine()
         it.write(targetSdkVersion.get())
         it.newLine()
         // Use compileSdkVersion for system framework resources.
         it.write("platforms/android-${compileSdkVersion.get()}/")
         it.newLine()
-        it.write(mergeAssetsOutput.get())
+        it.write(mergeAssetsOutputDir.get())
         it.newLine()
         it.write(resourcePackageNames)
         it.newLine()
