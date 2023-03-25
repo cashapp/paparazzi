@@ -71,6 +71,7 @@ import org.junit.runner.Description
 import org.junit.runners.model.Statement
 import java.awt.geom.Ellipse2D
 import java.awt.image.BufferedImage
+import java.io.File
 import java.util.Date
 import java.util.concurrent.TimeUnit
 
@@ -81,7 +82,7 @@ class Paparazzi @JvmOverloads constructor(
   private val renderingMode: RenderingMode = RenderingMode.NORMAL,
   private val appCompatEnabled: Boolean = true,
   private val maxPercentDifference: Double = 0.1,
-  private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference),
+  private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference, environment.snapshotDirectory),
   private val renderExtensions: Set<RenderExtension> = setOf(),
   private val supportsRtl: Boolean = false,
   private val showSystemUi: Boolean = true
@@ -613,11 +614,11 @@ class Paparazzi @JvmOverloads constructor(
       }
     }
 
-    private fun determineHandler(maxPercentDifference: Double): SnapshotHandler =
+    private fun determineHandler(maxPercentDifference: Double, snapshotDirectory: String?): SnapshotHandler =
       if (isVerifying) {
-        SnapshotVerifier(maxPercentDifference)
+        SnapshotVerifier(maxPercentDifference, File(snapshotDirectory))
       } else {
-        HtmlReportWriter()
+        HtmlReportWriter(snapshotRootDirectory = File(snapshotDirectory))
       }
   }
 }

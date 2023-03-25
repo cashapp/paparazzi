@@ -59,10 +59,14 @@ class PaparazziPlugin : Plugin<Project> {
       }
     }
 
-    project.plugins.withId("com.android.library") { setupPaparazzi(project) }
+    val extension = project.extensions.create("paparazzi", PaparazziPluginExtension::class.java)
+    extension.snapshotDirectory.convention(project.layout.projectDirectory.dir("src/test/snapshots"))
+    project.plugins.withId("com.android.library") {
+      setupPaparazzi(project, extension)
+    }
   }
 
-  private fun setupPaparazzi(project: Project) {
+  private fun setupPaparazzi(project: Project, extension: PaparazziPluginExtension) {
     project.addTestDependency()
     val nativePlatformFileCollection = project.setupNativePlatformDependency()
 
@@ -81,7 +85,6 @@ class PaparazziPlugin : Plugin<Project> {
         project.tasks.named("merge${variantSlug}Assets") as TaskProvider<MergeSourceSetFolders>
       val mergeAssetsOutputDir = mergeAssetsProvider.flatMap { it.outputDir }
       val reportOutputDir = project.layout.buildDirectory.dir("reports/paparazzi")
-      val snapshotOutputDir = project.layout.projectDirectory.dir("src/test/snapshots")
 
       val packageAwareArtifacts = project.configurations
         .getByName("${variant.name}RuntimeClasspath")
@@ -107,6 +110,11 @@ class PaparazziPlugin : Plugin<Project> {
         task.compileSdkVersion.set(android.compileSdkVersion())
         task.mergeAssetsOutput.set(mergeAssetsOutputDir)
         task.paparazziResources.set(project.layout.buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.txt"))
+        val snapshotDir =
+          project.provider {
+            extension.snapshotDirectory.get().asFile.relativeTo(project.projectDir).path
+          }
+        task.snapshotDirectory.set(snapshotDir)
       }
 
       val testVariantSlug = testVariant.name.capitalize(Locale.US)
@@ -161,7 +169,7 @@ class PaparazziPlugin : Plugin<Project> {
           .withPathSensitivity(PathSensitivity.NONE)
 
         test.outputs.dir(reportOutputDir)
-        test.outputs.dir(snapshotOutputDir)
+        test.outputs.dir(extension.snapshotDirectory)
 
         val paparazziProperties = project.properties.filterKeys { it.startsWith("app.cash.paparazzi") }
 

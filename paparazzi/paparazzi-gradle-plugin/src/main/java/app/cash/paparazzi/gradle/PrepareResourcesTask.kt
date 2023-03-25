@@ -50,6 +50,9 @@ abstract class PrepareResourcesTask : DefaultTask() {
   abstract val mergeAssetsOutput: DirectoryProperty
 
   @get:Input
+  abstract val snapshotDirectory: Property<String>
+
+  @get:Input
   abstract val nonTransitiveRClassEnabled: Property<Boolean>
 
   @get:InputFiles
@@ -95,6 +98,8 @@ abstract class PrepareResourcesTask : DefaultTask() {
         it.write(projectDirectory.relativize(mergeAssetsOutput.get()))
         it.newLine()
         it.write(resourcePackageNames)
+        it.newLine()
+        it.write(snapshotDirectory.get())
         it.newLine()
       }
   }
