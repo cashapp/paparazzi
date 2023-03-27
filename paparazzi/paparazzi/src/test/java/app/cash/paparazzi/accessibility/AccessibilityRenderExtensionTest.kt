@@ -24,6 +24,7 @@ import javax.imageio.ImageIO
 
 class AccessibilityRenderExtensionTest {
   private val snapshotHandler = TestSnapshotVerifier()
+  private val accessibilityRenderExtension = AccessibilityRenderExtension()
 
   @get:Rule
   val paparazzi = Paparazzi(
@@ -33,7 +34,7 @@ class AccessibilityRenderExtensionTest {
       softButtons = false
     ),
     snapshotHandler = snapshotHandler,
-    renderExtensions = setOf(AccessibilityRenderExtension())
+    renderExtensions = setOf(accessibilityRenderExtension)
   )
 
   @Test

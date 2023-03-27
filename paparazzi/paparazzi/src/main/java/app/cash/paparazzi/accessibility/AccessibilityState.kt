@@ -50,6 +50,8 @@ data class AccessibilityState(
     val customActions: List<CustomAction>? = null,
     val progress: Progress? = null
   ) {
+    val color by lazy { RenderSettings.getColor(id) }
+
     fun renderString() =
       text?.joinToString(", ") ?: contentDescription?.joinToString(", ") ?: stateDescription ?: onClickLabel ?: role
   }

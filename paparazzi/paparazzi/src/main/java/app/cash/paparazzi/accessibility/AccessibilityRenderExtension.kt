@@ -15,20 +15,13 @@
  */
 package app.cash.paparazzi.accessibility
 
-import android.content.Context
-import android.graphics.drawable.GradientDrawable
-import android.util.TypedValue
+import AccessibilityRowView
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.LinearLayout
-import android.widget.TextView
 import app.cash.paparazzi.RenderExtension
 import app.cash.paparazzi.accessibility.RenderSettings.DEFAULT_DESCRIPTION_BACKGROUND_COLOR
-import app.cash.paparazzi.accessibility.RenderSettings.DEFAULT_RECT_SIZE
-import app.cash.paparazzi.accessibility.RenderSettings.DEFAULT_TEXT_COLOR
-import app.cash.paparazzi.accessibility.RenderSettings.DEFAULT_TEXT_SIZE
-import app.cash.paparazzi.accessibility.RenderSettings.getColor
 import app.cash.paparazzi.accessibility.RenderSettings.toColorInt
 
 class AccessibilityRenderExtension : RenderExtension {
@@ -72,12 +65,15 @@ class AccessibilityRenderExtension : RenderExtension {
         )
       )
 
+      val accessibilityRowViews = mutableListOf<AccessibilityRowView>()
       val accessibilityLegend = LinearLayout(context).apply {
         orientation = LinearLayout.VERTICAL
         setBackgroundColor(DEFAULT_DESCRIPTION_BACKGROUND_COLOR.toColorInt())
 
-        accessibilityState.elements.forEach {
-          addView(buildAccessibilityRow(context, it))
+        accessibilityState.elements.forEach { _ ->
+          accessibilityRowViews += AccessibilityRowView(context).also { rowView ->
+            addView(rowView)
+          }
         }
       }
       addView(
@@ -96,70 +92,22 @@ class AccessibilityRenderExtension : RenderExtension {
         overlay.addElements(
           accessibilityState.elements.map {
             AccessibilityOverlayView.AccessibilityElement(
-              color = getColor(it.id),
+              color = it.color,
               bounds = it.displayBounds
             )
           }
         )
+
+        require(accessibilityState.elements.size == accessibilityRowViews.size) {
+          "Accessibility state has changed since accessibility state was captured in measureView() - " +
+            "expected ${accessibilityState.elements.size} elements, but found ${accessibilityRowViews.size} elements."
+        }
+        accessibilityState.elements.forEachIndexed { index, element ->
+          accessibilityRowViews[index].updateForElement(element)
+        }
+
         true
       }
     }
   }
-
-  private fun buildAccessibilityRow(
-    context: Context,
-    element: AccessibilityState.Element
-  ): View {
-    val color = getColor(element.id).toColorInt()
-    val margin = context.dip(8)
-    val innerMargin = context.dip(4)
-
-    return LinearLayout(context).apply {
-      orientation = LinearLayout.HORIZONTAL
-      layoutParams = ViewGroup.LayoutParams(
-        ViewGroup.LayoutParams.MATCH_PARENT,
-        ViewGroup.LayoutParams.WRAP_CONTENT
-      )
-      setPaddingRelative(margin, innerMargin, margin, innerMargin)
-
-      addView(
-        View(context).apply {
-          layoutParams = ViewGroup.LayoutParams(
-            context.dip(DEFAULT_RECT_SIZE),
-            context.dip(
-              DEFAULT_RECT_SIZE
-            )
-          )
-          background = GradientDrawable(
-            GradientDrawable.Orientation.TOP_BOTTOM,
-            intArrayOf(color, color)
-          ).apply {
-            cornerRadius = context.dip(DEFAULT_RECT_SIZE / 4f)
-          }
-          setPaddingRelative(innerMargin, innerMargin, innerMargin, innerMargin)
-        }
-      )
-      addView(
-        TextView(context).apply {
-          layoutParams = ViewGroup.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-          )
-          text = element.renderString()
-          textSize = DEFAULT_TEXT_SIZE
-          setTextColor(DEFAULT_TEXT_COLOR.toColorInt())
-          setPaddingRelative(innerMargin, 0, innerMargin, 0)
-        }
-      )
-    }
-  }
 }
-
-private fun Context.dip(value: Float): Float =
-  TypedValue.applyDimension(
-    TypedValue.COMPLEX_UNIT_DIP,
-    value,
-    resources.displayMetrics
-  )
-
-private fun Context.dip(value: Int): Int = dip(value.toFloat()).toInt()
