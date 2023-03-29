@@ -285,13 +285,13 @@ class Paparazzi @JvmOverloads constructor(
 
       if (hasLifecycleOwnerRuntime) {
         val lifecycleOwner = PaparazziLifecycleOwner()
-        ViewTreeLifecycleOwner.set(view, lifecycleOwner)
+        ViewTreeLifecycleOwner.set(viewGroup, lifecycleOwner)
 
         if (hasSavedStateRegistryOwnerRuntime) {
-          view.setViewTreeSavedStateRegistryOwner(PaparazziSavedStateRegistryOwner(lifecycleOwner))
+          viewGroup.setViewTreeSavedStateRegistryOwner(PaparazziSavedStateRegistryOwner(lifecycleOwner))
         }
         if (hasAndroidxActivityRuntime) {
-          view.setViewTreeOnBackPressedDispatcherOwner(PaparazziOnBackPressedDispatcherOwner(lifecycleOwner))
+          viewGroup.setViewTreeOnBackPressedDispatcherOwner(PaparazziOnBackPressedDispatcherOwner(lifecycleOwner))
         }
         // Must be changed after the SavedStateRegistryOwner above has finished restoring its state.
         lifecycleOwner.registry.currentState = Lifecycle.State.RESUMED
