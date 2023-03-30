@@ -159,6 +159,8 @@ class PaparazziPlugin : Plugin<Project> {
         test.systemProperties["paparazzi.build.dir"] =
           buildDirectory.get().toString()
         test.systemProperties["kotlinx.coroutines.main.delay"] = true
+        test.systemProperties.putAll(project.properties.filterKeys { it.startsWith("app.cash.paparazzi") })
+
         test.inputs.property("paparazzi.test.record", isRecordRun)
         test.inputs.property("paparazzi.test.verify", isVerifyRun)
 
@@ -170,9 +172,6 @@ class PaparazziPlugin : Plugin<Project> {
 
         test.outputs.dir(reportOutputDir)
         test.outputs.dir(snapshotOutputDir)
-
-        val paparazziProperties = project.properties.filterKeys { it.startsWith("app.cash.paparazzi") }
-        test.systemProperties.putAll(paparazziProperties)
 
         @Suppress("ObjectLiteralToLambda")
         // why not a lambda?  See: https://docs.gradle.org/7.2/userguide/validation_problems.html#implementation_unknown
