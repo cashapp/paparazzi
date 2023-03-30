@@ -158,6 +158,8 @@ class PaparazziPlugin : Plugin<Project> {
           writeResourcesTask.flatMap { it.paparazziResources.asFile }.get().path
         test.systemProperties["paparazzi.build.dir"] =
           buildDirectory.get().toString()
+        test.inputs.property("paparazzi.test.record", isRecordRun)
+        test.inputs.property("paparazzi.test.verify", isVerifyRun)
 
         test.inputs.dir(mergeResourcesOutputDir)
         test.inputs.dir(mergeAssetsOutputDir)
@@ -170,11 +172,6 @@ class PaparazziPlugin : Plugin<Project> {
 
         val paparazziProperties = project.properties.filterKeys { it.startsWith("app.cash.paparazzi") }
         test.systemProperties.putAll(paparazziProperties)
-
-        // Explicitly register these as inputs so that they are considered when determining up-to-date.
-        // The properties become resolvable after the last afterEvaluate runs.
-        test.inputs.property("paparazzi.test.record", isRecordRun)
-        test.inputs.property("paparazzi.test.verify", isVerifyRun)
 
         @Suppress("ObjectLiteralToLambda")
         // why not a lambda?  See: https://docs.gradle.org/7.2/userguide/validation_problems.html#implementation_unknown
