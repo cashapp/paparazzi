@@ -4,6 +4,7 @@ import app.cash.paparazzi.gradle.ImageSubject.Companion.assertThat
 import com.google.common.truth.Truth.assertThat
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
+import org.gradle.testkit.runner.TaskOutcome.FAILED
 import org.gradle.testkit.runner.TaskOutcome.FROM_CACHE
 import org.gradle.testkit.runner.TaskOutcome.SUCCESS
 import org.junit.Before
@@ -343,13 +344,13 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun rerunOnResourceChange() {
+  fun rerunRecordOnResourceChange() {
     val fixtureRoot = File("src/test/projects/rerun-resource-change")
 
     val snapshotsDir = File(fixtureRoot, "src/test/snapshots")
     val snapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_RecordTest_record.png")
 
-    val valuesDir = File(fixtureRoot, "src/main/res/values/")
+    val valuesDir = File(fixtureRoot, "src/main/res/values")
     val destResourceFile = File(valuesDir, "colors.xml")
     val firstResourceFile = File(fixtureRoot, "src/test/resources/colors1.xml")
     val secondResourceFile = File(fixtureRoot, "src/test/resources/colors2.xml")
@@ -394,13 +395,58 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun rerunVerifyOnResourceChange() {
+    val fixtureRoot = File("src/test/projects/rerun-resource-change")
+
+    val snapshotsDir = File(fixtureRoot, "src/test/snapshots")
+    snapshotsDir.deleteRecursively()
+    val valuesDir = File(fixtureRoot, "src/main/res/values")
+    valuesDir.deleteRecursively()
+
+    val destResourceFile = File(valuesDir, "colors.xml")
+    val firstResourceFile = File(fixtureRoot, "src/test/resources/colors1.xml")
+    val secondResourceFile = File(fixtureRoot, "src/test/resources/colors2.xml")
+
+    // Original resource
+    firstResourceFile.copyTo(destResourceFile, overwrite = false)
+
+    // Setup
+    gradleRunner
+      .withArguments("recordPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    // Take 1
+    val firstRunResult = gradleRunner
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    with(firstRunResult.task(":testDebugUnitTest")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(SUCCESS) // not UP-TO-DATE
+    }
+
+    // Update resource
+    secondResourceFile.copyTo(destResourceFile, overwrite = true)
+
+    // Take 2
+    val secondRunResult = gradleRunner
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    with(secondRunResult.task(":testDebugUnitTest")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(FAILED) // not UP-TO-DATE
+    }
+  }
+
+  @Test
   fun rerunOnAssetChange() {
     val fixtureRoot = File("src/test/projects/rerun-asset-change")
 
     val snapshotsDir = File(fixtureRoot, "src/test/snapshots")
     val snapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_RecordTest_record.png")
 
-    val assetsDir = File(fixtureRoot, "src/main/assets/")
+    val assetsDir = File(fixtureRoot, "src/main/assets")
     val destAssetFile = File(assetsDir, "secret.txt")
     val firstAssetFile = File(fixtureRoot, "src/test/resources/secret1.txt")
     val secondAssetFile = File(fixtureRoot, "src/test/resources/secret2.txt")
