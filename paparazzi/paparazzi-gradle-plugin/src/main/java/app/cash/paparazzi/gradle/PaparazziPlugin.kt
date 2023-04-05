@@ -158,6 +158,11 @@ class PaparazziPlugin : Plugin<Project> {
           writeResourcesTask.flatMap { it.paparazziResources.asFile }.get().path
         test.systemProperties["paparazzi.build.dir"] =
           buildDirectory.get().toString()
+        test.systemProperties["kotlinx.coroutines.main.delay"] = true
+        test.systemProperties.putAll(project.properties.filterKeys { it.startsWith("app.cash.paparazzi") })
+
+        test.inputs.property("paparazzi.test.record", isRecordRun)
+        test.inputs.property("paparazzi.test.verify", isVerifyRun)
 
         test.inputs.dir(mergeResourcesOutputDir)
         test.inputs.dir(mergeAssetsOutputDir)
@@ -168,18 +173,16 @@ class PaparazziPlugin : Plugin<Project> {
         test.outputs.dir(reportOutputDir)
         test.outputs.dir(snapshotOutputDir)
 
-        val paparazziProperties = project.properties.filterKeys { it.startsWith("app.cash.paparazzi") }
-
         @Suppress("ObjectLiteralToLambda")
         // why not a lambda?  See: https://docs.gradle.org/7.2/userguide/validation_problems.html#implementation_unknown
         test.doFirst(object : Action<Task> {
           override fun execute(t: Task) {
+            // Note: these are lazy properties that are not resolvable in the Gradle configuration phase.
+            // They need special handling, so they're added as inputs.property above, and systemProperty here.
             test.systemProperties["paparazzi.platform.data.root"] =
               nativePlatformFileCollection.singleFile.absolutePath
             test.systemProperties["paparazzi.test.record"] = isRecordRun.get()
             test.systemProperties["paparazzi.test.verify"] = isVerifyRun.get()
-            test.systemProperties["kotlinx.coroutines.main.delay"] = true
-            test.systemProperties.putAll(paparazziProperties)
           }
         })
       }
