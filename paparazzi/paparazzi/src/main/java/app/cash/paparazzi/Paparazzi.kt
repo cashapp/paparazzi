@@ -413,9 +413,6 @@ class Paparazzi @JvmOverloads constructor(
     return if (scale < 1f) ImageUtils.scale(image, scale, scale) else image
   }
 
-  /**
-   * Runs accessibility checks using the provided [View] and [BufferedImage] as inputs.
-   */
   private fun validateLayoutAccessibility(view: View, image: BufferedImage? = null) {
     LayoutValidator.updatePolicy(
       Policy(
