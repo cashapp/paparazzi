@@ -1175,6 +1175,22 @@ class PaparazziPluginTest {
     assertThat(result.task(":testDebugUnitTest")).isNotNull()
   }
 
+  @Test
+  fun accessibilityErrorsLogged() {
+    val fixtureRoot = File("src/test/projects/validate-accessibility")
+
+    val result = gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.output).contains(
+      "\u001B[33mAccessibility issue of type LOW_CONTRAST on no-id:\u001B[0m " +
+        "The item's text contrast ratio is 1.00. This ratio is based on a text color of #FFFFFF " +
+        "and background color of #FFFFFF. Consider increasing this item's text contrast ratio to " +
+        "4.50 or greater."
+    )
+  }
+
   private fun GradleRunner.runFixture(
     projectRoot: File,
     action: GradleRunner.() -> BuildResult

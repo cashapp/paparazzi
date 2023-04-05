@@ -26,9 +26,7 @@ import android.view.Choreographer.CALLBACK_ANIMATION
 import android.view.View
 import android.view.animation.LinearInterpolator
 import android.widget.Button
-import android.widget.LinearLayout
 import android.widget.TextView
-import app.cash.paparazzi.accessibility.AccessibilityCheckConfig
 import com.android.internal.lang.System_Delegate
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Ignore
@@ -53,37 +51,6 @@ class PaparazziTest {
     paparazzi.snapshot(view)
 
     assertThat(log).containsExactly("onDraw time=0")
-  }
-
-  @Test
-  fun accessibilityErrorsLogged() {
-    val textViewBad = TextView(paparazzi.context).apply {
-      text = "Low Contrast"
-      setTextColor(Color.WHITE)
-      setBackgroundColor(Color.WHITE)
-    }
-
-    val textViewGood = TextView(paparazzi.context).apply {
-      text = "High Contrast"
-      setTextColor(Color.WHITE)
-      setBackgroundColor(Color.BLACK)
-    }
-
-    val view = LinearLayout(paparazzi.context).apply {
-      addView(textViewBad)
-      addView(textViewGood)
-    }
-
-    paparazzi.snapshot(view)
-
-    val warnings = fakeLogger.log.filter { it.first == "WARNING" }
-    assertThat(warnings.size).isEqualTo(1)
-    assertThat(warnings.first().second).isEqualTo(
-      "\u001B[33mAccessibility issue of type LOW_CONTRAST on no-id:\u001B[0m " +
-        "The item's text contrast ratio is 1.00. This ratio is based on a text color of #FFFFFF " +
-        "and background color of #FFFFFF. Consider increasing this item's text contrast ratio to " +
-        "4.50 or greater. \nSee: https://support.google.com/accessibility/android/answer/7158390"
-    )
   }
 
   @Test

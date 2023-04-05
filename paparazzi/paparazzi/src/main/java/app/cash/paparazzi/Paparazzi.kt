@@ -36,7 +36,6 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
-import app.cash.paparazzi.accessibility.AccessibilityCheckConfig
 import app.cash.paparazzi.agent.AgentTestRule
 import app.cash.paparazzi.agent.InterceptorRegistrar
 import app.cash.paparazzi.internal.ChoreographerDelegateInterceptor
@@ -92,9 +91,7 @@ class Paparazzi @JvmOverloads constructor(
   private val renderExtensions: Set<RenderExtension> = setOf(),
   private val supportsRtl: Boolean = false,
   private val showSystemUi: Boolean = true,
-  private val accessibilityCheckConfig: AccessibilityCheckConfig = AccessibilityCheckConfig(
-    shouldValidate = false
-  ),
+  private val validateAccessibility: Boolean = false
 ) : TestRule {
   private val logger = PaparazziLogger()
   private lateinit var renderSession: RenderSessionImpl
@@ -320,7 +317,10 @@ class Paparazzi @JvmOverloads constructor(
             }
 
             val image = bridgeRenderSession.image
-            if (accessibilityCheckConfig.shouldValidate && renderExtensions.isEmpty()) {
+            if (validateAccessibility) {
+              require(renderExtensions.isEmpty()) {
+                "Running accessibility validation and render extensions simultaneously is not supported."
+              }
               validateLayoutAccessibility(modifiedView, image)
             }
             frameHandler.handle(scaleImage(frameImage(image)))
