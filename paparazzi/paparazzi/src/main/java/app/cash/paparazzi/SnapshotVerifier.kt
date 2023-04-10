@@ -17,6 +17,10 @@ package app.cash.paparazzi
 
 import app.cash.paparazzi.SnapshotHandler.FrameHandler
 import app.cash.paparazzi.internal.ImageUtils
+import app.cash.paparazzi.internal.writeImage
+import okio.HashingSink
+import okio.blackholeSink
+import okio.buffer
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
@@ -27,10 +31,12 @@ class SnapshotVerifier @JvmOverloads constructor(
 ) : SnapshotHandler {
   private val imagesDirectory: File = File(rootDirectory, "images")
   private val videosDirectory: File = File(rootDirectory, "videos")
+  private val verificationDirectory: File = File(rootDirectory, "verificationImages")
 
   init {
     imagesDirectory.mkdirs()
     videosDirectory.mkdirs()
+    verificationDirectory.mkdir()
   }
 
   override fun newFrameHandler(
@@ -39,25 +45,61 @@ class SnapshotVerifier @JvmOverloads constructor(
     fps: Int
   ): FrameHandler {
     return object : FrameHandler {
-      override fun handle(image: BufferedImage) {
-        // Note: does not handle videos or its frames at the moment
-        val expected = File(imagesDirectory, snapshot.toFileName(extension = "png"))
-        if (!expected.exists()) {
-          throw AssertionError("File $expected does not exist")
-        }
+      val hashes = mutableListOf<String>()
 
-        val goldenImage = ImageIO.read(expected)
-        ImageUtils.assertImageSimilar(
-          relativePath = expected.path,
-          image = image,
-          goldenImage = goldenImage,
-          maxPercentDifferent = maxPercentDifference
-        )
+      override fun handle(image: BufferedImage) {
+        hashes += image.writeImage(verificationDirectory)
       }
 
-      override fun close() = Unit
+      override fun close() {
+        if (hashes.size == 1) {
+          val original = File(verificationDirectory, "${hashes[0]}.png")
+          if (!original.exists()) {
+            throw AssertionError("File $original does not exist")
+          }
+          val image = ImageIO.read(original)
+
+          val expected = File(imagesDirectory, snapshot.toFileName(extension = "png"))
+          if (!expected.exists()) {
+            throw AssertionError("File $expected does not exist")
+          }
+
+          val goldenImage = ImageIO.read(expected)
+          ImageUtils.assertImageSimilar(
+            relativePath = expected.path,
+            image = image,
+            goldenImage = goldenImage,
+            maxPercentDifferent = maxPercentDifference
+          )
+        } else {
+          for ((index, frameHash) in hashes.withIndex()) {
+            val original = File(verificationDirectory, "${frameHash}.png")
+            if (!original.exists()) {
+              throw AssertionError("File $original does not exist")
+            }
+            val image = ImageIO.read(original)
+
+            val frameSnapshot = snapshot.copy(name = "${snapshot.name} $index")
+            val goldenFile = File(imagesDirectory, frameSnapshot.toFileName("_", "png"))
+            if (!goldenFile.exists()) {
+              throw AssertionError("File $goldenFile does not exist")
+            }
+
+            val goldenImage = ImageIO.read(goldenFile)
+            ImageUtils.assertImageSimilar(
+              relativePath = goldenFile.path,
+              image = image,
+              goldenImage = goldenImage,
+              maxPercentDifferent = maxPercentDifference
+            )
+          }
+        }
+      }
     }
   }
 
-  override fun close() = Unit
+  override fun close() {
+    // verification directory is only for storing the comparison snapshots so clean it up.
+    verificationDirectory.deleteRecursively()
+  }
 }

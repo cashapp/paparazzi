@@ -17,6 +17,9 @@ package app.cash.paparazzi
 
 import app.cash.paparazzi.SnapshotHandler.FrameHandler
 import app.cash.paparazzi.internal.PaparazziJson
+import app.cash.paparazzi.internal.toJsonPath
+import app.cash.paparazzi.internal.writeAtomically
+import app.cash.paparazzi.internal.writeImage
 import com.google.common.base.CharMatcher
 import okio.BufferedSink
 import okio.HashingSink
@@ -92,7 +95,7 @@ class HtmlReportWriter @JvmOverloads constructor(
       val hashes = mutableListOf<String>()
 
       override fun handle(image: BufferedImage) {
-        hashes += writeImage(image)
+        hashes += image.writeImage(imagesDirectory)
       }
 
       override fun close() {
@@ -104,7 +107,7 @@ class HtmlReportWriter @JvmOverloads constructor(
             val goldenFile = File(goldenImagesDirectory, snapshot.toFileName("_", "png"))
             original.copyTo(goldenFile, overwrite = true)
           }
-          snapshot.copy(file = original.toJsonPath())
+          snapshot.copy(file = original.toJsonPath(rootDirectory))
         } else {
           val hash = writeVideo(hashes, fps)
 
@@ -125,35 +128,12 @@ class HtmlReportWriter @JvmOverloads constructor(
               original.copyTo(goldenFile)
             }
           }
-          snapshot.copy(file = original.toJsonPath())
+          snapshot.copy(file = original.toJsonPath(rootDirectory))
         }
 
         shots += shot
       }
     }
-  }
-
-  /** Returns the hash of the image. */
-  private fun writeImage(image: BufferedImage): String {
-    val hash = hash(image)
-    val file = File(imagesDirectory, "$hash.png")
-    if (!file.exists()) {
-      file.writeAtomically(image)
-    }
-    return hash
-  }
-
-  /** Returns a SHA-1 hash of the pixels of [image]. */
-  private fun hash(image: BufferedImage): String {
-    val hashingSink = HashingSink.sha1(blackholeSink())
-    hashingSink.buffer().use { sink ->
-      for (y in 0 until image.height) {
-        for (x in 0 until image.width) {
-          sink.writeInt(image.getRGB(x, y))
-        }
-      }
-    }
-    return hashingSink.hash.hex()
   }
 
   private fun writeVideo(
@@ -256,26 +236,6 @@ class HtmlReportWriter @JvmOverloads constructor(
       }
     }
   }
-
-  private fun File.writeAtomically(bufferedImage: BufferedImage) {
-    val tmpFile = File(parentFile, "$name.tmp")
-    ImageIO.write(bufferedImage, "PNG", tmpFile)
-    delete()
-    tmpFile.renameTo(this)
-  }
-
-  private fun File.writeAtomically(writerAction: BufferedSink.() -> Unit) {
-    val tmpFile = File(parentFile, "$name.tmp")
-    tmpFile.sink()
-      .buffer()
-      .use { sink ->
-        sink.writerAction()
-      }
-    delete()
-    tmpFile.renameTo(this)
-  }
-
-  private fun File.toJsonPath(): String = relativeTo(rootDirectory).invariantSeparatorsPath
 }
 
 internal fun defaultRunName(): String {
