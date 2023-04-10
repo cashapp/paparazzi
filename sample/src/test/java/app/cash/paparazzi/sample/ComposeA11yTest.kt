@@ -26,7 +26,6 @@ import org.junit.Rule
 import org.junit.Test
 
 class ComposeA11yTest {
-
   @get:Rule
   val paparazzi = Paparazzi(
     deviceConfig = DeviceConfig.PIXEL.copy(screenWidth = DeviceConfig.PIXEL.screenWidth * 2, softButtons = false),

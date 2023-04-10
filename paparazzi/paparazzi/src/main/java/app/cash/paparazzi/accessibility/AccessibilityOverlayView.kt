@@ -8,7 +8,6 @@ import android.widget.FrameLayout
 import app.cash.paparazzi.accessibility.RenderSettings.toColorInt
 
 class AccessibilityOverlayView(context: Context) : FrameLayout(context) {
-
   private val accessibilityElements = mutableListOf<AccessibilityElement>()
   private val paint = Paint().apply {
     isAntiAlias = true

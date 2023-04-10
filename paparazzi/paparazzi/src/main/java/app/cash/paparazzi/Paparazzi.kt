@@ -213,7 +213,7 @@ class Paparazzi @JvmOverloads constructor(
     name: String? = null,
     start: Long = 0L,
     end: Long = 500L,
-    fps: Int = 30
+    fps: Int = 30,
   ) {
     // Add one to the frame count so we get the last frame. Otherwise a 1 second, 60 FPS animation
     // our 60th frame will be at time 983 ms, and we want our last frame to be 1,000 ms. This gets
@@ -276,41 +276,6 @@ class Paparazzi @JvmOverloads constructor(
     val frameHandler = snapshotHandler.newFrameHandler(snapshot, frameCount, fps)
     frameHandler.use {
       val viewGroup = bridgeRenderSession.rootViews[0].viewObject as ViewGroup
-      if (hasComposeRuntime) {
-        // During onAttachedToWindow, AbstractComposeView will attempt to resolve its parent's
-        // CompositionContext, which requires first finding the "content view", then using that
-        // to find a root view with a ViewTreeLifecycleOwner
-        viewGroup.id = android.R.id.content
-      }
-
-      if (hasLifecycleOwnerRuntime) {
-        val lifecycleOwner = PaparazziLifecycleOwner()
-        ViewTreeLifecycleOwner.set(viewGroup, lifecycleOwner)
-
-        if (hasSavedStateRegistryOwnerRuntime) {
-          viewGroup.setViewTreeSavedStateRegistryOwner(PaparazziSavedStateRegistryOwner(lifecycleOwner))
-        }
-        if (hasAndroidxActivityRuntime) {
-          viewGroup.setViewTreeOnBackPressedDispatcherOwner(PaparazziOnBackPressedDispatcherOwner(lifecycleOwner))
-        }
-        // Must be changed after the SavedStateRegistryOwner above has finished restoring its state.
-        lifecycleOwner.registry.currentState = Lifecycle.State.RESUMED
-      }
-
-      val measureRenderExtensions = renderExtensions.filter {
-        it.requiresMeasure
-      }
-      val requiresPreMeasure = measureRenderExtensions.isNotEmpty()
-
-      if (requiresPreMeasure) {
-        viewGroup.addView(view)
-        renderSession.measure()
-        renderExtensions.forEach {
-          it.measureView(view)
-        }
-        viewGroup.removeView(view)
-      }
-
       val modifiedView = renderExtensions.fold(view) { view, renderExtension ->
         renderExtension.renderView(view)
       }
@@ -321,7 +286,29 @@ class Paparazzi @JvmOverloads constructor(
           // Initialize the choreographer at time=0.
         }
 
+        if (hasComposeRuntime) {
+          // During onAttachedToWindow, AbstractComposeView will attempt to resolve its parent's
+          // CompositionContext, which requires first finding the "content view", then using that
+          // to find a root view with a ViewTreeLifecycleOwner
+          viewGroup.id = android.R.id.content
+        }
+
+        if (hasLifecycleOwnerRuntime) {
+          val lifecycleOwner = PaparazziLifecycleOwner()
+          ViewTreeLifecycleOwner.set(modifiedView, lifecycleOwner)
+
+          if (hasSavedStateRegistryOwnerRuntime) {
+            modifiedView.setViewTreeSavedStateRegistryOwner(PaparazziSavedStateRegistryOwner(lifecycleOwner))
+          }
+          if (hasAndroidxActivityRuntime) {
+            modifiedView.setViewTreeOnBackPressedDispatcherOwner(PaparazziOnBackPressedDispatcherOwner(lifecycleOwner))
+          }
+          // Must be changed after the SavedStateRegistryOwner above has finished restoring its state.
+          lifecycleOwner.registry.currentState = Lifecycle.State.RESUMED
+        }
+
         viewGroup.addView(modifiedView)
+
         for (frame in 0 until frameCount) {
           val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
           withTime(nowNanos) {
@@ -342,6 +329,8 @@ class Paparazzi @JvmOverloads constructor(
         }
       } finally {
         viewGroup.removeView(modifiedView)
+        // Remove the view from the parent to avoid leaking the view when modified with render extensions.
+        (view.parent as? ViewGroup)?.removeView(view)
         AnimationHandler.sAnimatorHandler.set(null)
         if (hasComposeRuntime) {
           forceReleaseComposeReferenceLeaks()

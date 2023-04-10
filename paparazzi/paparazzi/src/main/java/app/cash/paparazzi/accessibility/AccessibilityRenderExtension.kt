@@ -15,25 +15,14 @@
  */
 package app.cash.paparazzi.accessibility
 
-import AccessibilityRowView
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import app.cash.paparazzi.RenderExtension
-import app.cash.paparazzi.accessibility.RenderSettings.DEFAULT_DESCRIPTION_BACKGROUND_COLOR
-import app.cash.paparazzi.accessibility.RenderSettings.toColorInt
+import com.android.internal.view.OneShotPreDrawListener
 
 class AccessibilityRenderExtension : RenderExtension {
-  private lateinit var accessibilityState: AccessibilityState
-
-  override val requiresMeasure: Boolean = true
-
-  override fun measureView(contentView: View) {
-    // Fetch accessibility state to render legend in renderView()
-    accessibilityState = contentView.accessibilityState()
-  }
-
   override fun renderView(
     contentView: View
   ): View {
@@ -46,38 +35,28 @@ class AccessibilityRenderExtension : RenderExtension {
       )
 
       val overlay = AccessibilityOverlayView(context).apply {
-        val contentLayoutParams = contentView.layoutParams ?: generateLayoutParams(null)
-        this.addView(
+        addView(
           contentView,
           FrameLayout.LayoutParams(
-            contentLayoutParams.width,
-            contentLayoutParams.height
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT,
           )
         )
       }
 
+      val contentLayoutParams = contentView.layoutParams ?: generateLayoutParams(null)
       addView(
         overlay,
         LinearLayout.LayoutParams(
-          ViewGroup.LayoutParams.MATCH_PARENT,
-          ViewGroup.LayoutParams.MATCH_PARENT,
+          contentLayoutParams.width,
+          contentLayoutParams.height,
           1f
         )
       )
 
-      val accessibilityRowViews = mutableListOf<AccessibilityRowView>()
-      val accessibilityLegend = LinearLayout(context).apply {
-        orientation = LinearLayout.VERTICAL
-        setBackgroundColor(DEFAULT_DESCRIPTION_BACKGROUND_COLOR.toColorInt())
-
-        accessibilityState.elements.forEach { _ ->
-          accessibilityRowViews += AccessibilityRowView(context).also { rowView ->
-            addView(rowView)
-          }
-        }
-      }
+      val accessibilityOverlayDetailsView = AccessibilityOverlayDetailsView(context)
       addView(
-        accessibilityLegend,
+        accessibilityOverlayDetailsView,
         LinearLayout.LayoutParams(
           ViewGroup.LayoutParams.MATCH_PARENT,
           ViewGroup.LayoutParams.MATCH_PARENT,
@@ -85,29 +64,23 @@ class AccessibilityRenderExtension : RenderExtension {
         )
       )
 
-      // Since Accessibility tests may use 2x rendering width, our accessibility state has incorrect view bounds.
-      // If we process the state after layout and before rendering, we get the correct view bounds.
-      contentView.viewTreeObserver.addOnPreDrawListener {
+      doOnPreDraw {
         val accessibilityState = contentView.accessibilityState()
+        accessibilityOverlayDetailsView.addElements(accessibilityState.elements)
         overlay.addElements(
           accessibilityState.elements.map {
-            AccessibilityOverlayView.AccessibilityElement(
-              color = it.color,
-              bounds = it.displayBounds
-            )
+            AccessibilityOverlayView.AccessibilityElement(it.color, it.displayBounds)
           }
         )
-
-        require(accessibilityState.elements.size == accessibilityRowViews.size) {
-          "Accessibility state has changed since accessibility state was captured in measureView() - " +
-            "expected ${accessibilityState.elements.size} elements, but found ${accessibilityRowViews.size} elements."
-        }
-        accessibilityState.elements.forEachIndexed { index, element ->
-          accessibilityRowViews[index].updateForElement(element)
-        }
-
         true
       }
     }
   }
 }
+
+/**
+ * Taken from AndroidX.core.ktx
+ */
+private inline fun View.doOnPreDraw(
+  crossinline action: (view: View) -> Unit
+): OneShotPreDrawListener = OneShotPreDrawListener.add(this) { action(this) }

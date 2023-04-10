@@ -15,6 +15,7 @@ class ComplexA11yTest {
 
   @Test
   fun mixedComposeUsage() {
-    paparazzi.snapshot(MixedView(paparazzi.context))
+    val mixedView = MixedView(paparazzi.context)
+    paparazzi.snapshot(mixedView)
   }
 }

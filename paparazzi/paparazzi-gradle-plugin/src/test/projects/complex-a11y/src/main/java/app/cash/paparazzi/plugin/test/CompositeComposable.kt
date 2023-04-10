@@ -1,11 +1,13 @@
 package app.cash.paparazzi.plugin.test
 
+import android.widget.TextView
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.Checkbox
 import androidx.compose.material.Text
@@ -16,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.viewinterop.AndroidView
 
 @Composable
 fun CompositeComposable() {
@@ -47,5 +50,14 @@ fun CompositeComposable() {
         Text("more text")
       }
     }
+
+    AndroidView(
+      modifier = Modifier.wrapContentSize(),
+      factory = { context ->
+        TextView(context).apply {
+          text = "Nested Android View"
+        }
+      }
+    )
   }
 }
