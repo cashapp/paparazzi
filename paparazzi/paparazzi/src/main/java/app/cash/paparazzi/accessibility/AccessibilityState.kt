@@ -19,7 +19,6 @@ package app.cash.paparazzi.accessibility
 import android.graphics.Rect
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.ui.graphics.toAndroidRect
 import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.platform.ViewRootForTest
 import androidx.compose.ui.semantics.SemanticsActions
@@ -154,4 +153,8 @@ private fun SemanticsNode.processAccessibleChildren(
   children.forEach {
     it.processAccessibleChildren(rootView, processElement)
   }
+}
+
+private fun androidx.compose.ui.geometry.Rect.toAndroidRect(): Rect {
+  return Rect(left.toInt(), top.toInt(), right.toInt(), bottom.toInt())
 }

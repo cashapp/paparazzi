@@ -39,7 +39,7 @@ class AccessibilityRenderExtension : RenderExtension {
           contentView,
           FrameLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
           )
         )
       }

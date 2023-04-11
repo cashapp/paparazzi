@@ -213,7 +213,7 @@ class Paparazzi @JvmOverloads constructor(
     name: String? = null,
     start: Long = 0L,
     end: Long = 500L,
-    fps: Int = 30,
+    fps: Int = 30
   ) {
     // Add one to the frame count so we get the last frame. Otherwise a 1 second, 60 FPS animation
     // our 60th frame will be at time 983 ms, and we want our last frame to be 1,000 ms. This gets
@@ -308,7 +308,6 @@ class Paparazzi @JvmOverloads constructor(
         }
 
         viewGroup.addView(modifiedView)
-
         for (frame in 0 until frameCount) {
           val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
           withTime(nowNanos) {
@@ -329,8 +328,6 @@ class Paparazzi @JvmOverloads constructor(
         }
       } finally {
         viewGroup.removeView(modifiedView)
-        // Remove the view from the parent to avoid leaking the view when modified with render extensions.
-        (view.parent as? ViewGroup)?.removeView(view)
         AnimationHandler.sAnimatorHandler.set(null)
         if (hasComposeRuntime) {
           forceReleaseComposeReferenceLeaks()
