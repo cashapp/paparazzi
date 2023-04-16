@@ -115,6 +115,51 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun prepareResourcesCaching() {
+    val fixtureRoot = File("src/test/projects/prepare-resources-task-caching")
+
+    val firstRun = gradleRunner
+      .withArguments("testRelease", "testDebug", "--build-cache", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    with(firstRun.task(":preparePaparazziDebugResources")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isNotEqualTo(FROM_CACHE)
+    }
+
+    with(firstRun.task(":preparePaparazziReleaseResources")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isNotEqualTo(FROM_CACHE)
+    }
+
+    var resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/debug/resources.txt")
+    assertThat(resourcesFile.exists()).isTrue()
+    var resourceFileContents = resourcesFile.readLines()
+    assertThat(resourceFileContents.any { it.contains("release") }).isFalse()
+
+    resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/release/resources.txt")
+    assertThat(resourcesFile.exists()).isTrue()
+    resourceFileContents = resourcesFile.readLines()
+    assertThat(resourceFileContents.any { it.contains("debug") }).isFalse()
+
+    fixtureRoot.resolve("build").deleteRecursively()
+
+    val secondRun = gradleRunner
+      .withArguments("testDebug", "--build-cache", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    with(secondRun.task(":preparePaparazziDebugResources")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(FROM_CACHE)
+    }
+
+    resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/debug/resources.txt")
+    assertThat(resourcesFile.exists()).isTrue()
+    resourceFileContents = resourcesFile.readLines()
+    assertThat(resourceFileContents.any { it.contains("release") }).isFalse()
+  }
+
+  @Test
   fun customBuildDir() {
     val fixtureRoot = File("src/test/projects/custom-build-dir")
 
@@ -474,6 +519,44 @@ class PaparazziPluginTest {
     assertThat(snapshot.exists()).isTrue()
 
     snapshotsDir.deleteRecursively()
+  }
+
+  @Test
+  fun rerunTestsOnPropertyChange() {
+    val fixtureRoot = File("src/test/projects/rerun-property-change")
+
+    // Take 1
+    val firstRunResult = gradleRunner
+      .withArguments("testDebugUnitTest", "--stacktrace")
+      .forwardOutput()
+      .runFixture(fixtureRoot) { build() }
+
+    with(firstRunResult.task(":testDebugUnitTest")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(SUCCESS)
+    }
+
+    // Take 2
+    val secondRunResult = gradleRunner
+      .withArguments("recordPaparazziDebug", "--stacktrace")
+      .forwardOutput()
+      .runFixture(fixtureRoot) { build() }
+
+    with(secondRunResult.task(":testDebugUnitTest")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(SUCCESS) // not UP-TO-DATE
+    }
+
+    // Take 3
+    val thirdRunResult = gradleRunner
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .forwardOutput()
+      .runFixture(fixtureRoot) { build() }
+
+    with(thirdRunResult.task(":testDebugUnitTest")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(SUCCESS) // not UP-TO-DATE
+    }
   }
 
   @Test
@@ -987,6 +1070,15 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun composeRecomposition() {
+    val fixtureRoot = File("src/test/projects/compose-recomposition")
+
+    gradleRunner
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+  }
+
+  @Test
   fun composeViewTreeLifecycle() {
     val fixtureRoot = File("src/test/projects/compose-lifecycle-owner")
     gradleRunner
@@ -1108,6 +1200,33 @@ class PaparazziPluginTest {
     gradleRunner
       .withArguments("testDebug")
       .runFixture(fixtureRoot) { build() }
+  }
+
+  @Test
+  fun verifyCoroutineDelay() {
+    val fixtureRoot = File("src/test/projects/coroutine-delay-main")
+
+    val result = gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":testDebugUnitTest")).isNotNull()
+  }
+
+  @Test
+  fun accessibilityErrorsLogged() {
+    val fixtureRoot = File("src/test/projects/validate-accessibility")
+
+    val result = gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.output).contains(
+      "\u001B[33mAccessibility issue of type LOW_CONTRAST on no-id:\u001B[0m " +
+        "The item's text contrast ratio is 1.00. This ratio is based on a text color of #FFFFFF " +
+        "and background color of #FFFFFF. Consider increasing this item's text contrast ratio to " +
+        "4.50 or greater."
+    )
   }
 
   private fun GradleRunner.runFixture(

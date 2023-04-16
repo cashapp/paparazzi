@@ -31,7 +31,7 @@ class LifecycleUsageTest {
 
     paparazzi.snapshot(view)
     assertThat(currentLifecycleState).isNotNull()
-    assertThat(currentLifecycleState).isEqualTo(Lifecycle.State.CREATED)
+    assertThat(currentLifecycleState).isEqualTo(Lifecycle.State.RESUMED)
   }
 
   @Test fun SavedStateRegistryOwner() {
