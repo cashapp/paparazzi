@@ -36,21 +36,6 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun invalidAndroidApplicationPlugin() {
-    val fixtureRoot = File("src/test/projects/invalid-application-plugin")
-
-    val result = gradleRunner
-      .withArguments("preparePaparazziDebugResources", "--stacktrace")
-      .runFixture(fixtureRoot) { buildAndFail() }
-
-    assertThat(result.task(":preparePaparazziDebugResources")).isNull()
-    assertThat(result.output).contains(
-      "Currently, Paparazzi only works in Android library -- not application -- modules. " +
-        "See https://github.com/cashapp/paparazzi/issues/107"
-    )
-  }
-
-  @Test
   fun declareAndroidPluginAfter() {
     val fixtureRoot = File("src/test/projects/declare-android-plugin-after")
 
@@ -1056,6 +1041,22 @@ class PaparazziPluginTest {
   @Test
   fun compose() {
     val fixtureRoot = File("src/test/projects/compose")
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()
+    assertThat(snapshots!!).hasLength(1)
+
+    val snapshotImage = snapshots[0]
+    val goldenImage = File(fixtureRoot, "src/test/resources/compose_fonts.png")
+    assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
+  }
+
+  @Test
+  fun composeApplication() {
+    val fixtureRoot = File("src/test/projects/compose-application")
     gradleRunner
       .withArguments("testDebug", "--stacktrace")
       .runFixture(fixtureRoot) { build() }

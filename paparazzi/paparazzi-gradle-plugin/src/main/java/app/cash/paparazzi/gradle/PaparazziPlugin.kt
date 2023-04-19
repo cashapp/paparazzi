@@ -17,8 +17,10 @@ package app.cash.paparazzi.gradle
 
 import app.cash.paparazzi.NATIVE_LIB_VERSION
 import app.cash.paparazzi.VERSION
+import com.android.build.gradle.AppExtension
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.LibraryExtension
+import com.android.build.gradle.internal.cxx.logging.infoln
 import com.android.build.gradle.tasks.MergeSourceSetFolders
 import com.android.ide.common.symbols.getPackageNameFromManifest
 import org.gradle.api.Action
@@ -26,6 +28,7 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.UnknownDomainObjectException
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
 import org.gradle.api.attributes.Attribute
 import org.gradle.api.file.Directory
@@ -52,18 +55,19 @@ import kotlin.io.path.invariantSeparatorsPathString
 class PaparazziPlugin : Plugin<Project> {
   override fun apply(project: Project) {
     project.afterEvaluate {
-      check(!project.plugins.hasPlugin("com.android.application")) {
-        error(
-          "Currently, Paparazzi only works in Android library -- not application -- modules. " +
+      if (project.plugins.hasPlugin("com.android.application")) {
+        infoln(
+          "Currently, Paparazzi only works in Android application with compose. " +
             "See https://github.com/cashapp/paparazzi/issues/107"
         )
-      }
-      check(project.plugins.hasPlugin("com.android.library")) {
-        "The Android Gradle library plugin must be applied for Paparazzi to work properly."
+        project.plugins.withId("com.android.application") { setupPaparazzi(project) }
+      } else {
+        check(project.plugins.hasPlugin("com.android.library")) {
+          "The Android Gradle library plugin must be applied for Paparazzi to work properly."
+        }
+        project.plugins.withId("com.android.library") { setupPaparazzi(project) }
       }
     }
-
-    project.plugins.withId("com.android.library") { setupPaparazzi(project) }
   }
 
   private fun setupPaparazzi(project: Project) {
@@ -74,8 +78,14 @@ class PaparazziPlugin : Plugin<Project> {
     val verifyVariants = project.tasks.register("verifyPaparazzi")
     val recordVariants = project.tasks.register("recordPaparazzi")
 
-    val variants = project.extensions.getByType(LibraryExtension::class.java)
-      .libraryVariants
+    val variants = try {
+      project.extensions.getByType(LibraryExtension::class.java)
+        .libraryVariants
+    } catch (e: UnknownDomainObjectException) {
+      project.extensions.getByType(AppExtension::class.java)
+        .applicationVariants
+    }
+
     variants.all { variant ->
       val variantSlug = variant.name.capitalize(Locale.US)
       val testVariant = variant.unitTestVariant ?: return@all

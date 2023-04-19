@@ -1,0 +1,37 @@
+plugins {
+  id 'com.android.application'
+  id 'kotlin-android'
+  id 'app.cash.paparazzi'
+}
+
+repositories {
+  maven {
+    url "file://${projectDir.absolutePath}/../../../../../build/localMaven"
+  }
+  mavenCentral()
+  //mavenLocal()
+  google()
+}
+
+android {
+  namespace 'app.cash.paparazzi.plugin.test'
+  compileSdk libs.versions.compileSdk.get() as int
+  defaultConfig {
+    applicationId = 'app.cash.paparazzi.plugin.test'
+    minSdk libs.versions.minSdk.get() as int
+    targetSdk libs.versions.compileSdk.get() as int
+    version "1"
+    versionCode 1
+  }
+  buildFeatures {
+    compose true
+  }
+  composeOptions {
+    kotlinCompilerExtensionVersion libs.versions.composeCompiler.get()
+  }
+}
+
+dependencies {
+  implementation libs.composeUi.material
+  implementation libs.androidx.activity.compose
+}
