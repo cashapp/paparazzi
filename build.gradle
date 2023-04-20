@@ -1,3 +1,5 @@
+import com.diffplug.spotless.LineEnding
+
 apply plugin: 'com.github.ben-manes.versions'
 
 buildscript {
@@ -50,6 +52,9 @@ subprojects {
 
   apply plugin: 'com.diffplug.spotless'
   spotless {
+    // Needed to avoid configuration caching issues due to the default inspecting .gitattributes
+    // via external process
+    lineEndings = LineEnding.PLATFORM_NATIVE
     kotlin {
       target("src/**/*.kt")
       // ktlint doesn't honour .editorconfig yet: https://github.com/diffplug/spotless/issues/142
