@@ -1,3 +1,5 @@
+import com.diffplug.gradle.spotless.SpotlessTask
+
 apply plugin: 'org.jetbrains.kotlin.jvm'
 apply plugin: 'java-gradle-plugin'
 apply plugin: 'com.vanniktech.maven.publish'
@@ -47,6 +49,10 @@ const val NATIVE_LIB_VERSION = "${libs.versions.layoutlib.get()}"
 }
 
 tasks.named('compileKotlin').configure {
+  it.dependsOn(generateVersion)
+}
+
+tasks.withType(SpotlessTask).configureEach {
   it.dependsOn(generateVersion)
 }
 
