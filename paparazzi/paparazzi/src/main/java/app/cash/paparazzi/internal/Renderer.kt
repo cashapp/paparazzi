@@ -72,6 +72,7 @@ internal class Renderer(
     val icuLocation = File(platformDataDir, "icu" + File.separator + "icudt70l.dat")
     val buildProp = File(environment.platformDir, "build.prop")
     val attrs = File(platformDataResDir, "values" + File.separator + "attrs.xml")
+    val keyboardPaths = File(platformDataDir, "keyboards" + File.separator + "Generic.kcm")
     val systemProperties = DeviceConfig.loadProperties(buildProp) + mapOf(
       // We want Choreographer.USE_FRAME_TIME to be false so it uses System_Delegate.nanoTime()
       "debug.choreographer.frametime" to "false"
@@ -79,12 +80,13 @@ internal class Renderer(
     bridge = Bridge().apply {
       check(
         init(
-          systemProperties,
-          fontLocation,
-          nativeLibLocation.path,
-          icuLocation.path,
-          DeviceConfig.getEnumMap(attrs),
-          logger
+          /* platformProperties = */ systemProperties,
+          /* fontLocation = */ fontLocation,
+          /* nativeLibPath = */ nativeLibLocation.path,
+          /* icuDataPath = */ icuLocation.path,
+          /* keyboardPaths = */ arrayOf(keyboardPaths.path),
+          /* enumValueMap = */ DeviceConfig.getEnumMap(attrs),
+          /* log = */ logger
         )
       ) { "Failed to init Bridge." }
     }
