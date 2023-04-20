@@ -157,7 +157,7 @@ internal class PaparazziCallback(
 
   override fun getAdapterBinding(
     viewObject: Any?,
-    attributes: MutableMap<String, String>?,
+    attributes: MutableMap<String, String>?
   ): AdapterBinding? = null
 
   override fun getActionBarCallback(): ActionBarCallback = actionBarCallback
