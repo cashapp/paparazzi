@@ -147,6 +147,7 @@ class Paparazzi @JvmOverloads constructor(
 
   fun prepare(description: Description) {
     forcePlatformSdkVersion(environment.compileSdkVersion)
+    forcePlatformCodename(environment.platformCodename)
 
     val layoutlibCallback =
       PaparazziCallback(logger, environment.packageName, environment.resourcePackageNames)
@@ -457,6 +458,26 @@ class Paparazzi @JvmOverloads constructor(
     buildVersionClass
       .getFieldReflectively("SDK_INT")
       .setStaticValue(compileSdkVersion)
+  }
+
+  /**
+   * Android performs Build.VERSION.CODENAME checks to use different implementations depending
+   * on the platform version. One example would be different layout factory implementations
+   * that Compose uses for rendering text for Android 33+.
+   * Having Build.VERSION.CODENAME null by default crashes the tests.
+   * // https://github.com/cashapp/paparazzi/issues/758
+   */
+  private fun forcePlatformCodename(codename: String) {
+    val buildVersionClass = try {
+      Paparazzi::class.java.classLoader.loadClass("android.os.Build\$VERSION")
+    } catch (e: ClassNotFoundException) {
+      // Project unit tests don't load Android platform code
+      return
+    }
+
+    buildVersionClass
+      .getFieldReflectively("CODENAME")
+      .setStaticValue(codename)
   }
 
   private fun initializeAppCompatIfPresent() {

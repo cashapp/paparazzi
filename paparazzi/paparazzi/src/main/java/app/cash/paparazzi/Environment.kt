@@ -29,6 +29,7 @@ data class Environment(
   val assetsDir: String,
   val packageName: String,
   val compileSdkVersion: Int,
+  val platformCodename: String = "REL",
   val resourcePackageNames: List<String>
 ) {
   init {
