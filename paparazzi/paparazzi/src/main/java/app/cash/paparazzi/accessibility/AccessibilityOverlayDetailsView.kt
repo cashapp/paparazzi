@@ -3,7 +3,6 @@ package app.cash.paparazzi.accessibility
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
-import android.graphics.Rect
 import android.graphics.RectF
 import android.text.StaticLayout
 import android.text.TextPaint
@@ -14,8 +13,8 @@ import app.cash.paparazzi.accessibility.RenderSettings.DEFAULT_TEXT_COLOR
 import app.cash.paparazzi.accessibility.RenderSettings.toColorInt
 import java.lang.Float.max
 
-class AccessibilityOverlayDetailsView(context: Context) : FrameLayout(context) {
-  private val accessibilityElements = mutableListOf<AccessibilityState.Element>()
+internal class AccessibilityOverlayDetailsView(context: Context) : FrameLayout(context) {
+  private val accessibilityElements = mutableListOf<AccessibilityElement>()
   private val paint = Paint().apply {
     isAntiAlias = true
     style = Paint.Style.FILL
@@ -27,7 +26,7 @@ class AccessibilityOverlayDetailsView(context: Context) : FrameLayout(context) {
   }
   private val margin = context.dip(8f)
   private val innerMargin = margin / 2f
-  private val rectSize = context.dip(RenderSettings.DEFAULT_RECT_SIZE)
+  private val rectSize = context.dip(RenderSettings.DEFAULT_RECT_SIZE.toFloat())
   private val cornerRadius = rectSize / 4f
 
   init {
@@ -37,12 +36,7 @@ class AccessibilityOverlayDetailsView(context: Context) : FrameLayout(context) {
     setBackgroundColor(RenderSettings.DEFAULT_DESCRIPTION_BACKGROUND_COLOR.toColorInt())
   }
 
-  fun addElement(element: AccessibilityState.Element) {
-    accessibilityElements.add(element)
-    invalidate()
-  }
-
-  fun addElements(elements: Collection<AccessibilityState.Element>) {
+  fun addElements(elements: Collection<AccessibilityElement>) {
     accessibilityElements.addAll(elements)
     invalidate()
   }
@@ -51,7 +45,6 @@ class AccessibilityOverlayDetailsView(context: Context) : FrameLayout(context) {
     super.draw(canvas)
 
     var lastYCoord = innerMargin
-    val textBounds = Rect()
     val textPaint = TextPaint(textPaint)
 
     accessibilityElements.forEach {
@@ -61,7 +54,7 @@ class AccessibilityOverlayDetailsView(context: Context) : FrameLayout(context) {
 
       canvas.save()
 
-      val text = it.renderString().orEmpty()
+      val text = it.contentDescription
       val textLayout = StaticLayout.Builder.obtain(
         text,
         0,
@@ -81,20 +74,18 @@ class AccessibilityOverlayDetailsView(context: Context) : FrameLayout(context) {
       lastYCoord = max(badge.bottom + margin, textLayout.height.toFloat())
     }
   }
+
+  private fun Context.sp(value: Float): Float =
+    TypedValue.applyDimension(
+      TypedValue.COMPLEX_UNIT_SP,
+      value,
+      resources.displayMetrics
+    )
+
+  private fun Context.dip(value: Float): Float =
+    TypedValue.applyDimension(
+      TypedValue.COMPLEX_UNIT_DIP,
+      value,
+      resources.displayMetrics
+    )
 }
-
-private fun Context.sp(value: Float): Float =
-  TypedValue.applyDimension(
-    TypedValue.COMPLEX_UNIT_SP,
-    value,
-    resources.displayMetrics
-  )
-
-private fun Context.dip(value: Float): Float =
-  TypedValue.applyDimension(
-    TypedValue.COMPLEX_UNIT_DIP,
-    value,
-    resources.displayMetrics
-  )
-
-private fun Context.dip(value: Int): Int = dip(value.toFloat()).toInt()

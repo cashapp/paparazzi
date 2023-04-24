@@ -15,10 +15,18 @@
  */
 package app.cash.paparazzi.accessibility
 
+import android.graphics.Rect
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import android.widget.LinearLayout
+import androidx.compose.ui.platform.AbstractComposeView
+import androidx.compose.ui.platform.ViewRootForTest
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.semantics.SemanticsNode
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
 import app.cash.paparazzi.RenderExtension
 import com.android.internal.view.OneShotPreDrawListener
 
@@ -30,16 +38,16 @@ class AccessibilityRenderExtension : RenderExtension {
       orientation = LinearLayout.HORIZONTAL
       weightSum = 2f
       layoutParams = ViewGroup.LayoutParams(
-        ViewGroup.LayoutParams.MATCH_PARENT,
-        ViewGroup.LayoutParams.MATCH_PARENT
+        MATCH_PARENT,
+        MATCH_PARENT
       )
 
       val overlay = AccessibilityOverlayView(context).apply {
         addView(
           contentView,
           FrameLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT
+            MATCH_PARENT,
+            MATCH_PARENT
           )
         )
       }
@@ -58,29 +66,88 @@ class AccessibilityRenderExtension : RenderExtension {
       addView(
         accessibilityOverlayDetailsView,
         LinearLayout.LayoutParams(
-          ViewGroup.LayoutParams.MATCH_PARENT,
-          ViewGroup.LayoutParams.MATCH_PARENT,
+          MATCH_PARENT,
+          MATCH_PARENT,
           1f
         )
       )
 
-      doOnPreDraw {
-        val accessibilityState = contentView.accessibilityState()
-        accessibilityOverlayDetailsView.addElements(accessibilityState.elements)
-        overlay.addElements(
-          accessibilityState.elements.map {
-            AccessibilityOverlayView.AccessibilityElement(it.color, it.displayBounds)
-          }
-        )
-        true
+      OneShotPreDrawListener.add(this) {
+        val elements = buildList {
+          processAccessibleChildren { add(it) }
+        }
+
+        accessibilityOverlayDetailsView.addElements(elements)
+        overlay.addElements(elements)
       }
     }
   }
-}
 
-/**
- * Taken from AndroidX.core.ktx
- */
-private inline fun View.doOnPreDraw(
-  crossinline action: (view: View) -> Unit
-): OneShotPreDrawListener = OneShotPreDrawListener.add(this) { action(this) }
+  private fun View.processAccessibleChildren(
+    processElement: (AccessibilityElement) -> Unit
+  ) {
+    if (isImportantForAccessibility && !iterableTextForAccessibility.isNullOrBlank()) {
+      val bounds = Rect()
+      getBoundsOnScreen(bounds)
+
+      processElement(
+        AccessibilityElement(
+          id = "${this::class.simpleName}($iterableTextForAccessibility)",
+          displayBounds = bounds,
+          contentDescription = iterableTextForAccessibility!!.toString()
+        )
+      )
+    }
+
+    if (this is AbstractComposeView) {
+      // ComposeView creates a child view `AndroidComposeView` for view root for test.
+      val viewRoot = getChildAt(0) as? ViewRootForTest
+      println("Processing ComposeView: ${viewRoot?.semanticsOwner?.rootSemanticsNode?.children?.size}")
+      viewRoot?.semanticsOwner?.rootSemanticsNode?.processAccessibleChildren(this, processElement)
+    }
+
+    if (this is ViewGroup) {
+      (0 until childCount).forEach {
+        getChildAt(it).processAccessibleChildren(processElement)
+      }
+    }
+  }
+
+  private fun SemanticsNode.processAccessibleChildren(
+    rootView: View,
+    processElement: (AccessibilityElement) -> Unit
+  ) {
+    fun androidx.compose.ui.geometry.Rect.toAndroidRect(): Rect {
+      return Rect(left.toInt(), top.toInt(), right.toInt(), bottom.toInt())
+    }
+
+    val id = id
+    val contentDescription = config.getOrNull(SemanticsProperties.ContentDescription)
+    val text = config.getOrNull(SemanticsProperties.Text)
+    val stateDescription = config.getOrNull(SemanticsProperties.StateDescription)
+    val onClickLabel = config.getOrNull(SemanticsActions.OnClick)?.label
+    val role = config.getOrNull(SemanticsProperties.Role)
+
+    // TODO: Add input from [AccessibilityRenderExtension] to determine what generates the accessibility text output.
+    val accessibilityText = text?.joinToString(", ")
+      ?: contentDescription?.joinToString(", ")
+      ?: stateDescription
+      ?: onClickLabel
+      ?: role?.toString()
+
+    if (accessibilityText != null) {
+      val displayBounds = boundsInWindow.toAndroidRect()
+      processElement(
+        AccessibilityElement(
+          id = id.toString(),
+          displayBounds = displayBounds,
+          contentDescription = accessibilityText
+        )
+      )
+    }
+
+    children.forEach {
+      it.processAccessibleChildren(rootView, processElement)
+    }
+  }
+}

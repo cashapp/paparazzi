@@ -23,7 +23,7 @@ fun SimpleComposable() {
       Text("Disabled Button")
     }
     Button(onClick = {}) {
-      Icon(Icons.Default.Add, "Add Item")
+      Icon(Icons.Default.Add, contentDescription = "Add Item")
     }
     Checkbox(checked = true, onCheckedChange = {})
     RadioButton(selected = true, onClick = {})
