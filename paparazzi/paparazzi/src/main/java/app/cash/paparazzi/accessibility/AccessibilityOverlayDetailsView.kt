@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2023 Square, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package app.cash.paparazzi.accessibility
 
 import android.content.Context
@@ -51,20 +66,15 @@ internal class AccessibilityOverlayDetailsView(context: Context) : FrameLayout(c
       paint.color = it.color.toColorInt()
       val badge = RectF(margin, lastYCoord, margin + rectSize, lastYCoord + rectSize)
       canvas.drawRoundRect(badge, cornerRadius, cornerRadius, paint)
-
       canvas.save()
 
       val text = it.contentDescription
-      val textLayout = StaticLayout.Builder.obtain(
-        text,
-        0,
-        text.length,
-        textPaint,
-        width
-      ).setEllipsize(TextUtils.TruncateAt.END)
+      val textLayout = StaticLayout.Builder
+        .obtain(text, 0, text.length, textPaint, width)
+        .setEllipsize(TextUtils.TruncateAt.END)
         .build()
-
       canvas.save()
+
       val textX = badge.right + innerMargin
       val textY = badge.top
       canvas.translate(textX, textY)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Square, Inc.
+ * Copyright (C) 2023 Square, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,47 +37,24 @@ class AccessibilityRenderExtension : RenderExtension {
     return LinearLayout(contentView.context).apply {
       orientation = LinearLayout.HORIZONTAL
       weightSum = 2f
-      layoutParams = ViewGroup.LayoutParams(
-        MATCH_PARENT,
-        MATCH_PARENT
-      )
+      layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
 
       val overlay = AccessibilityOverlayView(context).apply {
-        addView(
-          contentView,
-          FrameLayout.LayoutParams(
-            MATCH_PARENT,
-            MATCH_PARENT
-          )
-        )
+        addView(contentView, FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT))
       }
 
       val contentLayoutParams = contentView.layoutParams ?: generateLayoutParams(null)
-      addView(
-        overlay,
-        LinearLayout.LayoutParams(
-          contentLayoutParams.width,
-          contentLayoutParams.height,
-          1f
-        )
-      )
+      addView(overlay, LinearLayout.LayoutParams(contentLayoutParams.width, contentLayoutParams.height, 1f))
 
-      val accessibilityOverlayDetailsView = AccessibilityOverlayDetailsView(context)
-      addView(
-        accessibilityOverlayDetailsView,
-        LinearLayout.LayoutParams(
-          MATCH_PARENT,
-          MATCH_PARENT,
-          1f
-        )
-      )
+      val overlayDetailsView = AccessibilityOverlayDetailsView(context)
+      addView(overlayDetailsView, LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, 1f))
 
       OneShotPreDrawListener.add(this) {
         val elements = buildList {
           processAccessibleChildren { add(it) }
         }
 
-        accessibilityOverlayDetailsView.addElements(elements)
+        overlayDetailsView.addElements(elements)
         overlay.addElements(elements)
       }
     }
@@ -102,8 +79,7 @@ class AccessibilityRenderExtension : RenderExtension {
     if (this is AbstractComposeView) {
       // ComposeView creates a child view `AndroidComposeView` for view root for test.
       val viewRoot = getChildAt(0) as? ViewRootForTest
-      println("Processing ComposeView: ${viewRoot?.semanticsOwner?.rootSemanticsNode?.children?.size}")
-      viewRoot?.semanticsOwner?.rootSemanticsNode?.processAccessibleChildren(this, processElement)
+      viewRoot?.semanticsOwner?.rootSemanticsNode?.processAccessibleChildren(processElement)
     }
 
     if (this is ViewGroup) {
@@ -114,29 +90,20 @@ class AccessibilityRenderExtension : RenderExtension {
   }
 
   private fun SemanticsNode.processAccessibleChildren(
-    rootView: View,
     processElement: (AccessibilityElement) -> Unit
   ) {
-    fun androidx.compose.ui.geometry.Rect.toAndroidRect(): Rect {
-      return Rect(left.toInt(), top.toInt(), right.toInt(), bottom.toInt())
-    }
-
-    val id = id
-    val contentDescription = config.getOrNull(SemanticsProperties.ContentDescription)
-    val text = config.getOrNull(SemanticsProperties.Text)
-    val stateDescription = config.getOrNull(SemanticsProperties.StateDescription)
-    val onClickLabel = config.getOrNull(SemanticsActions.OnClick)?.label
-    val role = config.getOrNull(SemanticsProperties.Role)
-
     // TODO: Add input from [AccessibilityRenderExtension] to determine what generates the accessibility text output.
-    val accessibilityText = text?.joinToString(", ")
-      ?: contentDescription?.joinToString(", ")
-      ?: stateDescription
-      ?: onClickLabel
-      ?: role?.toString()
+    val id = id
+    val accessibilityText = config.getOrNull(SemanticsProperties.Text)?.joinToString(", ")
+      ?: config.getOrNull(SemanticsProperties.ContentDescription)?.joinToString(", ")
+      ?: config.getOrNull(SemanticsProperties.StateDescription)
+      ?: config.getOrNull(SemanticsActions.OnClick)?.label
+      ?: config.getOrNull(SemanticsProperties.Role)?.toString()
 
     if (accessibilityText != null) {
-      val displayBounds = boundsInWindow.toAndroidRect()
+      val displayBounds = with(boundsInWindow) {
+        Rect(left.toInt(), top.toInt(), right.toInt(), bottom.toInt())
+      }
       processElement(
         AccessibilityElement(
           id = id.toString(),
@@ -147,7 +114,7 @@ class AccessibilityRenderExtension : RenderExtension {
     }
 
     children.forEach {
-      it.processAccessibleChildren(rootView, processElement)
+      it.processAccessibleChildren(processElement)
     }
   }
 }

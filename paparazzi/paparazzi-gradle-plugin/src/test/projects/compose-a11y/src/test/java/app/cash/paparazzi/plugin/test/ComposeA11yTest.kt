@@ -6,7 +6,7 @@ import app.cash.paparazzi.accessibility.AccessibilityRenderExtension
 import org.junit.Rule
 import org.junit.Test
 
-class ComplexA11yTest {
+class ComposeA11yTest {
   @get:Rule
   val paparazzi = Paparazzi(
     deviceConfig = DeviceConfig.PIXEL,
