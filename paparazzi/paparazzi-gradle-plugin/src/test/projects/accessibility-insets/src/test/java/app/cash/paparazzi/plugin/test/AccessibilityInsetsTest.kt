@@ -6,23 +6,14 @@ import app.cash.paparazzi.accessibility.AccessibilityRenderExtension
 import org.junit.Rule
 import org.junit.Test
 
-class ComposeA11yTest {
+class AccessibilityInsetsTest {
   @get:Rule
   val paparazzi = Paparazzi(
-    theme = "Theme.Cash.Accent",
-    deviceConfig = DeviceConfig.PIXEL,
+    theme = "Theme.AppCompat.Light.NoActionBar",
+    deviceConfig = DeviceConfig.PIXEL.copy(screenWidth = DeviceConfig.PIXEL.screenWidth * 2, softButtons = false),
     renderExtensions = setOf(AccessibilityRenderExtension())
   )
 
   @Test
-  fun mixedComposeUsage() {
-    val mixedView = MixedView(paparazzi.context)
-    paparazzi.snapshot(mixedView)
-  }
-
-  @Test
-  fun statusBar() {
-    val mixedView = MixedView(paparazzi.context)
-    paparazzi.snapshot(mixedView)
-  }
+  fun windowInsets() = paparazzi.snapshot(MixedView(paparazzi.context))
 }

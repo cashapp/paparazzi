@@ -18,6 +18,8 @@ package app.cash.paparazzi.accessibility
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.graphics.Rect
+import android.view.View
 import android.widget.FrameLayout
 import app.cash.paparazzi.accessibility.RenderSettings.toColorInt
 
@@ -32,9 +34,20 @@ internal class AccessibilityOverlayView(context: Context) : FrameLayout(context)
     style = Paint.Style.STROKE
   }
 
+  private lateinit var location: IntArray
+
   init {
     // Required for onDraw to be called
     setWillNotDraw(false)
+
+    // We can't get the location on screen until the view is attached.
+    addOnAttachStateChangeListener(object : OnAttachStateChangeListener {
+      override fun onViewAttachedToWindow(view: View) {
+        location = IntArray(2).also(view::getLocationOnScreen)
+      }
+
+      override fun onViewDetachedFromWindow(view: View) = Unit
+    })
   }
 
   fun addElements(elements: Collection<AccessibilityElement>) {
@@ -44,14 +57,17 @@ internal class AccessibilityOverlayView(context: Context) : FrameLayout(context)
 
   override fun draw(canvas: Canvas) {
     super.draw(canvas)
-
     accessibilityElements.forEach {
       paint.color = it.color.toColorInt()
-      canvas.drawRect(it.displayBounds, paint)
+      val bounds = Rect(it.displayBounds)
+      // Offset the location on the screen of [AccessibilityOverlayView] to correctly render element bounds.
+      bounds.offset(-location[0], -location[1])
+
+      canvas.drawRect(bounds, paint)
 
       strokePaint.color = it.color.toColorInt()
       strokePaint.alpha = RenderSettings.DEFAULT_RENDER_ALPHA * 2
-      canvas.drawRect(it.displayBounds, strokePaint)
+      canvas.drawRect(bounds, strokePaint)
     }
   }
 }
