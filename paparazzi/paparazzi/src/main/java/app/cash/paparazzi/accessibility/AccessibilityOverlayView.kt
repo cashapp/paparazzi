@@ -18,6 +18,7 @@ package app.cash.paparazzi.accessibility
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.view.View
 import android.widget.FrameLayout
 import app.cash.paparazzi.accessibility.RenderSettings.toColorInt
 
@@ -32,9 +33,22 @@ internal class AccessibilityOverlayView(context: Context) : FrameLayout(context)
     style = Paint.Style.STROKE
   }
 
+  private lateinit var location: IntArray
+
   init {
     // Required for onDraw to be called
     setWillNotDraw(false)
+
+    // We can't get the location on screen until the view is attached.
+    addOnAttachStateChangeListener(object : OnAttachStateChangeListener {
+      override fun onViewAttachedToWindow(view: View) {
+        location = IntArray(2).also(view::getLocationOnScreen)
+      }
+
+      override fun onViewDetachedFromWindow(view: View) {
+        view.removeOnAttachStateChangeListener(this)
+      }
+    })
   }
 
   fun addElements(elements: Collection<AccessibilityElement>) {
@@ -44,9 +58,10 @@ internal class AccessibilityOverlayView(context: Context) : FrameLayout(context)
 
   override fun draw(canvas: Canvas) {
     super.draw(canvas)
-
     accessibilityElements.forEach {
       paint.color = it.color.toColorInt()
+      it.displayBounds.offset(-location[0], -location[1])
+
       canvas.drawRect(it.displayBounds, paint)
 
       strokePaint.color = it.color.toColorInt()

@@ -64,8 +64,7 @@ class AccessibilityRenderExtension : RenderExtension {
     processElement: (AccessibilityElement) -> Unit
   ) {
     if (isImportantForAccessibility && !iterableTextForAccessibility.isNullOrBlank()) {
-      val bounds = Rect()
-      getBoundsOnScreen(bounds)
+      val bounds = Rect().also(::getBoundsOnScreen)
 
       processElement(
         AccessibilityElement(

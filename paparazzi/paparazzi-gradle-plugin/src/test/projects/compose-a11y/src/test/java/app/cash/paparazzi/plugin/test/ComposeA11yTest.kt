@@ -9,6 +9,7 @@ import org.junit.Test
 class ComposeA11yTest {
   @get:Rule
   val paparazzi = Paparazzi(
+    theme = "Theme.AppCompat.Light.NoActionBar",
     deviceConfig = DeviceConfig.PIXEL,
     renderExtensions = setOf(AccessibilityRenderExtension())
   )
