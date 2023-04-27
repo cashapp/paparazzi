@@ -131,12 +131,14 @@ class Paparazzi @JvmOverloads constructor(
     }
 
     return if (!isInitialized) {
-      registerFontLookupInterceptionIfResourceCompatDetected()
-      registerViewEditModeInterception()
-      registerMatrixMultiplyInterception()
-      registerChoreographerDelegateInterception()
-      registerServiceManagerInterception()
-      registerIInputMethodManagerInterception()
+      if (!robolectric) {
+        registerFontLookupInterceptionIfResourceCompatDetected()
+        registerViewEditModeInterception()
+        registerMatrixMultiplyInterception()
+        registerChoreographerDelegateInterception()
+        registerServiceManagerInterception()
+        registerIInputMethodManagerInterception()
+      }
 
       val outerRule = AgentTestRule()
       outerRule.apply(statement, description)
@@ -640,6 +642,9 @@ class Paparazzi @JvmOverloads constructor(
     )
     private val hasAndroidxActivityRuntime = isPresentInClasspath(
       "androidx.activity.ViewTreeOnBackPressedDispatcherOwner"
+    )
+    private val robolectric = isPresentInClasspath(
+      "org.robolectric.RobolectricTestRunner"
     )
 
     private fun isPresentInClasspath(vararg classNames: String): Boolean {
