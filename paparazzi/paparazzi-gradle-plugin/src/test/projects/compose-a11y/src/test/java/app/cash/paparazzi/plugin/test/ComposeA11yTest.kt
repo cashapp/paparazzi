@@ -9,19 +9,13 @@ import org.junit.Test
 class ComposeA11yTest {
   @get:Rule
   val paparazzi = Paparazzi(
-    theme = "Theme.Cash.Accent",
+    theme = "Theme.AppCompat.Light.NoActionBar",
     deviceConfig = DeviceConfig.PIXEL,
     renderExtensions = setOf(AccessibilityRenderExtension())
   )
 
   @Test
   fun mixedComposeUsage() {
-    val mixedView = MixedView(paparazzi.context)
-    paparazzi.snapshot(mixedView)
-  }
-
-  @Test
-  fun statusBar() {
     val mixedView = MixedView(paparazzi.context)
     paparazzi.snapshot(mixedView)
   }

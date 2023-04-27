@@ -1245,23 +1245,6 @@ class PaparazziPluginTest {
     )
   }
 
-  @Test
-  fun accessibilityInsets() {
-    val fixtureRoot = File("src/test/projects/accessibility-insets")
-
-    gradleRunner
-      .withArguments("testDebug", "--stacktrace")
-      .runFixture(fixtureRoot) { build() }
-
-    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
-    val snapshots = snapshotsDir.listFiles()?.sortedBy { it.lastModified() }
-    assertThat(snapshots!!).hasSize(1)
-
-    val image = snapshots[0]
-    val goldenImage = File(fixtureRoot, "src/test/resources/accessibility_insets.png")
-    assertThat(image).isSimilarTo(goldenImage).withDefaultThreshold()
-  }
-
   private fun GradleRunner.runFixture(
     projectRoot: File,
     action: GradleRunner.() -> BuildResult

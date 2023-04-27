@@ -18,7 +18,6 @@ package app.cash.paparazzi.accessibility
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
-import android.graphics.Rect
 import android.view.View
 import android.widget.FrameLayout
 import app.cash.paparazzi.accessibility.RenderSettings.toColorInt
@@ -46,7 +45,9 @@ internal class AccessibilityOverlayView(context: Context) : FrameLayout(context)
         location = IntArray(2).also(view::getLocationOnScreen)
       }
 
-      override fun onViewDetachedFromWindow(view: View) = Unit
+      override fun onViewDetachedFromWindow(view: View) {
+        view.removeOnAttachStateChangeListener(this)
+      }
     })
   }
 
@@ -59,15 +60,13 @@ internal class AccessibilityOverlayView(context: Context) : FrameLayout(context)
     super.draw(canvas)
     accessibilityElements.forEach {
       paint.color = it.color.toColorInt()
-      val bounds = Rect(it.displayBounds)
-      // Offset the location on the screen of [AccessibilityOverlayView] to correctly render element bounds.
-      bounds.offset(-location[0], -location[1])
+      it.displayBounds.offset(-location[0], -location[1])
 
-      canvas.drawRect(bounds, paint)
+      canvas.drawRect(it.displayBounds, paint)
 
       strokePaint.color = it.color.toColorInt()
       strokePaint.alpha = RenderSettings.DEFAULT_RENDER_ALPHA * 2
-      canvas.drawRect(bounds, strokePaint)
+      canvas.drawRect(it.displayBounds, strokePaint)
     }
   }
 }
