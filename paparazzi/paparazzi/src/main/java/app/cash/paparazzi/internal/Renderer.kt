@@ -16,13 +16,21 @@
 
 package app.cash.paparazzi.internal
 
+import android.os.SystemProperties
+import android.util.ArraySet
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Environment
 import app.cash.paparazzi.Flags
+import app.cash.paparazzi.Paparazzi
 import app.cash.paparazzi.deprecated.com.android.ide.common.resources.deprecated.FrameworkResources
 import app.cash.paparazzi.deprecated.com.android.ide.common.resources.deprecated.ResourceItem
 import app.cash.paparazzi.deprecated.com.android.ide.common.resources.deprecated.ResourceRepository
 import app.cash.paparazzi.deprecated.com.android.io.FolderWrapper
+import app.cash.paparazzi.getFieldReflectively
+import app.cash.paparazzi.setFieldValue
+import app.cash.paparazzi.setFieldValueInt
+import app.cash.paparazzi.setFieldValueList
+import app.cash.paparazzi.setStaticValue
 import com.android.layoutlib.bridge.Bridge
 import com.android.layoutlib.bridge.android.RenderParamsFlags
 import com.android.layoutlib.bridge.impl.DelegateManager
@@ -99,6 +107,8 @@ internal class Renderer(
           logger
         )
       ) { "Failed to init Bridge." }
+      forceBuildStaticFields()
+      forceBuildVersionStaticFields()
     }
     Bridge.getLock()
       .lock()
@@ -110,6 +120,71 @@ internal class Renderer(
     }
 
     return sessionParamsBuilder
+  }
+
+  private fun forceBuildStaticFields() {
+    val buildClass = try {
+      Paparazzi::class.java.classLoader.loadClass("android.os.Build")
+    } catch (e: ClassNotFoundException) {
+      // Project unit tests don't load Android platform code
+      return
+    }
+
+    buildClass.setFieldValue("MANUFACTURER", "ro.product.manufacturer")
+    buildClass.setFieldValue("ID", "ro.build.id")
+    buildClass.setFieldValue("DISPLAY", "ro.build.display.id")
+    buildClass.setFieldValue("PRODUCT", "ro.product.name")
+    buildClass.setFieldValue("DEVICE", "ro.product.device")
+    buildClass.setFieldValue("BOARD", "ro.product.board")
+    buildClass.setFieldValue("BRAND", "ro.product.brand")
+    buildClass.setFieldValue("MODEL", "ro.product.model")
+    buildClass.setFieldValue("BOOTLOADER", "ro.bootloader")
+    buildClass.setFieldValue("HARDWARE", "ro.hardware")
+    buildClass.setFieldValue("SKU", "ro.boot.hardware.sku")
+    buildClass.setFieldValue("ODM_SKU", "ro.boot.product.hardware.sku")
+  }
+
+  private fun forceBuildVersionStaticFields() {
+    val buildVersionClass = try {
+      Paparazzi::class.java.classLoader.loadClass("android.os.Build\$Version")
+    } catch (e: ClassNotFoundException) {
+      // Project unit tests don't load Android platform code
+      return
+    }
+
+    buildVersionClass.setFieldValue(fieldName = "INCREMENTAL", systemProp = "ro.build.version.incremental")
+    buildVersionClass.setFieldValue(fieldName = "RELEASE", systemProp = "ro.build.version.release")
+    buildVersionClass.setFieldValue(fieldName = "RELEASE_OR_CODENAME", systemProp = "ro.build.version.release_or_codename")
+    buildVersionClass.setFieldValue(fieldName = "RELEASE_OR_PREVIEW_DISPLAY", systemProp = "ro.build.version.release_or_preview_display")
+    buildVersionClass.setFieldValue(
+      fieldName = "BASE_OS", systemProp = "ro.build.version.base_os", defaultValue = ""
+    )
+    buildVersionClass.setFieldValue(
+      fieldName = "SECURITY_PATCH", systemProp = "ro.build.version.security_patch", defaultValue = ""
+    )
+    buildVersionClass.setFieldValueInt(fieldName = "SDK", systemProp = "ro.build.version.sdk")
+    buildVersionClass.setFieldValueInt(
+      fieldName = "DEVICE_INITIAL_SDK_INT", systemProp = "ro.product.first_api_level"
+    )
+    buildVersionClass.setFieldValueInt(
+      fieldName = "PREVIEW_SDK_INT", systemProp = "ro.build.version.preview_sdk"
+    )
+    buildVersionClass.setFieldValue(
+      fieldName = "PREVIEW_SDK_FINGERPRINT",
+      systemProp = "ro.build.version.preview_sdk_fingerprint", defaultValue = "REL"
+    )
+    buildVersionClass.setFieldValue(
+      fieldName = "CODENAME", systemProp = "ro.build.version.codename"
+    )
+    buildVersionClass.setFieldValueList(
+      fieldName = "KNOWN_CODENAMES", systemProp = "ro.build.version.known_codenames"
+    ) { it.toSet() }
+    buildVersionClass.setFieldValueList(
+      fieldName = "ALL_CODENAMES", systemProp = "ro.build.version.all_codenames"
+    ) { it }
+    buildVersionClass.setFieldValueInt(
+      fieldName = "MIN_SUPPORTED_TARGET_SDK_INT", systemProp = "ro.build.version.min_supported_target_sdk"
+    )
   }
 
   private fun getNativeLibDir(): String {

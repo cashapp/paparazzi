@@ -15,17 +15,33 @@
  */
 package app.cash.paparazzi.sample
 
+import android.os.Build
 import android.widget.LinearLayout
 import app.cash.paparazzi.DeviceConfig.Companion.NEXUS_5
 import app.cash.paparazzi.DeviceConfig.Companion.NEXUS_5_LAND
 import app.cash.paparazzi.DeviceConfig.Companion.PIXEL_3
 import app.cash.paparazzi.Paparazzi
+import com.google.android.material.textfield.TextInputEditText
 import org.junit.Rule
 import org.junit.Test
 
 class LaunchViewTest {
   @get:Rule
-  val paparazzi = Paparazzi(deviceConfig = PIXEL_3)
+  val paparazzi = Paparazzi( deviceConfig = PIXEL_3)
+
+  @Test
+  fun test() {
+    requireNotNull(Build.MANUFACTURER)
+    requireNotNull(Build.MODEL)
+    requireNotNull(Build.DISPLAY)
+    requireNotNull(Build.VERSION.CODENAME)
+    requireNotNull(Build.VERSION.RELEASE)
+    require(Build.VERSION.SDK_INT != 0)
+    paparazzi.unsafeUpdateConfig(theme = "Theme.MaterialComponents")
+    val text = paparazzi.inflate<LinearLayout>(R.layout.text)
+    paparazzi.snapshot(text)
+  }
+
 
   @Test
   fun pixel3() {

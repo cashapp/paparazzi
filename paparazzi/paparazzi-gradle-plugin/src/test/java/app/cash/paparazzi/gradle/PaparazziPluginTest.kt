@@ -19,6 +19,7 @@ class PaparazziPluginTest {
   fun setUp() {
     gradleRunner = GradleRunner.create()
       .withPluginClasspath()
+      .withDebug(true)
   }
 
   @Test
@@ -909,7 +910,6 @@ class PaparazziPluginTest {
   }
 
   @Test
-  @Ignore
   fun withMaterialComponents() {
     val fixtureRoot = File("src/test/projects/material-components-present")
 
@@ -919,10 +919,14 @@ class PaparazziPluginTest {
 
     val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
     val snapshots = snapshotsDir.listFiles()
-    assertThat(snapshots!!).hasLength(1)
+    assertThat(snapshots!!).hasLength(2)
 
-    val snapshotImage = snapshots[0]
-    val goldenImage = File(fixtureRoot, "src/test/resources/button.png")
+    var snapshotImage = snapshots[0]
+    var goldenImage = File(fixtureRoot, "src/test/resources/button.png")
+    assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
+
+    snapshotImage = snapshots[1]
+    goldenImage = File(fixtureRoot, "src/test/resources/button.png")
     assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
   }
 
