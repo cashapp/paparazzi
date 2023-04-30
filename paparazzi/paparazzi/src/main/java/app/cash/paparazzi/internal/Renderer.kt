@@ -70,6 +70,7 @@ internal class Renderer(
     val fontLocation = File(platformDataDir, "fonts")
     val nativeLibLocation = File(platformDataDir, getNativeLibDir())
     val icuLocation = File(platformDataDir, "icu" + File.separator + "icudt70l.dat")
+    val keyboardLocation = File(platformDataDir, "keyboards" + File.separator + "Generic.kcm")
     val buildProp = File(environment.platformDir, "build.prop")
     val attrs = File(platformDataResDir, "values" + File.separator + "attrs.xml")
     val systemProperties = DeviceConfig.loadProperties(buildProp) + mapOf(
@@ -83,6 +84,7 @@ internal class Renderer(
           fontLocation,
           nativeLibLocation.path,
           icuLocation.path,
+          arrayOf(keyboardLocation.path),
           DeviceConfig.getEnumMap(attrs),
           logger
         )
