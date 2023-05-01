@@ -146,8 +146,6 @@ class Paparazzi @JvmOverloads constructor(
   }
 
   fun prepare(description: Description) {
-    forcePlatformSdkVersion(environment.compileSdkVersion)
-
     val layoutlibCallback =
       PaparazziCallback(logger, environment.packageName, environment.resourcePackageNames)
     layoutlibCallback.initResources()
@@ -158,6 +156,7 @@ class Paparazzi @JvmOverloads constructor(
       renderer = Renderer(environment, layoutlibCallback, logger)
       sessionParamsBuilder = renderer.prepare()
     }
+    forcePlatformSdkVersion(environment.compileSdkVersion)
 
     sessionParamsBuilder = sessionParamsBuilder
       .copy(

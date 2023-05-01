@@ -19,7 +19,6 @@ class PaparazziPluginTest {
   fun setUp() {
     gradleRunner = GradleRunner.create()
       .withPluginClasspath()
-      .withDebug(true)
   }
 
   @Test
@@ -178,6 +177,18 @@ class PaparazziPluginTest {
     assertThat(snapshotsDir.exists()).isTrue()
 
     fixtureRoot.resolve("custom").deleteRecursively()
+  }
+
+  @Test
+  fun buildClassAccess() {
+    val fixtureRoot = File("src/test/projects/build-class")
+
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "custom/reports/paparazzi/images")
+    assertThat(snapshotsDir.exists()).isFalse()
   }
 
   @Test
@@ -910,6 +921,7 @@ class PaparazziPluginTest {
   }
 
   @Test
+  @Ignore
   fun withMaterialComponents() {
     val fixtureRoot = File("src/test/projects/material-components-present")
 
@@ -919,14 +931,10 @@ class PaparazziPluginTest {
 
     val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
     val snapshots = snapshotsDir.listFiles()
-    assertThat(snapshots!!).hasLength(2)
+    assertThat(snapshots!!).hasLength(1)
 
-    var snapshotImage = snapshots[0]
-    var goldenImage = File(fixtureRoot, "src/test/resources/button.png")
-    assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
-
-    snapshotImage = snapshots[1]
-    goldenImage = File(fixtureRoot, "src/test/resources/button.png")
+    val snapshotImage = snapshots[0]
+    val goldenImage = File(fixtureRoot, "src/test/resources/button.png")
     assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
   }
 

@@ -1,6 +1,5 @@
 package app.cash.paparazzi
 
-import android.os.SystemProperties
 import sun.misc.Unsafe
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier
@@ -61,19 +60,3 @@ internal fun Unsafe.setFieldValue(field: Field, base: Any, offset: Long, value: 
     Character.TYPE -> this.putChar(base, offset, (value as Char))
     else -> this.putObject(base, offset, value)
   }
-
-fun Class<*>.setFieldValue(fieldName: String, systemProp: String, defaultValue: String = "UNKNOWN") =
-  getFieldReflectively(fieldName).setStaticValue(SystemProperties.get(systemProp, defaultValue))
-
-fun Class<*>.setFieldValueInt(fieldName: String, systemProp: String, defaultValue: Int = 0) =
-  getFieldReflectively(fieldName).setStaticValue(SystemProperties.getInt(systemProp, defaultValue))
-
-fun <T> Class<*>.setFieldValueList(fieldName: String, systemProp: String, mapper: (Array<String>) -> T) {
-  val value = SystemProperties.get(systemProp)
-  val arrayValue = if (value.isEmpty()) {
-    emptyArray()
-  } else {
-    value.split(",".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-  }
-  getFieldReflectively(fieldName).setStaticValue(arrayValue)
-}
