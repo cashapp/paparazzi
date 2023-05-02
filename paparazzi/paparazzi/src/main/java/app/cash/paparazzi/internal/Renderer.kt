@@ -42,17 +42,28 @@ internal class Renderer(
   /** Initialize the bridge and the resource maps. */
   fun prepare(): SessionParamsBuilder {
     val platformDataResDir = File("${environment.platformDir}/data/res")
-    val frameworkResources = FrameworkResources(FolderWrapper(platformDataResDir)).apply {
-      loadResources()
-      loadPublicResources(logger)
+
+    val useNewResourceLoading = System.getProperty(Flags.NEW_RESOURCE_LOADING).toBoolean()
+
+    val frameworkResources = if (!useNewResourceLoading) {
+      FrameworkResources(FolderWrapper(platformDataResDir))
+        .apply {
+          loadResources()
+          loadPublicResources(logger)
+        }
+    } else {
+      TODO("New resource loading coming soon")
     }
 
-    val projectResources = object : ResourceRepository(FolderWrapper(environment.resDir), false) {
-      override fun createResourceItem(name: String): ResourceItem {
-        return ResourceItem(name)
-      }
+    val projectResources = if (!useNewResourceLoading) {
+      object : ResourceRepository(FolderWrapper(environment.resDir), false) {
+        override fun createResourceItem(name: String): ResourceItem {
+          return ResourceItem(name)
+        }
+      }.apply { loadResources() }
+    } else {
+      TODO("New resource loading coming soon")
     }
-    projectResources.loadResources()
 
     sessionParamsBuilder = SessionParamsBuilder(
       layoutlibCallback = layoutlibCallback,
