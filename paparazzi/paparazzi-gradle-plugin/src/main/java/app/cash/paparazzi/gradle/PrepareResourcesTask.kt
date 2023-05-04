@@ -17,6 +17,7 @@ package app.cash.paparazzi.gradle
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.Directory
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
@@ -26,6 +27,7 @@ import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
+import java.io.File
 
 @CacheableTask
 abstract class PrepareResourcesTask : DefaultTask() {
@@ -41,6 +43,14 @@ abstract class PrepareResourcesTask : DefaultTask() {
   @get:Input
   abstract val compileSdkVersion: Property<String>
 
+  @get:InputFiles
+  @get:PathSensitive(PathSensitivity.NONE)
+  abstract val localResourceFiles: ConfigurableFileCollection
+
+  @get:InputFiles
+  @get:PathSensitive(PathSensitivity.NONE)
+  abstract val libraryResourceFiles: ConfigurableFileCollection
+
   @get:Input
   abstract val mergeAssetsOutputDir: Property<String>
 
@@ -53,6 +63,8 @@ abstract class PrepareResourcesTask : DefaultTask() {
 
   @get:OutputFile
   abstract val paparazziResources: RegularFileProperty
+
+  private val projectDirectory = project.layout.projectDirectory
 
   @TaskAction
   // TODO: figure out why this can't be removed as of Kotlin 1.6+
@@ -88,6 +100,18 @@ abstract class PrepareResourcesTask : DefaultTask() {
         it.newLine()
         it.write(resourcePackageNames)
         it.newLine()
+        it.write(localResourceFiles.joinFiles())
+        it.newLine()
+        it.write(libraryResourceFiles.joinFiles())
+        it.newLine()
       }
+  }
+
+  private fun ConfigurableFileCollection.joinFiles() = files.joinToString(",") { file ->
+    projectDirectory.relativize(file)
+  }
+
+  private fun Directory.relativize(child: File): String {
+    return asFile.toPath().relativize(child.toPath()).toFile().invariantSeparatorsPath
   }
 }
