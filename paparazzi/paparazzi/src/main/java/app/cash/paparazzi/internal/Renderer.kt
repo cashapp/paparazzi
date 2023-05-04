@@ -45,22 +45,17 @@ internal class Renderer(
 
     val useNewResourceLoading = System.getProperty(Flags.NEW_RESOURCE_LOADING).toBoolean()
 
-    val frameworkResources = if (!useNewResourceLoading) {
+    val (frameworkResources, projectResources) = if (!useNewResourceLoading) {
       FrameworkResources(FolderWrapper(platformDataResDir))
         .apply {
           loadResources()
           loadPublicResources(logger)
-        }
-    } else {
-      TODO("New resource loading coming soon")
-    }
-
-    val projectResources = if (!useNewResourceLoading) {
-      object : ResourceRepository(FolderWrapper(environment.resDir), false) {
-        override fun createResourceItem(name: String): ResourceItem {
-          return ResourceItem(name)
-        }
-      }.apply { loadResources() }
+        } to
+        object : ResourceRepository(FolderWrapper(environment.resDir), false) {
+          override fun createResourceItem(name: String): ResourceItem {
+            return ResourceItem(name)
+          }
+        }.apply { loadResources() }
     } else {
       TODO("New resource loading coming soon")
     }
