@@ -93,8 +93,8 @@ class AccessibilityRenderExtension : RenderExtension {
   ) {
     // TODO: Add input from [AccessibilityRenderExtension] to determine what generates the accessibility text output.
     val id = id
-    val accessibilityText = config.getOrNull(SemanticsProperties.Text)?.joinToString(", ")
-      ?: config.getOrNull(SemanticsProperties.ContentDescription)?.joinToString(", ")
+    val accessibilityText = config.getOrNull(SemanticsProperties.ContentDescription)?.joinToString(", ")
+      ?: config.getOrNull(SemanticsProperties.Text)?.joinToString(", ")
       ?: config.getOrNull(SemanticsProperties.StateDescription)
       ?: config.getOrNull(SemanticsActions.OnClick)?.label
       ?: config.getOrNull(SemanticsProperties.Role)?.toString()
