@@ -21,6 +21,7 @@ import android.content.res.Resources
 import android.graphics.Bitmap
 import android.os.Handler_Delegate
 import android.os.SystemClock_Delegate
+import android.os._Original_Build
 import android.util.AttributeSet
 import android.util.DisplayMetrics
 import android.view.BridgeInflater
@@ -131,12 +132,12 @@ class Paparazzi @JvmOverloads constructor(
     }
 
     return if (!isInitialized) {
-      registerFontLookupInterceptionIfResourceCompatDetected()
-      registerViewEditModeInterception()
-      registerMatrixMultiplyInterception()
-      registerChoreographerDelegateInterception()
-      registerServiceManagerInterception()
-      registerIInputMethodManagerInterception()
+      // registerFontLookupInterceptionIfResourceCompatDetected()
+      // registerViewEditModeInterception()
+      // registerMatrixMultiplyInterception()
+      // registerChoreographerDelegateInterception()
+      // registerServiceManagerInterception()
+      // registerIInputMethodManagerInterception()
 
       val outerRule = AgentTestRule()
       outerRule.apply(statement, description)
@@ -146,10 +147,16 @@ class Paparazzi @JvmOverloads constructor(
   }
 
   fun prepare(description: Description) {
-    forcePlatformSdkVersion(environment.compileSdkVersion)
+    // forcePlatformSdkVersion(environment.compileSdkVersion)
 
+    val layoutlibClassLoader = LayoutlibClassLoader(Paparazzi::class.java.classLoader)
     val layoutlibCallback =
-      PaparazziCallback(logger, environment.packageName, environment.resourcePackageNames)
+      PaparazziCallback(
+        logger = logger,
+        packageName = environment.packageName,
+        resourcePackageNames = environment.resourcePackageNames,
+        classLoader = layoutlibClassLoader,
+      )
     layoutlibCallback.initResources()
 
     testName = description.toTestName()
@@ -158,6 +165,16 @@ class Paparazzi @JvmOverloads constructor(
       renderer = Renderer(environment, layoutlibCallback, logger)
       sessionParamsBuilder = renderer.prepare()
     }
+    layoutlibCallback.initClassLoader()
+
+    // println("Original!: " + _Original_Build.MANUFACTURER)
+    // val buildClass = try {
+    //   layoutlibClassLoader.loadClass("android.os.Build")
+    // } catch (e: ClassNotFoundException) {
+    //   // Project unit tests don't load Android platform code
+    //   return
+    // }
+    // println("Build!: " + buildClass.getFieldReflectively("MANUFACTURER").get(null))
 
     sessionParamsBuilder = sessionParamsBuilder
       .copy(

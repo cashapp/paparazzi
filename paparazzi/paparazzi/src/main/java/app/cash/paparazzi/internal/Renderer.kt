@@ -16,6 +16,7 @@
 
 package app.cash.paparazzi.internal
 
+import android.os._Original_Build
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Environment
 import app.cash.paparazzi.Flags
@@ -89,6 +90,8 @@ internal class Renderer(
           logger
         )
       ) { "Failed to init Bridge." }
+
+      println("after call to init, _Original_Build.MANUFACTURER = ${_Original_Build.MANUFACTURER}")
     }
     Bridge.getLock()
       .lock()

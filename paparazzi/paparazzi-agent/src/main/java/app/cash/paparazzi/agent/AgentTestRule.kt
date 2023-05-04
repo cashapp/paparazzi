@@ -11,8 +11,8 @@ class AgentTestRule : TestRule {
     description: Description
   ) = object : Statement() {
     override fun evaluate() {
-      ByteBuddyAgent.install()
-      InterceptorRegistrar.registerMethodInterceptors()
+      // ByteBuddyAgent.install()
+      // InterceptorRegistrar.registerMethodInterceptors()
       // interceptors are statically retained until test process finishes, so no need to cleanup
       base.evaluate()
     }

@@ -16,6 +16,7 @@
 
 package app.cash.paparazzi.internal
 
+import app.cash.paparazzi.LayoutlibClassLoader
 import app.cash.paparazzi.internal.parsers.LayoutPullParser
 import app.cash.paparazzi.internal.parsers.TagSnapshot
 import com.android.AndroidXConstants.CLASS_RECYCLER_VIEW_ADAPTER
@@ -43,7 +44,8 @@ import java.lang.reflect.Modifier
 internal class PaparazziCallback(
   private val logger: PaparazziLogger,
   private val packageName: String,
-  private val resourcePackageNames: List<String>
+  private val resourcePackageNames: List<String>,
+  private val classLoader: LayoutlibClassLoader,
 ) : LayoutlibCallback() {
   private val projectResources = mutableMapOf<Int, ResourceReference>()
   private val resources = mutableMapOf<ResourceReference, Int>()
@@ -52,6 +54,8 @@ internal class PaparazziCallback(
   private val dynamicResourceIdManager = DynamicResourceIdManager()
 
   private val loadedClasses = mutableMapOf<String, Class<*>>()
+
+  fun initClassLoader() { classLoader.initialize() }
 
   @Throws(ClassNotFoundException::class)
   fun initResources() {
@@ -218,10 +222,17 @@ internal class PaparazziCallback(
     constructorSignature: Array<Class<*>>,
     constructorArgs: Array<Any>
   ): Any? {
-    val anyClass = Class.forName(name)
-    val anyConstructor = anyClass.getConstructor(*constructorSignature)
-    anyConstructor.isAccessible = true
-    return anyConstructor.newInstance(*constructorArgs)
+    return createNewInstance(classLoader.loadClass(name), constructorSignature, constructorArgs)
+  }
+
+  private fun createNewInstance(
+    clazz: Class<*>,
+    constructorSignature: Array<Class<*>>,
+    constructorArgs: Array<Any>
+  ): Any? {
+    val constructor = clazz.getConstructor(*constructorSignature)
+    constructor.isAccessible = true
+    return constructor.newInstance(*constructorArgs)
   }
 
   private companion object {
