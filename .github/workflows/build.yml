@@ -4,6 +4,8 @@ on: [push, pull_request]
 
 env:
   GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false -Dkotlin.incremental=false"
+  GRADLE_BUILD_ACTION_CACHE_DEBUG_ENABLED: true
+  GRADLE_USER_HOME: ${{ github.workspace }} # required for Windows due to resource relative paths
 
 jobs:
   build:
@@ -20,6 +22,12 @@ jobs:
     runs-on: ${{matrix.os}}
 
     steps:
+      - name: Echo HOME
+        run: echo $HOME
+
+      - name: Echo envvars
+        run: env
+
       - name: Checkout
         uses: actions/checkout@v3.5.2
 
