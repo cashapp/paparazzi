@@ -15,6 +15,7 @@
  */
 package app.cash.paparazzi.gradle
 
+import app.cash.paparazzi.gradle.utils.joinFiles
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.RegularFileProperty
@@ -98,10 +99,10 @@ abstract class PrepareResourcesTask : DefaultTask() {
         it.newLine()
         it.write(resourcePackageNames)
         it.newLine()
-        // it.write(localResourceFiles.joinFiles(projectDirectory))
-        // it.newLine()
-        // it.write(libraryResourceFiles.joinFiles(projectDirectory))
-        // it.newLine()
+        it.write(localResourceFiles.joinFiles(projectDirectory))
+        it.newLine()
+        it.write(libraryResourceFiles.joinFiles(projectDirectory))
+        it.newLine()
       }
   }
 }
