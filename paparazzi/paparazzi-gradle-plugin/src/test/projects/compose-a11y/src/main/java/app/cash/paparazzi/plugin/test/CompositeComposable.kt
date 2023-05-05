@@ -56,6 +56,8 @@ fun CompositeComposable() {
       }
     }
 
+    Text("multi\nline\ntext")
+
     AndroidView(
       modifier = Modifier.wrapContentSize(),
       factory = { context ->
