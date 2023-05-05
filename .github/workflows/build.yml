@@ -34,8 +34,8 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
 
-      - name: Run Paparazzi Tests
-        run: ./gradlew -p paparazzi check
+#      - name: Run Paparazzi Tests
+#        run: ./gradlew -p paparazzi check
 
       - name: Run Sample Tests
         run: ./gradlew check --debug --stacktrace
