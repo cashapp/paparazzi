@@ -1,6 +1,5 @@
 package app.cash.paparazzi.gradle.utils
 
-import com.android.ide.common.util.toPathString
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.Directory
 import java.io.File
