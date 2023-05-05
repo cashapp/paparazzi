@@ -5,7 +5,7 @@ import org.gradle.api.file.Directory
 import java.io.File
 
 fun ConfigurableFileCollection.joinFiles(directory: Directory) = files.joinToString(",") { file ->
-  directory.relativize(file)
+  file.absolutePath
 }
 
 fun Directory.relativize(child: File): String {
