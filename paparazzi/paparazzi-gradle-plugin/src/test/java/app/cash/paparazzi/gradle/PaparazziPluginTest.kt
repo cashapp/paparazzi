@@ -738,6 +738,8 @@ class PaparazziPluginTest {
     assertThat(resourceFileContents[1]).isEqualTo("intermediates/merged_res/debug")
     assertThat(resourceFileContents[4]).isEqualTo("intermediates/assets/debug")
     assertThat(resourceFileContents[5]).isEqualTo("app.cash.paparazzi.plugin.test")
+    assertThat(resourceFileContents[6]).isEqualTo("src/main/res/values/strings.xml")
+    assertThat(resourceFileContents[7]).isEqualTo("../../../../build/tmp/test/work/.gradle-test-kit/caches/transforms-3/881c8c88ff6065d763ad7e4873ed32b3/transformed/external/res/values/values.xml")
   }
 
   @Test
@@ -758,6 +760,8 @@ class PaparazziPluginTest {
     assertThat(resourceFileContents[1]).isEqualTo("intermediates/merged_res/debug")
     assertThat(resourceFileContents[4]).isEqualTo("intermediates/assets/debug")
     assertThat(resourceFileContents[5]).isEqualTo("app.cash.paparazzi.plugin.test")
+    assertThat(resourceFileContents[6]).isEqualTo("src/main/res/values/strings.xml")
+    assertThat(resourceFileContents[7]).isEqualTo("../../../../build/tmp/test/work/.gradle-test-kit/caches/transforms-3/881c8c88ff6065d763ad7e4873ed32b3/transformed/external/res/values/values.xml")
   }
 
   @Test

@@ -20,3 +20,7 @@ android {
     minSdk libs.versions.minSdk.get() as int
   }
 }
+
+dependencies {
+  implementation files('libs/external.aar')
+}

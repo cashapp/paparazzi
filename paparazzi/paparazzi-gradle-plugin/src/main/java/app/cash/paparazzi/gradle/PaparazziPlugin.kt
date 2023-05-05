@@ -19,6 +19,7 @@ import app.cash.paparazzi.NATIVE_LIB_VERSION
 import app.cash.paparazzi.VERSION
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.LibraryExtension
+import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.tasks.MergeSourceSetFolders
 import com.android.ide.common.symbols.getPackageNameFromManifest
 import org.gradle.api.Action
@@ -26,8 +27,10 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.artifacts.ArtifactView
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
 import org.gradle.api.attributes.Attribute
+import org.gradle.api.attributes.AttributeContainer
 import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileCollection
@@ -104,6 +107,27 @@ class PaparazziPlugin : Plugin<Project> {
         val nonTransitiveRClassEnabled =
           (project.findProperty("android.nonTransitiveRClass") as? String).toBoolean()
 
+        // local resources
+        val localResourceFiles = project
+          .files(variant.sourceSets.flatMap { it.resDirectories })
+          .asFileTree
+
+        // library resources
+        // https://android.googlesource.com/platform/tools/base/+/96015063acd3455a76cdf1cc71b23b0828c0907f/build-system/gradle-core/src/main/java/com/android/build/gradle/tasks/MergeResources.kt#875
+        val libraryResourceFiles = variant.runtimeConfiguration
+          .incoming
+          .artifactView { config: ArtifactView.ViewConfiguration ->
+            config.attributes { container: AttributeContainer ->
+              container.attribute(
+                AndroidArtifacts.ARTIFACT_TYPE,
+                AndroidArtifacts.ArtifactType.ANDROID_RES.type
+              )
+            }
+          }
+          .artifacts
+          .artifactFiles
+          .asFileTree
+
         task.packageName.set(android.packageName())
         task.artifactFiles.from(packageAwareArtifacts.artifactFiles)
         task.nonTransitiveRClassEnabled.set(nonTransitiveRClassEnabled)
@@ -111,6 +135,8 @@ class PaparazziPlugin : Plugin<Project> {
         task.targetSdkVersion.set(android.targetSdkVersion())
         task.compileSdkVersion.set(android.compileSdkVersion())
         task.mergeAssetsOutputDir.set(buildDirectory.asRelativePathString(mergeAssetsOutputDir))
+        task.localResourceFiles.from(localResourceFiles)
+        task.libraryResourceFiles.from(libraryResourceFiles)
         task.paparazziResources.set(buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.txt"))
       }
 
