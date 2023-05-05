@@ -17,7 +17,8 @@
 package app.cash.paparazzi.internal
 
 import app.cash.paparazzi.DeviceConfig
-import app.cash.paparazzi.deprecated.com.android.ide.common.resources.deprecated.ResourceRepository
+import app.cash.paparazzi.internal.ResourceRepositoryBridge.Legacy
+import app.cash.paparazzi.internal.ResourceRepositoryBridge.New
 import app.cash.paparazzi.internal.parsers.LayoutPullParser
 import com.android.SdkConstants
 import com.android.ide.common.rendering.api.AssetRepository
@@ -36,9 +37,9 @@ import com.android.resources.ResourceType
 internal data class SessionParamsBuilder(
   private val layoutlibCallback: PaparazziCallback,
   private val logger: PaparazziLogger,
-  private val frameworkResources: ResourceRepository,
+  private val frameworkResources: ResourceRepositoryBridge,
   private val assetRepository: AssetRepository,
-  private val projectResources: ResourceRepository,
+  private val projectResources: ResourceRepositoryBridge,
   private val deviceConfig: DeviceConfig = DeviceConfig.NEXUS_5,
   private val renderingMode: RenderingMode = RenderingMode.NORMAL,
   private val targetSdk: Int = 22,
@@ -78,12 +79,21 @@ internal data class SessionParamsBuilder(
     val folderConfiguration = deviceConfig.folderConfiguration
     val resourceResolver = ResourceResolver.create(
       mapOf<ResourceNamespace, Map<ResourceType, ResourceValueMap>>(
-        ResourceNamespace.ANDROID to frameworkResources.getConfiguredResources(
-          folderConfiguration
-        ),
-        ResourceNamespace.TODO() to projectResources.getConfiguredResources(
-          folderConfiguration
-        )
+        when (frameworkResources) {
+          is Legacy ->
+            ResourceNamespace.ANDROID to
+              frameworkResources.repository.getConfiguredResources(folderConfiguration)
+
+          is New -> TODO()
+        },
+        when (projectResources) {
+          is Legacy -> {
+            ResourceNamespace.TODO() to
+              projectResources.repository.getConfiguredResources(folderConfiguration)
+          }
+
+          is New -> TODO()
+        }
       ),
       ResourceReference(
         ResourceNamespace.fromBoolean(!isProjectTheme),
