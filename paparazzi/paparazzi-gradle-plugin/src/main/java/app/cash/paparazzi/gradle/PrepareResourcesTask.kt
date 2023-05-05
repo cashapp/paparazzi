@@ -101,10 +101,10 @@ abstract class PrepareResourcesTask : DefaultTask() {
         it.newLine()
         it.write(resourcePackageNames)
         it.newLine()
-        it.write(localResourceFiles.joinFiles(projectDirectory))
-        it.newLine()
-        it.write(libraryResourceFiles.joinFiles(projectDirectory))
-        it.newLine()
+        // it.write(localResourceFiles.joinFiles(projectDirectory))
+        // it.newLine()
+        // it.write(libraryResourceFiles.joinFiles(projectDirectory))
+        // it.newLine()
       }
   }
 }
