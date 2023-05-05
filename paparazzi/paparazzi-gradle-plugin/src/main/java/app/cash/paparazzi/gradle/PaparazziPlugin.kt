@@ -143,7 +143,8 @@ class PaparazziPlugin : Plugin<Project> {
       val testVariantSlug = testVariant.name.capitalize(Locale.US)
 
       project.plugins.withType(JavaBasePlugin::class.java) {
-        writeResourcesTask.configure { it.dependsOn(project.tasks.named("compile${testVariantSlug}JavaWithJavac")) }
+        project.tasks.named("compile${testVariantSlug}JavaWithJavac")
+          .configure { it.dependsOn(writeResourcesTask) }
       }
 
       project.plugins.withType(KotlinMultiplatformPluginWrapper::class.java) {
@@ -152,11 +153,13 @@ class PaparazziPlugin : Plugin<Project> {
         check(multiplatformExtension.targets.any { target -> target is KotlinAndroidTarget }) {
           "There must be an Android target configured when using Paparazzi with the Kotlin Multiplatform Plugin"
         }
-        writeResourcesTask.configure { it.dependsOn(project.tasks.named("compile${testVariantSlug}KotlinAndroid")) }
+        project.tasks.named("compile${testVariantSlug}KotlinAndroid")
+          .configure { it.dependsOn(writeResourcesTask) }
       }
 
       project.plugins.withType(KotlinAndroidPluginWrapper::class.java) {
-        writeResourcesTask.configure { it.dependsOn(project.tasks.named("compile${testVariantSlug}Kotlin")) }
+        project.tasks.named("compile${testVariantSlug}Kotlin")
+          .configure { it.dependsOn(writeResourcesTask) }
       }
 
       val recordTaskProvider = project.tasks.register("recordPaparazzi$variantSlug", PaparazziTask::class.java) {
@@ -209,8 +212,6 @@ class PaparazziPlugin : Plugin<Project> {
           }
         })
       }
-
-      testTaskProvider.configure { it.dependsOn(writeResourcesTask) }
 
       recordTaskProvider.configure { it.dependsOn(testTaskProvider) }
       verifyTaskProvider.configure { it.dependsOn(testTaskProvider) }

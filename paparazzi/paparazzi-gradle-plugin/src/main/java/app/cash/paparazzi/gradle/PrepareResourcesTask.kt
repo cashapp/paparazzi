@@ -15,6 +15,7 @@
  */
 package app.cash.paparazzi.gradle
 
+import app.cash.paparazzi.gradle.utils.joinFiles
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.Directory
@@ -100,18 +101,10 @@ abstract class PrepareResourcesTask : DefaultTask() {
         it.newLine()
         it.write(resourcePackageNames)
         it.newLine()
-        it.write(localResourceFiles.joinFiles())
+        it.write(localResourceFiles.joinFiles(projectDirectory))
         it.newLine()
-        it.write(libraryResourceFiles.joinFiles())
+        it.write(libraryResourceFiles.joinFiles(projectDirectory))
         it.newLine()
       }
-  }
-
-  private fun ConfigurableFileCollection.joinFiles() = files.joinToString(",") { file ->
-    projectDirectory.relativize(file)
-  }
-
-  private fun Directory.relativize(child: File): String {
-    return asFile.toPath().relativize(child.toPath()).toFile().invariantSeparatorsPath
   }
 }
