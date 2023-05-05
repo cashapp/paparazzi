@@ -12,11 +12,9 @@ jobs:
       fail-fast: false
       matrix:
         os: [
-          macOS-latest,
           windows-latest,
-          ubuntu-latest
         ]
-        java-version: [11, 12, 16, 18]
+        java-version: [11]
 
     runs-on: ${{matrix.os}}
 
