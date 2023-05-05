@@ -12,9 +12,11 @@ jobs:
       fail-fast: false
       matrix:
         os: [
+          macOS-latest,
           windows-latest,
+          ubuntu-latest
         ]
-        java-version: [11]
+        java-version: [11, 12, 16, 18]
 
     runs-on: ${{matrix.os}}
 
@@ -34,11 +36,11 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
 
-#      - name: Run Paparazzi Tests
-#        run: ./gradlew -p paparazzi check
+      - name: Run Paparazzi Tests
+        run: ./gradlew -p paparazzi check
 
       - name: Run Sample Tests
-        run: ./gradlew check --debug --stacktrace
+        run: ./gradlew check
 
       - name: Upload Test Failures
         if: failure()
