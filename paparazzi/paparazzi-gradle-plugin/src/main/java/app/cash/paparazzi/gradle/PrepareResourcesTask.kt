@@ -15,10 +15,8 @@
  */
 package app.cash.paparazzi.gradle
 
-import app.cash.paparazzi.gradle.utils.joinFiles
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
-import org.gradle.api.file.Directory
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
@@ -28,7 +26,6 @@ import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
-import java.io.File
 
 @CacheableTask
 abstract class PrepareResourcesTask : DefaultTask() {
