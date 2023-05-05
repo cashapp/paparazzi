@@ -39,7 +39,7 @@ jobs:
         run: ./gradlew -p paparazzi check
 
       - name: Run Sample Tests
-        run: ./gradlew check
+        run: ./gradlew check --debug --stacktrace
 
       - name: Upload Test Failures
         if: failure()
