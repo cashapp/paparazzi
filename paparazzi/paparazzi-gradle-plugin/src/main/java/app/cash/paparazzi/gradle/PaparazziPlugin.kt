@@ -17,9 +17,11 @@ package app.cash.paparazzi.gradle
 
 import app.cash.paparazzi.NATIVE_LIB_VERSION
 import app.cash.paparazzi.VERSION
+import app.cash.paparazzi.gradle.utils.artifactViewFor
+import app.cash.paparazzi.gradle.utils.artifactsFor
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.LibraryExtension
-import com.android.build.gradle.internal.publishing.AndroidArtifacts
+import com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactType
 import com.android.build.gradle.tasks.MergeSourceSetFolders
 import com.android.ide.common.symbols.getPackageNameFromManifest
 import org.gradle.api.Action
@@ -27,10 +29,8 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.artifacts.ArtifactView
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
-import org.gradle.api.attributes.Attribute
-import org.gradle.api.attributes.AttributeContainer
+import org.gradle.api.artifacts.type.ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE
 import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileCollection
@@ -91,13 +91,21 @@ class PaparazziPlugin : Plugin<Project> {
       val reportOutputDir = buildDirectory.dir("reports/paparazzi")
       val snapshotOutputDir = project.layout.projectDirectory.dir("src/test/snapshots")
 
-      val packageAwareArtifacts = project.configurations
-        .getByName("${variant.name}RuntimeClasspath")
-        .incoming
-        .artifactView {
-          it.attributes.attribute(ARTIFACT_TYPE_ATTRIBUTE, "android-symbol-with-package-name")
-        }
-        .artifacts
+      // local resources
+      val localResourceFiles = project
+        .files(variant.sourceSets.flatMap { it.resDirectories })
+        .asFileTree
+
+      // library resources
+      // https://android.googlesource.com/platform/tools/base/+/96015063acd3455a76cdf1cc71b23b0828c0907f/build-system/gradle-core/src/main/java/com/android/build/gradle/tasks/MergeResources.kt#875
+      val libraryResourceFiles = variant.runtimeConfiguration
+        .artifactsFor(ArtifactType.ANDROID_RES.type)
+        .artifactFiles
+        .asFileTree
+
+      val packageAwareArtifactFiles = variant.runtimeConfiguration
+        .artifactsFor(ArtifactType.SYMBOL_LIST_WITH_PACKAGE_NAME.type)
+        .artifactFiles
 
       val writeResourcesTask = project.tasks.register(
         "preparePaparazzi${variantSlug}Resources",
@@ -107,29 +115,8 @@ class PaparazziPlugin : Plugin<Project> {
         val nonTransitiveRClassEnabled =
           (project.findProperty("android.nonTransitiveRClass") as? String).toBoolean()
 
-        // local resources
-        val localResourceFiles = project
-          .files(variant.sourceSets.flatMap { it.resDirectories })
-          .asFileTree
-
-        // library resources
-        // https://android.googlesource.com/platform/tools/base/+/96015063acd3455a76cdf1cc71b23b0828c0907f/build-system/gradle-core/src/main/java/com/android/build/gradle/tasks/MergeResources.kt#875
-        val libraryResourceFiles = variant.runtimeConfiguration
-          .incoming
-          .artifactView { config: ArtifactView.ViewConfiguration ->
-            config.attributes { container: AttributeContainer ->
-              container.attribute(
-                AndroidArtifacts.ARTIFACT_TYPE,
-                AndroidArtifacts.ArtifactType.ANDROID_RES.type
-              )
-            }
-          }
-          .artifacts
-          .artifactFiles
-          .asFileTree
-
         task.packageName.set(android.packageName())
-        task.artifactFiles.from(packageAwareArtifacts.artifactFiles)
+        task.artifactFiles.from(packageAwareArtifactFiles)
         task.nonTransitiveRClassEnabled.set(nonTransitiveRClassEnabled)
         task.mergeResourcesOutputDir.set(buildDirectory.asRelativePathString(mergeResourcesOutputDir))
         task.targetSdkVersion.set(android.targetSdkVersion())
@@ -261,10 +248,7 @@ class PaparazziPlugin : Plugin<Project> {
     }
 
     return nativePlatformConfiguration
-      .incoming
-      .artifactView {
-        it.attributes.attribute(ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.DIRECTORY_TYPE)
-      }
+      .artifactViewFor(ArtifactTypeDefinition.DIRECTORY_TYPE)
       .files
   }
 
@@ -305,7 +289,4 @@ private fun Directory.relativize(child: Directory): String {
 private fun DirectoryProperty.asRelativePathString(child: Provider<Directory>): Provider<String> =
   flatMap { root -> child.map { root.relativize(it) } }
 
-// TODO: Migrate to ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE when Gradle 7.3 is
-//  acceptable as the minimum supported version
-private val ARTIFACT_TYPE_ATTRIBUTE = Attribute.of("artifactType", String::class.java)
 private const val DEFAULT_COMPILE_SDK_VERSION = 33
