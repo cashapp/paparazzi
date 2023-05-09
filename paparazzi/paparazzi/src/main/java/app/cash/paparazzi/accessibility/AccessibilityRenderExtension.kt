@@ -93,11 +93,16 @@ class AccessibilityRenderExtension : RenderExtension {
   ) {
     // TODO: Add input from [AccessibilityRenderExtension] to determine what generates the accessibility text output.
     val id = id
-    val accessibilityText = config.getOrNull(SemanticsProperties.Text)?.joinToString(", ")
-      ?: config.getOrNull(SemanticsProperties.ContentDescription)?.joinToString(", ")
-      ?: config.getOrNull(SemanticsProperties.StateDescription)
-      ?: config.getOrNull(SemanticsActions.OnClick)?.label
-      ?: config.getOrNull(SemanticsProperties.Role)?.toString()
+    val accessibilityText = (
+      config.getOrNull(SemanticsProperties.ContentDescription)?.joinToString(", ")
+        ?: config.getOrNull(SemanticsProperties.Text)?.joinToString(", ")
+        ?: config.getOrNull(SemanticsProperties.StateDescription)
+        ?: config.getOrNull(SemanticsActions.OnClick)?.label
+        ?: config.getOrNull(SemanticsProperties.Role)?.toString()
+      ).let {
+      // Escape newline characters to simplify accessibility text.
+      it?.replaceLineBreaks()
+    }
 
     if (accessibilityText != null) {
       val displayBounds = with(boundsInWindow) {
@@ -117,3 +122,8 @@ class AccessibilityRenderExtension : RenderExtension {
     }
   }
 }
+
+private fun String.replaceLineBreaks() =
+  replace("\n", "\\n")
+    .replace("\r", "\\r")
+    .replace("\t", "\\t")

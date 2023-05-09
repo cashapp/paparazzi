@@ -21,6 +21,8 @@ android {
   }
 }
 
-dependencies {
-  implementation files('libs/external.aar')
+tasks.withType(Test).configureEach {
+  testLogging {
+    exceptionFormat 'FULL'
+  }
 }

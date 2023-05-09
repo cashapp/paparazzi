@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.viewinterop.AndroidView
 
@@ -32,7 +33,11 @@ fun CompositeComposable() {
         )
         .fillMaxWidth()
     ) {
-      Text("Option", Modifier.weight(1f))
+      Text(
+        "Option",
+        Modifier.weight(1f)
+          .semantics { contentDescription = "Custom content description for Text" }
+      )
       Checkbox(checked = true, onCheckedChange = null)
     }
     Box(
@@ -50,6 +55,8 @@ fun CompositeComposable() {
         Text("more text")
       }
     }
+
+    Text("multi\nline\ntext")
 
     AndroidView(
       modifier = Modifier.wrapContentSize(),

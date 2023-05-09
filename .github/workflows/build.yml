@@ -4,6 +4,7 @@ on: [push, pull_request]
 
 env:
   GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false -Dkotlin.incremental=false"
+  GRADLE_USER_HOME: ${{ github.workspace }}/gradle-home # required for Windows due to resource relative paths
 
 jobs:
   build:

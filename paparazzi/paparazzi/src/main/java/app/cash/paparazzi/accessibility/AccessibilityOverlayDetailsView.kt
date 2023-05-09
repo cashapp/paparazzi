@@ -81,7 +81,7 @@ internal class AccessibilityOverlayDetailsView(context: Context) : FrameLayout(c
       textLayout.draw(canvas)
       canvas.restore()
 
-      lastYCoord = max(badge.bottom + margin, textLayout.height.toFloat())
+      lastYCoord = max(badge.bottom + margin, textY + textLayout.height.toFloat())
     }
   }
 

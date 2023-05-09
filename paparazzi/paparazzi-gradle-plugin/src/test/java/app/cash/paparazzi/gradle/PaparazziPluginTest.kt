@@ -216,6 +216,40 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun flagNewResourceLoadingIsOff() {
+    val fixtureRoot = File("src/test/projects/flag-new-resource-loading-off")
+
+    val result = gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
+    assertThat(result.task(":testDebugUnitTest")).isNotNull()
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()
+    assertThat(snapshots!!).hasLength(1)
+
+    val snapshotImage = snapshots[0]
+    val goldenImage = File(fixtureRoot, "src/test/resources/launch.png")
+    assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
+  }
+
+  @Test
+  fun flagNewResourceLoadingIsOn() {
+    val fixtureRoot = File("src/test/projects/flag-new-resource-loading-on")
+
+    val result = gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .forwardOutput()
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    assertThat(result.output).contains(
+      "An operation is not implemented: New resource loading coming soon"
+    )
+  }
+
+  @Test
   fun cacheable() {
     val fixtureRoot = File("src/test/projects/cacheable")
 
@@ -704,6 +738,8 @@ class PaparazziPluginTest {
     assertThat(resourceFileContents[1]).isEqualTo("intermediates/merged_res/debug")
     assertThat(resourceFileContents[4]).isEqualTo("intermediates/assets/debug")
     assertThat(resourceFileContents[5]).isEqualTo("app.cash.paparazzi.plugin.test")
+    assertThat(resourceFileContents[6]).isEqualTo("src/main/res/values/strings.xml")
+    assertThat(resourceFileContents[7]).isEqualTo("../../../../build/tmp/test/work/.gradle-test-kit/caches/transforms-3/447a80cf40ceaa09b49db1df799dcb00/transformed/external/res/values/values.xml")
   }
 
   @Test
@@ -724,6 +760,8 @@ class PaparazziPluginTest {
     assertThat(resourceFileContents[1]).isEqualTo("intermediates/merged_res/debug")
     assertThat(resourceFileContents[4]).isEqualTo("intermediates/assets/debug")
     assertThat(resourceFileContents[5]).isEqualTo("app.cash.paparazzi.plugin.test")
+    assertThat(resourceFileContents[6]).isEqualTo("src/main/res/values/strings.xml")
+    assertThat(resourceFileContents[7]).isEqualTo("../../../../build/tmp/test/work/.gradle-test-kit/caches/transforms-3/447a80cf40ceaa09b49db1df799dcb00/transformed/external/res/values/values.xml")
   }
 
   @Test
