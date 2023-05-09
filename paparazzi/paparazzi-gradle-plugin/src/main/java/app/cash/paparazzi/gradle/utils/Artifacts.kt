@@ -15,14 +15,15 @@
  */
 package app.cash.paparazzi.gradle.utils
 
-import org.gradle.api.file.ConfigurableFileCollection
-import org.gradle.api.file.Directory
-import java.io.File
+import org.gradle.api.artifacts.ArtifactCollection
+import org.gradle.api.artifacts.ArtifactView
+import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.type.ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE
 
-fun ConfigurableFileCollection.joinFiles(directory: Directory) = files.joinToString(",") { file ->
-  directory.relativize(file)
-}
+internal fun Configuration.artifactsFor(attrValue: String): ArtifactCollection =
+  artifactViewFor(attrValue).artifacts
 
-fun Directory.relativize(child: File): String {
-  return asFile.toPath().relativize(child.toPath()).toFile().invariantSeparatorsPath
-}
+internal fun Configuration.artifactViewFor(attrValue: String): ArtifactView =
+  incoming.artifactView { config ->
+    config.attributes.attribute(ARTIFACT_TYPE_ATTRIBUTE, attrValue)
+  }
