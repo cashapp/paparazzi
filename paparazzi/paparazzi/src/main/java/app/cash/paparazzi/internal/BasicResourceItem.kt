@@ -37,45 +37,33 @@ import org.w3c.dom.Element
 import java.io.File
 import java.util.EnumSet
 
-open class PaparazziResourceItem constructor(
+class BasicResourceItem(
   file: File,
   tag: Element?,
   private val name: String,
   private val type: ResourceType,
-  private val repository: SingleNamespaceResourceRepository,
+  private val repository: SingleNamespaceResourceRepository
 ) : ResourceItem {
   private val resourceValue: ResourceValue
 
-  open val folderConfiguration: FolderConfiguration =
+  private val folderConfiguration: FolderConfiguration =
     FolderConfiguration.getConfigForFolder(file.parentFile.name)
 
   private val source = PathString(file)
 
   private val isFileBased = tag == null
 
-  override fun getConfiguration(): FolderConfiguration {
-    return folderConfiguration
-  }
+  override fun getConfiguration() = folderConfiguration
 
-  override fun getName(): String {
-    return name
-  }
+  override fun getName() = name
 
-  override fun getType(): ResourceType {
-    return type
-  }
+  override fun getType() = type
 
-  override fun getNamespace(): ResourceNamespace {
-    return repository.namespace
-  }
+  override fun getNamespace(): ResourceNamespace = repository.namespace
 
-  override fun getLibraryName(): String? {
-    return null
-  }
+  override fun getLibraryName() = null
 
-  override fun getRepository(): SingleNamespaceResourceRepository {
-    return repository
-  }
+  override fun getRepository() = repository
 
   override fun getReferenceToSelf(): ResourceReference =
     ResourceReference(namespace, type, name)
@@ -93,9 +81,9 @@ open class PaparazziResourceItem constructor(
         if (type == ResourceType.DRAWABLE || type == ResourceType.MIPMAP) configuration.densityQualifier?.value else null
       val path = file.absolutePath
       if (density != null) {
-        DensityBasedResourceValueImpl(namespace, type, name, path, density, null);
+        DensityBasedResourceValueImpl(namespace, type, name, path, density, null)
       } else {
-        ResourceValueImpl(namespace, type, name, path, null);
+        ResourceValueImpl(namespace, type, name, path, null)
       }
     } else {
       parseXmlToResourceValueSafe(tag)
@@ -146,7 +134,8 @@ open class PaparazziResourceItem constructor(
             }
             return super.getValue()
           }
-        })
+        }
+      )
 
       ResourceType.STRING ->
         parseTextValue(tag, TextResourceValueImpl(namespace, name, null, null, null))
