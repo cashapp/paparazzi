@@ -314,12 +314,8 @@
 <td>[jvm]<br>class <a href="-basic-resource-item/">BasicResourceItem</a>(type: ResourceType, name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, visibility: ResourceVisibility, repositoryConfiguration: <a href="-repository-configuration/">RepositoryConfiguration</a>, file: <a href="https://docs.oracle.com/javase/8/docs/api/java/io/File.html">File</a>, tag: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/org.w3c.dom/-element/index.html">Element</a>?) : ResourceItemWithVisibility, ResourceValue</td>
 </tr>
 <tr>
-<td><a href="-loadable-resource-repository/">LoadableResourceRepository</a></td>
-<td>[jvm]<br>interface <a href="-loadable-resource-repository/">LoadableResourceRepository</a> : SingleNamespaceResourceRepository<br>Repository of resources loaded from a file or a directory on disk.</td>
-</tr>
-<tr>
 <td><a href="-repository-configuration/">RepositoryConfiguration</a></td>
-<td>[jvm]<br>class <a href="-repository-configuration/">RepositoryConfiguration</a>(repository: <a href="-loadable-resource-repository/">LoadableResourceRepository</a>, val folderConfiguration: FolderConfiguration)<br>A (<a href="-loadable-resource-repository/">LoadableResourceRepository</a>, FolderConfiguration) pair. Instances of <a href="-basic-resource-item/">BasicResourceItem</a> contain a reference to an <a href="-repository-configuration/">RepositoryConfiguration</a> instead of two separate references to <a href="-loadable-resource-repository/">LoadableResourceRepository</a> and FolderConfiguration. This indirection saves memory because the number of <a href="-repository-configuration/">RepositoryConfiguration</a> instances is a tiny fraction of the number of <a href="-basic-resource-item/">BasicResourceItem</a> instances.</td>
+<td>[jvm]<br>class <a href="-repository-configuration/">RepositoryConfiguration</a>(repository: SingleNamespaceResourceRepository, val folderConfiguration: FolderConfiguration)<br>A (SingleNamespaceResourceRepository, FolderConfiguration) pair. Instances of <a href="-basic-resource-item/">BasicResourceItem</a> contain a reference to an <a href="-repository-configuration/">RepositoryConfiguration</a> instead of two separate references to SingleNamespaceResourceRepository and FolderConfiguration. This indirection saves memory because the number of <a href="-repository-configuration/">RepositoryConfiguration</a> instances is a tiny fraction of the number of <a href="-basic-resource-item/">BasicResourceItem</a> instances.</td>
 </tr>
 </tbody>
 </table>

@@ -1846,46 +1846,6 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources/-loadable-resource-repository/</loc>
-         <lastmod>2023-05-11</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources/-loadable-resource-repository/contains-user-defined-resources/</loc>
-         <lastmod>2023-05-11</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources/-loadable-resource-repository/display-name/</loc>
-         <lastmod>2023-05-11</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources/-loadable-resource-repository/get-original-source-file/</loc>
-         <lastmod>2023-05-11</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources/-loadable-resource-repository/get-resource-url/</loc>
-         <lastmod>2023-05-11</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources/-loadable-resource-repository/get-source-file/</loc>
-         <lastmod>2023-05-11</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources/-loadable-resource-repository/library-name/</loc>
-         <lastmod>2023-05-11</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources/-loadable-resource-repository/origin/</loc>
-         <lastmod>2023-05-11</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
          <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources/-repository-configuration/</loc>
          <lastmod>2023-05-11</lastmod>
          <changefreq>daily</changefreq>

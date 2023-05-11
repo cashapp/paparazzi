@@ -308,8 +308,8 @@
                 <p>//<a href="../../../">paparazzi</a>/<a href="../">app.cash.paparazzi.internal.resources</a>/<a href="./">RepositoryConfiguration</a></p>
 <h1 id="repositoryconfiguration">RepositoryConfiguration<a class="headerlink" href="#repositoryconfiguration" title="Permanent link">&para;</a></h1>
 <p>[jvm]\
-class <a href="./">RepositoryConfiguration</a>(repository: <a href="../-loadable-resource-repository/">LoadableResourceRepository</a>, val folderConfiguration: FolderConfiguration)</p>
-<p>A (<a href="../-loadable-resource-repository/">LoadableResourceRepository</a>, FolderConfiguration) pair. Instances of <a href="../-basic-resource-item/">BasicResourceItem</a> contain a reference to an <a href="./">RepositoryConfiguration</a> instead of two separate references to <a href="../-loadable-resource-repository/">LoadableResourceRepository</a> and FolderConfiguration. This indirection saves memory because the number of <a href="./">RepositoryConfiguration</a> instances is a tiny fraction of the number of <a href="../-basic-resource-item/">BasicResourceItem</a> instances.</p>
+class <a href="./">RepositoryConfiguration</a>(repository: SingleNamespaceResourceRepository, val folderConfiguration: FolderConfiguration)</p>
+<p>A (SingleNamespaceResourceRepository, FolderConfiguration) pair. Instances of <a href="../-basic-resource-item/">BasicResourceItem</a> contain a reference to an <a href="./">RepositoryConfiguration</a> instead of two separate references to SingleNamespaceResourceRepository and FolderConfiguration. This indirection saves memory because the number of <a href="./">RepositoryConfiguration</a> instances is a tiny fraction of the number of <a href="../-basic-resource-item/">BasicResourceItem</a> instances.</p>
 <h2 id="constructors">Constructors<a class="headerlink" href="#constructors" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -321,7 +321,7 @@ class <a href="./">RepositoryConfiguration</a>(repository: <a href="../-loadable
 <tbody>
 <tr>
 <td><a href="-repository-configuration/">RepositoryConfiguration</a></td>
-<td>[jvm]<br>fun <a href="-repository-configuration/">RepositoryConfiguration</a>(repository: <a href="../-loadable-resource-repository/">LoadableResourceRepository</a>, folderConfiguration: FolderConfiguration)</td>
+<td>[jvm]<br>fun <a href="-repository-configuration/">RepositoryConfiguration</a>(repository: SingleNamespaceResourceRepository, folderConfiguration: FolderConfiguration)</td>
 </tr>
 </tbody>
 </table>
@@ -340,7 +340,7 @@ class <a href="./">RepositoryConfiguration</a>(repository: <a href="../-loadable
 </tr>
 <tr>
 <td><a href="repository/">repository</a></td>
-<td>[jvm]<br>var <a href="repository/">repository</a>: <a href="../-loadable-resource-repository/">LoadableResourceRepository</a></td>
+<td>[jvm]<br>var <a href="repository/">repository</a>: SingleNamespaceResourceRepository</td>
 </tr>
 </tbody>
 </table>
