@@ -180,6 +180,18 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun buildClassAccess() {
+    val fixtureRoot = File("src/test/projects/build-class")
+
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "custom/reports/paparazzi/images")
+    assertThat(snapshotsDir.exists()).isFalse()
+  }
+
+  @Test
   fun missingPlatformDirTest() {
     val fixtureRoot = File("src/test/projects/missing-platform-dir")
 

@@ -19,10 +19,13 @@ package app.cash.paparazzi.internal
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Environment
 import app.cash.paparazzi.Flags
+import app.cash.paparazzi.Paparazzi
 import app.cash.paparazzi.deprecated.com.android.ide.common.resources.deprecated.FrameworkResources
 import app.cash.paparazzi.deprecated.com.android.ide.common.resources.deprecated.ResourceItem
 import app.cash.paparazzi.deprecated.com.android.ide.common.resources.deprecated.ResourceRepository
 import app.cash.paparazzi.deprecated.com.android.io.FolderWrapper
+import app.cash.paparazzi.getFieldReflectively
+import app.cash.paparazzi.setStaticValue
 import com.android.layoutlib.bridge.Bridge
 import com.android.layoutlib.bridge.android.RenderParamsFlags
 import com.android.layoutlib.bridge.impl.DelegateManager
@@ -100,6 +103,7 @@ internal class Renderer(
         )
       ) { "Failed to init Bridge." }
     }
+    configureBuildProperties()
     Bridge.getLock()
       .lock()
     try {
@@ -110,6 +114,35 @@ internal class Renderer(
     }
 
     return sessionParamsBuilder
+  }
+
+  private fun configureBuildProperties() {
+    val classLoader = Paparazzi::class.java.classLoader
+    val buildClass = try {
+      classLoader.loadClass("android.os.Build")
+    } catch (e: ClassNotFoundException) {
+      // Project unit tests don't load Android platform code
+      return
+    }
+    val originalBuildClass = try {
+      classLoader.loadClass("android.os._Original_Build")
+    } catch (e: ClassNotFoundException) {
+      // Project unit tests don't load Android platform code
+      return
+    }
+
+    buildClass.fields.forEach {
+      val originalField = originalBuildClass.getField(it.name)
+      buildClass.getFieldReflectively(it.name).setStaticValue(originalField.get(null))
+    }
+
+    buildClass.classes.forEach { inner ->
+      val originalInnerClass = originalBuildClass.classes.single { it.simpleName == inner.simpleName }
+      inner.fields.forEach {
+        val originalField = originalInnerClass.getField(it.name)
+        inner.getFieldReflectively(it.name).setStaticValue(originalField.get(null))
+      }
+    }
   }
 
   private fun getNativeLibDir(): String {
