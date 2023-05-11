@@ -40,9 +40,7 @@ import com.android.ide.common.rendering.api.StyleResourceValueImpl
 import com.android.ide.common.rendering.api.StyleableResourceValueImpl
 import com.android.ide.common.rendering.api.TextResourceValueImpl
 import com.android.ide.common.resources.ResourceItemWithVisibility
-import com.android.ide.common.resources.SingleNamespaceResourceRepository
 import com.android.ide.common.resources.ValueXmlHelper
-import com.android.ide.common.resources.configuration.FolderConfiguration
 import com.android.ide.common.util.PathString
 import com.android.resources.ResourceType
 import com.android.resources.ResourceType.PUBLIC
@@ -57,18 +55,15 @@ class BasicResourceItem(
   type: ResourceType,
   private val name: String,
   visibility: ResourceVisibility,
+  private val repositoryConfiguration: RepositoryConfiguration,
   file: File,
-  tag: Element?,
-  private val repository: SingleNamespaceResourceRepository
+  tag: Element?
 ) : ResourceItemWithVisibility {
   // Store enums as their ordinals in byte form to minimize memory footprint.
   private val typeOrdinal: Byte
   private val visibilityOrdinal: Byte
 
   private val resourceValue: ResourceValue
-
-  private val folderConfiguration: FolderConfiguration =
-    FolderConfiguration.getConfigForFolder(file.parentFile.name)
 
   private val source = PathString(file)
 
@@ -105,9 +100,9 @@ class BasicResourceItem(
   override fun getReferenceToSelf(): ResourceReference =
     ResourceReference(namespace, type, name)
 
-  override fun getRepository() = repository
+  override fun getRepository() = repositoryConfiguration.repository
 
-  override fun getConfiguration() = folderConfiguration
+  override fun getConfiguration() = repositoryConfiguration.folderConfiguration
 
   override fun getKey(): String {
     val qualifiers = configuration.qualifierString
