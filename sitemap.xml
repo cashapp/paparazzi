@@ -1810,4 +1810,24 @@
          <lastmod>2023-05-11</lastmod>
          <changefreq>daily</changefreq>
     </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources/-repository-configuration/</loc>
+         <lastmod>2023-05-11</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources/-repository-configuration/-repository-configuration/</loc>
+         <lastmod>2023-05-11</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources/-repository-configuration/folder-configuration/</loc>
+         <lastmod>2023-05-11</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources/-repository-configuration/repository/</loc>
+         <lastmod>2023-05-11</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
 </urlset>
