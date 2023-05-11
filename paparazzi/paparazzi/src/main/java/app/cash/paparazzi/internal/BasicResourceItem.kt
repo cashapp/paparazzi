@@ -53,12 +53,15 @@ import java.io.File
 import java.util.EnumSet
 
 class BasicResourceItem(
-  private val type: ResourceType,
+  type: ResourceType,
   private val name: String,
   file: File,
   tag: Element?,
   private val repository: SingleNamespaceResourceRepository
 ) : ResourceItem {
+  // Store enums as their ordinals in byte form to minimize memory footprint.
+  private val typeOrdinal: Byte
+
   private val resourceValue: ResourceValue
 
   private val folderConfiguration: FolderConfiguration =
@@ -69,6 +72,8 @@ class BasicResourceItem(
   private val isFileBased = tag == null
 
   init {
+    typeOrdinal = type.ordinal.toByte()
+
     resourceValue = if (tag == null || type == PUBLIC) {
       val density =
         if (type == ResourceType.DRAWABLE || type == ResourceType.MIPMAP) configuration.densityQualifier?.value else null
@@ -83,7 +88,7 @@ class BasicResourceItem(
     }
   }
 
-  override fun getType() = type
+  override fun getType() = ResourceType.values()[typeOrdinal.toInt()]
 
   override fun getNamespace(): ResourceNamespace = repository.namespace
 
