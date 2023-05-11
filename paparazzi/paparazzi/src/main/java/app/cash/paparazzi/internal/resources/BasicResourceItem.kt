@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package app.cash.paparazzi.internal
+package app.cash.paparazzi.internal.resources
 
 import com.android.SdkConstants.ATTR_FORMAT
 import com.android.SdkConstants.ATTR_NAME
