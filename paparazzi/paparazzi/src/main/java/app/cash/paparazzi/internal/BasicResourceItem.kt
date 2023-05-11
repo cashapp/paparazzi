@@ -39,7 +39,7 @@ import com.android.ide.common.rendering.api.StyleItemResourceValueImpl
 import com.android.ide.common.rendering.api.StyleResourceValueImpl
 import com.android.ide.common.rendering.api.StyleableResourceValueImpl
 import com.android.ide.common.rendering.api.TextResourceValueImpl
-import com.android.ide.common.resources.ResourceItem
+import com.android.ide.common.resources.ResourceItemWithVisibility
 import com.android.ide.common.resources.SingleNamespaceResourceRepository
 import com.android.ide.common.resources.ValueXmlHelper
 import com.android.ide.common.resources.configuration.FolderConfiguration
@@ -47,6 +47,7 @@ import com.android.ide.common.util.PathString
 import com.android.resources.ResourceType
 import com.android.resources.ResourceType.PUBLIC
 import com.android.resources.ResourceUrl
+import com.android.resources.ResourceVisibility
 import com.android.utils.XmlUtils
 import org.w3c.dom.Element
 import java.io.File
@@ -55,12 +56,14 @@ import java.util.EnumSet
 class BasicResourceItem(
   type: ResourceType,
   private val name: String,
+  visibility: ResourceVisibility,
   file: File,
   tag: Element?,
   private val repository: SingleNamespaceResourceRepository
-) : ResourceItem {
+) : ResourceItemWithVisibility {
   // Store enums as their ordinals in byte form to minimize memory footprint.
   private val typeOrdinal: Byte
+  private val visibilityOrdinal: Byte
 
   private val resourceValue: ResourceValue
 
@@ -73,6 +76,7 @@ class BasicResourceItem(
 
   init {
     typeOrdinal = type.ordinal.toByte()
+    visibilityOrdinal = visibility.ordinal.toByte()
 
     resourceValue = if (tag == null || type == PUBLIC) {
       val density =
@@ -95,6 +99,8 @@ class BasicResourceItem(
   override fun getName() = name
 
   override fun getLibraryName() = null
+
+  override fun getVisibility() = ResourceVisibility.values()[visibilityOrdinal.toInt()]
 
   override fun getReferenceToSelf(): ResourceReference =
     ResourceReference(namespace, type, name)
