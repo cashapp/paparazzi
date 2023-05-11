@@ -224,21 +224,22 @@ $dokka.location:app.cash.paparazzi.internal.parsers/TagSnapshot/namespace/#/Poin
 $dokka.location:app.cash.paparazzi.internal.parsers/TagSnapshot/next/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal.parsers/-tag-snapshot/next.md
 $dokka.location:app.cash.paparazzi.internal.parsers/TagSnapshot/prefix/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal.parsers/-tag-snapshot/prefix.md
 $dokka.location:app.cash.paparazzi.internal.parsers/TagSnapshot/printFormatted/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal.parsers/-tag-snapshot/print-formatted.md
+$dokka.location:app.cash.paparazzi.internal.resources////PointingToDeclaration/paparazzi/app.cash.paparazzi.internal.resources/index.md
+$dokka.location:app.cash.paparazzi.internal.resources/BasicResourceItem///PointingToDeclaration/paparazzi/app.cash.paparazzi.internal.resources/-basic-resource-item/index.md
+$dokka.location:app.cash.paparazzi.internal.resources/BasicResourceItem/BasicResourceItem/#com.android.resources.ResourceType#kotlin.String#com.android.resources.ResourceVisibility#java.io.File#org.w3c.dom.Element?#com.android.ide.common.resources.SingleNamespaceResourceRepository/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal.resources/-basic-resource-item/-basic-resource-item.md
+$dokka.location:app.cash.paparazzi.internal.resources/BasicResourceItem/getConfiguration/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal.resources/-basic-resource-item/get-configuration.md
+$dokka.location:app.cash.paparazzi.internal.resources/BasicResourceItem/getKey/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal.resources/-basic-resource-item/get-key.md
+$dokka.location:app.cash.paparazzi.internal.resources/BasicResourceItem/getLibraryName/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal.resources/-basic-resource-item/get-library-name.md
+$dokka.location:app.cash.paparazzi.internal.resources/BasicResourceItem/getName/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal.resources/-basic-resource-item/get-name.md
+$dokka.location:app.cash.paparazzi.internal.resources/BasicResourceItem/getNamespace/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal.resources/-basic-resource-item/get-namespace.md
+$dokka.location:app.cash.paparazzi.internal.resources/BasicResourceItem/getReferenceToSelf/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal.resources/-basic-resource-item/get-reference-to-self.md
+$dokka.location:app.cash.paparazzi.internal.resources/BasicResourceItem/getRepository/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal.resources/-basic-resource-item/get-repository.md
+$dokka.location:app.cash.paparazzi.internal.resources/BasicResourceItem/getResourceValue/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal.resources/-basic-resource-item/get-resource-value.md
+$dokka.location:app.cash.paparazzi.internal.resources/BasicResourceItem/getSource/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal.resources/-basic-resource-item/get-source.md
+$dokka.location:app.cash.paparazzi.internal.resources/BasicResourceItem/getType/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal.resources/-basic-resource-item/get-type.md
+$dokka.location:app.cash.paparazzi.internal.resources/BasicResourceItem/getVisibility/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal.resources/-basic-resource-item/get-visibility.md
+$dokka.location:app.cash.paparazzi.internal.resources/BasicResourceItem/isFileBased/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal.resources/-basic-resource-item/is-file-based.md
 $dokka.location:app.cash.paparazzi.internal////PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/index.md
-$dokka.location:app.cash.paparazzi.internal/BasicResourceItem///PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-basic-resource-item/index.md
-$dokka.location:app.cash.paparazzi.internal/BasicResourceItem/BasicResourceItem/#java.io.File#org.w3c.dom.Element?#kotlin.String#com.android.resources.ResourceType#com.android.ide.common.resources.SingleNamespaceResourceRepository/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-basic-resource-item/-basic-resource-item.md
-$dokka.location:app.cash.paparazzi.internal/BasicResourceItem/getConfiguration/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-basic-resource-item/get-configuration.md
-$dokka.location:app.cash.paparazzi.internal/BasicResourceItem/getKey/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-basic-resource-item/get-key.md
-$dokka.location:app.cash.paparazzi.internal/BasicResourceItem/getLibraryName/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-basic-resource-item/get-library-name.md
-$dokka.location:app.cash.paparazzi.internal/BasicResourceItem/getName/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-basic-resource-item/get-name.md
-$dokka.location:app.cash.paparazzi.internal/BasicResourceItem/getNamespace/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-basic-resource-item/get-namespace.md
-$dokka.location:app.cash.paparazzi.internal/BasicResourceItem/getReferenceToSelf/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-basic-resource-item/get-reference-to-self.md
-$dokka.location:app.cash.paparazzi.internal/BasicResourceItem/getRepository/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-basic-resource-item/get-repository.md
-$dokka.location:app.cash.paparazzi.internal/BasicResourceItem/getResourceValue/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-basic-resource-item/get-resource-value.md
-$dokka.location:app.cash.paparazzi.internal/BasicResourceItem/getSource/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-basic-resource-item/get-source.md
-$dokka.location:app.cash.paparazzi.internal/BasicResourceItem/getTextContent/#org.w3c.dom.Element/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-basic-resource-item/get-text-content.md
-$dokka.location:app.cash.paparazzi.internal/BasicResourceItem/getType/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-basic-resource-item/get-type.md
-$dokka.location:app.cash.paparazzi.internal/BasicResourceItem/isFileBased/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-basic-resource-item/is-file-based.md
 $dokka.location:app.cash.paparazzi.internal/ChoreographerDelegateInterceptor///PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-choreographer-delegate-interceptor/index.md
 $dokka.location:app.cash.paparazzi.internal/ChoreographerDelegateInterceptor/intercept/#android.view.Choreographer/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-choreographer-delegate-interceptor/intercept.md
 $dokka.location:app.cash.paparazzi.internal/EditModeInterceptor///PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-edit-mode-interceptor/index.md
@@ -376,4 +377,5 @@ app.cash.paparazzi.deprecated.com.android.ide.common.resources.deprecated
 app.cash.paparazzi.deprecated.com.android.io
 app.cash.paparazzi.internal
 app.cash.paparazzi.internal.parsers
+app.cash.paparazzi.internal.resources
 
