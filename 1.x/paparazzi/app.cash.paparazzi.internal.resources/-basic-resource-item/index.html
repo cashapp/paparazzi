@@ -308,7 +308,7 @@
                 <p>//<a href="../../../">paparazzi</a>/<a href="../">app.cash.paparazzi.internal.resources</a>/<a href="./">BasicResourceItem</a></p>
 <h1 id="basicresourceitem">BasicResourceItem<a class="headerlink" href="#basicresourceitem" title="Permanent link">&para;</a></h1>
 <p>[jvm]\
-class <a href="./">BasicResourceItem</a>(type: ResourceType, name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, visibility: ResourceVisibility, repositoryConfiguration: <a href="../-repository-configuration/">RepositoryConfiguration</a>, file: <a href="https://docs.oracle.com/javase/8/docs/api/java/io/File.html">File</a>, tag: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/org.w3c.dom/-element/index.html">Element</a>?) : ResourceItemWithVisibility</p>
+class <a href="./">BasicResourceItem</a>(type: ResourceType, name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, visibility: ResourceVisibility, repositoryConfiguration: <a href="../-repository-configuration/">RepositoryConfiguration</a>, file: <a href="https://docs.oracle.com/javase/8/docs/api/java/io/File.html">File</a>, tag: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/org.w3c.dom/-element/index.html">Element</a>?) : ResourceItemWithVisibility, ResourceValue</p>
 <h2 id="constructors">Constructors<a class="headerlink" href="#constructors" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -334,6 +334,10 @@ class <a href="./">BasicResourceItem</a>(type: ResourceType, name: <a href="http
 </thead>
 <tbody>
 <tr>
+<td><a href="as-reference/">asReference</a></td>
+<td>[jvm]<br>open override fun <a href="as-reference/">asReference</a>(): ResourceReference</td>
+</tr>
+<tr>
 <td><a href="get-configuration/">getConfiguration</a></td>
 <td>[jvm]<br>open override fun <a href="get-configuration/">getConfiguration</a>(): FolderConfiguration</td>
 </tr>
@@ -343,7 +347,7 @@ class <a href="./">BasicResourceItem</a>(type: ResourceType, name: <a href="http
 </tr>
 <tr>
 <td><a href="get-library-name/">getLibraryName</a></td>
-<td>[jvm]<br>open override fun <a href="get-library-name/">getLibraryName</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-nothing/index.html">Nothing</a>?</td>
+<td>[jvm]<br>open override fun <a href="get-library-name/">getLibraryName</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?</td>
 </tr>
 <tr>
 <td><a href="get-name/">getName</a></td>
@@ -354,6 +358,10 @@ class <a href="./">BasicResourceItem</a>(type: ResourceType, name: <a href="http
 <td>[jvm]<br>open override fun <a href="get-namespace/">getNamespace</a>(): ResourceNamespace</td>
 </tr>
 <tr>
+<td><a href="get-namespace-resolver/">getNamespaceResolver</a></td>
+<td>[jvm]<br>open override fun <a href="get-namespace-resolver/">getNamespaceResolver</a>(): ResourceNamespace.Resolver</td>
+</tr>
+<tr>
 <td><a href="./#-509585620%2FFunctions%2F-2095620550">getOriginalSource</a></td>
 <td>[jvm]<br>open fun <a href="./#-509585620%2FFunctions%2F-2095620550">getOriginalSource</a>(): PathString</td>
 </tr>
@@ -362,12 +370,28 @@ class <a href="./">BasicResourceItem</a>(type: ResourceType, name: <a href="http
 <td>[jvm]<br>open fun <a href="./#1114844795%2FFunctions%2F-2095620550">getQualifiedNameWithType</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
 </tr>
 <tr>
+<td><a href="./#-821168389%2FFunctions%2F-2095620550">getRawXmlValue</a></td>
+<td>[jvm]<br>open fun <a href="./#-821168389%2FFunctions%2F-2095620550">getRawXmlValue</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
+</tr>
+<tr>
+<td><a href="./#-1154767950%2FFunctions%2F-2095620550">getReference</a></td>
+<td>[jvm]<br>open fun <a href="./#-1154767950%2FFunctions%2F-2095620550">getReference</a>(): ResourceReference</td>
+</tr>
+<tr>
 <td><a href="get-reference-to-self/">getReferenceToSelf</a></td>
 <td>[jvm]<br>open override fun <a href="get-reference-to-self/">getReferenceToSelf</a>(): ResourceReference</td>
 </tr>
 <tr>
 <td><a href="get-repository/">getRepository</a></td>
 <td>[jvm]<br>open override fun <a href="get-repository/">getRepository</a>(): SingleNamespaceResourceRepository</td>
+</tr>
+<tr>
+<td><a href="get-resource-type/">getResourceType</a></td>
+<td>[jvm]<br>open override fun <a href="get-resource-type/">getResourceType</a>(): ResourceType</td>
+</tr>
+<tr>
+<td><a href="./#-276484804%2FFunctions%2F-2095620550">getResourceUrl</a></td>
+<td>[jvm]<br>open fun <a href="./#-276484804%2FFunctions%2F-2095620550">getResourceUrl</a>(): ResourceUrl</td>
 </tr>
 <tr>
 <td><a href="get-resource-value/">getResourceValue</a></td>
@@ -382,12 +406,28 @@ class <a href="./">BasicResourceItem</a>(type: ResourceType, name: <a href="http
 <td>[jvm]<br>open override fun <a href="get-type/">getType</a>(): ResourceType</td>
 </tr>
 <tr>
+<td><a href="get-value/">getValue</a></td>
+<td>[jvm]<br>open override fun <a href="get-value/">getValue</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
+</tr>
+<tr>
 <td><a href="get-visibility/">getVisibility</a></td>
 <td>[jvm]<br>open override fun <a href="get-visibility/">getVisibility</a>(): ResourceVisibility</td>
 </tr>
 <tr>
 <td><a href="is-file-based/">isFileBased</a></td>
 <td>[jvm]<br>open override fun <a href="is-file-based/">isFileBased</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="is-framework/">isFramework</a></td>
+<td>[jvm]<br>open override fun <a href="is-framework/">isFramework</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="is-user-defined/">isUserDefined</a></td>
+<td>[jvm]<br>open override fun <a href="is-user-defined/">isUserDefined</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="set-value/">setValue</a></td>
+<td>[jvm]<br>open override fun <a href="set-value/">setValue</a>(value: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-nothing/index.html">Nothing</a></td>
 </tr>
 </tbody>
 </table>
