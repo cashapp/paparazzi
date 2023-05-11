@@ -53,10 +53,10 @@ import java.io.File
 import java.util.EnumSet
 
 class BasicResourceItem(
+  private val type: ResourceType,
+  private val name: String,
   file: File,
   tag: Element?,
-  private val name: String,
-  private val type: ResourceType,
   private val repository: SingleNamespaceResourceRepository
 ) : ResourceItem {
   private val resourceValue: ResourceValue
@@ -67,28 +67,6 @@ class BasicResourceItem(
   private val source = PathString(file)
 
   private val isFileBased = tag == null
-
-  override fun getConfiguration() = folderConfiguration
-
-  override fun getName() = name
-
-  override fun getType() = type
-
-  override fun getNamespace(): ResourceNamespace = repository.namespace
-
-  override fun getLibraryName() = null
-
-  override fun getRepository() = repository
-
-  override fun getReferenceToSelf(): ResourceReference =
-    ResourceReference(namespace, type, name)
-
-  override fun getKey(): String {
-    val qualifiers = configuration.qualifierString
-    return if (qualifiers.isNotEmpty()) {
-      (type.getName() + '-') + qualifiers + '/' + name
-    } else type.getName() + '/' + name
-  }
 
   init {
     resourceValue = if (tag == null || type == PUBLIC) {
@@ -105,9 +83,40 @@ class BasicResourceItem(
     }
   }
 
-  override fun getResourceValue(): ResourceValue {
-    return resourceValue
+  override fun getType() = type
+
+  override fun getNamespace(): ResourceNamespace = repository.namespace
+
+  override fun getName() = name
+
+  override fun getLibraryName() = null
+
+  override fun getReferenceToSelf(): ResourceReference =
+    ResourceReference(namespace, type, name)
+
+  override fun getRepository() = repository
+
+  override fun getConfiguration() = folderConfiguration
+
+  override fun getKey(): String {
+    val qualifiers = configuration.qualifierString
+    return if (qualifiers.isNotEmpty()) {
+      "${type.getName()}-$qualifiers/$name"
+    } else {
+      "${type.getName()}/$name"
+    }
   }
+
+  override fun getResourceValue(): ResourceValue = resourceValue
+
+  override fun getSource() = source
+
+  override fun isFileBased() = isFileBased
+
+  /**
+   * Returns the text content of a given tag
+   */
+  private fun getTextContent(tag: Element): String = tag.textContent
 
   private fun parseXmlToResourceValueSafe(tag: Element): ResourceValue {
     val value: ResourceValueImpl = when (type) {
@@ -288,13 +297,6 @@ class BasicResourceItem(
   }
 
   /**
-   * Returns the text content of a given tag
-   */
-  open fun getTextContent(tag: Element): String {
-    return tag.textContent
-  }
-
-  /**
    * Returns a [ResourceNamespace.Resolver] for the specified tag.
    */
   private fun getNamespaceResolver(element: Element): ResourceNamespace.Resolver {
@@ -306,8 +308,4 @@ class BasicResourceItem(
       override fun prefixToUri(namespacePrefix: String): String? = null
     }
   }
-
-  override fun getSource() = source
-
-  override fun isFileBased() = isFileBased
 }
