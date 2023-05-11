@@ -32,6 +32,7 @@ import com.android.ide.common.rendering.api.AttributeFormat.FLAGS
 import com.android.ide.common.rendering.api.DensityBasedResourceValueImpl
 import com.android.ide.common.rendering.api.PluralsResourceValueImpl
 import com.android.ide.common.rendering.api.ResourceNamespace
+import com.android.ide.common.rendering.api.ResourceNamespace.Resolver
 import com.android.ide.common.rendering.api.ResourceReference
 import com.android.ide.common.rendering.api.ResourceValue
 import com.android.ide.common.rendering.api.ResourceValueImpl
@@ -40,7 +41,9 @@ import com.android.ide.common.rendering.api.StyleResourceValueImpl
 import com.android.ide.common.rendering.api.StyleableResourceValueImpl
 import com.android.ide.common.rendering.api.TextResourceValueImpl
 import com.android.ide.common.resources.ResourceItemWithVisibility
+import com.android.ide.common.resources.SingleNamespaceResourceRepository
 import com.android.ide.common.resources.ValueXmlHelper
+import com.android.ide.common.resources.configuration.FolderConfiguration
 import com.android.ide.common.util.PathString
 import com.android.resources.ResourceType
 import com.android.resources.ResourceType.PUBLIC
@@ -58,7 +61,7 @@ class BasicResourceItem(
   private val repositoryConfiguration: RepositoryConfiguration,
   file: File,
   tag: Element?
-) : ResourceItemWithVisibility {
+) : ResourceItemWithVisibility, ResourceValue {
   // Store enums as their ordinals in byte form to minimize memory footprint.
   private val typeOrdinal: Byte
   private val visibilityOrdinal: Byte
@@ -87,22 +90,32 @@ class BasicResourceItem(
     }
   }
 
-  override fun getType() = ResourceType.values()[typeOrdinal.toInt()]
+  override fun getType(): ResourceType = resourceType
 
   override fun getNamespace(): ResourceNamespace = repository.namespace
 
-  override fun getName() = name
+  override fun getName(): String = name
 
-  override fun getLibraryName() = null
+  override fun getLibraryName(): String? = null
+
+  override fun getResourceType() = ResourceType.values()[typeOrdinal.toInt()]
 
   override fun getVisibility() = ResourceVisibility.values()[visibilityOrdinal.toInt()]
 
-  override fun getReferenceToSelf(): ResourceReference =
-    ResourceReference(namespace, type, name)
+  override fun getReferenceToSelf(): ResourceReference = asReference()
 
-  override fun getRepository() = repositoryConfiguration.repository
+  override fun getResourceValue(): ResourceValue = resourceValue
 
-  override fun getConfiguration() = repositoryConfiguration.folderConfiguration
+  override fun isUserDefined(): Boolean = !isFramework
+
+  override fun isFramework(): Boolean = namespace == ResourceNamespace.ANDROID
+
+  override fun asReference(): ResourceReference = ResourceReference(namespace, type, name)
+
+  override fun getRepository(): SingleNamespaceResourceRepository =
+    repositoryConfiguration.repository
+
+  override fun getConfiguration(): FolderConfiguration = repositoryConfiguration.folderConfiguration
 
   override fun getKey(): String {
     val qualifiers = configuration.qualifierString
@@ -113,7 +126,11 @@ class BasicResourceItem(
     }
   }
 
-  override fun getResourceValue(): ResourceValue = resourceValue
+  override fun setValue(value: String?) = throw UnsupportedOperationException()
+
+  override fun getValue(): String = throw UnsupportedOperationException()
+
+  override fun getNamespaceResolver(): Resolver = TODO("Not yet implemented")
 
   override fun getSource() = source
 
