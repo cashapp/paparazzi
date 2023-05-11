@@ -15,17 +15,16 @@
  */
 package app.cash.paparazzi.internal.resources
 
-import com.android.ide.common.resources.SingleNamespaceResourceRepository
 import com.android.ide.common.resources.configuration.FolderConfiguration
 
 /**
- * A ([SingleNamespaceResourceRepository], [FolderConfiguration]) pair. Instances of [BasicResourceItem] contain
- * a reference to an [RepositoryConfiguration] instead of two separate references to [SingleNamespaceResourceRepository]
+ * A ([LoadableResourceRepository], [FolderConfiguration]) pair. Instances of [BasicResourceItem] contain
+ * a reference to an [RepositoryConfiguration] instead of two separate references to [LoadableResourceRepository]
  * and [FolderConfiguration]. This indirection saves memory because the number of [RepositoryConfiguration]
  * instances is a tiny fraction of the number of [BasicResourceItem] instances.
  */
 class RepositoryConfiguration(
-  repository: SingleNamespaceResourceRepository,
+  repository: LoadableResourceRepository,
   val folderConfiguration: FolderConfiguration
 ) {
   var repository = repository
