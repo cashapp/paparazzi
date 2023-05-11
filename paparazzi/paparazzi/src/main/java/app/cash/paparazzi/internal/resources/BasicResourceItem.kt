@@ -1,4 +1,19 @@
-package app.cash.paparazzi.internal
+/*
+ * Copyright (C) 2023 Square, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package app.cash.paparazzi.internal.resources
 
 import com.android.SdkConstants.ATTR_FORMAT
 import com.android.SdkConstants.ATTR_NAME
@@ -24,7 +39,7 @@ import com.android.ide.common.rendering.api.StyleItemResourceValueImpl
 import com.android.ide.common.rendering.api.StyleResourceValueImpl
 import com.android.ide.common.rendering.api.StyleableResourceValueImpl
 import com.android.ide.common.rendering.api.TextResourceValueImpl
-import com.android.ide.common.resources.ResourceItem
+import com.android.ide.common.resources.ResourceItemWithVisibility
 import com.android.ide.common.resources.SingleNamespaceResourceRepository
 import com.android.ide.common.resources.ValueXmlHelper
 import com.android.ide.common.resources.configuration.FolderConfiguration
@@ -32,18 +47,24 @@ import com.android.ide.common.util.PathString
 import com.android.resources.ResourceType
 import com.android.resources.ResourceType.PUBLIC
 import com.android.resources.ResourceUrl
+import com.android.resources.ResourceVisibility
 import com.android.utils.XmlUtils
 import org.w3c.dom.Element
 import java.io.File
 import java.util.EnumSet
 
 class BasicResourceItem(
+  type: ResourceType,
+  private val name: String,
+  visibility: ResourceVisibility,
   file: File,
   tag: Element?,
-  private val name: String,
-  private val type: ResourceType,
   private val repository: SingleNamespaceResourceRepository
-) : ResourceItem {
+) : ResourceItemWithVisibility {
+  // Store enums as their ordinals in byte form to minimize memory footprint.
+  private val typeOrdinal: Byte
+  private val visibilityOrdinal: Byte
+
   private val resourceValue: ResourceValue
 
   private val folderConfiguration: FolderConfiguration =
@@ -53,29 +74,10 @@ class BasicResourceItem(
 
   private val isFileBased = tag == null
 
-  override fun getConfiguration() = folderConfiguration
-
-  override fun getName() = name
-
-  override fun getType() = type
-
-  override fun getNamespace(): ResourceNamespace = repository.namespace
-
-  override fun getLibraryName() = null
-
-  override fun getRepository() = repository
-
-  override fun getReferenceToSelf(): ResourceReference =
-    ResourceReference(namespace, type, name)
-
-  override fun getKey(): String {
-    val qualifiers = configuration.qualifierString
-    return if (qualifiers.isNotEmpty()) {
-      (type.getName() + '-') + qualifiers + '/' + name
-    } else type.getName() + '/' + name
-  }
-
   init {
+    typeOrdinal = type.ordinal.toByte()
+    visibilityOrdinal = visibility.ordinal.toByte()
+
     resourceValue = if (tag == null || type == PUBLIC) {
       val density =
         if (type == ResourceType.DRAWABLE || type == ResourceType.MIPMAP) configuration.densityQualifier?.value else null
@@ -90,9 +92,42 @@ class BasicResourceItem(
     }
   }
 
-  override fun getResourceValue(): ResourceValue {
-    return resourceValue
+  override fun getType() = ResourceType.values()[typeOrdinal.toInt()]
+
+  override fun getNamespace(): ResourceNamespace = repository.namespace
+
+  override fun getName() = name
+
+  override fun getLibraryName() = null
+
+  override fun getVisibility() = ResourceVisibility.values()[visibilityOrdinal.toInt()]
+
+  override fun getReferenceToSelf(): ResourceReference =
+    ResourceReference(namespace, type, name)
+
+  override fun getRepository() = repository
+
+  override fun getConfiguration() = folderConfiguration
+
+  override fun getKey(): String {
+    val qualifiers = configuration.qualifierString
+    return if (qualifiers.isNotEmpty()) {
+      "${type.getName()}-$qualifiers/$name"
+    } else {
+      "${type.getName()}/$name"
+    }
   }
+
+  override fun getResourceValue(): ResourceValue = resourceValue
+
+  override fun getSource() = source
+
+  override fun isFileBased() = isFileBased
+
+  /**
+   * Returns the text content of a given tag
+   */
+  private fun getTextContent(tag: Element): String = tag.textContent
 
   private fun parseXmlToResourceValueSafe(tag: Element): ResourceValue {
     val value: ResourceValueImpl = when (type) {
@@ -273,13 +308,6 @@ class BasicResourceItem(
   }
 
   /**
-   * Returns the text content of a given tag
-   */
-  open fun getTextContent(tag: Element): String {
-    return tag.textContent
-  }
-
-  /**
    * Returns a [ResourceNamespace.Resolver] for the specified tag.
    */
   private fun getNamespaceResolver(element: Element): ResourceNamespace.Resolver {
@@ -291,8 +319,4 @@ class BasicResourceItem(
       override fun prefixToUri(namespacePrefix: String): String? = null
     }
   }
-
-  override fun getSource() = source
-
-  override fun isFileBased() = isFileBased
 }
