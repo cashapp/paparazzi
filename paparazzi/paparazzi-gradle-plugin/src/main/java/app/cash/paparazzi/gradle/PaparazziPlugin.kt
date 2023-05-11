@@ -94,14 +94,12 @@ class PaparazziPlugin : Plugin<Project> {
       // local resources
       val localResourceFiles = project
         .files(variant.sourceSets.flatMap { it.resDirectories })
-        .asFileTree
 
       // library resources
       // https://android.googlesource.com/platform/tools/base/+/96015063acd3455a76cdf1cc71b23b0828c0907f/build-system/gradle-core/src/main/java/com/android/build/gradle/tasks/MergeResources.kt#875
       val libraryResourceFiles = variant.runtimeConfiguration
         .artifactsFor(ArtifactType.ANDROID_RES.type)
         .artifactFiles
-        .asFileTree
 
       val packageAwareArtifactFiles = variant.runtimeConfiguration
         .artifactsFor(ArtifactType.SYMBOL_LIST_WITH_PACKAGE_NAME.type)
