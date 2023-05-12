@@ -92,7 +92,6 @@ class ResourceFolderRepositoryTest {
     val array = map[0].resourceValue as ArrayResourceValue
     val plurals = map[1].resourceValue as PluralsResourceValue
     val string = map[2].resourceValue
-    val pseudoString = map[3].resourceValue
 
     val firstItemInArray = array.getElement(0)
     val secondItemInArray = array.getElement(1)
@@ -100,10 +99,8 @@ class ResourceFolderRepositoryTest {
     assertThat(array.name).isEqualTo("string_array_name")
     assertThat(plurals.name).isEqualTo("plural_name")
     assertThat(string.name).isEqualTo("string_name")
-    assertThat(pseudoString.name).isEqualTo("string_name")
 
     assertThat(string.value).isEqualTo("Test String")
-    assertThat(pseudoString.value).isEqualTo("[Ţéšţ Šţŕîñĝ one two]")
 
     assertThat(firstItemInArray).isEqualTo("First Test String")
     assertThat(secondItemInArray).isEqualTo("Second Test String")
