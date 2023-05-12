@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- comment -->
+  <style name="TestStyle">
+    <item name="android:scrollbars">horizontal</item>
+    <item name="android:marginTop">16dp</item>
+  </style>
+</resources>
