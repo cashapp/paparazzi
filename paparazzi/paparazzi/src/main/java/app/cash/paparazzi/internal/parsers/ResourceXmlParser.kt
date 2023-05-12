@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package app.cash.paparazzi.internal.resources
+package app.cash.paparazzi.internal.parsers
 
+import app.cash.paparazzi.internal.resources.RepositoryConfiguration
 import com.android.SdkConstants
 import com.android.ide.common.rendering.api.ArrayResourceValueImpl
 import com.android.ide.common.rendering.api.AttrResourceValue
@@ -40,7 +41,7 @@ import org.w3c.dom.Element
 import java.io.File
 import java.util.EnumSet
 
-object ResourceValueParser {
+object ResourceXmlParser {
   fun parse(
     type: ResourceType,
     name: String,
