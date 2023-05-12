@@ -104,6 +104,8 @@ def generateTestConfig = tasks.register("generateTestConfig") {
       writer.writeLine("platforms/android-31/")
       writer.writeLine(".")
       writer.writeLine("app.cash.paparazzi")
+      writer.writeLine("")
+      writer.writeLine("")
     }
   }
 }
