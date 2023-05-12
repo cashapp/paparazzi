@@ -25,7 +25,9 @@ import app.cash.paparazzi.deprecated.com.android.ide.common.resources.deprecated
 import app.cash.paparazzi.deprecated.com.android.ide.common.resources.deprecated.ResourceRepository
 import app.cash.paparazzi.deprecated.com.android.io.FolderWrapper
 import app.cash.paparazzi.getFieldReflectively
+import app.cash.paparazzi.internal.resources.ResourceFolderRepository
 import app.cash.paparazzi.setStaticValue
+import com.android.ide.common.rendering.api.ResourceNamespace
 import com.android.layoutlib.bridge.Bridge
 import com.android.layoutlib.bridge.android.RenderParamsFlags
 import com.android.layoutlib.bridge.impl.DelegateManager
@@ -64,6 +66,16 @@ internal class Renderer(
             }.apply { loadResources() }
           )
       } else {
+        val resourceFolderRepositories = environment.libraryResourceDirs.map {
+          ResourceFolderRepository(
+            resourceDir = File(it),
+            namespace = ResourceNamespace.RES_AUTO
+          )
+        }
+
+        // ./gradlew sample:testDebug --tests=app.cash.paparazzi.sample.LaunchViewTest -Papp.cash.paparazzi.new.resource.loading=true
+        println(resourceFolderRepositories.map { it.origin }.joinToString(separator = "\n"))
+
         TODO("New resource loading coming soon")
       }
 
