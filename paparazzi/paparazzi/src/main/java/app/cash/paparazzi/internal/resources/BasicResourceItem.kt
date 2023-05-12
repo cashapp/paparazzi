@@ -22,7 +22,6 @@ import com.android.ide.common.rendering.api.ResourceValue
 import com.android.ide.common.resources.ResourceItemWithVisibility
 import com.android.ide.common.resources.SingleNamespaceResourceRepository
 import com.android.ide.common.resources.configuration.FolderConfiguration
-import com.android.ide.common.util.PathString
 import com.android.resources.ResourceType
 import com.android.resources.ResourceVisibility
 
@@ -31,7 +30,7 @@ class BasicResourceItem(
   private val name: String,
   visibility: ResourceVisibility,
   private val repositoryConfiguration: RepositoryConfiguration,
-  private val resourceValue: ResourceValue,
+  private val resourceValue: ResourceValue
 ) : ResourceItemWithVisibility, ResourceValue {
   // Store enums as their ordinals in byte form to minimize memory footprint.
   private val typeOrdinal: Byte
