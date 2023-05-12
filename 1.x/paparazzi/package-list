@@ -349,10 +349,12 @@ $dokka.location:app.cash.paparazzi/DeviceConfig/uiModeMask/#/PointingToDeclarati
 $dokka.location:app.cash.paparazzi/DeviceConfig/xdpi/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-device-config/xdpi.md
 $dokka.location:app.cash.paparazzi/DeviceConfig/ydpi/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-device-config/ydpi.md
 $dokka.location:app.cash.paparazzi/Environment///PointingToDeclaration/paparazzi/app.cash.paparazzi/-environment/index.md
-$dokka.location:app.cash.paparazzi/Environment/Environment/#kotlin.String#kotlin.String#kotlin.String#kotlin.String#kotlin.String#kotlin.Int#kotlin.collections.List[kotlin.String]/PointingToDeclaration/paparazzi/app.cash.paparazzi/-environment/-environment.md
+$dokka.location:app.cash.paparazzi/Environment/Environment/#kotlin.String#kotlin.String#kotlin.String#kotlin.String#kotlin.String#kotlin.Int#kotlin.collections.List[kotlin.String]#kotlin.collections.List[kotlin.String]#kotlin.collections.List[kotlin.String]/PointingToDeclaration/paparazzi/app.cash.paparazzi/-environment/-environment.md
 $dokka.location:app.cash.paparazzi/Environment/appTestDir/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-environment/app-test-dir.md
 $dokka.location:app.cash.paparazzi/Environment/assetsDir/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-environment/assets-dir.md
 $dokka.location:app.cash.paparazzi/Environment/compileSdkVersion/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-environment/compile-sdk-version.md
+$dokka.location:app.cash.paparazzi/Environment/libraryResourceDirs/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-environment/library-resource-dirs.md
+$dokka.location:app.cash.paparazzi/Environment/localResourceDirs/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-environment/local-resource-dirs.md
 $dokka.location:app.cash.paparazzi/Environment/packageName/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-environment/package-name.md
 $dokka.location:app.cash.paparazzi/Environment/platformDir/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-environment/platform-dir.md
 $dokka.location:app.cash.paparazzi/Environment/resDir/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-environment/res-dir.md
