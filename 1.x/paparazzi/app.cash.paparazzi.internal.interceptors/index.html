@@ -11,7 +11,7 @@
         <meta name="description" content="Android screenshots without Android">
       
       
-        <link rel="canonical" href="https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources/">
+        <link rel="canonical" href="https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.interceptors/">
       
       
         <meta name="author" content="Square, Inc.">
@@ -290,7 +290,7 @@
             <article class="md-content__inner md-typeset">
               
                 
-                  <a href="https://github.com/cashapp/paparazzi/edit/master/docs/1.x/paparazzi/app.cash.paparazzi.internal.resources/index.md" title="Edit this page" class="md-content__button md-icon">
+                  <a href="https://github.com/cashapp/paparazzi/edit/master/docs/1.x/paparazzi/app.cash.paparazzi.internal.interceptors/index.md" title="Edit this page" class="md-content__button md-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
                   </a>
                 
@@ -298,7 +298,7 @@
                   
                 
                 
-                <p>//<a href="../../">paparazzi</a>/<a href="./">app.cash.paparazzi.internal.resources</a></p>
+                <p>//<a href="../../">paparazzi</a>/<a href="./">app.cash.paparazzi.internal.interceptors</a></p>
 <h1 id="package-level-declarations">Package-level declarations<a class="headerlink" href="#package-level-declarations" title="Permanent link">&para;</a></h1>
 <h2 id="types">Types<a class="headerlink" href="#types" title="Permanent link">&para;</a></h2>
 <table>
@@ -310,32 +310,32 @@
 </thead>
 <tbody>
 <tr>
-<td><a href="-basic-resource-item/">BasicResourceItem</a></td>
-<td>[jvm]<br>class <a href="-basic-resource-item/">BasicResourceItem</a>(type: ResourceType, name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, visibility: ResourceVisibility, repositoryConfiguration: <a href="-repository-configuration/">RepositoryConfiguration</a>, file: <a href="https://docs.oracle.com/javase/8/docs/api/java/io/File.html">File</a>, tag: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/org.w3c.dom/-element/index.html">Element</a>?) : ResourceItemWithVisibility, ResourceValue</td>
+<td><a href="-choreographer-delegate-interceptor/">ChoreographerDelegateInterceptor</a></td>
+<td>[jvm]<br>object <a href="-choreographer-delegate-interceptor/">ChoreographerDelegateInterceptor</a></td>
 </tr>
 <tr>
-<td><a href="-loadable-resource-repository/">LoadableResourceRepository</a></td>
-<td>[jvm]<br>interface <a href="-loadable-resource-repository/">LoadableResourceRepository</a> : SingleNamespaceResourceRepository<br>Repository of resources loaded from a file or a directory on disk.</td>
+<td><a href="-edit-mode-interceptor/">EditModeInterceptor</a></td>
+<td>[jvm]<br>object <a href="-edit-mode-interceptor/">EditModeInterceptor</a></td>
 </tr>
 <tr>
-<td><a href="-local-resource-repository/">LocalResourceRepository</a></td>
-<td>[jvm]<br>abstract class <a href="-local-resource-repository/">LocalResourceRepository</a> : AbstractResourceRepository<br>Repository for Android application resources, e.g. those that show up in {@code R}, not {@code android.R} (which are referred to as framework resources.).</td>
+<td><a href="-i-input-method-manager-interceptor/">IInputMethodManagerInterceptor</a></td>
+<td>[jvm]<br>object <a href="-i-input-method-manager-interceptor/">IInputMethodManagerInterceptor</a><br>With <a href="-service-manager-interceptor/">ServiceManagerInterceptor</a> returning null for the service, we must override the logic in com.android.internal.view.IInputMethodManager.Stub.asInterface to return the default implementation of IInputMethodManager.</td>
 </tr>
 <tr>
-<td><a href="-namespace-resolver/">NamespaceResolver</a></td>
-<td>[jvm]<br>class <a href="-namespace-resolver/">NamespaceResolver</a> : ResourceNamespace.Resolver<br>Ported from: <a href="https://cs.android.com/android-studio/platform/tools/base/+/18047faf69512736b8ddb1f6a6785f58d47c893f:resource-repository/main/java/com/android/resources/base/NamespaceResolver.java">NamespaceResolver.java</a></td>
+<td><a href="-matrix-matrix-multiplication-interceptor/">MatrixMatrixMultiplicationInterceptor</a></td>
+<td>[jvm]<br>object <a href="-matrix-matrix-multiplication-interceptor/">MatrixMatrixMultiplicationInterceptor</a></td>
 </tr>
 <tr>
-<td><a href="-repository-configuration/">RepositoryConfiguration</a></td>
-<td>[jvm]<br>class <a href="-repository-configuration/">RepositoryConfiguration</a>(repository: <a href="-loadable-resource-repository/">LoadableResourceRepository</a>, val folderConfiguration: FolderConfiguration)<br>A (<a href="-loadable-resource-repository/">LoadableResourceRepository</a>, FolderConfiguration) pair. Instances of <a href="-basic-resource-item/">BasicResourceItem</a> contain a reference to an <a href="-repository-configuration/">RepositoryConfiguration</a> instead of two separate references to <a href="-loadable-resource-repository/">LoadableResourceRepository</a> and FolderConfiguration. This indirection saves memory because the number of <a href="-repository-configuration/">RepositoryConfiguration</a> instances is a tiny fraction of the number of <a href="-basic-resource-item/">BasicResourceItem</a> instances.</td>
+<td><a href="-matrix-vector-multiplication-interceptor/">MatrixVectorMultiplicationInterceptor</a></td>
+<td>[jvm]<br>object <a href="-matrix-vector-multiplication-interceptor/">MatrixVectorMultiplicationInterceptor</a></td>
 </tr>
 <tr>
-<td><a href="-resource-folder-repository/">ResourceFolderRepository</a></td>
-<td>[jvm]<br>class <a href="-resource-folder-repository/">ResourceFolderRepository</a>(resourceDir: <a href="https://docs.oracle.com/javase/8/docs/api/java/io/File.html">File</a>, namespace: ResourceNamespace) : <a href="-local-resource-repository/">LocalResourceRepository</a>, <a href="-loadable-resource-repository/">LoadableResourceRepository</a><br>The <a href="-resource-folder-repository/">ResourceFolderRepository</a> is a leaf in the repository tree, and is used for user editable resources (e.g. the resources in the project, typically the res/main source set.)</td>
+<td><a href="-resources-interceptor/">ResourcesInterceptor</a></td>
+<td>[jvm]<br>object <a href="-resources-interceptor/">ResourcesInterceptor</a></td>
 </tr>
 <tr>
-<td><a href="-resource-url-parser/">ResourceUrlParser</a></td>
-<td>[jvm]<br>class <a href="-resource-url-parser/">ResourceUrlParser</a><br>Ported from: <a href="https://cs.android.com/android-studio/platform/tools/base/+/47d204001bf0cb6273d8b135c7eece3a982cf0e0:resource-repository/main/java/com/android/resources/base/ResourceUrlParser.java">ResourceUrlParser.java</a></td>
+<td><a href="-service-manager-interceptor/">ServiceManagerInterceptor</a></td>
+<td>[jvm]<br>object <a href="-service-manager-interceptor/">ServiceManagerInterceptor</a><br>The ImeTracing class attempts to initialize its <a href="https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/java/android/util/imetracing/ImeTracing.java;l=60">mService field in its constructor</a>.</td>
 </tr>
 </tbody>
 </table>
