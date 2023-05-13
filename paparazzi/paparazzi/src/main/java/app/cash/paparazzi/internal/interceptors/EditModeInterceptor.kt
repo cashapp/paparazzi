@@ -1,4 +1,4 @@
-package app.cash.paparazzi.internal
+package app.cash.paparazzi.internal.interceptors
 
 object EditModeInterceptor {
   @JvmStatic
