@@ -122,6 +122,10 @@ tasks.withType(Test).configureEach {
     project.layout.buildDirectory.get().toString()
   )
   systemProperty(
+    "paparazzi.artifacts.cache.dir",
+    project.gradle.gradleUserHomeDir.path
+  )
+  systemProperty(
     "paparazzi.platform.data.root",
     configurations.unzip.singleFile.absolutePath
   )
