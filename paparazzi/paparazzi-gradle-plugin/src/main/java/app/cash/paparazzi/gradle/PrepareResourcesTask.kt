@@ -65,6 +65,8 @@ abstract class PrepareResourcesTask : DefaultTask() {
 
   private val projectDirectory = project.layout.projectDirectory
 
+  private val gradleUserHomeDirectory = projectDirectory.dir(project.gradle.gradleUserHomeDir.path)
+
   @TaskAction
   // TODO: figure out why this can't be removed as of Kotlin 1.6+
   @OptIn(ExperimentalStdlibApi::class)
@@ -101,7 +103,7 @@ abstract class PrepareResourcesTask : DefaultTask() {
         it.newLine()
         it.write(localResourceDirs.joinFiles(projectDirectory))
         it.newLine()
-        it.write(libraryResourceDirs.joinFiles(projectDirectory))
+        it.write(libraryResourceDirs.joinFiles(gradleUserHomeDirectory))
         it.newLine()
       }
   }
