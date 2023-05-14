@@ -144,15 +144,25 @@ internal class Renderer(
     }
 
     buildClass.fields.forEach {
-      val originalField = originalBuildClass.getField(it.name)
-      buildClass.getFieldReflectively(it.name).setStaticValue(originalField.get(null))
+      try {
+        val originalField = originalBuildClass.getField(it.name)
+        buildClass.getFieldReflectively(it.name).setStaticValue(originalField.get(null))
+      } catch (e: NoSuchFieldException) {
+        // android.os._Original_Build from layoutlib doesn't have this field, it's probably new.
+        // Just ignore it and keep the value in android.os.Build
+      }
     }
 
     buildClass.classes.forEach { inner ->
       val originalInnerClass = originalBuildClass.classes.single { it.simpleName == inner.simpleName }
       inner.fields.forEach {
-        val originalField = originalInnerClass.getField(it.name)
-        inner.getFieldReflectively(it.name).setStaticValue(originalField.get(null))
+        try {
+          val originalField = originalInnerClass.getField(it.name)
+          inner.getFieldReflectively(it.name).setStaticValue(originalField.get(null))
+        } catch (e: NoSuchFieldException) {
+          // android.os._Original_Build from layoutlib doesn't have this field, it's probably new.
+          // Just ignore it and keep the value in android.os.Build
+        }
       }
     }
   }
