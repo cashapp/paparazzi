@@ -240,27 +240,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#jetifier" class="md-nav__link">
-    Jetifier
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#releases" class="md-nav__link">
-    Releases
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#license" class="md-nav__link">
-    License
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -355,27 +334,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#jetifier" class="md-nav__link">
-    Jetifier
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#releases" class="md-nav__link">
-    Releases
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#license" class="md-nav__link">
-    License
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -398,127 +356,116 @@
                 
                 <h1 id="paparazzi">Paparazzi<a class="headerlink" href="#paparazzi" title="Permanent link">&para;</a></h1>
 <p>An Android library to render your application screens without a physical device or emulator.</p>
-<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">LaunchViewTest</span> <span class="p">{</span>
-  <span class="n">@get</span><span class="p">:</span><span class="n">Rule</span>
-  <span class="k">val</span> <span class="py">paparazzi</span> <span class="p">=</span> <span class="n">Paparazzi</span><span class="p">(</span>
-    <span class="n">deviceConfig</span> <span class="p">=</span> <span class="n">PIXEL_5</span><span class="p">,</span>
-    <span class="n">theme</span> <span class="p">=</span> <span class="s">&quot;android:Theme.Material.Light.NoActionBar&quot;</span>
-    <span class="c1">// ...see docs for more options</span>
-  <span class="p">)</span>
-
-  <span class="n">@Test</span>
-  <span class="k">fun</span> <span class="nf">launchView</span><span class="p">()</span> <span class="p">{</span>
-    <span class="k">val</span> <span class="py">view</span> <span class="p">=</span> <span class="n">paparazzi</span><span class="p">.</span><span class="n">inflate</span><span class="p">&lt;</span><span class="n">LaunchView</span><span class="p">&gt;(</span><span class="n">R</span><span class="p">.</span><span class="n">layout</span><span class="p">.</span><span class="n">launch</span><span class="p">)</span>
-    <span class="c1">// or...</span>
-    <span class="c1">// val view = LaunchView(paparazzi.context)</span>
-
-    <span class="n">view</span><span class="p">.</span><span class="n">setModel</span><span class="p">(</span><span class="n">LaunchModel</span><span class="p">(</span><span class="n">title</span> <span class="p">=</span> <span class="s">&quot;paparazzi&quot;</span><span class="p">))</span>
-    <span class="n">paparazzi</span><span class="p">.</span><span class="n">snapshot</span><span class="p">(</span><span class="n">view</span><span class="p">)</span>
-  <span class="p">}</span>
-
-  <span class="n">@Test</span>
-  <span class="k">fun</span> <span class="nf">launchComposable</span><span class="p">()</span> <span class="p">{</span>
-    <span class="n">paparazzi</span><span class="p">.</span><span class="n">snapshot</span> <span class="p">{</span>
-      <span class="n">MyComposable</span><span class="p">()</span>
-    <span class="p">}</span>
-  <span class="p">}</span>
-<span class="p">}</span>
+<p>```kotlin
+class LaunchViewTest {
+  @get:Rule
+  val paparazzi = Paparazzi(
+    deviceConfig = PIXEL_5,
+    theme = &ldquo;android:Theme.Material.Light.NoActionBar&rdquo;
+    // &hellip;see docs for more options
+  )</p>
+<p>@Test
+  fun launchView() {
+    val view = paparazzi.inflate<LaunchView>(R.layout.launch)
+    // or&hellip;
+    // val view = LaunchView(paparazzi.context)</p>
+<div class="codehilite"><pre><span></span><code>view.setModel(LaunchModel(title = &quot;paparazzi&quot;))
+paparazzi.snapshot(view)
 </code></pre></div>
 
+
+<p>}</p>
+<p>@Test
+  fun launchComposable() {
+    paparazzi.snapshot {
+      MyComposable()
+    }
+  }
+}
+```</p>
 <h2 id="tasks">Tasks<a class="headerlink" href="#tasks" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code>$ ./gradlew sample:testDebug
-</code></pre></div>
-
+<p><code>$ ./gradlew sample:testDebug</code></p>
 <p>Runs tests and generates an HTML report at <code>sample/build/reports/paparazzi/</code> showing all
 test runs and snapshots.</p>
-<div class="highlight"><pre><span></span><code>$ ./gradlew sample:recordPaparazziDebug
-</code></pre></div>
-
+<p><code>$ ./gradlew sample:recordPaparazziDebug</code></p>
 <p>Saves snapshots as golden values to a predefined source-controlled location
 (defaults to <code>src/test/snapshots</code>).</p>
-<div class="highlight"><pre><span></span><code>$ ./gradlew sample:verifyPaparazziDebug
-</code></pre></div>
-
+<p><code>$ ./gradlew sample:verifyPaparazziDebug</code></p>
 <p>Runs tests and verifies against previously-recorded golden values. Failures generate diffs at <code>sample/out/failures</code>.</p>
 <p>For more examples, check out the <a href="https://github.com/cashapp/paparazzi/tree/master/sample">sample</a> project.</p>
 <h2 id="git-lfs">Git LFS<a class="headerlink" href="#git-lfs" title="Permanent link">&para;</a></h2>
 <p>It is recommended you use <a href="https://git-lfs.github.com/">Git LFS</a> to store your snapshots.  Here&rsquo;s a quick setup:</p>
-<div class="highlight"><pre><span></span><code>$ brew install git-lfs
-$ git config core.hooksPath  <span class="c1"># optional, confirm where your git hooks will be installed</span>
+<p><code>bash
+$ brew install git-lfs
+$ git config core.hooksPath  # optional, confirm where your git hooks will be installed
 $ git lfs install --local
-$ git lfs track <span class="s2">&quot;**/snapshots/**/*.png&quot;</span>
-$ git add .gitattributes
-</code></pre></div>
-
+$ git lfs track "**/snapshots/**/*.png"
+$ git add .gitattributes</code></p>
 <p>On CI, you might set up something like:</p>
 <p><code>$HOOKS_DIR/pre-receive</code>
-<div class="highlight"><pre><span></span><code><span class="c1"># compares files that match .gitattributes filter to those actually tracked by git-lfs</span>
-diff &lt;<span class="o">(</span>git ls-files <span class="s1">&#39;:(attr:filter=lfs)&#39;</span> <span class="p">|</span> sort<span class="o">)</span> &lt;<span class="o">(</span>git lfs ls-files -n <span class="p">|</span> sort<span class="o">)</span> &gt;/dev/null
-
-<span class="nv">ret</span><span class="o">=</span><span class="nv">$?</span>
-<span class="k">if</span> <span class="o">[[</span> <span class="nv">$ret</span> -ne <span class="m">0</span> <span class="o">]]</span><span class="p">;</span> <span class="k">then</span>
-  <span class="nb">echo</span> &gt;<span class="p">&amp;</span><span class="m">2</span> <span class="s2">&quot;This remote has detected files committed without using Git LFS. Run &#39;brew install git-lfs &amp;&amp; git lfs install&#39; to install it and re-commit your files.&quot;</span><span class="p">;</span>
-  <span class="nb">exit</span> <span class="m">1</span><span class="p">;</span>
-<span class="k">fi</span>
-</code></pre></div></p>
+```bash</p>
+<h1 id="compares-files-that-match-gitattributes-filter-to-those-actually-tracked-by-git-lfs">compares files that match .gitattributes filter to those actually tracked by git-lfs<a class="headerlink" href="#compares-files-that-match-gitattributes-filter-to-those-actually-tracked-by-git-lfs" title="Permanent link">&para;</a></h1>
+<p>diff &lt;(git ls-files &lsquo;:(attr:filter=lfs)&rsquo; | sort) &lt;(git lfs ls-files -n | sort) &gt;/dev/null</p>
+<p>ret=$?
+if [[ $ret -ne 0 ]]; then
+  echo &gt;&amp;2 &ldquo;This remote has detected files committed without using Git LFS. Run &lsquo;brew install git-lfs &amp;&amp; git lfs install&rsquo; to install it and re-commit your files.&rdquo;;
+  exit 1;
+fi
+```</p>
 <p><code>your_build_script.sh</code>
-<div class="highlight"><pre><span></span><code><span class="k">if</span> <span class="o">[[</span> is running snapshot tests <span class="o">]]</span><span class="p">;</span> <span class="k">then</span>
-  <span class="c1"># fail fast if files not checked in using git lfs</span>
-  <span class="s2">&quot;</span><span class="nv">$HOOKS_DIR</span><span class="s2">&quot;</span>/pre-receive
+<code>bash
+if [[ is running snapshot tests ]]; then
+  # fail fast if files not checked in using git lfs
+  "$HOOKS_DIR"/pre-receive
   git lfs install --local
   git lfs pull
-<span class="k">fi</span>
-</code></pre></div></p>
+fi</code></p>
 <h2 id="jetifier">Jetifier<a class="headerlink" href="#jetifier" title="Permanent link">&para;</a></h2>
 <p>If using Jetifier to migrate off Support libraries, add the following to your <code>gradle.properties</code> to
 exclude bundled Android dependencies.</p>
-<div class="highlight"><pre><span></span><code>android.jetifier.ignorelist=android-base-common,common
-</code></pre></div>
-
+<p><code>text
+android.jetifier.ignorelist=android-base-common,common</code></p>
 <h2 id="releases">Releases<a class="headerlink" href="#releases" title="Permanent link">&para;</a></h2>
 <p>Our <a href="https://cashapp.github.io/paparazzi/changelog/">change log</a> has release history.</p>
 <p>Using plugin application:
-<div class="highlight"><pre><span></span><code><span class="n">buildscript</span> <span class="o">{</span>
-  <span class="n">repositories</span> <span class="o">{</span>
-    <span class="n">mavenCentral</span><span class="o">()</span>
-    <span class="n">google</span><span class="o">()</span>
-  <span class="o">}</span>
-  <span class="n">dependencies</span> <span class="o">{</span>
-    <span class="n">classpath</span> <span class="s1">&#39;app.cash.paparazzi:paparazzi-gradle-plugin:1.2.0&#39;</span>
-  <span class="o">}</span>
-<span class="o">}</span>
-
-<span class="n">apply</span> <span class="nl">plugin:</span> <span class="s1">&#39;app.cash.paparazzi&#39;</span>
-</code></pre></div></p>
+```groovy
+buildscript {
+  repositories {
+    mavenCentral()
+    google()
+  }
+  dependencies {
+    classpath &lsquo;app.cash.paparazzi:paparazzi-gradle-plugin:1.2.0&rsquo;
+  }
+}</p>
+<p>apply plugin: &lsquo;app.cash.paparazzi&rsquo;
+```</p>
 <p>Using the plugins DSL:
-<div class="highlight"><pre><span></span><code><span class="n">plugins</span> <span class="o">{</span>
-  <span class="n">id</span> <span class="s1">&#39;app.cash.paparazzi&#39;</span> <span class="n">version</span> <span class="s1">&#39;1.2.0&#39;</span>
-<span class="o">}</span>
-</code></pre></div></p>
+<code>groovy
+plugins {
+  id 'app.cash.paparazzi' version '1.2.0'
+}</code></p>
 <p>Snapshots of the development version are available in <a href="https://oss.sonatype.org/content/repositories/snapshots/app/cash/paparazzi/">Sonatype&rsquo;s <code>snapshots</code> repository</a>.</p>
-<div class="highlight"><pre><span></span><code> <span class="n">repositories</span> <span class="o">{</span>
-   <span class="c1">// ...</span>
-   <span class="n">maven</span> <span class="o">{</span>
-     <span class="n">url</span> <span class="s1">&#39;https://oss.sonatype.org/content/repositories/snapshots/&#39;</span>
-   <span class="o">}</span>
- <span class="o">}</span>
-</code></pre></div>
-
+<p><code>groovy
+ repositories {
+   // ...
+   maven {
+     url 'https://oss.sonatype.org/content/repositories/snapshots/'
+   }
+ }</code></p>
 <h2 id="license">License<a class="headerlink" href="#license" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code>Copyright 2019 Square, Inc.
-
-Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<p>```
+Copyright 2019 Square, Inc.</p>
+<p>Licensed under the Apache License, Version 2.0 (the &ldquo;License&rdquo;);
 you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-   http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+You may obtain a copy of the License at</p>
+<p><a href="http://www.apache.org/licenses/LICENSE-2.0">http://www.apache.org/licenses/LICENSE-2.0</a></p>
+<p>Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an &ldquo;AS IS&rdquo; BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-</code></pre></div>
+```</p>
                 
               
               
