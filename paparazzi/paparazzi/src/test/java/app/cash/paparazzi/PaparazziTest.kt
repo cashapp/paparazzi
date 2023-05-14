@@ -28,7 +28,7 @@ import android.view.animation.LinearInterpolator
 import android.widget.Button
 import android.widget.TextView
 import com.android.internal.lang.System_Delegate
-import org.assertj.core.api.Assertions.assertThat
+import com.google.common.truth.Truth.assertThat
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
@@ -212,7 +212,7 @@ class PaparazziTest {
       true
     }
 
-    assertThat(thrown).isTrue
+    assertThat(thrown).isTrue()
   }
 
   private val time: Long

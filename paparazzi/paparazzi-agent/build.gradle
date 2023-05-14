@@ -6,5 +6,5 @@ dependencies {
   implementation libs.bytebuddy.agent
   api libs.junit
 
-  testImplementation libs.assertj
+  testImplementation libs.truth
 }

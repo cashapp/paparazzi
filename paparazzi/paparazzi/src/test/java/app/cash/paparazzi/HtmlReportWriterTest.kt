@@ -15,14 +15,14 @@
  */
 package app.cash.paparazzi
 
-import org.assertj.core.api.Assertions.assertThat
+import app.cash.paparazzi.FileSubject.Companion.assertThat
+import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.awt.image.BufferedImage
 import java.io.File
 import java.nio.file.Files
-import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.attribute.FileTime
 import java.time.Instant
@@ -62,7 +62,6 @@ class HtmlReportWriterTest {
         |window.all_runs = [
         |  "run_one"
         |];
-        |
       """.trimMargin()
     )
 
@@ -79,7 +78,6 @@ class HtmlReportWriterTest {
         |    "file": "images/$anyImageHash.png"
         |  }
         |];
-        |
       """.trimMargin()
     )
   }
@@ -109,8 +107,8 @@ class HtmlReportWriterTest {
       }
     }
 
-    assertThat(File(reportRoot.root, "images")).isEmptyDirectory
-    assertThat(File(reportRoot.root, "videos")).isEmptyDirectory
+    assertThat(File(reportRoot.root, "images")).isEmptyDirectory()
+    assertThat(File(reportRoot.root, "videos")).isEmptyDirectory()
   }
 
   @Test
@@ -126,9 +124,8 @@ class HtmlReportWriterTest {
         testName = TestName("app.cash.paparazzi", "HomeView", "testSettings"),
         timestamp = now.toDate()
       )
-      val file =
+      val golden =
         File("${snapshotRoot.root}/images/app.cash.paparazzi_HomeView_testSettings_test.png")
-      val golden = file.toPath()
 
       // precondition
       assertThat(golden).doesNotExist()
@@ -163,7 +160,7 @@ class HtmlReportWriterTest {
 
   private fun Instant.toDate() = Date(toEpochMilli())
 
-  private fun Path.lastModifiedTime(): FileTime {
-    return Files.readAttributes(this, BasicFileAttributes::class.java).lastModifiedTime()
+  private fun File.lastModifiedTime(): FileTime {
+    return Files.readAttributes(this.toPath(), BasicFileAttributes::class.java).lastModifiedTime()
   }
 }
