@@ -1,0 +1,26 @@
+name: pip-requirements
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/requirements.txt'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+
+      - name: Prep mkdocs
+        run: .github/workflows/prepare_mkdocs.sh
+
+      - name: Build mkdocs
+        run: |
+          pip3 install -r .github/workflows/requirements.txt
+          mkdocs build
