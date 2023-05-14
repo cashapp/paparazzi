@@ -19,7 +19,7 @@ layoutlibPrebuiltSha = "5128371"
 
 [libraries]
 androidx-annotations = { module = "androidx.annotation:annotation", version = "1.6.0" }
-androidx-appcompat = { module = "androidx.appcompat:appcompat", version = "1.5.1" }
+androidx-appcompat = { module = "androidx.appcompat:appcompat", version = "1.6.1" }
 androidx-lifecycleCommon = { module = "androidx.lifecycle:lifecycle-common", version = "2.4.0" }
 androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version = "1.2.1" }
 
