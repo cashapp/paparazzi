@@ -20,6 +20,8 @@ android {
 
 dependencies {
   implementation libs.composeUi.material
+  implementation libs.androidx.ui.tooling.preview
 
   testImplementation libs.testParameterInjector
+  debugImplementation libs.androidx.ui.tooling
 }
