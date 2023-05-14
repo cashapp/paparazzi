@@ -9,7 +9,7 @@ import com.android.ide.common.rendering.api.ResourceNamespace
 import com.android.ide.common.rendering.api.ResourceValue
 import com.android.ide.common.rendering.api.StyleResourceValue
 import com.android.resources.ResourceType
-import org.assertj.core.api.Assertions.assertThat
+import com.google.common.truth.Truth.assertThat
 import org.junit.Ignore
 import org.junit.Test
 import java.io.File

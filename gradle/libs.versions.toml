@@ -59,7 +59,6 @@ tools-sdkCommon = { module = "com.android.tools:sdk-common", version.ref = "andr
 trove4j = { module = "org.jetbrains.intellij.deps:trove4j", version = "1.0.20200330" }
 
 # Test libraries
-assertj = { module = "org.assertj:assertj-core", version = "3.23.1" }
 junit = { module = "junit:junit", version = "4.13.2" }
 testParameterInjector = { module = "com.google.testparameterinjector:test-parameter-injector", version = "1.10" }
 truth = { module = "com.google.truth:truth", version = "1.1.3" }
