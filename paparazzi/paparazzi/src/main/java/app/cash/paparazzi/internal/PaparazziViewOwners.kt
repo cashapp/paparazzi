@@ -11,7 +11,8 @@ import androidx.savedstate.SavedStateRegistryOwner
 
 internal class PaparazziLifecycleOwner : LifecycleOwner {
   val registry = LifecycleRegistry(this)
-  override fun getLifecycle(): Lifecycle = registry
+  override val lifecycle: Lifecycle
+    get() = registry
 }
 
 internal class PaparazziSavedStateRegistryOwner(
