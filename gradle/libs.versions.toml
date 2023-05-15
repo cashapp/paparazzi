@@ -65,7 +65,7 @@ truth = { module = "com.google.truth:truth", version = "1.1.3" }
 
 # Plugins
 plugin-android = { module = "com.android.tools.build:gradle", version.ref = "agp" }
-plugin-dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "kotlin" }
+plugin-dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version = "1.7.20" }
 plugin-grgit = { module = "org.ajoberstar.grgit:grgit-gradle", version = "5.2.0" }
 plugin-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 plugin-mavenPublish = { module = "com.vanniktech:gradle-maven-publish-plugin", version = "0.21.0" }
