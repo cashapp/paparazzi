@@ -179,9 +179,11 @@ class PaparazziPlugin : Plugin<Project> {
         test.inputs.files(nativePlatformFileCollection)
           .withPropertyName("paparazzi.nativePlatform")
           .withPathSensitivity(PathSensitivity.NONE)
+        test.inputs.files(snapshotOutputDir)
+          .withPropertyName("paparazzi.snapshot.output.dir")
+          .withPathSensitivity(PathSensitivity.RELATIVE)
 
         test.outputs.dir(reportOutputDir)
-        test.outputs.dir(snapshotOutputDir)
 
         @Suppress("ObjectLiteralToLambda")
         // why not a lambda?  See: https://docs.gradle.org/7.2/userguide/validation_problems.html#implementation_unknown
