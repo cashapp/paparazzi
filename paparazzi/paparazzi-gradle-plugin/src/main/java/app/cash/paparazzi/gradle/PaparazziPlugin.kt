@@ -15,8 +15,6 @@
  */
 package app.cash.paparazzi.gradle
 
-import app.cash.paparazzi.NATIVE_LIB_VERSION
-import app.cash.paparazzi.VERSION
 import app.cash.paparazzi.gradle.utils.artifactViewFor
 import app.cash.paparazzi.gradle.utils.artifactsFor
 import com.android.build.gradle.BaseExtension

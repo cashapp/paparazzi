@@ -1,6 +1,7 @@
 apply plugin: 'org.jetbrains.kotlin.jvm'
 apply plugin: 'java-gradle-plugin'
 apply plugin: 'com.vanniktech.maven.publish'
+apply plugin: 'com.github.gmazzo.buildconfig'
 
 gradlePlugin {
   plugins {
@@ -24,30 +25,15 @@ dependencies {
   testImplementation libs.truth
 }
 
-sourceSets {
-  main.java.srcDir 'src/generated/kotlin'
-}
-
-def generateVersion = tasks.register("pluginVersion") {
-  def outputDir = file('src/generated/kotlin')
-
-  inputs.property 'version', project.version
-  inputs.property 'nativeLibVersion', libs.versions.layoutlib
-  outputs.dir outputDir
-
-  doLast {
-    def versionFile = file("${outputDir}/app/cash/paparazzi/Version.kt")
-    versionFile.parentFile.mkdirs()
-    versionFile.text = """// Generated file. Do not edit!
-package app.cash.paparazzi
-const val VERSION = "${project.version}"
-const val NATIVE_LIB_VERSION = "${libs.versions.layoutlib.get()}"
-"""
+buildConfig {
+  useKotlinOutput {
+    internalVisibility = true
+    topLevelConstants = true
   }
-}
 
-tasks.named('compileKotlin').configure {
-  it.dependsOn(generateVersion)
+  packageName('app.cash.paparazzi.gradle')
+  buildConfigField("String", "VERSION", "\"${project.version}\"")
+  buildConfigField("String", "NATIVE_LIB_VERSION", "\"${libs.versions.layoutlib.get()}\"")
 }
 
 tasks.withType(Test).configureEach {
