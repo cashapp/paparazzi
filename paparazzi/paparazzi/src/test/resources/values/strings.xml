@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <plurals name="plural_name">
+    <item quantity="zero">Nothing</item>
+    <item quantity="one">One String</item>
+  </plurals>
+  <string name="string_name">Test String</string>
+  <string-array name="string_array_name">
+    <item>First Test String</item>
+    <item>Second Test String</item>
+  </string-array>
+</resources>

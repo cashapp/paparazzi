@@ -1,8 +1,8 @@
 package app.cash.paparazzi.internal
 
 import app.cash.paparazzi.internal.PaparazziLogger.MultipleFailuresException
-import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.fail
+import com.google.common.truth.Truth.assertThat
+import org.junit.Assert.fail
 import org.junit.Test
 import java.io.FileNotFoundException
 

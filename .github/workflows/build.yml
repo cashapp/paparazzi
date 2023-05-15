@@ -4,7 +4,6 @@ on: [push, pull_request]
 
 env:
   GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false -Dkotlin.incremental=false"
-  GRADLE_USER_HOME: ${{ github.workspace }}/gradle-home # required for Windows due to resource relative paths
 
 jobs:
   build:
@@ -22,10 +21,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3.5.2
-
-      - name: Validate Gradle Wrapper
-        uses: gradle/wrapper-validation-action@v1.0.6
+        uses: actions/checkout@v3
 
       - name: Configure JDK
         uses: actions/setup-java@v3
@@ -60,7 +56,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3.5.2
+        uses: actions/checkout@v3
 
       - name: Configure JDK
         uses: actions/setup-java@v3

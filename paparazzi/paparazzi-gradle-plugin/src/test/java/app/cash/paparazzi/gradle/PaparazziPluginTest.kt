@@ -180,6 +180,30 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun buildClassAccess() {
+    val fixtureRoot = File("src/test/projects/build-class")
+
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "custom/reports/paparazzi/images")
+    assertThat(snapshotsDir.exists()).isFalse()
+  }
+
+  @Test
+  fun buildClassNextSdkAccess() {
+    val fixtureRoot = File("src/test/projects/build-class-next-sdk")
+
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "custom/reports/paparazzi/images")
+    assertThat(snapshotsDir.exists()).isFalse()
+  }
+
+  @Test
   fun missingPlatformDirTest() {
     val fixtureRoot = File("src/test/projects/missing-platform-dir")
 
@@ -738,8 +762,8 @@ class PaparazziPluginTest {
     assertThat(resourceFileContents[1]).isEqualTo("intermediates/merged_res/debug")
     assertThat(resourceFileContents[4]).isEqualTo("intermediates/assets/debug")
     assertThat(resourceFileContents[5]).isEqualTo("app.cash.paparazzi.plugin.test")
-    assertThat(resourceFileContents[6]).isEqualTo("src/main/res/values/strings.xml")
-    assertThat(resourceFileContents[7]).isEqualTo("../../../../build/tmp/test/work/.gradle-test-kit/caches/transforms-3/447a80cf40ceaa09b49db1df799dcb00/transformed/external/res/values/values.xml")
+    assertThat(resourceFileContents[6]).isEqualTo("src/main/res,src/debug/res")
+    assertThat(resourceFileContents[7]).isEqualTo("caches/transforms-3/d6334ba6e139ad8b9f858c5a04bdbe68/transformed/external/res")
   }
 
   @Test
@@ -760,8 +784,8 @@ class PaparazziPluginTest {
     assertThat(resourceFileContents[1]).isEqualTo("intermediates/merged_res/debug")
     assertThat(resourceFileContents[4]).isEqualTo("intermediates/assets/debug")
     assertThat(resourceFileContents[5]).isEqualTo("app.cash.paparazzi.plugin.test")
-    assertThat(resourceFileContents[6]).isEqualTo("src/main/res/values/strings.xml")
-    assertThat(resourceFileContents[7]).isEqualTo("../../../../build/tmp/test/work/.gradle-test-kit/caches/transforms-3/447a80cf40ceaa09b49db1df799dcb00/transformed/external/res/values/values.xml")
+    assertThat(resourceFileContents[6]).isEqualTo("src/main/res,src/debug/res")
+    assertThat(resourceFileContents[7]).isEqualTo("caches/transforms-3/d6334ba6e139ad8b9f858c5a04bdbe68/transformed/external/res")
   }
 
   @Test

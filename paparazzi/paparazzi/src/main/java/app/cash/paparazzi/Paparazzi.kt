@@ -38,21 +38,21 @@ import androidx.lifecycle.ViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import app.cash.paparazzi.agent.AgentTestRule
 import app.cash.paparazzi.agent.InterceptorRegistrar
-import app.cash.paparazzi.internal.ChoreographerDelegateInterceptor
-import app.cash.paparazzi.internal.EditModeInterceptor
-import app.cash.paparazzi.internal.IInputMethodManagerInterceptor
 import app.cash.paparazzi.internal.ImageUtils
-import app.cash.paparazzi.internal.MatrixMatrixMultiplicationInterceptor
-import app.cash.paparazzi.internal.MatrixVectorMultiplicationInterceptor
 import app.cash.paparazzi.internal.PaparazziCallback
 import app.cash.paparazzi.internal.PaparazziLifecycleOwner
 import app.cash.paparazzi.internal.PaparazziLogger
 import app.cash.paparazzi.internal.PaparazziOnBackPressedDispatcherOwner
 import app.cash.paparazzi.internal.PaparazziSavedStateRegistryOwner
 import app.cash.paparazzi.internal.Renderer
-import app.cash.paparazzi.internal.ResourcesInterceptor
-import app.cash.paparazzi.internal.ServiceManagerInterceptor
 import app.cash.paparazzi.internal.SessionParamsBuilder
+import app.cash.paparazzi.internal.interceptors.ChoreographerDelegateInterceptor
+import app.cash.paparazzi.internal.interceptors.EditModeInterceptor
+import app.cash.paparazzi.internal.interceptors.IInputMethodManagerInterceptor
+import app.cash.paparazzi.internal.interceptors.MatrixMatrixMultiplicationInterceptor
+import app.cash.paparazzi.internal.interceptors.MatrixVectorMultiplicationInterceptor
+import app.cash.paparazzi.internal.interceptors.ResourcesInterceptor
+import app.cash.paparazzi.internal.interceptors.ServiceManagerInterceptor
 import app.cash.paparazzi.internal.parsers.LayoutPullParser
 import com.android.ide.common.rendering.api.RenderSession
 import com.android.ide.common.rendering.api.Result
@@ -146,8 +146,6 @@ class Paparazzi @JvmOverloads constructor(
   }
 
   fun prepare(description: Description) {
-    forcePlatformSdkVersion(environment.compileSdkVersion)
-
     val layoutlibCallback =
       PaparazziCallback(logger, environment.packageName, environment.resourcePackageNames)
     layoutlibCallback.initResources()
@@ -158,6 +156,7 @@ class Paparazzi @JvmOverloads constructor(
       renderer = Renderer(environment, layoutlibCallback, logger)
       sessionParamsBuilder = renderer.prepare()
     }
+    forcePlatformSdkVersion(environment.compileSdkVersion)
 
     sessionParamsBuilder = sessionParamsBuilder
       .copy(
@@ -304,7 +303,7 @@ class Paparazzi @JvmOverloads constructor(
             modifiedView.setViewTreeOnBackPressedDispatcherOwner(PaparazziOnBackPressedDispatcherOwner(lifecycleOwner))
           }
           // Must be changed after the SavedStateRegistryOwner above has finished restoring its state.
-          lifecycleOwner.registry.currentState = Lifecycle.State.RESUMED
+          lifecycleOwner.registry.setCurrentState(Lifecycle.State.RESUMED)
         }
 
         viewGroup.addView(modifiedView)

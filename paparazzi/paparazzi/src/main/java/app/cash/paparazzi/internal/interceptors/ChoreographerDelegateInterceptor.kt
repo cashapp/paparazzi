@@ -1,4 +1,4 @@
-package app.cash.paparazzi.internal
+package app.cash.paparazzi.internal.interceptors
 
 import android.view.Choreographer
 import com.android.internal.lang.System_Delegate

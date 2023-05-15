@@ -19,10 +19,15 @@ package app.cash.paparazzi.internal
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Environment
 import app.cash.paparazzi.Flags
+import app.cash.paparazzi.Paparazzi
 import app.cash.paparazzi.deprecated.com.android.ide.common.resources.deprecated.FrameworkResources
 import app.cash.paparazzi.deprecated.com.android.ide.common.resources.deprecated.ResourceItem
 import app.cash.paparazzi.deprecated.com.android.ide.common.resources.deprecated.ResourceRepository
 import app.cash.paparazzi.deprecated.com.android.io.FolderWrapper
+import app.cash.paparazzi.getFieldReflectively
+import app.cash.paparazzi.internal.resources.ResourceFolderRepository
+import app.cash.paparazzi.setStaticValue
+import com.android.ide.common.rendering.api.ResourceNamespace
 import com.android.layoutlib.bridge.Bridge
 import com.android.layoutlib.bridge.android.RenderParamsFlags
 import com.android.layoutlib.bridge.impl.DelegateManager
@@ -61,6 +66,16 @@ internal class Renderer(
             }.apply { loadResources() }
           )
       } else {
+        val resourceFolderRepositories = environment.libraryResourceDirs.map {
+          ResourceFolderRepository(
+            resourceDir = File(it),
+            namespace = ResourceNamespace.RES_AUTO
+          )
+        }
+
+        // ./gradlew sample:testDebug --tests=app.cash.paparazzi.sample.LaunchViewTest -Papp.cash.paparazzi.new.resource.loading=true
+        println(resourceFolderRepositories.map { it.origin }.joinToString(separator = "\n"))
+
         TODO("New resource loading coming soon")
       }
 
@@ -100,6 +115,7 @@ internal class Renderer(
         )
       ) { "Failed to init Bridge." }
     }
+    configureBuildProperties()
     Bridge.getLock()
       .lock()
     try {
@@ -110,6 +126,45 @@ internal class Renderer(
     }
 
     return sessionParamsBuilder
+  }
+
+  private fun configureBuildProperties() {
+    val classLoader = Paparazzi::class.java.classLoader
+    val buildClass = try {
+      classLoader.loadClass("android.os.Build")
+    } catch (e: ClassNotFoundException) {
+      // Project unit tests don't load Android platform code
+      return
+    }
+    val originalBuildClass = try {
+      classLoader.loadClass("android.os._Original_Build")
+    } catch (e: ClassNotFoundException) {
+      // Project unit tests don't load Android platform code
+      return
+    }
+
+    buildClass.fields.forEach {
+      try {
+        val originalField = originalBuildClass.getField(it.name)
+        buildClass.getFieldReflectively(it.name).setStaticValue(originalField.get(null))
+      } catch (e: NoSuchFieldException) {
+        // android.os._Original_Build from layoutlib doesn't have this field, it's probably new.
+        // Just ignore it and keep the value in android.os.Build
+      }
+    }
+
+    buildClass.classes.forEach { inner ->
+      val originalInnerClass = originalBuildClass.classes.single { it.simpleName == inner.simpleName }
+      inner.fields.forEach {
+        try {
+          val originalField = originalInnerClass.getField(it.name)
+          inner.getFieldReflectively(it.name).setStaticValue(originalField.get(null))
+        } catch (e: NoSuchFieldException) {
+          // android.os._Original_Build from layoutlib doesn't have this field, it's probably new.
+          // Just ignore it and keep the value in android.os.Build
+        }
+      }
+    }
   }
 
   private fun getNativeLibDir(): String {

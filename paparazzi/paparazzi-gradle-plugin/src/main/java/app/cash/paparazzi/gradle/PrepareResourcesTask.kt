@@ -44,11 +44,11 @@ abstract class PrepareResourcesTask : DefaultTask() {
 
   @get:InputFiles
   @get:PathSensitive(PathSensitivity.NONE)
-  abstract val localResourceFiles: ConfigurableFileCollection
+  abstract val localResourceDirs: ConfigurableFileCollection
 
   @get:InputFiles
   @get:PathSensitive(PathSensitivity.NONE)
-  abstract val libraryResourceFiles: ConfigurableFileCollection
+  abstract val libraryResourceDirs: ConfigurableFileCollection
 
   @get:Input
   abstract val mergeAssetsOutputDir: Property<String>
@@ -64,6 +64,8 @@ abstract class PrepareResourcesTask : DefaultTask() {
   abstract val paparazziResources: RegularFileProperty
 
   private val projectDirectory = project.layout.projectDirectory
+
+  private val gradleUserHomeDirectory = projectDirectory.dir(project.gradle.gradleUserHomeDir.path)
 
   @TaskAction
   // TODO: figure out why this can't be removed as of Kotlin 1.6+
@@ -99,9 +101,9 @@ abstract class PrepareResourcesTask : DefaultTask() {
         it.newLine()
         it.write(resourcePackageNames)
         it.newLine()
-        it.write(localResourceFiles.joinFiles(projectDirectory))
+        it.write(localResourceDirs.joinFiles(projectDirectory))
         it.newLine()
-        it.write(libraryResourceFiles.joinFiles(projectDirectory))
+        it.write(libraryResourceDirs.joinFiles(gradleUserHomeDirectory))
         it.newLine()
       }
   }

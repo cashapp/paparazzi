@@ -1,6 +1,6 @@
 package app.cash.paparazzi.internal.parsers
 
-import org.assertj.core.api.Assertions.assertThat
+import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.xmlpull.v1.XmlPullParserException
 
@@ -55,7 +55,7 @@ class InMemoryParserTest {
     assertThat(parser.getAttributePrefix(1)).isEqualTo(ANDROID_PREFIX)
 
     assertThat(parser.getAttributeValue(0)).isEqualTo("#999999")
-    assertThat(parser.getAttributeValue(1)).isNotNull // pathData
+    assertThat(parser.getAttributeValue(1)).isNotNull() // pathData
 
     parser.next() // END_TAG = "path"
 

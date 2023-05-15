@@ -88,20 +88,19 @@ class PaparazziPlugin : Plugin<Project> {
         project.tasks.named("merge${variantSlug}Assets") as TaskProvider<MergeSourceSetFolders>
       val mergeAssetsOutputDir = mergeAssetsProvider.flatMap { it.outputDir }
       val buildDirectory = project.layout.buildDirectory
+      val gradleUserHomeDir = project.gradle.gradleUserHomeDir
       val reportOutputDir = buildDirectory.dir("reports/paparazzi")
       val snapshotOutputDir = project.layout.projectDirectory.dir("src/test/snapshots")
 
       // local resources
-      val localResourceFiles = project
+      val localResourceDirs = project
         .files(variant.sourceSets.flatMap { it.resDirectories })
-        .asFileTree
 
       // library resources
       // https://android.googlesource.com/platform/tools/base/+/96015063acd3455a76cdf1cc71b23b0828c0907f/build-system/gradle-core/src/main/java/com/android/build/gradle/tasks/MergeResources.kt#875
-      val libraryResourceFiles = variant.runtimeConfiguration
+      val libraryResourceDirs = variant.runtimeConfiguration
         .artifactsFor(ArtifactType.ANDROID_RES.type)
         .artifactFiles
-        .asFileTree
 
       val packageAwareArtifactFiles = variant.runtimeConfiguration
         .artifactsFor(ArtifactType.SYMBOL_LIST_WITH_PACKAGE_NAME.type)
@@ -122,8 +121,8 @@ class PaparazziPlugin : Plugin<Project> {
         task.targetSdkVersion.set(android.targetSdkVersion())
         task.compileSdkVersion.set(android.compileSdkVersion())
         task.mergeAssetsOutputDir.set(buildDirectory.asRelativePathString(mergeAssetsOutputDir))
-        task.localResourceFiles.from(localResourceFiles)
-        task.libraryResourceFiles.from(libraryResourceFiles)
+        task.localResourceDirs.from(localResourceDirs)
+        task.libraryResourceDirs.from(libraryResourceDirs)
         task.paparazziResources.set(buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.txt"))
       }
 
@@ -169,8 +168,8 @@ class PaparazziPlugin : Plugin<Project> {
       val testTaskProvider = project.tasks.named("test$testVariantSlug", Test::class.java) { test ->
         test.systemProperties["paparazzi.test.resources"] =
           writeResourcesTask.flatMap { it.paparazziResources.asFile }.get().path
-        test.systemProperties["paparazzi.build.dir"] =
-          buildDirectory.get().toString()
+        test.systemProperties["paparazzi.build.dir"] = buildDirectory.get().toString()
+        test.systemProperties["paparazzi.artifacts.cache.dir"] = gradleUserHomeDir.path
         test.systemProperties["kotlinx.coroutines.main.delay"] = true
         test.systemProperties.putAll(project.properties.filterKeys { it.startsWith("app.cash.paparazzi") })
 

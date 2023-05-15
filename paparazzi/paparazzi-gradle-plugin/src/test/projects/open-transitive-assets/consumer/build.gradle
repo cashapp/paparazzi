@@ -23,5 +23,5 @@ android {
 
 dependencies {
   implementation project(':producer')
-  testImplementation 'org.assertj:assertj-core:3.21.0'
+  testImplementation libs.truth
 }

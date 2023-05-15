@@ -21,7 +21,7 @@ import android.animation.ValueAnimator
 import android.graphics.Canvas
 import android.view.animation.LinearInterpolator
 import android.widget.TextView
-import org.assertj.core.api.Assertions.assertThat
+import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
 
@@ -66,11 +66,8 @@ class InstantAnimationsRuleTest {
     animator.start()
 
     paparazzi.snapshot(view)
-    assertThat(log).containsExactly(
-      "onAnimationStart",
-      "onAnimationEnd",
-      "onDraw text=1.0"
-    )
+    assertThat(log)
+      .containsExactly("onAnimationStart", "onAnimationEnd", "onDraw text=1.0").inOrder()
     log.clear()
   }
 }

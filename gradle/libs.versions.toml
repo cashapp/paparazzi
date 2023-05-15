@@ -1,13 +1,13 @@
 [versions]
 agp = "7.4.2"
 androidTools = "30.4.2" # == 23.0.0 + agp version
-bytebuddy = "1.12.10"
+bytebuddy = "1.14.4"
 composeCompiler = "1.3.2"
 javaTarget = "11"
 jcodec = "0.2.5"
 kotlin = "1.7.20"
 ktlint = "0.46.1"
-moshi = "1.13.0"
+moshi = "1.15.0"
 
 minSdk = "25"
 compileSdk = "33"
@@ -18,10 +18,10 @@ layoutlib = "2022.2.1-5128371-2"
 layoutlibPrebuiltSha = "5128371"
 
 [libraries]
-androidx-annotations = { module = "androidx.annotation:annotation", version = "1.3.0" }
-androidx-appcompat = { module = "androidx.appcompat:appcompat", version = "1.5.1" }
-androidx-lifecycleCommon = { module = "androidx.lifecycle:lifecycle-common", version = "2.4.0" }
-androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version = "1.2.1" }
+androidx-annotations = { module = "androidx.annotation:annotation", version = "1.6.0" }
+androidx-appcompat = { module = "androidx.appcompat:appcompat", version = "1.6.1" }
+androidx-lifecycleCommon = { module = "androidx.lifecycle:lifecycle-common", version = "2.6.1" }
+androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version = "1.3.0" }
 
 bytebuddy-agent = { module = "net.bytebuddy:byte-buddy-agent", version.ref = "bytebuddy" }
 bytebuddy-core = { module = "net.bytebuddy:byte-buddy", version.ref = "bytebuddy" }
@@ -35,7 +35,7 @@ jcodec-core = { module = "org.jcodec:jcodec", version.ref = "jcodec" }
 jcodec-javase = { module = "org.jcodec:jcodec-javase", version.ref = "jcodec" }
 
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
-kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.6.4" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.7.1" }
 
 kxml2 = { module = "kxml2:kxml2", version = "2.3.0" }
 
@@ -49,26 +49,25 @@ moshi-adapters = { module = "com.squareup.moshi:moshi-adapters", version.ref = "
 moshi-core = { module = "com.squareup.moshi:moshi", version.ref = "moshi" }
 moshi-kotlinCodegen = { module = "com.squareup.moshi:moshi-kotlin-codegen", version.ref = "moshi" }
 
-okio = { module = "com.squareup.okio:okio", version = "3.1.0" }
+okio = { module = "com.squareup.okio:okio", version = "3.3.0" }
 
 tools-common = { module = "com.android.tools:common", version.ref = "androidTools" }
-tools-layoutlib = { module = "com.android.tools.layoutlib:layoutlib-api", version = "31.0.0" }
+tools-layoutlib = { module = "com.android.tools.layoutlib:layoutlib-api", version = "31.0.1" }
 tools-ninepatch = { module = "com.android.tools:ninepatch", version.ref = "androidTools" }
 tools-sdkCommon = { module = "com.android.tools:sdk-common", version.ref = "androidTools" }
 
 trove4j = { module = "org.jetbrains.intellij.deps:trove4j", version = "1.0.20200330" }
 
 # Test libraries
-assertj = { module = "org.assertj:assertj-core", version = "3.23.1" }
 junit = { module = "junit:junit", version = "4.13.2" }
-testParameterInjector = { module = "com.google.testparameterinjector:test-parameter-injector", version = "1.10" }
+testParameterInjector = { module = "com.google.testparameterinjector:test-parameter-injector", version = "1.11" }
 truth = { module = "com.google.truth:truth", version = "1.1.3" }
 
 # Plugins
 plugin-android = { module = "com.android.tools.build:gradle", version.ref = "agp" }
-plugin-dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "kotlin" }
-plugin-grgit = { module = "org.ajoberstar.grgit:grgit-gradle", version = "5.0.0" }
+plugin-dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version = "1.8.10" }
+plugin-grgit = { module = "org.ajoberstar.grgit:grgit-gradle", version = "5.2.0" }
 plugin-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 plugin-mavenPublish = { module = "com.vanniktech:gradle-maven-publish-plugin", version = "0.25.2" }
-plugin-spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version = "6.12.0" }
-plugin-versions = { module = "com.github.ben-manes:gradle-versions-plugin", version = "0.44.0" }
+plugin-spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version = "6.18.0" }
+plugin-versions = { module = "com.github.ben-manes:gradle-versions-plugin", version = "0.46.0" }

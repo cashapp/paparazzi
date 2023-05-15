@@ -4,10 +4,10 @@ import android.os.SystemClock
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.ComposeView
 import app.cash.paparazzi.Paparazzi
-import kotlinx.coroutines.delay
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
+import kotlinx.coroutines.delay
 
 class CoroutineDelayMainTest {
   @get:Rule
