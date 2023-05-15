@@ -224,9 +224,6 @@ class PaparazziPlugin : Plugin<Project> {
   }
 
   private fun Project.setupNativePlatformDependency(): FileCollection {
-    val nativePlatformConfiguration = configurations.create("nativePlatform")
-    configurations.add(nativePlatformConfiguration)
-
     val operatingSystem = OperatingSystem.current()
     val nativeLibraryArtifactId = when {
       operatingSystem.isMacOsX -> {
@@ -236,6 +233,8 @@ class PaparazziPlugin : Plugin<Project> {
       operatingSystem.isWindows -> "win"
       else -> "linux"
     }
+
+    val nativePlatformConfiguration = configurations.create("nativePlatform")
     nativePlatformConfiguration.dependencies.add(
       dependencies.create("app.cash.paparazzi:layoutlib-native-$nativeLibraryArtifactId:$NATIVE_LIB_VERSION")
     )
