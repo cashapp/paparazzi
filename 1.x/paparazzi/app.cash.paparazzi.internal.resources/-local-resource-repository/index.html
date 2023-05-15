@@ -310,6 +310,13 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#inheritors" class="md-nav__link">
+    Inheritors
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#functions" class="md-nav__link">
     Functions
   </a>
@@ -319,13 +326,6 @@
         <li class="md-nav__item">
   <a href="#properties" class="md-nav__link">
     Properties
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#inheritors" class="md-nav__link">
-    Inheritors
   </a>
   
 </li>
@@ -350,9 +350,21 @@
 
 <p>//<a href="../../../">paparazzi</a>/<a href="../">app.cash.paparazzi.internal.resources</a>/<a href="./">LocalResourceRepository</a></p>
 <h1 id="localresourcerepository">LocalResourceRepository<a class="headerlink" href="#localresourcerepository" title="Permanent link">&para;</a></h1>
-<p>[jvm]\
-abstract class <a href="./">LocalResourceRepository</a> : AbstractResourceRepository</p>
+<p>abstract class <a href="./">LocalResourceRepository</a> : AbstractResourceRepository</p>
 <p>Repository for Android application resources, e.g. those that show up in {@code R}, not {@code android.R} (which are referred to as framework resources.).</p>
+<h4 id="inheritors">Inheritors<a class="headerlink" href="#inheritors" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="../-resource-folder-repository/">ResourceFolderRepository</a></td>
+</tr>
+</tbody>
+</table>
 <h2 id="functions">Functions<a class="headerlink" href="#functions" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -387,8 +399,8 @@ abstract class <a href="./">LocalResourceRepository</a> : AbstractResourceReposi
 <td>[jvm]<br>open fun <a href="../-resource-folder-repository/#-408651289%2FFunctions%2F-2095620550">getResourceNames</a>(namespace: ResourceNamespace, resourceType: ResourceType): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-set/index.html">MutableSet</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>&gt;</td>
 </tr>
 <tr>
-<td><a href="../-resource-folder-repository/#-490337056%2FFunctions%2F-2095620550">getResources</a></td>
-<td>[jvm]<br>open fun <a href="../-resource-folder-repository/#-490337056%2FFunctions%2F-2095620550">getResources</a>(reference: ResourceReference): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a>&lt;ResourceItem&gt;<br>open override fun <a href="../-resource-folder-repository/#1404228208%2FFunctions%2F-2095620550">getResources</a>(namespace: ResourceNamespace, resourceType: ResourceType): ListMultimap&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, ResourceItem&gt;<br>open override fun <a href="../-resource-folder-repository/#970284153%2FFunctions%2F-2095620550">getResources</a>(namespace: ResourceNamespace, resourceType: ResourceType, filter: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Predicate.html">Predicate</a>&lt;ResourceItem&gt;): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a>&lt;ResourceItem&gt;<br>open override fun <a href="../-resource-folder-repository/#-768659627%2FFunctions%2F-2095620550">getResources</a>(namespace: ResourceNamespace, resourceType: ResourceType, resourceName: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a>&lt;ResourceItem&gt;</td>
+<td><a href="../-resource-folder-repository/#1404228208%2FFunctions%2F-2095620550">getResources</a></td>
+<td>[jvm]<br>open override fun <a href="../-resource-folder-repository/#1404228208%2FFunctions%2F-2095620550">getResources</a>(namespace: ResourceNamespace, resourceType: ResourceType): ListMultimap&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, ResourceItem&gt;<br>open override fun <a href="../-resource-folder-repository/#970284153%2FFunctions%2F-2095620550">getResources</a>(namespace: ResourceNamespace, resourceType: ResourceType, filter: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Predicate.html">Predicate</a>&lt;ResourceItem&gt;): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a>&lt;ResourceItem&gt;<br>open override fun <a href="../-resource-folder-repository/#-768659627%2FFunctions%2F-2095620550">getResources</a>(namespace: ResourceNamespace, resourceType: ResourceType, resourceName: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a>&lt;ResourceItem&gt;<br>open fun <a href="../-resource-folder-repository/#-490337056%2FFunctions%2F-2095620550">getResources</a>(reference: ResourceReference): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a>&lt;ResourceItem&gt;</td>
 </tr>
 <tr>
 <td><a href="../-resource-folder-repository/#1517093356%2FFunctions%2F-2095620550">getResourceTypes</a></td>
@@ -412,19 +424,6 @@ abstract class <a href="./">LocalResourceRepository</a> : AbstractResourceReposi
 <tr>
 <td><a href="display-name/">displayName</a></td>
 <td>[jvm]<br>val <a href="display-name/">displayName</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
-</tr>
-</tbody>
-</table>
-<h2 id="inheritors">Inheritors<a class="headerlink" href="#inheritors" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><a href="../-resource-folder-repository/">ResourceFolderRepository</a></td>
 </tr>
 </tbody>
 </table>

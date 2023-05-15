@@ -310,6 +310,13 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#inheritors" class="md-nav__link">
+    Inheritors
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#functions" class="md-nav__link">
     Functions
   </a>
@@ -319,13 +326,6 @@
         <li class="md-nav__item">
   <a href="#properties" class="md-nav__link">
     Properties
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#inheritors" class="md-nav__link">
-    Inheritors
   </a>
   
 </li>
@@ -350,9 +350,21 @@
 
 <p>//<a href="../../../">paparazzi</a>/<a href="../">app.cash.paparazzi.internal.resources</a>/<a href="./">LoadableResourceRepository</a></p>
 <h1 id="loadableresourcerepository">LoadableResourceRepository<a class="headerlink" href="#loadableresourcerepository" title="Permanent link">&para;</a></h1>
-<p>[jvm]\
-interface <a href="./">LoadableResourceRepository</a> : SingleNamespaceResourceRepository</p>
+<p>interface <a href="./">LoadableResourceRepository</a> : SingleNamespaceResourceRepository</p>
 <p>Repository of resources loaded from a file or a directory on disk.</p>
+<h4 id="inheritors">Inheritors<a class="headerlink" href="#inheritors" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="../-resource-folder-repository/">ResourceFolderRepository</a></td>
+</tr>
+</tbody>
+</table>
 <h2 id="functions">Functions<a class="headerlink" href="#functions" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -444,19 +456,6 @@ interface <a href="./">LoadableResourceRepository</a> : SingleNamespaceResourceR
 <tr>
 <td><a href="origin/">origin</a></td>
 <td>[jvm]<br>abstract val <a href="origin/">origin</a>: <a href="https://docs.oracle.com/javase/8/docs/api/java/nio/file/Path.html">Path</a><br>Returns the file or directory this resource repository was loaded from. Resource repositories loaded from the same file or directory with different file filtering options have the same origin.</td>
-</tr>
-</tbody>
-</table>
-<h2 id="inheritors">Inheritors<a class="headerlink" href="#inheritors" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><a href="../-resource-folder-repository/">ResourceFolderRepository</a></td>
 </tr>
 </tbody>
 </table>
