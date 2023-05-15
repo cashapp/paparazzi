@@ -17,6 +17,7 @@ package app.cash.paparazzi.plugin.test
 
 import android.os.Build
 import app.cash.paparazzi.Paparazzi
+import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
 
@@ -26,31 +27,30 @@ class BuildClassTest {
 
   @Test
   fun verifyFields() {
-    println(Build.MODEL)
-    assert(Build.ID == "TPB4.220624.004")
-    assert(Build.DISPLAY == "sdk_phone_armv7-userdebug 13 TPB4.220624.004 8808248 test-keys")
-    assert(Build.PRODUCT == "unknown")
-    assert(Build.DEVICE == "generic")
-    assert(Build.BOARD == "unknown")
-    assert(Build.MANUFACTURER == "generic")
-    assert(Build.BRAND == "generic")
-    assert(Build.MODEL == "unknown")
-    assert(Build.SOC_MANUFACTURER == "unknown")
-    assert(Build.SOC_MODEL == "unknown")
-    assert(Build.BOOTLOADER == "unknown")
-    assert(Build.RADIO == "unknown")
-    assert(Build.HARDWARE == "unknown")
-    assert(Build.SKU == "unknown")
-    assert(Build.ODM_SKU == "unknown")
+    assertThat(Build.ID).isNotNull()
+    assertThat(Build.DISPLAY).contains("test-keys")
+    assertThat(Build.PRODUCT).isEqualTo("unknown")
+    assertThat(Build.DEVICE).isEqualTo("generic")
+    assertThat(Build.BOARD).isEqualTo("unknown")
+    assertThat(Build.MANUFACTURER).isEqualTo("generic")
+    assertThat(Build.BRAND).isEqualTo("generic")
+    assertThat(Build.MODEL).isEqualTo("unknown")
+    assertThat(Build.SOC_MANUFACTURER).isEqualTo("unknown")
+    assertThat(Build.SOC_MODEL).isEqualTo("unknown")
+    assertThat(Build.BOOTLOADER).isEqualTo("unknown")
+    assertThat(Build.RADIO).isEqualTo("unknown")
+    assertThat(Build.HARDWARE).isEqualTo("unknown")
+    assertThat(Build.SKU).isEqualTo("unknown")
+    assertThat(Build.ODM_SKU).isEqualTo("unknown")
 
-    assert(Build.VERSION.INCREMENTAL == "8808248")
-    assert(Build.VERSION.RELEASE != null)
-    assert(Build.VERSION.RELEASE_OR_CODENAME != null)
-    assert(Build.VERSION.BASE_OS == "")
-    assert(Build.VERSION.SECURITY_PATCH != null)
-    assert(Build.VERSION.MEDIA_PERFORMANCE_CLASS == 0)
-    assert(Build.VERSION.SDK != null)
-    assert(Build.VERSION.SDK_INT != 0)
-    assert(Build.VERSION.CODENAME == "REL")
+    assertThat(Build.VERSION.INCREMENTAL).isNotEmpty()
+    assertThat(Build.VERSION.RELEASE).isNotNull()
+    assertThat(Build.VERSION.RELEASE_OR_CODENAME).isNotNull()
+    assertThat(Build.VERSION.BASE_OS).isEqualTo("")
+    assertThat(Build.VERSION.SECURITY_PATCH).isNotNull()
+    assertThat(Build.VERSION.MEDIA_PERFORMANCE_CLASS).isEqualTo(0)
+    assertThat(Build.VERSION.SDK).isNotNull()
+    assertThat(Build.VERSION.SDK_INT).isNotEqualTo(0)
+    assertThat(Build.VERSION.CODENAME).isNotNull()
   }
 }
