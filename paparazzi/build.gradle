@@ -20,6 +20,8 @@ buildscript {
 }
 
 subprojects {
+  version = property("VERSION_NAME") as String
+
   repositories {
     mavenCentral()
     google()

@@ -31,7 +31,7 @@ sourceSets {
 def generateVersion = tasks.register("pluginVersion") {
   def outputDir = file('src/generated/kotlin')
 
-  inputs.property 'version', version
+  inputs.property 'version', project.version
   inputs.property 'nativeLibVersion', libs.versions.layoutlib
   outputs.dir outputDir
 
