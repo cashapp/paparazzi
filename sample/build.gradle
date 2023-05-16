@@ -9,6 +9,10 @@ android {
   defaultConfig {
     minSdk libs.versions.minSdk.get() as int
   }
+  compileOptions {
+    sourceCompatibility = libs.versions.javaTarget.get()
+    targetCompatibility = libs.versions.javaTarget.get()
+  }
   buildFeatures {
     compose true
     viewBinding true

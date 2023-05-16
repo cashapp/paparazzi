@@ -45,7 +45,7 @@ subprojects {
     targetCompatibility = libs.versions.javaTarget.get()
   }
 
-  tasks.withType(org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile).configureEach {
+  tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile).configureEach {
     kotlinOptions {
       jvmTarget = libs.versions.javaTarget.get()
     }
