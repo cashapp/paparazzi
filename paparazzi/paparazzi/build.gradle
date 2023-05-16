@@ -1,4 +1,4 @@
-import org.jetbrains.kotlin.gradle.plugin.KotlinPluginKt
+import org.jetbrains.kotlin.gradle.plugin.KotlinJvmPluginKt
 
 apply plugin: 'org.jetbrains.kotlin.jvm'
 apply plugin: 'org.jetbrains.kotlin.kapt'
@@ -26,14 +26,14 @@ dependencies {
 dependencies {
   // Paparazzi is a Kotlin JVM module and thus cannot depend on Android library artifacts (AARs)
   // TODO: Use Gradle transforms to extract/rename classes.jar's from AARs
-  api files('libs/compose-runtime-1.3.1.jar')
-  implementation files('libs/compose-ui-1.3.1.jar') // Need implementation dependency to reference AbstractComposeView for AccessibilityRenderExtension
+  api files('libs/compose-runtime-1.4.3.jar')
+  implementation files('libs/compose-ui-1.4.3.jar') // Need implementation dependency to reference AbstractComposeView for AccessibilityRenderExtension
   // Needed to get compose bounds and annotated strings for Compose support for AccessibilityRenderExtension
-  compileOnly files('libs/compose-ui-geometry-1.3.1.jar')
-  compileOnly files('libs/compose-ui-text-1.3.1.jar')
+  compileOnly files('libs/compose-ui-geometry-1.4.3.jar')
+  compileOnly files('libs/compose-ui-text-1.4.3.jar')
   compileOnly libs.androidx.lifecycleCommon
-  compileOnly files('libs/lifecycle-runtime-2.5.0.jar')
-  compileOnly files('libs/savedstate-1.2.0.jar')
+  compileOnly files('libs/lifecycle-runtime-2.6.1.jar')
+  compileOnly files('libs/savedstate-1.2.1.jar')
   compileOnly files('libs/androidx-activity-1.5.0.jar')
 
   implementation libs.trove4j
@@ -72,7 +72,7 @@ dependencies {
 
   testImplementation libs.truth
 
-  add(KotlinPluginKt.PLUGIN_CLASSPATH_CONFIGURATION_NAME, libs.compose.compiler)
+  add(KotlinJvmPluginKt.PLUGIN_CLASSPATH_CONFIGURATION_NAME, libs.compose.compiler)
 }
 
 tasks.named("dokkaGfm").configure {
