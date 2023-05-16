@@ -1,9 +1,9 @@
 import org.jetbrains.kotlin.gradle.plugin.KotlinJvmPluginKt
 
 apply plugin: 'org.jetbrains.kotlin.jvm'
-apply plugin: 'org.jetbrains.kotlin.kapt'
 apply plugin: 'org.jetbrains.dokka'
 apply plugin: 'com.vanniktech.maven.publish'
+apply plugin: 'com.google.devtools.ksp'
 
 sourceCompatibility = libs.versions.javaTarget.get()
 targetCompatibility = libs.versions.javaTarget.get()
@@ -51,10 +51,11 @@ dependencies {
   api platform(libs.kotlin.bom)
   implementation libs.moshi.core
   implementation libs.moshi.adapters
-  kapt libs.moshi.kotlinCodegen
   implementation libs.jcodec.core
   implementation libs.jcodec.javase
   implementation projects.paparazziAgent
+
+  ksp libs.moshi.kotlinCodegen
 
   def osName = System.getProperty("os.name").toLowerCase(Locale.US)
   if (osName.startsWith("mac")) {

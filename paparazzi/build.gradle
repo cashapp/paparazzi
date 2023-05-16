@@ -17,6 +17,7 @@ buildscript {
     classpath libs.plugin.versions
     classpath libs.plugin.spotless
     classpath libs.plugin.buildConfig
+    classpath libs.plugin.ksp
   }
 }
 
