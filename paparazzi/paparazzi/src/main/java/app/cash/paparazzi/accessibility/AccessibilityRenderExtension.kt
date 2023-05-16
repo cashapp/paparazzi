@@ -92,7 +92,6 @@ class AccessibilityRenderExtension : RenderExtension {
     processElement: (AccessibilityElement) -> Unit
   ) {
     // TODO: Add input from [AccessibilityRenderExtension] to determine what generates the accessibility text output.
-    val id = id
     val accessibilityText = (
       config.getOrNull(SemanticsProperties.ContentDescription)?.joinToString(", ")
         ?: config.getOrNull(SemanticsProperties.Text)?.joinToString(", ")
@@ -110,7 +109,8 @@ class AccessibilityRenderExtension : RenderExtension {
       }
       processElement(
         AccessibilityElement(
-          id = id.toString(),
+          // SemanticsNode.id is backed by AtomicInteger and is not guaranteed consistent across runs.
+          id = accessibilityText,
           displayBounds = displayBounds,
           contentDescription = accessibilityText
         )

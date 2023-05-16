@@ -1180,7 +1180,9 @@ class PaparazziPluginTest {
     assertThat(snapshots!!).hasLength(1)
 
     val snapshotImage = snapshots[0]
-    val goldenImage = File(fixtureRoot, "src/test/resources/compose_a11y.png")
+    var goldenImage = File(fixtureRoot, "src/test/resources/compose_a11y.png")
+    assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
+    goldenImage = File(fixtureRoot, "src/test/resources/compose_a11y_change_hierarchy_order.png")
     assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
   }
 
