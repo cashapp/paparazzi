@@ -763,7 +763,7 @@ class PaparazziPluginTest {
     assertThat(resourceFileContents[4]).isEqualTo("intermediates/assets/debug")
     assertThat(resourceFileContents[5]).isEqualTo("app.cash.paparazzi.plugin.test")
     assertThat(resourceFileContents[6]).isEqualTo("src/main/res,src/debug/res")
-    assertThat(resourceFileContents[7]).isEqualTo("caches/transforms-3/f573c9111f4bdbcb90c4bb6ea00d55bd/transformed/external/res")
+    assertThat(resourceFileContents[7]).matches("^caches/transforms-3/[0-9a-f]{32}/transformed/external/res\$")
   }
 
   @Test
@@ -785,7 +785,7 @@ class PaparazziPluginTest {
     assertThat(resourceFileContents[4]).isEqualTo("intermediates/assets/debug")
     assertThat(resourceFileContents[5]).isEqualTo("app.cash.paparazzi.plugin.test")
     assertThat(resourceFileContents[6]).isEqualTo("src/main/res,src/debug/res")
-    assertThat(resourceFileContents[7]).isEqualTo("caches/transforms-3/f573c9111f4bdbcb90c4bb6ea00d55bd/transformed/external/res")
+    assertThat(resourceFileContents[7]).matches("^caches/transforms-3/[0-9a-f]{32}/transformed/external/res\$")
   }
 
   @Test
