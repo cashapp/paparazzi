@@ -34,7 +34,7 @@ import androidx.annotation.LayoutRes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.ViewTreeLifecycleOwner
+import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import app.cash.paparazzi.agent.AgentTestRule
 import app.cash.paparazzi.agent.InterceptorRegistrar
@@ -294,7 +294,7 @@ class Paparazzi @JvmOverloads constructor(
 
         if (hasLifecycleOwnerRuntime) {
           val lifecycleOwner = PaparazziLifecycleOwner()
-          ViewTreeLifecycleOwner.set(modifiedView, lifecycleOwner)
+          modifiedView.setViewTreeLifecycleOwner(lifecycleOwner)
 
           if (hasSavedStateRegistryOwnerRuntime) {
             modifiedView.setViewTreeSavedStateRegistryOwner(PaparazziSavedStateRegistryOwner(lifecycleOwner))
@@ -303,7 +303,7 @@ class Paparazzi @JvmOverloads constructor(
             modifiedView.setViewTreeOnBackPressedDispatcherOwner(PaparazziOnBackPressedDispatcherOwner(lifecycleOwner))
           }
           // Must be changed after the SavedStateRegistryOwner above has finished restoring its state.
-          lifecycleOwner.registry.setCurrentState(Lifecycle.State.RESUMED)
+          lifecycleOwner.registry.currentState = Lifecycle.State.RESUMED
         }
 
         viewGroup.addView(modifiedView)

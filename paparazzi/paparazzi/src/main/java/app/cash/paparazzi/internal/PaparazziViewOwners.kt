@@ -25,7 +25,6 @@ internal class PaparazziSavedStateRegistryOwner(
 internal class PaparazziOnBackPressedDispatcherOwner(
   private val lifecycleOwner: LifecycleOwner
 ) : OnBackPressedDispatcherOwner, LifecycleOwner by lifecycleOwner {
-  override fun getOnBackPressedDispatcher(): OnBackPressedDispatcher {
-    return OnBackPressedDispatcher { /* Swallow all back-presses. */ }
-  }
+  override val onBackPressedDispatcher: OnBackPressedDispatcher
+    get() = OnBackPressedDispatcher { /* Swallow all back-presses. */ }
 }
