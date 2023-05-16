@@ -27,3 +27,8 @@ dependencies {
 
   testImplementation libs.testParameterInjector
 }
+
+// https://github.com/diffplug/spotless/issues/1572
+tasks.withType(com.diffplug.gradle.spotless.SpotlessTask).configureEach {
+  dependsOn(tasks.withType(Test))
+}
