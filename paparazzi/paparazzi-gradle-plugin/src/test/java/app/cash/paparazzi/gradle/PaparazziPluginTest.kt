@@ -744,7 +744,7 @@ class PaparazziPluginTest {
     assertThat(resourceFileContents[0]).isEqualTo("app.cash.paparazzi.plugin.test")
     assertThat(resourceFileContents[1]).isEqualTo("intermediates/merged_res/debug")
     assertThat(resourceFileContents[4]).isEqualTo("intermediates/assets/debug")
-    assertThat(resourceFileContents[5]).isEqualTo("app.cash.paparazzi.plugin.test")
+    assertThat(resourceFileContents[5]).isEqualTo("app.cash.paparazzi.plugin.test,com.example.mylibrary")
     assertThat(resourceFileContents[6]).isEqualTo("src/main/res,src/debug/res")
     assertThat(resourceFileContents[7]).matches("^caches/transforms-3/[0-9a-f]{32}/transformed/external/res\$")
   }
@@ -766,7 +766,7 @@ class PaparazziPluginTest {
     assertThat(resourceFileContents[0]).isEqualTo("app.cash.paparazzi.plugin.test")
     assertThat(resourceFileContents[1]).isEqualTo("intermediates/merged_res/debug")
     assertThat(resourceFileContents[4]).isEqualTo("intermediates/assets/debug")
-    assertThat(resourceFileContents[5]).isEqualTo("app.cash.paparazzi.plugin.test")
+    assertThat(resourceFileContents[5]).isEqualTo("app.cash.paparazzi.plugin.test,com.example.mylibrary")
     assertThat(resourceFileContents[6]).isEqualTo("src/main/res,src/debug/res")
     assertThat(resourceFileContents[7]).matches("^caches/transforms-3/[0-9a-f]{32}/transformed/external/res\$")
   }
@@ -1070,8 +1070,8 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun nonTransitiveResources() {
-    val fixtureRoot = File("src/test/projects/non-transitive-resources")
+  fun transitiveResources() {
+    val fixtureRoot = File("src/test/projects/transitive-resources")
     val moduleRoot = File(fixtureRoot, "module")
 
     gradleRunner
@@ -1085,17 +1085,6 @@ class PaparazziPluginTest {
     val snapshotImage = snapshots[0]
     val goldenImage = File(moduleRoot, "src/test/resources/five_bucks.png")
     assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
-  }
-
-  @Test
-  fun nonTransitiveResourcesNoDeps() {
-    val fixtureRoot = File("src/test/projects/non-transitive-resources-no-deps")
-
-    val result = gradleRunner
-      .withArguments("testDebug")
-      .runFixture(fixtureRoot) { build() }
-
-    assertThat(result.output).doesNotContain("java.lang.ClassNotFoundException")
   }
 
   @Test
