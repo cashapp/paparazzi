@@ -4,15 +4,6 @@ plugins  {
   id 'app.cash.paparazzi'
 }
 
-repositories {
-  maven {
-    url "file://${projectDir.absolutePath}/../../../../../build/localMaven"
-  }
-  mavenCentral()
-  //mavenLocal()
-  google()
-}
-
 android {
   namespace 'app.cash.paparazzi.plugin.test'
   compileSdk libs.versions.compileSdk.get() as int

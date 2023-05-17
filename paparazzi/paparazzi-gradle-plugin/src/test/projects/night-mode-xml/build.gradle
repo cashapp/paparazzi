@@ -4,15 +4,6 @@ plugins {
   id 'app.cash.paparazzi'
 }
 
-repositories {
-  maven {
-    url "file://${projectDir.absolutePath}/../../../../../build/localMaven"
-  }
-  mavenCentral()
-  //mavenLocal()
-  google()
-}
-
 android {
   compileSdk libs.versions.compileSdk.get() as int
   defaultConfig {
