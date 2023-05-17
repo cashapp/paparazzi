@@ -21,7 +21,6 @@ import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.LibraryExtension
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactType
 import com.android.build.gradle.tasks.MergeSourceSetFolders
-import com.android.ide.common.symbols.getPackageNameFromManifest
 import org.gradle.api.Action
 import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
@@ -254,19 +253,7 @@ class PaparazziPlugin : Plugin<Project> {
     )
   }
 
-  private fun BaseExtension.packageName(): String {
-    namespace?.let { return it }
-
-    // TODO: explore whether AGP 7.x APIs can handle source set filtering
-    sourceSets
-      .filterNot { it.name.startsWith("androidTest") }
-      .map { it.manifest.srcFile }
-      .filter { it.exists() }
-      .forEach {
-        return getPackageNameFromManifest(it)
-      }
-    throw IllegalStateException("No source sets available")
-  }
+  private fun BaseExtension.packageName(): String = namespace ?: ""
 
   private fun BaseExtension.compileSdkVersion(): String {
     return compileSdkVersion!!.substringAfter("android-", DEFAULT_COMPILE_SDK_VERSION.toString())

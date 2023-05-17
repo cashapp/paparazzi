@@ -98,23 +98,6 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun preferDslNamespaceOverManifestPackageDeclaration() {
-    val fixtureRoot = File("src/test/projects/prefer-dsl-namespace")
-
-    val result = gradleRunner
-      .withArguments("preparePaparazziDebugResources", "--stacktrace")
-      .runFixture(fixtureRoot) { build() }
-
-    assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
-
-    val resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/debug/resources.txt")
-    assertThat(resourcesFile.exists()).isTrue()
-
-    val resourceFileContents = resourcesFile.readLines()
-    assertThat(resourceFileContents[0]).isEqualTo("app.cash.paparazzi.plugin.namespaced")
-  }
-
-  @Test
   fun prepareResourcesCaching() {
     val fixtureRoot = File("src/test/projects/prepare-resources-task-caching")
 
