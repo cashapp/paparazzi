@@ -344,7 +344,7 @@
 <p>//<a href="../../../">paparazzi</a>/<a href="../">app.cash.paparazzi.internal.resources</a>/<a href="./">BasicResourceItem</a></p>
 <h1 id="basicresourceitem">BasicResourceItem<a class="headerlink" href="#basicresourceitem" title="Permanent link">&para;</a></h1>
 <p>[jvm]\
-class <a href="./">BasicResourceItem</a>(type: ResourceType, name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, visibility: ResourceVisibility, repositoryConfiguration: <a href="../-repository-configuration/">RepositoryConfiguration</a>, file: <a href="https://docs.oracle.com/javase/8/docs/api/java/io/File.html">File</a>, tag: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/org.w3c.dom/-element/index.html">Element</a>?) : ResourceItemWithVisibility, ResourceValue</p>
+class <a href="./">BasicResourceItem</a>(type: ResourceType, name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, visibility: ResourceVisibility, repositoryConfiguration: <a href="../-repository-configuration/">RepositoryConfiguration</a>, resourceValue: ResourceValue) : ResourceItemWithVisibility, ResourceValue</p>
 <h2 id="constructors">Constructors<a class="headerlink" href="#constructors" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -356,7 +356,7 @@ class <a href="./">BasicResourceItem</a>(type: ResourceType, name: <a href="http
 <tbody>
 <tr>
 <td><a href="-basic-resource-item/">BasicResourceItem</a></td>
-<td>[jvm]<br>constructor(type: ResourceType, name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, visibility: ResourceVisibility, repositoryConfiguration: <a href="../-repository-configuration/">RepositoryConfiguration</a>, file: <a href="https://docs.oracle.com/javase/8/docs/api/java/io/File.html">File</a>, tag: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/org.w3c.dom/-element/index.html">Element</a>?)</td>
+<td>[jvm]<br>constructor(type: ResourceType, name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, visibility: ResourceVisibility, repositoryConfiguration: <a href="../-repository-configuration/">RepositoryConfiguration</a>, resourceValue: ResourceValue)</td>
 </tr>
 </tbody>
 </table>
@@ -419,7 +419,7 @@ class <a href="./">BasicResourceItem</a>(type: ResourceType, name: <a href="http
 </tr>
 <tr>
 <td><a href="get-repository/">getRepository</a></td>
-<td>[jvm]<br>open override fun <a href="get-repository/">getRepository</a>(): SingleNamespaceResourceRepository</td>
+<td>[jvm]<br>open override fun <a href="get-repository/">getRepository</a>(): <a href="../-loadable-resource-repository/">LoadableResourceRepository</a></td>
 </tr>
 <tr>
 <td><a href="get-resource-type/">getResourceType</a></td>
@@ -435,7 +435,7 @@ class <a href="./">BasicResourceItem</a>(type: ResourceType, name: <a href="http
 </tr>
 <tr>
 <td><a href="get-source/">getSource</a></td>
-<td>[jvm]<br>open override fun <a href="get-source/">getSource</a>(): PathString</td>
+<td>[jvm]<br>open override fun <a href="get-source/">getSource</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-nothing/index.html">Nothing</a></td>
 </tr>
 <tr>
 <td><a href="get-type/">getType</a></td>
@@ -451,7 +451,7 @@ class <a href="./">BasicResourceItem</a>(type: ResourceType, name: <a href="http
 </tr>
 <tr>
 <td><a href="is-file-based/">isFileBased</a></td>
-<td>[jvm]<br>open override fun <a href="is-file-based/">isFileBased</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+<td>[jvm]<br>open override fun <a href="is-file-based/">isFileBased</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-nothing/index.html">Nothing</a></td>
 </tr>
 <tr>
 <td><a href="is-framework/">isFramework</a></td>
