@@ -62,7 +62,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
-          java-version: 11
+          java-version: 17
 
       - name: Publish Artifacts
         run: ./gradlew -p paparazzi publishMavenPublicationToMavenCentralRepository paparazzi-gradle-plugin:publishPluginMavenPublicationToMavenCentralRepository paparazzi-gradle-plugin:publishPaparazziPluginMarkerMavenPublicationToMavenCentralRepository --no-parallel
