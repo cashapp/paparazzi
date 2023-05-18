@@ -156,7 +156,7 @@ class Paparazzi @JvmOverloads constructor(
       renderer = Renderer(environment, layoutlibCallback, logger)
       sessionParamsBuilder = renderer.prepare()
     }
-    forcePlatformSdkVersion(environment.compileSdkVersion)
+    forcePlatformSdkVersion(environment.targetSdkVersion)
 
     sessionParamsBuilder = sessionParamsBuilder
       .copy(
