@@ -1,6 +1,6 @@
 [versions]
-agp = "7.4.2"
-androidTools = "30.4.2" # == 23.0.0 + agp version
+agp = "8.0.1"
+androidTools = "31.0.1" # == 23.0.0 + agp version
 bytebuddy = "1.14.4"
 composeCompiler = "1.4.7"
 javaTarget = "11"
