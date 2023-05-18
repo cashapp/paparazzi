@@ -12,7 +12,7 @@
         <meta name="author" content="Square, Inc.">
       
       
-        <link rel="canonical" href="https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.deprecated.com.android.ide.common.resources.deprecated/-single-resource-file/">
+        <link rel="canonical" href="https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources.base/-basic-value-resource-item-base/">
       
       
       
@@ -21,7 +21,7 @@
     
     
       
-        <title>SingleResourceFile - Paparazzi - Paparazzi</title>
+        <title>BasicValueResourceItemBase - Paparazzi - Paparazzi</title>
       
     
     
@@ -71,7 +71,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#singleresourcefile" class="md-skip">
+        <a href="#basicvalueresourceitembase" class="md-skip">
           Skip to content
         </a>
       
@@ -105,7 +105,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              SingleResourceFile - Paparazzi
+              BasicValueResourceItemBase - Paparazzi
             
           </span>
         </div>
@@ -310,22 +310,9 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#deprecated" class="md-nav__link">
-    Deprecated
+  <a href="#inheritors" class="md-nav__link">
+    Inheritors
   </a>
-  
-    <nav class="md-nav" aria-label="Deprecated">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#deprecated_1" class="md-nav__link">
-    Deprecated
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -339,6 +326,13 @@
         <li class="md-nav__item">
   <a href="#functions" class="md-nav__link">
     Functions
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#properties" class="md-nav__link">
+    Properties
   </a>
   
 </li>
@@ -361,14 +355,24 @@
   
 
 
-<p>//<a href="../../../">paparazzi</a>/<a href="../">app.cash.paparazzi.deprecated.com.android.ide.common.resources.deprecated</a>/<a href="./">SingleResourceFile</a></p>
-<h1 id="singleresourcefile">SingleResourceFile<a class="headerlink" href="#singleresourcefile" title="Permanent link">&para;</a></h1>
-<p>[jvm]\
-open class <a href="./">~~SingleResourceFile~~</a> : <a href="../-resource-file/">ResourceFile</a>&mdash;</p>
-<h3 id="deprecated">Deprecated<a class="headerlink" href="#deprecated" title="Permanent link">&para;</a></h3>
-<hr />
-<h4 id="deprecated_1">Deprecated<a class="headerlink" href="#deprecated_1" title="Permanent link">&para;</a></h4>
-<p>This class is part of an obsolete resource repository system that is no longer used in production code. The class is preserved temporarily for LayoutLib tests.</p>
+<p>//<a href="../../../">paparazzi</a>/<a href="../">app.cash.paparazzi.internal.resources.base</a>/<a href="./">BasicValueResourceItemBase</a></p>
+<h1 id="basicvalueresourceitembase">BasicValueResourceItemBase<a class="headerlink" href="#basicvalueresourceitembase" title="Permanent link">&para;</a></h1>
+<p>abstract class <a href="./">BasicValueResourceItemBase</a>(type: ResourceType, name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, val sourceFile: <a href="../../app.cash.paparazzi.internal.resources/-resource-source-file/">ResourceSourceFile</a>, visibility: ResourceVisibility) : <a href="../-basic-resource-item-base/">BasicResourceItemBase</a></p>
+<p>Ported from: <a href="https://cs.android.com/android-studio/platform/tools/base/+/18047faf69512736b8ddb1f6a6785f58d47c893f:resource-repository/main/java/com/android/resources/base/BasicValueResourceItemBase.java">BasicValueResourceItemBase.java</a></p>
+<p>Base class for value resource items.</p>
+<h4 id="inheritors">Inheritors<a class="headerlink" href="#inheritors" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="../-basic-value-resource-item/">BasicValueResourceItem</a></td>
+</tr>
+</tbody>
+</table>
 <h2 id="constructors">Constructors<a class="headerlink" href="#constructors" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -379,8 +383,8 @@ open class <a href="./">~~SingleResourceFile~~</a> : <a href="../-resource-file/
 </thead>
 <tbody>
 <tr>
-<td><a href="-single-resource-file/">SingleResourceFile</a></td>
-<td>[jvm]<br>constructor(file: <a href="../../app.cash.paparazzi.deprecated.com.android.io/-i-abstract-file/">IAbstractFile</a>, folder: <a href="../-resource-folder/">ResourceFolder</a>)</td>
+<td><a href="-basic-value-resource-item-base/">BasicValueResourceItemBase</a></td>
+<td>[jvm]<br>constructor(type: ResourceType, name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, sourceFile: <a href="../../app.cash.paparazzi.internal.resources/-resource-source-file/">ResourceSourceFile</a>, visibility: ResourceVisibility)</td>
 </tr>
 </tbody>
 </table>
@@ -394,40 +398,135 @@ open class <a href="./">~~SingleResourceFile~~</a> : <a href="../-resource-file/
 </thead>
 <tbody>
 <tr>
-<td><a href="../-resource-file/get-configuration/">getConfiguration</a></td>
-<td>[jvm]<br>open fun <a href="../-resource-file/get-configuration/">getConfiguration</a>(): FolderConfiguration<br>abstract fun <a href="../../app.cash.paparazzi.internal.resources.base/-basic-resource-item/#-1970885412%2FFunctions%2F-2095620550">getConfiguration</a>(): FolderConfiguration</td>
+<td><a href="../-basic-resource-item-base/as-reference/">asReference</a></td>
+<td>[jvm]<br>open override fun <a href="../-basic-resource-item-base/as-reference/">asReference</a>(): ResourceReference</td>
 </tr>
 <tr>
-<td><a href="../-resource-file/get-file/">getFile</a></td>
-<td>[jvm]<br>fun <a href="../-resource-file/get-file/">getFile</a>(): <a href="../../app.cash.paparazzi.deprecated.com.android.io/-i-abstract-file/">IAbstractFile</a><br>Returns the IFile associated with the ResourceFile.</td>
+<td><a href="equals/">equals</a></td>
+<td>[jvm]<br>open operator override fun <a href="equals/">equals</a>(obj: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a>?): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
 </tr>
 <tr>
-<td><a href="../-resource-file/get-folder/">getFolder</a></td>
-<td>[jvm]<br>fun <a href="../-resource-file/get-folder/">getFolder</a>(): <a href="../-resource-folder/">ResourceFolder</a><br>Returns the parent folder as a <a href="../-resource-folder/">ResourceFolder</a>.</td>
+<td><a href="../-basic-resource-item-base/get-configuration/">getConfiguration</a></td>
+<td>[jvm]<br>open override fun <a href="../-basic-resource-item-base/get-configuration/">getConfiguration</a>(): FolderConfiguration</td>
 </tr>
 <tr>
-<td><a href="../-resource-file/get-repository/">getRepository</a></td>
-<td>[jvm]<br>fun <a href="../-resource-file/get-repository/">getRepository</a>(): <a href="../-resource-repository/">ResourceRepository</a></td>
+<td><a href="../-basic-resource-item-base/get-key/">getKey</a></td>
+<td>[jvm]<br>open override fun <a href="../-basic-resource-item-base/get-key/">getKey</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
 </tr>
 <tr>
-<td><a href="get-resource-types/">getResourceTypes</a></td>
-<td>[jvm]<br>open fun <a href="get-resource-types/">getResourceTypes</a>(): <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Collection.html">Collection</a>&lt;ResourceType&gt;<br>Returns the list of ResourceType generated by the file.</td>
+<td><a href="../-basic-resource-item-base/get-library-name/">getLibraryName</a></td>
+<td>[jvm]<br>open override fun <a href="../-basic-resource-item-base/get-library-name/">getLibraryName</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?</td>
+</tr>
+<tr>
+<td><a href="../-basic-resource-item-base/get-name/">getName</a></td>
+<td>[jvm]<br>open override fun <a href="../-basic-resource-item-base/get-name/">getName</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
+</tr>
+<tr>
+<td><a href="../-basic-resource-item-base/get-namespace/">getNamespace</a></td>
+<td>[jvm]<br>open override fun <a href="../-basic-resource-item-base/get-namespace/">getNamespace</a>(): ResourceNamespace</td>
+</tr>
+<tr>
+<td><a href="get-namespace-resolver/">getNamespaceResolver</a></td>
+<td>[jvm]<br>open override fun <a href="get-namespace-resolver/">getNamespaceResolver</a>(): ResourceNamespace.Resolver</td>
+</tr>
+<tr>
+<td><a href="get-original-source/">getOriginalSource</a></td>
+<td>[jvm]<br>open override fun <a href="get-original-source/">getOriginalSource</a>(): PathString?</td>
+</tr>
+<tr>
+<td><a href="./#1114844795%2FFunctions%2F-2095620550">getQualifiedNameWithType</a></td>
+<td>[jvm]<br>open fun <a href="./#1114844795%2FFunctions%2F-2095620550">getQualifiedNameWithType</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
+</tr>
+<tr>
+<td><a href="./#-821168389%2FFunctions%2F-2095620550">getRawXmlValue</a></td>
+<td>[jvm]<br>open fun <a href="./#-821168389%2FFunctions%2F-2095620550">getRawXmlValue</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
+</tr>
+<tr>
+<td><a href="./#-1154767950%2FFunctions%2F-2095620550">getReference</a></td>
+<td>[jvm]<br>open fun <a href="./#-1154767950%2FFunctions%2F-2095620550">getReference</a>(): ResourceReference</td>
+</tr>
+<tr>
+<td><a href="../-basic-resource-item-base/get-reference-to-self/">getReferenceToSelf</a></td>
+<td>[jvm]<br>open override fun <a href="../-basic-resource-item-base/get-reference-to-self/">getReferenceToSelf</a>(): ResourceReference</td>
+</tr>
+<tr>
+<td><a href="../-basic-resource-item-base/get-repository/">getRepository</a></td>
+<td>[jvm]<br>open override fun <a href="../-basic-resource-item-base/get-repository/">getRepository</a>(): <a href="../../app.cash.paparazzi.internal.resources/-loadable-resource-repository/">LoadableResourceRepository</a><br>Returns the repository this resource belongs to.</td>
+</tr>
+<tr>
+<td><a href="get-repository-configuration/">getRepositoryConfiguration</a></td>
+<td>[jvm]<br>open override fun <a href="get-repository-configuration/">getRepositoryConfiguration</a>(): <a href="../../app.cash.paparazzi.internal.resources/-repository-configuration/">RepositoryConfiguration</a></td>
+</tr>
+<tr>
+<td><a href="../-basic-resource-item-base/get-resource-type/">getResourceType</a></td>
+<td>[jvm]<br>open override fun <a href="../-basic-resource-item-base/get-resource-type/">getResourceType</a>(): ResourceType</td>
+</tr>
+<tr>
+<td><a href="./#-276484804%2FFunctions%2F-2095620550">getResourceUrl</a></td>
+<td>[jvm]<br>open fun <a href="./#-276484804%2FFunctions%2F-2095620550">getResourceUrl</a>(): ResourceUrl</td>
+</tr>
+<tr>
+<td><a href="../-basic-resource-item-base/get-resource-value/">getResourceValue</a></td>
+<td>[jvm]<br>open override fun <a href="../-basic-resource-item-base/get-resource-value/">getResourceValue</a>(): <a href="../-basic-resource-item-base/">BasicResourceItemBase</a></td>
+</tr>
+<tr>
+<td><a href="get-source/">getSource</a></td>
+<td>[jvm]<br>open override fun <a href="get-source/">getSource</a>(): PathString?</td>
+</tr>
+<tr>
+<td><a href="../-basic-resource-item-base/get-type/">getType</a></td>
+<td>[jvm]<br>open override fun <a href="../-basic-resource-item-base/get-type/">getType</a>(): ResourceType</td>
 </tr>
 <tr>
 <td><a href="get-value/">getValue</a></td>
-<td>[jvm]<br>open fun <a href="get-value/">getValue</a>(type: ResourceType, name: <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html">String</a>): ResourceValue<br>Returns the value of a resource generated by this file by ResourceType and name.</td>
+<td>[jvm]<br>open override fun <a href="get-value/">getValue</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?</td>
 </tr>
 <tr>
-<td><a href="has-resources/">hasResources</a></td>
-<td>[jvm]<br>open fun <a href="has-resources/">hasResources</a>(type: ResourceType): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><br>Returns whether the file generated a resource of a specific type.</td>
+<td><a href="../-basic-resource-item-base/get-visibility/">getVisibility</a></td>
+<td>[jvm]<br>open override fun <a href="../-basic-resource-item-base/get-visibility/">getVisibility</a>(): ResourceVisibility</td>
 </tr>
 <tr>
-<td><a href="../-resource-file/is-framework/">isFramework</a></td>
-<td>[jvm]<br>fun <a href="../-resource-file/is-framework/">isFramework</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><br>Returns whether the resource is a framework resource.</td>
+<td><a href="hash-code/">hashCode</a></td>
+<td>[jvm]<br>open override fun <a href="hash-code/">hashCode</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></td>
 </tr>
 <tr>
-<td><a href="../-resource-file/to-string/">toString</a></td>
-<td>[jvm]<br>open fun <a href="../-resource-file/to-string/">toString</a>(): <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html">String</a></td>
+<td><a href="is-file-based/">isFileBased</a></td>
+<td>[jvm]<br>open override fun <a href="is-file-based/">isFileBased</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="../-basic-resource-item-base/is-framework/">isFramework</a></td>
+<td>[jvm]<br>open override fun <a href="../-basic-resource-item-base/is-framework/">isFramework</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="../-basic-resource-item-base/is-user-defined/">isUserDefined</a></td>
+<td>[jvm]<br>open override fun <a href="../-basic-resource-item-base/is-user-defined/">isUserDefined</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="set-namespace-resolver/">setNamespaceResolver</a></td>
+<td>[jvm]<br>fun <a href="set-namespace-resolver/">setNamespaceResolver</a>(resolver: ResourceNamespace.Resolver)</td>
+</tr>
+<tr>
+<td><a href="../-basic-resource-item-base/set-value/">setValue</a></td>
+<td>[jvm]<br>open override fun <a href="../-basic-resource-item-base/set-value/">setValue</a>(value: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-nothing/index.html">Nothing</a></td>
+</tr>
+<tr>
+<td><a href="../-basic-resource-item-base/to-string/">toString</a></td>
+<td>[jvm]<br>open override fun <a href="../-basic-resource-item-base/to-string/">toString</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
+</tr>
+</tbody>
+</table>
+<h2 id="properties">Properties<a class="headerlink" href="#properties" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Summary</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="source-file/">sourceFile</a></td>
+<td>[jvm]<br>val <a href="source-file/">sourceFile</a>: <a href="../../app.cash.paparazzi.internal.resources/-resource-source-file/">ResourceSourceFile</a></td>
 </tr>
 </tbody>
 </table>
