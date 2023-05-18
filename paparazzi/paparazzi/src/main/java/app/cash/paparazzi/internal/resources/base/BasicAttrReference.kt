@@ -37,7 +37,6 @@ class BasicAttrReference(
   private val description: String?,
   private val groupName: String?
 ) : BasicValueResourceItemBase(ResourceType.ATTR, name, sourceFile, visibility), AttrResourceValue {
-
   override fun getNamespace() = namespace
 
   override fun getFormats(): Set<AttributeFormat> = emptySet()
