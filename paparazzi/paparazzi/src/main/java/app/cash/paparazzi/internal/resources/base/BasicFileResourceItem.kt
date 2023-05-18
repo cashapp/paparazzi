@@ -27,7 +27,7 @@ import com.android.utils.HashCodes
  *
  * Resource item representing a file resource, e.g. a drawable or a layout.
  */
-class BasicFileResourceItem(
+open class BasicFileResourceItem(
   type: ResourceType,
   name: String,
   private val repositoryConfiguration: RepositoryConfiguration,
