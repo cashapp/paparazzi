@@ -45,6 +45,5 @@ class BasicForeignAttrResourceItem(
   valueMap,
   valueDescriptionMap
 ) {
-
   override fun getNamespace() = namespace
 }
