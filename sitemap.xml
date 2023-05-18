@@ -2221,6 +2221,106 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources.base/-basic-attr-reference/</loc>
+         <lastmod>2023-05-18</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources.base/-basic-attr-reference/-basic-attr-reference/</loc>
+         <lastmod>2023-05-18</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources.base/-basic-attr-reference/equals/</loc>
+         <lastmod>2023-05-18</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources.base/-basic-attr-reference/get-attribute-values/</loc>
+         <lastmod>2023-05-18</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources.base/-basic-attr-reference/get-description/</loc>
+         <lastmod>2023-05-18</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources.base/-basic-attr-reference/get-formats/</loc>
+         <lastmod>2023-05-18</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources.base/-basic-attr-reference/get-group-name/</loc>
+         <lastmod>2023-05-18</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources.base/-basic-attr-reference/get-namespace/</loc>
+         <lastmod>2023-05-18</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources.base/-basic-attr-reference/get-value-description/</loc>
+         <lastmod>2023-05-18</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources.base/-basic-attr-reference/hash-code/</loc>
+         <lastmod>2023-05-18</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources.base/-basic-attr-resource-item/</loc>
+         <lastmod>2023-05-18</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources.base/-basic-attr-resource-item/-basic-attr-resource-item/</loc>
+         <lastmod>2023-05-18</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources.base/-basic-attr-resource-item/create-reference/</loc>
+         <lastmod>2023-05-18</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources.base/-basic-attr-resource-item/equals/</loc>
+         <lastmod>2023-05-18</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources.base/-basic-attr-resource-item/get-attribute-values/</loc>
+         <lastmod>2023-05-18</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources.base/-basic-attr-resource-item/get-description/</loc>
+         <lastmod>2023-05-18</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources.base/-basic-attr-resource-item/get-formats/</loc>
+         <lastmod>2023-05-18</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources.base/-basic-attr-resource-item/get-group-name/</loc>
+         <lastmod>2023-05-18</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources.base/-basic-attr-resource-item/get-value-description/</loc>
+         <lastmod>2023-05-18</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources.base/-basic-attr-resource-item/set-formats/</loc>
+         <lastmod>2023-05-18</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources.base/-basic-file-resource-item/</loc>
          <lastmod>2023-05-18</lastmod>
          <changefreq>daily</changefreq>
@@ -2272,6 +2372,21 @@
     </url>
     <url>
          <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources.base/-basic-file-resource-item/is-file-based/</loc>
+         <lastmod>2023-05-18</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources.base/-basic-foreign-attr-resource-item/</loc>
+         <lastmod>2023-05-18</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources.base/-basic-foreign-attr-resource-item/-basic-foreign-attr-resource-item/</loc>
+         <lastmod>2023-05-18</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources.base/-basic-foreign-attr-resource-item/get-namespace/</loc>
          <lastmod>2023-05-18</lastmod>
          <changefreq>daily</changefreq>
     </url>
