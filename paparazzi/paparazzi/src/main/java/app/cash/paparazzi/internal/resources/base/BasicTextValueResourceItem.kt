@@ -16,33 +16,34 @@
 package app.cash.paparazzi.internal.resources.base
 
 import app.cash.paparazzi.internal.resources.ResourceSourceFile
+import com.android.ide.common.rendering.api.TextResourceValue
 import com.android.resources.ResourceType
 import com.android.resources.ResourceVisibility
 import com.android.utils.HashCodes
-import java.util.Objects
 
 /**
- * Ported from: [BasicValueResourceItem.java](https://cs.android.com/android-studio/platform/tools/base/+/18047faf69512736b8ddb1f6a6785f58d47c893f:resource-repository/main/java/com/android/resources/base/BasicValueResourceItem.java)
+ * Ported from: [BasicTextValueResourceItem.java](https://cs.android.com/android-studio/platform/tools/base/+/47d204001bf0cb6273d8b135c7eece3a982cf0e0:resource-repository/main/java/com/android/resources/base/BasicTextValueResourceItem.java)
  *
  * Resource item representing a value resource, e.g. a string or a color.
  */
-open class BasicValueResourceItem(
+class BasicTextValueResourceItem(
   type: ResourceType,
   name: String,
   sourceFile: ResourceSourceFile,
   visibility: ResourceVisibility,
-  private val value: String?
-) : BasicValueResourceItemBase(type, name, sourceFile, visibility) {
-  override fun getValue() = value
+  textValue: String?,
+  private val rawXmlValue: String?
+) : BasicValueResourceItem(type, name, sourceFile, visibility, textValue), TextResourceValue {
+  override fun getRawXmlValue(): String? = rawXmlValue ?: value
 
   override fun equals(obj: Any?): Boolean {
     if (this === obj) return true
     if (!super.equals(obj)) return false
-    val other = obj as BasicValueResourceItem
-    return Objects.equals(value, other.value)
+    val other = obj as BasicTextValueResourceItem
+    return rawXmlValue == other.rawXmlValue
   }
 
   override fun hashCode(): Int {
-    return HashCodes.mix(super.hashCode(), value.hashCode())
+    return HashCodes.mix(super.hashCode(), rawXmlValue.hashCode())
   }
 }
