@@ -1,0 +1,9 @@
+int[] styleable Styleable_with_underscore { 0x7f010068, 0x7f010069 }
+int styleable Styleable_with_underscore_app_attr2 3
+int styleable Styleable_with_underscore_app_attr1 0
+int styleable Styleable_with_underscore_android_colorForeground 2
+int styleable Styleable_with_underscore_app_attr3 4
+int styleable Styleable_with_underscore_android_icon 1
+int id id1 0x7f0b0000
+int id id2 0x7f0b0001
+int id id3 0x7f0b0002

@@ -83,7 +83,6 @@ import com.android.resources.ResourceType.STYLE
 import com.android.resources.ResourceType.STYLEABLE
 import com.android.resources.ResourceType.TRANSITION
 import com.android.resources.ResourceVisibility
-import com.android.resources.ResourceVisibility.PRIVATE
 import com.android.utils.SdkUtils
 import com.android.utils.XmlUtils
 import com.google.common.collect.Table
@@ -118,6 +117,11 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
   private val fileFilter =
     PatternBasedFileFilter(AndroidAaptIgnore(System.getenv(ANDROID_AAPT_IGNORE)))
 
+  private val publicResources: MutableMap<ResourceType, MutableSet<String>> =
+    EnumMap(ResourceType::class.java)
+
+  protected var defaultVisibility = ResourceVisibility.PRIVATE
+
   /** Cache of FolderConfiguration instances, keyed by qualifier strings (see [FolderConfiguration.getQualifierString]).  */
   protected val folderConfigCache = hashMapOf<String, FolderConfiguration>()
   private val configCache = hashMapOf<FolderConfiguration, RepositoryConfiguration>()
@@ -129,12 +133,12 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
   private val valueFileResources: Table<ResourceType, String, BasicResourceItem> =
     Tables.newCustomTable(EnumMap(ResourceType::class.java)) { LinkedHashMap() }
   private val resourceDirectoryOrFilePath = PathString(resourceDirectoryOrFile)
-  private val loadingFromZipArchive = isZipArchive(resourceDirectoryOrFile)
+  private val isLoadingFromZipArchive = isZipArchive(resourceDirectoryOrFile)
 
   protected var zipFile: ZipFile? = null
 
   open fun loadRepositoryContents(repository: T) {
-    if (loadingFromZipArchive) {
+    if (isLoadingFromZipArchive) {
       loadFromZip(repository)
     } else {
       loadFromResFolder(repository)
@@ -202,6 +206,23 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
 
   protected open fun finishLoading(repository: T) = processAttrsAndStyleables()
 
+  val sourceFileProtocol: String
+    get() = if (isLoadingFromZipArchive) JAR_PROTOCOL else "file"
+
+  val resourcePathPrefix: String
+    get() = if (isLoadingFromZipArchive) {
+      "${portableFileName(resourceDirectoryOrFile.toString())}${JAR_SEPARATOR}res/"
+    } else {
+      "${portableFileName(resourceDirectoryOrFile.toString())}/"
+    }
+
+  val resourceUrlPrefix: String
+    get() = if (isLoadingFromZipArchive) {
+      "$JAR_PROTOCOL://${portableFileName(resourceDirectoryOrFile.toString())}${JAR_SEPARATOR}res/"
+    } else {
+      "${portableFileName(resourceDirectoryOrFile.toString())}/"
+    }
+
   /**
    * A hook for loading resource IDs from a R.txt file. This implementation does nothing but subclasses may override.
    *
@@ -220,6 +241,11 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
 
   protected open fun loadPublicResourceNames() {
     // todo load public resources
+  }
+
+  protected fun addPublicResourceName(type: ResourceType, name: String) {
+    val names = publicResources.computeIfAbsent(type) { HashSet() }
+    names += name
   }
 
   private fun findResourceFiles(filesOrFolders: List<Path>): List<PathString> {
@@ -897,7 +923,7 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
     resourceName: String
   ): ResourceVisibility {
     // todo look up public resources to return proper visibility
-    return PRIVATE
+    return ResourceVisibility.PRIVATE
     // val names: Set<String> = myPublicResources.get(resourceType)
     // return if (names != null && names.contains(getKeyForVisibilityLookup(resourceName))) ResourceVisibility.PUBLIC else myDefaultVisibility
   }
@@ -973,8 +999,7 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
     }
   }
 
-  private class ResourceFileCollector(val fileFilter: FileFilter) :
-    FileVisitor<Path> {
+  private class ResourceFileCollector(val fileFilter: FileFilter) : FileVisitor<Path> {
     val resourceFiles = mutableListOf<PathString>()
     val ioErrors = mutableListOf<IOException>()
 
@@ -1128,6 +1153,8 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
 
   companion object {
     private val LOG: Logger = Logger.getLogger(RepositoryLoader::class.java.name)
+    const val JAR_PROTOCOL = "jar"
+    const val JAR_SEPARATOR = "!/"
 
     private fun isXmlFile(file: PathString) = isXmlFile(file.fileName)
 
@@ -1139,5 +1166,7 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
         SdkUtils.endsWithIgnoreCase(filename, DOT_JAR) ||
         SdkUtils.endsWithIgnoreCase(filename, DOT_ZIP)
     }
+
+    fun portableFileName(fileName: String): String = fileName.replace(File.separatorChar, '/')
   }
 }
