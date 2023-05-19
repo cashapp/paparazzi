@@ -12,7 +12,7 @@
         <meta name="author" content="Square, Inc.">
       
       
-        <link rel="canonical" href="https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources/-abstract-aar-resource-repository/">
+        <link rel="canonical" href="https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources/-aar-source-resource-repository/">
       
       
       
@@ -21,7 +21,7 @@
     
     
       
-        <title>AbstractAarResourceRepository - Paparazzi - Paparazzi</title>
+        <title>AarSourceResourceRepository - Paparazzi - Paparazzi</title>
       
     
     
@@ -71,7 +71,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#abstractaarresourcerepository" class="md-skip">
+        <a href="#aarsourceresourcerepository" class="md-skip">
           Skip to content
         </a>
       
@@ -105,7 +105,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              AbstractAarResourceRepository - Paparazzi
+              AarSourceResourceRepository - Paparazzi
             
           </span>
         </div>
@@ -310,8 +310,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#inheritors" class="md-nav__link">
-    Inheritors
+  <a href="#constructors" class="md-nav__link">
+    Constructors
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#types" class="md-nav__link">
+    Types
   </a>
   
 </li>
@@ -348,20 +355,39 @@
   
 
 
-<p>//<a href="../../../">paparazzi</a>/<a href="../">app.cash.paparazzi.internal.resources</a>/<a href="./">AbstractAarResourceRepository</a></p>
-<h1 id="abstractaarresourcerepository">AbstractAarResourceRepository<a class="headerlink" href="#abstractaarresourcerepository" title="Permanent link">&para;</a></h1>
-<p>abstract class <a href="./">AbstractAarResourceRepository</a> : AbstractResourceRepository, <a href="../-loadable-resource-repository/">LoadableResourceRepository</a></p>
-<p>Ported from: <a href="https://cs.android.com/android-studio/platform/tools/base/+/47d204001bf0cb6273d8b135c7eece3a982cf0e0:resource-repository/main/java/com/android/resources/aar/AbstractAarResourceRepository.java">AbstractAarResourceRepository.java</a></p>
-<h4 id="inheritors">Inheritors<a class="headerlink" href="#inheritors" title="Permanent link">&para;</a></h4>
+<p>//<a href="../../../">paparazzi</a>/<a href="../">app.cash.paparazzi.internal.resources</a>/<a href="./">AarSourceResourceRepository</a></p>
+<h1 id="aarsourceresourcerepository">AarSourceResourceRepository<a class="headerlink" href="#aarsourceresourcerepository" title="Permanent link">&para;</a></h1>
+<p>[jvm]\
+class <a href="./">AarSourceResourceRepository</a>(loader: <a href="../-repository-loader/">RepositoryLoader</a>&lt;out <a href="./">AarSourceResourceRepository</a>&gt;, val libraryName: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?) : <a href="../-abstract-aar-resource-repository/">AbstractAarResourceRepository</a></p>
+<p>A resource repository representing unpacked contents of a non-namespaced AAR.</p>
+<p>For performance reasons ID resources defined using @+id syntax in layout XML files are obtained from R.txt instead, when it is available. This means that <a href="../../app.cash.paparazzi.internal.resources.base/-basic-resource-item-base/#-509585620%2FFunctions%2F-2095620550">ResourceItem.getOriginalSource</a> method may return null for such ID resources.</p>
+<h2 id="constructors">Constructors<a class="headerlink" href="#constructors" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
+<th></th>
 <th></th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><a href="../-aar-source-resource-repository/">AarSourceResourceRepository</a></td>
+<td><a href="-aar-source-resource-repository/">AarSourceResourceRepository</a></td>
+<td>[jvm]<br>constructor(loader: <a href="../-repository-loader/">RepositoryLoader</a>&lt;out <a href="./">AarSourceResourceRepository</a>&gt;, libraryName: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="types">Types<a class="headerlink" href="#types" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Summary</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="-companion/">Companion</a></td>
+<td>[jvm]<br>object <a href="-companion/">Companion</a></td>
 </tr>
 </tbody>
 </table>
@@ -375,12 +401,12 @@
 </thead>
 <tbody>
 <tr>
-<td><a href="accept/">accept</a></td>
-<td>[jvm]<br>open override fun <a href="accept/">accept</a>(visitor: ResourceVisitor): ResourceVisitor.VisitResult</td>
+<td><a href="../-abstract-aar-resource-repository/accept/">accept</a></td>
+<td>[jvm]<br>open override fun <a href="../-abstract-aar-resource-repository/accept/">accept</a>(visitor: ResourceVisitor): ResourceVisitor.VisitResult</td>
 </tr>
 <tr>
-<td><a href="contains-user-defined-resources/">containsUserDefinedResources</a></td>
-<td>[jvm]<br>open override fun <a href="contains-user-defined-resources/">containsUserDefinedResources</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+<td><a href="../-abstract-aar-resource-repository/contains-user-defined-resources/">containsUserDefinedResources</a></td>
+<td>[jvm]<br>open override fun <a href="../-abstract-aar-resource-repository/contains-user-defined-resources/">containsUserDefinedResources</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
 </tr>
 <tr>
 <td><a href="../-resource-folder-repository/#1361689245%2FFunctions%2F-2095620550">getAllResources</a></td>
@@ -391,8 +417,8 @@
 <td>[jvm]<br>abstract fun <a href="../-resource-folder-repository/#1107288845%2FFunctions%2F-2095620550">getLeafResourceRepositories</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-collection/index.html">MutableCollection</a>&lt;SingleNamespaceResourceRepository&gt;</td>
 </tr>
 <tr>
-<td><a href="get-namespace/">getNamespace</a></td>
-<td>[jvm]<br>open override fun <a href="get-namespace/">getNamespace</a>(): ResourceNamespace</td>
+<td><a href="../-abstract-aar-resource-repository/get-namespace/">getNamespace</a></td>
+<td>[jvm]<br>open override fun <a href="../-abstract-aar-resource-repository/get-namespace/">getNamespace</a>(): ResourceNamespace</td>
 </tr>
 <tr>
 <td><a href="../-resource-folder-repository/#-823365335%2FFunctions%2F-2095620550">getNamespaces</a></td>
@@ -403,36 +429,40 @@
 <td>[jvm]<br>open fun <a href="../-loadable-resource-repository/get-original-source-file/">getOriginalSourceFile</a>(relativeResourcePath: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, forFileResource: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a>): PathString?<br>Produces a PathString to be returned by the BasicResourceItem.getOriginalSource method.</td>
 </tr>
 <tr>
-<td><a href="../-loadable-resource-repository/#-217103679%2FFunctions%2F-2095620550">getPackageName</a></td>
-<td>[jvm]<br>abstract fun <a href="../-loadable-resource-repository/#-217103679%2FFunctions%2F-2095620550">getPackageName</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
+<td><a href="get-package-name/">getPackageName</a></td>
+<td>[jvm]<br>open override fun <a href="get-package-name/">getPackageName</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?</td>
 </tr>
 <tr>
-<td><a href="get-public-resources/">getPublicResources</a></td>
-<td>[jvm]<br>open override fun <a href="get-public-resources/">getPublicResources</a>(namespace: ResourceNamespace, type: ResourceType): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-collection/index.html">Collection</a>&lt;ResourceItem&gt;</td>
+<td><a href="../-abstract-aar-resource-repository/get-public-resources/">getPublicResources</a></td>
+<td>[jvm]<br>open override fun <a href="../-abstract-aar-resource-repository/get-public-resources/">getPublicResources</a>(namespace: ResourceNamespace, type: ResourceType): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-collection/index.html">Collection</a>&lt;ResourceItem&gt;</td>
 </tr>
 <tr>
 <td><a href="../-resource-folder-repository/#-408651289%2FFunctions%2F-2095620550">getResourceNames</a></td>
 <td>[jvm]<br>open fun <a href="../-resource-folder-repository/#-408651289%2FFunctions%2F-2095620550">getResourceNames</a>(namespace: ResourceNamespace, resourceType: ResourceType): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-set/index.html">MutableSet</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>&gt;</td>
 </tr>
 <tr>
-<td><a href="get-resources/">getResources</a></td>
-<td>[jvm]<br>open override fun <a href="get-resources/">getResources</a>(namespace: ResourceNamespace, resourceType: ResourceType): ListMultimap&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, ResourceItem&gt;<br>open override fun <a href="get-resources/">getResources</a>(namespace: ResourceNamespace, resourceType: ResourceType, resourceName: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;ResourceItem&gt;<br>open override fun <a href="../-resource-folder-repository/#970284153%2FFunctions%2F-2095620550">getResources</a>(namespace: ResourceNamespace, resourceType: ResourceType, filter: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Predicate.html">Predicate</a>&lt;ResourceItem&gt;): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a>&lt;ResourceItem&gt;<br>open fun <a href="../-resource-folder-repository/#-490337056%2FFunctions%2F-2095620550">getResources</a>(reference: ResourceReference): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a>&lt;ResourceItem&gt;</td>
+<td><a href="../-abstract-aar-resource-repository/get-resources/">getResources</a></td>
+<td>[jvm]<br>open override fun <a href="../-abstract-aar-resource-repository/get-resources/">getResources</a>(namespace: ResourceNamespace, resourceType: ResourceType): ListMultimap&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, ResourceItem&gt;<br>open override fun <a href="../-abstract-aar-resource-repository/get-resources/">getResources</a>(namespace: ResourceNamespace, resourceType: ResourceType, resourceName: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;ResourceItem&gt;<br>open override fun <a href="../-resource-folder-repository/#970284153%2FFunctions%2F-2095620550">getResources</a>(namespace: ResourceNamespace, resourceType: ResourceType, filter: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Predicate.html">Predicate</a>&lt;ResourceItem&gt;): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a>&lt;ResourceItem&gt;<br>open fun <a href="../-resource-folder-repository/#-490337056%2FFunctions%2F-2095620550">getResources</a>(reference: ResourceReference): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a>&lt;ResourceItem&gt;</td>
 </tr>
 <tr>
 <td><a href="../-resource-folder-repository/#1517093356%2FFunctions%2F-2095620550">getResourceTypes</a></td>
 <td>[jvm]<br>open override fun <a href="../-resource-folder-repository/#1517093356%2FFunctions%2F-2095620550">getResourceTypes</a>(namespace: ResourceNamespace): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-set/index.html">MutableSet</a>&lt;ResourceType&gt;</td>
 </tr>
 <tr>
-<td><a href="../-loadable-resource-repository/get-resource-url/">getResourceUrl</a></td>
-<td>[jvm]<br>abstract fun <a href="../-loadable-resource-repository/get-resource-url/">getResourceUrl</a>(relativeResourcePath: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><br>Produces a string to be returned by the <a href="../-basic-resource-item/get-value/">BasicResourceItem.getValue</a> method. The string represents an URL in one of the following formats:</td>
+<td><a href="get-resource-url/">getResourceUrl</a></td>
+<td>[jvm]<br>open override fun <a href="get-resource-url/">getResourceUrl</a>(relativeResourcePath: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><br>Produces a string to be returned by the <a href="../-basic-resource-item/get-value/">BasicResourceItem.getValue</a> method. The string represents an URL in one of the following formats:</td>
 </tr>
 <tr>
-<td><a href="../-loadable-resource-repository/get-source-file/">getSourceFile</a></td>
-<td>[jvm]<br>abstract fun <a href="../-loadable-resource-repository/get-source-file/">getSourceFile</a>(relativeResourcePath: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, forFileResource: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a>): PathString<br>Produces a PathString to be returned by the <a href="../-basic-resource-item/get-source/">BasicResourceItem.getSource</a> method.</td>
+<td><a href="get-source-file/">getSourceFile</a></td>
+<td>[jvm]<br>open override fun <a href="get-source-file/">getSourceFile</a>(relativeResourcePath: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, forFileResource: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a>): PathString<br>Produces a PathString to be returned by the <a href="../-basic-resource-item/get-source/">BasicResourceItem.getSource</a> method.</td>
 </tr>
 <tr>
 <td><a href="../-resource-folder-repository/#2129073324%2FFunctions%2F-2095620550">hasResources</a></td>
 <td>[jvm]<br>open override fun <a href="../-resource-folder-repository/#2129073324%2FFunctions%2F-2095620550">hasResources</a>(namespace: ResourceNamespace, resourceType: ResourceType): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><br>open override fun <a href="../-resource-folder-repository/#-214640495%2FFunctions%2F-2095620550">hasResources</a>(namespace: ResourceNamespace, resourceType: ResourceType, resourceName: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="to-string/">toString</a></td>
+<td>[jvm]<br>open override fun <a href="to-string/">toString</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
 </tr>
 </tbody>
 </table>
@@ -446,16 +476,16 @@
 </thead>
 <tbody>
 <tr>
-<td><a href="display-name/">displayName</a></td>
-<td>[jvm]<br>open override val <a href="display-name/">displayName</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><br>Returns the name of this resource repository to display in the UI.</td>
+<td><a href="../-abstract-aar-resource-repository/display-name/">displayName</a></td>
+<td>[jvm]<br>open override val <a href="../-abstract-aar-resource-repository/display-name/">displayName</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><br>Returns the name of this resource repository to display in the UI.</td>
 </tr>
 <tr>
-<td><a href="library-name/">libraryName</a></td>
-<td>[jvm]<br>open override val <a href="library-name/">libraryName</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?<br>Returns the name of the library, or null if this is not an AAR resource repository.</td>
+<td><a href="../-abstract-aar-resource-repository/library-name/">libraryName</a></td>
+<td>[jvm]<br>open override val <a href="../-abstract-aar-resource-repository/library-name/">libraryName</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?<br>Returns the name of the library, or null if this is not an AAR resource repository.</td>
 </tr>
 <tr>
-<td><a href="../-loadable-resource-repository/origin/">origin</a></td>
-<td>[jvm]<br>abstract val <a href="../-loadable-resource-repository/origin/">origin</a>: <a href="https://docs.oracle.com/javase/8/docs/api/java/nio/file/Path.html">Path</a><br>Returns the file or directory this resource repository was loaded from. Resource repositories loaded from the same file or directory with different file filtering options have the same origin.</td>
+<td><a href="origin/">origin</a></td>
+<td>[jvm]<br>open override val <a href="origin/">origin</a>: <a href="https://docs.oracle.com/javase/8/docs/api/java/nio/file/Path.html">Path</a><br>Returns the file or directory this resource repository was loaded from. Resource repositories loaded from the same file or directory with different file filtering options have the same origin.</td>
 </tr>
 </tbody>
 </table>

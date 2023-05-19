@@ -12,7 +12,7 @@
         <meta name="author" content="Square, Inc.">
       
       
-        <link rel="canonical" href="https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources/-repository-loader/-companion/">
+        <link rel="canonical" href="https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources/-aar-source-resource-repository/get-resource-url/">
       
       
       
@@ -21,7 +21,7 @@
     
     
       
-        <title>Companion - Paparazzi - Paparazzi</title>
+        <title>getResourceUrl - Paparazzi - Paparazzi</title>
       
     
     
@@ -71,7 +71,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#companion" class="md-skip">
+        <a href="#getresourceurl" class="md-skip">
           Skip to content
         </a>
       
@@ -105,7 +105,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Companion - Paparazzi
+              getResourceUrl - Paparazzi
             
           </span>
         </div>
@@ -310,15 +310,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#functions" class="md-nav__link">
-    Functions
+  <a href="#return" class="md-nav__link">
+    Return
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#properties" class="md-nav__link">
-    Properties
+  <a href="#parameters" class="md-nav__link">
+    Parameters
   </a>
   
 </li>
@@ -341,41 +341,30 @@
   
 
 
-<p>//<a href="../../../../">paparazzi</a>/<a href="../../">app.cash.paparazzi.internal.resources</a>/<a href="../">RepositoryLoader</a>/<a href="./">Companion</a></p>
-<h1 id="companion">Companion<a class="headerlink" href="#companion" title="Permanent link">&para;</a></h1>
+<p>//<a href="../../../../">paparazzi</a>/<a href="../../">app.cash.paparazzi.internal.resources</a>/<a href="../">AarSourceResourceRepository</a>/<a href="./">getResourceUrl</a></p>
+<h1 id="getresourceurl">getResourceUrl<a class="headerlink" href="#getresourceurl" title="Permanent link">&para;</a></h1>
 <p>[jvm]\
-object <a href="./">Companion</a></p>
-<h2 id="functions">Functions<a class="headerlink" href="#functions" title="Permanent link">&para;</a></h2>
+open override fun <a href="./">getResourceUrl</a>(relativeResourcePath: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></p>
+<p>Produces a string to be returned by the <a href="../../-basic-resource-item/get-value/">BasicResourceItem.getValue</a> method. The string represents an URL in one of the following formats:</p>
+<ul>
+<li>file URL, e.g. &quot;file:///foo/bar/res/layout/my_layout.xml&quot;</li>
+<li>URL of a zipped element inside the res.apk file, e.g. &quot;apk:///foo/bar/res.apk!/res/layout/my_layout.xml&quot;</li>
+</ul>
+<h4 id="return">Return<a class="headerlink" href="#return" title="Permanent link">&para;</a></h4>
+<p>the URL pointing to the file resource</p>
+<h4 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h4>
+<p>jvm</p>
 <table>
 <thead>
 <tr>
-<th>Name</th>
-<th>Summary</th>
+<th></th>
+<th></th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><a href="portable-file-name/">portableFileName</a></td>
-<td>[jvm]<br>fun <a href="portable-file-name/">portableFileName</a>(fileName: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
-</tr>
-</tbody>
-</table>
-<h2 id="properties">Properties<a class="headerlink" href="#properties" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Summary</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><a href="-j-a-r_-p-r-o-t-o-c-o-l/">JAR_PROTOCOL</a></td>
-<td>[jvm]<br>const val <a href="-j-a-r_-p-r-o-t-o-c-o-l/">JAR_PROTOCOL</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
-</tr>
-<tr>
-<td><a href="-j-a-r_-s-e-p-a-r-a-t-o-r/">JAR_SEPARATOR</a></td>
-<td>[jvm]<br>const val <a href="-j-a-r_-s-e-p-a-r-a-t-o-r/">JAR_SEPARATOR</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
+<td>relativeResourcePath</td>
+<td>the relative path of a file resource</td>
 </tr>
 </tbody>
 </table>

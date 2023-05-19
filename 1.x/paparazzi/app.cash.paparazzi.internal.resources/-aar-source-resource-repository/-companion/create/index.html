@@ -12,23 +12,23 @@
         <meta name="author" content="Square, Inc.">
       
       
-        <link rel="canonical" href="https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources/-repository-loader/-companion/">
+        <link rel="canonical" href="https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources/-aar-source-resource-repository/-companion/create/">
       
       
       
-      <link rel="icon" href="../../../../../images/icon-square.png">
+      <link rel="icon" href="../../../../../../images/icon-square.png">
       <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.13">
     
     
       
-        <title>Companion - Paparazzi - Paparazzi</title>
+        <title>create - Paparazzi - Paparazzi</title>
       
     
     
-      <link rel="stylesheet" href="../../../../../assets/stylesheets/main.85bb2934.min.css">
+      <link rel="stylesheet" href="../../../../../../assets/stylesheets/main.85bb2934.min.css">
       
         
-        <link rel="stylesheet" href="../../../../../assets/stylesheets/palette.a6bdf11c.min.css">
+        <link rel="stylesheet" href="../../../../../../assets/stylesheets/palette.a6bdf11c.min.css">
       
       
 
@@ -44,9 +44,9 @@
       
     
     
-      <link rel="stylesheet" href="../../../../../css/app.css">
+      <link rel="stylesheet" href="../../../../../../css/app.css">
     
-    <script>__md_scope=new URL("../../../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../../../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -71,7 +71,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#companion" class="md-skip">
+        <a href="#create" class="md-skip">
           Skip to content
         </a>
       
@@ -87,9 +87,9 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../../../../.." title="Paparazzi" class="md-header__button md-logo" aria-label="Paparazzi" data-md-component="logo">
+    <a href="../../../../../.." title="Paparazzi" class="md-header__button md-logo" aria-label="Paparazzi" data-md-component="logo">
       
-  <img src="../../../../../images/icon-square.png" alt="logo">
+  <img src="../../../../../../images/icon-square.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -105,7 +105,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Companion - Paparazzi
+              create - Paparazzi
             
           </span>
         </div>
@@ -186,9 +186,9 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../../../.." title="Paparazzi" class="md-nav__button md-logo" aria-label="Paparazzi" data-md-component="logo">
+    <a href="../../../../../.." title="Paparazzi" class="md-nav__button md-logo" aria-label="Paparazzi" data-md-component="logo">
       
-  <img src="../../../../../images/icon-square.png" alt="logo">
+  <img src="../../../../../../images/icon-square.png" alt="logo">
 
     </a>
     Paparazzi
@@ -216,7 +216,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../.." class="md-nav__link">
+      <a href="../../../../../.." class="md-nav__link">
         Overview
       </a>
     </li>
@@ -231,7 +231,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../app.cash.paparazzi/" class="md-nav__link">
+      <a href="../../../../app.cash.paparazzi/" class="md-nav__link">
         1.x API
       </a>
     </li>
@@ -246,7 +246,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../changelog/" class="md-nav__link">
+      <a href="../../../../../../changelog/" class="md-nav__link">
         Change Log
       </a>
     </li>
@@ -261,7 +261,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../code_of_conduct/" class="md-nav__link">
+      <a href="../../../../../../code_of_conduct/" class="md-nav__link">
         Code of Conduct
       </a>
     </li>
@@ -310,15 +310,29 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#functions" class="md-nav__link">
-    Functions
+  <a href="#return" class="md-nav__link">
+    Return
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#properties" class="md-nav__link">
-    Properties
+  <a href="#parameters" class="md-nav__link">
+    Parameters
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#return_1" class="md-nav__link">
+    Return
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parameters_1" class="md-nav__link">
+    Parameters
   </a>
   
 </li>
@@ -341,41 +355,59 @@
   
 
 
-<p>//<a href="../../../../">paparazzi</a>/<a href="../../">app.cash.paparazzi.internal.resources</a>/<a href="../">RepositoryLoader</a>/<a href="./">Companion</a></p>
-<h1 id="companion">Companion<a class="headerlink" href="#companion" title="Permanent link">&para;</a></h1>
+<p>//<a href="../../../../../">paparazzi</a>/<a href="../../../">app.cash.paparazzi.internal.resources</a>/<a href="../../">AarSourceResourceRepository</a>/<a href="../">Companion</a>/<a href="./">create</a></p>
+<h1 id="create">create<a class="headerlink" href="#create" title="Permanent link">&para;</a></h1>
 <p>[jvm]\
-object <a href="./">Companion</a></p>
-<h2 id="functions">Functions<a class="headerlink" href="#functions" title="Permanent link">&para;</a></h2>
+fun <a href="./">create</a>(resourceDirectoryOrFile: <a href="https://docs.oracle.com/javase/8/docs/api/java/nio/file/Path.html">Path</a>, libraryName: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="../../">AarSourceResourceRepository</a></p>
+<p>Creates and loads a resource repository.</p>
+<h4 id="return">Return<a class="headerlink" href="#return" title="Permanent link">&para;</a></h4>
+<p>the created resource repository</p>
+<h4 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h4>
+<p>jvm</p>
 <table>
 <thead>
 <tr>
-<th>Name</th>
-<th>Summary</th>
+<th></th>
+<th></th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><a href="portable-file-name/">portableFileName</a></td>
-<td>[jvm]<br>fun <a href="portable-file-name/">portableFileName</a>(fileName: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
+<td>resourceDirectoryOrFile</td>
+<td>the res directory or an AAR file containing resources</td>
+</tr>
+<tr>
+<td>libraryName</td>
+<td>the name of the library</td>
 </tr>
 </tbody>
 </table>
-<h2 id="properties">Properties<a class="headerlink" href="#properties" title="Permanent link">&para;</a></h2>
+<p>[jvm]\
+fun <a href="./">create</a>(resourceFolderRoot: PathString, resourceFolderResources: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-collection/index.html">Collection</a>&lt;PathString&gt;?, libraryName: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="../../">AarSourceResourceRepository</a></p>
+<p>Creates and loads a resource repository.</p>
+<h4 id="return_1">Return<a class="headerlink" href="#return_1" title="Permanent link">&para;</a></h4>
+<p>the created resource repository</p>
+<h4 id="parameters_1">Parameters<a class="headerlink" href="#parameters_1" title="Permanent link">&para;</a></h4>
+<p>jvm</p>
 <table>
 <thead>
 <tr>
-<th>Name</th>
-<th>Summary</th>
+<th></th>
+<th></th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><a href="-j-a-r_-p-r-o-t-o-c-o-l/">JAR_PROTOCOL</a></td>
-<td>[jvm]<br>const val <a href="-j-a-r_-p-r-o-t-o-c-o-l/">JAR_PROTOCOL</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
+<td>resourceFolderRoot</td>
+<td>specifies the resource files to be loaded. The list of files to be loaded can be restricted by providing a not null <code>resourceFolderResources</code> list of files and subdirectories that should be loaded.</td>
 </tr>
 <tr>
-<td><a href="-j-a-r_-s-e-p-a-r-a-t-o-r/">JAR_SEPARATOR</a></td>
-<td>[jvm]<br>const val <a href="-j-a-r_-s-e-p-a-r-a-t-o-r/">JAR_SEPARATOR</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
+<td>resourceFolderResources</td>
+<td>A null value indicates that all files and subdirectories in <code>resourceFolderRoot</code> should be loaded. Otherwise files and subdirectories specified in <code>resourceFolderResources</code> are loaded.</td>
+</tr>
+<tr>
+<td>libraryName</td>
+<td>the name of the library</td>
 </tr>
 </tbody>
 </table>
@@ -420,10 +452,10 @@ object <a href="./">Companion</a></p>
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "../../../../..", "features": [], "search": "../../../../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "../../../../../..", "features": [], "search": "../../../../../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../../../../../assets/javascripts/bundle.b4d07000.min.js"></script>
+      <script src="../../../../../../assets/javascripts/bundle.b4d07000.min.js"></script>
       
     
   </body>

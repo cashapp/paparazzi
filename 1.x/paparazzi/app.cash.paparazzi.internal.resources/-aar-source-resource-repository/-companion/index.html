@@ -12,7 +12,7 @@
         <meta name="author" content="Square, Inc.">
       
       
-        <link rel="canonical" href="https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources/-repository-loader/-companion/">
+        <link rel="canonical" href="https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources/-aar-source-resource-repository/-companion/">
       
       
       
@@ -316,13 +316,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#properties" class="md-nav__link">
-    Properties
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -341,7 +334,7 @@
   
 
 
-<p>//<a href="../../../../">paparazzi</a>/<a href="../../">app.cash.paparazzi.internal.resources</a>/<a href="../">RepositoryLoader</a>/<a href="./">Companion</a></p>
+<p>//<a href="../../../../">paparazzi</a>/<a href="../../">app.cash.paparazzi.internal.resources</a>/<a href="../">AarSourceResourceRepository</a>/<a href="./">Companion</a></p>
 <h1 id="companion">Companion<a class="headerlink" href="#companion" title="Permanent link">&para;</a></h1>
 <p>[jvm]\
 object <a href="./">Companion</a></p>
@@ -355,27 +348,8 @@ object <a href="./">Companion</a></p>
 </thead>
 <tbody>
 <tr>
-<td><a href="portable-file-name/">portableFileName</a></td>
-<td>[jvm]<br>fun <a href="portable-file-name/">portableFileName</a>(fileName: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
-</tr>
-</tbody>
-</table>
-<h2 id="properties">Properties<a class="headerlink" href="#properties" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Summary</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><a href="-j-a-r_-p-r-o-t-o-c-o-l/">JAR_PROTOCOL</a></td>
-<td>[jvm]<br>const val <a href="-j-a-r_-p-r-o-t-o-c-o-l/">JAR_PROTOCOL</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
-</tr>
-<tr>
-<td><a href="-j-a-r_-s-e-p-a-r-a-t-o-r/">JAR_SEPARATOR</a></td>
-<td>[jvm]<br>const val <a href="-j-a-r_-s-e-p-a-r-a-t-o-r/">JAR_SEPARATOR</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
+<td><a href="create/">create</a></td>
+<td>[jvm]<br>fun <a href="create/">create</a>(resourceDirectoryOrFile: <a href="https://docs.oracle.com/javase/8/docs/api/java/nio/file/Path.html">Path</a>, libraryName: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="../">AarSourceResourceRepository</a><br>fun <a href="create/">create</a>(resourceFolderRoot: PathString, resourceFolderResources: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-collection/index.html">Collection</a>&lt;PathString&gt;?, libraryName: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="../">AarSourceResourceRepository</a><br>Creates and loads a resource repository.</td>
 </tr>
 </tbody>
 </table>
