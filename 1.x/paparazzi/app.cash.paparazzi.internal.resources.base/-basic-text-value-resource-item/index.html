@@ -12,7 +12,7 @@
         <meta name="author" content="Square, Inc.">
       
       
-        <link rel="canonical" href="https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources.base/-basic-value-resource-item/">
+        <link rel="canonical" href="https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources.base/-basic-text-value-resource-item/">
       
       
       
@@ -21,7 +21,7 @@
     
     
       
-        <title>BasicValueResourceItem - Paparazzi - Paparazzi</title>
+        <title>BasicTextValueResourceItem - Paparazzi - Paparazzi</title>
       
     
     
@@ -71,7 +71,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#basicvalueresourceitem" class="md-skip">
+        <a href="#basictextvalueresourceitem" class="md-skip">
           Skip to content
         </a>
       
@@ -105,7 +105,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              BasicValueResourceItem - Paparazzi
+              BasicTextValueResourceItem - Paparazzi
             
           </span>
         </div>
@@ -310,13 +310,6 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#inheritors" class="md-nav__link">
-    Inheritors
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#constructors" class="md-nav__link">
     Constructors
   </a>
@@ -355,24 +348,12 @@
   
 
 
-<p>//<a href="../../../">paparazzi</a>/<a href="../">app.cash.paparazzi.internal.resources.base</a>/<a href="./">BasicValueResourceItem</a></p>
-<h1 id="basicvalueresourceitem">BasicValueResourceItem<a class="headerlink" href="#basicvalueresourceitem" title="Permanent link">&para;</a></h1>
-<p>open class <a href="./">BasicValueResourceItem</a>(type: ResourceType, name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, val sourceFile: <a href="../../app.cash.paparazzi.internal.resources/-resource-source-file/">ResourceSourceFile</a>, visibility: ResourceVisibility, value: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?) : <a href="../-basic-value-resource-item-base/">BasicValueResourceItemBase</a></p>
-<p>Ported from: <a href="https://cs.android.com/android-studio/platform/tools/base/+/18047faf69512736b8ddb1f6a6785f58d47c893f:resource-repository/main/java/com/android/resources/base/BasicValueResourceItem.java">BasicValueResourceItem.java</a></p>
+<p>//<a href="../../../">paparazzi</a>/<a href="../">app.cash.paparazzi.internal.resources.base</a>/<a href="./">BasicTextValueResourceItem</a></p>
+<h1 id="basictextvalueresourceitem">BasicTextValueResourceItem<a class="headerlink" href="#basictextvalueresourceitem" title="Permanent link">&para;</a></h1>
+<p>[jvm]\
+class <a href="./">BasicTextValueResourceItem</a>(type: ResourceType, name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, val sourceFile: <a href="../../app.cash.paparazzi.internal.resources/-resource-source-file/">ResourceSourceFile</a>, visibility: ResourceVisibility, textValue: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, rawXmlValue: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?) : <a href="../-basic-value-resource-item/">BasicValueResourceItem</a>, TextResourceValue</p>
+<p>Ported from: <a href="https://cs.android.com/android-studio/platform/tools/base/+/47d204001bf0cb6273d8b135c7eece3a982cf0e0:resource-repository/main/java/com/android/resources/base/BasicTextValueResourceItem.java">BasicTextValueResourceItem.java</a></p>
 <p>Resource item representing a value resource, e.g. a string or a color.</p>
-<h4 id="inheritors">Inheritors<a class="headerlink" href="#inheritors" title="Permanent link">&para;</a></h4>
-<table>
-<thead>
-<tr>
-<th></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><a href="../-basic-text-value-resource-item/">BasicTextValueResourceItem</a></td>
-</tr>
-</tbody>
-</table>
 <h2 id="constructors">Constructors<a class="headerlink" href="#constructors" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -383,8 +364,8 @@
 </thead>
 <tbody>
 <tr>
-<td><a href="-basic-value-resource-item/">BasicValueResourceItem</a></td>
-<td>[jvm]<br>constructor(type: ResourceType, name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, sourceFile: <a href="../../app.cash.paparazzi.internal.resources/-resource-source-file/">ResourceSourceFile</a>, visibility: ResourceVisibility, value: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?)</td>
+<td><a href="-basic-text-value-resource-item/">BasicTextValueResourceItem</a></td>
+<td>[jvm]<br>constructor(type: ResourceType, name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, sourceFile: <a href="../../app.cash.paparazzi.internal.resources/-resource-source-file/">ResourceSourceFile</a>, visibility: ResourceVisibility, textValue: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, rawXmlValue: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?)</td>
 </tr>
 </tbody>
 </table>
@@ -438,8 +419,8 @@
 <td>[jvm]<br>open fun <a href="../-basic-value-resource-item-base/#1114844795%2FFunctions%2F-2095620550">getQualifiedNameWithType</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
 </tr>
 <tr>
-<td><a href="../-basic-value-resource-item-base/#-821168389%2FFunctions%2F-2095620550">getRawXmlValue</a></td>
-<td>[jvm]<br>open fun <a href="../-basic-value-resource-item-base/#-821168389%2FFunctions%2F-2095620550">getRawXmlValue</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
+<td><a href="get-raw-xml-value/">getRawXmlValue</a></td>
+<td>[jvm]<br>open override fun <a href="get-raw-xml-value/">getRawXmlValue</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?</td>
 </tr>
 <tr>
 <td><a href="../-basic-value-resource-item-base/#-1154767950%2FFunctions%2F-2095620550">getReference</a></td>
@@ -478,8 +459,8 @@
 <td>[jvm]<br>open override fun <a href="../-basic-resource-item-base/get-type/">getType</a>(): ResourceType</td>
 </tr>
 <tr>
-<td><a href="get-value/">getValue</a></td>
-<td>[jvm]<br>open override fun <a href="get-value/">getValue</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?</td>
+<td><a href="../-basic-value-resource-item/get-value/">getValue</a></td>
+<td>[jvm]<br>open override fun <a href="../-basic-value-resource-item/get-value/">getValue</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?</td>
 </tr>
 <tr>
 <td><a href="../-basic-resource-item-base/get-visibility/">getVisibility</a></td>

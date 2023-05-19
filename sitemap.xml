@@ -2566,6 +2566,31 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources.base/-basic-text-value-resource-item/</loc>
+         <lastmod>2023-05-19</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources.base/-basic-text-value-resource-item/-basic-text-value-resource-item/</loc>
+         <lastmod>2023-05-19</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources.base/-basic-text-value-resource-item/equals/</loc>
+         <lastmod>2023-05-19</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources.base/-basic-text-value-resource-item/get-raw-xml-value/</loc>
+         <lastmod>2023-05-19</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources.base/-basic-text-value-resource-item/hash-code/</loc>
+         <lastmod>2023-05-19</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources.base/-basic-value-resource-item/</loc>
          <lastmod>2023-05-19</lastmod>
          <changefreq>daily</changefreq>
