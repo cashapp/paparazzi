@@ -20,7 +20,7 @@ tasks.register('cloneLayoutlib') {
     }
     Grgit grgit
     if (!repoDir.exists()) {
-      logger.warn('Cloning prebuilt layoutlib: this make take a few minutes...')
+      logger.warn('Cloning prebuilt layoutlib: this may take a few minutes...')
       grgit = Grgit.clone {
         dir = repoDir
         uri = "https://android.googlesource.com/platform/prebuilts/studio/layoutlib"
