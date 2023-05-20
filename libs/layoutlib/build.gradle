@@ -17,11 +17,16 @@ tasks.register('cloneLayoutlib') {
       repoDir.delete()
     }
     Grgit grgit
+    String tag = "refs/tags/studio-${libs.versions.layoutlibPrebuiltSha.get()}"
     if (!repoDir.exists()) {
       logger.warn('Cloning prebuilt layoutlib: this may take a few minutes...')
       grgit = Grgit.clone {
         dir = repoDir
         uri = "https://android.googlesource.com/platform/prebuilts/studio/layoutlib"
+        depth = 1
+        branches = [ tag ]
+        all = false
+        refToCheckout = tag
       }
       logger.warn('Cloned prebuilt layoutlib.')
     } else {
@@ -31,10 +36,14 @@ tasks.register('cloneLayoutlib') {
       }
     }
     grgit.withCloseable { repo ->
-      repo.fetch()
-      logger.warn("Checking out SHA ${libs.versions.layoutlibPrebuiltSha.get()}")
+      logger.warn("Fetching tag ${tag}")
+      repo.fetch {
+        refSpecs = [ tag ]
+        depth = 1
+      }
+      logger.warn("Checking out tag ${tag}")
       repo.checkout {
-        branch = libs.versions.layoutlibPrebuiltSha.get()
+        branch = tag
       }
     }
   }
