@@ -29,6 +29,7 @@ bytebuddy-core = { module = "net.bytebuddy:byte-buddy", version.ref = "bytebuddy
 compose-compiler = { module = "androidx.compose.compiler:compiler", version.ref = "composeCompiler" }
 composeUi-material = { module = "androidx.compose.material:material", version = "1.4.3" }
 
+grgit = { module = "org.ajoberstar.grgit:grgit-core", version = "5.2.0" }
 guava = { module = "com.google.guava:guava", version = "31.1-jre" }
 
 jcodec-core = { module = "org.jcodec:jcodec", version.ref = "jcodec" }
@@ -67,7 +68,6 @@ truth = { module = "com.google.truth:truth", version = "1.1.3" }
 plugin-android = { module = "com.android.tools.build:gradle", version.ref = "agp" }
 plugin-buildConfig = { module = "com.github.gmazzo:gradle-buildconfig-plugin", version = "3.1.0" }
 plugin-dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version = "1.8.10" }
-plugin-grgit = { module = "org.ajoberstar.grgit:grgit-gradle", version = "5.2.0" }
 plugin-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 plugin-ksp = { module = "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin", version = "1.8.21-1.0.11" }
 plugin-mavenPublish = { module = "com.vanniktech:gradle-maven-publish-plugin", version = "0.25.2" }
