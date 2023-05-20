@@ -87,7 +87,7 @@ private fun createAar(tempDir: Path, sourceDirectory: Path): Path {
  *
  * @throws IllegalArgumentException if the path results in a file that is not found.
  */
-private fun resolveProjectPath(relativePath: String): Path {
+internal fun resolveProjectPath(relativePath: String): Path {
   val f = projectRoot.resolve(relativePath)
   if (f.exists()) {
     return f
