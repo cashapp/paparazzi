@@ -15,6 +15,19 @@
  */
 package app.cash.paparazzi.internal.resources
 
+import app.cash.paparazzi.internal.resources.base.BasicArrayResourceItem
+import app.cash.paparazzi.internal.resources.base.BasicAttrResourceItem
+import app.cash.paparazzi.internal.resources.base.BasicDensityBasedFileResourceItem
+import app.cash.paparazzi.internal.resources.base.BasicFileResourceItem
+import app.cash.paparazzi.internal.resources.base.BasicForeignAttrResourceItem
+import app.cash.paparazzi.internal.resources.base.BasicPluralsResourceItem
+import app.cash.paparazzi.internal.resources.base.BasicResourceItem
+import app.cash.paparazzi.internal.resources.base.BasicResourceItemBase
+import app.cash.paparazzi.internal.resources.base.BasicStyleResourceItem
+import app.cash.paparazzi.internal.resources.base.BasicStyleableResourceItem
+import app.cash.paparazzi.internal.resources.base.BasicTextValueResourceItem
+import app.cash.paparazzi.internal.resources.base.BasicValueResourceItem
+import app.cash.paparazzi.internal.resources.base.BasicValueResourceItemBase
 import com.android.SdkConstants
 import com.android.SdkConstants.ANDROID_NS_NAME
 import com.android.SdkConstants.ATTR_FORMAT
@@ -39,19 +52,12 @@ import com.android.SdkConstants.TAG_ITEM
 import com.android.SdkConstants.TAG_RESOURCES
 import com.android.SdkConstants.TAG_SKIP
 import com.android.SdkConstants.TOOLS_URI
-import com.android.ide.common.rendering.api.ArrayResourceValueImpl
 import com.android.ide.common.rendering.api.AttrResourceValue
-import com.android.ide.common.rendering.api.AttrResourceValueImpl
 import com.android.ide.common.rendering.api.AttributeFormat
 import com.android.ide.common.rendering.api.DensityBasedResourceValue
-import com.android.ide.common.rendering.api.DensityBasedResourceValueImpl
-import com.android.ide.common.rendering.api.PluralsResourceValueImpl
 import com.android.ide.common.rendering.api.ResourceNamespace
-import com.android.ide.common.rendering.api.ResourceValueImpl
+import com.android.ide.common.rendering.api.StyleItemResourceValue
 import com.android.ide.common.rendering.api.StyleItemResourceValueImpl
-import com.android.ide.common.rendering.api.StyleResourceValueImpl
-import com.android.ide.common.rendering.api.StyleableResourceValueImpl
-import com.android.ide.common.rendering.api.TextResourceValueImpl
 import com.android.ide.common.resources.ANDROID_AAPT_IGNORE
 import com.android.ide.common.resources.AndroidAaptIgnore
 import com.android.ide.common.resources.PatternBasedFileFilter
@@ -60,7 +66,6 @@ import com.android.ide.common.resources.ValueResourceNameValidator
 import com.android.ide.common.resources.ValueXmlHelper
 import com.android.ide.common.resources.configuration.FolderConfiguration
 import com.android.ide.common.util.PathString
-import com.android.ide.common.util.toPathString
 import com.android.io.CancellableFileIo
 import com.android.resources.Arity
 import com.android.resources.Density
@@ -85,6 +90,10 @@ import com.android.resources.ResourceType.TRANSITION
 import com.android.resources.ResourceVisibility
 import com.android.utils.SdkUtils
 import com.android.utils.XmlUtils
+import com.google.common.collect.ArrayListMultimap
+import com.google.common.collect.ListMultimap
+import com.google.common.collect.Maps
+import com.google.common.collect.Sets
 import com.google.common.collect.Table
 import com.google.common.collect.Tables
 import org.kxml2.io.KXmlParser
@@ -114,12 +123,25 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
   val resourceFilesAndFolders: Collection<PathString>?,
   val namespace: ResourceNamespace
 ) : FileFilter {
+  /** The set of attribute formats that is used when no formats are explicitly specified and the attribute is not a flag or enum.  */
+  private val DEFAULT_ATTR_FORMATS: Set<AttributeFormat> = Sets.immutableEnumSet(
+    AttributeFormat.BOOLEAN,
+    AttributeFormat.COLOR,
+    AttributeFormat.DIMENSION,
+    AttributeFormat.FLOAT,
+    AttributeFormat.FRACTION,
+    AttributeFormat.INTEGER,
+    AttributeFormat.REFERENCE,
+    AttributeFormat.STRING
+  )
   private val fileFilter =
     PatternBasedFileFilter(AndroidAaptIgnore(System.getenv(ANDROID_AAPT_IGNORE)))
 
   private val publicResources: MutableMap<ResourceType, MutableSet<String>> =
     EnumMap(ResourceType::class.java)
-
+  private val attrs: ListMultimap<String, BasicAttrResourceItem> = ArrayListMultimap.create<String, BasicAttrResourceItem>()
+  private val attrCandidates: ListMultimap<String, BasicAttrResourceItem> = ArrayListMultimap.create<String, BasicAttrResourceItem>()
+  private val styleables: ListMultimap<String, BasicStyleableResourceItem> = ArrayListMultimap.create<String, BasicStyleableResourceItem>()
   protected var defaultVisibility = ResourceVisibility.PRIVATE
 
   /** Cache of FolderConfiguration instances, keyed by qualifier strings (see [FolderConfiguration.getQualifierString]).  */
@@ -130,7 +152,7 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
   private val urlParser = ResourceUrlParser()
 
   // Used to keep track of resources defined in the current value resource file.
-  private val valueFileResources: Table<ResourceType, String, BasicResourceItem> =
+  private val valueFileResources: Table<ResourceType, String, BasicValueResourceItemBase> =
     Tables.newCustomTable(EnumMap(ResourceType::class.java)) { LinkedHashMap() }
   private val resourceDirectoryOrFilePath = PathString(resourceDirectoryOrFile)
   private val isLoadingFromZipArchive = isZipArchive(resourceDirectoryOrFile)
@@ -284,17 +306,17 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
     configuration: RepositoryConfiguration,
     shouldParseResourceIds: Boolean
   ) {
-    val folderType = getFolderType(file)
-    if (folderType == VALUES) {
+    if (folderInfo.resourceType == null) {
       if (isXmlFile(file)) {
         parseValueResourceFile(file, configuration)
       }
     } else {
-      if (isXmlFile(file) && FolderTypeRelationship.isIdGeneratingFolderType(folderType)) {
+      if (shouldParseResourceIds && folderInfo.isIdGenerating && isXmlFile(file)) {
         parseIdGeneratingResourceFile(file, configuration)
       }
 
-      parseFileResourceFile(file, folderType, configuration)
+      val item = createFileResourceItem(file, folderInfo.resourceType, configuration)
+      addResourceItem(item)
     }
   }
 
@@ -311,6 +333,7 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
   ) {
     try {
       getInputStream(file).use { stream ->
+        val sourceFile = createResourceSourceFile(file, configuration)
         parser.setInput(stream, null)
         var event: Int
         do {
@@ -332,7 +355,7 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
                 val resourceName = parser.getAttributeValue(null, ATTR_NAME)
                 if (resourceName != null) {
                   validateResourceName(resourceName, resourceType, file)
-                  val item = createResourceItem(resourceType, resourceName, file, configuration)
+                  val item = createResourceItem(resourceType, resourceName, sourceFile)
                   addValueResourceItem(item)
                 } else {
                   // Skip the subtags when the tag of a valid resource type doesn't have a name.
@@ -346,7 +369,6 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
         } while (event != XmlPullParser.END_DOCUMENT)
       }
     } // KXmlParser throws RuntimeException for an undefined prefix and an illegal attribute name.
-    // todo these error hanldings are from AS, but should we actually throw the exception as illegal values should be fixed rather than swallowed
     catch (e: IOException) {
       handleParsingError(file, e)
     } catch (e: XmlPullParserException) {
@@ -359,20 +381,21 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
     addValueFileResources()
   }
 
-  // todo attr and styleable needs special handlings
-  // https://cs.android.com/android-studio/platform/tools/base/+/mirror-goog-studio-main:resource-repository/main/java/com/android/resources/base/RepositoryLoader.java;l=952?q=processAttrsAndStyleables&sq=&ss=android-studio%2Fplatform%2Ftools%2Fbase
-  private fun addValueResourceItem(item: BasicResourceItem) {
+  protected open fun createResourceSourceFile(
+    file: PathString,
+    configuration: RepositoryConfiguration
+  ): ResourceSourceFile = ResourceSourceFileImpl(getResRelativePath(file), configuration)
+
+  private fun addValueResourceItem(item: BasicValueResourceItemBase) {
     // Add attr and styleable resources to intermediate maps to post-process them in the processAttrsAndStyleables
     // method after all resources are loaded.
     when (val resourceType: ResourceType = item.type) {
-      // ATTR -> {
-      //   // addAttr(item as BasicAttrResourceItem, myAttrs)
-      // }
-      //
-      // STYLEABLE -> {
-      //   // myStyleables.put(item.getName(), item as BasicStyleableResourceItem)
-      // }
-
+      ATTR -> {
+        addAttr(item as BasicAttrResourceItem, attrs)
+      }
+      STYLEABLE -> {
+        styleables.put(item.name, item as BasicStyleableResourceItem)
+      }
       else -> {
         // For compatibility with resource merger code we add value resources first to a file-specific map,
         // then move them to the global resource table. In case when there are multiple definitions of
@@ -395,6 +418,7 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
   ) {
     try {
       getInputStream(file).use { stream ->
+        val sourceFile = createResourceSourceFile(file, configuration)
         val parser = KXmlParser()
         parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true)
         parser.setInput(stream, null)
@@ -407,7 +431,7 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
               val idValue = parser.getAttributeValue(i)
               if (idValue.startsWith(NEW_ID_PREFIX) && idValue.length > NEW_ID_PREFIX.length) {
                 val resourceName = idValue.substring(NEW_ID_PREFIX.length)
-                addIdResourceItem(resourceName, configuration)
+                addIdResourceItem(resourceName, sourceFile)
               }
             }
           }
@@ -443,39 +467,31 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
 
   protected fun addIdResourceItem(
     resourceName: String,
-    repositoryConfiguration: RepositoryConfiguration
+    sourceFile: ResourceSourceFile
   ) {
     val visibility = getVisibility(ID, resourceName)
-    val resourceValue =
-      ResourceValueImpl(repositoryConfiguration.repository.namespace, ID, resourceName, null)
-    val item =
-      BasicResourceItem(ID, resourceName, visibility, repositoryConfiguration, resourceValue)
-    addValueResourceItem(item)
+    val item = BasicValueResourceItem(ID, resourceName, sourceFile, visibility, null)
+    // Don't create duplicate ID resources.
+    if (!resourceAlreadyDefined(item)) {
+      addValueResourceItem(item)
+    }
   }
 
   private fun createFileResourceItem(
     file: PathString,
-    name: String,
     resourceType: ResourceType,
     configuration: RepositoryConfiguration
-  ): BasicResourceItem {
-    val visibility = getVisibility(resourceType, name)
+  ): BasicFileResourceItem {
+    val resourceName = SdkUtils.fileNameToResourceName(file.fileName)
+    val visibility = getVisibility(resourceType, resourceName)
     var density: Density? = null
     if (DensityBasedResourceValue.isDensityBasedResourceType(resourceType)) {
-      val densityQualifier =
-        configuration.folderConfiguration.densityQualifier
+      val densityQualifier = configuration.folderConfiguration.densityQualifier
       if (densityQualifier != null) {
         density = densityQualifier.value
       }
     }
-    return createFileResourceItem(
-      file,
-      resourceType,
-      name,
-      configuration,
-      visibility,
-      density
-    )
+    return createFileResourceItem(file, resourceType, resourceName, configuration, visibility, density)
   }
 
   protected fun createFileResourceItem(
@@ -485,21 +501,13 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
     configuration: RepositoryConfiguration,
     visibility: ResourceVisibility,
     density: Density?
-  ): BasicResourceItem {
-    val resourceValue = if (density != null) {
-      DensityBasedResourceValueImpl(
-        configuration.repository.namespace,
-        type,
-        name,
-        file.nativePath,
-        density,
-        null
-      )
+  ): BasicFileResourceItem {
+    val relativePath = getResRelativePath(file)
+    return if (density == null) {
+      BasicFileResourceItem(type, name, configuration, visibility, relativePath)
     } else {
-      ResourceValueImpl(configuration.repository.namespace, type, name, file.nativePath, null)
+      BasicDensityBasedFileResourceItem(type, name, configuration, visibility, relativePath, density)
     }
-
-    return BasicResourceItem(type, name, visibility, configuration, resourceValue)
   }
 
   @Throws(
@@ -510,23 +518,22 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
   private fun createResourceItem(
     type: ResourceType,
     name: String,
-    file: PathString,
-    configuration: RepositoryConfiguration
-  ): BasicResourceItem {
+    sourceFile: ResourceSourceFile
+  ): BasicValueResourceItemBase {
     return when (type) {
-      ARRAY -> createArrayItem(name, file, configuration)
-      ATTR -> createAttrItem(name, file, configuration)
-      PLURALS -> createPluralsItem(name, file, configuration)
-      STRING -> createStringItem(type, name, configuration, true)
-      STYLE -> createStyleItem(name, configuration)
-      STYLEABLE -> createStyleableItem(name, file, configuration)
+      ARRAY -> createArrayItem(name, sourceFile)
+      ATTR -> createAttrItem(name, sourceFile)
+      PLURALS -> createPluralsItem(name, sourceFile)
+      STRING -> createStringItem(type, name, sourceFile, true)
+      STYLE -> createStyleItem(name, sourceFile)
+      STYLEABLE -> createStyleableItem(name, sourceFile)
       ANIMATOR, DRAWABLE, INTERPOLATOR, LAYOUT, MENU, MIPMAP, TRANSITION -> createFileReferenceItem(
         type,
         name,
-        configuration
+        sourceFile
       )
 
-      else -> createStringItem(type, name, configuration, false)
+      else -> createStringItem(type, name, sourceFile, false)
     }
   }
 
@@ -537,21 +544,15 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
   )
   private fun createArrayItem(
     name: String,
-    file: PathString,
-    configuration: RepositoryConfiguration
-  ): BasicResourceItem {
-    val namespaceResolver = parser.namespaceResolver
-    val resourceValue = ArrayResourceValueImpl(
-      configuration.repository.namespace,
-      name,
-      configuration.repository.libraryName
-    )
+    sourceFile: ResourceSourceFile
+  ): BasicArrayResourceItem {
     val indexValue = parser.getAttributeValue(TOOLS_URI, ATTR_INDEX)
+    val namespaceResolver = parser.namespaceResolver
+    val values = mutableListOf<String>()
     forSubTags(TAG_ITEM) {
-      val text = textExtractor.extractText(parser, false)
-      resourceValue.addElement(text)
+      values += textExtractor.extractText(parser, false)
     }
-    val index: Int
+    var index = 0
     if (indexValue != null) {
       index = try {
         Integer.parseUnsignedInt(indexValue)
@@ -559,20 +560,21 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
         throw XmlSyntaxException(
           "The value of the " + namespaceResolver.prefixToUri(TOOLS_URI) + ':' + ATTR_INDEX + " attribute is not a valid number.",
           parser,
-          file.fileName
+          getDisplayName(sourceFile)
         )
       }
-      if (index >= resourceValue.elementCount) {
+      if (index >= values.size) {
         throw XmlSyntaxException(
           "The value of the " + namespaceResolver.prefixToUri(TOOLS_URI) + ':' + ATTR_INDEX + " attribute is out of bounds.",
           parser,
-          file.fileName
+          getDisplayName(sourceFile)
         )
       }
     }
     val visibility = getVisibility(ARRAY, name)
-    resourceValue.namespaceResolver = namespaceResolver
-    return BasicResourceItem(type = ARRAY, name, visibility, configuration, resourceValue)
+    val item = BasicArrayResourceItem(name, sourceFile, visibility, values, index)
+    item.namespaceResolver = namespaceResolver
+    return item
   }
 
   @Throws(
@@ -582,32 +584,26 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
   )
   private fun createAttrItem(
     name: String,
-    file: PathString,
-    configuration: RepositoryConfiguration
-  ): BasicResourceItem {
+    sourceFile: ResourceSourceFile
+  ): BasicAttrResourceItem {
     val namespaceResolver = parser.namespaceResolver
-    val resourceValue = AttrResourceValueImpl(
-      configuration.repository.namespace,
-      name,
-      configuration.repository.libraryName
-    )
-
     val attrNamespace: ResourceNamespace?
     urlParser.parseResourceUrl(name)
     if (urlParser.hasNamespacePrefix(ANDROID_NS_NAME)) {
       attrNamespace = ResourceNamespace.ANDROID
     } else {
       val prefix = urlParser.namespacePrefix
-      attrNamespace =
-        ResourceNamespace.fromNamespacePrefix(prefix, namespace, parser.namespaceResolver)
+      attrNamespace = ResourceNamespace.fromNamespacePrefix(prefix, namespace, parser.namespaceResolver)
       if (attrNamespace == null) {
         throw XmlSyntaxException(
           "Undefined prefix of attr resource name \"$name\"",
           parser,
-          getDisplayName(file)
+          getDisplayName(sourceFile)
         )
       }
     }
+    val name = urlParser.name
+    // todo add comment parser
     val formatString = parser.getAttributeValue(null, ATTR_FORMAT)
     val formats = if (formatString.isNullOrBlank()) {
       EnumSet.noneOf(AttributeFormat::class.java)
@@ -616,6 +612,7 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
     }
 
     // The average number of enum or flag values is 7 for Android framework, so start with small maps.
+    val valueMap = Maps.newHashMapWithExpectedSize<String, Int>(8)
     forSubTags(null) {
       if (parser.prefix == null) {
         val tagName = parser.name
@@ -634,18 +631,21 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
               } catch (ignored: NumberFormatException) {
               }
             }
-            resourceValue.addValue(valueName, numericValue, "")
+            valueMap[valueName] = numericValue
           }
         }
       }
     }
 
-    resourceValue.setFormats(formats)
-    resourceValue.namespaceResolver = namespaceResolver
-    val visibility = getVisibility(ATTR, name)
+    val item: BasicAttrResourceItem = if (attrNamespace == namespace) {
+      val visibility = getVisibility(ATTR, name)
+      BasicAttrResourceItem(name, sourceFile, visibility, null, null, formats, valueMap, emptyMap())
+    } else {
+      BasicForeignAttrResourceItem(attrNamespace, name, sourceFile, null, null, formats, valueMap, emptyMap())
+    }
 
-    // todo kzheng handle attrNamespace
-    return BasicResourceItem(type = ATTR, name, visibility, configuration, resourceValue)
+    item.namespaceResolver = namespaceResolver
+    return item
   }
 
   @Throws(
@@ -655,145 +655,118 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
   )
   private fun createPluralsItem(
     name: String,
-    file: PathString,
-    configuration: RepositoryConfiguration
-  ): BasicResourceItem {
-    val resourceValue = object : PluralsResourceValueImpl(namespace, name, null, null) {
-      // Allow the user to specify a specific quantity to use via tools:quantity
-      override fun getValue(): String {
-        val quantity = parser.getAttributeValue(
-          ATTR_QUANTITY,
-          TOOLS_URI
-        )
-        if (quantity != null) {
-          val value = getValue(quantity)
-          if (value != null) {
-            return value
-          }
-        }
-        return super.getValue()
-      }
-    }
+    sourceFile: ResourceSourceFile
+  ): BasicPluralsResourceItem {
     val defaultQuantity = parser.getAttributeValue(TOOLS_URI, ATTR_QUANTITY)
     val namespaceResolver = parser.namespaceResolver
+    val values = EnumMap<Arity, String>(Arity::class.java)
     forSubTags(TAG_ITEM) {
       val quantityValue = parser.getAttributeValue(null, ATTR_QUANTITY)
       if (quantityValue != null) {
         val quantity = Arity.getEnum(quantityValue)
         if (quantity != null) {
           val text = textExtractor.extractText(parser, false)
-          resourceValue.addPlural(quantityValue, text)
+          values[quantity] = text
         }
       }
     }
+    var defaultArity: Arity? = null
     if (defaultQuantity != null) {
-      val defaultArity = Arity.getEnum(defaultQuantity)
-      if (defaultArity == null || resourceValue.getValue(defaultArity.name) == null) {
+      defaultArity = Arity.getEnum(defaultQuantity)
+      if (defaultArity == null || !values.containsKey(defaultArity)) {
         throw XmlSyntaxException(
           "Invalid value of the " + namespaceResolver.prefixToUri(TOOLS_URI) + ':' + ATTR_QUANTITY + " attribute.",
           parser,
-          getDisplayName(file)
+          getDisplayName(sourceFile)
         )
       }
     }
     val visibility = getVisibility(PLURALS, name)
-    resourceValue.namespaceResolver = namespaceResolver
-    return BasicResourceItem(type = PLURALS, name, visibility, configuration, resourceValue)
+    val item = BasicPluralsResourceItem(name, sourceFile, visibility, values, defaultArity)
+    item.namespaceResolver = namespaceResolver
+    return item
   }
 
   @Throws(IOException::class, XmlPullParserException::class)
   private fun createStringItem(
     type: ResourceType,
     name: String,
-    configuration: RepositoryConfiguration,
+    sourceFile: ResourceSourceFile,
     withRowXml: Boolean
-  ): BasicResourceItem {
+  ): BasicValueResourceItem {
     val namespaceResolver = parser.namespaceResolver
     val text = if (type == ResourceType.ID) null else textExtractor.extractText(parser, withRowXml)
     val rawXml = if (type == ResourceType.ID) null else textExtractor.getRawXml()
     assert(withRowXml || rawXml == null) // Text extractor doesn't extract raw XML unless asked to do it.
     val visibility = getVisibility(type, name)
-    val resourceValue = if (rawXml == null) {
-      TextResourceValueImpl(namespace, name, null, null, null).apply {
-        value = text
-      }
+    val item = if (rawXml == null) {
+      BasicValueResourceItem(type, name, sourceFile, visibility, text)
     } else {
-      ResourceValueImpl(namespace, type, name, null, null)
+      BasicTextValueResourceItem(type, name, sourceFile, visibility, text, rawXml)
     }
-    resourceValue.namespaceResolver = namespaceResolver
-    return BasicResourceItem(type, name, visibility, configuration, resourceValue)
+    item.namespaceResolver = namespaceResolver
+    return item
   }
 
   @Throws(IOException::class, XmlPullParserException::class)
   private fun createStyleItem(
     name: String,
-    configuration: RepositoryConfiguration
-  ): BasicResourceItem {
+    sourceFile: ResourceSourceFile
+  ): BasicStyleResourceItem {
     val namespaceResolver = parser.namespaceResolver
     var parentStyle = parser.getAttributeValue(null, ATTR_PARENT)
     if (parentStyle != null && parentStyle.isNotEmpty()) {
       urlParser.parseResourceUrl(parentStyle)
       parentStyle = urlParser.qualifiedName
     }
-
-    val resourceValue = StyleResourceValueImpl(namespace, name, parentStyle, null)
-    resourceValue.namespaceResolver = namespaceResolver
-
+    val styleItems = mutableListOf<StyleItemResourceValue>()
     forSubTags(TAG_ITEM) {
       val itemNamespaceResolver = parser.namespaceResolver
       val itemName = parser.getAttributeValue(null, ATTR_NAME)
       if (itemName != null) {
         val text = textExtractor.extractText(parser, false)
-        val styleItem = StyleItemResourceValueImpl(
-          namespace,
-          itemName,
-          text,
-          configuration.repository.libraryName
-        )
+        val styleItem = StyleItemResourceValueImpl(namespace, itemName, text, sourceFile.repository.libraryName)
         styleItem.namespaceResolver = itemNamespaceResolver
-        resourceValue.addItem(styleItem)
+        styleItems += styleItem
       }
     }
-
     val visibility = getVisibility(STYLE, name)
-    return BasicResourceItem(STYLE, name, visibility, configuration, resourceValue)
+    val item = BasicStyleResourceItem(name, sourceFile, visibility, parentStyle, styleItems)
+    item.namespaceResolver = namespaceResolver
+    return item
   }
 
   @Throws(IOException::class, XmlPullParserException::class)
   private fun createStyleableItem(
     name: String,
-    file: PathString,
-    configuration: RepositoryConfiguration
-  ): BasicResourceItem {
+    sourceFile: ResourceSourceFile
+  ): BasicStyleableResourceItem {
     val namespaceResolver = parser.namespaceResolver
-    val resourceValue = StyleableResourceValueImpl(namespace, name, null, null)
+    val attrs = mutableListOf<AttrResourceValue>()
     forSubTags(TAG_ATTR) {
       val attrName = parser.getAttributeValue(null, ATTR_NAME)
       if (attrName != null) {
         try {
-          val item = createAttrItem(attrName, file, configuration)
-          val value = item.resourceValue as AttrResourceValue
-          resourceValue.addValue(value)
+          val attr = createAttrItem(attrName, sourceFile)
+          // Mimic behavior of AAPT2 and put an attr reference inside a styleable resource.
+          attrs += (if (attr.formats.isEmpty()) attr else attr.createReference())
 
-          if (item.namespace == namespace && (namespace != ResourceNamespace.RES_AUTO || value.formats.isNotEmpty())) {
-            addValueResourceItem(item)
+          // Don't create top-level attr resources in a foreign namespace, or for attr references in the res-auto namespace.
+          // The second condition is determined by the fact that the attr in the res-auto namespace may have an explicit definition
+          // outside of this resource repository.
+          if (attr.namespace == namespace && (namespace != ResourceNamespace.RES_AUTO || attr.formats.isNotEmpty())) {
+            addAttr(attr, attrCandidates)
           }
         } catch (e: XmlSyntaxException) {
-          handleParsingError(file, e)
+          LOG.severe(e.toString())
         }
       }
     }
-
     // AAPT2 treats all styleable resources as public.
     // See https://android.googlesource.com/platform/frameworks/base/+/master/tools/aapt2/ResourceParser.cpp#1539
-    resourceValue.namespaceResolver = namespaceResolver
-    return BasicResourceItem(
-      STYLEABLE,
-      name,
-      ResourceVisibility.PUBLIC,
-      configuration,
-      resourceValue
-    )
+    val item = BasicStyleableResourceItem(name, sourceFile, ResourceVisibility.PUBLIC, attrs)
+    item.namespaceResolver = namespaceResolver
+    return item
   }
 
   /**
@@ -801,29 +774,37 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
    * if they don't match the attr definitions present in [attrs].
    */
   private fun processAttrsAndStyleables() {
-    // for (attr in myAttrs.values()) {
-    //   addAttrWithAdjustedFormats(attr)
-    // }
-    // for (attr in myAttrCandidates.values()) {
-    //   val attrs: List<BasicAttrResourceItem> = myAttrs.get(attr.getName())
-    //   val i: Int = findResourceWithSameNameAndConfiguration(attr, attrs)
-    //   if (i < 0) {
-    //     addAttrWithAdjustedFormats(attr)
-    //   }
-    // }
-    //
-    // // Resolve attribute references where it can be done without loosing any data to reduce resource memory footprint.
-    // for (styleable in myStyleables.values()) {
-    //   addResourceItem(resolveAttrReferences(styleable))
-    // }
+    for (attr in attrs.values()) {
+      addAttrWithAdjustedFormats(attr)
+    }
+    for (attr in attrCandidates.values()) {
+      val attrs = attrs[attr.name]
+      val i = findResourceWithSameNameAndConfiguration(attr, attrs)
+      if (i < 0) {
+        addAttrWithAdjustedFormats(attr)
+      }
+    }
+
+    // Resolve attribute references where it can be done without loosing any data to reduce resource memory footprint.
+    for (styleable in styleables.values()) {
+      addResourceItem(resolveAttrReferences(styleable))
+    }
+  }
+
+  private fun addAttrWithAdjustedFormats(attr: BasicAttrResourceItem) {
+    var attr = attr
+    if (attr.formats.isEmpty()) {
+      attr = BasicAttrResourceItem(attr.name, attr.sourceFile, attr.visibility, attr.description, attr.groupName, DEFAULT_ATTR_FORMATS, emptyMap(), emptyMap())
+    }
+    addResourceItem(attr)
   }
 
   @Throws(IOException::class, XmlPullParserException::class)
   private fun createFileReferenceItem(
     type: ResourceType,
     name: String,
-    configuration: RepositoryConfiguration
-  ): BasicResourceItem {
+    sourceFile: ResourceSourceFile
+  ): BasicValueResourceItem {
     val namespaceResolver = parser.namespaceResolver
     var text = textExtractor.extractText(parser, false).trim()
     if (text.isNotEmpty() && !text.startsWith(PREFIX_RESOURCE_REF) && !text.startsWith(
@@ -833,9 +814,9 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
       text = text.replace('/', File.separatorChar)
     }
     val visibility = getVisibility(type, name)
-    val resourceValue = ResourceValueImpl(namespace, type, name, text, null)
-    resourceValue.namespaceResolver = namespaceResolver
-    return BasicResourceItem(type, name, visibility, configuration, resourceValue)
+    val item = BasicValueResourceItem(type, name, sourceFile, visibility, text)
+    item.namespaceResolver = namespaceResolver
+    return item
   }
 
   @Throws(XmlSyntaxException::class)
@@ -916,7 +897,11 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
 
   private fun getDisplayName(file: PathString) = file.nativePath
 
-  private fun getDisplayName(file: File) = getDisplayName(file.toPathString())
+  private fun getDisplayName(sourceFile: ResourceSourceFile): String {
+    val relativePath = sourceFile.relativePath
+    check(relativePath != null)
+    return getDisplayName(PathString(relativePath))
+  }
 
   protected fun getVisibility(
     resourceType: ResourceType,
@@ -928,24 +913,17 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
     // return if (names != null && names.contains(getKeyForVisibilityLookup(resourceName))) ResourceVisibility.PUBLIC else myDefaultVisibility
   }
 
-  private fun parseFileResourceFile(
-    file: PathString,
-    folderType: ResourceFolderType,
-    configuration: RepositoryConfiguration
-  ) {
-    val resourceType = FolderTypeRelationship.getNonIdRelatedResourceType(folderType)
-    val resourceName = SdkUtils.fileNameToResourceName(file.fileName)
-    val item = createFileResourceItem(
-      file,
-      resourceName,
-      resourceType,
-      configuration
-    )
-    addResourceItem(item, item.repository as T)
+  protected fun getResRelativePath(file: PathString): String {
+    if (file.isAbsolute) {
+      return resourceDirectoryOrFilePath.relativize(file).portablePath
+    }
+    assert(file.nameCount != 0)
+    // Note that Android Studio's version of RepositoryLoader asserts that /res is segments[0]
+    // we weaken this to check for existence
+    val index = file.segments.indexOf("res")
+    assert(index != -1)
+    return file.subpath(index + 1, file.nameCount).portablePath
   }
-
-  private fun getFolderType(file: PathString) =
-    ResourceFolderType.getFolderType(file.parentFileName)
 
   private fun interface XmlTagVisitor {
     /** Is called when the parser is positioned at a [XmlPullParser.START_TAG].  */
@@ -1159,6 +1137,94 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
     private fun isXmlFile(file: PathString) = isXmlFile(file.fileName)
 
     private fun isXmlFile(filename: String) = SdkUtils.endsWithIgnoreCase(filename, DOT_XML)
+
+    private fun addAttr(
+      attr: BasicAttrResourceItem,
+      map: ListMultimap<String, BasicAttrResourceItem>
+    ) {
+      val attrs = map[attr.name]
+      val i = findResourceWithSameNameAndConfiguration(attr, attrs)
+      if (i >= 0) {
+        // Found a matching attr definition.
+        val existing = attrs[i]
+        if (attr.formats.isNotEmpty()) {
+          if (existing.formats.isEmpty()) {
+            attrs[i] = attr // Use the new attr since it contains more information than the existing one.
+          } else if (attr.formats != existing.formats) {
+            // Both, the existing and the new attr contain formats, but they are not the same.
+            // Assign union of formats to both attr definitions.
+            if (attr.formats.containsAll(existing.formats)) {
+              existing.formats = attr.formats
+            } else if (existing.formats.containsAll(attr.formats)) {
+              attr.formats = existing.formats
+            } else {
+              val formats: Set<AttributeFormat> = EnumSet.copyOf(attr.formats).apply { addAll(existing.formats) }.toSet()
+              attr.formats = formats
+              existing.formats = formats
+            }
+          }
+        }
+        if (existing.formats.isEmpty() && attr.formats.isNotEmpty()) {
+          attrs[i] = attr // Use the new attr since it contains more information than the existing one.
+        }
+      } else {
+        attrs += attr
+      }
+    }
+
+    /**
+     * Returns a styleable with attr references replaced by attr definitions returned by
+     * the [BasicStyleableResourceItem.getCanonicalAttr] method.
+     */
+    fun resolveAttrReferences(styleable: BasicStyleableResourceItem): BasicStyleableResourceItem {
+      var styleable = styleable
+      val repository = styleable.repository
+      val attributes = styleable.allAttributes
+      var resolvedAttributes: MutableList<AttrResourceValue>? = null
+      for (i in attributes.indices) {
+        val attr = attributes[i]
+        val canonicalAttr = BasicStyleableResourceItem.getCanonicalAttr(attr, repository)
+        if (canonicalAttr !== attr) {
+          if (resolvedAttributes == null) {
+            resolvedAttributes = ArrayList(attributes.size)
+            for (j in 0 until i) {
+              resolvedAttributes += attributes[j]
+            }
+          }
+          resolvedAttributes += canonicalAttr
+        } else {
+          resolvedAttributes?.add(attr)
+        }
+      }
+      if (resolvedAttributes != null) {
+        val namespaceResolver = styleable.namespaceResolver
+        styleable = BasicStyleableResourceItem(
+          styleable.name,
+          styleable.sourceFile,
+          styleable.visibility,
+          resolvedAttributes
+        )
+        styleable.namespaceResolver = namespaceResolver
+      }
+      return styleable
+    }
+
+    /**
+     * Checks if resource with the same name, type and configuration has already been defined.
+     *
+     * @param resource the resource to check
+     * @return true if a matching resource already exists
+     */
+    private fun resourceAlreadyDefined(resource: BasicResourceItemBase): Boolean {
+      val repository = resource.repository
+      val items = repository.getResources(resource.namespace, resource.type, resource.name)
+      return findResourceWithSameNameAndConfiguration(resource, items) >= 0
+    }
+
+    private fun findResourceWithSameNameAndConfiguration(
+      resource: ResourceItem,
+      items: List<ResourceItem>
+    ): Int = items.indexOfFirst { it.configuration == resource.configuration }
 
     private fun isZipArchive(resourceDirectoryOrFile: Path): Boolean {
       val filename = resourceDirectoryOrFile.fileName.toString()
