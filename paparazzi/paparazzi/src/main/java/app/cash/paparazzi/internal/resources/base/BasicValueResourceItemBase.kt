@@ -34,7 +34,7 @@ abstract class BasicValueResourceItemBase(
   name: String,
   val sourceFile: ResourceSourceFile,
   visibility: ResourceVisibility
-) : BasicResourceItemBase(type, name, visibility) {
+) : BasicResourceItem(type, name, visibility) {
   private var namespaceResolver: Resolver =
     Resolver.EMPTY_RESOLVER
 

@@ -33,7 +33,7 @@ open class BasicFileResourceItem(
   private val repositoryConfiguration: RepositoryConfiguration,
   visibility: ResourceVisibility,
   private val relativePath: String
-) : BasicResourceItemBase(type, name, visibility) {
+) : BasicResourceItem(type, name, visibility) {
   override fun isFileBased() = true
 
   override fun getReference(): ResourceReference? = null

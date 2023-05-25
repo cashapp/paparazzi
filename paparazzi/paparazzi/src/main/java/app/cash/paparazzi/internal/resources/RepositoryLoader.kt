@@ -22,7 +22,6 @@ import app.cash.paparazzi.internal.resources.base.BasicFileResourceItem
 import app.cash.paparazzi.internal.resources.base.BasicForeignAttrResourceItem
 import app.cash.paparazzi.internal.resources.base.BasicPluralsResourceItem
 import app.cash.paparazzi.internal.resources.base.BasicResourceItem
-import app.cash.paparazzi.internal.resources.base.BasicResourceItemBase
 import app.cash.paparazzi.internal.resources.base.BasicStyleResourceItem
 import app.cash.paparazzi.internal.resources.base.BasicStyleableResourceItem
 import app.cash.paparazzi.internal.resources.base.BasicTextValueResourceItem
@@ -1215,7 +1214,7 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
      * @param resource the resource to check
      * @return true if a matching resource already exists
      */
-    private fun resourceAlreadyDefined(resource: BasicResourceItemBase): Boolean {
+    private fun resourceAlreadyDefined(resource: BasicResourceItem): Boolean {
       val repository = resource.repository
       val items = repository.getResources(resource.namespace, resource.type, resource.name)
       return findResourceWithSameNameAndConfiguration(resource, items) >= 0
