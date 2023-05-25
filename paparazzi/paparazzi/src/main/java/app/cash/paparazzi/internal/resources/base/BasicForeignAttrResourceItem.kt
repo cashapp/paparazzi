@@ -30,7 +30,7 @@ class BasicForeignAttrResourceItem(
   private val namespace: ResourceNamespace,
   name: String,
   sourceFile: ResourceSourceFile,
-  description: String,
+  description: String?,
   groupName: String?,
   formats: Set<AttributeFormat>,
   valueMap: Map<String, Int>,

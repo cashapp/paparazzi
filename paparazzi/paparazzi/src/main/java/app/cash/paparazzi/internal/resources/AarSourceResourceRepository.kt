@@ -1,6 +1,7 @@
 package app.cash.paparazzi.internal.resources
 
 import android.annotation.SuppressLint
+import app.cash.paparazzi.internal.resources.base.BasicResourceItem
 import com.android.SdkConstants.FN_ANDROID_MANIFEST_XML
 import com.android.SdkConstants.FN_PUBLIC_TXT
 import com.android.SdkConstants.FN_RESOURCE_TEXT
@@ -151,9 +152,10 @@ class AarSourceResourceRepository(
     private fun createResourcesForRTxtIds(repository: AarSourceResourceRepository) {
       if (rTxtIds.isNotEmpty()) {
         val configuration = getConfiguration(repository, ResourceItem.DEFAULT_CONFIGURATION)
+        val sourceFile = ResourceSourceFileImpl(null, configuration)
         ResourceSourceFileImpl(null, configuration)
         for (name in rTxtIds) {
-          addIdResourceItem(name, configuration)
+          addIdResourceItem(name, sourceFile)
         }
         addValueFileResources()
       }

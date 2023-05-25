@@ -99,7 +99,7 @@ class AarSourceResourceRepositoryTest {
     val repository = makeAarRepositoryFromExplodedAar("my_aar_lib")
     assertThat(repository.libraryName).isEqualTo(AAR_LIBRARY_NAME)
     for (item in repository.allResources) {
-      // assertThat(item.libraryName).isEqualTo(AAR_LIBRARY_NAME)
+      assertThat(item.libraryName).isEqualTo(AAR_LIBRARY_NAME)
     }
   }
 
@@ -168,7 +168,7 @@ class AarSourceResourceRepositoryTest {
       assertThat(attributes.size).isEqualTo(1)
       attr = attributes[0]
       assertThat(attr.name).isEqualTo("some_attr")
-      // assertThat(attr.formats).containsExactly(AttributeFormat.COLOR)
+      assertThat(attr.formats).containsExactly(AttributeFormat.COLOR)
 
       items = repository.getResources(
         namespace = ResourceNamespace.RES_AUTO,
@@ -195,16 +195,16 @@ class AarSourceResourceRepositoryTest {
       assertThat(items.size).isEqualTo(1)
       attr = items[0].resourceValue as AttrResourceValue
       assertThat(attr.name).isEqualTo("app_attr2")
-      // assertThat(attr.formats).containsExactly(
-      //   AttributeFormat.BOOLEAN,
-      //   AttributeFormat.COLOR,
-      //   AttributeFormat.DIMENSION,
-      //   AttributeFormat.FLOAT,
-      //   AttributeFormat.FRACTION,
-      //   AttributeFormat.INTEGER,
-      //   AttributeFormat.REFERENCE,
-      //   AttributeFormat.STRING
-      // )
+      assertThat(attr.formats).containsExactly(
+        AttributeFormat.BOOLEAN,
+        AttributeFormat.COLOR,
+        AttributeFormat.DIMENSION,
+        AttributeFormat.FLOAT,
+        AttributeFormat.FRACTION,
+        AttributeFormat.INTEGER,
+        AttributeFormat.REFERENCE,
+        AttributeFormat.STRING
+      )
     }
   }
 }
