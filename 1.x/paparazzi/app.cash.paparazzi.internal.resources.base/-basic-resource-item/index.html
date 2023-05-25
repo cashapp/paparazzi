@@ -317,6 +317,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#constructors" class="md-nav__link">
+    Constructors
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#functions" class="md-nav__link">
     Functions
   </a>
@@ -343,9 +350,8 @@
 
 <p>//<a href="../../../">paparazzi</a>/<a href="../">app.cash.paparazzi.internal.resources.base</a>/<a href="./">BasicResourceItem</a></p>
 <h1 id="basicresourceitem">BasicResourceItem<a class="headerlink" href="#basicresourceitem" title="Permanent link">&para;</a></h1>
-<p>interface <a href="./">BasicResourceItem</a> : ResourceItemWithVisibility, ResourceValue</p>
-<p>Ported from: <a href="https://cs.android.com/android-studio/platform/tools/base/+/47d204001bf0cb6273d8b135c7eece3a982cf0e0:resource-repository/main/java/com/android/resources/base/BasicResourceItem.java">BasicResourceItem.java</a></p>
-<p>Combination of ResourceItemWithVisibility and ResourceValue interfaces.</p>
+<p>abstract class <a href="./">BasicResourceItem</a>(type: ResourceType, name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, visibility: ResourceVisibility) : ResourceItemWithVisibility, ResourceValue</p>
+<p>Ported from: <a href="https://cs.android.com/android-studio/platform/tools/base/+/18047faf69512736b8ddb1f6a6785f58d47c893f:resource-repository/main/java/com/android/resources/base/BasicResourceItemBase.java">BasicResourceItemBase.java</a></p>
 <h4 id="inheritors">Inheritors<a class="headerlink" href="#inheritors" title="Permanent link">&para;</a></h4>
 <table>
 <thead>
@@ -355,7 +361,25 @@
 </thead>
 <tbody>
 <tr>
-<td><a href="../-basic-resource-item-base/">BasicResourceItemBase</a></td>
+<td><a href="../-basic-file-resource-item/">BasicFileResourceItem</a></td>
+</tr>
+<tr>
+<td><a href="../-basic-value-resource-item-base/">BasicValueResourceItemBase</a></td>
+</tr>
+</tbody>
+</table>
+<h2 id="constructors">Constructors<a class="headerlink" href="#constructors" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="-basic-resource-item/">BasicResourceItem</a></td>
+<td>[jvm]<br>constructor(type: ResourceType, name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, visibility: ResourceVisibility)</td>
 </tr>
 </tbody>
 </table>
@@ -369,36 +393,40 @@
 </thead>
 <tbody>
 <tr>
-<td><a href="./#-1000159622%2FFunctions%2F-2095620550">asReference</a></td>
-<td>[jvm]<br>abstract fun <a href="./#-1000159622%2FFunctions%2F-2095620550">asReference</a>(): ResourceReference</td>
+<td><a href="as-reference/">asReference</a></td>
+<td>[jvm]<br>open override fun <a href="as-reference/">asReference</a>(): ResourceReference</td>
 </tr>
 <tr>
-<td><a href="./#-1970885412%2FFunctions%2F-2095620550">getConfiguration</a></td>
-<td>[jvm]<br>abstract fun <a href="./#-1970885412%2FFunctions%2F-2095620550">getConfiguration</a>(): FolderConfiguration</td>
+<td><a href="equals/">equals</a></td>
+<td>[jvm]<br>open operator override fun <a href="equals/">equals</a>(obj: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a>?): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
 </tr>
 <tr>
-<td><a href="./#43413987%2FFunctions%2F-2095620550">getKey</a></td>
-<td>[jvm]<br>abstract fun <a href="./#43413987%2FFunctions%2F-2095620550">getKey</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
+<td><a href="get-configuration/">getConfiguration</a></td>
+<td>[jvm]<br>open override fun <a href="get-configuration/">getConfiguration</a>(): FolderConfiguration</td>
 </tr>
 <tr>
-<td><a href="./#1195774780%2FFunctions%2F-2095620550">getLibraryName</a></td>
-<td>[jvm]<br>abstract fun <a href="./#1195774780%2FFunctions%2F-2095620550">getLibraryName</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
+<td><a href="get-key/">getKey</a></td>
+<td>[jvm]<br>open override fun <a href="get-key/">getKey</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
 </tr>
 <tr>
-<td><a href="./#-1668338547%2FFunctions%2F-2095620550">getName</a></td>
-<td>[jvm]<br>abstract fun <a href="./#-1668338547%2FFunctions%2F-2095620550">getName</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
+<td><a href="get-library-name/">getLibraryName</a></td>
+<td>[jvm]<br>open override fun <a href="get-library-name/">getLibraryName</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?</td>
 </tr>
 <tr>
-<td><a href="./#1012219559%2FFunctions%2F-2095620550">getNamespace</a></td>
-<td>[jvm]<br>abstract fun <a href="./#1012219559%2FFunctions%2F-2095620550">getNamespace</a>(): ResourceNamespace</td>
+<td><a href="get-name/">getName</a></td>
+<td>[jvm]<br>open override fun <a href="get-name/">getName</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
 </tr>
 <tr>
-<td><a href="../-basic-resource-item-base/#-1012006596%2FFunctions%2F-2095620550">getNamespaceResolver</a></td>
-<td>[jvm]<br>abstract fun <a href="../-basic-resource-item-base/#-1012006596%2FFunctions%2F-2095620550">getNamespaceResolver</a>(): ResourceNamespace.Resolver</td>
+<td><a href="get-namespace/">getNamespace</a></td>
+<td>[jvm]<br>open override fun <a href="get-namespace/">getNamespace</a>(): ResourceNamespace</td>
 </tr>
 <tr>
-<td><a href="../-basic-resource-item-base/#-509585620%2FFunctions%2F-2095620550">getOriginalSource</a></td>
-<td>[jvm]<br>open fun <a href="../-basic-resource-item-base/#-509585620%2FFunctions%2F-2095620550">getOriginalSource</a>(): PathString</td>
+<td><a href="./#-1012006596%2FFunctions%2F-2095620550">getNamespaceResolver</a></td>
+<td>[jvm]<br>abstract fun <a href="./#-1012006596%2FFunctions%2F-2095620550">getNamespaceResolver</a>(): ResourceNamespace.Resolver</td>
+</tr>
+<tr>
+<td><a href="./#-509585620%2FFunctions%2F-2095620550">getOriginalSource</a></td>
+<td>[jvm]<br>open fun <a href="./#-509585620%2FFunctions%2F-2095620550">getOriginalSource</a>(): PathString</td>
 </tr>
 <tr>
 <td><a href="../-basic-value-resource-item-base/#1114844795%2FFunctions%2F-2095620550">getQualifiedNameWithType</a></td>
@@ -413,56 +441,68 @@
 <td>[jvm]<br>open fun <a href="../-basic-value-resource-item-base/#-1154767950%2FFunctions%2F-2095620550">getReference</a>(): ResourceReference</td>
 </tr>
 <tr>
-<td><a href="./#274467984%2FFunctions%2F-2095620550">getReferenceToSelf</a></td>
-<td>[jvm]<br>abstract fun <a href="./#274467984%2FFunctions%2F-2095620550">getReferenceToSelf</a>(): ResourceReference</td>
+<td><a href="get-reference-to-self/">getReferenceToSelf</a></td>
+<td>[jvm]<br>open override fun <a href="get-reference-to-self/">getReferenceToSelf</a>(): ResourceReference</td>
 </tr>
 <tr>
-<td><a href="./#1362159726%2FFunctions%2F-2095620550">getRepository</a></td>
-<td>[jvm]<br>open fun <a href="./#1362159726%2FFunctions%2F-2095620550">getRepository</a>(): SingleNamespaceResourceRepository</td>
+<td><a href="get-repository/">getRepository</a></td>
+<td>[jvm]<br>open override fun <a href="get-repository/">getRepository</a>(): <a href="../../app.cash.paparazzi.internal.resources/-loadable-resource-repository/">LoadableResourceRepository</a><br>Returns the repository this resource belongs to.</td>
 </tr>
 <tr>
-<td><a href="./#-1773885579%2FFunctions%2F-2095620550">getResourceType</a></td>
-<td>[jvm]<br>abstract fun <a href="./#-1773885579%2FFunctions%2F-2095620550">getResourceType</a>(): ResourceType</td>
+<td><a href="get-repository-configuration/">getRepositoryConfiguration</a></td>
+<td>[jvm]<br>abstract fun <a href="get-repository-configuration/">getRepositoryConfiguration</a>(): <a href="../../app.cash.paparazzi.internal.resources/-repository-configuration/">RepositoryConfiguration</a></td>
+</tr>
+<tr>
+<td><a href="get-resource-type/">getResourceType</a></td>
+<td>[jvm]<br>open override fun <a href="get-resource-type/">getResourceType</a>(): ResourceType</td>
 </tr>
 <tr>
 <td><a href="../-basic-value-resource-item-base/#-276484804%2FFunctions%2F-2095620550">getResourceUrl</a></td>
 <td>[jvm]<br>open fun <a href="../-basic-value-resource-item-base/#-276484804%2FFunctions%2F-2095620550">getResourceUrl</a>(): ResourceUrl</td>
 </tr>
 <tr>
-<td><a href="./#-1594331009%2FFunctions%2F-2095620550">getResourceValue</a></td>
-<td>[jvm]<br>abstract fun <a href="./#-1594331009%2FFunctions%2F-2095620550">getResourceValue</a>(): ResourceValue</td>
+<td><a href="get-resource-value/">getResourceValue</a></td>
+<td>[jvm]<br>open override fun <a href="get-resource-value/">getResourceValue</a>(): <a href="./">BasicResourceItem</a></td>
 </tr>
 <tr>
-<td><a href="../-basic-resource-item-base/#-1459532227%2FFunctions%2F-2095620550">getSource</a></td>
-<td>[jvm]<br>abstract fun <a href="../-basic-resource-item-base/#-1459532227%2FFunctions%2F-2095620550">getSource</a>(): PathString</td>
+<td><a href="./#-1459532227%2FFunctions%2F-2095620550">getSource</a></td>
+<td>[jvm]<br>abstract fun <a href="./#-1459532227%2FFunctions%2F-2095620550">getSource</a>(): PathString</td>
 </tr>
 <tr>
-<td><a href="./#-738563394%2FFunctions%2F-2095620550">getType</a></td>
-<td>[jvm]<br>abstract fun <a href="./#-738563394%2FFunctions%2F-2095620550">getType</a>(): ResourceType</td>
+<td><a href="get-type/">getType</a></td>
+<td>[jvm]<br>open override fun <a href="get-type/">getType</a>(): ResourceType</td>
 </tr>
 <tr>
-<td><a href="../-basic-resource-item-base/#-396208052%2FFunctions%2F-2095620550">getValue</a></td>
-<td>[jvm]<br>abstract fun <a href="../-basic-resource-item-base/#-396208052%2FFunctions%2F-2095620550">getValue</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
+<td><a href="./#-396208052%2FFunctions%2F-2095620550">getValue</a></td>
+<td>[jvm]<br>abstract fun <a href="./#-396208052%2FFunctions%2F-2095620550">getValue</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
 </tr>
 <tr>
-<td><a href="./#-1221702002%2FFunctions%2F-2095620550">getVisibility</a></td>
-<td>[jvm]<br>abstract fun <a href="./#-1221702002%2FFunctions%2F-2095620550">getVisibility</a>(): ResourceVisibility</td>
+<td><a href="get-visibility/">getVisibility</a></td>
+<td>[jvm]<br>open override fun <a href="get-visibility/">getVisibility</a>(): ResourceVisibility</td>
 </tr>
 <tr>
-<td><a href="../-basic-resource-item-base/#161466113%2FFunctions%2F-2095620550">isFileBased</a></td>
-<td>[jvm]<br>abstract fun <a href="../-basic-resource-item-base/#161466113%2FFunctions%2F-2095620550">isFileBased</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+<td><a href="hash-code/">hashCode</a></td>
+<td>[jvm]<br>open override fun <a href="hash-code/">hashCode</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></td>
 </tr>
 <tr>
-<td><a href="./#564868639%2FFunctions%2F-2095620550">isFramework</a></td>
-<td>[jvm]<br>abstract fun <a href="./#564868639%2FFunctions%2F-2095620550">isFramework</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+<td><a href="./#161466113%2FFunctions%2F-2095620550">isFileBased</a></td>
+<td>[jvm]<br>abstract fun <a href="./#161466113%2FFunctions%2F-2095620550">isFileBased</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
 </tr>
 <tr>
-<td><a href="./#-1020348321%2FFunctions%2F-2095620550">isUserDefined</a></td>
-<td>[jvm]<br>abstract fun <a href="./#-1020348321%2FFunctions%2F-2095620550">isUserDefined</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+<td><a href="is-framework/">isFramework</a></td>
+<td>[jvm]<br>open override fun <a href="is-framework/">isFramework</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
 </tr>
 <tr>
-<td><a href="./#-625264724%2FFunctions%2F-2095620550">setValue</a></td>
-<td>[jvm]<br>abstract fun <a href="./#-625264724%2FFunctions%2F-2095620550">setValue</a>(value: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>)</td>
+<td><a href="is-user-defined/">isUserDefined</a></td>
+<td>[jvm]<br>open override fun <a href="is-user-defined/">isUserDefined</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="set-value/">setValue</a></td>
+<td>[jvm]<br>open override fun <a href="set-value/">setValue</a>(value: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-nothing/index.html">Nothing</a></td>
+</tr>
+<tr>
+<td><a href="to-string/">toString</a></td>
+<td>[jvm]<br>open override fun <a href="to-string/">toString</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
 </tr>
 </tbody>
 </table>
