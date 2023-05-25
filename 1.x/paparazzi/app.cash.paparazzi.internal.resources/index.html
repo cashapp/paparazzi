@@ -354,10 +354,6 @@
 <td>[jvm]<br>abstract class <a href="-abstract-aar-resource-repository/">AbstractAarResourceRepository</a> : AbstractResourceRepository, <a href="-loadable-resource-repository/">LoadableResourceRepository</a><br>Ported from: <a href="https://cs.android.com/android-studio/platform/tools/base/+/47d204001bf0cb6273d8b135c7eece3a982cf0e0:resource-repository/main/java/com/android/resources/aar/AbstractAarResourceRepository.java">AbstractAarResourceRepository.java</a></td>
 </tr>
 <tr>
-<td><a href="-basic-resource-item/">BasicResourceItem</a></td>
-<td>[jvm]<br>class <a href="-basic-resource-item/">BasicResourceItem</a>(type: ResourceType, name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, visibility: ResourceVisibility, repositoryConfiguration: <a href="-repository-configuration/">RepositoryConfiguration</a>, resourceValue: ResourceValue) : ResourceItemWithVisibility, ResourceValue</td>
-</tr>
-<tr>
 <td><a href="-loadable-resource-repository/">LoadableResourceRepository</a></td>
 <td>[jvm]<br>interface <a href="-loadable-resource-repository/">LoadableResourceRepository</a> : SingleNamespaceResourceRepository<br>Repository of resources loaded from a file or a directory on disk.</td>
 </tr>
@@ -371,7 +367,7 @@
 </tr>
 <tr>
 <td><a href="-repository-configuration/">RepositoryConfiguration</a></td>
-<td>[jvm]<br>class <a href="-repository-configuration/">RepositoryConfiguration</a>(repository: <a href="-loadable-resource-repository/">LoadableResourceRepository</a>, val folderConfiguration: FolderConfiguration)<br>A (<a href="-loadable-resource-repository/">LoadableResourceRepository</a>, FolderConfiguration) pair. Instances of <a href="-basic-resource-item/">BasicResourceItem</a> contain a reference to an <a href="-repository-configuration/">RepositoryConfiguration</a> instead of two separate references to <a href="-loadable-resource-repository/">LoadableResourceRepository</a> and FolderConfiguration. This indirection saves memory because the number of <a href="-repository-configuration/">RepositoryConfiguration</a> instances is a tiny fraction of the number of <a href="-basic-resource-item/">BasicResourceItem</a> instances.</td>
+<td>[jvm]<br>class <a href="-repository-configuration/">RepositoryConfiguration</a>(repository: <a href="-loadable-resource-repository/">LoadableResourceRepository</a>, val folderConfiguration: FolderConfiguration)<br>A (<a href="-loadable-resource-repository/">LoadableResourceRepository</a>, FolderConfiguration) pair. Instances of BasicResourceItem contain a reference to an <a href="-repository-configuration/">RepositoryConfiguration</a> instead of two separate references to <a href="-loadable-resource-repository/">LoadableResourceRepository</a> and FolderConfiguration. This indirection saves memory because the number of <a href="-repository-configuration/">RepositoryConfiguration</a> instances is a tiny fraction of the number of BasicResourceItem instances.</td>
 </tr>
 <tr>
 <td><a href="-repository-loader/">RepositoryLoader</a></td>

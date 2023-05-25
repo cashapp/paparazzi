@@ -12,23 +12,23 @@
         <meta name="author" content="Square, Inc.">
       
       
-        <link rel="canonical" href="https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources/-basic-resource-item/get-configuration/">
+        <link rel="canonical" href="https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources/-repository-loader/-companion/resolve-attr-references/">
       
       
       
-      <link rel="icon" href="../../../../../images/icon-square.png">
+      <link rel="icon" href="../../../../../../images/icon-square.png">
       <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.14">
     
     
       
-        <title>getConfiguration - Paparazzi - Paparazzi</title>
+        <title>resolveAttrReferences - Paparazzi - Paparazzi</title>
       
     
     
-      <link rel="stylesheet" href="../../../../../assets/stylesheets/main.85bb2934.min.css">
+      <link rel="stylesheet" href="../../../../../../assets/stylesheets/main.85bb2934.min.css">
       
         
-        <link rel="stylesheet" href="../../../../../assets/stylesheets/palette.a6bdf11c.min.css">
+        <link rel="stylesheet" href="../../../../../../assets/stylesheets/palette.a6bdf11c.min.css">
       
       
 
@@ -44,9 +44,9 @@
       
     
     
-      <link rel="stylesheet" href="../../../../../css/app.css">
+      <link rel="stylesheet" href="../../../../../../css/app.css">
     
-    <script>__md_scope=new URL("../../../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../../../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -71,7 +71,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#getconfiguration" class="md-skip">
+        <a href="#resolveattrreferences" class="md-skip">
           Skip to content
         </a>
       
@@ -87,9 +87,9 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../../../../.." title="Paparazzi" class="md-header__button md-logo" aria-label="Paparazzi" data-md-component="logo">
+    <a href="../../../../../.." title="Paparazzi" class="md-header__button md-logo" aria-label="Paparazzi" data-md-component="logo">
       
-  <img src="../../../../../images/icon-square.png" alt="logo">
+  <img src="../../../../../../images/icon-square.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -105,7 +105,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              getConfiguration - Paparazzi
+              resolveAttrReferences - Paparazzi
             
           </span>
         </div>
@@ -186,9 +186,9 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../../../.." title="Paparazzi" class="md-nav__button md-logo" aria-label="Paparazzi" data-md-component="logo">
+    <a href="../../../../../.." title="Paparazzi" class="md-nav__button md-logo" aria-label="Paparazzi" data-md-component="logo">
       
-  <img src="../../../../../images/icon-square.png" alt="logo">
+  <img src="../../../../../../images/icon-square.png" alt="logo">
 
     </a>
     Paparazzi
@@ -216,7 +216,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../.." class="md-nav__link">
+      <a href="../../../../../.." class="md-nav__link">
         Overview
       </a>
     </li>
@@ -231,7 +231,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../app.cash.paparazzi/" class="md-nav__link">
+      <a href="../../../../app.cash.paparazzi/" class="md-nav__link">
         1.x API
       </a>
     </li>
@@ -246,7 +246,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../changelog/" class="md-nav__link">
+      <a href="../../../../../../changelog/" class="md-nav__link">
         Change Log
       </a>
     </li>
@@ -261,7 +261,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../code_of_conduct/" class="md-nav__link">
+      <a href="../../../../../../code_of_conduct/" class="md-nav__link">
         Code of Conduct
       </a>
     </li>
@@ -319,10 +319,11 @@
   
 
 
-<p>//<a href="../../../../">paparazzi</a>/<a href="../../">app.cash.paparazzi.internal.resources</a>/<a href="../">BasicResourceItem</a>/<a href="./">getConfiguration</a></p>
-<h1 id="getconfiguration">getConfiguration<a class="headerlink" href="#getconfiguration" title="Permanent link">&para;</a></h1>
+<p>//<a href="../../../../../">paparazzi</a>/<a href="../../../">app.cash.paparazzi.internal.resources</a>/<a href="../../">RepositoryLoader</a>/<a href="../">Companion</a>/<a href="./">resolveAttrReferences</a></p>
+<h1 id="resolveattrreferences">resolveAttrReferences<a class="headerlink" href="#resolveattrreferences" title="Permanent link">&para;</a></h1>
 <p>[jvm]\
-open override fun <a href="./">getConfiguration</a>(): FolderConfiguration</p>
+fun <a href="./">resolveAttrReferences</a>(styleable: <a href="../../../../app.cash.paparazzi.internal.resources.base/-basic-styleable-resource-item/">BasicStyleableResourceItem</a>): <a href="../../../../app.cash.paparazzi.internal.resources.base/-basic-styleable-resource-item/">BasicStyleableResourceItem</a></p>
+<p>Returns a styleable with attr references replaced by attr definitions returned by the <a href="../../../../app.cash.paparazzi.internal.resources.base/-basic-styleable-resource-item/-companion/get-canonical-attr/">BasicStyleableResourceItem.getCanonicalAttr</a> method.</p>
 
 
 
@@ -364,10 +365,10 @@ open override fun <a href="./">getConfiguration</a>(): FolderConfiguration</p>
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "../../../../..", "features": [], "search": "../../../../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "../../../../../..", "features": [], "search": "../../../../../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../../../../../assets/javascripts/bundle.b4d07000.min.js"></script>
+      <script src="../../../../../../assets/javascripts/bundle.b4d07000.min.js"></script>
       
     
   </body>

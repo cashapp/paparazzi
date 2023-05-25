@@ -345,7 +345,7 @@
 <h1 id="repositoryconfiguration">RepositoryConfiguration<a class="headerlink" href="#repositoryconfiguration" title="Permanent link">&para;</a></h1>
 <p>[jvm]\
 class <a href="./">RepositoryConfiguration</a>(repository: <a href="../-loadable-resource-repository/">LoadableResourceRepository</a>, val folderConfiguration: FolderConfiguration)</p>
-<p>A (<a href="../-loadable-resource-repository/">LoadableResourceRepository</a>, FolderConfiguration) pair. Instances of <a href="../-basic-resource-item/">BasicResourceItem</a> contain a reference to an <a href="./">RepositoryConfiguration</a> instead of two separate references to <a href="../-loadable-resource-repository/">LoadableResourceRepository</a> and FolderConfiguration. This indirection saves memory because the number of <a href="./">RepositoryConfiguration</a> instances is a tiny fraction of the number of <a href="../-basic-resource-item/">BasicResourceItem</a> instances.</p>
+<p>A (<a href="../-loadable-resource-repository/">LoadableResourceRepository</a>, FolderConfiguration) pair. Instances of BasicResourceItem contain a reference to an <a href="./">RepositoryConfiguration</a> instead of two separate references to <a href="../-loadable-resource-repository/">LoadableResourceRepository</a> and FolderConfiguration. This indirection saves memory because the number of <a href="./">RepositoryConfiguration</a> instances is a tiny fraction of the number of BasicResourceItem instances.</p>
 <h2 id="constructors">Constructors<a class="headerlink" href="#constructors" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
