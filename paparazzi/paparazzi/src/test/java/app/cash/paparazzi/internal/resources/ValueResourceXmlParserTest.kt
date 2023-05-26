@@ -3,7 +3,6 @@ package app.cash.paparazzi.internal.resources
 import com.android.ide.common.rendering.api.ResourceNamespace
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
-import org.xmlpull.v1.XmlPullParser
 import java.io.StringReader
 
 class ValueResourceXmlParserTest {
@@ -11,15 +10,16 @@ class ValueResourceXmlParserTest {
   fun test() {
     StringReader(SIMPLE_LAYOUT).use {
       val parser = ValueResourceXmlParser().apply {
-        setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true)
         setInput(it)
       }
+
+      parser.nextToken()
 
       parser.assertNamespaceResolverCheckFails()
       assertThat(parser.namespaceResolverCache).isEmpty()
       assertThat(parser.resolverStack).isEmpty()
 
-      parser.next()
+      parser.nextToken()
 
       var namespaceResolver = parser.namespaceResolver
       assertThat(namespaceResolver).isNotEqualTo(ResourceNamespace.Resolver.EMPTY_RESOLVER)
@@ -27,13 +27,13 @@ class ValueResourceXmlParserTest {
       assertThat(parser.namespaceResolverCache).hasSize(1)
       assertThat(parser.resolverStack).hasSize(1)
 
-      parser.next()
+      parser.nextToken()
 
       parser.assertNamespaceResolverCheckFails()
       assertThat(parser.namespaceResolverCache).hasSize(1)
       assertThat(parser.resolverStack).hasSize(1)
 
-      parser.next()
+      parser.nextToken()
 
       namespaceResolver = parser.namespaceResolver
       assertThat(namespaceResolver).isNotEqualTo(ResourceNamespace.Resolver.EMPTY_RESOLVER)
@@ -41,25 +41,25 @@ class ValueResourceXmlParserTest {
       assertThat(parser.namespaceResolverCache).hasSize(2)
       assertThat(parser.resolverStack).hasSize(2)
 
-      parser.next()
+      parser.nextToken()
 
       parser.assertNamespaceResolverCheckFails()
       assertThat(parser.namespaceResolverCache).hasSize(2)
       assertThat(parser.resolverStack).hasSize(1)
 
-      parser.next()
+      parser.nextToken()
 
       parser.assertNamespaceResolverCheckFails()
       assertThat(parser.namespaceResolverCache).hasSize(2)
       assertThat(parser.resolverStack).hasSize(1)
 
-      parser.next()
+      parser.nextToken()
 
       parser.assertNamespaceResolverCheckFails()
       assertThat(parser.namespaceResolverCache).hasSize(2)
       assertThat(parser.resolverStack).hasSize(0)
 
-      parser.next()
+      parser.nextToken()
 
       parser.assertNamespaceResolverCheckFails()
       assertThat(parser.namespaceResolverCache).hasSize(2)

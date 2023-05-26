@@ -16,7 +16,6 @@
 package app.cash.paparazzi.internal.resources
 
 import com.android.ide.common.rendering.api.ResourceNamespace
-import org.kxml2.io.KXmlParser
 import org.xmlpull.v1.XmlPullParserException
 import java.io.IOException
 import java.io.InputStream
@@ -29,7 +28,7 @@ import java.util.function.Function
  * XML pull parser for value resource files. Provides access to the resource namespace resolver
  * for the current tag.
  */
-internal class ValueResourceXmlParser : KXmlParser() {
+internal class ValueResourceXmlParser : CommentTrackingXmlPullParser() {
   internal val namespaceResolverCache = mutableMapOf<NamespaceResolver, NamespaceResolver>()
   internal val resolverStack = ArrayDeque<NamespaceResolver>(4)
 

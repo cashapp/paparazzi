@@ -603,7 +603,8 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
       }
     }
     val name = urlParser.name
-    // todo add comment parser
+    val description = parser.lastComment
+    val groupName = parser.attrGroupComment
     val formatString = parser.getAttributeValue(null, ATTR_FORMAT)
     val formats = if (formatString.isNullOrBlank()) {
       EnumSet.noneOf(AttributeFormat::class.java)
@@ -613,6 +614,7 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
 
     // The average number of enum or flag values is 7 for Android framework, so start with small maps.
     val valueMap = Maps.newHashMapWithExpectedSize<String, Int>(8)
+    val descriptionMap = Maps.newHashMapWithExpectedSize<String, String>(8)
     forSubTags(null) {
       if (parser.prefix == null) {
         val tagName = parser.name
@@ -622,6 +624,10 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
           formats += format
           val valueName = parser.getAttributeValue(null, ATTR_NAME)
           if (valueName != null) {
+            val valueDescription = parser.lastComment
+            if (valueDescription != null) {
+              descriptionMap[valueName] = valueDescription
+            }
             val value = parser.getAttributeValue(null, ATTR_VALUE)
             var numericValue: Int? = null
             if (value != null) {
@@ -639,9 +645,9 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
 
     val item: BasicAttrResourceItem = if (attrNamespace == namespace) {
       val visibility = getVisibility(ATTR, name)
-      BasicAttrResourceItem(name, sourceFile, visibility, null, null, formats, valueMap, emptyMap())
+      BasicAttrResourceItem(name, sourceFile, visibility, description, groupName, formats, valueMap, descriptionMap)
     } else {
-      BasicForeignAttrResourceItem(attrNamespace, name, sourceFile, null, null, formats, valueMap, emptyMap())
+      BasicForeignAttrResourceItem(attrNamespace, name, sourceFile, description, groupName, formats, valueMap, descriptionMap)
     }
 
     item.namespaceResolver = namespaceResolver
@@ -864,7 +870,7 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
       if (event == XmlPullParser.START_TAG && (tagName == null || tagName == parser.name && parser.prefix == null)) {
         subtagVisitor.visitTag()
       }
-    } while (event != XmlPullParser.END_DOCUMENT && (event != XmlPullParser.END_TAG || parser.getDepth() > elementDepth))
+    } while (event != XmlPullParser.END_DOCUMENT && (event != XmlPullParser.END_TAG || parser.depth > elementDepth))
   }
 
   /**
