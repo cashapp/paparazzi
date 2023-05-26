@@ -1,6 +1,7 @@
 package app.cash.paparazzi.plugin.test
 
 import android.content.Context
+import android.view.View.GONE
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -15,6 +16,14 @@ class MixedView(context: Context) : LinearLayout(context) {
       TextView(context).apply {
         id = 1
         text = "Legacy Text View"
+      }
+    )
+
+    addView(
+      TextView(context).apply {
+        id = 1
+        text = "Hidden Legacy Text View"
+        visibility = GONE
       }
     )
 
