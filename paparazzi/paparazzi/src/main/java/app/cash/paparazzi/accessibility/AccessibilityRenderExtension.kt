@@ -17,6 +17,7 @@ package app.cash.paparazzi.accessibility
 
 import android.graphics.Rect
 import android.view.View
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
@@ -63,7 +64,7 @@ class AccessibilityRenderExtension : RenderExtension {
   private fun View.processAccessibleChildren(
     processElement: (AccessibilityElement) -> Unit
   ) {
-    if (isImportantForAccessibility && !iterableTextForAccessibility.isNullOrBlank()) {
+    if (isImportantForAccessibility && !iterableTextForAccessibility.isNullOrBlank() && visibility == VISIBLE) {
       val bounds = Rect().also(::getBoundsOnScreen)
 
       processElement(
