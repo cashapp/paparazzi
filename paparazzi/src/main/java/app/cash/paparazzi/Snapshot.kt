@@ -53,7 +53,7 @@ internal fun Snapshot.goldenFile(goldenImagesDirectory: File, frame: Int? = null
   return if (frame == null) {
     File(goldenImagesDirectory, toFileName("_", "png"))
   } else {
-    val frameSnapshot = copy(name = "$name $frame")
-    File(goldenImagesDirectory, frameSnapshot.toFileName("_", "png"))
+    val name = if (name == null) "$frame" else "$name $frame"
+    File(goldenImagesDirectory, copy(name = name).toFileName("_", "png"))
   }
 }

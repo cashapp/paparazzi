@@ -52,7 +52,7 @@ class SnapshotKtTest {
     ).goldenFile(File("/a/path"), 1)
 
     assertThat(path)
-      .isEqualTo(File("/a/path/app.cash.paparazzi_CelebrityTest_testSettings_null_1.png"))
+      .isEqualTo(File("/a/path/app.cash.paparazzi_CelebrityTest_testSettings_1.png"))
   }
 }
 
