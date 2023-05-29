@@ -1,4 +1,11 @@
+import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
+import org.jetbrains.kotlin.gradle.plugin.KotlinCommonPluginWrapper
+
 apply plugin: 'com.github.ben-manes.versions'
+
+project.gradle.settingsEvaluated { settings ->
+  settings.apply("plugin" to "org.gradle.toolchains.foojay-resolver-convention")
+}
 
 buildscript {
   repositories {
@@ -51,6 +58,14 @@ subprojects {
     }
   }
 
+  plugins.withType(KotlinCommonPluginWrapper).configureEach {
+    def kotlinExtension = project.extensions.getByType(KotlinProjectExtension)
+    kotlinExtension.jvmToolchain {
+      it.languageVersion.set(JavaLanguageVersion.of(libs.versions.javaTarget.get()))
+      it.vendor.set(JvmVendorSpec.AZUL)
+    }
+  }
+
   plugins.withId('com.vanniktech.maven.publish') {
     publishing {
       repositories {
@@ -97,6 +112,30 @@ subprojects {
         'trim_trailing_whitespace': 'true',
         'kotlin_imports_layout': 'ascii'
       ])
+    }
+  }
+
+  // Avoid the native projects in 'libs'
+  plugins.withId('org.jetbrains.kotlin.jvm') {
+    // Create a test task for each supported JDK.
+    [17, 18].each { majorVersion ->
+      def jdkTest = tasks.register("testJdk$majorVersion", Test) {
+        javaLauncher = javaToolchains.launcherFor {
+          languageVersion = JavaLanguageVersion.of(majorVersion)
+          vendor = JvmVendorSpec.AZUL
+        }
+
+        description = "Runs the test suite on JDK $majorVersion"
+        group = LifecycleBasePlugin.VERIFICATION_GROUP
+
+        // Copy inputs from normal Test task.
+        def testTask = tasks.getByName("test")
+        classpath = testTask.classpath
+        testClassesDirs = testTask.testClassesDirs
+      }
+      tasks.named("check").configure {
+        dependsOn(jdkTest)
+      }
     }
   }
 }
