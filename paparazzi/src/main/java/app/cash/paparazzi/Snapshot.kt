@@ -16,6 +16,7 @@
 package app.cash.paparazzi
 
 import dev.drewhamilton.poko.Poko
+import java.io.File
 import java.util.Date
 import java.util.Locale
 
@@ -46,4 +47,13 @@ internal fun Snapshot.toFileName(
     ""
   }
   return "${testName.packageName}${delimiter}${testName.className}${delimiter}${testName.methodName}$formattedLabel.$extension"
+}
+
+internal fun Snapshot.goldenFile(goldenImagesDirectory: File, frame: Int? = null): File {
+  return if (frame == null) {
+    File(goldenImagesDirectory, toFileName("_", "png"))
+  } else {
+    val frameSnapshot = copy(name = "$name $frame")
+    File(goldenImagesDirectory, frameSnapshot.toFileName("_", "png"))
+  }
 }
