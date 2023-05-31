@@ -387,6 +387,14 @@ class <a href="./">ResourceFolderRepository</a>(resourceDir: <a href="https://do
 <td>[jvm]<br>open override fun <a href="contains-user-defined-resources/">containsUserDefinedResources</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
 </tr>
 <tr>
+<td><a href="../-loadable-resource-repository/deserialize-file-resource-item/">deserializeFileResourceItem</a></td>
+<td>[jvm]<br>open fun <a href="../-loadable-resource-repository/deserialize-file-resource-item/">deserializeFileResourceItem</a>(stream: Base128InputStream, resourceType: ResourceType, name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, visibility: ResourceVisibility, configurations: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="../-repository-configuration/">RepositoryConfiguration</a>&gt;): <a href="../../app.cash.paparazzi.internal.resources.base/-basic-file-resource-item/">BasicFileResourceItem</a><br>Creates a <a href="../../app.cash.paparazzi.internal.resources.base/-basic-file-resource-item/">BasicFileResourceItem</a> by reading its contents from the given stream.</td>
+</tr>
+<tr>
+<td><a href="../-loadable-resource-repository/deserialize-resource-source-file/">deserializeResourceSourceFile</a></td>
+<td>[jvm]<br>open fun <a href="../-loadable-resource-repository/deserialize-resource-source-file/">deserializeResourceSourceFile</a>(stream: Base128InputStream, configurations: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="../-repository-configuration/">RepositoryConfiguration</a>&gt;): <a href="../-resource-source-file/">ResourceSourceFile</a><br>Creates a <a href="../-resource-source-file/">ResourceSourceFile</a> by reading its contents from the given stream.</td>
+</tr>
+<tr>
 <td><a href="./#1361689245%2FFunctions%2F-2095620550">getAllResources</a></td>
 <td>[jvm]<br>open fun <a href="./#1361689245%2FFunctions%2F-2095620550">getAllResources</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a>&lt;ResourceItem&gt;</td>
 </tr>
