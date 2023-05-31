@@ -1,5 +1,6 @@
 package app.cash.paparazzi.internal.resources
 
+import app.cash.paparazzi.internal.MultiResourceRepository
 import com.android.ide.common.rendering.api.ResourceNamespace
 import com.android.ide.common.resources.AbstractResourceRepository
 import com.android.ide.common.resources.ResourceItem
@@ -32,4 +33,13 @@ abstract class LocalResourceRepository protected constructor(
     namespace: ResourceNamespace,
     type: ResourceType
   ): Collection<ResourceItem> = throw UnsupportedOperationException("Not implemented yet")
+
+  /**
+   * Package accessible version of [getMap].
+   * Do not call outside of [MultiResourceRepository].
+   */
+  open fun getMapPackageAccessible(
+    namespace: ResourceNamespace,
+    type: ResourceType
+  ): ListMultimap<String, ResourceItem>? = getMap(namespace, type)
 }
