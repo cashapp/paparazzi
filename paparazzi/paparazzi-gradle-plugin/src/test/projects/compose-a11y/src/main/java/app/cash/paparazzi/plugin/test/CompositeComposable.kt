@@ -50,9 +50,16 @@ fun CompositeComposable() {
         imageVector = Icons.Filled.Add,
         contentDescription = null // decorative
       )
-      Column {
+      Column(modifier = Modifier.semantics(mergeDescendants = true) {}) {
         Text("Text")
-        Text("more text")
+        Text(
+          text = "more text",
+          modifier = Modifier.semantics { contentDescription = "custom description" }
+        )
+        Column(modifier = Modifier.semantics(mergeDescendants = true) {}) {
+          Text("Nested text")
+          Text(text = "more text", modifier = Modifier.semantics { contentDescription = "custom description" })
+        }
       }
     }
 

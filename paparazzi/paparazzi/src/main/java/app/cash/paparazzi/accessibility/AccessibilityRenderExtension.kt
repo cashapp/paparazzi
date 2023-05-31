@@ -27,6 +27,7 @@ import androidx.compose.ui.platform.ViewRootForTest
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsNode
 import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getAllSemanticsNodes
 import androidx.compose.ui.semantics.getOrNull
 import app.cash.paparazzi.RenderExtension
 import com.android.internal.view.OneShotPreDrawListener
@@ -61,6 +62,8 @@ class AccessibilityRenderExtension : RenderExtension {
     }
   }
 
+  private var unmergedNodes: List<SemanticsNode>? = null
+
   private fun View.processAccessibleChildren(
     processElement: (AccessibilityElement) -> Unit
   ) {
@@ -79,6 +82,7 @@ class AccessibilityRenderExtension : RenderExtension {
     if (this is AbstractComposeView) {
       // ComposeView creates a child view `AndroidComposeView` for view root for test.
       val viewRoot = getChildAt(0) as? ViewRootForTest
+      unmergedNodes = viewRoot?.semanticsOwner?.getAllSemanticsNodes(false)
       viewRoot?.semanticsOwner?.rootSemanticsNode?.processAccessibleChildren(processElement)
     }
 
@@ -92,16 +96,23 @@ class AccessibilityRenderExtension : RenderExtension {
   private fun SemanticsNode.processAccessibleChildren(
     processElement: (AccessibilityElement) -> Unit
   ) {
-    // TODO: Add input from [AccessibilityRenderExtension] to determine what generates the accessibility text output.
-    val accessibilityText = (
-      config.getOrNull(SemanticsProperties.ContentDescription)?.joinToString(", ")
-        ?: config.getOrNull(SemanticsProperties.Text)?.joinToString(", ")
-        ?: config.getOrNull(SemanticsProperties.StateDescription)
-        ?: config.getOrNull(SemanticsActions.OnClick)?.label
-        ?: config.getOrNull(SemanticsProperties.Role)?.toString()
-      ).let {
-      // Escape newline characters to simplify accessibility text.
-      it?.replaceLineBreaks()
+    var accessibilityText: String? = null
+    if (config.isMergingSemanticsOfDescendants) {
+      val unmergedNode = unmergedNodes?.filter { it.id == id }
+      unmergedNode?.first()?.let { node ->
+        accessibilityText = if (node.children.isEmpty()) {
+          accessibilityText()
+        } else {
+          // Ignore nodes that merge descendants as they will have their own merged node
+          node.children.filter {
+            !it.config.isMergingSemanticsOfDescendants
+          }.mapNotNull { child ->
+            child.accessibilityText()
+          }.joinToString(", ").ifEmpty { null }
+        }
+      }
+    } else {
+      accessibilityText = accessibilityText()
     }
 
     if (accessibilityText != null) {
@@ -111,9 +122,9 @@ class AccessibilityRenderExtension : RenderExtension {
       processElement(
         AccessibilityElement(
           // SemanticsNode.id is backed by AtomicInteger and is not guaranteed consistent across runs.
-          id = accessibilityText,
+          id = accessibilityText!!,
           displayBounds = displayBounds,
-          contentDescription = accessibilityText
+          contentDescription = accessibilityText!!
         )
       )
     }
@@ -123,6 +134,18 @@ class AccessibilityRenderExtension : RenderExtension {
     }
   }
 }
+
+private fun SemanticsNode.accessibilityText() =
+  (
+    config.getOrNull(SemanticsProperties.ContentDescription)?.joinToString(", ")
+      ?: config.getOrNull(SemanticsProperties.Text)?.joinToString(", ")
+      ?: config.getOrNull(SemanticsProperties.StateDescription)
+      ?: config.getOrNull(SemanticsActions.OnClick)?.label
+      ?: config.getOrNull(SemanticsProperties.Role)?.toString()
+    ).let {
+    // Escape newline characters to simplify accessibility text.
+    it?.replaceLineBreaks()
+  }
 
 private fun String.replaceLineBreaks() =
   replace("\n", "\\n")

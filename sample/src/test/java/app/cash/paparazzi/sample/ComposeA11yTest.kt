@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Paparazzi
@@ -54,9 +55,19 @@ class ComposeA11yTest {
             imageVector = Icons.Filled.Add,
             contentDescription = null // decorative
           )
-          Column {
+          Column(modifier = Modifier.semantics(mergeDescendants = true) {}) {
             Text("Text")
-            Text("more text")
+            Text(
+              text = "more text",
+              modifier = Modifier.semantics { contentDescription = "custom description" }
+            )
+            Column(modifier = Modifier.semantics(mergeDescendants = true) {}) {
+              Text("Nested text")
+              Text(
+                text = "more text",
+                modifier = Modifier.semantics { contentDescription = "custom description" }
+              )
+            }
           }
         }
       }
