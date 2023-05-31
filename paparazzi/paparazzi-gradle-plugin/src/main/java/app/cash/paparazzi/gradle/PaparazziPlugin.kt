@@ -158,7 +158,7 @@ class PaparazziPlugin : Plugin<Project> {
       recordVariants.configure { it.dependsOn(recordTaskProvider) }
       val verifyTaskProvider = project.tasks.register("verifyPaparazzi$variantSlug", PaparazziTask::class.java) {
         it.group = VERIFICATION_GROUP
-        it.description = "Run screenshot tests for variant $variantSlug"
+        it.description = "Run screenshot tests for variant '${variant.name}'"
       }
       verifyVariants.configure { it.dependsOn(verifyTaskProvider) }
 
