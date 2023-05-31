@@ -1,8 +1,31 @@
-Change Log
-==========
+# Change Log
 
-## Version 1.2.0
-_2023-01-18_
+## [Unreleased]
+
+As of this release, consumers must build on Java 17+ environments.
+
+### New
+* Migrate Paparazzi to layoutlib Flamingo 2022.2.1
+* Add accessibility support for Composables
+* Add layout accessibility check support
+* Compose 1.4.7
+* Kotlin 1.8.21
+* [Gradle Plugin] Gradle 8.1.1
+* [Gradle Plugin] Android Gradle Plugin 8.0.2
+
+### Fixed
+* Configure android.os.Build values via reflection
+* Various bug fixes with AccessibilityRenderExtension
+* Make sure changes to system properties actually affect test tasks
+* Fix caching bug with preparePaparazziResources task
+* Use Dispatchers.Main for delay functionality
+* Recomposition does not happen unless lifecycle is RESUMED
+* Fix NPE when unit test variant is disabled
+* Fix incompatibility with androidx.savedstate:1.1.0
+
+Kudos to @gamepro65, @geoff-powell, @TWiStErRob, @adamalyyan and others for contributions this release!
+
+## [1.2.0] - 2023-01-18
 
 ### New
 * Migrate Paparazzi to layoutlib Electric Eel 2022.1.1
@@ -27,8 +50,7 @@ _2023-01-18_
 
 Kudos to @gamepro65, @saket, @rharter and others for contributions this release!
 
-## Version 1.1.0
-_2022-10-12_
+## [1.1.0] - 2022-10-12
 
 ### New
 * Migrate Paparazzi to layoutlib Chipmunk 2021.2.1
@@ -57,8 +79,7 @@ _2022-10-12_
 
 Kudos to @chris-horner, @swankjesse, @yschimke, @dniHze, @TWiStErRob, @gamepro65, @liutikas and others for contributions this release!
 
-## Version 1.0.0
-_2022-06-03_
+## [1.0.0] - 2022-06-03
 
 ### New
 * Support for Composable snapshots
@@ -85,8 +106,7 @@ _2022-06-03_
 
 Kudos to @luis-cortes, @nak5ive, @alexvanyo, @gamepro65 and others for contributions this release!
 
-## Version 0.9.3
-_2022-01-20_
+## [0.9.3] - 2022-01-20
 
 ### Fixed
 * Load the correct mac arm artifact on M1 machines
@@ -95,12 +115,12 @@ _2022-01-20_
 Kudos to @geoff-powell, @nicbell for their contributions this release!
 
 
-## Version 0.9.2 (Please ignore this release)
-_2022-01-20_
+## [0.9.2] - 2022-01-20
+
+Please ignore this release
 
 
-## Version 0.9.1
-_2022-01-14_
+## [0.9.1] - 2022-01-14
 
 ### Fixed
 * Download mac arm artifact if on M1 machines
@@ -113,8 +133,7 @@ _2022-01-14_
 Kudos to @luis-cortes, @geoff-powell, @autonomousapps and @LuK1709 for their contributions this release!
 
 
-## Version 0.9.0
-_2021-11-22_
+## [0.9.0] - 2021-11-22
 
 ### New
 * Migrate Paparazzi to layoutlib Arctic Fox 2020.3.1, providing native support for M1 machines
@@ -140,8 +159,7 @@ _2021-11-22_
 Kudos to @luis-cortes, @geoff-powell and @TWiStErRob for their contributions this release!
 
 
-## Version 0.8.0
-_2021-10-07_
+## [0.8.0] - 2021-10-07
 
 ### New
 * Migrate Paparazzi to use native layoutlib for better rendering and API 30 support
@@ -161,8 +179,7 @@ _2021-10-07_
 * Don't swallow FileNotFoundExceptions when overridden platform dir doesn't exist
 * [Gradle Plugin] Fix remote caching bug by referencing relative, not absolute, paths in intermediate resources file.
 
-## Version 0.7.1
-_2021-05-17_
+## [0.7.1] - 2021-05-17
 
 ### New
 * [Gradle Plugin] Support the --tests option for record/verify tasks
@@ -170,8 +187,7 @@ _2021-05-17_
 ### Fixed
 * [Gradle Plugin] Defer task configuration until created
 
-## Version 0.7.0
-_2021-02-26_
+## [0.7.0] - 2021-02-26
 
 ### New
 * Kotlin 1.4.30
@@ -193,8 +209,7 @@ _2021-02-26_
 * [Gradle Plugin] Force test re-runs when a resource or asset has changed
 * [Gradle Plugin] Force test re-runs if generated report or snapshot dirs are deleted
 
-## Version 0.6.0
-_2020-10-02_
+## [0.6.0] - 2020-10-02
 
 As of this release, consumers must build on Java 11 environments.
 
@@ -203,19 +218,34 @@ As of this release, consumers must build on Java 11 environments.
 * Refactor Paparazzi to better support non-Gradle builds
 * Added device configs for Pixel 4 series
 
-## Version 0.5.2
-_2020-09-17_
+## [0.5.2] - 2020-09-17
 
 ### Fixed
 * [Gradle Plugin] Fixed record and verify tasks in multi-module projects.
 
-## Version 0.5.1
-_2020-09-17_
+## [0.5.1] - 2020-09-17
 
 ### Fixed
 * [Gradle Plugin] Fixed race condition in record and verify tasks.
 
-## Version 0.5.0
-_2020-09-16_
+## [0.5.0] - 2020-09-16
 
 * Initial release.
+
+
+
+[Unreleased]: https://github.com/cashapp/paparazzi/compare/1.2.0...HEAD
+[1.2.0]: https://github.com/cashapp/paparazzi/releases/tag/1.2.0
+[1.1.0]: https://github.com/cashapp/paparazzi/releases/tag/1.1.0
+[1.0.0]: https://github.com/cashapp/paparazzi/releases/tag/1.0.0
+[0.9.3]: https://github.com/cashapp/paparazzi/releases/tag/0.9.3
+[0.9.2]: https://github.com/cashapp/paparazzi/releases/tag/0.9.2
+[0.9.1]: https://github.com/cashapp/paparazzi/releases/tag/0.9.1
+[0.9.0]: https://github.com/cashapp/paparazzi/releases/tag/0.9.0
+[0.8.0]: https://github.com/cashapp/paparazzi/releases/tag/0.8.0
+[0.7.1]: https://github.com/cashapp/paparazzi/releases/tag/0.7.1
+[0.7.0]: https://github.com/cashapp/paparazzi/releases/tag/0.7.0
+[0.6.0]: https://github.com/cashapp/paparazzi/releases/tag/0.6.0
+[0.5.2]: https://github.com/cashapp/paparazzi/releases/tag/0.5.2
+[0.5.1]: https://github.com/cashapp/paparazzi/releases/tag/0.5.1
+[0.5.0]: https://github.com/cashapp/paparazzi/releases/tag/0.5.0
