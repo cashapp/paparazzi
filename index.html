@@ -462,25 +462,25 @@
 <span class="p">}</span>
 </code></pre></div>
 <h2 id="tasks">Tasks<a class="headerlink" href="#tasks" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code>$ ./gradlew sample:testDebug
+<div class="highlight"><pre><span></span><code>./gradlew<span class="w"> </span>sample:testDebug
 </code></pre></div>
 <p>Runs tests and generates an HTML report at <code>sample/build/reports/paparazzi/</code> showing all
 test runs and snapshots.</p>
-<div class="highlight"><pre><span></span><code>$ ./gradlew sample:recordPaparazziDebug
+<div class="highlight"><pre><span></span><code>./gradlew<span class="w"> </span>sample:recordPaparazziDebug
 </code></pre></div>
 <p>Saves snapshots as golden values to a predefined source-controlled location
 (defaults to <code>src/test/snapshots</code>).</p>
-<div class="highlight"><pre><span></span><code>$ ./gradlew sample:verifyPaparazziDebug
+<div class="highlight"><pre><span></span><code>./gradlew<span class="w"> </span>sample:verifyPaparazziDebug
 </code></pre></div>
 <p>Runs tests and verifies against previously-recorded golden values. Failures generate diffs at <code>sample/out/failures</code>.</p>
 <p>For more examples, check out the <a href="https://github.com/cashapp/paparazzi/tree/master/sample">sample</a> project.</p>
 <h2 id="git-lfs">Git LFS<a class="headerlink" href="#git-lfs" title="Permanent link">&para;</a></h2>
 <p>It is recommended you use <a href="https://git-lfs.github.com/">Git LFS</a> to store your snapshots.  Here&rsquo;s a quick setup:</p>
-<div class="highlight"><pre><span></span><code>$<span class="w"> </span>brew<span class="w"> </span>install<span class="w"> </span>git-lfs
-$<span class="w"> </span>git<span class="w"> </span>config<span class="w"> </span>core.hooksPath<span class="w">  </span><span class="c1"># optional, confirm where your git hooks will be installed</span>
-$<span class="w"> </span>git<span class="w"> </span>lfs<span class="w"> </span>install<span class="w"> </span>--local
-$<span class="w"> </span>git<span class="w"> </span>lfs<span class="w"> </span>track<span class="w"> </span><span class="s2">&quot;**/snapshots/**/*.png&quot;</span>
-$<span class="w"> </span>git<span class="w"> </span>add<span class="w"> </span>.gitattributes
+<div class="highlight"><pre><span></span><code>brew<span class="w"> </span>install<span class="w"> </span>git-lfs
+git<span class="w"> </span>config<span class="w"> </span>core.hooksPath<span class="w">  </span><span class="c1"># optional, confirm where your git hooks will be installed</span>
+git<span class="w"> </span>lfs<span class="w"> </span>install<span class="w"> </span>--local
+git<span class="w"> </span>lfs<span class="w"> </span>track<span class="w"> </span><span class="s2">&quot;**/snapshots/**/*.png&quot;</span>
+git<span class="w"> </span>add<span class="w"> </span>.gitattributes
 </code></pre></div>
 <p>On CI, you might set up something like:</p>
 <p><code>$HOOKS_DIR/pre-receive</code>
@@ -504,7 +504,7 @@ diff<span class="w"> </span>&lt;<span class="o">(</span>git<span class="w"> </sp
 <h2 id="jetifier">Jetifier<a class="headerlink" href="#jetifier" title="Permanent link">&para;</a></h2>
 <p>If using Jetifier to migrate off Support libraries, add the following to your <code>gradle.properties</code> to
 exclude bundled Android dependencies.</p>
-<div class="highlight"><pre><span></span><code>android.jetifier.ignorelist=android-base-common,common
+<div class="highlight"><pre><span></span><code><span class="na">android.jetifier.ignorelist</span><span class="o">=</span><span class="s">android-base-common,common</span>
 </code></pre></div>
 <h2 id="releases">Releases<a class="headerlink" href="#releases" title="Permanent link">&para;</a></h2>
 <p>Our <a href="https://cashapp.github.io/paparazzi/changelog/">change log</a> has release history.</p>
@@ -527,12 +527,12 @@ exclude bundled Android dependencies.</p>
 <span class="o">}</span>
 </code></pre></div></p>
 <p>Snapshots of the development version are available in <a href="https://oss.sonatype.org/content/repositories/snapshots/app/cash/paparazzi/">Sonatype&rsquo;s <code>snapshots</code> repository</a>.</p>
-<div class="highlight"><pre><span></span><code><span class="w"> </span><span class="n">repositories</span><span class="w"> </span><span class="o">{</span>
-<span class="w">   </span><span class="c1">// ...</span>
-<span class="w">   </span><span class="n">maven</span><span class="w"> </span><span class="o">{</span>
-<span class="w">     </span><span class="n">url</span><span class="w"> </span><span class="s1">&#39;https://oss.sonatype.org/content/repositories/snapshots/&#39;</span>
-<span class="w">   </span><span class="o">}</span>
-<span class="w"> </span><span class="o">}</span>
+<div class="highlight"><pre><span></span><code><span class="n">repositories</span><span class="w"> </span><span class="o">{</span>
+<span class="w">  </span><span class="c1">// ...</span>
+<span class="w">  </span><span class="n">maven</span><span class="w"> </span><span class="o">{</span>
+<span class="w">    </span><span class="n">url</span><span class="w"> </span><span class="s1">&#39;https://oss.sonatype.org/content/repositories/snapshots/&#39;</span>
+<span class="w">  </span><span class="o">}</span>
+<span class="o">}</span>
 </code></pre></div>
 <h2 id="license">License<a class="headerlink" href="#license" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>Copyright 2019 Square, Inc.
