@@ -15,6 +15,9 @@
  */
 package app.cash.paparazzi.internal.resources
 
+import com.android.utils.Base128InputStream
+import java.io.IOException
+
 /**
  * Ported from: [ResourceSourceFileImpl.kt](https://cs.android.com/android-studio/platform/tools/base/+/18047faf69512736b8ddb1f6a6785f58d47c893f:resource-repository/main/java/com/android/resources/base/ResourceSourceFileImpl.kt)
  *
@@ -26,4 +29,19 @@ package app.cash.paparazzi.internal.resources
 data class ResourceSourceFileImpl(
   override val relativePath: String?,
   override val configuration: RepositoryConfiguration
-) : ResourceSourceFile
+) : ResourceSourceFile {
+  companion object {
+    /**
+     * Creates a [ResourceSourceFileImpl] by reading its contents from the given stream.
+     */
+    @Throws(IOException::class)
+    fun deserialize(
+      stream: Base128InputStream,
+      configurations: List<RepositoryConfiguration>
+    ): ResourceSourceFileImpl {
+      val relativePath = stream.readString()
+      val configIndex = stream.readInt()
+      return ResourceSourceFileImpl(relativePath, configurations[configIndex])
+    }
+  }
+}

@@ -16,14 +16,19 @@
 package app.cash.paparazzi.internal.resources.base
 
 import app.cash.paparazzi.internal.resources.RepositoryConfiguration
+import app.cash.paparazzi.internal.resources.ResourceSourceFile
 import com.android.ide.common.rendering.api.ResourceNamespace
+import com.android.ide.common.rendering.api.ResourceNamespace.Resolver
 import com.android.ide.common.rendering.api.ResourceReference
 import com.android.ide.common.rendering.api.ResourceValue
 import com.android.ide.common.resources.ResourceItemWithVisibility
 import com.android.resources.ResourceType
 import com.android.resources.ResourceVisibility
+import com.android.utils.Base128InputStream
+import com.android.utils.Base128InputStream.StreamFormatException
 import com.android.utils.HashCodes
 import com.google.common.base.MoreObjects
+import java.io.IOException
 
 /**
  * Ported from: [BasicResourceItemBase.java](https://cs.android.com/android-studio/platform/tools/base/+/18047faf69512736b8ddb1f6a6785f58d47c893f:resource-repository/main/java/com/android/resources/base/BasicResourceItemBase.java)
@@ -106,5 +111,47 @@ abstract class BasicResourceItem(
       .add("name", name)
       .add("value", value)
       .toString()
+  }
+
+  companion object {
+    /**
+     * Creates a resource item by reading its contents from the given stream.
+     */
+    @Throws(IOException::class)
+    fun deserialize(
+      stream: Base128InputStream,
+      configurations: List<RepositoryConfiguration>,
+      sourceFiles: List<ResourceSourceFile>,
+      namespaceResolvers: List<Resolver>
+    ): BasicResourceItem {
+      assert(configurations.isNotEmpty())
+
+      val encodedType = stream.readInt()
+      val isFileBased = encodedType and 0x1 != 0
+      val resourceType = ResourceType.values()[encodedType ushr 1]
+      val name = stream.readString() ?: throw StreamFormatException.invalidFormat()
+      val visibility = ResourceVisibility.values()[stream.readInt()]
+
+      if (isFileBased) {
+        val repository = configurations[0].repository
+        return repository.deserializeFileResourceItem(
+          stream,
+          resourceType,
+          name,
+          visibility,
+          configurations
+        )
+      }
+
+      return BasicValueResourceItemBase.deserialize(
+        stream,
+        resourceType,
+        name,
+        visibility,
+        configurations,
+        sourceFiles,
+        namespaceResolvers
+      )
+    }
   }
 }

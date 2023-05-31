@@ -17,11 +17,19 @@ package app.cash.paparazzi.internal.resources.base
 
 import app.cash.paparazzi.internal.resources.RepositoryConfiguration
 import app.cash.paparazzi.internal.resources.ResourceSourceFile
+import com.android.ide.common.rendering.api.ResourceNamespace
 import com.android.ide.common.rendering.api.ResourceNamespace.Resolver
 import com.android.ide.common.util.PathString
 import com.android.resources.ResourceType
+import com.android.resources.ResourceType.ARRAY
+import com.android.resources.ResourceType.ATTR
+import com.android.resources.ResourceType.PLURALS
+import com.android.resources.ResourceType.STYLE
+import com.android.resources.ResourceType.STYLEABLE
 import com.android.resources.ResourceVisibility
+import com.android.utils.Base128InputStream
 import com.android.utils.HashCodes
+import java.io.IOException
 import java.util.Objects
 
 /**
@@ -66,5 +74,61 @@ abstract class BasicValueResourceItemBase(
 
   override fun hashCode(): Int {
     return HashCodes.mix(super.hashCode(), sourceFile.hashCode())
+  }
+
+  companion object {
+    /**
+     * Creates a resource item by reading its contents from the given stream.
+     */
+    @Throws(IOException::class)
+    fun deserialize(
+      stream: Base128InputStream,
+      resourceType: ResourceType,
+      name: String,
+      visibility: ResourceVisibility,
+      configurations: List<RepositoryConfiguration>,
+      sourceFiles: List<ResourceSourceFile>,
+      namespaceResolvers: List<ResourceNamespace.Resolver>
+    ): BasicValueResourceItemBase {
+      val sourceFile = sourceFiles[stream.readInt()]
+      val resolver = namespaceResolvers[stream.readInt()]
+      return when (resourceType) {
+        ARRAY -> BasicArrayResourceItem.deserialize(stream, name, visibility, sourceFile, resolver)
+
+        ATTR -> BasicAttrResourceItem.deserialize(stream, name, visibility, sourceFile, resolver)
+
+        PLURALS ->
+          BasicPluralsResourceItem.deserialize(stream, name, visibility, sourceFile, resolver)
+
+        STYLE -> BasicStyleResourceItem.deserialize(
+          stream,
+          name,
+          visibility,
+          sourceFile,
+          resolver,
+          namespaceResolvers
+        )
+
+        STYLEABLE -> BasicStyleableResourceItem.deserialize(
+          stream,
+          name,
+          visibility,
+          sourceFile,
+          resolver,
+          configurations,
+          sourceFiles,
+          namespaceResolvers
+        )
+
+        else -> BasicValueResourceItem.deserialize(
+          stream,
+          resourceType,
+          name,
+          visibility,
+          sourceFile,
+          resolver
+        )
+      }
+    }
   }
 }

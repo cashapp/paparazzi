@@ -16,9 +16,12 @@
 package app.cash.paparazzi.internal.resources.base
 
 import app.cash.paparazzi.internal.resources.ResourceSourceFile
+import com.android.ide.common.rendering.api.ResourceNamespace
 import com.android.resources.ResourceType
 import com.android.resources.ResourceVisibility
+import com.android.utils.Base128InputStream
 import com.android.utils.HashCodes
+import java.io.IOException
 import java.util.Objects
 
 /**
@@ -44,5 +47,30 @@ open class BasicValueResourceItem(
 
   override fun hashCode(): Int {
     return HashCodes.mix(super.hashCode(), value.hashCode())
+  }
+
+  companion object {
+    /**
+     * Creates a [BasicValueResourceItem] by reading its contents from the given stream.
+     */
+    @Throws(IOException::class)
+    fun deserialize(
+      stream: Base128InputStream,
+      resourceType: ResourceType,
+      name: String,
+      visibility: ResourceVisibility,
+      sourceFile: ResourceSourceFile,
+      resolver: ResourceNamespace.Resolver
+    ): BasicValueResourceItem {
+      val value = stream.readString()
+      val rawXmlValue = stream.readString()
+      val item = if (rawXmlValue == null) {
+        BasicValueResourceItem(resourceType, name, sourceFile, visibility, value)
+      } else {
+        BasicTextValueResourceItem(resourceType, name, sourceFile, visibility, value, rawXmlValue)
+      }
+      item.namespaceResolver = resolver
+      return item
+    }
   }
 }

@@ -1,7 +1,12 @@
 package app.cash.paparazzi.internal.resources
 
+import app.cash.paparazzi.internal.resources.base.BasicFileResourceItem
 import com.android.ide.common.resources.SingleNamespaceResourceRepository
 import com.android.ide.common.util.PathString
+import com.android.resources.ResourceType
+import com.android.resources.ResourceVisibility
+import com.android.utils.Base128InputStream
+import java.io.IOException
 import java.nio.file.Path
 
 /**
@@ -58,6 +63,42 @@ interface LoadableResourceRepository : SingleNamespaceResourceRepository {
     forFileResource: Boolean
   ): PathString? {
     return getSourceFile(relativeResourcePath, forFileResource)
+  }
+
+  /**
+   * Creates a [ResourceSourceFile] by reading its contents from the given stream.
+   *
+   * @param stream the stream to read data from
+   * @param configurations the repository configurations to select from when creating the ResourceSourceFile
+   * @return the created [ResourceSourceFile]
+   */
+  @Throws(IOException::class)
+  fun deserializeResourceSourceFile(
+    stream: Base128InputStream,
+    configurations: List<RepositoryConfiguration>
+  ): ResourceSourceFile {
+    return ResourceSourceFileImpl.deserialize(stream, configurations)
+  }
+
+  /**
+   * Creates a [BasicFileResourceItem] by reading its contents from the given stream.
+   *
+   * @param stream the stream to read data from
+   * @param resourceType the type of the resource
+   * @param name the name of the resource
+   * @param visibility the visibility of the resource
+   * @param configurations the repository configurations to select from when creating the ResourceSourceFile
+   * @return the created [BasicFileResourceItem]
+   */
+  @Throws(IOException::class)
+  fun deserializeFileResourceItem(
+    stream: Base128InputStream,
+    resourceType: ResourceType,
+    name: String,
+    visibility: ResourceVisibility,
+    configurations: List<RepositoryConfiguration>
+  ): BasicFileResourceItem {
+    return BasicFileResourceItem.deserialize(stream, resourceType, name, visibility, configurations)
   }
 
   fun containsUserDefinedResources(): Boolean

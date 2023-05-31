@@ -16,10 +16,16 @@
 package app.cash.paparazzi.internal.resources.base
 
 import app.cash.paparazzi.internal.resources.ResourceSourceFile
+import com.android.SdkConstants
 import com.android.ide.common.rendering.api.AttrResourceValue
 import com.android.ide.common.rendering.api.AttributeFormat
+import com.android.ide.common.rendering.api.ResourceNamespace
 import com.android.resources.ResourceType
 import com.android.resources.ResourceVisibility
+import com.android.utils.Base128InputStream
+import com.android.utils.Base128InputStream.StreamFormatException
+import java.io.IOException
+import java.util.EnumSet
 
 /**
  * Ported from: [BasicAttrResourceItem.java](https://cs.android.com/android-studio/platform/tools/base/+/18047faf69512736b8ddb1f6a6785f58d47c893f:resource-repository/main/java/com/android/resources/base/BasicAttrResourceItem.java)
@@ -78,5 +84,92 @@ open class BasicAttrResourceItem(
       BasicAttrReference(namespace, name, sourceFile, visibility, description, groupName)
     attrReference.namespaceResolver = namespaceResolver
     return attrReference
+  }
+
+  companion object {
+
+    /**
+     * Creates a [BasicAttrResourceItem] by reading its contents from the given stream.
+     */
+    @Throws(IOException::class)
+    fun deserialize(
+      stream: Base128InputStream,
+      name: String,
+      visibility: ResourceVisibility,
+      sourceFile: ResourceSourceFile,
+      resolver: ResourceNamespace.Resolver
+    ): BasicValueResourceItemBase {
+      val namespaceSuffix = stream.readString()
+      val description = stream.readString()
+      val groupName = stream.readString()
+
+      var formatMask = stream.readInt()
+      val formats = EnumSet.noneOf(AttributeFormat::class.java)
+      val attributeFormatValues = AttributeFormat.values()
+      var ordinal = 0
+      while (ordinal < attributeFormatValues.size && formatMask != 0) {
+        if (formatMask and 0x1 != 0) {
+          formats.add(attributeFormatValues[ordinal])
+        }
+        ordinal++
+        formatMask = formatMask ushr 1
+      }
+      val n = stream.readInt()
+      val (valueMap, descriptionMap) = if (n == 0) {
+        emptyMap<String, Int>() to emptyMap<String, String>()
+      } else {
+        val valueTempMap = LinkedHashMap<String, Int>(n)
+        val descriptionTempMap = LinkedHashMap<String, String>(n)
+        for (i in 0 until n) {
+          val valueName = stream.readString()!!
+          val value = stream.readInt()
+          if (value != Int.MIN_VALUE) {
+            valueTempMap[valueName] = value - 1
+          }
+          val valueDescription = stream.readString()
+          if (valueDescription != null) {
+            descriptionTempMap[valueName] = valueDescription
+          }
+        }
+        valueTempMap.toMap() to descriptionTempMap.toMap()
+      }
+
+      val item: BasicValueResourceItemBase =
+        if (formats.isEmpty() && valueMap.isEmpty()) {
+          val namespace = if (namespaceSuffix == null) {
+            sourceFile.repository.namespace
+          } else {
+            ResourceNamespace.fromNamespaceUri(SdkConstants.URI_DOMAIN_PREFIX + namespaceSuffix)
+          } ?: throw StreamFormatException.invalidFormat()
+          BasicAttrReference(namespace, name, sourceFile, visibility, description, groupName)
+        } else if (namespaceSuffix == null) {
+          BasicAttrResourceItem(
+            name,
+            sourceFile,
+            visibility,
+            description,
+            groupName,
+            formats,
+            valueMap,
+            descriptionMap
+          )
+        } else {
+          val namespace =
+            ResourceNamespace.fromNamespaceUri(SdkConstants.URI_DOMAIN_PREFIX + namespaceSuffix)
+              ?: throw StreamFormatException.invalidFormat()
+          BasicForeignAttrResourceItem(
+            namespace,
+            name,
+            sourceFile,
+            description,
+            groupName,
+            formats,
+            valueMap,
+            descriptionMap
+          )
+        }
+      item.namespaceResolver = resolver
+      return item
+    }
   }
 }

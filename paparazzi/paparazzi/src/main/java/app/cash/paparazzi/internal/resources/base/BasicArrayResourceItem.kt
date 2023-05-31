@@ -17,8 +17,12 @@ package app.cash.paparazzi.internal.resources.base
 
 import app.cash.paparazzi.internal.resources.ResourceSourceFile
 import com.android.ide.common.rendering.api.ArrayResourceValue
+import com.android.ide.common.rendering.api.ResourceNamespace
 import com.android.resources.ResourceType
 import com.android.resources.ResourceVisibility
+import com.android.utils.Base128InputStream
+import com.android.utils.Base128InputStream.StreamFormatException
+import java.io.IOException
 import java.util.Collections
 
 /**
@@ -50,5 +54,37 @@ class BasicArrayResourceItem(
     if (!super.equals(obj)) return false
     val other = obj as BasicArrayResourceItem
     return elements == other.elements
+  }
+
+  companion object {
+    /**
+     * Creates a [BasicArrayResourceItem] by reading its contents from the given stream.
+     */
+    @Throws(IOException::class)
+    fun deserialize(
+      stream: Base128InputStream,
+      name: String,
+      visibility: ResourceVisibility,
+      sourceFile: ResourceSourceFile,
+      resolver: ResourceNamespace.Resolver
+    ): BasicArrayResourceItem {
+      val n = stream.readInt()
+      val elements = if (n == 0) {
+        emptyList()
+      } else {
+        buildList(n) {
+          for (i in 0 until n) {
+            add(stream.readString()!!)
+          }
+        }
+      }
+      val defaultIndex = stream.readInt()
+      if (elements.isNotEmpty() && defaultIndex >= elements.size) {
+        throw StreamFormatException.invalidFormat()
+      }
+      val item = BasicArrayResourceItem(name, sourceFile, visibility, elements, defaultIndex)
+      item.namespaceResolver = resolver
+      return item
+    }
   }
 }
