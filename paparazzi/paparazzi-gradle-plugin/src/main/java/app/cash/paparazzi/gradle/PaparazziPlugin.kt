@@ -71,8 +71,14 @@ class PaparazziPlugin : Plugin<Project> {
     val nativePlatformFileCollection = project.setupNativePlatformDependency()
 
     // Create anchor tasks for all variants.
-    val verifyVariants = project.tasks.register("verifyPaparazzi")
-    val recordVariants = project.tasks.register("recordPaparazzi")
+    val verifyVariants = project.tasks.register("verifyPaparazzi") {
+      it.group = VERIFICATION_GROUP
+      it.description = "Record golden images for all variants"
+    }
+    val recordVariants = project.tasks.register("recordPaparazzi") {
+      it.group = VERIFICATION_GROUP
+      it.description = "Run screenshot tests for all variants"
+    }
 
     val variants = project.extensions.getByType(LibraryExtension::class.java)
       .libraryVariants
@@ -147,10 +153,12 @@ class PaparazziPlugin : Plugin<Project> {
 
       val recordTaskProvider = project.tasks.register("recordPaparazzi$variantSlug", PaparazziTask::class.java) {
         it.group = VERIFICATION_GROUP
+        it.description = "Record golden images for variant $variantSlug"
       }
       recordVariants.configure { it.dependsOn(recordTaskProvider) }
       val verifyTaskProvider = project.tasks.register("verifyPaparazzi$variantSlug", PaparazziTask::class.java) {
         it.group = VERIFICATION_GROUP
+        it.description = "Run screenshot tests for variant $variantSlug"
       }
       verifyVariants.configure { it.dependsOn(verifyTaskProvider) }
 
