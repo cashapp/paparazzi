@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.3.0] - 2023-05-31
+
 As of this release, consumers must build on Java 17+ environments.
 
 ### New
@@ -234,7 +236,8 @@ As of this release, consumers must build on Java 11 environments.
 
 
 
-[Unreleased]: https://github.com/cashapp/paparazzi/compare/1.2.0...HEAD
+[Unreleased]: https://github.com/cashapp/paparazzi/compare/1.3.0...HEAD
+[1.3.0]: https://github.com/cashapp/paparazzi/releases/tag/1.3.0
 [1.2.0]: https://github.com/cashapp/paparazzi/releases/tag/1.2.0
 [1.1.0]: https://github.com/cashapp/paparazzi/releases/tag/1.1.0
 [1.0.0]: https://github.com/cashapp/paparazzi/releases/tag/1.0.0
