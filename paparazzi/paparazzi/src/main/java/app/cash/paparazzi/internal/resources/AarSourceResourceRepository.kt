@@ -14,6 +14,7 @@ import com.android.ide.common.symbols.SymbolTable
 import com.android.ide.common.util.PathString
 import com.android.resources.ResourceType
 import com.android.resources.ResourceVisibility.PUBLIC
+import com.android.utils.Base128InputStream
 import java.io.BufferedReader
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -89,6 +90,22 @@ class AarSourceResourceRepository(
 
   override fun getResourceUrl(relativeResourcePath: String): String =
     "$resourceUrlPrefix$relativeResourcePath"
+
+  /**
+   * Loads contents of the repository from the given input stream.
+   */
+  @Throws(IOException::class)
+  fun loadFromStream(
+    stream: Base128InputStream,
+    stringCache: Map<String, String>,
+    namespaceResolverCache: MutableMap<NamespaceResolver, NamespaceResolver>?
+  ) = ResourceSerializationUtil.readResourcesFromStream(
+    stream,
+    stringCache,
+    namespaceResolverCache,
+    this,
+    ::addResourceItem
+  )
 
   // For debugging only.
   override fun toString(): String {

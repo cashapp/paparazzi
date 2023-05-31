@@ -16,6 +16,8 @@
 package app.cash.paparazzi.internal.resources
 
 import com.android.ide.common.rendering.api.ResourceNamespace
+import com.android.utils.Base128InputStream
+import com.android.utils.Base128InputStream.StreamFormatException
 import org.xmlpull.v1.XmlPullParser
 
 /**
@@ -24,11 +26,11 @@ import org.xmlpull.v1.XmlPullParser
  * Simple implementation of the [ResourceNamespace.Resolver] interface intended to be used
  * together with [XmlPullParser].
  */
-class NamespaceResolver internal constructor(parser: XmlPullParser) : ResourceNamespace.Resolver {
+class NamespaceResolver : ResourceNamespace.Resolver {
   /** Interleaved prefixes and the corresponding URIs in order of descending priority.  */
   private val prefixesAndUris: Array<String>
 
-  init {
+  internal constructor(parser: XmlPullParser) {
     val namespaceCount = parser.getNamespaceCount(parser.depth)
     var j = namespaceCount * 2
     prefixesAndUris = arrayOfNulls<String>(j).apply {
@@ -37,6 +39,10 @@ class NamespaceResolver internal constructor(parser: XmlPullParser) : ResourceNa
         this[--j] = parser.getNamespacePrefix(i)
       }
     }.requireNoNulls()
+  }
+
+  private constructor(prefixesAndUris: Array<String>) {
+    this.prefixesAndUris = prefixesAndUris
   }
 
   val namespaceCount: Int
@@ -68,4 +74,22 @@ class NamespaceResolver internal constructor(parser: XmlPullParser) : ResourceNa
   }
 
   override fun hashCode(): Int = prefixesAndUris.contentHashCode()
+
+  companion object {
+    private val EMPTY_STRING_ARRAY = arrayOfNulls<String>(0).requireNoNulls()
+    val EMPTY: NamespaceResolver = NamespaceResolver(EMPTY_STRING_ARRAY)
+
+    /**
+     * Creates a namespace resolver by reading its contents from the given stream.
+     */
+    fun deserialize(stream: Base128InputStream): NamespaceResolver {
+      val n = stream.readInt() * 2
+      val prefixesAndUris = arrayOfNulls<String>(n).apply {
+        for (i in 0 until n) {
+          this[i] = stream.readString() ?: throw StreamFormatException.invalidFormat()
+        }
+      }.requireNoNulls()
+      return NamespaceResolver(prefixesAndUris)
+    }
+  }
 }

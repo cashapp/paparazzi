@@ -19,11 +19,15 @@ import app.cash.paparazzi.internal.resources.ResourceSourceFile
 import com.android.ide.common.rendering.api.ResourceNamespace
 import com.android.ide.common.rendering.api.ResourceReference
 import com.android.ide.common.rendering.api.StyleItemResourceValue
+import com.android.ide.common.rendering.api.StyleItemResourceValueImpl
 import com.android.ide.common.rendering.api.StyleResourceValue
 import com.android.resources.ResourceType
 import com.android.resources.ResourceVisibility
+import com.android.utils.Base128InputStream
+import com.android.utils.Base128InputStream.StreamFormatException
 import com.google.common.collect.ImmutableTable
 import com.google.common.collect.Table
+import java.io.IOException
 import java.util.logging.Logger
 
 /**
@@ -82,5 +86,41 @@ class BasicStyleResourceItem(
 
   companion object {
     private val LOG: Logger = Logger.getLogger(BasicStyleResourceItem::class.java.name)
+
+    /**
+     * Creates a [BasicStyleResourceItem] by reading its contents from the given stream.
+     */
+    @Throws(IOException::class)
+    fun deserialize(
+      stream: Base128InputStream,
+      name: String,
+      visibility: ResourceVisibility,
+      sourceFile: ResourceSourceFile,
+      resolver: ResourceNamespace.Resolver,
+      namespaceResolvers: List<ResourceNamespace.Resolver>
+    ): BasicStyleResourceItem {
+      val repository = sourceFile.repository
+      val namespace = repository.namespace
+      val libraryName = repository.libraryName
+      val parentStyle = stream.readString()!!
+      val n = stream.readInt()
+      val styleItems = if (n == 0) {
+        emptyList()
+      } else {
+        buildList {
+          for (i in 0 until n) {
+            val attrName = stream.readString() ?: throw StreamFormatException.invalidFormat()
+            val value = stream.readString()
+            val itemResolver = namespaceResolvers[stream.readInt()]
+            val styleItem = StyleItemResourceValueImpl(namespace, attrName, value, libraryName)
+            styleItem.namespaceResolver = itemResolver
+            add(styleItem)
+          }
+        }
+      }
+      val item = BasicStyleResourceItem(name, sourceFile, visibility, parentStyle, styleItems)
+      item.namespaceResolver = resolver
+      return item
+    }
   }
 }
