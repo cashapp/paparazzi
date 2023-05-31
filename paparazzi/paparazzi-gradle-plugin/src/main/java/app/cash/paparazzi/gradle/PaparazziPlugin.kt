@@ -153,7 +153,7 @@ class PaparazziPlugin : Plugin<Project> {
 
       val recordTaskProvider = project.tasks.register("recordPaparazzi$variantSlug", PaparazziTask::class.java) {
         it.group = VERIFICATION_GROUP
-        it.description = "Record golden images for variant $variantSlug"
+        it.description = "Record golden images for variant '${variant.name}'"
       }
       recordVariants.configure { it.dependsOn(recordTaskProvider) }
       val verifyTaskProvider = project.tasks.register("verifyPaparazzi$variantSlug", PaparazziTask::class.java) {
