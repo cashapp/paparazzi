@@ -12,7 +12,7 @@
         <meta name="author" content="Square, Inc.">
       
       
-        <link rel="canonical" href="https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources/-local-resource-repository/">
+        <link rel="canonical" href="https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal/-multi-resource-repository/">
       
       
       
@@ -21,7 +21,7 @@
     
     
       
-        <title>LocalResourceRepository - Paparazzi - Paparazzi</title>
+        <title>MultiResourceRepository - Paparazzi - Paparazzi</title>
       
     
     
@@ -71,7 +71,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#localresourcerepository" class="md-skip">
+        <a href="#multiresourcerepository" class="md-skip">
           Skip to content
         </a>
       
@@ -105,7 +105,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              LocalResourceRepository - Paparazzi
+              MultiResourceRepository - Paparazzi
             
           </span>
         </div>
@@ -303,35 +303,6 @@
     
   
   
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#inheritors" class="md-nav__link">
-    Inheritors
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#functions" class="md-nav__link">
-    Functions
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#properties" class="md-nav__link">
-    Properties
-  </a>
-  
-</li>
-      
-    </ul>
-  
 </nav>
                   </div>
                 </div>
@@ -348,92 +319,41 @@
   
 
 
-<p>//<a href="../../../">paparazzi</a>/<a href="../">app.cash.paparazzi.internal.resources</a>/<a href="./">LocalResourceRepository</a></p>
-<h1 id="localresourcerepository">LocalResourceRepository<a class="headerlink" href="#localresourcerepository" title="Permanent link">&para;</a></h1>
-<p>abstract class <a href="./">LocalResourceRepository</a> : AbstractResourceRepository</p>
-<p>Repository for Android application resources, e.g. those that show up in {@code R}, not {@code android.R} (which are referred to as framework resources.).</p>
-<h4 id="inheritors">Inheritors<a class="headerlink" href="#inheritors" title="Permanent link">&para;</a></h4>
-<table>
-<thead>
-<tr>
-<th></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><a href="../../app.cash.paparazzi.internal/-multi-resource-repository/">MultiResourceRepository</a></td>
-</tr>
-<tr>
-<td><a href="../-resource-folder-repository/">ResourceFolderRepository</a></td>
-</tr>
-</tbody>
-</table>
-<h2 id="functions">Functions<a class="headerlink" href="#functions" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Summary</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><a href="./#1347815895%2FFunctions%2F-2095620550">accept</a></td>
-<td>[jvm]<br>abstract fun <a href="./#1347815895%2FFunctions%2F-2095620550">accept</a>(visitor: ResourceVisitor): ResourceVisitor.VisitResult</td>
-</tr>
-<tr>
-<td><a href="../-resource-folder-repository/#1361689245%2FFunctions%2F-2095620550">getAllResources</a></td>
-<td>[jvm]<br>open fun <a href="../-resource-folder-repository/#1361689245%2FFunctions%2F-2095620550">getAllResources</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a>&lt;ResourceItem&gt;</td>
-</tr>
-<tr>
-<td><a href="../-resource-folder-repository/#1107288845%2FFunctions%2F-2095620550">getLeafResourceRepositories</a></td>
-<td>[jvm]<br>abstract fun <a href="../-resource-folder-repository/#1107288845%2FFunctions%2F-2095620550">getLeafResourceRepositories</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-collection/index.html">MutableCollection</a>&lt;SingleNamespaceResourceRepository&gt;</td>
-</tr>
-<tr>
-<td><a href="get-map-package-accessible/">getMapPackageAccessible</a></td>
-<td>[jvm]<br>open fun <a href="get-map-package-accessible/">getMapPackageAccessible</a>(namespace: ResourceNamespace, type: ResourceType): ListMultimap&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, ResourceItem&gt;?<br>Package accessible version of getMap. Do not call outside of <a href="../../app.cash.paparazzi.internal/-multi-resource-repository/">MultiResourceRepository</a>.</td>
-</tr>
-<tr>
-<td><a href="../-resource-folder-repository/#-823365335%2FFunctions%2F-2095620550">getNamespaces</a></td>
-<td>[jvm]<br>abstract fun <a href="../-resource-folder-repository/#-823365335%2FFunctions%2F-2095620550">getNamespaces</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-set/index.html">MutableSet</a>&lt;ResourceNamespace&gt;</td>
-</tr>
-<tr>
-<td><a href="get-public-resources/">getPublicResources</a></td>
-<td>[jvm]<br>open override fun <a href="get-public-resources/">getPublicResources</a>(namespace: ResourceNamespace, type: ResourceType): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-collection/index.html">Collection</a>&lt;ResourceItem&gt;</td>
-</tr>
-<tr>
-<td><a href="../-resource-folder-repository/#-408651289%2FFunctions%2F-2095620550">getResourceNames</a></td>
-<td>[jvm]<br>open fun <a href="../-resource-folder-repository/#-408651289%2FFunctions%2F-2095620550">getResourceNames</a>(namespace: ResourceNamespace, resourceType: ResourceType): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-set/index.html">MutableSet</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>&gt;</td>
-</tr>
-<tr>
-<td><a href="../-resource-folder-repository/#1404228208%2FFunctions%2F-2095620550">getResources</a></td>
-<td>[jvm]<br>open override fun <a href="../-resource-folder-repository/#1404228208%2FFunctions%2F-2095620550">getResources</a>(namespace: ResourceNamespace, resourceType: ResourceType): ListMultimap&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, ResourceItem&gt;<br>open override fun <a href="../-resource-folder-repository/#970284153%2FFunctions%2F-2095620550">getResources</a>(namespace: ResourceNamespace, resourceType: ResourceType, filter: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Predicate.html">Predicate</a>&lt;ResourceItem&gt;): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a>&lt;ResourceItem&gt;<br>open override fun <a href="../-resource-folder-repository/#-768659627%2FFunctions%2F-2095620550">getResources</a>(namespace: ResourceNamespace, resourceType: ResourceType, resourceName: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a>&lt;ResourceItem&gt;<br>open fun <a href="../-resource-folder-repository/#-490337056%2FFunctions%2F-2095620550">getResources</a>(reference: ResourceReference): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a>&lt;ResourceItem&gt;</td>
-</tr>
-<tr>
-<td><a href="../-resource-folder-repository/#1517093356%2FFunctions%2F-2095620550">getResourceTypes</a></td>
-<td>[jvm]<br>open override fun <a href="../-resource-folder-repository/#1517093356%2FFunctions%2F-2095620550">getResourceTypes</a>(namespace: ResourceNamespace): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-set/index.html">MutableSet</a>&lt;ResourceType&gt;</td>
-</tr>
-<tr>
-<td><a href="../-resource-folder-repository/#2129073324%2FFunctions%2F-2095620550">hasResources</a></td>
-<td>[jvm]<br>open override fun <a href="../-resource-folder-repository/#2129073324%2FFunctions%2F-2095620550">hasResources</a>(namespace: ResourceNamespace, resourceType: ResourceType): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><br>open override fun <a href="../-resource-folder-repository/#-214640495%2FFunctions%2F-2095620550">hasResources</a>(namespace: ResourceNamespace, resourceType: ResourceType, resourceName: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
-</tr>
-</tbody>
-</table>
-<h2 id="properties">Properties<a class="headerlink" href="#properties" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Summary</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><a href="display-name/">displayName</a></td>
-<td>[jvm]<br>val <a href="display-name/">displayName</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
-</tr>
-</tbody>
-</table>
+<p>//<a href="../../../">paparazzi</a>/<a href="../">app.cash.paparazzi.internal</a>/<a href="./">MultiResourceRepository</a></p>
+<h1 id="multiresourcerepository">MultiResourceRepository<a class="headerlink" href="#multiresourcerepository" title="Permanent link">&para;</a></h1>
+<p>[jvm]\
+abstract class <a href="./">MultiResourceRepository</a> : <a href="../../app.cash.paparazzi.internal.resources/-local-resource-repository/">LocalResourceRepository</a></p>
+<p>Ported from: <a href="https://cs.android.com/android-studio/platform/tools/adt/idea/+/55991b4380c1ac18e81151493f59228220c5b72a:android/src/com/android/tools/idea/res/MultiResourceRepository.java">MultiResourceRepository.java</a></p>
+<p>A super class for several of the other repositories. Its only purpose is to be able to combine multiple resource repositories and expose it as a single one, applying the “override” semantics of resources: earlier children defining the same resource namespace/type/name combination will replace/hide any subsequent definitions of the same resource.</p>
+<p>In the resource repository hierarchy, MultiResourceRepository is an internal node, never a leaf.
+
+## Types
+
+| Name | Summary |
+|---|---|
+| [Companion](-companion/index.md) | [jvm]<br>object [Companion](-companion/index.md) |
+
+## Functions
+
+| Name | Summary |
+|---|---|
+| [accept](accept.md) | [jvm]<br>open override fun [accept](accept.md)(visitor: ResourceVisitor): ResourceVisitor.VisitResult |
+| [getAllResources](../../app.cash.paparazzi.internal.resources/-resource-folder-repository/index.md#1361689245%2FFunctions%2F-2095620550) | [jvm]<br>open fun [getAllResources](../../app.cash.paparazzi.internal.resources/-resource-folder-repository/index.md#1361689245%2FFunctions%2F-2095620550)(): [MutableList](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html)&lt;ResourceItem&gt; |
+| [getLeafResourceRepositories](get-leaf-resource-repositories.md) | [jvm]<br>open override fun [getLeafResourceRepositories](get-leaf-resource-repositories.md)(): [Collection](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-collection/index.html)&lt;SingleNamespaceResourceRepository&gt; |
+| [getMapPackageAccessible](../../app.cash.paparazzi.internal.resources/-local-resource-repository/get-map-package-accessible.md) | [jvm]<br>open fun [getMapPackageAccessible](../../app.cash.paparazzi.internal.resources/-local-resource-repository/get-map-package-accessible.md)(namespace: ResourceNamespace, type: ResourceType): ListMultimap&lt;[String](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html), ResourceItem&gt;?<br>Package accessible version of getMap. Do not call outside of [MultiResourceRepository](index.md). |
+| [getNamespaces](get-namespaces.md) | [jvm]<br>open override fun [getNamespaces](get-namespaces.md)(): [Set](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-set/index.html)&lt;ResourceNamespace&gt; |
+| [getPublicResources](../../app.cash.paparazzi.internal.resources/-local-resource-repository/get-public-resources.md) | [jvm]<br>open override fun [getPublicResources](../../app.cash.paparazzi.internal.resources/-local-resource-repository/get-public-resources.md)(namespace: ResourceNamespace, type: ResourceType): [Collection](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-collection/index.html)&lt;ResourceItem&gt; |
+| [getResourceNames](../../app.cash.paparazzi.internal.resources/-resource-folder-repository/index.md#-408651289%2FFunctions%2F-2095620550) | [jvm]<br>open fun [getResourceNames](../../app.cash.paparazzi.internal.resources/-resource-folder-repository/index.md#-408651289%2FFunctions%2F-2095620550)(namespace: ResourceNamespace, resourceType: ResourceType): [MutableSet](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-set/index.html)&lt;[String](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html)&gt; |
+| [getResources](../../app.cash.paparazzi.internal.resources/-resource-folder-repository/index.md#1404228208%2FFunctions%2F-2095620550) | [jvm]<br>open override fun [getResources](../../app.cash.paparazzi.internal.resources/-resource-folder-repository/index.md#1404228208%2FFunctions%2F-2095620550)(namespace: ResourceNamespace, resourceType: ResourceType): ListMultimap&lt;[String](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html), ResourceItem&gt;<br>open override fun [getResources](../../app.cash.paparazzi.internal.resources/-resource-folder-repository/index.md#970284153%2FFunctions%2F-2095620550)(namespace: ResourceNamespace, resourceType: ResourceType, filter: [Predicate](https://docs.oracle.com/javase/8/docs/api/java/util/function/Predicate.html)&lt;ResourceItem&gt;): [MutableList](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html)&lt;ResourceItem&gt;<br>open override fun [getResources](../../app.cash.paparazzi.internal.resources/-resource-folder-repository/index.md#-768659627%2FFunctions%2F-2095620550)(namespace: ResourceNamespace, resourceType: ResourceType, resourceName: [String](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html)): [MutableList](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html)&lt;ResourceItem&gt;<br>open fun [getResources](../../app.cash.paparazzi.internal.resources/-resource-folder-repository/index.md#-490337056%2FFunctions%2F-2095620550)(reference: ResourceReference): [MutableList](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html)&lt;ResourceItem&gt; |
+| [getResourceTypes](../../app.cash.paparazzi.internal.resources/-resource-folder-repository/index.md#1517093356%2FFunctions%2F-2095620550) | [jvm]<br>open override fun [getResourceTypes](../../app.cash.paparazzi.internal.resources/-resource-folder-repository/index.md#1517093356%2FFunctions%2F-2095620550)(namespace: ResourceNamespace): [MutableSet](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-set/index.html)&lt;ResourceType&gt; |
+| [hasResources](../../app.cash.paparazzi.internal.resources/-resource-folder-repository/index.md#2129073324%2FFunctions%2F-2095620550) | [jvm]<br>open override fun [hasResources](../../app.cash.paparazzi.internal.resources/-resource-folder-repository/index.md#2129073324%2FFunctions%2F-2095620550)(namespace: ResourceNamespace, resourceType: ResourceType): [Boolean](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html)<br>open override fun [hasResources](../../app.cash.paparazzi.internal.resources/-resource-folder-repository/index.md#-214640495%2FFunctions%2F-2095620550)(namespace: ResourceNamespace, resourceType: ResourceType, resourceName: [String](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html)): [Boolean](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html) |
+| [setChildren](set-children.md) | [jvm]<br>fun [setChildren](set-children.md)(localResources: [List](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html)&lt;[LocalResourceRepository](../../app.cash.paparazzi.internal.resources/-local-resource-repository/index.md)&gt;, libraryResources: [Collection](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-collection/index.html)&lt;[AarSourceResourceRepository](../../app.cash.paparazzi.internal.resources/-aar-source-resource-repository/index.md)&gt;) |
+
+## Properties
+
+| Name | Summary |
+|---|---|
+| [displayName](../../app.cash.paparazzi.internal.resources/-local-resource-repository/display-name.md) | [jvm]<br>val [displayName](../../app.cash.paparazzi.internal.resources/-local-resource-repository/display-name.md): [String](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html) |
 
 
 
