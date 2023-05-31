@@ -134,12 +134,12 @@ plugins {
 Snapshots of the development version are available in [Sonatype's `snapshots` repository][snap].
 
 ```groovy
- repositories {
-   // ...
-   maven {
-     url 'https://oss.sonatype.org/content/repositories/snapshots/'
-   }
- }
+repositories {
+  // ...
+  maven {
+    url 'https://oss.sonatype.org/content/repositories/snapshots/'
+  }
+}
 ```
 
 License
