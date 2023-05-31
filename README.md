@@ -100,7 +100,7 @@ Jetifier
 If using Jetifier to migrate off Support libraries, add the following to your `gradle.properties` to
 exclude bundled Android dependencies.
 
-```text
+```properties
 android.jetifier.ignorelist=android-base-common,common
 ```
 
