@@ -6,7 +6,7 @@ composeCompiler = "1.4.7"
 javaTarget = "11"
 jcodec = "0.2.5"
 kotlin = "1.8.21"
-ktlint = "0.46.1"
+ktlint = "0.49.1"
 moshi = "1.15.0"
 
 minSdk = "25"
@@ -37,6 +37,8 @@ jcodec-javase = { module = "org.jcodec:jcodec-javase", version.ref = "jcodec" }
 
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.7.1" }
+
+ktlint = { module = "com.pinterest.ktlint:ktlint-rule-engine", version.ref = "ktlint" }
 
 kxml2 = { module = "kxml2:kxml2", version = "2.3.0" }
 

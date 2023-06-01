@@ -24,7 +24,7 @@ class LayoutDirectionTest(
     AR(
       tag = "ar",
       direction = LayoutDirection.LTR
-    );
+    )
   }
 
   @get:Rule
