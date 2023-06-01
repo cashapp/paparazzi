@@ -60,7 +60,7 @@ class LifecycleUsageTest {
       dispatcher = dispatcherOwner.onBackPressedDispatcher
 
       dispatcher!!.addCallback(
-        object : OnBackPressedCallback(/* enabled = */ true) {
+        object : OnBackPressedCallback(true) {
           override fun handleOnBackPressed() = Unit
         }
       )

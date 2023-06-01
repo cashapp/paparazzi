@@ -103,7 +103,7 @@ internal data class SessionParamsBuilder(
     )
 
     val result = SessionParams(
-      layoutPullParser, renderingMode, projectKey /* for caching */,
+      layoutPullParser, renderingMode, projectKey,
       deviceConfig.hardwareConfig, resourceResolver, layoutlibCallback, minSdk, targetSdk, logger
     )
     result.fontScale = deviceConfig.fontScale
