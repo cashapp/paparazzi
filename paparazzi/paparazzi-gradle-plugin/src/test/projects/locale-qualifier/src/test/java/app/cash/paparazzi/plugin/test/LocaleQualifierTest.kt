@@ -13,7 +13,7 @@ class LocaleQualifierTest(
   @TestParameter locale: Locale
 ) {
   enum class Locale(val tag: String?) {
-    Default(null), GB("en-rGB");
+    Default(null), GB("en-rGB")
   }
 
   @get:Rule

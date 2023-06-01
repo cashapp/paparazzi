@@ -19,7 +19,7 @@ class TestParameterInjectorTest(
   ) {
     NEXUS_4(deviceConfig = DeviceConfig.NEXUS_4),
     NEXUS_5(deviceConfig = DeviceConfig.NEXUS_5),
-    NEXUS_5_LAND(deviceConfig = DeviceConfig.NEXUS_5_LAND),
+    NEXUS_5_LAND(deviceConfig = DeviceConfig.NEXUS_5_LAND)
   }
 
   enum class Theme(val themeName: String) {

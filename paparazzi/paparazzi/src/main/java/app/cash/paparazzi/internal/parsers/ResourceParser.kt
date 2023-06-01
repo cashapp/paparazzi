@@ -119,7 +119,9 @@ class ResourceParser(inputStream: InputStream) : KXmlParser() {
     val prefixEnd = name.indexOf(':')
     return if (prefixEnd > 0) {
       name.substring(0, prefixEnd)
-    } else ""
+    } else {
+      ""
+    }
   }
 
   private fun findLocalNameByQualifiedName(name: String): String {

@@ -147,9 +147,11 @@ abstract class MultiResourceRepository internal constructor(displayName: String)
           // is not a styleable or an id. Styleables and ids are allowed to be defined in multiple
           // places even with the same qualifiers.
           map =
-            if (type === ResourceType.STYLEABLE || type === ResourceType.ID) ArrayListMultimap.create<String, ResourceItem>() else PerConfigResourceMap(
-              resourceComparator
-            )
+            if (type === ResourceType.STYLEABLE || type === ResourceType.ID) {
+              ArrayListMultimap.create<String, ResourceItem>()
+            } else {
+              PerConfigResourceMap(resourceComparator)
+            }
           cachedMaps.put(namespace, type, map)
         }
         map!!.putAll(items)
