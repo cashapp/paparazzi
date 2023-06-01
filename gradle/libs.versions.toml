@@ -38,6 +38,8 @@ jcodec-javase = { module = "org.jcodec:jcodec-javase", version.ref = "jcodec" }
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.7.1" }
 
+ktlint = { module = "com.pinterest.ktlint:ktlint-rule-engine", version.ref = "ktlint" }
+
 kxml2 = { module = "kxml2:kxml2", version = "2.3.0" }
 
 layoutlib-native-jdk11 = { module = "app.cash.paparazzi:layoutlib-native-jdk11", version.ref = "layoutlib" }
