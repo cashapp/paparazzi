@@ -12,7 +12,7 @@
         <meta name="author" content="Square, Inc.">
       
       
-        <link rel="canonical" href="https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources/-aar-source-resource-repository/">
+        <link rel="canonical" href="https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.internal.resources/-framework-resource-repository/">
       
       
       
@@ -21,7 +21,7 @@
     
     
       
-        <title>AarSourceResourceRepository - Paparazzi - Paparazzi</title>
+        <title>FrameworkResourceRepository - Paparazzi - Paparazzi</title>
       
     
     
@@ -71,7 +71,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#aarsourceresourcerepository" class="md-skip">
+        <a href="#frameworkresourcerepository" class="md-skip">
           Skip to content
         </a>
       
@@ -105,7 +105,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              AarSourceResourceRepository - Paparazzi
+              FrameworkResourceRepository - Paparazzi
             
           </span>
         </div>
@@ -310,15 +310,8 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#inheritors" class="md-nav__link">
-    Inheritors
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#constructors" class="md-nav__link">
-    Constructors
+  <a href="#see-also" class="md-nav__link">
+    See also
   </a>
   
 </li>
@@ -362,12 +355,13 @@
   
 
 
-<p>//<a href="../../../">paparazzi</a>/<a href="../">app.cash.paparazzi.internal.resources</a>/<a href="./">AarSourceResourceRepository</a></p>
-<h1 id="aarsourceresourcerepository">AarSourceResourceRepository<a class="headerlink" href="#aarsourceresourcerepository" title="Permanent link">&para;</a></h1>
-<p>open class <a href="./">AarSourceResourceRepository</a>(loader: <a href="../-repository-loader/">RepositoryLoader</a>&lt;out <a href="./">AarSourceResourceRepository</a>&gt;, val libraryName: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?) : <a href="../-abstract-aar-resource-repository/">AbstractAarResourceRepository</a></p>
-<p>A resource repository representing unpacked contents of a non-namespaced AAR.</p>
-<p>For performance reasons ID resources defined using @+id syntax in layout XML files are obtained from R.txt instead, when it is available. This means that <a href="../../app.cash.paparazzi.internal.resources.base/-basic-resource-item/#-509585620%2FFunctions%2F-2095620550">ResourceItem.getOriginalSource</a> method may return null for such ID resources.</p>
-<h4 id="inheritors">Inheritors<a class="headerlink" href="#inheritors" title="Permanent link">&para;</a></h4>
+<p>//<a href="../../../">paparazzi</a>/<a href="../">app.cash.paparazzi.internal.resources</a>/<a href="./">FrameworkResourceRepository</a></p>
+<h1 id="frameworkresourcerepository">FrameworkResourceRepository<a class="headerlink" href="#frameworkresourcerepository" title="Permanent link">&para;</a></h1>
+<p>class <a href="./">FrameworkResourceRepository</a> : <a href="../-aar-source-resource-repository/">AarSourceResourceRepository</a></p>
+<p>Repository of resources of the Android framework. Most client code should use the ResourceRepositoryManager.getFrameworkResources method to obtain framework resources.</p>
+<p>The repository can be loaded either from a res directory containing XML files, or from framework_res.jar file, or from a binary cache file located under the directory returned by the PathManager.getSystemPath method. This binary cache file can be created as a side effect of loading the repository from a res directory.</p>
+<p>Loading from framework_res.jar or a binary cache file is 3-4 times faster than loading from res directory.</p>
+<h4 id="see-also">See also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h4>
 <table>
 <thead>
 <tr>
@@ -376,22 +370,7 @@
 </thead>
 <tbody>
 <tr>
-<td><a href="../-framework-resource-repository/">FrameworkResourceRepository</a></td>
-</tr>
-</tbody>
-</table>
-<h2 id="constructors">Constructors<a class="headerlink" href="#constructors" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th></th>
-<th></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><a href="-aar-source-resource-repository/">AarSourceResourceRepository</a></td>
-<td>[jvm]<br>constructor(loader: <a href="../-repository-loader/">RepositoryLoader</a>&lt;out <a href="./">AarSourceResourceRepository</a>&gt;, libraryName: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?)</td>
+<td>FrameworkResJarCreator</td>
 </tr>
 </tbody>
 </table>
@@ -422,6 +401,10 @@
 <tr>
 <td><a href="../-abstract-aar-resource-repository/accept/">accept</a></td>
 <td>[jvm]<br>open override fun <a href="../-abstract-aar-resource-repository/accept/">accept</a>(visitor: ResourceVisitor): ResourceVisitor.VisitResult</td>
+</tr>
+<tr>
+<td><a href="contains-languages/">containsLanguages</a></td>
+<td>[jvm]<br>fun <a href="contains-languages/">containsLanguages</a>(languages: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-set/index.html">Set</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>&gt;): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><br>Checks if the repository contains resources for the given set of languages.</td>
 </tr>
 <tr>
 <td><a href="../-abstract-aar-resource-repository/contains-user-defined-resources/">containsUserDefinedResources</a></td>
@@ -472,8 +455,8 @@
 <td>[jvm]<br>open override fun <a href="../-abstract-aar-resource-repository/get-resources/">getResources</a>(namespace: ResourceNamespace, resourceType: ResourceType): ListMultimap&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, ResourceItem&gt;<br>open override fun <a href="../-abstract-aar-resource-repository/get-resources/">getResources</a>(namespace: ResourceNamespace, resourceType: ResourceType, resourceName: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;ResourceItem&gt;<br>open override fun <a href="../-resource-folder-repository/#970284153%2FFunctions%2F-2095620550">getResources</a>(namespace: ResourceNamespace, resourceType: ResourceType, filter: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Predicate.html">Predicate</a>&lt;ResourceItem&gt;): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a>&lt;ResourceItem&gt;<br>open fun <a href="../-resource-folder-repository/#-490337056%2FFunctions%2F-2095620550">getResources</a>(reference: ResourceReference): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a>&lt;ResourceItem&gt;</td>
 </tr>
 <tr>
-<td><a href="../-resource-folder-repository/#1517093356%2FFunctions%2F-2095620550">getResourceTypes</a></td>
-<td>[jvm]<br>open override fun <a href="../-resource-folder-repository/#1517093356%2FFunctions%2F-2095620550">getResourceTypes</a>(namespace: ResourceNamespace): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-set/index.html">MutableSet</a>&lt;ResourceType&gt;</td>
+<td><a href="get-resource-types/">getResourceTypes</a></td>
+<td>[jvm]<br>open override fun <a href="get-resource-types/">getResourceTypes</a>(namespace: ResourceNamespace): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-set/index.html">Set</a>&lt;ResourceType&gt;</td>
 </tr>
 <tr>
 <td><a href="get-resource-url/">getResourceUrl</a></td>
@@ -488,12 +471,16 @@
 <td>[jvm]<br>open override fun <a href="../-resource-folder-repository/#2129073324%2FFunctions%2F-2095620550">hasResources</a>(namespace: ResourceNamespace, resourceType: ResourceType): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><br>open override fun <a href="../-resource-folder-repository/#-214640495%2FFunctions%2F-2095620550">hasResources</a>(namespace: ResourceNamespace, resourceType: ResourceType, resourceName: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
 </tr>
 <tr>
-<td><a href="load-from-stream/">loadFromStream</a></td>
-<td>[jvm]<br>fun <a href="load-from-stream/">loadFromStream</a>(stream: Base128InputStream, stringCache: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-map/index.html">Map</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>&gt;, namespaceResolverCache: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-map/index.html">MutableMap</a>&lt;<a href="../-namespace-resolver/">NamespaceResolver</a>, <a href="../-namespace-resolver/">NamespaceResolver</a>&gt;?)<br>Loads contents of the repository from the given input stream.</td>
+<td><a href="../-aar-source-resource-repository/load-from-stream/">loadFromStream</a></td>
+<td>[jvm]<br>fun <a href="../-aar-source-resource-repository/load-from-stream/">loadFromStream</a>(stream: Base128InputStream, stringCache: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-map/index.html">Map</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>&gt;, namespaceResolverCache: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-map/index.html">MutableMap</a>&lt;<a href="../-namespace-resolver/">NamespaceResolver</a>, <a href="../-namespace-resolver/">NamespaceResolver</a>&gt;?)<br>Loads contents of the repository from the given input stream.</td>
 </tr>
 <tr>
-<td><a href="to-string/">toString</a></td>
-<td>[jvm]<br>open override fun <a href="to-string/">toString</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
+<td><a href="load-missing-languages/">loadMissingLanguages</a></td>
+<td>[jvm]<br>fun <a href="load-missing-languages/">loadMissingLanguages</a>(languagesToLoad: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-set/index.html">Set</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>&gt;?): <a href="./">FrameworkResourceRepository</a><br>Loads resources for requested languages that are not present in this resource repository.</td>
+</tr>
+<tr>
+<td><a href="../-aar-source-resource-repository/to-string/">toString</a></td>
+<td>[jvm]<br>open override fun <a href="../-aar-source-resource-repository/to-string/">toString</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
 </tr>
 </tbody>
 </table>
@@ -511,12 +498,16 @@
 <td>[jvm]<br>open override val <a href="../-abstract-aar-resource-repository/display-name/">displayName</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><br>Returns the name of this resource repository to display in the UI.</td>
 </tr>
 <tr>
+<td><a href="language-groups/">languageGroups</a></td>
+<td>[jvm]<br>val <a href="language-groups/">languageGroups</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-set/index.html">MutableSet</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>&gt;</td>
+</tr>
+<tr>
 <td><a href="../-abstract-aar-resource-repository/library-name/">libraryName</a></td>
 <td>[jvm]<br>open override val <a href="../-abstract-aar-resource-repository/library-name/">libraryName</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?<br>Returns the name of the library, or null if this is not an AAR resource repository.</td>
 </tr>
 <tr>
-<td><a href="origin/">origin</a></td>
-<td>[jvm]<br>open override val <a href="origin/">origin</a>: <a href="https://docs.oracle.com/javase/8/docs/api/java/nio/file/Path.html">Path</a><br>Returns the file or directory this resource repository was loaded from. Resource repositories loaded from the same file or directory with different file filtering options have the same origin.</td>
+<td><a href="../-aar-source-resource-repository/origin/">origin</a></td>
+<td>[jvm]<br>open override val <a href="../-aar-source-resource-repository/origin/">origin</a>: <a href="https://docs.oracle.com/javase/8/docs/api/java/nio/file/Path.html">Path</a><br>Returns the file or directory this resource repository was loaded from. Resource repositories loaded from the same file or directory with different file filtering options have the same origin.</td>
 </tr>
 </tbody>
 </table>

@@ -337,6 +337,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#properties" class="md-nav__link">
+    Properties
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -357,7 +364,7 @@
 
 <p>//<a href="../../../">paparazzi</a>/<a href="../">app.cash.paparazzi.internal.resources.base</a>/<a href="./">BasicFileResourceItem</a></p>
 <h1 id="basicfileresourceitem">BasicFileResourceItem<a class="headerlink" href="#basicfileresourceitem" title="Permanent link">&para;</a></h1>
-<p>open class <a href="./">BasicFileResourceItem</a>(type: ResourceType, name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, repositoryConfiguration: <a href="../../app.cash.paparazzi.internal.resources/-repository-configuration/">RepositoryConfiguration</a>, visibility: ResourceVisibility, relativePath: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>) : <a href="../-basic-resource-item/">BasicResourceItem</a></p>
+<p>open class <a href="./">BasicFileResourceItem</a>(type: ResourceType, name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, val repositoryConfiguration: <a href="../../app.cash.paparazzi.internal.resources/-repository-configuration/">RepositoryConfiguration</a>, visibility: ResourceVisibility, relativePath: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>) : <a href="../-basic-resource-item/">BasicResourceItem</a></p>
 <p>Ported from: <a href="https://cs.android.com/android-studio/platform/tools/base/+/18047faf69512736b8ddb1f6a6785f58d47c893f:resource-repository/main/java/com/android/resources/base/BasicFileResourceItem.java">BasicFileResourceItem.java</a></p>
 <p>Resource item representing a file resource, e.g. a drawable or a layout.</p>
 <h4 id="inheritors">Inheritors<a class="headerlink" href="#inheritors" title="Permanent link">&para;</a></h4>
@@ -469,10 +476,6 @@
 <td>[jvm]<br>open override fun <a href="../-basic-resource-item/get-repository/">getRepository</a>(): <a href="../../app.cash.paparazzi.internal.resources/-loadable-resource-repository/">LoadableResourceRepository</a><br>Returns the repository this resource belongs to.</td>
 </tr>
 <tr>
-<td><a href="get-repository-configuration/">getRepositoryConfiguration</a></td>
-<td>[jvm]<br>open override fun <a href="get-repository-configuration/">getRepositoryConfiguration</a>(): <a href="../../app.cash.paparazzi.internal.resources/-repository-configuration/">RepositoryConfiguration</a></td>
-</tr>
-<tr>
 <td><a href="../-basic-resource-item/get-resource-type/">getResourceType</a></td>
 <td>[jvm]<br>open override fun <a href="../-basic-resource-item/get-resource-type/">getResourceType</a>(): ResourceType</td>
 </tr>
@@ -523,6 +526,21 @@
 <tr>
 <td><a href="../-basic-resource-item/to-string/">toString</a></td>
 <td>[jvm]<br>open override fun <a href="../-basic-resource-item/to-string/">toString</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
+</tr>
+</tbody>
+</table>
+<h2 id="properties">Properties<a class="headerlink" href="#properties" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Summary</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="repository-configuration/">repositoryConfiguration</a></td>
+<td>[jvm]<br>open override val <a href="repository-configuration/">repositoryConfiguration</a>: <a href="../../app.cash.paparazzi.internal.resources/-repository-configuration/">RepositoryConfiguration</a></td>
 </tr>
 </tbody>
 </table>
