@@ -50,7 +50,8 @@ abstract class BasicValueResourceItemBase(
 
   override fun isFileBased() = false
 
-  override fun getRepositoryConfiguration(): RepositoryConfiguration = sourceFile.configuration
+  override val repositoryConfiguration: RepositoryConfiguration
+    get() = sourceFile.configuration
 
   override fun getNamespaceResolver() = namespaceResolver
 

@@ -34,15 +34,13 @@ import java.io.IOException
 open class BasicFileResourceItem(
   type: ResourceType,
   name: String,
-  private val repositoryConfiguration: RepositoryConfiguration,
+  override val repositoryConfiguration: RepositoryConfiguration,
   visibility: ResourceVisibility,
   private val relativePath: String
 ) : BasicResourceItem(type, name, visibility) {
   override fun isFileBased() = true
 
   override fun getReference(): ResourceReference? = null
-
-  override fun getRepositoryConfiguration() = repositoryConfiguration
 
   override fun getNamespaceResolver(): Resolver = Resolver.EMPTY_RESOLVER
 

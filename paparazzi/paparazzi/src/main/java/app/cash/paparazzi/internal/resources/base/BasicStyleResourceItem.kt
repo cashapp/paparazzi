@@ -102,7 +102,7 @@ class BasicStyleResourceItem(
       val repository = sourceFile.repository
       val namespace = repository.namespace
       val libraryName = repository.libraryName
-      val parentStyle = stream.readString()!!
+      val parentStyle = stream.readString()
       val n = stream.readInt()
       val styleItems = if (n == 0) {
         emptyList()

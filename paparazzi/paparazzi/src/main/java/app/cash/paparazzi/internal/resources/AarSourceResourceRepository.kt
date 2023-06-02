@@ -32,11 +32,11 @@ import java.util.stream.Collectors
  * obtained from R.txt instead, when it is available. This means that
  * [ResourceItem.getOriginalSource] method may return null for such ID resources.
  */
-class AarSourceResourceRepository(
+open class AarSourceResourceRepository(
   loader: RepositoryLoader<out AarSourceResourceRepository>,
   libraryName: String?
 ) : AbstractAarResourceRepository(loader.namespace, libraryName) {
-  private val resourceDirectoryOrFile: Path
+  protected val resourceDirectoryOrFile: Path
 
   /**
    * Protocol used for constructing [PathString]s returned by the [BasicFileResourceItem.getSource] method.

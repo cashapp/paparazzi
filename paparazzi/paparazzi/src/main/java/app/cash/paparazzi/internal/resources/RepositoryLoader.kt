@@ -64,6 +64,7 @@ import com.android.ide.common.resources.ResourceItem
 import com.android.ide.common.resources.ValueResourceNameValidator
 import com.android.ide.common.resources.ValueXmlHelper
 import com.android.ide.common.resources.configuration.FolderConfiguration
+import com.android.ide.common.resources.resourceNameToFieldName
 import com.android.ide.common.util.PathString
 import com.android.io.CancellableFileIo
 import com.android.resources.Arity
@@ -912,10 +913,20 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
     resourceType: ResourceType,
     resourceName: String
   ): ResourceVisibility {
-    // todo look up public resources to return proper visibility
-    return ResourceVisibility.PRIVATE
-    // val names: Set<String> = myPublicResources.get(resourceType)
-    // return if (names != null && names.contains(getKeyForVisibilityLookup(resourceName))) ResourceVisibility.PUBLIC else myDefaultVisibility
+    val names = publicResources[resourceType]
+    return if (names?.contains(getKeyForVisibilityLookup(resourceName)) == true) {
+      ResourceVisibility.PUBLIC
+    } else {
+      defaultVisibility
+    }
+  }
+
+  /**
+   * Transforms the given resource name to a key for lookup in [publicResources].
+   */
+  protected open fun getKeyForVisibilityLookup(resourceName: String): String {
+    // In public.txt all resource names are transformed by replacing dots, colons and dashes with underscores.
+    return resourceNameToFieldName(resourceName)
   }
 
   protected fun getResRelativePath(file: PathString): String {

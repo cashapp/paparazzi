@@ -71,11 +71,11 @@ abstract class BasicResourceItem(
    * Framework resource items may move between repositories with the same origin.
    * @see RepositoryConfiguration.transferOwnershipTo
    */
-  override fun getRepository() = getRepositoryConfiguration().repository
+  override fun getRepository() = repositoryConfiguration.repository
 
-  override fun getConfiguration() = getRepositoryConfiguration().folderConfiguration
+  override fun getConfiguration() = repositoryConfiguration.folderConfiguration
 
-  abstract fun getRepositoryConfiguration(): RepositoryConfiguration
+  abstract val repositoryConfiguration: RepositoryConfiguration
 
   override fun getKey(): String {
     val qualifiers = configuration.qualifierString
