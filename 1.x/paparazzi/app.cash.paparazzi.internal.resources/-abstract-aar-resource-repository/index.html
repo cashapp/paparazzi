@@ -317,15 +317,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#functions" class="md-nav__link">
-    Functions
+  <a href="#properties" class="md-nav__link">
+    Properties
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#properties" class="md-nav__link">
-    Properties
+  <a href="#functions" class="md-nav__link">
+    Functions
   </a>
   
 </li>
@@ -362,6 +362,29 @@
 <tbody>
 <tr>
 <td><a href="../-aar-source-resource-repository/">AarSourceResourceRepository</a></td>
+</tr>
+</tbody>
+</table>
+<h2 id="properties">Properties<a class="headerlink" href="#properties" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Summary</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="display-name/">displayName</a></td>
+<td>[jvm]<br>open override val <a href="display-name/">displayName</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><br>Returns the name of this resource repository to display in the UI.</td>
+</tr>
+<tr>
+<td><a href="library-name/">libraryName</a></td>
+<td>[jvm]<br>open override val <a href="library-name/">libraryName</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?<br>Returns the name of the library, or null if this is not an AAR resource repository.</td>
+</tr>
+<tr>
+<td><a href="../-loadable-resource-repository/origin/">origin</a></td>
+<td>[jvm]<br>abstract val <a href="../-loadable-resource-repository/origin/">origin</a>: <a href="https://docs.oracle.com/javase/8/docs/api/java/nio/file/Path.html">Path</a><br>Returns the file or directory this resource repository was loaded from. Resource repositories loaded from the same file or directory with different file filtering options have the same origin.</td>
 </tr>
 </tbody>
 </table>
@@ -441,29 +464,6 @@
 <tr>
 <td><a href="../-resource-folder-repository/#2129073324%2FFunctions%2F-2095620550">hasResources</a></td>
 <td>[jvm]<br>open override fun <a href="../-resource-folder-repository/#2129073324%2FFunctions%2F-2095620550">hasResources</a>(namespace: ResourceNamespace, resourceType: ResourceType): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><br>open override fun <a href="../-resource-folder-repository/#-214640495%2FFunctions%2F-2095620550">hasResources</a>(namespace: ResourceNamespace, resourceType: ResourceType, resourceName: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
-</tr>
-</tbody>
-</table>
-<h2 id="properties">Properties<a class="headerlink" href="#properties" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Summary</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><a href="display-name/">displayName</a></td>
-<td>[jvm]<br>open override val <a href="display-name/">displayName</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><br>Returns the name of this resource repository to display in the UI.</td>
-</tr>
-<tr>
-<td><a href="library-name/">libraryName</a></td>
-<td>[jvm]<br>open override val <a href="library-name/">libraryName</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?<br>Returns the name of the library, or null if this is not an AAR resource repository.</td>
-</tr>
-<tr>
-<td><a href="../-loadable-resource-repository/origin/">origin</a></td>
-<td>[jvm]<br>abstract val <a href="../-loadable-resource-repository/origin/">origin</a>: <a href="https://docs.oracle.com/javase/8/docs/api/java/nio/file/Path.html">Path</a><br>Returns the file or directory this resource repository was loaded from. Resource repositories loaded from the same file or directory with different file filtering options have the same origin.</td>
 </tr>
 </tbody>
 </table>

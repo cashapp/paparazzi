@@ -317,15 +317,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#functions" class="md-nav__link">
-    Functions
+  <a href="#properties" class="md-nav__link">
+    Properties
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#properties" class="md-nav__link">
-    Properties
+  <a href="#functions" class="md-nav__link">
+    Functions
   </a>
   
 </li>
@@ -368,6 +368,25 @@ class <a href="./">RepositoryConfiguration</a>(repository: <a href="../-loadable
 </tr>
 </tbody>
 </table>
+<h2 id="properties">Properties<a class="headerlink" href="#properties" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Summary</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="folder-configuration/">folderConfiguration</a></td>
+<td>[jvm]<br>val <a href="folder-configuration/">folderConfiguration</a>: FolderConfiguration</td>
+</tr>
+<tr>
+<td><a href="repository/">repository</a></td>
+<td>[jvm]<br>var <a href="repository/">repository</a>: <a href="../-loadable-resource-repository/">LoadableResourceRepository</a></td>
+</tr>
+</tbody>
+</table>
 <h2 id="functions">Functions<a class="headerlink" href="#functions" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -388,25 +407,6 @@ class <a href="./">RepositoryConfiguration</a>(repository: <a href="../-loadable
 <tr>
 <td><a href="transfer-ownership-to/">transferOwnershipTo</a></td>
 <td>[jvm]<br>fun <a href="transfer-ownership-to/">transferOwnershipTo</a>(repository: <a href="../-loadable-resource-repository/">LoadableResourceRepository</a>)<br>Makes <a href="transfer-ownership-to/">repository</a> the owner of this <a href="./">RepositoryConfiguration</a>. The new owner should be loaded from the same file or directory as the previous one, which means that changing the owner does not affect <a href="equals/">equals</a> or <a href="hash-code/">hashCode</a>.</td>
-</tr>
-</tbody>
-</table>
-<h2 id="properties">Properties<a class="headerlink" href="#properties" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Summary</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><a href="folder-configuration/">folderConfiguration</a></td>
-<td>[jvm]<br>val <a href="folder-configuration/">folderConfiguration</a>: FolderConfiguration</td>
-</tr>
-<tr>
-<td><a href="repository/">repository</a></td>
-<td>[jvm]<br>var <a href="repository/">repository</a>: <a href="../-loadable-resource-repository/">LoadableResourceRepository</a></td>
 </tr>
 </tbody>
 </table>
