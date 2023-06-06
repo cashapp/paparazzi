@@ -26,6 +26,7 @@ import app.cash.paparazzi.deprecated.com.android.ide.common.resources.deprecated
 import app.cash.paparazzi.deprecated.com.android.io.FolderWrapper
 import app.cash.paparazzi.getFieldReflectively
 import app.cash.paparazzi.internal.resources.AarSourceResourceRepository
+import app.cash.paparazzi.internal.resources.FrameworkResourceRepository
 import app.cash.paparazzi.setStaticValue
 import com.android.layoutlib.bridge.Bridge
 import com.android.layoutlib.bridge.android.RenderParamsFlags
@@ -67,6 +68,16 @@ internal class Renderer(
             }.apply { loadResources() }
           )
       } else {
+        ResourceRepositoryBridge.New(
+          FrameworkResourceRepository.create(
+            resourceDirectoryOrFile = platformDataResDir.toPath(),
+            languagesToLoad = emptySet(),
+            useCompiled9Patches = true
+          )
+        )
+
+        // ResourceRepositoryBridge.New(TODO("Add ModuleResourceRepository"))
+
         val libraryResourceRepositories = environment.libraryResourceDirs.map { dir ->
           val resourceDirPath = Paths.get(dir)
           AarSourceResourceRepository.create(
