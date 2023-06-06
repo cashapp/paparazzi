@@ -26,6 +26,7 @@ import app.cash.paparazzi.deprecated.com.android.ide.common.resources.deprecated
 import app.cash.paparazzi.deprecated.com.android.io.FolderWrapper
 import app.cash.paparazzi.getFieldReflectively
 import app.cash.paparazzi.internal.resources.AarSourceResourceRepository
+import app.cash.paparazzi.internal.resources.AppResourceRepository
 import app.cash.paparazzi.internal.resources.FrameworkResourceRepository
 import app.cash.paparazzi.setStaticValue
 import com.android.layoutlib.bridge.Bridge
@@ -74,22 +75,21 @@ internal class Renderer(
             languagesToLoad = emptySet(),
             useCompiled9Patches = true
           )
-        )
-
-        // ResourceRepositoryBridge.New(TODO("Add ModuleResourceRepository"))
-
-        val libraryResourceRepositories = environment.libraryResourceDirs.map { dir ->
-          val resourceDirPath = Paths.get(dir)
-          AarSourceResourceRepository.create(
-            resourceDirectoryOrFile = resourceDirPath,
-            libraryName = resourceDirPath.parent.fileName.name // segment before /res
+        ) to
+          ResourceRepositoryBridge.New(
+            AppResourceRepository.create(
+              localResourceDirectories = environment.localResourceDirs.map { File(it) },
+              libraryRepositories = environment.libraryResourceDirs.map { dir ->
+                val resourceDirPath = Paths.get(dir)
+                AarSourceResourceRepository.create(
+                  resourceDirectoryOrFile = resourceDirPath,
+                  libraryName = resourceDirPath.parent.fileName.name // segment before /res
+                )
+              }
+            )
           )
-        }
 
         // ./gradlew sample:testDebug --tests=app.cash.paparazzi.sample.LaunchViewTest -Papp.cash.paparazzi.new.resource.loading=true
-        println(libraryResourceRepositories.map { it.origin }.joinToString(separator = "\n"))
-
-        TODO("New resource loading coming soon")
       }
 
     sessionParamsBuilder = SessionParamsBuilder(

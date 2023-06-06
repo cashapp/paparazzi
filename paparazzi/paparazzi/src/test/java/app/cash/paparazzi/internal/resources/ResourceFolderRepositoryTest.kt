@@ -22,9 +22,6 @@ class ResourceFolderRepositoryTest {
     )
 
     val map = repository.allResources
-    map.forEach {
-      println(it)
-    }
     assertThat(map.size).isEqualTo(31)
 
     // ANIM
