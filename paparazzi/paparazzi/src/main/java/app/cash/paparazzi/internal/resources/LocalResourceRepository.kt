@@ -1,6 +1,5 @@
 package app.cash.paparazzi.internal.resources
 
-import app.cash.paparazzi.internal.MultiResourceRepository
 import com.android.ide.common.rendering.api.ResourceNamespace
 import com.android.ide.common.resources.AbstractResourceRepository
 import com.android.ide.common.resources.ResourceItem
