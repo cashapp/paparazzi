@@ -317,6 +317,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#types" class="md-nav__link">
+    Types
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#properties" class="md-nav__link">
     Properties
   </a>
@@ -351,7 +358,7 @@
 <p>//<a href="../../../">paparazzi</a>/<a href="../">app.cash.paparazzi.internal.resources</a>/<a href="./">ResourceFolderRepository</a></p>
 <h1 id="resourcefolderrepository">ResourceFolderRepository<a class="headerlink" href="#resourcefolderrepository" title="Permanent link">&para;</a></h1>
 <p>[jvm]\
-class <a href="./">ResourceFolderRepository</a>(resourceDir: <a href="https://docs.oracle.com/javase/8/docs/api/java/io/File.html">File</a>, namespace: ResourceNamespace) : <a href="../-local-resource-repository/">LocalResourceRepository</a>, <a href="../-loadable-resource-repository/">LoadableResourceRepository</a></p>
+class <a href="./">ResourceFolderRepository</a>(val resourceDir: <a href="https://docs.oracle.com/javase/8/docs/api/java/io/File.html">File</a>, namespace: ResourceNamespace) : <a href="../-local-resource-repository/">LocalResourceRepository</a>, <a href="../-loadable-resource-repository/">LoadableResourceRepository</a></p>
 <p>The <a href="./">ResourceFolderRepository</a> is a leaf in the repository tree, and is used for user editable resources (e.g. the resources in the project, typically the res/main source set.)</p>
 <p>Each <a href="./">ResourceFolderRepository</a> contains the resources provided by a single res folder.</p>
 <h2 id="constructors">Constructors<a class="headerlink" href="#constructors" title="Permanent link">&para;</a></h2>
@@ -366,6 +373,21 @@ class <a href="./">ResourceFolderRepository</a>(resourceDir: <a href="https://do
 <tr>
 <td><a href="-resource-folder-repository/">ResourceFolderRepository</a></td>
 <td>[jvm]<br>constructor(resourceDir: <a href="https://docs.oracle.com/javase/8/docs/api/java/io/File.html">File</a>, namespace: ResourceNamespace)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="types">Types<a class="headerlink" href="#types" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Summary</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="-companion/">Companion</a></td>
+<td>[jvm]<br>object <a href="-companion/">Companion</a></td>
 </tr>
 </tbody>
 </table>
@@ -389,6 +411,10 @@ class <a href="./">ResourceFolderRepository</a>(resourceDir: <a href="https://do
 <tr>
 <td><a href="origin/">origin</a></td>
 <td>[jvm]<br>open override val <a href="origin/">origin</a>: <a href="https://docs.oracle.com/javase/8/docs/api/java/nio/file/Path.html">Path</a><br>Returns the file or directory this resource repository was loaded from. Resource repositories loaded from the same file or directory with different file filtering options have the same origin.</td>
+</tr>
+<tr>
+<td><a href="resource-dir/">resourceDir</a></td>
+<td>[jvm]<br>val <a href="resource-dir/">resourceDir</a>: <a href="https://docs.oracle.com/javase/8/docs/api/java/io/File.html">File</a></td>
 </tr>
 </tbody>
 </table>
