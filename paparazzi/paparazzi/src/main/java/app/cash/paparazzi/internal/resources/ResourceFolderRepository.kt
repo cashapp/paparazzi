@@ -100,7 +100,7 @@ class ResourceFolderRepository(
   private fun getOrCreateMap(type: ResourceType): ListMultimap<String, ResourceItem> =
     // Use LinkedListMultimap to preserve ordering for editors that show original order.
     resourceTable.computeIfAbsent(type) { LinkedListMultimap.create() }
-    
+
   override fun getNamespace(): ResourceNamespace = namespace
 
   private fun checkResourceFilename(file: PathString): Boolean {
