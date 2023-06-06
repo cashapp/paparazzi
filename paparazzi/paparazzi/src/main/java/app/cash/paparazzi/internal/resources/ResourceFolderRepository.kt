@@ -97,11 +97,11 @@ class ResourceFolderRepository(
   ): ListMultimap<String, ResourceItem>? =
     if (namespace != this.namespace) null else resourceTable[resourceType]
 
-  override fun getNamespace(): ResourceNamespace = namespace
-
   private fun getOrCreateMap(type: ResourceType): ListMultimap<String, ResourceItem> =
     // Use LinkedListMultimap to preserve ordering for editors that show original order.
     resourceTable.computeIfAbsent(type) { LinkedListMultimap.create() }
+    
+  override fun getNamespace(): ResourceNamespace = namespace
 
   private fun checkResourceFilename(file: PathString): Boolean {
     val fileNameToResourceName = SdkUtils.fileNameToResourceName(file.fileName)
