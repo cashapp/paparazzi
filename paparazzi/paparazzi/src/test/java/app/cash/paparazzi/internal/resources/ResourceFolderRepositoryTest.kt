@@ -1,7 +1,5 @@
-package app.cash.paparazzi.internal
+package app.cash.paparazzi.internal.resources
 
-import app.cash.paparazzi.internal.resources.ResourceFolderRepository
-import app.cash.paparazzi.internal.resources.resolveProjectPath
 import com.android.ide.common.rendering.api.ArrayResourceValue
 import com.android.ide.common.rendering.api.AttrResourceValue
 import com.android.ide.common.rendering.api.AttributeFormat

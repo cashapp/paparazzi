@@ -13,10 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package app.cash.paparazzi.internal
+package app.cash.paparazzi.internal.resources
 
-import app.cash.paparazzi.internal.resources.AarSourceResourceRepository
-import app.cash.paparazzi.internal.resources.LocalResourceRepository
 import com.android.ide.common.rendering.api.ResourceNamespace
 import com.android.ide.common.resources.ResourceItem
 import com.android.ide.common.resources.ResourceRepository
@@ -51,7 +49,7 @@ import kotlin.collections.Map.Entry
  *
  * <p>In the resource repository hierarchy, MultiResourceRepository is an internal node, never a leaf.
  */
-abstract class MultiResourceRepository internal constructor(displayName: String) :
+internal abstract class MultiResourceRepository internal constructor(displayName: String) :
   LocalResourceRepository(displayName) {
   private var localResources = listOf<LocalResourceRepository>()
 
