@@ -477,7 +477,7 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
     }
   }
 
-  private fun createFileResourceItem(
+  protected fun createFileResourceItem(
     file: PathString,
     resourceType: ResourceType,
     configuration: RepositoryConfiguration
@@ -1150,7 +1150,8 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
     const val JAR_PROTOCOL = "jar"
     const val JAR_SEPARATOR = "!/"
 
-    private fun isXmlFile(file: PathString) = isXmlFile(file.fileName)
+    @JvmStatic
+    protected fun isXmlFile(file: PathString) = isXmlFile(file.fileName)
 
     private fun isXmlFile(filename: String) = SdkUtils.endsWithIgnoreCase(filename, DOT_XML)
 
