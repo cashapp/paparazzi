@@ -256,9 +256,16 @@ class PaparazziPlugin : Plugin<Project> {
   }
 
   private fun Project.addTestDependency() {
-    configurations.getByName("testImplementation").dependencies.add(
+    val dependency = if (isInternal()) {
+      dependencies.project(mapOf("path" to ":paparazzi"))
+    } else {
       dependencies.create("app.cash.paparazzi:paparazzi:$VERSION")
-    )
+    }
+    configurations.getByName("testImplementation").dependencies.add(dependency)
+  }
+
+  private fun Project.isInternal(): Boolean {
+    return properties["app.cash.paparazzi.internal"].toString() == "true"
   }
 
   private fun BaseExtension.packageName(): String = namespace ?: ""
