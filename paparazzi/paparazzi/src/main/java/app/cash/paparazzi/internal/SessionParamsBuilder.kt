@@ -29,6 +29,7 @@ import com.android.ide.common.rendering.api.SessionParams.Key
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode
 import com.android.ide.common.resources.ResourceResolver
 import com.android.ide.common.resources.ResourceValueMap
+import com.android.ide.common.resources.getConfiguredResources
 import com.android.layoutlib.bridge.Bridge
 import com.android.resources.LayoutDirection
 import com.android.resources.ResourceType
@@ -84,15 +85,24 @@ internal data class SessionParamsBuilder(
             ResourceNamespace.ANDROID to
               frameworkResources.repository.getConfiguredResources(folderConfiguration)
 
-          is New -> TODO()
+          is New ->
+            ResourceNamespace.ANDROID to
+              frameworkResources.repository.getConfiguredResources(folderConfiguration)
+                .row(ResourceNamespace.ANDROID)
         },
-        when (projectResources) {
+        *when (projectResources) {
           is Legacy -> {
-            ResourceNamespace.TODO() to
-              projectResources.repository.getConfiguredResources(folderConfiguration)
+            arrayOf(
+              ResourceNamespace.TODO() to
+                projectResources.repository.getConfiguredResources(folderConfiguration)
+            )
           }
 
-          is New -> TODO()
+          is New ->
+            projectResources.repository.getConfiguredResources(folderConfiguration)
+              .rowMap()
+              .map { (key, value) -> key to value }
+              .toTypedArray()
         }
       ),
       ResourceReference(
