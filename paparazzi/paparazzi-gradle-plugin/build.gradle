@@ -12,17 +12,28 @@ gradlePlugin {
   }
 }
 
+configurations {
+  fixtureClasspath
+}
+
+tasks.named('pluginUnderTestMetadata').configure {
+  getPluginClasspath().from(configurations.fixtureClasspath)
+}
+
 dependencies {
   compileOnly gradleApi()
-  implementation platform(libs.kotlin.bom)
   implementation libs.plugin.kotlin
-  implementation libs.plugin.android
+  compileOnly libs.plugin.android
+
+  implementation platform(libs.kotlin.bom)
   implementation(libs.tools.sdkCommon) {
     because "SymbolUtils.getPackageNameFromManifest removed in AGP 7.0.  Replace?"
   }
 
   testImplementation libs.junit
   testImplementation libs.truth
+
+  fixtureClasspath 'com.android.tools.build:gradle:7.3.1'
 }
 
 buildConfig {

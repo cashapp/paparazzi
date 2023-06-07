@@ -10,7 +10,7 @@ buildscript {
 
   dependencies {
     classpath libs.plugin.kotlin
-    classpath libs.plugin.android
+    classpath 'com.android.tools.build:gradle:7.3.1'
     classpath libs.plugin.versions
     classpath libs.plugin.spotless
 
