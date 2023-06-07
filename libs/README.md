@@ -26,7 +26,7 @@ Note that layoutlib's version tracks [Android Studio Releases][studio_releases] 
    ```
 5. Build and upload:
     ```
-    ./gradlew -p paparazzi publishMavenNativeLibraryPublicationToMavenCentralRepository
+    ./gradlew publishMavenNativeLibraryPublicationToMavenCentralRepository
     ```
 
    This may take a few minutes. It clones a large repo (2.4 GiB) and then uploads a large artifact

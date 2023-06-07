@@ -21,6 +21,6 @@ android {
 
 tasks.withType(Test).configureEach {
   testLogging {
-    exceptionFormat 'FULL'
+    showStandardStreams true
   }
 }

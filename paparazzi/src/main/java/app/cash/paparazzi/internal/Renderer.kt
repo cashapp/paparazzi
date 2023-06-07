@@ -69,6 +69,8 @@ internal class Renderer(
             }.apply { loadResources() }
           )
       } else {
+        println("New resource loading coming soon")
+
         ResourceRepositoryBridge.New(
           FrameworkResourceRepository.create(
             resourceDirectoryOrFile = platformDataResDir.toPath(),

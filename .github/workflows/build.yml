@@ -39,10 +39,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
 
-      - name: Run Paparazzi Tests
-        run: ./gradlew -p paparazzi check
-
-      - name: Run Sample Tests
+      - name: Run All Tests
         run: ./gradlew check
 
       - name: Upload Test Failures
@@ -72,7 +69,7 @@ jobs:
           java-version: 17
 
       - name: Publish Artifacts
-        run: ./gradlew -p paparazzi publishMavenPublicationToMavenCentralRepository paparazzi-gradle-plugin:publishPluginMavenPublicationToMavenCentralRepository paparazzi-gradle-plugin:publishPaparazziPluginMarkerMavenPublicationToMavenCentralRepository --no-parallel
+        run: ./gradlew publishMavenPublicationToMavenCentralRepository paparazzi-gradle-plugin:publishPluginMavenPublicationToMavenCentralRepository paparazzi-gradle-plugin:publishPaparazziPluginMarkerMavenPublicationToMavenCentralRepository --no-parallel
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}

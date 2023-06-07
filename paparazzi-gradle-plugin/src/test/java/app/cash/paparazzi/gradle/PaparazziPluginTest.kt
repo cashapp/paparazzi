@@ -248,12 +248,9 @@ class PaparazziPluginTest {
 
     val result = gradleRunner
       .withArguments("testDebug", "--stacktrace")
-      .forwardOutput()
-      .runFixture(fixtureRoot) { buildAndFail() }
+      .runFixture(fixtureRoot) { build() }
 
-    assertThat(result.output).contains(
-      "An operation is not implemented: New resource loading coming soon"
-    )
+    assertThat(result.output).contains("New resource loading coming soon")
   }
 
   @Test

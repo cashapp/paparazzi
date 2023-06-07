@@ -1,13 +1,20 @@
 rootProject.name = 'paparazzi-root'
 
+include ':libs:layoutlib'
+include ':libs:native-macarm'
+include ':libs:native-macosx'
+include ':libs:native-win'
+include ':libs:native-linux'
+include ':paparazzi'
+include ':paparazzi-agent'
+include ':paparazzi-gradle-plugin'
+
 include ':sample'
 
-includeBuild('paparazzi') {
+enableFeaturePreview('TYPESAFE_PROJECT_ACCESSORS')
+
+includeBuild('build-logic') {
   dependencySubstitution {
-    substitute module('app.cash.paparazzi:paparazzi') using project(':paparazzi')
-    substitute module('app.cash.paparazzi:paparazzi-agent') using project(':paparazzi-agent')
     substitute module('app.cash.paparazzi:paparazzi-gradle-plugin') using project(':paparazzi-gradle-plugin')
   }
 }
-
-enableFeaturePreview('TYPESAFE_PROJECT_ACCESSORS')
