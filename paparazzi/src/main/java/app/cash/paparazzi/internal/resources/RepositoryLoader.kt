@@ -27,7 +27,6 @@ import app.cash.paparazzi.internal.resources.base.BasicStyleableResourceItem
 import app.cash.paparazzi.internal.resources.base.BasicTextValueResourceItem
 import app.cash.paparazzi.internal.resources.base.BasicValueResourceItem
 import app.cash.paparazzi.internal.resources.base.BasicValueResourceItemBase
-import com.android.SdkConstants
 import com.android.SdkConstants.ANDROID_NS_NAME
 import com.android.SdkConstants.ATTR_FORMAT
 import com.android.SdkConstants.ATTR_INDEX
@@ -108,8 +107,6 @@ import java.nio.file.FileVisitor
 import java.nio.file.NoSuchFileException
 import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
-import java.util.ArrayDeque
-import java.util.Deque
 import java.util.EnumMap
 import java.util.EnumSet
 import java.util.logging.Logger
@@ -1031,14 +1028,12 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
   private class XmlTextExtractor {
     private val text = StringBuilder()
     private val rawXml = StringBuilder()
-    private val textInclusionState: Deque<Boolean> = ArrayDeque()
     private var nontrivialRawXml = false
 
     @Throws(IOException::class, XmlPullParserException::class)
     fun extractText(parser: XmlPullParser, withRawXml: Boolean): String {
       text.setLength(0)
       rawXml.setLength(0)
-      textInclusionState.clear()
       nontrivialRawXml = false
       val elementDepth = parser.depth
       var event: Int
@@ -1047,21 +1042,6 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
         when (event) {
           XmlPullParser.START_TAG -> {
             val tagName = parser.name
-            if (ResourceItem.XLIFF_G_TAG == tagName && isXliffNamespace(parser.namespace)) {
-              var includeNestedText = getTextInclusionState()
-              val example = parser.getAttributeValue(null, ResourceItem.ATTR_EXAMPLE)
-              if (example != null) {
-                text.append('(').append(example).append(')')
-                includeNestedText = false
-              } else {
-                val id = parser.getAttributeValue(null, SdkConstants.ATTR_ID)
-                if (id != null && id != "id") {
-                  text.append('$').append('{').append(id).append('}')
-                  includeNestedText = false
-                }
-              }
-              textInclusionState.addLast(includeNestedText)
-            }
             if (withRawXml) {
               nontrivialRawXml = true
               rawXml.append('<')
@@ -1100,16 +1080,11 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
               }
               rawXml.append(tagName).append('>')
             }
-            if (ResourceItem.XLIFF_G_TAG == tagName && isXliffNamespace(parser.namespace)) {
-              textInclusionState.removeLast()
-            }
           }
 
           XmlPullParser.ENTITY_REF, XmlPullParser.TEXT -> {
             val textPiece = parser.text
-            if (getTextInclusionState()) {
-              text.append(textPiece)
-            }
+            text.append(textPiece)
             if (withRawXml) {
               rawXml.append(textPiece)
             }
@@ -1117,9 +1092,7 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
 
           XmlPullParser.CDSECT -> {
             val textPiece = parser.text
-            if (getTextInclusionState()) {
-              text.append(textPiece)
-            }
+            text.append(textPiece)
             if (withRawXml) {
               nontrivialRawXml = true
               rawXml.append("<![CDATA[").append(textPiece).append("]]>")
@@ -1130,9 +1103,6 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
 
       return ValueXmlHelper.unescapeResourceString(text.toString(), false, true)
     }
-
-    private fun getTextInclusionState(): Boolean =
-      textInclusionState.isEmpty() || textInclusionState.last
 
     fun getRawXml(): String? = if (nontrivialRawXml) rawXml.toString() else null
 
