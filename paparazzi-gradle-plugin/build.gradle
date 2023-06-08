@@ -1,0 +1,60 @@
+apply plugin: 'org.jetbrains.kotlin.jvm'
+apply plugin: 'java-gradle-plugin'
+apply plugin: 'com.github.gmazzo.buildconfig'
+
+// This module is included in two projects:
+// - In the root project where it's released as one of our artifacts
+// - In build-logic project where we can use it for the test-schema and samples.
+//
+// We only want to publish when it's being built in the root project.
+if (rootProject.name == 'paparazzi-root') {
+  apply plugin: 'com.vanniktech.maven.publish'
+}
+
+gradlePlugin {
+  plugins {
+    paparazzi {
+      id = 'app.cash.paparazzi'
+      implementationClass = 'app.cash.paparazzi.gradle.PaparazziPlugin'
+    }
+  }
+}
+
+dependencies {
+  compileOnly gradleApi()
+  implementation platform(libs.kotlin.bom)
+  implementation libs.plugin.kotlin
+  implementation libs.plugin.android
+  implementation(libs.tools.sdkCommon) {
+    because "SymbolUtils.getPackageNameFromManifest removed in AGP 7.0.  Replace?"
+  }
+
+  testImplementation libs.junit
+  testImplementation libs.truth
+}
+
+buildConfig {
+  useKotlinOutput {
+    internalVisibility = true
+    topLevelConstants = true
+  }
+
+  packageName('app.cash.paparazzi.gradle')
+  buildConfigField("String", "VERSION", "\"${project.version}\"")
+  buildConfigField("String", "NATIVE_LIB_VERSION", "\"${libs.versions.layoutlib.get()}\"")
+}
+
+tasks.withType(Test).configureEach {
+  dependsOn(':paparazzi:publishMavenPublicationToProjectLocalMavenRepository')
+  dependsOn(':paparazzi-agent:publishMavenPublicationToProjectLocalMavenRepository')
+}
+
+// When cleaning this project, we also want to clean the test projects.
+tasks.named("clean").configure { cleaner ->
+  cleaner.doFirst {
+    project.file('src/test/projects').eachFile { root ->
+      new File(root, '.gradle').deleteDir()
+      new File(root, 'build').deleteDir()
+    }
+  }
+}

@@ -1,0 +1,12 @@
+rootProject.name = 'build-logic'
+
+include(':paparazzi-gradle-plugin')
+project(':paparazzi-gradle-plugin').projectDir = new File('../paparazzi-gradle-plugin')
+
+dependencyResolutionManagement {
+  versionCatalogs {
+    libs {
+      from(files("../gradle/libs.versions.toml"))
+    }
+  }
+}
