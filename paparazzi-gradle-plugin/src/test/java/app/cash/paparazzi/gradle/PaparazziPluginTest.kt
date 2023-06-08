@@ -1283,19 +1283,27 @@ class PaparazziPluginTest {
     action: GradleRunner.() -> BuildResult
   ): BuildResult {
     val settings = File(projectRoot, "settings.gradle")
-    if (!settings.exists()) {
-      settings.createNewFile()
-      settings.writeText("apply from: \"../test.settings.gradle\"")
-      settings.deleteOnExit()
-    }
-
     val gradleProperties = File(projectRoot, "gradle.properties")
-    if (!gradleProperties.exists()) {
-      gradleProperties.createNewFile()
-      gradleProperties.writeText("android.useAndroidX=true")
-      gradleProperties.deleteOnExit()
-    }
+    var generatedSettings = false
+    var generatedGradleProperties = false
 
-    return withProjectDir(projectRoot).action()
+    return try {
+      if (!settings.exists()) {
+        settings.createNewFile()
+        settings.writeText("apply from: \"../test.settings.gradle\"")
+        generatedSettings = true
+      }
+
+      if (!gradleProperties.exists()) {
+        gradleProperties.createNewFile()
+        gradleProperties.writeText("android.useAndroidX=true")
+        generatedGradleProperties = true
+      }
+
+      withProjectDir(projectRoot).action()
+    } finally {
+      if (generatedSettings) settings.delete()
+      if (generatedGradleProperties) gradleProperties.delete()
+    }
   }
 }
