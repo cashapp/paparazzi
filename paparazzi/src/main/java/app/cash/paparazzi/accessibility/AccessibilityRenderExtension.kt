@@ -97,22 +97,16 @@ class AccessibilityRenderExtension : RenderExtension {
     processElement: (AccessibilityElement) -> Unit
   ) {
     var accessibilityText: String? = null
-    if (config.isMergingSemanticsOfDescendants) {
+    accessibilityText = if (config.isMergingSemanticsOfDescendants) {
       val unmergedNode = unmergedNodes?.filter { it.id == id }
       unmergedNode?.first()?.let { node ->
-        accessibilityText = if (node.children.isEmpty()) {
-          accessibilityText()
-        } else {
-          // Ignore nodes that merge descendants as they will have their own merged node
-          node.children.filter {
-            !it.config.isMergingSemanticsOfDescendants
-          }.mapNotNull { child ->
-            child.accessibilityText()
-          }.joinToString(", ").ifEmpty { null }
-        }
+        node.findAllUnmergedNodes()
+          .mapNotNull { it.accessibilityText() }
+          .joinToString(", ")
+          .ifEmpty { null }
       }
     } else {
-      accessibilityText = accessibilityText()
+      accessibilityText()
     }
 
     if (accessibilityText != null) {
@@ -122,9 +116,9 @@ class AccessibilityRenderExtension : RenderExtension {
       processElement(
         AccessibilityElement(
           // SemanticsNode.id is backed by AtomicInteger and is not guaranteed consistent across runs.
-          id = accessibilityText!!,
+          id = accessibilityText,
           displayBounds = displayBounds,
-          contentDescription = accessibilityText!!
+          contentDescription = accessibilityText
         )
       )
     }
@@ -132,6 +126,17 @@ class AccessibilityRenderExtension : RenderExtension {
     children.forEach {
       it.processAccessibleChildren(processElement)
     }
+  }
+}
+
+private fun SemanticsNode.findAllUnmergedNodes(): List<SemanticsNode> {
+  return buildList {
+    addAll(
+      children
+        .filter { !it.config.isMergingSemanticsOfDescendants }
+        .flatMap { it.findAllUnmergedNodes() }
+    )
+    add(this@findAllUnmergedNodes)
   }
 }
 
