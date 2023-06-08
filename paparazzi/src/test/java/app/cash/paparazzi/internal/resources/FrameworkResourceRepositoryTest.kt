@@ -47,6 +47,30 @@ class FrameworkResourceRepositoryTest {
     checkContents(withFrenchAndGerman)
   }
 
+  @Test
+  fun useCompiled9Patches() {
+    val repository = FrameworkResourceRepository.create(
+      resourceDirectoryOrFile = getFrameworkResJar(),
+      languagesToLoad = emptySet(),
+      useCompiled9Patches = true
+    )
+
+    val resourceUrl = repository.getResourceUrl("drawable-hdpi/textfield_search_activated_mtrl_alpha.9.png")
+    assertThat(resourceUrl).isEqualTo("jar://src/test/resources/framework/framework_res.jar!/res/drawable-hdpi/textfield_search_activated_mtrl_alpha.compiled.9.png")
+  }
+
+  @Test
+  fun notUseCompiled9Patches() {
+    val repository = FrameworkResourceRepository.create(
+      resourceDirectoryOrFile = getFrameworkResJar(),
+      languagesToLoad = emptySet(),
+      useCompiled9Patches = false
+    )
+
+    val resourceUrl = repository.getResourceUrl("drawable-hdpi/textfield_search_activated_mtrl_alpha.9.png")
+    assertThat(resourceUrl).isEqualTo("jar://src/test/resources/framework/framework_res.jar!/res/drawable-hdpi/textfield_search_activated_mtrl_alpha.9.png")
+  }
+
   private fun getFrameworkResJar(): Path =
     Paths.get("src/test/resources/framework/framework_res.jar")
 

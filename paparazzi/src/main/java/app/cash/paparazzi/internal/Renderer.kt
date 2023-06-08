@@ -75,7 +75,7 @@ internal class Renderer(
           FrameworkResourceRepository.create(
             resourceDirectoryOrFile = platformDataResDir.toPath(),
             languagesToLoad = emptySet(),
-            useCompiled9Patches = true
+            useCompiled9Patches = false
           )
         ) to
           ResourceRepositoryBridge.New(
