@@ -21,11 +21,9 @@ import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.LibraryExtension
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactType
 import com.android.build.gradle.tasks.MergeSourceSetFolders
-import org.gradle.api.Action
 import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.Task
 import org.gradle.api.artifacts.component.ProjectComponentIdentifier
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE
@@ -194,33 +192,23 @@ class PaparazziPlugin : Plugin<Project> {
         test.outputs.dir(reportOutputDir)
         test.outputs.dir(snapshotOutputDir)
 
-        @Suppress("ObjectLiteralToLambda")
-        // why not a lambda?  See: https://docs.gradle.org/7.2/userguide/validation_problems.html#implementation_unknown
-        test.doFirst(object : Action<Task> {
-          override fun execute(t: Task) {
-            // Note: these are lazy properties that are not resolvable in the Gradle configuration phase.
-            // They need special handling, so they're added as inputs.property above, and systemProperty here.
-            test.systemProperties["paparazzi.platform.data.root"] =
-              nativePlatformFileCollection.singleFile.absolutePath
-            test.systemProperties["paparazzi.test.record"] = isRecordRun.get()
-            test.systemProperties["paparazzi.test.verify"] = isVerifyRun.get()
-          }
-        })
+        test.doFirst {
+          // Note: these are lazy properties that are not resolvable in the Gradle configuration phase.
+          // They need special handling, so they're added as inputs.property above, and systemProperty here.
+          test.systemProperties["paparazzi.platform.data.root"] =
+            nativePlatformFileCollection.singleFile.absolutePath
+          test.systemProperties["paparazzi.test.record"] = isRecordRun.get()
+          test.systemProperties["paparazzi.test.verify"] = isVerifyRun.get()
+        }
+
+        test.doLast {
+          val uri = reportOutputDir.get().asFile.toPath().resolve("index.html").toUri()
+          test.logger.log(LIFECYCLE, "See the Paparazzi report at: $uri")
+        }
       }
 
       recordTaskProvider.configure { it.dependsOn(testTaskProvider) }
       verifyTaskProvider.configure { it.dependsOn(testTaskProvider) }
-
-      testTaskProvider.configure { test ->
-        @Suppress("ObjectLiteralToLambda")
-        // why not a lambda?  See: https://docs.gradle.org/7.2/userguide/validation_problems.html#implementation_unknown
-        test.doLast(object : Action<Task> {
-          override fun execute(t: Task) {
-            val uri = reportOutputDir.get().asFile.toPath().resolve("index.html").toUri()
-            test.logger.log(LIFECYCLE, "See the Paparazzi report at: $uri")
-          }
-        })
-      }
     }
   }
 
