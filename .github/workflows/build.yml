@@ -49,7 +49,7 @@ jobs:
           name: test-failures
           path: |
             **/build/reports/tests/*/
-            **/out/failures/
+            **/build/paparazzi/failures/
             paparazzi/paparazzi-gradle-plugin/src/test/projects/**/build/reports/paparazzi/images/
 
   publish:
