@@ -90,7 +90,7 @@ class Paparazzi @JvmOverloads constructor(
   private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference),
   private val renderExtensions: Set<RenderExtension> = setOf(),
   private val supportsRtl: Boolean = false,
-  private val showSystemUi: Boolean = true,
+  private val showSystemUi: Boolean = false,
   private val validateAccessibility: Boolean = false
 ) : TestRule {
   private val logger = PaparazziLogger()
