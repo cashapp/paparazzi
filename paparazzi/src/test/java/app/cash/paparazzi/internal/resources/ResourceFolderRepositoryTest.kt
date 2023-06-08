@@ -22,7 +22,7 @@ class ResourceFolderRepositoryTest {
     )
 
     val map = repository.allResources
-    assertThat(map.size).isEqualTo(31)
+    assertThat(map.size).isEqualTo(32)
 
     // ANIM
     assertThat(map[0].name).isEqualTo("slide_in_from_left")
@@ -135,11 +135,15 @@ class ResourceFolderRepositoryTest {
     // STRINGS
     assertThat(map[27].name).isEqualTo("string_name")
     assertThat(map[27].type).isEqualTo(ResourceType.STRING)
+    assertThat(map[27].resourceValue.value).isEqualTo("Test String")
+    assertThat(map[28].name).isEqualTo("string_name_xliff")
+    assertThat(map[28].type).isEqualTo(ResourceType.STRING)
+    assertThat(map[28].resourceValue.value).isEqualTo("Test String {0} with suffix")
 
     // STYLE XML
-    assertThat(map[28].name).isEqualTo("TestStyle")
-    assertThat(map[28].type).isEqualTo(ResourceType.STYLE)
-    with(map[28].resourceValue as StyleResourceValue) {
+    assertThat(map[29].name).isEqualTo("TestStyle")
+    assertThat(map[29].type).isEqualTo(ResourceType.STYLE)
+    with(map[29].resourceValue as StyleResourceValue) {
       assertThat(definedItems.size).isEqualTo(2)
       assertThat(definedItems.elementAt(0).attrName).isEqualTo("android:scrollbars")
       assertThat(definedItems.elementAt(0).value).isEqualTo("horizontal")
@@ -148,9 +152,9 @@ class ResourceFolderRepositoryTest {
     }
 
     // STYLEABLE
-    assertThat(map[29].name).isEqualTo("test_styleable")
-    assertThat(map[29].type).isEqualTo(ResourceType.STYLEABLE)
-    with(map[29].resourceValue as StyleableResourceValue) {
+    assertThat(map[30].name).isEqualTo("test_styleable")
+    assertThat(map[30].type).isEqualTo(ResourceType.STYLEABLE)
+    with(map[30].resourceValue as StyleableResourceValue) {
       assertThat(allAttributes.size).isEqualTo(3)
       assertThat(allAttributes[0].name).isEqualTo("TestAttr")
       assertThat(allAttributes[1].name).isEqualTo("TestAttrInt")
@@ -158,7 +162,7 @@ class ResourceFolderRepositoryTest {
     }
 
     // XML
-    assertThat(map[30].name).isEqualTo("test_network_security_config")
-    assertThat(map[30].type).isEqualTo(ResourceType.XML)
+    assertThat(map[31].name).isEqualTo("test_network_security_config")
+    assertThat(map[31].type).isEqualTo(ResourceType.XML)
   }
 }

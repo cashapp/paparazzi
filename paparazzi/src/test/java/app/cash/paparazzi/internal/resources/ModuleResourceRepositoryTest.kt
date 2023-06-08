@@ -15,14 +15,14 @@ class ModuleResourceRepositoryTest {
     )
 
     val map = repository.allResources
-    assertThat(map.size).isEqualTo(31)
+    assertThat(map.size).isEqualTo(32)
 
     assertThat(map[0].name).isEqualTo("slide_in_from_left")
     assertThat(map[0].type).isEqualTo(ResourceType.ANIM)
     assertThat(map[1].name).isEqualTo("test_animator")
     assertThat(map[1].type).isEqualTo(ResourceType.ANIMATOR)
 
-    assertThat(map[30].name).isEqualTo("test_network_security_config")
-    assertThat(map[30].type).isEqualTo(ResourceType.XML)
+    assertThat(map[31].name).isEqualTo("test_network_security_config")
+    assertThat(map[31].type).isEqualTo(ResourceType.XML)
   }
 }
