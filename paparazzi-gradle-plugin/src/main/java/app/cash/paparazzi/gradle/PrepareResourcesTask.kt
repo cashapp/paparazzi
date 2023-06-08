@@ -44,11 +44,11 @@ abstract class PrepareResourcesTask : DefaultTask() {
 
   @get:InputFiles
   @get:PathSensitive(PathSensitivity.NONE)
-  abstract val localResourceDirs: ConfigurableFileCollection
+  abstract val projectResourceDirs: ConfigurableFileCollection
 
   @get:InputFiles
   @get:PathSensitive(PathSensitivity.NONE)
-  abstract val libraryResourceDirs: ConfigurableFileCollection
+  abstract val aarExplodedDirs: ConfigurableFileCollection
 
   @get:Input
   abstract val mergeAssetsOutputDir: Property<String>
@@ -101,9 +101,9 @@ abstract class PrepareResourcesTask : DefaultTask() {
         it.newLine()
         it.write(resourcePackageNames)
         it.newLine()
-        it.write(localResourceDirs.joinFiles(projectDirectory))
+        it.write(projectResourceDirs.joinFiles(projectDirectory))
         it.newLine()
-        it.write(libraryResourceDirs.joinFiles(gradleUserHomeDirectory))
+        it.write(aarExplodedDirs.joinFiles(gradleUserHomeDirectory))
         it.newLine()
       }
   }

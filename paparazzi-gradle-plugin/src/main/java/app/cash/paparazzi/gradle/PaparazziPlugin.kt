@@ -26,6 +26,7 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.artifacts.component.ProjectComponentIdentifier
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE
 import org.gradle.api.file.Directory
@@ -95,14 +96,17 @@ class PaparazziPlugin : Plugin<Project> {
       val reportOutputDir = buildDirectory.dir("reports/paparazzi")
       val snapshotOutputDir = project.layout.projectDirectory.dir("src/test/snapshots")
 
-      // local resources
       val localResourceDirs = project
         .files(variant.sourceSets.flatMap { it.resDirectories })
 
-      // library resources
       // https://android.googlesource.com/platform/tools/base/+/96015063acd3455a76cdf1cc71b23b0828c0907f/build-system/gradle-core/src/main/java/com/android/build/gradle/tasks/MergeResources.kt#875
-      val libraryResourceDirs = variant.runtimeConfiguration
-        .artifactsFor(ArtifactType.ANDROID_RES.type)
+
+      val moduleResourceDirs = variant.runtimeConfiguration
+        .artifactsFor(ArtifactType.ANDROID_RES.type) { it is ProjectComponentIdentifier }
+        .artifactFiles
+
+      val aarExplodedDirs = variant.runtimeConfiguration
+        .artifactsFor(ArtifactType.ANDROID_RES.type) { it !is ProjectComponentIdentifier }
         .artifactFiles
 
       val packageAwareArtifactFiles = variant.runtimeConfiguration
@@ -124,8 +128,8 @@ class PaparazziPlugin : Plugin<Project> {
         task.targetSdkVersion.set(android.targetSdkVersion())
         task.compileSdkVersion.set(android.compileSdkVersion())
         task.mergeAssetsOutputDir.set(buildDirectory.asRelativePathString(mergeAssetsOutputDir))
-        task.localResourceDirs.from(localResourceDirs)
-        task.libraryResourceDirs.from(libraryResourceDirs)
+        task.projectResourceDirs.from(localResourceDirs.plus(moduleResourceDirs))
+        task.aarExplodedDirs.from(aarExplodedDirs)
         task.paparazziResources.set(buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.txt"))
       }
 
