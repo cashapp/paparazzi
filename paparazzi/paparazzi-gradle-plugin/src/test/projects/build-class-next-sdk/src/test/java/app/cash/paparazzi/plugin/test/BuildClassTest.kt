@@ -27,8 +27,8 @@ class BuildClassTest {
 
   @Test
   fun verifyFields() {
-    assertThat(Build.ID).isEqualTo("UPB2.230407.013")
-    assertThat(Build.DISPLAY).isEqualTo("sdk_phone_armv7-userdebug UpsideDownCake UPB2.230407.013 10043902 test-keys")
+    assertThat(Build.ID).isEqualTo("URA8.230510.004")
+    assertThat(Build.DISPLAY).isEqualTo("sdk_phone_armv7-userdebug UpsideDownCakePrivacySandbox URA8.230510.004 10115423 test-keys")
     assertThat(Build.PRODUCT).isEqualTo("unknown")
     assertThat(Build.DEVICE).isEqualTo("generic")
     assertThat(Build.BOARD).isEqualTo("unknown")
@@ -43,7 +43,7 @@ class BuildClassTest {
     assertThat(Build.SKU).isEqualTo("unknown")
     assertThat(Build.ODM_SKU).isEqualTo("unknown")
 
-    assertThat(Build.VERSION.INCREMENTAL).isEqualTo("10043902")
+    assertThat(Build.VERSION.INCREMENTAL).isEqualTo("10115423")
     assertThat(Build.VERSION.RELEASE).isNotNull()
     assertThat(Build.VERSION.RELEASE_OR_CODENAME).isNotNull()
     assertThat(Build.VERSION.BASE_OS).isEqualTo("")
@@ -51,6 +51,6 @@ class BuildClassTest {
     assertThat(Build.VERSION.MEDIA_PERFORMANCE_CLASS).isEqualTo(0)
     assertThat(Build.VERSION.SDK).isNotNull()
     assertThat(Build.VERSION.SDK_INT).isNotEqualTo(0)
-    assertThat(Build.VERSION.CODENAME).isEqualTo("UpsideDownCake")
+    assertThat(Build.VERSION.CODENAME).isEqualTo("UpsideDownCakePrivacySandbox")
   }
 }

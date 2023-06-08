@@ -6,7 +6,7 @@ plugins {
 
 android {
   namespace 'app.cash.paparazzi.plugin.test'
-  compileSdkPreview "UpsideDownCake"
+  compileSdkPreview "UpsideDownCakePrivacySandbox"
   defaultConfig {
     minSdk libs.versions.minSdk.get() as int
   }
