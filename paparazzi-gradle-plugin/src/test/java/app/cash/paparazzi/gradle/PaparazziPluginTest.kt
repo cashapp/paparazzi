@@ -885,7 +885,7 @@ class PaparazziPluginTest {
       .runFixture(fixtureRoot) { build() }
 
     val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
-    val snapshotFile = File(snapshotsDir, "6dc7ccef5e1decc563e334e3d809fd68e6f6b122.png")
+    val snapshotFile = File(snapshotsDir, "9d3c31a9c79a363c26dc352b59e9e77083c300a7.png")
     assertThat(snapshotFile.exists()).isTrue()
 
     val goldenImage = File(fixtureRoot, "src/test/resources/arrow_missing.png")
