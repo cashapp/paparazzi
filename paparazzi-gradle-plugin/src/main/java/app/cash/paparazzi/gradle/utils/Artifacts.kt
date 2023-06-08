@@ -18,12 +18,20 @@ package app.cash.paparazzi.gradle.utils
 import org.gradle.api.artifacts.ArtifactCollection
 import org.gradle.api.artifacts.ArtifactView
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.component.ComponentIdentifier
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE
 
-internal fun Configuration.artifactsFor(attrValue: String): ArtifactCollection =
-  artifactViewFor(attrValue).artifacts
+internal fun Configuration.artifactsFor(
+  attrValue: String,
+  componentFilter: (ComponentIdentifier) -> Boolean = { true }
+): ArtifactCollection =
+  artifactViewFor(attrValue, componentFilter).artifacts
 
-internal fun Configuration.artifactViewFor(attrValue: String): ArtifactView =
+internal fun Configuration.artifactViewFor(
+  attrValue: String,
+  componentFilter: (ComponentIdentifier) -> Boolean = { true }
+): ArtifactView =
   incoming.artifactView { config ->
     config.attributes.attribute(ARTIFACT_TYPE_ATTRIBUTE, attrValue)
+    config.componentFilter(componentFilter)
   }
