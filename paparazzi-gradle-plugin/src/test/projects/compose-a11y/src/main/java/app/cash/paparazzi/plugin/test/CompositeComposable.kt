@@ -63,6 +63,18 @@ fun CompositeComposable() {
       }
     }
 
+    // Complex semantic layout
+    Row(modifier = Modifier.clickable(onClickLabel = "On Click Label") { }) {
+      Column(modifier = Modifier.semantics(mergeDescendants = true) {}) {
+        Text("Merged Text")
+        Text("More Text")
+      }
+      Column {
+        Text("Unmerged Text")
+        Text("More Text")
+      }
+    }
+
     Text("multi\nline\ntext")
 
     AndroidView(
