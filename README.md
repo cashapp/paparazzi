@@ -54,7 +54,7 @@ Saves snapshots as golden values to a predefined source-controlled location
 ./gradlew sample:verifyPaparazziDebug
 ```
 
-Runs tests and verifies against previously-recorded golden values. Failures generate diffs at `sample/out/failures`.
+Runs tests and verifies against previously-recorded golden values. Failures generate diffs at `sample/build/paparazzi/failures`.
 
 For more examples, check out the [sample][sample] project.
 
