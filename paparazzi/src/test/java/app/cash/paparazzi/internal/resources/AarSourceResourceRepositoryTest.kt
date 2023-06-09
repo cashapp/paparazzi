@@ -8,7 +8,6 @@ import com.android.ide.common.rendering.api.StyleableResourceValue
 import com.android.ide.common.resources.ResourceItem
 import com.android.resources.ResourceType
 import com.google.common.truth.Truth.assertThat
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -17,7 +16,6 @@ class AarSourceResourceRepositoryTest {
   @get:Rule
   val tempDir: TemporaryFolder = TemporaryFolder()
 
-  @Ignore
   @Test
   fun getAllDeclaredIds_hasRDotTxt() {
     // R.txt contains these 3 ids which are actually not defined anywhere else.
@@ -49,7 +47,6 @@ class AarSourceResourceRepositoryTest {
     )
   }
 
-  @Ignore
   @Test
   fun getAllDeclaredIds_wrongRDotTxt() {
     // IDs should come from R.txt, not parsing the layout.
