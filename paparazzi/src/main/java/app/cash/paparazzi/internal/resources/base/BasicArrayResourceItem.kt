@@ -41,19 +41,19 @@ class BasicArrayResourceItem(
     assert(elements.isEmpty() || defaultIndex < elements.size)
   }
 
-  override fun getElementCount() = elements.size
+  override fun getElementCount(): Int = elements.size
 
-  override fun getElement(index: Int) = elements[index]
+  override fun getElement(index: Int): String = elements[index]
 
   override fun iterator() = Collections.unmodifiableList(elements).iterator()
 
   override fun getValue(): String? = if (elements.isEmpty()) null else elements[defaultIndex]
 
-  override fun equals(obj: Any?): Boolean {
-    if (this === obj) return true
-    if (!super.equals(obj)) return false
-    val other = obj as BasicArrayResourceItem
-    return elements == other.elements
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (!super.equals(other)) return false
+    val that = other as BasicArrayResourceItem
+    return elements == that.elements
   }
 
   companion object {

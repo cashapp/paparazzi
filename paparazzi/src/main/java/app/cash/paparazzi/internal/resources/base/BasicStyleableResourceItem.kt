@@ -37,16 +37,17 @@ class BasicStyleableResourceItem(
   sourceFile: ResourceSourceFile,
   visibility: ResourceVisibility,
   attrs: List<AttrResourceValue>
-) : BasicValueResourceItemBase(ResourceType.STYLEABLE, name, sourceFile, visibility), StyleableResourceValue {
+) : BasicValueResourceItemBase(ResourceType.STYLEABLE, name, sourceFile, visibility),
+  StyleableResourceValue {
   private val attrs: List<AttrResourceValue> = attrs.toList()
 
   override fun getAllAttributes(): List<AttrResourceValue> = attrs
 
-  override fun equals(obj: Any?): Boolean {
-    if (this === obj) return true
-    if (!super.equals(obj)) return false
-    val other = obj as BasicStyleableResourceItem
-    return attrs == other.attrs
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (!super.equals(other)) return false
+    val that = other as BasicStyleableResourceItem
+    return attrs == that.attrs
   }
 
   companion object {
@@ -88,7 +89,10 @@ class BasicStyleableResourceItem(
      * If such attr definition belongs to this resource repository and has the same description and group name as
      * the attr reference, returns the attr definition. Otherwise returns the attr reference passed as the parameter.
      */
-    fun getCanonicalAttr(attr: AttrResourceValue, repository: ResourceRepository): AttrResourceValue {
+    fun getCanonicalAttr(
+      attr: AttrResourceValue,
+      repository: ResourceRepository
+    ): AttrResourceValue {
       if (attr.formats.isEmpty()) {
         val items = repository.getResources(attr.namespace, ResourceType.ATTR, attr.name)
         val item = items.filterIsInstance<AttrResourceValue>()

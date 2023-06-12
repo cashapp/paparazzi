@@ -15,6 +15,7 @@
  */
 package app.cash.paparazzi.internal.resources.base
 
+import app.cash.paparazzi.internal.resources.LoadableResourceRepository
 import app.cash.paparazzi.internal.resources.RepositoryConfiguration
 import app.cash.paparazzi.internal.resources.ResourceSourceFile
 import com.android.ide.common.rendering.api.ResourceNamespace
@@ -22,6 +23,7 @@ import com.android.ide.common.rendering.api.ResourceNamespace.Resolver
 import com.android.ide.common.rendering.api.ResourceReference
 import com.android.ide.common.rendering.api.ResourceValue
 import com.android.ide.common.resources.ResourceItemWithVisibility
+import com.android.ide.common.resources.configuration.FolderConfiguration
 import com.android.resources.ResourceType
 import com.android.resources.ResourceVisibility
 import com.android.utils.Base128InputStream
@@ -32,6 +34,10 @@ import java.io.IOException
 
 /**
  * Ported from: [BasicResourceItemBase.java](https://cs.android.com/android-studio/platform/tools/base/+/18047faf69512736b8ddb1f6a6785f58d47c893f:resource-repository/main/java/com/android/resources/base/BasicResourceItemBase.java)
+ *
+ * Base class for [com.android.ide.common.resources.ResourceItem]s.
+ *
+ * A merger of [BasicResourceItemBase] and [BasicResourceItem] from AOSP, to simplify.
  */
 abstract class BasicResourceItem(
   private val type: ResourceType,
@@ -42,65 +48,67 @@ abstract class BasicResourceItem(
   private val typeOrdinal: Byte = type.ordinal.toByte()
   private val visibilityOrdinal: Byte = visibility.ordinal.toByte()
 
-  override fun getType() = resourceType
+  override fun getType(): ResourceType = resourceType
 
   override fun getNamespace(): ResourceNamespace = repository.namespace
 
-  override fun getName() = name
+  override fun getName(): String = name
 
-  override fun getLibraryName() = repository.libraryName
+  override fun getLibraryName(): String? = repository.libraryName
 
   override fun getResourceType() = ResourceType.values()[typeOrdinal.toInt()]
 
   override fun getVisibility() = ResourceVisibility.values()[visibilityOrdinal.toInt()]
 
-  override fun getReferenceToSelf() = asReference()
+  override fun getReferenceToSelf(): ResourceReference = asReference()
 
-  override fun getResourceValue() = this
+  override fun getResourceValue(): ResourceValue = this
 
-  override fun isUserDefined() = repository.containsUserDefinedResources()
+  override fun isUserDefined(): Boolean = repository.containsUserDefinedResources()
 
-  override fun isFramework() = namespace == ResourceNamespace.ANDROID
+  override fun isFramework(): Boolean = namespace == ResourceNamespace.ANDROID
 
-  override fun asReference() = ResourceReference(namespace, resourceType, name)
+  override fun asReference(): ResourceReference = ResourceReference(namespace, resourceType, name)
 
   /**
    * Returns the repository this resource belongs to.
    *
-   *
    * Framework resource items may move between repositories with the same origin.
    * @see RepositoryConfiguration.transferOwnershipTo
    */
-  override fun getRepository() = repositoryConfiguration.repository
+  override fun getRepository(): LoadableResourceRepository = repositoryConfiguration.repository
 
-  override fun getConfiguration() = repositoryConfiguration.folderConfiguration
+  override fun getConfiguration(): FolderConfiguration = repositoryConfiguration.folderConfiguration
 
   abstract val repositoryConfiguration: RepositoryConfiguration
 
   override fun getKey(): String {
     val qualifiers = configuration.qualifierString
     return if (qualifiers.isNotEmpty()) {
-      (type.getName() + '-') + qualifiers + '/' + name
-    } else (type.getName() + '/') + name
+      "${type.getName()}-$qualifiers/$name"
+    } else {
+      "${type.getName()}/$name"
+    }
   }
 
-  override fun setValue(value: String?) = throw UnsupportedOperationException()
+  override fun setValue(value: String?): Unit = throw UnsupportedOperationException()
 
-  override fun equals(obj: Any?): Boolean {
-    if (this === obj) {
+  override fun equals(other: Any?): Boolean {
+    if (this === other) {
       return true
     }
-    if (obj == null || javaClass != obj.javaClass) {
+    if (other == null || javaClass != other.javaClass) {
       return false
     }
-
-    val other = obj as BasicResourceItem
-    return typeOrdinal == other.typeOrdinal && name == other.name && visibilityOrdinal == other.visibilityOrdinal
+    val that = other as BasicResourceItem
+    return typeOrdinal == that.typeOrdinal &&
+      name == that.name &&
+      visibilityOrdinal == that.visibilityOrdinal
   }
 
   override fun hashCode(): Int {
-    // The visibilityOrdinal field is intentionally not included in hash code because having two resource items
-    // differing only by visibility in the same hash table is extremely unlikely.
+    // The visibilityOrdinal field is intentionally not included in hash code because having two
+    // resource items differing only by visibility in the same hash table is extremely unlikely.
     return HashCodes.mix(typeOrdinal.toInt(), name.hashCode())
   }
 
@@ -135,22 +143,12 @@ abstract class BasicResourceItem(
       if (isFileBased) {
         val repository = configurations[0].repository
         return repository.deserializeFileResourceItem(
-          stream,
-          resourceType,
-          name,
-          visibility,
-          configurations
+          stream, resourceType, name, visibility, configurations
         )
       }
 
       return BasicValueResourceItemBase.deserialize(
-        stream,
-        resourceType,
-        name,
-        visibility,
-        configurations,
-        sourceFiles,
-        namespaceResolvers
+        stream, resourceType, name, visibility, configurations, sourceFiles, namespaceResolvers
       )
     }
   }

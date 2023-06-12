@@ -36,14 +36,14 @@ class BasicForeignAttrResourceItem(
   valueMap: Map<String, Int>,
   valueDescriptionMap: Map<String, String>
 ) : BasicAttrResourceItem(
-  name,
-  sourceFile,
-  ResourceVisibility.PUBLIC,
-  description,
-  groupName,
-  formats,
-  valueMap,
-  valueDescriptionMap
+  name = name,
+  sourceFile = sourceFile,
+  visibility = ResourceVisibility.PUBLIC,
+  description = description,
+  groupName = groupName,
+  formats = formats,
+  valueMap = valueMap,
+  valueDescriptionMap = valueDescriptionMap
 ) {
-  override fun getNamespace() = namespace
+  override fun getNamespace(): ResourceNamespace = namespace
 }

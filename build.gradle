@@ -102,6 +102,7 @@ subprojects {
         'ij_kotlin_imports_layout': '*,java.**,javax.**,kotlin.**,kotlinx.**,^',
         'ij_kotlin_allow_trailing_comma': 'false',
         'ij_kotlin_allow_trailing_comma_on_call_site': 'false',
+        'ktlint_standard_argument-list-wrapping': 'disabled',
       ])
     }
   }

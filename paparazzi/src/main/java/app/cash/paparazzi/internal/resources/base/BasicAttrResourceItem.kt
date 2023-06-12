@@ -69,11 +69,15 @@ open class BasicAttrResourceItem(
 
   override fun getGroupName(): String? = groupName
 
-  override fun equals(obj: Any?): Boolean {
-    if (this === obj) return true
-    if (!super.equals(obj)) return false
-    val other = obj as BasicAttrResourceItem
-    return description == other.description && groupName == other.groupName && formats == other.formats && attributeValues == other.attributeValues && valueDescriptionMap == other.valueDescriptionMap
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (!super.equals(other)) return false
+    val that = other as BasicAttrResourceItem
+    return description == that.description &&
+      groupName == that.groupName &&
+      formats == that.formats &&
+      valueMap == that.valueMap &&
+      valueDescriptionMap == that.valueDescriptionMap
   }
 
   /**
@@ -87,7 +91,6 @@ open class BasicAttrResourceItem(
   }
 
   companion object {
-
     /**
      * Creates a [BasicAttrResourceItem] by reading its contents from the given stream.
      */
@@ -144,28 +147,14 @@ open class BasicAttrResourceItem(
           BasicAttrReference(namespace, name, sourceFile, visibility, description, groupName)
         } else if (namespaceSuffix == null) {
           BasicAttrResourceItem(
-            name,
-            sourceFile,
-            visibility,
-            description,
-            groupName,
-            formats,
-            valueMap,
-            descriptionMap
+            name, sourceFile, visibility, description, groupName, formats, valueMap, descriptionMap
           )
         } else {
           val namespace =
             ResourceNamespace.fromNamespaceUri(SdkConstants.URI_DOMAIN_PREFIX + namespaceSuffix)
               ?: throw StreamFormatException.invalidFormat()
           BasicForeignAttrResourceItem(
-            namespace,
-            name,
-            sourceFile,
-            description,
-            groupName,
-            formats,
-            valueMap,
-            descriptionMap
+            namespace, name, sourceFile, description, groupName, formats, valueMap, descriptionMap
           )
         }
       item.namespaceResolver = resolver

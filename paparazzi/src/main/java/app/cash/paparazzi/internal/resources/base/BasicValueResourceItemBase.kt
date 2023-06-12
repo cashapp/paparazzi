@@ -18,7 +18,6 @@ package app.cash.paparazzi.internal.resources.base
 import app.cash.paparazzi.internal.resources.RepositoryConfiguration
 import app.cash.paparazzi.internal.resources.ResourceSourceFile
 import com.android.ide.common.rendering.api.ResourceNamespace
-import com.android.ide.common.rendering.api.ResourceNamespace.Resolver
 import com.android.ide.common.util.PathString
 import com.android.resources.ResourceType
 import com.android.resources.ResourceType.ARRAY
@@ -30,7 +29,6 @@ import com.android.resources.ResourceVisibility
 import com.android.utils.Base128InputStream
 import com.android.utils.HashCodes
 import java.io.IOException
-import java.util.Objects
 
 /**
  * Ported from: [BasicValueResourceItemBase.java](https://cs.android.com/android-studio/platform/tools/base/+/18047faf69512736b8ddb1f6a6785f58d47c893f:resource-repository/main/java/com/android/resources/base/BasicValueResourceItemBase.java)
@@ -43,19 +41,18 @@ abstract class BasicValueResourceItemBase(
   val sourceFile: ResourceSourceFile,
   visibility: ResourceVisibility
 ) : BasicResourceItem(type, name, visibility) {
-  private var namespaceResolver: Resolver =
-    Resolver.EMPTY_RESOLVER
+  private var namespaceResolver = ResourceNamespace.Resolver.EMPTY_RESOLVER
 
   override fun getValue(): String? = null
 
-  override fun isFileBased() = false
+  override fun isFileBased(): Boolean = false
 
   override val repositoryConfiguration: RepositoryConfiguration
     get() = sourceFile.configuration
 
-  override fun getNamespaceResolver() = namespaceResolver
+  override fun getNamespaceResolver(): ResourceNamespace.Resolver = namespaceResolver
 
-  fun setNamespaceResolver(resolver: Resolver) {
+  fun setNamespaceResolver(resolver: ResourceNamespace.Resolver) {
     namespaceResolver = resolver
   }
 
@@ -66,11 +63,11 @@ abstract class BasicValueResourceItemBase(
     return if (sourcePath == null) null else repository.getOriginalSourceFile(sourcePath, false)
   }
 
-  override fun equals(obj: Any?): Boolean {
-    if (this === obj) return true
-    if (!super.equals(obj)) return false
-    val other = obj as BasicValueResourceItemBase
-    return Objects.equals(sourceFile, other.sourceFile)
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (!super.equals(other)) return false
+    val that = other as BasicValueResourceItemBase
+    return sourceFile == that.sourceFile
   }
 
   override fun hashCode(): Int {
@@ -102,32 +99,16 @@ abstract class BasicValueResourceItemBase(
           BasicPluralsResourceItem.deserialize(stream, name, visibility, sourceFile, resolver)
 
         STYLE -> BasicStyleResourceItem.deserialize(
-          stream,
-          name,
-          visibility,
-          sourceFile,
-          resolver,
-          namespaceResolvers
+          stream, name, visibility, sourceFile, resolver, namespaceResolvers
         )
 
         STYLEABLE -> BasicStyleableResourceItem.deserialize(
-          stream,
-          name,
-          visibility,
-          sourceFile,
-          resolver,
-          configurations,
-          sourceFiles,
+          stream, name, visibility, sourceFile, resolver, configurations, sourceFiles,
           namespaceResolvers
         )
 
         else -> BasicValueResourceItem.deserialize(
-          stream,
-          resourceType,
-          name,
-          visibility,
-          sourceFile,
-          resolver
+          stream, resourceType, name, visibility, sourceFile, resolver
         )
       }
     }

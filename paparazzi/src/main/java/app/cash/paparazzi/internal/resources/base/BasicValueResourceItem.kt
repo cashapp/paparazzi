@@ -22,7 +22,6 @@ import com.android.resources.ResourceVisibility
 import com.android.utils.Base128InputStream
 import com.android.utils.HashCodes
 import java.io.IOException
-import java.util.Objects
 
 /**
  * Ported from: [BasicValueResourceItem.java](https://cs.android.com/android-studio/platform/tools/base/+/18047faf69512736b8ddb1f6a6785f58d47c893f:resource-repository/main/java/com/android/resources/base/BasicValueResourceItem.java)
@@ -38,11 +37,11 @@ open class BasicValueResourceItem(
 ) : BasicValueResourceItemBase(type, name, sourceFile, visibility) {
   override fun getValue() = value
 
-  override fun equals(obj: Any?): Boolean {
-    if (this === obj) return true
-    if (!super.equals(obj)) return false
-    val other = obj as BasicValueResourceItem
-    return Objects.equals(value, other.value)
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (!super.equals(other)) return false
+    val that = other as BasicValueResourceItem
+    return value == that.value
   }
 
   override fun hashCode(): Int {

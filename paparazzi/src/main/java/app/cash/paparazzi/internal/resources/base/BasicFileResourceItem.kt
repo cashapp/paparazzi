@@ -18,6 +18,7 @@ package app.cash.paparazzi.internal.resources.base
 import app.cash.paparazzi.internal.resources.RepositoryConfiguration
 import com.android.ide.common.rendering.api.ResourceNamespace.Resolver
 import com.android.ide.common.rendering.api.ResourceReference
+import com.android.ide.common.util.PathString
 import com.android.resources.Density
 import com.android.resources.ResourceType
 import com.android.resources.ResourceVisibility
@@ -38,7 +39,7 @@ open class BasicFileResourceItem(
   visibility: ResourceVisibility,
   private val relativePath: String
 ) : BasicResourceItem(type, name, visibility) {
-  override fun isFileBased() = true
+  override fun isFileBased(): Boolean = true
 
   override fun getReference(): ResourceReference? = null
 
@@ -51,15 +52,16 @@ open class BasicFileResourceItem(
    * In the latter case the filesystem URI part points to res.apk itself, e.g. `"zip:///foo/bar/res.apk"`.
    * The path part is the path of the ZIP entry containing the resource.
    */
-  override fun getSource() = repository.getSourceFile(relativePath, true)
+  override fun getSource(): PathString = repository.getSourceFile(relativePath, true)
 
-  override fun getOriginalSource() = repository.getOriginalSourceFile(relativePath, true)
+  override fun getOriginalSource(): PathString? =
+    repository.getOriginalSourceFile(relativePath, true)
 
-  override fun equals(obj: Any?): Boolean {
-    if (this === obj) return true
-    if (!super.equals(obj)) return false
-    val other = obj as BasicFileResourceItem
-    return configuration == other.configuration && relativePath == other.relativePath
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (!super.equals(other)) return false
+    val that = other as BasicFileResourceItem
+    return repositoryConfiguration == that.repositoryConfiguration && relativePath == that.relativePath
   }
 
   override fun hashCode(): Int {
@@ -86,12 +88,7 @@ open class BasicFileResourceItem(
       }
       val density = Density.values()[encodedDensity - 1]
       return BasicDensityBasedFileResourceItem(
-        resourceType,
-        name,
-        configuration,
-        visibility,
-        relativePath,
-        density
+        resourceType, name, configuration, visibility, relativePath, density
       )
     }
   }

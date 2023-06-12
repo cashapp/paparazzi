@@ -59,7 +59,7 @@ class BasicPluralsResourceItem private constructor(
     assert(values.isEmpty() || defaultIndex < values.size)
   }
 
-  override fun getPluralsCount() = arities.size
+  override fun getPluralsCount(): Int = arities.size
 
   override fun getQuantity(index: Int): String = arities[index].getName()
 
@@ -70,15 +70,13 @@ class BasicPluralsResourceItem private constructor(
     return if (index != -1) values[index] else null
   }
 
-  override fun getValue(): String? {
-    return if (values.isEmpty()) null else values[defaultIndex]
-  }
+  override fun getValue(): String? = if (values.isEmpty()) null else values[defaultIndex]
 
-  override fun equals(obj: Any?): Boolean {
-    if (this === obj) return true
-    if (!super.equals(obj)) return false
-    val other = obj as BasicPluralsResourceItem
-    return arities contentEquals other.arities && values contentEquals other.values
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (!super.equals(other)) return false
+    val that = other as BasicPluralsResourceItem
+    return arities.contentEquals(that.arities) && values.contentEquals(that.values)
   }
 
   companion object {
@@ -86,7 +84,6 @@ class BasicPluralsResourceItem private constructor(
       if (arity == null || arities.isEmpty()) {
         return 0
       }
-
       val index = arities.indexOf(arity)
       return if (index != -1) index else throw IllegalArgumentException()
     }
