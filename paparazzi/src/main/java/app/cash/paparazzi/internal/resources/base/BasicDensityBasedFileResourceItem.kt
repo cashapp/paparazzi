@@ -35,14 +35,15 @@ class BasicDensityBasedFileResourceItem(
   visibility: ResourceVisibility,
   relativePath: String,
   private val density: Density
-) : BasicFileResourceItem(type, name, configuration, visibility, relativePath), DensityBasedResourceValue {
-  override fun getResourceDensity() = density
+) : BasicFileResourceItem(type, name, configuration, visibility, relativePath),
+  DensityBasedResourceValue {
+  override fun getResourceDensity(): Density = density
 
-  override fun equals(obj: Any?): Boolean {
-    if (this === obj) return true
-    if (!super.equals(obj)) return false
-    val other = obj as BasicDensityBasedFileResourceItem
-    return density === other.density
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (!super.equals(other)) return false
+    val that = other as BasicDensityBasedFileResourceItem
+    return density == that.density
   }
 
   override fun hashCode(): Int {

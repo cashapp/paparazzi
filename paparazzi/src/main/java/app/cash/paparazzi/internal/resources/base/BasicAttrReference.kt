@@ -37,7 +37,7 @@ class BasicAttrReference(
   private val description: String?,
   private val groupName: String?
 ) : BasicValueResourceItemBase(ResourceType.ATTR, name, sourceFile, visibility), AttrResourceValue {
-  override fun getNamespace() = namespace
+  override fun getNamespace(): ResourceNamespace = namespace
 
   override fun getFormats(): Set<AttributeFormat> = emptySet()
 
@@ -49,13 +49,13 @@ class BasicAttrReference(
 
   override fun getGroupName(): String? = groupName
 
-  override fun equals(obj: Any?): Boolean {
-    if (this === obj) return true
-    if (!super.equals(obj)) return false
-    val other = obj as BasicAttrReference
-    return namespace == other.namespace &&
-      description == other.description &&
-      groupName == other.groupName
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (!super.equals(other)) return false
+    val that = other as BasicAttrReference
+    return namespace == that.namespace &&
+      description == that.description &&
+      groupName == that.groupName
   }
 
   override fun hashCode(): Int {

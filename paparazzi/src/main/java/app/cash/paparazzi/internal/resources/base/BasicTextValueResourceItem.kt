@@ -36,11 +36,11 @@ class BasicTextValueResourceItem(
 ) : BasicValueResourceItem(type, name, sourceFile, visibility, textValue), TextResourceValue {
   override fun getRawXmlValue(): String? = rawXmlValue ?: value
 
-  override fun equals(obj: Any?): Boolean {
-    if (this === obj) return true
-    if (!super.equals(obj)) return false
-    val other = obj as BasicTextValueResourceItem
-    return rawXmlValue == other.rawXmlValue
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (!super.equals(other)) return false
+    val that = other as BasicTextValueResourceItem
+    return rawXmlValue == that.rawXmlValue
   }
 
   override fun hashCode(): Int {

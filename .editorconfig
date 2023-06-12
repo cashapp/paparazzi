@@ -9,3 +9,5 @@ end_of_line = lf
 
 [*.{kt, kts}]
 ij_kotlin_imports_layout = *,java.**,javax.**,kotlin.**,kotlinx.**,^
+
+ktlint_standard_argument-list-wrapping = disabled

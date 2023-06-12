@@ -66,7 +66,8 @@ class BasicStyleResourceItem(
 
   override fun getParentStyleName(): String? = parentStyle
 
-  override fun getItem(namespace: ResourceNamespace, name: String): StyleItemResourceValue? = styleItemTable.get(namespace, name)
+  override fun getItem(namespace: ResourceNamespace, name: String): StyleItemResourceValue? =
+    styleItemTable.get(namespace, name)
 
   override fun getItem(attr: ResourceReference): StyleItemResourceValue? =
     if (attr.resourceType == ResourceType.ATTR) {
@@ -77,11 +78,11 @@ class BasicStyleResourceItem(
 
   override fun getDefinedItems(): Collection<StyleItemResourceValue> = styleItemTable.values()
 
-  override fun equals(obj: Any?): Boolean {
-    if (this === obj) return true
-    if (!super.equals(obj)) return false
-    val other = obj as BasicStyleResourceItem
-    return parentStyle == other.parentStyle && styleItemTable == other.styleItemTable
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (!super.equals(other)) return false
+    val that = other as BasicStyleResourceItem
+    return parentStyle == that.parentStyle && styleItemTable == that.styleItemTable
   }
 
   companion object {
