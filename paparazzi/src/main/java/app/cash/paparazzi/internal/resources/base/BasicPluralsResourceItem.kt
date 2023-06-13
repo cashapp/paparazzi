@@ -66,7 +66,7 @@ class BasicPluralsResourceItem private constructor(
   override fun getValue(index: Int): String = values[index]
 
   override fun getValue(quantity: String): String? {
-    val index = arities.indexOfFirst { it.name == quantity }
+    val index = arities.indexOfFirst { it.getName() == quantity }
     return if (index != -1) values[index] else null
   }
 
