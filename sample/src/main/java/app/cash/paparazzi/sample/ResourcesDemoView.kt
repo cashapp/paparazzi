@@ -64,7 +64,7 @@ class ResourcesDemoView(context: Context) : LinearLayout(context) {
   }
 
   private fun LinearLayout.addTextView(
-    text: CharSequence,
+    text: CharSequence?,
     @ColorInt backgroundColor: Int = 0
   ) {
     addView(

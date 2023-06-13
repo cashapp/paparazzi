@@ -76,15 +76,15 @@ fun ResourcesDemo() {
       color = Color.Black
     )
     Text(
-      text = resources.getQuantityString(R.plurals.plural_name, 0),
+      text = resources.getQuantityString(R.plurals.plural_name, 0) ?: "",
       color = Color.Black
     )
     Text(
-      text = resources.getQuantityString(R.plurals.plural_name, 1),
+      text = resources.getQuantityString(R.plurals.plural_name, 1) ?: "",
       color = Color.Black
     )
     Text(
-      text = resources.getQuantityString(R.plurals.plural_name, 2),
+      text = resources.getQuantityString(R.plurals.plural_name, 2) ?: "",
       color = Color.Black
     )
     Text(
