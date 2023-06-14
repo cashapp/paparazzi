@@ -8,6 +8,7 @@ import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -32,9 +33,22 @@ class ResourcesDemoView(context: Context) : LinearLayout(context) {
     addTextView(resources.getString(R.string.string_escaped_chars))
     addTextView("Height: ${resources.getDimension(R.dimen.textview_height)}")
     addTextView("Max speed: ${context.resources.getInteger(R.integer.max_speed)}")
-    addTextView(context.resources.getQuantityString(R.plurals.plural_name, 0))
-    addTextView(context.resources.getQuantityString(R.plurals.plural_name, 1))
-    addTextView(context.resources.getQuantityString(R.plurals.plural_name, 2))
+    addTextView("Plurals:")
+    plurals.forEach { (label, quantity) ->
+      addView(
+        LinearLayout(context).apply {
+          orientation = LinearLayout.HORIZONTAL
+          addTextView("$label:", width = WRAP_CONTENT, leftMargin = dip(4f))
+          addTextView(
+            context.resources.getQuantityString(R.plurals.plural_name, quantity),
+            width = WRAP_CONTENT,
+            weight = 1f,
+            leftMargin = dip(4f),
+            rightMargin = dip(4f)
+          )
+        }
+      )
+    }
     addTextView(resources.getString(R.string.string_name))
     addTextView(MessageFormat.format(context.resources.getString(R.string.string_name_xliff), 5))
     addTextView(
@@ -65,14 +79,18 @@ class ResourcesDemoView(context: Context) : LinearLayout(context) {
 
   private fun LinearLayout.addTextView(
     text: CharSequence,
-    @ColorInt backgroundColor: Int = 0
+    @ColorInt backgroundColor: Int = 0,
+    width: Int = ViewGroup.LayoutParams.MATCH_PARENT,
+    height: Int = ViewGroup.LayoutParams.WRAP_CONTENT,
+    weight: Float = 0f,
+    leftMargin: Int = 0,
+    rightMargin: Int = 0
   ) {
     addView(
       TextView(context).apply {
-        layoutParams = LinearLayout.LayoutParams(
-          ViewGroup.LayoutParams.MATCH_PARENT,
-          ViewGroup.LayoutParams.WRAP_CONTENT
-        )
+        layoutParams = LinearLayout.LayoutParams(width, height, weight).apply {
+          setMargins(leftMargin, 0, rightMargin, 0)
+        }
         this.text = text
         setTextColor(Color.BLACK)
         setBackgroundColor(backgroundColor)
@@ -86,4 +104,9 @@ class ResourcesDemoView(context: Context) : LinearLayout(context) {
       value,
       resources.displayMetrics
     ).toInt()
+
+  companion object {
+    val plurals =
+      mapOf("Zero" to 0, "One" to 1, "Two" to 2, "Few" to 3, "Many" to 11, "Other" to 100)
+  }
 }
