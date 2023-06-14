@@ -620,3 +620,4 @@ data class DeviceConfig(
     }
   }
 }
+
