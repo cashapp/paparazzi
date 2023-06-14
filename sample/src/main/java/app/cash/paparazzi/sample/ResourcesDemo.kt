@@ -6,8 +6,10 @@ import android.widget.TextView
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -20,6 +22,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import app.cash.paparazzi.sample.ResourcesDemoView.Companion.plurals
 
 const val imageSize = 120f
 
@@ -76,17 +79,25 @@ fun ResourcesDemo() {
       color = Color.Black
     )
     Text(
-      text = resources.getQuantityString(R.plurals.plural_name, 0),
+      text = "Plurals:",
       color = Color.Black
     )
-    Text(
-      text = resources.getQuantityString(R.plurals.plural_name, 1),
-      color = Color.Black
-    )
-    Text(
-      text = resources.getQuantityString(R.plurals.plural_name, 2),
-      color = Color.Black
-    )
+    plurals.forEach { (label, quantity) ->
+      Row(
+        modifier = Modifier.fillMaxWidth()
+      ) {
+        Text(
+          modifier = Modifier.padding(start = 4.dp),
+          text = "$label:",
+          color = Color.Black
+        )
+        Text(
+          modifier = Modifier.weight(1f).padding(horizontal = 4.dp),
+          text = resources.getQuantityString(R.plurals.plural_name, quantity),
+          color = Color.Black
+        )
+      }
+    }
     Text(
       text = resources.getString(R.string.string_name),
       color = Color.Black
