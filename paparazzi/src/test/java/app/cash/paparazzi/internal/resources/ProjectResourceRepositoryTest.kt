@@ -3,14 +3,13 @@ package app.cash.paparazzi.internal.resources
 import com.android.resources.ResourceType
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
-import java.io.File
 
 class ProjectResourceRepositoryTest {
   @Test
   fun test() {
     // TODO: need mapOf(package to listOf(resourceDirectory)) for each transitive project module
     val repository = ProjectResourceRepository.create(
-      resourceDirectories = listOf(File("src/test/resources/folders/res"))
+      resourceDirectories = listOf(resolveProjectPath("src/test/resources/folders/res").toFile())
     )
 
     val map = repository.allResources

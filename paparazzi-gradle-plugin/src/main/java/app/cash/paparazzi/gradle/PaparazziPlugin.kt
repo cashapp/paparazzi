@@ -89,6 +89,7 @@ class PaparazziPlugin : Plugin<Project> {
       val mergeAssetsProvider =
         project.tasks.named("merge${variantSlug}Assets") as TaskProvider<MergeSourceSetFolders>
       val mergeAssetsOutputDir = mergeAssetsProvider.flatMap { it.outputDir }
+      val projectDirectory = project.layout.projectDirectory
       val buildDirectory = project.layout.buildDirectory
       val gradleUserHomeDir = project.gradle.gradleUserHomeDir
       val reportOutputDir = buildDirectory.dir("reports/paparazzi")
@@ -175,6 +176,7 @@ class PaparazziPlugin : Plugin<Project> {
       val testTaskProvider = project.tasks.named("test$testVariantSlug", Test::class.java) { test ->
         test.systemProperties["paparazzi.test.resources"] =
           writeResourcesTask.flatMap { it.paparazziResources.asFile }.get().path
+        test.systemProperties["paparazzi.project.dir"] = projectDirectory.toString()
         test.systemProperties["paparazzi.build.dir"] = buildDirectory.get().toString()
         test.systemProperties["paparazzi.artifacts.cache.dir"] = gradleUserHomeDir.path
         test.systemProperties["kotlinx.coroutines.main.delay"] = true

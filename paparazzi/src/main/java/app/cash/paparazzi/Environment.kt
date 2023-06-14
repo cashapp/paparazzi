@@ -55,6 +55,7 @@ fun detectEnvironment(): Environment {
   val resourcesFile = File(System.getProperty("paparazzi.test.resources"))
   val configLines = resourcesFile.readLines()
 
+  val projectDir = Paths.get(System.getProperty("paparazzi.project.dir"))
   val appTestDir = Paths.get(System.getProperty("paparazzi.build.dir"))
   val artifactsCacheDir = Paths.get(System.getProperty("paparazzi.artifacts.cache.dir"))
   val androidHome = Paths.get(androidHome())
@@ -66,7 +67,7 @@ fun detectEnvironment(): Environment {
     packageName = configLines[0],
     compileSdkVersion = configLines[2].toInt(),
     resourcePackageNames = configLines[5].split(","),
-    localResourceDirs = configLines[6].split(","),
+    localResourceDirs = configLines[6].split(",").map { projectDir.resolve(it).toString() },
     libraryResourceDirs = configLines[7].split(",").map { artifactsCacheDir.resolve(it).toString() }
   )
 }
