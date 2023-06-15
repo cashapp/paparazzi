@@ -5,13 +5,12 @@ import com.android.ide.common.rendering.api.AttributeFormat
 import com.android.resources.ResourceType
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
-import java.io.File
 
 class AppResourceRepositoryTest {
   @Test
   fun test() {
     val repository = AppResourceRepository.create(
-      localResourceDirectories = listOf(File("src/test/resources/folders/res")),
+      localResourceDirectories = listOf(resolveProjectPath("src/test/resources/folders/res").toFile()),
       libraryRepositories = listOf(makeAarRepositoryFromExplodedAar("my_aar_lib"))
     )
 

@@ -118,6 +118,10 @@ tasks.withType(Test).configureEach {
     generateTestConfig.map { it.outputs.files.singleFile }.get().path
   )
   systemProperty(
+    "paparazzi.project.dir",
+    project.layout.projectDirectory.toString()
+  )
+  systemProperty(
     "paparazzi.build.dir",
     project.layout.buildDirectory.get().toString()
   )

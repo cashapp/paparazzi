@@ -930,12 +930,11 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
     if (file.isAbsolute) {
       return resourceDirectoryOrFilePath.relativize(file).portablePath
     }
+
+    // The path is already relative, drop the first "res" segment.
     assert(file.nameCount != 0)
-    // Note that Android Studio's version of RepositoryLoader asserts that /res is segments[0]
-    // we weaken this to check for existence
-    val index = file.segments.indexOf("res")
-    assert(index != -1)
-    return file.subpath(index + 1, file.nameCount).portablePath
+    assert(file.segment(0) == "res")
+    return file.subpath(1, file.nameCount).portablePath
   }
 
   private fun interface XmlTagVisitor {
