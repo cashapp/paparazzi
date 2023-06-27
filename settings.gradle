@@ -20,6 +20,7 @@ includeBuild('build-logic') {
 }
 
 def brokenProjects = [
+  "appcompat-missing",
   "invalid-application-plugin",
   "missing-library-plugin",
   "multiplatform-plugin-without-android",
