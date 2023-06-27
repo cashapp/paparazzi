@@ -127,7 +127,8 @@ class PaparazziPlugin : Plugin<Project> {
         task.targetSdkVersion.set(android.targetSdkVersion())
         task.compileSdkVersion.set(android.compileSdkVersion())
         task.mergeAssetsOutputDir.set(buildDirectory.asRelativePathString(mergeAssetsOutputDir))
-        task.projectResourceDirs.from(localResourceDirs.plus(moduleResourceDirs))
+        task.projectResourceDirs.from(localResourceDirs)
+        task.moduleResourceDirs.from(moduleResourceDirs)
         task.aarExplodedDirs.from(aarExplodedDirs)
         task.paparazziResources.set(buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.txt"))
       }

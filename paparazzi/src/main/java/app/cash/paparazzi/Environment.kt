@@ -31,6 +31,7 @@ data class Environment(
   val compileSdkVersion: Int,
   val resourcePackageNames: List<String>,
   val localResourceDirs: List<String>,
+  val moduleResourceDirs: List<String>,
   val libraryResourceDirs: List<String>
 ) {
   init {
@@ -68,7 +69,8 @@ fun detectEnvironment(): Environment {
     compileSdkVersion = configLines[2].toInt(),
     resourcePackageNames = configLines[5].split(","),
     localResourceDirs = configLines[6].split(",").map { projectDir.resolve(it).toString() },
-    libraryResourceDirs = configLines[7].split(",").map { artifactsCacheDir.resolve(it).toString() }
+    moduleResourceDirs = configLines[7].split(",").filter { it.isNotEmpty() }.map { projectDir.resolve(it).toString() },
+    libraryResourceDirs = configLines[8].split(",").map { artifactsCacheDir.resolve(it).toString() }
   )
 }
 

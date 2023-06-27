@@ -48,6 +48,10 @@ abstract class PrepareResourcesTask : DefaultTask() {
 
   @get:InputFiles
   @get:PathSensitive(PathSensitivity.NONE)
+  abstract val moduleResourceDirs: ConfigurableFileCollection
+
+  @get:InputFiles
+  @get:PathSensitive(PathSensitivity.NONE)
   abstract val aarExplodedDirs: ConfigurableFileCollection
 
   @get:Input
@@ -102,6 +106,8 @@ abstract class PrepareResourcesTask : DefaultTask() {
         it.write(resourcePackageNames)
         it.newLine()
         it.write(projectResourceDirs.joinFiles(projectDirectory))
+        it.newLine()
+        it.write(moduleResourceDirs.joinFiles(projectDirectory))
         it.newLine()
         it.write(aarExplodedDirs.joinFiles(gradleUserHomeDirectory))
         it.newLine()
