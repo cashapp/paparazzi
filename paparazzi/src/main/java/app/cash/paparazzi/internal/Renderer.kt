@@ -81,6 +81,7 @@ internal class Renderer(
           ResourceRepositoryBridge.New(
             AppResourceRepository.create(
               localResourceDirectories = environment.localResourceDirs.map { File(it) },
+              moduleResourceDirectories = environment.moduleResourceDirs.map { File(it) },
               libraryRepositories = environment.libraryResourceDirs.map { dir ->
                 val resourceDirPath = Paths.get(dir)
                 AarSourceResourceRepository.create(

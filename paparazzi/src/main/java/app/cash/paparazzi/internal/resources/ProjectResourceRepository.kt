@@ -19,19 +19,38 @@ internal class ProjectResourceRepository private constructor(
 
   companion object {
     fun create(
-      resourceDirectories: List<File>
+      resourceDirectories: List<File>,
+      moduleResourceDirectories: List<File>
     ): ProjectResourceRepository {
       return ProjectResourceRepository(
         displayName = "main",
-        // TODO: need mapOf(package to listOf(resourceDirectory)) for each transitive project module
-        localResources = listOf(
-          ModuleResourceRepository.forMainResources(
-            namespace = getNamespace(namespacing = ResourceNamespacing.DISABLED, packageName = "TODO"),
-            resourceDirectories = resourceDirectories
-          )
-        )
+        localResources = computeRepositories(resourceDirectories, moduleResourceDirectories)
       )
     }
+
+    private fun computeRepositories(
+      resourceDirectories: List<File>,
+      moduleResourceDirectories: List<File>
+    ): List<LocalResourceRepository> {
+      val main = getModuleResources(resourceDirectories)
+
+      val resources = buildList(moduleResourceDirectories.size + 1) {
+        this += main
+        for (moduleResourceDirectory in moduleResourceDirectories) {
+          this += getModuleResources(listOf(moduleResourceDirectory))
+        }
+      }
+      return resources
+    }
+
+    private fun getModuleResources(
+      resourceDirectories: List<File>
+    ): LocalResourceRepository =
+      // TODO: need mapOf(package to listOf(resourceDirectory)) for each transitive project module
+      ModuleResourceRepository.forMainResources(
+        namespace = getNamespace(namespacing = ResourceNamespacing.DISABLED, packageName = "TODO"),
+        resourceDirectories = resourceDirectories
+      )
 
     private fun getNamespace(namespacing: ResourceNamespacing, packageName: String?): ResourceNamespace {
       if (namespacing === ResourceNamespacing.DISABLED || packageName == null) {

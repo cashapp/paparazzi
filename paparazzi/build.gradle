@@ -107,6 +107,7 @@ def generateTestConfig = tasks.register("generateTestConfig") {
       writer.writeLine("app.cash.paparazzi")
       writer.writeLine("")
       writer.writeLine("")
+      writer.writeLine("")
     }
   }
 }
