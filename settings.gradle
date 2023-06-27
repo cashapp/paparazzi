@@ -18,3 +18,18 @@ includeBuild('build-logic') {
     substitute module('app.cash.paparazzi:paparazzi-gradle-plugin') using project(':paparazzi-gradle-plugin')
   }
 }
+
+def brokenProjects = [
+  "invalid-application-plugin",
+  "missing-library-plugin",
+  "multiplatform-plugin-without-android",
+  "night-mode-xml", // TODO fix this one or remove it? Maybe left out of PaparazziPluginTest by accident?
+]
+
+new File(rootDir, "paparazzi-gradle-plugin/src/test/projects").eachDir {
+  def dirName = it.name
+  if (!dirName.startsWith(".") && !brokenProjects.contains(dirName)) {
+    include ":test-projects:$dirName"
+    project(":test-projects:$dirName").projectDir = new File(rootDir, "paparazzi-gradle-plugin/src/test/projects/$dirName")
+  }
+}
