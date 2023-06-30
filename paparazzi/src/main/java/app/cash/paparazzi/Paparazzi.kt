@@ -109,7 +109,8 @@ class Paparazzi @JvmOverloads constructor(
 
   private val contentRoot = """
         |<?xml version="1.0" encoding="utf-8"?>
-        |<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        |<${if (hasComposeRuntime) "app.cash.paparazzi.internal.ComposeViewAdapter" else "FrameLayout"}
+        |     xmlns:android="http://schemas.android.com/apk/res/android"
         |              android:layout_width="${if (renderingMode.horizAction == RenderingMode.SizeAction.SHRINK) "wrap_content" else "match_parent"}"
         |              android:layout_height="${if (renderingMode.vertAction == RenderingMode.SizeAction.SHRINK) "wrap_content" else "match_parent"}"/>
   """.trimMargin()
