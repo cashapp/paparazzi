@@ -19,7 +19,6 @@ package app.cash.paparazzi.deprecated.com.android.ide.common.resources.deprecate
 import app.cash.paparazzi.deprecated.com.android.ide.common.resources.deprecated.ValueResourceParser.IValueResourceRepository;
 import app.cash.paparazzi.deprecated.com.android.io.IAbstractFile;
 import app.cash.paparazzi.deprecated.com.android.io.StreamException;
-import kotlin.text.Charsets;
 
 import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.ide.common.rendering.api.ResourceValueImpl;
@@ -27,7 +26,7 @@ import com.android.ide.common.resources.ResourceValueMap;
 import com.android.resources.ResourceType;
 import com.android.utils.XmlUtils;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -171,9 +170,8 @@ public final class MultiResourceFile extends ResourceFile implements IValueResou
     private void parseFile() {
         try {
             SAXParser parser = XmlUtils.createSaxParser(sParserFactory);
-            InputStreamReader reader = new InputStreamReader(getFile().getContents());
-            InputSource source = new InputSource(reader);
-            source.setEncoding(Charsets.UTF_8.displayName());
+            InputSource source = new InputSource(getFile().getContents());
+            source.setEncoding(StandardCharsets.UTF_8.name());
             parser.parse(source, new ValueResourceParser(this, isFramework(), null));
         } catch (ParserConfigurationException e) {
         } catch (SAXException e) {
