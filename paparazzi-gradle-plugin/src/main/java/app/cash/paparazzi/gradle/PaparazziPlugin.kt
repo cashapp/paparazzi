@@ -17,9 +17,20 @@ package app.cash.paparazzi.gradle
 
 import app.cash.paparazzi.gradle.utils.artifactViewFor
 import app.cash.paparazzi.gradle.utils.artifactsFor
+import com.android.build.api.artifact.impl.ArtifactsImpl
+import com.android.build.api.component.analytics.AnalyticsEnabledLibraryVariant
+import com.android.build.api.component.analytics.AnalyticsEnabledVariant
+import com.android.build.api.component.impl.ComponentImpl
+import com.android.build.api.variant.AndroidComponentsExtension
+import com.android.build.api.variant.LibraryVariant
+import com.android.build.api.variant.Variant
+import com.android.build.api.variant.impl.VariantImpl
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.LibraryExtension
+import com.android.build.gradle.internal.component.ComponentCreationConfig
+import com.android.build.gradle.internal.component.VariantCreationConfig
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactType
+import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.tasks.MergeSourceSetFolders
 import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
@@ -77,6 +88,22 @@ class PaparazziPlugin : Plugin<Project> {
     val recordVariants = project.tasks.register("recordPaparazzi") {
       it.group = VERIFICATION_GROUP
       it.description = "Record golden images for all variants"
+    }
+
+    val androidComponents = project.extensions.getByType(AndroidComponentsExtension::class.java)
+    androidComponents.onVariants { variant ->
+      variant.unitTest ?: return@onVariants
+      println(variant.name)
+      println(variant::class.java)
+
+      // Internal API: remove once new resource loading is stable
+//      val taskContainer = ((variant as AnalyticsEnabledVariant).delegate as ComponentImpl<*>).taskContainer
+//      val mergeResourcesOutputDir = taskContainer.mergeResourcesTask.flatMap { it.outputDir }
+//      val mergeAssetsOutputDir = taskContainer.mergeAssetsTask.flatMap { it.outputDir }
+
+      val internalArtifacts = variant.artifacts as ArtifactsImpl
+      val mergeResourcesOutputDir = internalArtifacts.get(InternalArtifactType.MERGED_RES)
+      val mergeAssetsOutputDir = internalArtifacts.get(InternalArtifactType.LIBRARY_ASSETS)
     }
 
     val variants = project.extensions.getByType(LibraryExtension::class.java)
