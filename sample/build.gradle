@@ -20,6 +20,15 @@ android {
   composeOptions {
     kotlinCompilerExtensionVersion libs.versions.composeCompiler.get()
   }
+
+  buildTypes {
+    debug {
+      resValue 'string', 'string_from_build_system', 'Generated string from build system debug'
+    }
+    release {
+      resValue 'string', 'string_from_build_system', 'Generated string from build system release'
+    }
+  }
 }
 
 dependencies {

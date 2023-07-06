@@ -58,6 +58,7 @@ class ResourcesDemoView(context: Context) : LinearLayout(context) {
       )
     )
     addTextView(context.resources.getStringArray(R.array.string_array_name).joinToString())
+    addTextView(context.resources.getString(R.string.string_from_build_system))
   }
 
   private fun LinearLayout.addImageView(@DrawableRes drawableRes: Int) {
