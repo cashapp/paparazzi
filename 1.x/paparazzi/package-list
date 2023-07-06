@@ -504,6 +504,8 @@ $dokka.location:app.cash.paparazzi.internal.resources/ResourceUrlParser/parseRes
 $dokka.location:app.cash.paparazzi.internal.resources/ResourceUrlParser/qualifiedName/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal.resources/-resource-url-parser/qualified-name.md
 $dokka.location:app.cash.paparazzi.internal.resources/ResourceUrlParser/type/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal.resources/-resource-url-parser/type.md
 $dokka.location:app.cash.paparazzi.internal////PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/index.md
+$dokka.location:app.cash.paparazzi.internal/ComposeViewAdapter///PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-compose-view-adapter/index.md
+$dokka.location:app.cash.paparazzi.internal/ComposeViewAdapter/ComposeViewAdapter/#android.content.Context#android.util.AttributeSet/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-compose-view-adapter/-compose-view-adapter.md
 $dokka.location:app.cash.paparazzi.internal/ResourceRepositoryBridge.Legacy///PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-resource-repository-bridge/-legacy/index.md
 $dokka.location:app.cash.paparazzi.internal/ResourceRepositoryBridge.Legacy/Legacy/#app.cash.paparazzi.deprecated.com.android.ide.common.resources.deprecated.ResourceRepository/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-resource-repository-bridge/-legacy/-legacy.md
 $dokka.location:app.cash.paparazzi.internal/ResourceRepositoryBridge.Legacy/repository/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-resource-repository-bridge/-legacy/repository.md
