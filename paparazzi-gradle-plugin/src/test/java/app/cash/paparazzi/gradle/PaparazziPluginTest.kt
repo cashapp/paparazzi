@@ -22,7 +22,65 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun missingAndroidLibraryPlugin() {
+  fun androidApplicationPluginWhenNewResourceLoadingIsOn() {
+    val fixtureRoot = File("src/test/projects/supports-application-modules")
+
+    val result = gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
+    assertThat(result.task(":testDebugUnitTest")).isNotNull()
+    assertThat(result.output).doesNotContain(
+      "Currently, Paparazzi only works in Android library -- not application -- modules. " +
+        "See https://github.com/cashapp/paparazzi/issues/107"
+    )
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()
+    assertThat(snapshots!!).hasLength(1)
+
+    val snapshotImage = snapshots[0]
+    val goldenImage = File(fixtureRoot, "src/test/resources/launch.png")
+    assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
+  }
+
+  @Test
+  fun androidDynamicFeaturePluginWhenNewResourceLoadingIsOn() {
+    val fixtureRoot = File("src/test/projects/supports-dynamic-feature-modules")
+
+    val result = gradleRunner
+      .withArguments(":dynamic_feature:testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":dynamic_feature:preparePaparazziDebugResources")).isNotNull()
+    assertThat(result.task(":dynamic_feature:testDebugUnitTest")).isNotNull()
+
+    val snapshotsDir = File(fixtureRoot, "dynamic_feature/build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()
+    assertThat(snapshots!!).hasLength(1)
+
+    val snapshotImage = snapshots[0]
+    val goldenImage = File(fixtureRoot, "dynamic_feature/src/test/resources/launch.png")
+    assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
+  }
+
+  @Test
+  fun missingSupportedPluginsWhenNewResourceLoadingIsOn() {
+    val fixtureRoot = File("src/test/projects/missing-supported-plugins")
+
+    val result = gradleRunner
+      .withArguments("preparePaparazziDebugResources", "--stacktrace")
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    assertThat(result.task(":preparePaparazziDebugResources")).isNull()
+    assertThat(result.output).contains(
+      "One of com.android.application, com.android.library, com.android.dynamic-feature must be applied for Paparazzi to work properly."
+    )
+  }
+
+  @Test
+  fun missingAndroidLibraryPluginWhenNewResourceLoadingIsOff() {
     val fixtureRoot = File("src/test/projects/missing-library-plugin")
 
     val result = gradleRunner
@@ -36,7 +94,7 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun invalidAndroidApplicationPlugin() {
+  fun invalidAndroidApplicationPluginWhenNewResourceLoadingIsOff() {
     val fixtureRoot = File("src/test/projects/invalid-application-plugin")
 
     val result = gradleRunner

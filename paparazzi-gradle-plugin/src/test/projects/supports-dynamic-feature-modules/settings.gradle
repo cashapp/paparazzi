@@ -1,0 +1,4 @@
+apply from: '../test.settings.gradle'
+
+include ':app'
+include ':dynamic_feature'
