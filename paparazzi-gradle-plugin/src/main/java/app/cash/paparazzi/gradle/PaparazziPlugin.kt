@@ -56,9 +56,9 @@ import kotlin.io.path.invariantSeparatorsPathString
 @Suppress("unused")
 class PaparazziPlugin : Plugin<Project> {
   override fun apply(project: Project) {
-    val newResourceLoadingEnabled = (project.findProperty("app.cash.paparazzi.new.resource.loading") as? String)?.toBoolean() ?: false
+    val legacyResourceLoadingEnabled = (project.findProperty("app.cash.paparazzi.legacy.resource.loading") as? String)?.toBoolean() ?: false
 
-    if (!newResourceLoadingEnabled) {
+    if (legacyResourceLoadingEnabled) {
       project.afterEvaluate {
         check(!project.plugins.hasPlugin("com.android.application")) {
           error(

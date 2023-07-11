@@ -51,9 +51,9 @@ internal class Renderer(
   fun prepare(): SessionParamsBuilder {
     val platformDataResDir = File("${environment.platformDir}/data/res")
 
-    val useNewResourceLoading = System.getProperty(Flags.NEW_RESOURCE_LOADING).toBoolean()
+    val useLegacyResourceLoading = System.getProperty(Flags.LEGACY_RESOURCE_LOADING).toBoolean()
     val (frameworkResources, projectResources) =
-      if (!useNewResourceLoading) {
+      if (useLegacyResourceLoading) {
         ResourceRepositoryBridge.Legacy(
           FrameworkResources(FolderWrapper(platformDataResDir))
             .apply {
@@ -69,8 +69,6 @@ internal class Renderer(
             }.apply { loadResources() }
           )
       } else {
-        println("New resource loading coming soon")
-
         ResourceRepositoryBridge.New(
           FrameworkResourceRepository.create(
             resourceDirectoryOrFile = platformDataResDir.toPath(),
@@ -91,8 +89,6 @@ internal class Renderer(
               }
             )
           )
-
-        // ./gradlew sample:testDebug --tests=app.cash.paparazzi.sample.LaunchViewTest -Papp.cash.paparazzi.new.resource.loading=true
       }
 
     sessionParamsBuilder = SessionParamsBuilder(
