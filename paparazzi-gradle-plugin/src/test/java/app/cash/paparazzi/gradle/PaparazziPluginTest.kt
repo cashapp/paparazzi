@@ -22,7 +22,7 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun androidApplicationPluginWhenNewResourceLoadingIsOn() {
+  fun androidApplicationPlugin() {
     val fixtureRoot = File("src/test/projects/supports-application-modules")
 
     val result = gradleRunner
@@ -46,7 +46,7 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun androidDynamicFeaturePluginWhenNewResourceLoadingIsOn() {
+  fun androidDynamicFeaturePlugin() {
     val fixtureRoot = File("src/test/projects/supports-dynamic-feature-modules")
 
     val result = gradleRunner
@@ -66,7 +66,7 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun missingSupportedPluginsWhenNewResourceLoadingIsOn() {
+  fun missingSupportedPlugins() {
     val fixtureRoot = File("src/test/projects/missing-supported-plugins")
 
     val result = gradleRunner
@@ -80,7 +80,7 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun missingAndroidLibraryPluginWhenNewResourceLoadingIsOff() {
+  fun missingAndroidLibraryPluginWhenLegacyResourceLoadingIsOn() {
     val fixtureRoot = File("src/test/projects/missing-library-plugin")
 
     val result = gradleRunner
@@ -94,7 +94,7 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun invalidAndroidApplicationPluginWhenNewResourceLoadingIsOff() {
+  fun invalidAndroidApplicationPluginWhenLegacyResourceLoadingIsOn() {
     val fixtureRoot = File("src/test/projects/invalid-application-plugin")
 
     val result = gradleRunner
@@ -281,8 +281,8 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun flagNewResourceLoadingIsOff() {
-    val fixtureRoot = File("src/test/projects/flag-new-resource-loading-off")
+  fun flagLegacyResourceLoadingIsOn() {
+    val fixtureRoot = File("src/test/projects/flag-legacy-resource-loading-on")
 
     val result = gradleRunner
       .withArguments("testDebug", "--stacktrace")
@@ -301,14 +301,23 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun flagNewResourceLoadingIsOn() {
-    val fixtureRoot = File("src/test/projects/flag-new-resource-loading-on")
+  fun flagLegacyResourceLoadingIsOff() {
+    val fixtureRoot = File("src/test/projects/flag-legacy-resource-loading-off")
 
     val result = gradleRunner
       .withArguments("testDebug", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
 
-    assertThat(result.output).contains("New resource loading coming soon")
+    assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
+    assertThat(result.task(":testDebugUnitTest")).isNotNull()
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()
+    assertThat(snapshots!!).hasLength(1)
+
+    val snapshotImage = snapshots[0]
+    val goldenImage = File(fixtureRoot, "src/test/resources/launch.png")
+    assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
   }
 
   @Test
