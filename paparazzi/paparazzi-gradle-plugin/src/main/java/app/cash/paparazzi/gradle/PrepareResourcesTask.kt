@@ -103,6 +103,8 @@ abstract class PrepareResourcesTask : DefaultTask() {
         it.newLine()
         it.write(localResourceDirs.joinFiles(projectDirectory))
         it.newLine()
+        println("JROD: $gradleUserHomeDirectory")
+        println("JROD: ${libraryResourceDirs.files}")
         it.write(libraryResourceDirs.joinFiles(gradleUserHomeDirectory))
         it.newLine()
       }

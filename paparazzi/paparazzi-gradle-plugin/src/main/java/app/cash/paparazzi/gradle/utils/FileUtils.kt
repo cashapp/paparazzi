@@ -19,7 +19,9 @@ import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.Directory
 import java.io.File
 
-fun ConfigurableFileCollection.joinFiles(directory: Directory) = files.joinToString(",") { file ->
+fun ConfigurableFileCollection.joinFiles(directory: Directory) = files.joinToString(",") { file: File ->
+  println("JROD: file = " + file.absolutePath)
+  println("JROD: directory = " + directory.asFile.absolutePath)
   directory.relativize(file)
 }
 
