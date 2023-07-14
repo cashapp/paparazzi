@@ -104,6 +104,20 @@ exclude bundled Android dependencies.
 android.jetifier.ignorelist=android-base-common,common
 ```
 
+Lottie
+--------
+
+When taking screenshots of Lottie animations, Paparazzi can throw weird exceptions ([#494](https://github.com/cashapp/paparazzi/issues/494), [#630](https://github.com/cashapp/paparazzi/issues/630)). 
+
+As a workaround, you need to force Lottie to not run on the background thread:
+
+```kotlin
+@Before
+fun setup() {
+    LottieTask.EXECUTOR = Executor(Runnable::run)
+}
+```
+
 Releases
 --------
 
