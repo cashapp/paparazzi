@@ -48,7 +48,10 @@ tasks.withType(Test).configureEach {
   // These are referenced with relative paths in src/test/projects/test.settings.gradle.
   // They need to be declared on the Test task to make sure it runs with the new files.
   inputs.file(rootProject.layout.projectDirectory.file("gradle/libs.versions.toml"))
-  inputs.dir(rootProject.layout.buildDirectory.dir("localMaven"))
+  inputs.dir(fileTree(rootProject.layout.buildDirectory.dir("localMaven")) {
+    // Exclude Maven repository files, to prevent cache misses because of changing `<lastUpdated>20230715095719</lastUpdated>`.
+    exclude("**/maven-metadata.xml")
+  })
   dependsOn(':paparazzi:publishMavenPublicationToProjectLocalMavenRepository')
   dependsOn(':paparazzi-agent:publishMavenPublicationToProjectLocalMavenRepository')
 }
