@@ -67,12 +67,15 @@ fun detectEnvironment(): Environment {
     assetsDir = appTestDir.resolve(configLines[4]).toString(),
     packageName = configLines[0],
     compileSdkVersion = configLines[2].toInt(),
-    resourcePackageNames = configLines[5].split(","),
-    localResourceDirs = configLines[6].split(",").map { projectDir.resolve(it).toString() },
-    moduleResourceDirs = configLines[7].split(",").filter { it.isNotEmpty() }.map { projectDir.resolve(it).toString() },
-    libraryResourceDirs = configLines[8].split(",").map { artifactsCacheDir.resolve(it).toString() }
+    resourcePackageNames = configLines[5].split(),
+    localResourceDirs = configLines[6].split().map { projectDir.resolve(it).toString() },
+    moduleResourceDirs = configLines[7].split().map { projectDir.resolve(it).toString() },
+    libraryResourceDirs = configLines[8].split().map { artifactsCacheDir.resolve(it).toString() }
   )
 }
+
+private fun String.split(): List<String> =
+  this.split(",").filter { it.isNotEmpty() }
 
 private fun androidSdkPath(): String {
   val osName = System.getProperty("os.name").lowercase(Locale.US)
