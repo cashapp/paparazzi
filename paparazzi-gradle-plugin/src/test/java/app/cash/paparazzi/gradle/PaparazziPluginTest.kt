@@ -874,17 +874,17 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun verifyOpenAssets() {
-    val fixtureRoot = File("src/test/projects/open-assets")
+  fun verifyOpenAssetsLegacyAssetLoadingIsOff() {
+    val fixtureRoot = File("src/test/projects/open-assets-legacy-asset-loading-off")
 
     gradleRunner
-      .withArguments("testDebug", "--stacktrace")
+      .withArguments("consumer:testDebug", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
   }
 
   @Test
-  fun openTransitiveAssets() {
-    val fixtureRoot = File("src/test/projects/open-transitive-assets")
+  fun verifyOpenAssetsLegacyAssetLoadingIsOn() {
+    val fixtureRoot = File("src/test/projects/open-assets-legacy-asset-loading-on")
 
     gradleRunner
       .withArguments("consumer:testDebug", "--stacktrace")

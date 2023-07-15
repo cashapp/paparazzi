@@ -23,7 +23,10 @@ import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
 
-internal class PaparazziAssetRepository(private val assetPath: String) : AssetRepository() {
+internal class PaparazziAssetRepository(
+  private val assetPath: String,
+  private val assetDirs: List<String> = emptyList()
+) : AssetRepository() {
   @Throws(FileNotFoundException::class)
   private fun open(path: String): InputStream? {
     val asset = File(path)
@@ -39,7 +42,19 @@ internal class PaparazziAssetRepository(private val assetPath: String) : AssetRe
   override fun openAsset(
     path: String,
     mode: Int
-  ): InputStream? = open("$assetPath/$path")
+  ): InputStream? {
+    if (assetDirs.isEmpty()) {
+      return open("$assetPath/$path")
+    } else {
+      for (assetDir in assetDirs) {
+        val assetFile = open("$assetDir/$path")
+        if (assetFile != null) {
+          return assetFile
+        }
+      }
+      return null
+    }
+  }
 
   @Throws(IOException::class)
   override fun openNonAsset(

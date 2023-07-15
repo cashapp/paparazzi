@@ -110,6 +110,8 @@ def generateTestConfig = tasks.register("generateTestConfig") {
       writer.writeLine("")
       writer.writeLine("")
       writer.writeLine("")
+      writer.writeLine("")
+      writer.writeLine("")
     }
   }
 }
