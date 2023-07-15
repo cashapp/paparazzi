@@ -5,8 +5,10 @@ apply plugin: 'org.jetbrains.dokka'
 apply plugin: 'com.vanniktech.maven.publish'
 apply plugin: 'com.google.devtools.ksp'
 
-sourceCompatibility = libs.versions.javaTarget.get()
-targetCompatibility = libs.versions.javaTarget.get()
+java {
+  sourceCompatibility = libs.versions.javaTarget.get()
+  targetCompatibility = libs.versions.javaTarget.get()
+}
 
 def artifactType = Attribute.of('artifactType', String)
 
