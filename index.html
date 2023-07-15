@@ -273,6 +273,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#lottie" class="md-nav__link">
+    Lottie
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#releases" class="md-nav__link">
     Releases
   </a>
@@ -402,6 +409,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#lottie" class="md-nav__link">
+    Lottie
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#releases" class="md-nav__link">
     Releases
   </a>
@@ -505,6 +519,13 @@ diff<span class="w"> </span>&lt;<span class="o">(</span>git<span class="w"> </sp
 <p>If using Jetifier to migrate off Support libraries, add the following to your <code>gradle.properties</code> to
 exclude bundled Android dependencies.</p>
 <div class="highlight"><pre><span></span><code><span class="na">android.jetifier.ignorelist</span><span class="o">=</span><span class="s">android-base-common,common</span>
+</code></pre></div>
+<h2 id="lottie">Lottie<a class="headerlink" href="#lottie" title="Permanent link">&para;</a></h2>
+<p>When taking screenshots of Lottie animations, you need to force Lottie to not run on a background thread, otherwise Paparazzi can throw exceptions <a href="https://github.com/cashapp/paparazzi/issues/494">#494</a>, <a href="https://github.com/cashapp/paparazzi/issues/630">#630</a>. </p>
+<div class="highlight"><pre><span></span><code><span class="nd">@Before</span>
+<span class="kd">fun</span><span class="w"> </span><span class="nf">setup</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">LottieTask</span><span class="p">.</span><span class="na">EXECUTOR</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Executor</span><span class="p">(</span><span class="n">Runnable</span><span class="o">::</span><span class="n">run</span><span class="p">)</span>
+<span class="p">}</span>
 </code></pre></div>
 <h2 id="releases">Releases<a class="headerlink" href="#releases" title="Permanent link">&para;</a></h2>
 <p>Our <a href="https://cashapp.github.io/paparazzi/changelog/">change log</a> has release history.</p>
