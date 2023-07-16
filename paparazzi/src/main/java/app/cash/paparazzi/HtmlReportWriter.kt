@@ -111,7 +111,11 @@ class HtmlReportWriter @JvmOverloads constructor(
           if (isRecording) {
             for ((index, frameHash) in hashes.withIndex()) {
               val originalFrame = File(imagesDirectory, "$frameHash.png")
-              val frameSnapshot = snapshot.copy(name = "${snapshot.name} $index")
+              val frameSnapshot = if (snapshot.name != null) {
+                snapshot.copy(name = "${snapshot.name} $index")
+              } else {
+                snapshot.copy(name = "$index")
+              }
               val goldenFile = File(goldenImagesDirectory, frameSnapshot.toFileName("_", "png"))
               if (!goldenFile.exists()) {
                 originalFrame.copyTo(goldenFile)
