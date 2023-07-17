@@ -91,12 +91,20 @@ internal class Renderer(
           )
       }
 
+    val useLegacyAssetLoading = System.getProperty(Flags.LEGACY_ASSET_LOADING).toBoolean()
     sessionParamsBuilder = SessionParamsBuilder(
       layoutlibCallback = layoutlibCallback,
       logger = logger,
       frameworkResources = frameworkResources,
       projectResources = projectResources,
-      assetRepository = PaparazziAssetRepository(environment.assetsDir)
+      assetRepository = PaparazziAssetRepository(
+        assetPath = environment.assetsDir,
+        assetDirs = if (useLegacyAssetLoading) {
+          emptyList()
+        } else {
+          environment.allModuleAssetDirs + environment.libraryAssetDirs
+        }
+      )
     )
       .plusFlag(RenderParamsFlags.FLAG_DO_NOT_RENDER_ON_CREATE, true)
       .withTheme("AppTheme", true)

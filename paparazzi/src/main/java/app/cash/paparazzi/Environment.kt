@@ -32,7 +32,9 @@ data class Environment(
   val resourcePackageNames: List<String>,
   val localResourceDirs: List<String>,
   val moduleResourceDirs: List<String>,
-  val libraryResourceDirs: List<String>
+  val libraryResourceDirs: List<String>,
+  val allModuleAssetDirs: List<String>,
+  val libraryAssetDirs: List<String>
 ) {
   init {
     val platformDirPath = Path.of(platformDir)
@@ -70,7 +72,9 @@ fun detectEnvironment(): Environment {
     resourcePackageNames = configLines[5].split(),
     localResourceDirs = configLines[6].split().map { projectDir.resolve(it).toString() },
     moduleResourceDirs = configLines[7].split().map { projectDir.resolve(it).toString() },
-    libraryResourceDirs = configLines[8].split().map { artifactsCacheDir.resolve(it).toString() }
+    libraryResourceDirs = configLines[8].split().map { artifactsCacheDir.resolve(it).toString() },
+    allModuleAssetDirs = configLines[9].split().map { projectDir.resolve(it).toString() },
+    libraryAssetDirs = configLines[10].split().map { artifactsCacheDir.resolve(it).toString() }
   )
 }
 
