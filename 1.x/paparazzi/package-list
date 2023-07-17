@@ -569,10 +569,12 @@ $dokka.location:app.cash.paparazzi/DeviceConfig/uiModeMask/#/PointingToDeclarati
 $dokka.location:app.cash.paparazzi/DeviceConfig/xdpi/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-device-config/xdpi.md
 $dokka.location:app.cash.paparazzi/DeviceConfig/ydpi/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-device-config/ydpi.md
 $dokka.location:app.cash.paparazzi/Environment///PointingToDeclaration/paparazzi/app.cash.paparazzi/-environment/index.md
-$dokka.location:app.cash.paparazzi/Environment/Environment/#kotlin.String#kotlin.String#kotlin.String#kotlin.String#kotlin.String#kotlin.Int#kotlin.collections.List[kotlin.String]#kotlin.collections.List[kotlin.String]#kotlin.collections.List[kotlin.String]#kotlin.collections.List[kotlin.String]/PointingToDeclaration/paparazzi/app.cash.paparazzi/-environment/-environment.md
+$dokka.location:app.cash.paparazzi/Environment/Environment/#kotlin.String#kotlin.String#kotlin.String#kotlin.String#kotlin.String#kotlin.Int#kotlin.collections.List[kotlin.String]#kotlin.collections.List[kotlin.String]#kotlin.collections.List[kotlin.String]#kotlin.collections.List[kotlin.String]#kotlin.collections.List[kotlin.String]#kotlin.collections.List[kotlin.String]/PointingToDeclaration/paparazzi/app.cash.paparazzi/-environment/-environment.md
+$dokka.location:app.cash.paparazzi/Environment/allModuleAssetDirs/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-environment/all-module-asset-dirs.md
 $dokka.location:app.cash.paparazzi/Environment/appTestDir/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-environment/app-test-dir.md
 $dokka.location:app.cash.paparazzi/Environment/assetsDir/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-environment/assets-dir.md
 $dokka.location:app.cash.paparazzi/Environment/compileSdkVersion/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-environment/compile-sdk-version.md
+$dokka.location:app.cash.paparazzi/Environment/libraryAssetDirs/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-environment/library-asset-dirs.md
 $dokka.location:app.cash.paparazzi/Environment/libraryResourceDirs/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-environment/library-resource-dirs.md
 $dokka.location:app.cash.paparazzi/Environment/localResourceDirs/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-environment/local-resource-dirs.md
 $dokka.location:app.cash.paparazzi/Environment/moduleResourceDirs/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-environment/module-resource-dirs.md
@@ -582,6 +584,7 @@ $dokka.location:app.cash.paparazzi/Environment/resDir/#/PointingToDeclaration/p
 $dokka.location:app.cash.paparazzi/Environment/resourcePackageNames/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-environment/resource-package-names.md
 $dokka.location:app.cash.paparazzi/Flags///PointingToDeclaration/paparazzi/app.cash.paparazzi/-flags/index.md
 $dokka.location:app.cash.paparazzi/Flags/DEBUG_LINKED_OBJECTS/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-flags/-d-e-b-u-g_-l-i-n-k-e-d_-o-b-j-e-c-t-s.md
+$dokka.location:app.cash.paparazzi/Flags/LEGACY_ASSET_LOADING/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-flags/-l-e-g-a-c-y_-a-s-s-e-t_-l-o-a-d-i-n-g.md
 $dokka.location:app.cash.paparazzi/Flags/LEGACY_RESOURCE_LOADING/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-flags/-l-e-g-a-c-y_-r-e-s-o-u-r-c-e_-l-o-a-d-i-n-g.md
 $dokka.location:app.cash.paparazzi/HtmlReportWriter///PointingToDeclaration/paparazzi/app.cash.paparazzi/-html-report-writer/index.md
 $dokka.location:app.cash.paparazzi/HtmlReportWriter/HtmlReportWriter/#kotlin.String#java.io.File#java.io.File/PointingToDeclaration/paparazzi/app.cash.paparazzi/-html-report-writer/-html-report-writer.md
