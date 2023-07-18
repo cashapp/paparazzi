@@ -21,7 +21,7 @@ android {
 
 dependencies {
   implementation files('libs/external.aar')
-  implementation project(':producer1')
-  implementation project(':producer2')
+  implementation projects.producer1
+  implementation projects.producer2
   testImplementation libs.truth
 }
