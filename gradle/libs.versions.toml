@@ -6,7 +6,7 @@ composeCompiler = "1.4.7"
 javaTarget = "11"
 jcodec = "0.2.5"
 kotlin = "1.8.21"
-ktlint = "0.49.1"
+ktlint = "0.50.0"
 moshi = "1.15.0"
 
 minSdk = "25"
