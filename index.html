@@ -521,7 +521,7 @@ exclude bundled Android dependencies.</p>
 <div class="highlight"><pre><span></span><code><span class="na">android.jetifier.ignorelist</span><span class="o">=</span><span class="s">android-base-common,common</span>
 </code></pre></div>
 <h2 id="lottie">Lottie<a class="headerlink" href="#lottie" title="Permanent link">&para;</a></h2>
-<p>When taking screenshots of Lottie animations, you need to force Lottie to not run on a background thread, otherwise Paparazzi can throw exceptions <a href="https://github.com/cashapp/paparazzi/issues/494">#494</a>, <a href="https://github.com/cashapp/paparazzi/issues/630">#630</a>. </p>
+<p>When taking screenshots of Lottie animations, you need to force Lottie to not run on a background thread, otherwise Paparazzi can throw exceptions <a href="https://github.com/cashapp/paparazzi/issues/494">#494</a>, <a href="https://github.com/cashapp/paparazzi/issues/630">#630</a>.</p>
 <div class="highlight"><pre><span></span><code><span class="nd">@Before</span>
 <span class="kd">fun</span><span class="w"> </span><span class="nf">setup</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="n">LottieTask</span><span class="p">.</span><span class="na">EXECUTOR</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Executor</span><span class="p">(</span><span class="n">Runnable</span><span class="o">::</span><span class="n">run</span><span class="p">)</span>
@@ -536,7 +536,7 @@ exclude bundled Android dependencies.</p>
 <span class="w">    </span><span class="n">google</span><span class="o">()</span>
 <span class="w">  </span><span class="o">}</span>
 <span class="w">  </span><span class="n">dependencies</span><span class="w"> </span><span class="o">{</span>
-<span class="w">    </span><span class="n">classpath</span><span class="w"> </span><span class="s1">&#39;app.cash.paparazzi:paparazzi-gradle-plugin:1.3.0&#39;</span>
+<span class="w">    </span><span class="n">classpath</span><span class="w"> </span><span class="s1">&#39;app.cash.paparazzi:paparazzi-gradle-plugin:1.3.1&#39;</span>
 <span class="w">  </span><span class="o">}</span>
 <span class="o">}</span>
 
@@ -544,7 +544,7 @@ exclude bundled Android dependencies.</p>
 </code></pre></div></p>
 <p>Using the plugins DSL:
 <div class="highlight"><pre><span></span><code><span class="n">plugins</span><span class="w"> </span><span class="o">{</span>
-<span class="w">  </span><span class="n">id</span><span class="w"> </span><span class="s1">&#39;app.cash.paparazzi&#39;</span><span class="w"> </span><span class="n">version</span><span class="w"> </span><span class="s1">&#39;1.3.0&#39;</span>
+<span class="w">  </span><span class="n">id</span><span class="w"> </span><span class="s1">&#39;app.cash.paparazzi&#39;</span><span class="w"> </span><span class="n">version</span><span class="w"> </span><span class="s1">&#39;1.3.1&#39;</span>
 <span class="o">}</span>
 </code></pre></div></p>
 <p>Snapshots of the development version are available in <a href="https://oss.sonatype.org/content/repositories/snapshots/app/cash/paparazzi/">Sonatype&rsquo;s <code>snapshots</code> repository</a>.</p>
