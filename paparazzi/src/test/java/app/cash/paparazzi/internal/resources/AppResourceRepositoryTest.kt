@@ -11,6 +11,7 @@ class AppResourceRepositoryTest {
   fun test() {
     val repository = AppResourceRepository.create(
       localResourceDirectories = listOf(resolveProjectPath("src/test/resources/folders/res").toFile()),
+      moduleResourceDirectories = emptyList(),
       libraryRepositories = listOf(makeAarRepositoryFromExplodedAar("my_aar_lib"))
     )
 

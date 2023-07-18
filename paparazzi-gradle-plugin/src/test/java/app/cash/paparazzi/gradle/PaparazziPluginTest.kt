@@ -22,7 +22,65 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun missingAndroidLibraryPlugin() {
+  fun androidApplicationPlugin() {
+    val fixtureRoot = File("src/test/projects/supports-application-modules")
+
+    val result = gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
+    assertThat(result.task(":testDebugUnitTest")).isNotNull()
+    assertThat(result.output).doesNotContain(
+      "Currently, Paparazzi only works in Android library -- not application -- modules. " +
+        "See https://github.com/cashapp/paparazzi/issues/107"
+    )
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()
+    assertThat(snapshots!!).hasLength(1)
+
+    val snapshotImage = snapshots[0]
+    val goldenImage = File(fixtureRoot, "src/test/resources/launch.png")
+    assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
+  }
+
+  @Test
+  fun androidDynamicFeaturePlugin() {
+    val fixtureRoot = File("src/test/projects/supports-dynamic-feature-modules")
+
+    val result = gradleRunner
+      .withArguments(":dynamic_feature:testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":dynamic_feature:preparePaparazziDebugResources")).isNotNull()
+    assertThat(result.task(":dynamic_feature:testDebugUnitTest")).isNotNull()
+
+    val snapshotsDir = File(fixtureRoot, "dynamic_feature/build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()
+    assertThat(snapshots!!).hasLength(1)
+
+    val snapshotImage = snapshots[0]
+    val goldenImage = File(fixtureRoot, "dynamic_feature/src/test/resources/launch.png")
+    assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
+  }
+
+  @Test
+  fun missingSupportedPlugins() {
+    val fixtureRoot = File("src/test/projects/missing-supported-plugins")
+
+    val result = gradleRunner
+      .withArguments("preparePaparazziDebugResources", "--stacktrace")
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    assertThat(result.task(":preparePaparazziDebugResources")).isNull()
+    assertThat(result.output).contains(
+      "One of com.android.application, com.android.library, com.android.dynamic-feature must be applied for Paparazzi to work properly."
+    )
+  }
+
+  @Test
+  fun missingAndroidLibraryPluginWhenLegacyResourceLoadingIsOn() {
     val fixtureRoot = File("src/test/projects/missing-library-plugin")
 
     val result = gradleRunner
@@ -36,7 +94,7 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun invalidAndroidApplicationPlugin() {
+  fun invalidAndroidApplicationPluginWhenLegacyResourceLoadingIsOn() {
     val fixtureRoot = File("src/test/projects/invalid-application-plugin")
 
     val result = gradleRunner
@@ -223,8 +281,8 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun flagNewResourceLoadingIsOff() {
-    val fixtureRoot = File("src/test/projects/flag-new-resource-loading-off")
+  fun flagLegacyResourceLoadingIsOn() {
+    val fixtureRoot = File("src/test/projects/flag-legacy-resource-loading-on")
 
     val result = gradleRunner
       .withArguments("testDebug", "--stacktrace")
@@ -243,14 +301,23 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun flagNewResourceLoadingIsOn() {
-    val fixtureRoot = File("src/test/projects/flag-new-resource-loading-on")
+  fun flagLegacyResourceLoadingIsOff() {
+    val fixtureRoot = File("src/test/projects/flag-legacy-resource-loading-off")
 
     val result = gradleRunner
       .withArguments("testDebug", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
 
-    assertThat(result.output).contains("New resource loading coming soon")
+    assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
+    assertThat(result.task(":testDebugUnitTest")).isNotNull()
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()
+    assertThat(snapshots!!).hasLength(1)
+
+    val snapshotImage = snapshots[0]
+    val goldenImage = File(fixtureRoot, "src/test/resources/launch.png")
+    assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
   }
 
   @Test
@@ -741,9 +808,10 @@ class PaparazziPluginTest {
     assertThat(resourceFileContents[0]).isEqualTo("app.cash.paparazzi.plugin.test")
     assertThat(resourceFileContents[1]).isEqualTo("intermediates/merged_res/debug")
     assertThat(resourceFileContents[4]).isEqualTo("intermediates/assets/debug")
-    assertThat(resourceFileContents[5]).isEqualTo("app.cash.paparazzi.plugin.test,com.example.mylibrary")
+    assertThat(resourceFileContents[5]).isEqualTo("app.cash.paparazzi.plugin.test,com.example.mylibrary,app.cash.paparazzi.plugin.test.module1,app.cash.paparazzi.plugin.test.module2")
     assertThat(resourceFileContents[6]).isEqualTo("src/main/res,src/debug/res")
-    assertThat(resourceFileContents[7]).matches("^caches/transforms-3/[0-9a-f]{32}/transformed/external/res\$")
+    assertThat(resourceFileContents[7]).isEqualTo("module1/build/intermediates/packaged_res/debug,module2/build/intermediates/packaged_res/debug")
+    assertThat(resourceFileContents[8]).matches("^caches/transforms-3/[0-9a-f]{32}/transformed/external/res\$")
   }
 
   @Test
@@ -763,9 +831,10 @@ class PaparazziPluginTest {
     assertThat(resourceFileContents[0]).isEqualTo("app.cash.paparazzi.plugin.test")
     assertThat(resourceFileContents[1]).isEqualTo("intermediates/merged_res/debug")
     assertThat(resourceFileContents[4]).isEqualTo("intermediates/assets/debug")
-    assertThat(resourceFileContents[5]).isEqualTo("app.cash.paparazzi.plugin.test,com.example.mylibrary")
+    assertThat(resourceFileContents[5]).isEqualTo("app.cash.paparazzi.plugin.test,com.example.mylibrary,app.cash.paparazzi.plugin.test.module1,app.cash.paparazzi.plugin.test.module2")
     assertThat(resourceFileContents[6]).isEqualTo("src/main/res,src/debug/res")
-    assertThat(resourceFileContents[7]).matches("^caches/transforms-3/[0-9a-f]{32}/transformed/external/res\$")
+    assertThat(resourceFileContents[7]).isEqualTo("module1/build/intermediates/packaged_res/debug,module2/build/intermediates/packaged_res/debug")
+    assertThat(resourceFileContents[8]).matches("^caches/transforms-3/[0-9a-f]{32}/transformed/external/res\$")
   }
 
   @Test
@@ -805,17 +874,17 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun verifyOpenAssets() {
-    val fixtureRoot = File("src/test/projects/open-assets")
+  fun verifyOpenAssetsLegacyAssetLoadingIsOff() {
+    val fixtureRoot = File("src/test/projects/open-assets-legacy-asset-loading-off")
 
     gradleRunner
-      .withArguments("testDebug", "--stacktrace")
+      .withArguments("consumer:testDebug", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
   }
 
   @Test
-  fun openTransitiveAssets() {
-    val fixtureRoot = File("src/test/projects/open-transitive-assets")
+  fun verifyOpenAssetsLegacyAssetLoadingIsOn() {
+    val fixtureRoot = File("src/test/projects/open-assets-legacy-asset-loading-on")
 
     gradleRunner
       .withArguments("consumer:testDebug", "--stacktrace")
@@ -1226,6 +1295,26 @@ class PaparazziPluginTest {
   @Test
   fun nightModeCompose() {
     val fixtureRoot = File("src/test/projects/night-mode-compose")
+
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()?.sortedBy { it.lastModified() }
+    assertThat(snapshots!!).hasSize(2)
+
+    val lightModeSnapshotImage = snapshots[0]
+    val darkModeSnapshotImage = snapshots[1]
+    val lightModeGoldenImage = File(fixtureRoot, "src/test/resources/light_mode.png")
+    val darkModeGoldenImage = File(fixtureRoot, "src/test/resources/dark_mode.png")
+    assertThat(lightModeSnapshotImage).isSimilarTo(lightModeGoldenImage).withDefaultThreshold()
+    assertThat(darkModeSnapshotImage).isSimilarTo(darkModeGoldenImage).withDefaultThreshold()
+  }
+
+  @Test
+  fun nightModeXml() {
+    val fixtureRoot = File("src/test/projects/night-mode-xml")
 
     gradleRunner
       .withArguments("testDebug", "--stacktrace")

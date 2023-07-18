@@ -104,6 +104,18 @@ exclude bundled Android dependencies.
 android.jetifier.ignorelist=android-base-common,common
 ```
 
+Lottie
+--------
+
+When taking screenshots of Lottie animations, you need to force Lottie to not run on a background thread, otherwise Paparazzi can throw exceptions [#494](https://github.com/cashapp/paparazzi/issues/494), [#630](https://github.com/cashapp/paparazzi/issues/630).
+
+```kotlin
+@Before
+fun setup() {
+    LottieTask.EXECUTOR = Executor(Runnable::run)
+}
+```
+
 Releases
 --------
 
@@ -117,7 +129,7 @@ buildscript {
     google()
   }
   dependencies {
-    classpath 'app.cash.paparazzi:paparazzi-gradle-plugin:1.3.0'
+    classpath 'app.cash.paparazzi:paparazzi-gradle-plugin:1.3.1'
   }
 }
 
@@ -127,7 +139,7 @@ apply plugin: 'app.cash.paparazzi'
 Using the plugins DSL:
 ```groovy
 plugins {
-  id 'app.cash.paparazzi' version '1.3.0'
+  id 'app.cash.paparazzi' version '1.3.1'
 }
 ```
 

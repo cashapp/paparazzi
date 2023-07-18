@@ -25,11 +25,12 @@ internal class AppResourceRepository private constructor(
   companion object {
     fun create(
       localResourceDirectories: List<File>,
+      moduleResourceDirectories: List<File>,
       libraryRepositories: Collection<AarSourceResourceRepository>
     ): AppResourceRepository {
       return AppResourceRepository(
         displayName = "",
-        listOf(ProjectResourceRepository.create(localResourceDirectories)),
+        listOf(ProjectResourceRepository.create(localResourceDirectories, moduleResourceDirectories)),
         libraryRepositories
       )
     }

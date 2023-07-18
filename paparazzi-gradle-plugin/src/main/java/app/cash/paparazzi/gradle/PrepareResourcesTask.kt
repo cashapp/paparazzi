@@ -33,6 +33,7 @@ abstract class PrepareResourcesTask : DefaultTask() {
   @get:Input
   abstract val packageName: Property<String>
 
+  @Deprecated("legacy resource loading, to be removed in a future release")
   @get:Input
   abstract val mergeResourcesOutputDir: Property<String>
 
@@ -48,8 +49,21 @@ abstract class PrepareResourcesTask : DefaultTask() {
 
   @get:InputFiles
   @get:PathSensitive(PathSensitivity.NONE)
+  abstract val moduleResourceDirs: ConfigurableFileCollection
+
+  @get:InputFiles
+  @get:PathSensitive(PathSensitivity.NONE)
   abstract val aarExplodedDirs: ConfigurableFileCollection
 
+  @get:InputFiles
+  @get:PathSensitive(PathSensitivity.NONE)
+  abstract val projectAssetDirs: ConfigurableFileCollection
+
+  @get:InputFiles
+  @get:PathSensitive(PathSensitivity.NONE)
+  abstract val aarAssetDirs: ConfigurableFileCollection
+
+  @Deprecated("legacy asset loading, to be removed in a future release")
   @get:Input
   abstract val mergeAssetsOutputDir: Property<String>
 
@@ -103,7 +117,13 @@ abstract class PrepareResourcesTask : DefaultTask() {
         it.newLine()
         it.write(projectResourceDirs.joinFiles(projectDirectory))
         it.newLine()
+        it.write(moduleResourceDirs.joinFiles(projectDirectory))
+        it.newLine()
         it.write(aarExplodedDirs.joinFiles(gradleUserHomeDirectory))
+        it.newLine()
+        it.write(projectAssetDirs.joinFiles(projectDirectory))
+        it.newLine()
+        it.write(aarAssetDirs.joinFiles(gradleUserHomeDirectory))
         it.newLine()
       }
   }

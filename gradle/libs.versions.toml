@@ -6,7 +6,7 @@ composeCompiler = "1.4.7"
 javaTarget = "11"
 jcodec = "0.2.5"
 kotlin = "1.8.21"
-ktlint = "0.49.1"
+ktlint = "0.50.0"
 moshi = "1.15.0"
 
 minSdk = "25"
@@ -37,7 +37,7 @@ jcodec-core = { module = "org.jcodec:jcodec", version.ref = "jcodec" }
 jcodec-javase = { module = "org.jcodec:jcodec-javase", version.ref = "jcodec" }
 
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
-kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.7.1" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.7.2" }
 
 ktlint = { module = "com.pinterest.ktlint:ktlint-rule-engine", version.ref = "ktlint" }
 
@@ -53,7 +53,7 @@ moshi-adapters = { module = "com.squareup.moshi:moshi-adapters", version.ref = "
 moshi-core = { module = "com.squareup.moshi:moshi", version.ref = "moshi" }
 moshi-kotlinCodegen = { module = "com.squareup.moshi:moshi-kotlin-codegen", version.ref = "moshi" }
 
-okio = { module = "com.squareup.okio:okio", version = "3.3.0" }
+okio = { module = "com.squareup.okio:okio", version = "3.4.0" }
 
 tools-common = { module = "com.android.tools:common", version.ref = "androidTools" }
 tools-layoutlib = { module = "com.android.tools.layoutlib:layoutlib-api", version = "31.0.2" }
@@ -65,7 +65,7 @@ trove4j = { module = "org.jetbrains.intellij.deps:trove4j", version = "1.0.20200
 # Test libraries
 junit = { module = "junit:junit", version = "4.13.2" }
 testParameterInjector = { module = "com.google.testparameterinjector:test-parameter-injector", version = "1.12" }
-truth = { module = "com.google.truth:truth", version = "1.1.4" }
+truth = { module = "com.google.truth:truth", version = "1.1.5" }
 
 # Plugins
 plugin-android = { module = "com.android.tools.build:gradle", version.ref = "agp" }
@@ -73,6 +73,6 @@ plugin-buildConfig = { module = "com.github.gmazzo:gradle-buildconfig-plugin", v
 plugin-dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version = "1.8.20" }
 plugin-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 plugin-ksp = { module = "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin", version = "1.8.21-1.0.11" }
-plugin-mavenPublish = { module = "com.vanniktech:gradle-maven-publish-plugin", version = "0.25.2" }
-plugin-spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version = "6.19.0" }
+plugin-mavenPublish = { module = "com.vanniktech:gradle-maven-publish-plugin", version = "0.25.3" }
+plugin-spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version = "6.20.0" }
 plugin-versions = { module = "com.github.ben-manes:gradle-versions-plugin", version = "0.47.0" }

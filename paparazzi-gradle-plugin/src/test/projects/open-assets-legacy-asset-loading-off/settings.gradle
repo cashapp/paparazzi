@@ -1,0 +1,5 @@
+apply from: '../test.settings.gradle'
+
+include ':consumer'
+include ':producer1'
+include ':producer2'

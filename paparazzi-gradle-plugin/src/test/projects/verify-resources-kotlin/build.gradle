@@ -18,4 +18,6 @@ android {
 
 dependencies {
   implementation files('libs/external.aar')
+  implementation project("module1")
+  implementation project("module2")
 }

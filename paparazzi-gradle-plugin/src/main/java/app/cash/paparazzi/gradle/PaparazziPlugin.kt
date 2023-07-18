@@ -19,9 +19,15 @@ import app.cash.paparazzi.gradle.utils.artifactViewFor
 import app.cash.paparazzi.gradle.utils.artifactsFor
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.LibraryExtension
+import com.android.build.gradle.TestedExtension
+import com.android.build.gradle.api.BaseVariant
+import com.android.build.gradle.internal.api.TestedVariant
+import com.android.build.gradle.internal.dsl.BaseAppModuleExtension
+import com.android.build.gradle.internal.dsl.DynamicFeatureExtension
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactType
 import com.android.build.gradle.tasks.MergeSourceSetFolders
 import org.gradle.api.DefaultTask
+import org.gradle.api.DomainObjectSet
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.component.ProjectComponentIdentifier
@@ -50,22 +56,49 @@ import kotlin.io.path.invariantSeparatorsPathString
 @Suppress("unused")
 class PaparazziPlugin : Plugin<Project> {
   override fun apply(project: Project) {
-    project.afterEvaluate {
-      check(!project.plugins.hasPlugin("com.android.application")) {
-        error(
-          "Currently, Paparazzi only works in Android library -- not application -- modules. " +
-            "See https://github.com/cashapp/paparazzi/issues/107"
-        )
+    val legacyResourceLoadingEnabled = (project.findProperty("app.cash.paparazzi.legacy.resource.loading") as? String)?.toBoolean() ?: false
+
+    if (legacyResourceLoadingEnabled) {
+      project.afterEvaluate {
+        check(!project.plugins.hasPlugin("com.android.application")) {
+          error(
+            "Currently, Paparazzi only works in Android library -- not application -- modules. " +
+              "See https://github.com/cashapp/paparazzi/issues/107"
+          )
+        }
+
+        check(project.plugins.hasPlugin("com.android.library")) {
+          "The Android Gradle library plugin must be applied for Paparazzi to work properly."
+        }
       }
-      check(project.plugins.hasPlugin("com.android.library")) {
-        "The Android Gradle library plugin must be applied for Paparazzi to work properly."
+
+      project.plugins.withId("com.android.library") {
+        setupPaparazzi(project, project.extensions.getByType(LibraryExtension::class.java).libraryVariants)
+      }
+    } else {
+      val supportedPlugins = listOf("com.android.application", "com.android.library", "com.android.dynamic-feature")
+      project.afterEvaluate {
+        check(supportedPlugins.any { project.plugins.hasPlugin(it) }) {
+          "One of ${supportedPlugins.joinToString(", ")} must be applied for Paparazzi to work properly."
+        }
+      }
+
+      supportedPlugins.forEach { plugin ->
+        project.plugins.withId(plugin) {
+          val variants = when (val extension = project.extensions.getByType(TestedExtension::class.java)) {
+            is LibraryExtension -> extension.libraryVariants
+            is BaseAppModuleExtension -> extension.applicationVariants
+            is DynamicFeatureExtension -> extension.applicationVariants
+            // exhaustive to avoid potential breaking changes in future AGP releases
+            else -> throw IllegalStateException("${extension.javaClass.name} from $plugin is not supported in Paparazzi")
+          }
+          setupPaparazzi(project, variants)
+        }
       }
     }
-
-    project.plugins.withId("com.android.library") { setupPaparazzi(project) }
   }
 
-  private fun setupPaparazzi(project: Project) {
+  private fun <T> setupPaparazzi(project: Project, variants: DomainObjectSet<T>) where T : BaseVariant, T : TestedVariant {
     project.addTestDependency()
     val nativePlatformFileCollection = project.setupNativePlatformDependency()
 
@@ -79,8 +112,6 @@ class PaparazziPlugin : Plugin<Project> {
       it.description = "Record golden images for all variants"
     }
 
-    val variants = project.extensions.getByType(LibraryExtension::class.java)
-      .libraryVariants
     variants.all { variant ->
       val variantSlug = variant.name.capitalize(Locale.US)
       val testVariant = variant.unitTestVariant ?: return@all
@@ -108,6 +139,19 @@ class PaparazziPlugin : Plugin<Project> {
         .artifactsFor(ArtifactType.ANDROID_RES.type) { it !is ProjectComponentIdentifier }
         .artifactFiles
 
+      val localAssetDirs = project
+        .files(variant.sourceSets.flatMap { it.assetsDirectories })
+
+      // https://android.googlesource.com/platform/tools/base/+/96015063acd3455a76cdf1cc71b23b0828c0907f/build-system/gradle-core/src/main/java/com/android/build/gradle/tasks/MergeResources.kt#875
+
+      val moduleAssetDirs = variant.runtimeConfiguration
+        .artifactsFor(ArtifactType.ASSETS.type) { it is ProjectComponentIdentifier }
+        .artifactFiles
+
+      val aarAssetDirs = variant.runtimeConfiguration
+        .artifactsFor(ArtifactType.ASSETS.type) { it !is ProjectComponentIdentifier }
+        .artifactFiles
+
       val packageAwareArtifactFiles = variant.runtimeConfiguration
         .artifactsFor(ArtifactType.SYMBOL_LIST_WITH_PACKAGE_NAME.type)
         .artifactFiles
@@ -127,8 +171,11 @@ class PaparazziPlugin : Plugin<Project> {
         task.targetSdkVersion.set(android.targetSdkVersion())
         task.compileSdkVersion.set(android.compileSdkVersion())
         task.mergeAssetsOutputDir.set(buildDirectory.asRelativePathString(mergeAssetsOutputDir))
-        task.projectResourceDirs.from(localResourceDirs.plus(moduleResourceDirs))
+        task.projectResourceDirs.from(localResourceDirs)
+        task.moduleResourceDirs.from(moduleResourceDirs)
         task.aarExplodedDirs.from(aarExplodedDirs)
+        task.projectAssetDirs.from(localAssetDirs.plus(moduleAssetDirs))
+        task.aarAssetDirs.from(aarAssetDirs)
         task.paparazziResources.set(buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.txt"))
       }
 

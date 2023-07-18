@@ -2,6 +2,34 @@
 
 ## [Unreleased]
 
+## [1.3.1] - 2023-07-18
+
+### New
+* Migrated to new resource and asset loading mechanisms.  To explicitly opt-out and fall back to the
+legacy mechanisms, add either/both of the following to your `gradle.properties`:
+```
+app.cash.paparazzi.legacy.resource.loading=true
+app.cash.paparazzi.legacy.asset.loading=true
+```
+
+* The Android system ui (status + navigation bar) is now hidden by default; to re-enable:
+```
+  @get:Rule
+  val paparazzi = Paparazzi(
+    showSystemUi = true
+  )
+```
+
+* Relocate failure deltas from `PROJECT_ROOT/out/failures/` to `BUILD_DIR/paparazzi/failures/`
+* Support for application and dynamic feature modules
+* [Gradle Plugin] Gradle 8.2.1
+
+### Fixed
+* Fix accessibility labels when mergeDescendants is true
+* Fixes compose alert dialogs not rendering when using RenderingMode.SHRINK
+
+Kudos to @kevinzheng-ap, @adamalyyan and others for contributions this release!
+
 ## [1.3.0] - 2023-05-31
 
 As of this release, consumers must build on Java 17+ environments.
@@ -236,7 +264,8 @@ As of this release, consumers must build on Java 11 environments.
 
 
 
-[Unreleased]: https://github.com/cashapp/paparazzi/compare/1.3.0...HEAD
+[Unreleased]: https://github.com/cashapp/paparazzi/compare/1.3.1...HEAD
+[1.3.1]: https://github.com/cashapp/paparazzi/releases/tag/1.3.1
 [1.3.0]: https://github.com/cashapp/paparazzi/releases/tag/1.3.0
 [1.2.0]: https://github.com/cashapp/paparazzi/releases/tag/1.2.0
 [1.1.0]: https://github.com/cashapp/paparazzi/releases/tag/1.1.0

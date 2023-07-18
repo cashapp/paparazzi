@@ -9,7 +9,8 @@ class ProjectResourceRepositoryTest {
   fun test() {
     // TODO: need mapOf(package to listOf(resourceDirectory)) for each transitive project module
     val repository = ProjectResourceRepository.create(
-      resourceDirectories = listOf(resolveProjectPath("src/test/resources/folders/res").toFile())
+      resourceDirectories = listOf(resolveProjectPath("src/test/resources/folders/res").toFile()),
+      moduleResourceDirectories = emptyList()
     )
 
     val map = repository.allResources
