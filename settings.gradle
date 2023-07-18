@@ -31,7 +31,6 @@ private void includeTestProjectsIntoIDE() {
     "invalid-application-plugin", // intentionally does not import
     "missing-library-plugin", // intentionally does not import
     "multiplatform-plugin-without-android", // intentionally does not import
-    "night-mode-xml", // TODO fix this one or remove it? Maybe left out of PaparazziPluginTest by accident?
   ]
 
   new File(rootDir, "paparazzi-gradle-plugin/src/test/projects").eachDir {
