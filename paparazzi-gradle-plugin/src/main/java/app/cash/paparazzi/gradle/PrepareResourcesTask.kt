@@ -33,6 +33,7 @@ abstract class PrepareResourcesTask : DefaultTask() {
   @get:Input
   abstract val packageName: Property<String>
 
+  @Deprecated("legacy resource loading, to be removed in a future release")
   @get:Input
   abstract val mergeResourcesOutputDir: Property<String>
 
@@ -62,6 +63,7 @@ abstract class PrepareResourcesTask : DefaultTask() {
   @get:PathSensitive(PathSensitivity.NONE)
   abstract val aarAssetDirs: ConfigurableFileCollection
 
+  @Deprecated("legacy asset loading, to be removed in a future release")
   @get:Input
   abstract val mergeAssetsOutputDir: Property<String>
 
