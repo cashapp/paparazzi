@@ -437,7 +437,9 @@ internal abstract class MultiResourceRepository internal constructor(displayName
       val c: Int = item1.configuration.compareTo(item2.configuration)
       return if (c != 0) {
         c
-      } else priorityComparator.compare(item1, item2)
+      } else {
+        priorityComparator.compare(item1, item2)
+      }
     }
   }
 
