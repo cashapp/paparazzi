@@ -1313,6 +1313,26 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun nightModeXml() {
+    val fixtureRoot = File("src/test/projects/night-mode-xml")
+
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/images")
+    val snapshots = snapshotsDir.listFiles()?.sortedBy { it.lastModified() }
+    assertThat(snapshots!!).hasSize(2)
+
+    val lightModeSnapshotImage = snapshots[0]
+    val darkModeSnapshotImage = snapshots[1]
+    val lightModeGoldenImage = File(fixtureRoot, "src/test/resources/light_mode.png")
+    val darkModeGoldenImage = File(fixtureRoot, "src/test/resources/dark_mode.png")
+    assertThat(lightModeSnapshotImage).isSimilarTo(lightModeGoldenImage).withDefaultThreshold()
+    assertThat(darkModeSnapshotImage).isSimilarTo(darkModeGoldenImage).withDefaultThreshold()
+  }
+
+  @Test
   fun disabledUnitTestVariant() {
     val fixtureRoot = File("src/test/projects/disabled-unit-test-variant")
     gradleRunner
