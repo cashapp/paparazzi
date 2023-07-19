@@ -41,7 +41,7 @@ class ResourceFile(
   }
 
   override val relativePath: String?
-    get() = file?.let { repository.resourceDir.toRelativeString(it) }
+    get() = file?.let { it.toRelativeString(repository.resourceDir) }
 
   fun isValid(): Boolean = file != null
 }
