@@ -435,11 +435,3 @@ class Pseudolocalizer(method: Method) {
   }
 }
 
-fun String.pseudoLocalize(method: Pseudolocalizer.Method) =
-  if (isBlank()) {
-    this
-  } else {
-    with(Pseudolocalizer(method)) {
-      start() + text(this@pseudoLocalize) + end()
-    }
-  }
