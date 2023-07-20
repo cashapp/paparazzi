@@ -109,7 +109,7 @@ subprojects {
 }
 
 tasks.register("clean", Delete).configure {
-  delete rootProject.buildDir
+  delete(rootProject.layout.buildDirectory)
 }
 
 allprojects { project ->
