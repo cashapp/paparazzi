@@ -60,7 +60,7 @@ subprojects {
       repositories {
         maven {
           name = "projectLocalMaven"
-          url = "${rootProject.buildDir}/localMaven"
+          url = rootProject.layout.buildDirectory.dir("localMaven")
         }
         /**
          * Want to push to an internal repository for testing?
@@ -109,7 +109,7 @@ subprojects {
 }
 
 tasks.register("clean", Delete).configure {
-  delete rootProject.buildDir
+  delete(rootProject.layout.buildDirectory)
 }
 
 allprojects { project ->

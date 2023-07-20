@@ -4,7 +4,7 @@ plugins {
   id 'app.cash.paparazzi'
 }
 
-project.buildDir = 'custom'
+project.layout.buildDirectory = 'custom'
 
 android {
   namespace 'app.cash.paparazzi.plugin.test'
