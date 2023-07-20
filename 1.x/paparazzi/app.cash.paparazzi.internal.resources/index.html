@@ -374,6 +374,26 @@
 <td>[jvm]<br>class <a href="-namespace-resolver/">NamespaceResolver</a> : ResourceNamespace.Resolver<br>Ported from: <a href="https://cs.android.com/android-studio/platform/tools/base/+/18047faf69512736b8ddb1f6a6785f58d47c893f:resource-repository/main/java/com/android/resources/base/NamespaceResolver.java">NamespaceResolver.java</a></td>
 </tr>
 <tr>
+<td><a href="-pseudolocalizer/">Pseudolocalizer</a></td>
+<td>[jvm]<br>class <a href="-pseudolocalizer/">Pseudolocalizer</a>(method: <a href="-pseudolocalizer/-method/">Pseudolocalizer.Method</a>)</td>
+</tr>
+<tr>
+<td><a href="-pseudo-method-accent/">PseudoMethodAccent</a></td>
+<td>[jvm]<br>class <a href="-pseudo-method-accent/">PseudoMethodAccent</a> : <a href="-pseudo-method-impl/">PseudoMethodImpl</a></td>
+</tr>
+<tr>
+<td><a href="-pseudo-method-bidi/">PseudoMethodBidi</a></td>
+<td>[jvm]<br>object <a href="-pseudo-method-bidi/">PseudoMethodBidi</a> : <a href="-pseudo-method-impl/">PseudoMethodImpl</a></td>
+</tr>
+<tr>
+<td><a href="-pseudo-method-impl/">PseudoMethodImpl</a></td>
+<td>[jvm]<br>abstract class <a href="-pseudo-method-impl/">PseudoMethodImpl</a></td>
+</tr>
+<tr>
+<td><a href="-pseudo-method-none/">PseudoMethodNone</a></td>
+<td>[jvm]<br>object <a href="-pseudo-method-none/">PseudoMethodNone</a> : <a href="-pseudo-method-impl/">PseudoMethodImpl</a></td>
+</tr>
+<tr>
 <td><a href="-repository-configuration/">RepositoryConfiguration</a></td>
 <td>[jvm]<br>class <a href="-repository-configuration/">RepositoryConfiguration</a>(repository: <a href="-loadable-resource-repository/">LoadableResourceRepository</a>, val folderConfiguration: FolderConfiguration)<br>A (<a href="-loadable-resource-repository/">LoadableResourceRepository</a>, FolderConfiguration) pair. Instances of BasicResourceItem contain a reference to an <a href="-repository-configuration/">RepositoryConfiguration</a> instead of two separate references to <a href="-loadable-resource-repository/">LoadableResourceRepository</a> and FolderConfiguration. This indirection saves memory because the number of <a href="-repository-configuration/">RepositoryConfiguration</a> instances is a tiny fraction of the number of BasicResourceItem instances.</td>
 </tr>
