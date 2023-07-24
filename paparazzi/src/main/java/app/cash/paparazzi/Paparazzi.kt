@@ -32,7 +32,9 @@ import android.view.ViewGroup
 import androidx.activity.setViewTreeOnBackPressedDispatcherOwner
 import androidx.annotation.LayoutRes
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
@@ -196,8 +198,16 @@ class Paparazzi @JvmOverloads constructor(
   fun <V : View> inflate(@LayoutRes layoutId: Int): V = layoutInflater.inflate(layoutId, null) as V
 
   fun snapshot(name: String? = null, composable: @Composable () -> Unit) {
+    // Mimics ComposeViewAdapter behavior to let a composable know this is a local preview
+    val previewComposable = @Composable {
+      CompositionLocalProvider(
+        LocalInspectionMode provides true,
+        content = composable
+      )
+    }
+
     val hostView = ComposeView(context)
-    hostView.setContent(composable)
+    hostView.setContent(previewComposable)
 
     snapshot(hostView, name)
   }
