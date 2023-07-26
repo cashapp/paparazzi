@@ -37,7 +37,7 @@ jcodec-core = { module = "org.jcodec:jcodec", version.ref = "jcodec" }
 jcodec-javase = { module = "org.jcodec:jcodec-javase", version.ref = "jcodec" }
 
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
-kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.7.2" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.7.3" }
 
 ktlint = { module = "com.pinterest.ktlint:ktlint-rule-engine", version.ref = "ktlint" }
 
