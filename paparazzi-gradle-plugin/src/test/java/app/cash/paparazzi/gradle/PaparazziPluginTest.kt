@@ -796,12 +796,12 @@ class PaparazziPluginTest {
     val fixtureRoot = File("src/test/projects/verify-resources-java")
 
     val result = gradleRunner
-      .withArguments("compileDebugUnitTestJavaWithJavac", "--stacktrace")
+      .withArguments(":consumer:compileDebugUnitTestJavaWithJavac", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
 
-    assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
+    assertThat(result.task(":consumer:preparePaparazziDebugResources")).isNotNull()
 
-    val resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/debug/resources.txt")
+    val resourcesFile = File(fixtureRoot, "consumer/build/intermediates/paparazzi/debug/resources.txt")
     assertThat(resourcesFile.exists()).isTrue()
 
     val resourceFileContents = resourcesFile.readLines()
@@ -810,7 +810,7 @@ class PaparazziPluginTest {
     assertThat(resourceFileContents[4]).isEqualTo("intermediates/assets/debug")
     assertThat(resourceFileContents[5]).isEqualTo("app.cash.paparazzi.plugin.test,com.example.mylibrary,app.cash.paparazzi.plugin.test.module1,app.cash.paparazzi.plugin.test.module2")
     assertThat(resourceFileContents[6]).isEqualTo("src/main/res,src/debug/res")
-    assertThat(resourceFileContents[7]).isEqualTo("module1/build/intermediates/packaged_res/debug,module2/build/intermediates/packaged_res/debug")
+    assertThat(resourceFileContents[7]).isEqualTo("../module1/build/intermediates/packaged_res/debug,../module2/build/intermediates/packaged_res/debug")
     assertThat(resourceFileContents[8]).matches("^caches/transforms-3/[0-9a-f]{32}/transformed/external/res\$")
   }
 
@@ -819,12 +819,12 @@ class PaparazziPluginTest {
     val fixtureRoot = File("src/test/projects/verify-resources-kotlin")
 
     val result = gradleRunner
-      .withArguments("compileDebugUnitTestKotlin", "--stacktrace")
+      .withArguments(":consumer:compileDebugUnitTestKotlin", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
 
-    assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
+    assertThat(result.task(":consumer:preparePaparazziDebugResources")).isNotNull()
 
-    val resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/debug/resources.txt")
+    val resourcesFile = File(fixtureRoot, "consumer/build/intermediates/paparazzi/debug/resources.txt")
     assertThat(resourcesFile.exists()).isTrue()
 
     val resourceFileContents = resourcesFile.readLines()
@@ -833,7 +833,7 @@ class PaparazziPluginTest {
     assertThat(resourceFileContents[4]).isEqualTo("intermediates/assets/debug")
     assertThat(resourceFileContents[5]).isEqualTo("app.cash.paparazzi.plugin.test,com.example.mylibrary,app.cash.paparazzi.plugin.test.module1,app.cash.paparazzi.plugin.test.module2")
     assertThat(resourceFileContents[6]).isEqualTo("src/main/res,src/debug/res")
-    assertThat(resourceFileContents[7]).isEqualTo("module1/build/intermediates/packaged_res/debug,module2/build/intermediates/packaged_res/debug")
+    assertThat(resourceFileContents[7]).isEqualTo("../module1/build/intermediates/packaged_res/debug,../module2/build/intermediates/packaged_res/debug")
     assertThat(resourceFileContents[8]).matches("^caches/transforms-3/[0-9a-f]{32}/transformed/external/res\$")
   }
 
@@ -842,12 +842,12 @@ class PaparazziPluginTest {
     val fixtureRoot = File("src/test/projects/verify-resources-java")
 
     val result = gradleRunner
-      .withArguments("compileDebugUnitTestJavaWithJavac", "--stacktrace")
+      .withArguments(":consumer:compileDebugUnitTestJavaWithJavac", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
 
-    assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
+    assertThat(result.task(":consumer:preparePaparazziDebugResources")).isNotNull()
 
-    val resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/debug/resources.txt")
+    val resourcesFile = File(fixtureRoot, "consumer/build/intermediates/paparazzi/debug/resources.txt")
     assertThat(resourcesFile.exists()).isTrue()
 
     val resourceFileContents = resourcesFile.readLines()
