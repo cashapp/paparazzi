@@ -142,7 +142,6 @@ tasks.withType<Test> {
   }
 }
 ```
-More info
 
 Releases
 --------
