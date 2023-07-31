@@ -116,6 +116,34 @@ fun setup() {
 }
 ```
 
+JaCoCo Compatibility
+--------------------
+
+The way both JaCoCo and Paparazzi instrument may cause conflict if JDK 17+ is used. Mitigate this issue by adding the following into your JaCoCo configuration [#955](https://github.com/cashapp/paparazzi/issues/955):
+
+build.gradle
+```groovy
+jacoco.excludes = [
+  'androidx.core.*',
+  'com.android.*',
+  'android.*'
+]
+```
+
+build.gradle.kts
+```kotlin
+tasks.withType<Test> {
+  extensions.configure<JacocoTaskExtension> {
+    excludes = listOf(
+      "androidx.core.*",
+      "com.android.*",
+      "android.*",
+    )
+  }
+}
+```
+More info
+
 Releases
 --------
 
