@@ -76,3 +76,4 @@ plugin-ksp = { module = "com.google.devtools.ksp:com.google.devtools.ksp.gradle.
 plugin-mavenPublish = { module = "com.vanniktech:gradle-maven-publish-plugin", version = "0.25.3" }
 plugin-spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version = "6.20.0" }
 plugin-versions = { module = "com.github.ben-manes:gradle-versions-plugin", version = "0.47.0" }
+androidx-swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version = "1.1.0" }

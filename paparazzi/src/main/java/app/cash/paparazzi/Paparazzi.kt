@@ -23,12 +23,15 @@ import android.os.Handler_Delegate
 import android.os.SystemClock_Delegate
 import android.util.AttributeSet
 import android.util.DisplayMetrics
+import android.util.TimeUtils
+import android.view.AttachInfo_Accessor
 import android.view.BridgeInflater
 import android.view.Choreographer
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.NO_ID
 import android.view.ViewGroup
+import android.view.ViewRootImpl
 import androidx.activity.setViewTreeOnBackPressedDispatcherOwner
 import androidx.annotation.LayoutRes
 import androidx.compose.runtime.Composable
@@ -264,6 +267,16 @@ class Paparazzi @JvmOverloads constructor(
     bridgeRenderSession = createBridgeSession(renderSession, renderSession.inflate())
   }
 
+  private fun syncAttachInfoDrawingTime(capturedView: View) {
+    val attachInfoField = View::class.java.getDeclaredField("mAttachInfo")
+    attachInfoField.isAccessible = true
+    val attachInfo = attachInfoField.get(capturedView)
+    val frameTime = Choreographer.getInstance().frameTimeNanos / TimeUtils.NANOS_PER_MS
+    val drawingTimeField = attachInfoField.type.getDeclaredField("mDrawingTime")
+    drawingTimeField.isAccessible = true
+    drawingTimeField.set(attachInfo, frameTime)
+  }
+
   private fun takeSnapshots(
     view: View,
     name: String?,
@@ -311,6 +324,8 @@ class Paparazzi @JvmOverloads constructor(
         for (frame in 0 until frameCount) {
           val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
           withTime(nowNanos) {
+            syncAttachInfoDrawingTime(modifiedView)
+            println("Rendering frame $frame/$frameCount - ${viewGroup.drawingTime}")
             val result = renderSession.render(true)
             if (result.status == ERROR_UNKNOWN) {
               throw result.exception

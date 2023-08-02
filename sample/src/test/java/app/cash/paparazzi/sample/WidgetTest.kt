@@ -10,8 +10,11 @@ import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import app.cash.paparazzi.DeviceConfig
+import app.cash.paparazzi.InstantAnimationsRule
 import app.cash.paparazzi.Paparazzi
+import app.cash.paparazzi.sample.databinding.SrlBinding
 import com.android.ide.common.rendering.api.SessionParams
 import org.junit.Rule
 import org.junit.Test
@@ -26,6 +29,17 @@ class WidgetTest {
 
   @Test fun default() {
     paparazzi.snapshot(buildView(paparazzi.context))
+  }
+
+  @get:Rule
+  val instantAnimationsRule = InstantAnimationsRule()
+
+  @Test
+  fun swipeRefresh() {
+    val view = SrlBinding.inflate(paparazzi.layoutInflater).apply {
+      swipeRefreshLayout.isRefreshing = true
+    }
+    paparazzi.gif(view.root)
   }
 
   private fun buildView(context: Context): View {

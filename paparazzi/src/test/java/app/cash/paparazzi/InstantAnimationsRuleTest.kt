@@ -19,7 +19,11 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.graphics.Canvas
+import android.graphics.Color
+import android.view.animation.Animation
+import android.view.animation.Animation.AnimationListener
 import android.view.animation.LinearInterpolator
+import android.view.animation.Transformation
 import android.widget.TextView
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
@@ -66,6 +70,53 @@ class InstantAnimationsRuleTest {
     animator.start()
 
     paparazzi.snapshot(view)
+    assertThat(log)
+      .containsExactly("onAnimationStart", "onAnimationEnd", "onDraw text=1.0").inOrder()
+    log.clear()
+  }
+
+  @Test
+  fun happyPathAnimation() {
+    val log = mutableListOf<String>()
+
+    val view = object : TextView(paparazzi.context) {
+      override fun onDraw(canvas: Canvas) {
+        log += "onDraw text=$text"
+      }
+    }
+    view.setBackgroundColor(Color.WHITE)
+    view.setTextColor(Color.BLACK)
+
+    val animation = object : Animation() {
+      override fun applyTransformation(
+        interpolatedTime: Float,
+        t: Transformation,
+      ) {
+        view.text = interpolatedTime.toString()
+      }
+    }
+    animation.setAnimationListener(object : AnimationListener {
+      override fun onAnimationStart(p0: Animation?) {
+        log += "onAnimationStart"
+      }
+
+      override fun onAnimationEnd(p0: Animation?) {
+        log += "onAnimationEnd"
+      }
+
+      override fun onAnimationRepeat(p0: Animation?) {
+        log += "onAnimationRepeat"
+      }
+    })
+
+    animation.startOffset = 20L
+    animation.duration = 10L
+    animation.interpolator = LinearInterpolator()
+    view.animation = animation
+
+    animation.start()
+
+    paparazzi.gif(view)
     assertThat(log)
       .containsExactly("onAnimationStart", "onAnimationEnd", "onDraw text=1.0").inOrder()
     log.clear()

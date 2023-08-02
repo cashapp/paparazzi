@@ -25,6 +25,7 @@ android {
 dependencies {
   implementation libs.composeUi.material
   implementation libs.composeUi.uiTooling
+  implementation libs.androidx.swiperefreshlayout
 
   testImplementation libs.testParameterInjector
 }
