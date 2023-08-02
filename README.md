@@ -132,7 +132,7 @@ jacoco.excludes = [
 
 build.gradle.kts
 ```kotlin
-tasks.withType<Test> {
+tasks.withType<Test>().configureEach {
   extensions.configure<JacocoTaskExtension> {
     excludes = listOf(
       "androidx.core.*",
