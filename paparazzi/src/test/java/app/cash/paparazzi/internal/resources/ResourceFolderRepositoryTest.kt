@@ -22,7 +22,7 @@ class ResourceFolderRepositoryTest {
     )
 
     val map = repository.allResources
-    assertThat(map.size).isEqualTo(32)
+    assertThat(map.size).isEqualTo(34)
 
     // ANIM
     assertThat(map[0].name).isEqualTo("slide_in_from_left")
@@ -133,17 +133,24 @@ class ResourceFolderRepositoryTest {
     assertThat(map[26].type).isEqualTo(ResourceType.RAW)
 
     // STRINGS
-    assertThat(map[27].name).isEqualTo("string_name")
+    assertThat(map[27].name).isEqualTo("string_not_translate")
     assertThat(map[27].type).isEqualTo(ResourceType.STRING)
-    assertThat(map[27].resourceValue.value).isEqualTo("Test String")
-    assertThat(map[28].name).isEqualTo("string_name_xliff")
+    assertThat(map[27].resourceValue.value).isEqualTo("Not Translatable String")
+    assertThat(map[28].name).isEqualTo("string_name")
     assertThat(map[28].type).isEqualTo(ResourceType.STRING)
-    assertThat(map[28].resourceValue.value).isEqualTo("Test String {0} with suffix")
+    assertThat(map[28].resourceValue.value).isEqualTo("Test String")
+    assertThat(map[29].name).isEqualTo("string_name_html")
+    assertThat(map[29].type).isEqualTo(ResourceType.STRING)
+    assertThat(map[29].resourceValue.value).isEqualTo("This Test String")
+    assertThat(map[29].resourceValue.rawXmlValue).isEqualTo("This <b>Test</b> String")
+    assertThat(map[30].name).isEqualTo("string_name_xliff")
+    assertThat(map[30].type).isEqualTo(ResourceType.STRING)
+    assertThat(map[30].resourceValue.value).isEqualTo("Test String {0} with suffix")
 
     // STYLE XML
-    assertThat(map[29].name).isEqualTo("TestStyle")
-    assertThat(map[29].type).isEqualTo(ResourceType.STYLE)
-    with(map[29].resourceValue as StyleResourceValue) {
+    assertThat(map[31].name).isEqualTo("TestStyle")
+    assertThat(map[31].type).isEqualTo(ResourceType.STYLE)
+    with(map[31].resourceValue as StyleResourceValue) {
       assertThat(definedItems.size).isEqualTo(2)
       assertThat(definedItems.elementAt(0).attrName).isEqualTo("android:scrollbars")
       assertThat(definedItems.elementAt(0).value).isEqualTo("horizontal")
@@ -152,9 +159,9 @@ class ResourceFolderRepositoryTest {
     }
 
     // STYLEABLE
-    assertThat(map[30].name).isEqualTo("test_styleable")
-    assertThat(map[30].type).isEqualTo(ResourceType.STYLEABLE)
-    with(map[30].resourceValue as StyleableResourceValue) {
+    assertThat(map[32].name).isEqualTo("test_styleable")
+    assertThat(map[32].type).isEqualTo(ResourceType.STYLEABLE)
+    with(map[32].resourceValue as StyleableResourceValue) {
       assertThat(allAttributes.size).isEqualTo(3)
       assertThat(allAttributes[0].name).isEqualTo("TestAttr")
       assertThat(allAttributes[1].name).isEqualTo("TestAttrInt")
@@ -162,7 +169,7 @@ class ResourceFolderRepositoryTest {
     }
 
     // XML
-    assertThat(map[31].name).isEqualTo("test_network_security_config")
-    assertThat(map[31].type).isEqualTo(ResourceType.XML)
+    assertThat(map[33].name).isEqualTo("test_network_security_config")
+    assertThat(map[33].type).isEqualTo(ResourceType.XML)
   }
 }

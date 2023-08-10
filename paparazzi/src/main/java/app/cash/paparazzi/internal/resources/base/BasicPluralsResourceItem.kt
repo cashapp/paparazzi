@@ -34,9 +34,9 @@ class BasicPluralsResourceItem private constructor(
   name: String,
   sourceFile: ResourceSourceFile,
   visibility: ResourceVisibility,
-  private val arities: Array<Arity>,
-  private val values: Array<String>,
-  private val defaultIndex: Int
+  internal val arities: Array<Arity>,
+  internal val values: Array<String>,
+  internal val defaultIndex: Int
 ) : BasicValueResourceItemBase(ResourceType.PLURALS, name, sourceFile, visibility),
   PluralsResourceValue {
   constructor(

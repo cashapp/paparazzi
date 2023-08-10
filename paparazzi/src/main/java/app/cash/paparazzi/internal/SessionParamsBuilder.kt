@@ -20,6 +20,7 @@ import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.internal.ResourceRepositoryBridge.Legacy
 import app.cash.paparazzi.internal.ResourceRepositoryBridge.New
 import app.cash.paparazzi.internal.parsers.LayoutPullParser
+import app.cash.paparazzi.internal.resources.pseudolocalizeIfNeeded
 import com.android.SdkConstants
 import com.android.ide.common.rendering.api.AssetRepository
 import com.android.ide.common.rendering.api.ResourceNamespace
@@ -88,6 +89,7 @@ internal data class SessionParamsBuilder(
           is New ->
             ResourceNamespace.ANDROID to
               frameworkResources.repository.getConfiguredResources(folderConfiguration)
+                .pseudolocalizeIfNeeded(folderConfiguration.localeQualifier)
                 .row(ResourceNamespace.ANDROID)
         },
         *when (projectResources) {
@@ -100,6 +102,7 @@ internal data class SessionParamsBuilder(
 
           is New ->
             projectResources.repository.getConfiguredResources(folderConfiguration)
+              .pseudolocalizeIfNeeded(folderConfiguration.localeQualifier)
               .rowMap()
               .map { (key, value) -> key to value }
               .toTypedArray()

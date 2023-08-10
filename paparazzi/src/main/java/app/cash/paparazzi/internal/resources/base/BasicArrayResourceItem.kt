@@ -35,7 +35,7 @@ class BasicArrayResourceItem(
   sourceFile: ResourceSourceFile,
   visibility: ResourceVisibility,
   private val elements: List<String>,
-  private val defaultIndex: Int
+  internal val defaultIndex: Int
 ) : BasicValueResourceItemBase(ResourceType.ARRAY, name, sourceFile, visibility), ArrayResourceValue {
   init {
     assert(elements.isEmpty() || defaultIndex < elements.size)
