@@ -12,10 +12,9 @@ moshi = "1.15.0"
 minSdk = "25"
 compileSdk = "33"
 
-# Maps to this commit: https://android.googlesource.com/platform/prebuilts/studio/layoutlib/+/5128371
-# which runs on JDK 11.
-layoutlib = "2022.2.1-5128371-2"
-layoutlibPrebuiltSha = "5128371"
+# Maps to this commit: https://android.googlesource.com/platform/prebuilts/studio/layoutlib/+/5e972ea
+layoutlib = "2022.3.1-5e972ea"
+layoutlibPrebuiltSha = "5e972ea"
 
 [libraries]
 androidx-annotations = { module = "androidx.annotation:annotation", version = "1.6.0" }
@@ -56,7 +55,7 @@ moshi-kotlinCodegen = { module = "com.squareup.moshi:moshi-kotlin-codegen", vers
 okio = { module = "com.squareup.okio:okio", version = "3.5.0" }
 
 tools-common = { module = "com.android.tools:common", version.ref = "androidTools" }
-tools-layoutlib = { module = "com.android.tools.layoutlib:layoutlib-api", version = "31.0.2" }
+tools-layoutlib = { module = "com.android.tools.layoutlib:layoutlib-api", version = "31.1.0" }
 tools-ninepatch = { module = "com.android.tools:ninepatch", version.ref = "androidTools" }
 tools-sdkCommon = { module = "com.android.tools:sdk-common", version.ref = "androidTools" }
 
