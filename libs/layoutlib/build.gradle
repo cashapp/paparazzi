@@ -2,8 +2,6 @@ import org.ajoberstar.grgit.Grgit
 
 apply plugin: 'com.vanniktech.maven.publish'
 
-version = libs.versions.layoutlib.get()
-
 /**
  * Clone AOSP's prebuilts repo to get a prebuilt layoutlib jar. This big repo that takes a long time to clone!
  *
@@ -45,6 +43,10 @@ tasks.register('cloneLayoutlib') {
 /**
  * Publish layoutlib.jar to Maven Central with Paparazzi coordinates.
  */
+mavenPublishing {
+  coordinates(property("GROUP"), property("POM_ARTIFACT_ID"), libs.versions.layoutlib.get())
+}
+
 publishing {
   publications {
     mavenNativeLibrary(MavenPublication) {
