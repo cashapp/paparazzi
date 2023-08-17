@@ -14,7 +14,7 @@ compileSdk = "33"
 
 # Maps to this commit: https://android.googlesource.com/platform/prebuilts/studio/layoutlib/+/5128371
 # which runs on JDK 11.
-layoutlib = "2022.2.1-5128371-2"
+layoutlib = "2022.3.1-5e972ea"
 layoutlibPrebuiltSha = "5128371"
 
 [libraries]
