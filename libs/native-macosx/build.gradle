@@ -1,7 +1,5 @@
 apply plugin: 'com.vanniktech.maven.publish'
 
-version = libs.versions.layoutlib.get()
-
 tasks.register('macJar', Jar) {
   from(repoDir) {
     include 'data/mac/**'
@@ -11,6 +9,10 @@ tasks.register('macJar', Jar) {
     exclude '**/BUILD'
   }
   dependsOn(':libs:layoutlib:cloneLayoutlib')
+}
+
+mavenPublishing {
+  coordinates(property("GROUP"), property("POM_ARTIFACT_ID"), libs.versions.layoutlib.get())
 }
 
 publishing {
