@@ -116,6 +116,25 @@ fun setup() {
 }
 ```
 
+LocalInspectionMode
+--------
+Some Composables -- such as `GoogleMap()` -- check for `LocalInspectionMode` to short-circuit to a `@Preview`-safe Composable.
+
+However, Paparazzi does not set `LocalInspectionMode` globally to ensure that the snapshot represents the true production output, similar to how it overrides `View.isInEditMode` for legacy views.
+
+As a workaround, we recommend wrapping such a Composable in a custom Composable with a `CompositionLocalProvider` and setting `LocalInspectionMode` there.
+
+```kotlin
+ @Test
+  fun inspectionModeView() {
+    paparazzi.snapshot(
+      CompositionLocalProvider(LocalInspectionMode provides true) {
+        YourComposable()
+      }
+    )
+  }
+```
+
 Releases
 --------
 
