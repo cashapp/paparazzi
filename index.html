@@ -280,6 +280,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#localinspectionmode" class="md-nav__link">
+    LocalInspectionMode
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#releases" class="md-nav__link">
     Releases
   </a>
@@ -416,6 +423,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#localinspectionmode" class="md-nav__link">
+    LocalInspectionMode
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#releases" class="md-nav__link">
     Releases
   </a>
@@ -526,6 +540,19 @@ exclude bundled Android dependencies.</p>
 <span class="kd">fun</span><span class="w"> </span><span class="nf">setup</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="n">LottieTask</span><span class="p">.</span><span class="na">EXECUTOR</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Executor</span><span class="p">(</span><span class="n">Runnable</span><span class="o">::</span><span class="n">run</span><span class="p">)</span>
 <span class="p">}</span>
+</code></pre></div>
+<h2 id="localinspectionmode">LocalInspectionMode<a class="headerlink" href="#localinspectionmode" title="Permanent link">&para;</a></h2>
+<p>Some Composables &ndash; such as <code>GoogleMap()</code> &ndash; check for <code>LocalInspectionMode</code> to short-circuit to a <code>@Preview</code>-safe Composable.</p>
+<p>However, Paparazzi does not set <code>LocalInspectionMode</code> globally to ensure that the snapshot represents the true production output, similar to how it overrides <code>View.isInEditMode</code> for legacy views.</p>
+<p>As a workaround, we recommend wrapping such a Composable in a custom Composable with a <code>CompositionLocalProvider</code> and setting <code>LocalInspectionMode</code> there.</p>
+<div class="highlight"><pre><span></span><code><span class="w"> </span><span class="nd">@Test</span>
+<span class="w">  </span><span class="kd">fun</span><span class="w"> </span><span class="nf">inspectionModeView</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">paparazzi</span><span class="p">.</span><span class="na">snapshot</span><span class="p">(</span>
+<span class="w">      </span><span class="n">CompositionLocalProvider</span><span class="p">(</span><span class="n">LocalInspectionMode</span><span class="w"> </span><span class="n">provides</span><span class="w"> </span><span class="kc">true</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">YourComposable</span><span class="p">()</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">)</span>
+<span class="w">  </span><span class="p">}</span>
 </code></pre></div>
 <h2 id="releases">Releases<a class="headerlink" href="#releases" title="Permanent link">&para;</a></h2>
 <p>Our <a href="https://cashapp.github.io/paparazzi/changelog/">change log</a> has release history.</p>
