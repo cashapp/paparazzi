@@ -26,8 +26,8 @@ Note that layoutlib's version tracks [Android Studio Releases][studio_releases] 
     ./gradlew publishMavenNativeLibraryPublicationToMavenCentralRepository
     ```
 
-   This may take a few minutes. It clones a large repo (2.4 GiB) and then uploads a large artifact
-   (30 MiB) to Maven Central.
+   This may take a few minutes.
+   It clones a large repo (300 MiB) and then uploads a large artifact (30 MiB) to Maven Central.
 
 6. Visit [Sonatype Nexus][nexus] to promote the artifact. Or drop it if there is a problem!
 7. Once deploy is live, continue with changeset from step 4 to update Paparazzi to consume this
