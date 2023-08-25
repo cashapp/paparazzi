@@ -11,18 +11,15 @@ Note that layoutlib's version tracks [Android Studio Releases][studio_releases] 
    Flamingo => 2022.2.1
    ```
 2. Find and click the [tag][prebuilt_refs] for the prebuilt corresponding to that version.
-3. Copy the commit short sha from the resulting page
+3. Copy the end of the tag name from the resulting page
+   Example: https://android.googlesource.com/platform/prebuilts/studio/layoutlib/+/refs/tags/studio-2022.2.1
    ```
-   # Example: https://android.googlesource.com/platform/prebuilts/studio/layoutlib/+/refs/tags/studio-2022.2.1
-
-   512837137ea60b9b86836cab7169fec5c635f422 => 5128371
+   refs/tags/studio-2022.2.1 => studio-2022.2.1
    ```
-4. Update commit link, `layoutlib` and `layoutlibPrebuiltSha` in `libs.versions.toml` as expected.
+4. Update & commit the link and `layoutlib` version in `libs.versions.toml`:
    ```
-   https://android.googlesource.com/platform/prebuilts/studio/layoutlib/+/5128371
-   ...
-   layoutlib = "2022.2.1-5128371"
-   layoutlibPrebuiltSha = "5128371"
+   # Maps to this tag: https://android.googlesource.com/platform/prebuilts/studio/layoutlib/+/refs/tags/studio-2022.2.1
+   layoutlib = "2022.2.1"
    ```
 5. Build and upload:
     ```

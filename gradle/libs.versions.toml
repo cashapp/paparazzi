@@ -14,8 +14,7 @@ minSdk = "25"
 compileSdk = "33"
 
 # Maps to this tag: https://android.googlesource.com/platform/prebuilts/studio/layoutlib/+/refs/tags/studio-2022.3.1
-layoutlib = "2022.3.1-5e972ea"
-layoutlibPrebuiltSha = "2022.3.1"
+layoutlib = "2022.3.1"
 
 [libraries]
 androidx-annotations = { module = "androidx.annotation:annotation", version = "1.7.0" }

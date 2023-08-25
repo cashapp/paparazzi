@@ -9,7 +9,7 @@ apply plugin: 'com.vanniktech.maven.publish'
  */
 tasks.register('cloneLayoutlib') {
   it.outputs.dir(repoDir)
-  it.inputs.property('sha', libs.versions.layoutlibPrebuiltSha)
+  it.inputs.property('layoutlibVersion', libs.versions.layoutlib)
 
   doFirst {
     // Gradle aggressively creates outputs directories, which interferes with the git clone check
@@ -17,7 +17,7 @@ tasks.register('cloneLayoutlib') {
       repoDir.delete()
     }
     Grgit grgit
-    String tag = "refs/tags/studio-${libs.versions.layoutlibPrebuiltSha.get()}"
+    String tag = "refs/tags/studio-${libs.versions.layoutlib.get()}"
     if (!repoDir.exists()) {
       logger.lifecycle('Cloning prebuilt layoutlib: this may take a few minutes...')
       grgit = Grgit.clone {
