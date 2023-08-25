@@ -19,7 +19,7 @@ tasks.register('cloneLayoutlib') {
     Grgit grgit
     String tag = "refs/tags/studio-${libs.versions.layoutlib.get()}"
     if (!repoDir.exists()) {
-      logger.lifecycle('Cloning prebuilt layoutlib: this may take a few minutes...')
+      logger.lifecycle("Cloning prebuilt layoutlib to ${repoDir}...")
       grgit = Grgit.clone {
         dir = repoDir
         uri = "https://android.googlesource.com/platform/prebuilts/studio/layoutlib"
@@ -30,7 +30,7 @@ tasks.register('cloneLayoutlib') {
       }
       logger.lifecycle('Cloned prebuilt layoutlib.')
     } else {
-      logger.lifecycle('Using existing prebuilt layoutlib clone.')
+      logger.lifecycle("Using existing prebuilt layoutlib clone in ${repoDir}.")
       grgit = Grgit.open {
         dir = repoDir
       }
