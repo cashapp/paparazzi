@@ -124,7 +124,7 @@ class PaparazziPlugin : Plugin<Project> {
       val projectDirectory = project.layout.projectDirectory
       val buildDirectory = project.layout.buildDirectory
       val gradleUserHomeDir = project.gradle.gradleUserHomeDir
-      val reportOutputDir = project.extensions.getByType(ReportingExtension::class.java).baseDirectory.dir("paparazzi")
+      val reportOutputDir = project.extensions.getByType(ReportingExtension::class.java).baseDirectory.dir("paparazzi/${variant.name}")
       val snapshotOutputDir = project.layout.projectDirectory.dir("src/test/snapshots")
 
       val localResourceDirs = project
