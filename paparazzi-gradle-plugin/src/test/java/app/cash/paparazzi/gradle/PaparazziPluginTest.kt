@@ -221,6 +221,26 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun customReportDir() {
+    val fixtureRoot = File("src/test/projects/custom-report-dir")
+
+    val result = gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .forwardOutput()
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
+
+    val resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/debug/resources.txt")
+    assertThat(resourcesFile.exists()).isTrue()
+
+    val snapshotsDir = File(fixtureRoot, "custom/our-reports/paparazzi/images")
+    assertThat(snapshotsDir.exists()).isTrue()
+
+    fixtureRoot.resolve("custom").deleteRecursively()
+  }
+
+  @Test
   fun buildClassAccess() {
     val fixtureRoot = File("src/test/projects/build-class")
 
