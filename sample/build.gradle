@@ -27,6 +27,11 @@ dependencies {
   implementation libs.composeUi.uiTooling
 
   testImplementation libs.testParameterInjector
+
+  //noinspection UseTomlInstead
+  implementation "com.google.android.gms:play-services-maps:18.1.0"
+  //noinspection UseTomlInstead
+  implementation "com.google.maps.android:maps-compose:2.13.0"
 }
 
 // https://github.com/diffplug/spotless/issues/1572
