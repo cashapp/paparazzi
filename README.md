@@ -116,11 +116,23 @@ fun setup() {
 }
 ```
 
+View.isInEditMode
+--------
+
+`View.isInEditMode` is a property that provides information about whether a View is presented in edit mode.
+A View typically enters edit mode when it is being displayed within a developer tool.
+
+Although this default behavior is logical for Android Studio's Layout Editor, historically,
+it has not been effective at rendering custom views. This can be problematic for Paparazzi,
+as it necessitates users to eliminate any isInEditMode checks that they might have intended to keep.
+
+In this context, it's important to emphasize that Paparazzi always returns **false** for `View.isInEditMode`.
+
 LocalInspectionMode
 --------
 Some Composables -- such as `GoogleMap()` -- check for `LocalInspectionMode` to short-circuit to a `@Preview`-safe Composable.
 
-However, Paparazzi does not set `LocalInspectionMode` globally to ensure that the snapshot represents the true production output, similar to how it overrides `View.isInEditMode` for legacy views.
+However, Paparazzi does not set `LocalInspectionMode` globally to ensure that the snapshot represents the true production output.
 
 As a workaround, we recommend wrapping such a Composable in a custom Composable with a `CompositionLocalProvider` and setting `LocalInspectionMode` there.
 
