@@ -39,7 +39,7 @@ jcodec-javase = { module = "org.jcodec:jcodec-javase", version.ref = "jcodec" }
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.7.3" }
 
-ksp-api = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }
+ksp = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }
 
 ktlint = { module = "com.pinterest.ktlint:ktlint-rule-engine", version.ref = "ktlint" }
 
