@@ -2,5 +2,5 @@ apply plugin: 'org.jetbrains.kotlin.jvm'
 apply plugin: 'com.vanniktech.maven.publish'
 
 dependencies {
-  implementation libs.ksp.api
+  implementation libs.ksp
 }
