@@ -8,6 +8,7 @@ include ':libs:native-linux'
 include ':paparazzi'
 include ':paparazzi-agent'
 include ':paparazzi-annotations'
+include ':paparazzi-annotation-processor'
 include ':paparazzi-gradle-plugin'
 
 include ':sample'
