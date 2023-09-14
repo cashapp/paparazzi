@@ -6,6 +6,7 @@ composeCompiler = "1.5.1"
 javaTarget = "11"
 jcodec = "0.2.5"
 kotlin = "1.9.0"
+ksp = "1.9.0-1.0.13"
 ktlint = "0.50.0"
 moshi = "1.15.0"
 
@@ -37,6 +38,8 @@ jcodec-javase = { module = "org.jcodec:jcodec-javase", version.ref = "jcodec" }
 
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.7.3" }
+
+ksp-api = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }
 
 ktlint = { module = "com.pinterest.ktlint:ktlint-rule-engine", version.ref = "ktlint" }
 
@@ -71,7 +74,7 @@ plugin-android = { module = "com.android.tools.build:gradle", version.ref = "agp
 plugin-buildConfig = { module = "com.github.gmazzo.buildconfig:plugin", version = "4.1.2" }
 plugin-dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version = "1.9.0" }
 plugin-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
-plugin-ksp = { module = "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin", version = "1.9.0-1.0.13" }
+plugin-ksp = { module = "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
 plugin-mavenPublish = { module = "com.vanniktech:gradle-maven-publish-plugin", version = "0.25.3" }
 plugin-spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version = "6.21.0" }
 plugin-versions = { module = "com.github.ben-manes:gradle-versions-plugin", version = "0.48.0" }
