@@ -22,6 +22,7 @@ import org.junit.Assert.fail
 import java.awt.AlphaComposite
 import java.awt.Color
 import java.awt.Graphics2D
+import java.awt.Rectangle
 import java.awt.RenderingHints.KEY_ANTIALIASING
 import java.awt.RenderingHints.KEY_INTERPOLATION
 import java.awt.RenderingHints.KEY_RENDERING
@@ -309,6 +310,46 @@ internal object ImageUtils {
         iterations--
       }
       return scaled
+    }
+  }
+
+  fun smallestDiffRect(firstImage: BufferedImage, secondImage: BufferedImage): Rectangle? {
+    val firstImageWidth = firstImage.width
+    val firstImageHeight = firstImage.height
+    val secondImageWidth = secondImage.width
+    val secondImageHeight = secondImage.height
+
+    val maxWidth = max(firstImageWidth, secondImageWidth)
+    val maxHeight = max(firstImageHeight, secondImageHeight)
+
+    var (left, right, top, bottom) = listOf(-1, -1, -1, -1)
+    for (y in 0 until maxHeight) {
+      for (x in 0 until maxWidth) {
+        val firstRgb = if (x < firstImageWidth && y < firstImageHeight) firstImage.getRGB(x, y) else null
+        val secondRgb = if (x < secondImageWidth && y < secondImageHeight) secondImage.getRGB(x, y) else null
+        if (firstRgb != secondRgb) {
+          if (x < left || left == -1) left = x
+          if (x > right) right = x
+          if (y < top || top == -1) top = y
+          if (y > bottom) bottom = y
+        }
+      }
+    }
+
+    val diffWidth = right - left
+    val diffHeight = bottom - top
+    return if (diffWidth > 0 && diffHeight > 0) {
+      Rectangle(left, top, diffWidth + 1, diffHeight + 1)
+    } else {
+      null
+    }
+  }
+
+  fun BufferedImage.resize(targetWidth: Int, targetHeight: Int): BufferedImage {
+    return BufferedImage(targetWidth, targetHeight, type).apply {
+      val g = createGraphics()
+      g.drawImage(this@resize, 0, 0, null)
+      g.dispose()
     }
   }
 
