@@ -1,4 +1,4 @@
-package app.cash.paparazzi.annotation.api
+package app.cash.paparazzi.annotations
 
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.BINARY)
