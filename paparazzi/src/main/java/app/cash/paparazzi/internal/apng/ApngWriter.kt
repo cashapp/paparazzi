@@ -37,8 +37,6 @@ import okio.buffer
 import java.awt.Rectangle
 import java.awt.image.BufferedImage
 import java.io.Closeable
-import java.io.File
-import java.lang.IllegalStateException
 import java.lang.Integer.max
 import java.util.zip.CRC32
 import java.util.zip.Deflater
@@ -50,94 +48,68 @@ import java.util.zip.Deflater
  */
 internal class ApngWriter(
   private val path: Path,
-  private val totalFrameCount: Int,
-  fps: Int,
+  private val fps: Int,
   private val fileSystem: FileSystem = FileSystem.SYSTEM
 ) : Closeable {
-
-  private val fpsNum = 1
-  private val fpsDen = fps
-  private val tempFile = File.createTempFile(path.name, "apng")
-  private val fileHandle = fileSystem.openReadWrite(tempFile.path.toPath())
-  private val sink = fileHandle.sink().buffer()
+  private val afterFirstFrameDataPath: Path = "$path.ApngWriter.tmp".toPath()
   private val crcEngine = CRC32()
 
   private lateinit var firstFrame: BufferedImage
   private lateinit var previousFrame: BufferedImage
+  private lateinit var afterFirstFrameDataSink: BufferedSink
 
   private var maxWidth = 0
   private var maxHeight = 0
   private var ihdrWidth = 0
   private var ihdrHeight = 0
-  private var iDATChunkEndOffset = 0L
   private var frameCount = 0
-  private var sequenceNumber = 0
+  private var sequenceNumber = 1
 
   fun writeImage(image: BufferedImage) {
     if (frameCount == 0) {
-      sink.writePngSignature()
-      sink.writeIHDR(image)
-
-      if (totalFrameCount > 1) {
-        sink.writeACTL(totalFrameCount, 0)
-        sink.writeFCTL(sequenceNumber++, Rectangle(image.width, image.height))
+      firstFrame = image.copy() // Defensive copy
+    } else {
+      // If we have multiple frames, write them to a temp file. We must always write the first
+      // frame first, but we don't know its final dimensions just yet.
+      if (frameCount == 1) {
+        afterFirstFrameDataSink = fileSystem.sink(afterFirstFrameDataPath).buffer()
       }
 
-      sink.writeIDAT(image)
-      iDATChunkEndOffset = fileHandle.position(sink)
-      firstFrame = image
-    } else {
       val subRect = ImageUtils.smallestDiffRect(previousFrame, image) ?: MIN_FRAME_RECT
-      sink.writeFCTL(sequenceNumber++, subRect)
-      sink.writeFDAT(sequenceNumber++, subRect, image)
+      afterFirstFrameDataSink.writeFCTL(sequenceNumber++, subRect)
+      afterFirstFrameDataSink.writeFDAT(sequenceNumber++, subRect, image)
     }
 
     maxWidth = max(maxWidth, image.width)
     maxHeight = max(maxHeight, image.height)
-    previousFrame = image
+    previousFrame = image.copy() // Defensive copy
     frameCount++
   }
 
   override fun close() {
-    if (frameCount != totalFrameCount) {
-      throw IllegalStateException("Expected $totalFrameCount total frames, actual count $frameCount")
+    // Only when we close do we actually create the .png file!
+    fileSystem.write(path) {
+      // First frame.
+      writePngSignature()
+      val firstFrameResized = firstFrame.resize(maxWidth, maxHeight)
+      writeIHDR(firstFrameResized)
+      if (frameCount > 1) {
+        writeACTL(frameCount, 0)
+        writeFCTL(0, Rectangle(maxWidth, maxHeight))
+      }
+      writeIDAT(firstFrameResized)
+
+      // Copy over the subsequent frames, if we have any.
+      if (frameCount > 1) {
+        afterFirstFrameDataSink.close()
+        fileSystem.source(afterFirstFrameDataPath).use { tempPathSource ->
+          writeAll(tempPathSource)
+        }
+        fileSystem.delete(afterFirstFrameDataPath)
+      }
+
+      writeIEND()
     }
-
-    sink.writeIEND()
-    fileHandle.resize(fileHandle.position(sink))
-    sink.close()
-
-    if (ihdrWidth == maxWidth && ihdrHeight == maxHeight) {
-      tempFile.copyTo(path.toFile(), true)
-    } else {
-      correctFirstFrame()
-    }
-
-    fileHandle.close()
-    tempFile.delete()
-  }
-
-  /**
-   * The IHDR chunk defines the image size from which all animation frames must be
-   * encapsulated. If over the course of the animation we need to render a larger
-   * image than the first frame we need to resize the first frame such that the
-   * entire animation will fit within. Subsequent animation frames are still correct
-   * and don't need to be re-computed.
-   */
-  private fun correctFirstFrame() {
-    val resizedFirstFrame = firstFrame.resize(maxWidth, maxHeight)
-    val stableHandle = fileSystem.openReadWrite(path)
-    val stableSink = stableHandle.sink().buffer()
-    val unstableSource = fileHandle.source(iDATChunkEndOffset)
-    stableSink.writePngSignature()
-    stableSink.writeIHDR(resizedFirstFrame)
-    stableSink.writeACTL(frameCount, 0)
-    stableSink.writeFCTL(0, Rectangle(maxWidth, maxHeight))
-    stableSink.writeIDAT(resizedFirstFrame)
-    stableSink.write(unstableSource, fileHandle.size() - iDATChunkEndOffset)
-    stableHandle.resize(stableHandle.position(stableSink))
-    stableSink.close()
-    stableHandle.close()
   }
 
   private fun BufferedSink.writePngSignature() {
@@ -145,7 +117,7 @@ internal class ApngWriter(
   }
 
   private fun BufferedSink.writeIHDR(bufferedImage: BufferedImage) {
-    val data = Buffer().apply {
+    writeChunk(IHDR) {
       writeInt(bufferedImage.width)
       writeInt(bufferedImage.height)
       ihdrWidth = bufferedImage.width
@@ -164,45 +136,40 @@ internal class ApngWriter(
       writeByte(0) // Filter
       writeByte(0) // Interlace
     }
-
-    writeChunk(IHDR, data)
   }
 
   private fun BufferedSink.writeACTL(frameCount: Int, loopCount: Int) {
-    val data = Buffer().apply {
+    writeChunk(ACTL) {
       writeInt(frameCount)
       writeInt(loopCount)
     }
-
-    writeChunk(ACTL, data)
   }
 
   private fun BufferedSink.writeFCTL(
     sequenceNumber: Int,
     rectangle: Rectangle
   ) {
-    val data = Buffer().apply {
+    writeChunk(FCTL) {
       writeInt(sequenceNumber)
       writeInt(rectangle.width)
       writeInt(rectangle.height)
       writeInt(rectangle.x)
       writeInt(rectangle.y)
-      writeShort(fpsNum)
-      writeShort(fpsDen)
+      writeShort(1) // Delay Numerator
+      writeShort(fps) // Delay Denominator
       writeByte(0) // Dispose Operation
       writeByte(0) // Blend Operation
     }
-
-    writeChunk(FCTL, data)
   }
 
   private fun BufferedSink.writeIDAT(
     image: BufferedImage
   ) {
-    val imageBytes = image.encodeBytes(Rectangle(image.width, image.height))
-    val compressedData = imageBytes.compress(Deflater.BEST_COMPRESSION)
-
-    writeChunk(IDAT, compressedData)
+    writeChunk(IDAT) {
+      val encodedImageBytes = Buffer()
+      image.encodeBytes(encodedImageBytes, Rectangle(image.width, image.height))
+      encodedImageBytes.compress(this, Deflater.BEST_COMPRESSION)
+    }
   }
 
   private fun BufferedSink.writeFDAT(
@@ -210,23 +177,20 @@ internal class ApngWriter(
     subRect: Rectangle,
     image: BufferedImage
   ) {
-    val imageBytes = image.encodeBytes(subRect)
-    val compressedBytes = imageBytes.compress(Deflater.BEST_COMPRESSION)
-
-    val data = Buffer().apply {
+    writeChunk(FDAT) {
       writeInt(sequenceNumber)
-      write(compressedBytes, compressedBytes.size)
+      val encodedImageBytes = Buffer()
+      image.encodeBytes(encodedImageBytes, subRect)
+      encodedImageBytes.compress(this, Deflater.BEST_COMPRESSION)
     }
-
-    writeChunk(FDAT, data)
   }
 
   private fun BufferedSink.writeIEND() {
-    writeChunk(IEND, Buffer())
+    writeChunk(IEND) { }
   }
 
-  private fun BufferedImage.encodeBytes(subRect: Rectangle): Buffer {
-    return Buffer().apply {
+  private fun BufferedImage.encodeBytes(sink: BufferedSink, subRect: Rectangle) {
+    sink.apply {
       for (y in subRect.y until subRect.y + subRect.height) {
         writeByte(0) // Row Filter: None
         for (x in subRect.x until subRect.x + subRect.width) {
@@ -243,25 +207,24 @@ internal class ApngWriter(
     }
   }
 
-  private fun Buffer.compress(level: Int): Buffer {
+  private fun Buffer.compress(sink: BufferedSink, level: Int) {
     val deflater = Deflater(level).apply {
       setInput(readByteArray())
       finish()
     }
 
     val buffer = ByteArray(1000 * 1024)
-    return Buffer().apply {
-      while (!deflater.finished()) {
-        val compressedDataLength = deflater.deflate(buffer)
-        write(buffer, 0, compressedDataLength)
-      }
+    while (!deflater.finished()) {
+      val compressedDataLength = deflater.deflate(buffer)
+      sink.write(buffer, 0, compressedDataLength)
     }
   }
 
-  private fun BufferedSink.writeChunk(header: Header, data: Buffer) {
+  private fun BufferedSink.writeChunk(header: Header, data: Buffer.() -> Unit) {
+    val buffer = Buffer().apply(data)
     crcEngine.reset()
     crcEngine.update(header.bytes, 0, 4)
-    val dataBytes = data.readByteArray()
+    val dataBytes = buffer.readByteArray()
     if (dataBytes.isNotEmpty()) crcEngine.update(dataBytes, 0, dataBytes.size)
     val crc = crcEngine.value.toInt()
 
@@ -270,6 +233,8 @@ internal class ApngWriter(
     write(dataBytes)
     writeInt(crc)
   }
+
+  private fun BufferedImage.copy() = resize(width, height)
 
   companion object {
     private val MIN_FRAME_RECT = Rectangle(0, 0, 1, 1)
