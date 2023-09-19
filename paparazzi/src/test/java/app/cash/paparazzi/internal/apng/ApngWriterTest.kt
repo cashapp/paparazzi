@@ -50,7 +50,7 @@ class ApngWriterTest {
   @Test
   fun writesAnimationMetadata() {
     val testPath = tempFolderRule.newFile("writesAnimationMetadata.png").path.toPath()
-    ApngWriter(testPath, 3, 1).use { writer ->
+    ApngWriter(testPath, 1).use { writer ->
       writer.writeImage(createImage(squareOffset = Point(5, 5)))
       writer.writeImage(createImage(squareOffset = Point(25, 25)))
       writer.writeImage(createImage(squareOffset = Point(45, 45)))
@@ -82,7 +82,7 @@ class ApngWriterTest {
   @Test
   fun writesSingleImageWithNoAnimationMetadata() {
     val testPath = tempFolderRule.newFile("writesSingleImageWithNoAnimationMetadata.png").path.toPath()
-    ApngWriter(testPath, 1, 1).use { writer ->
+    ApngWriter(testPath, 1).use { writer ->
       writer.writeImage(createImage(squareOffset = Point(5, 5)))
     }
 
@@ -102,7 +102,7 @@ class ApngWriterTest {
   @Test
   fun writesAnimationChunksSequentially() {
     val testPath = tempFolderRule.newFile("writesAnimationChunksSequentially.png").path.toPath()
-    ApngWriter(testPath, 3, 1).use { writer ->
+    ApngWriter(testPath, 1).use { writer ->
       writer.writeImage(createImage(squareOffset = Point(5, 5)))
       writer.writeImage(createImage(squareOffset = Point(15, 15)))
       writer.writeImage(createImage(squareOffset = Point(25, 25)))
@@ -126,7 +126,7 @@ class ApngWriterTest {
   @Test
   fun writesAllFramesWithSameFrameRate() {
     val testPath = tempFolderRule.newFile("writesAllFramesWithSameFrameRate.png").path.toPath()
-    ApngWriter(testPath, 3, 3).use { writer ->
+    ApngWriter(testPath, 3).use { writer ->
       writer.writeImage(createImage(squareOffset = Point(5, 5)))
       writer.writeImage(createImage(squareOffset = Point(15, 15)))
       writer.writeImage(createImage(squareOffset = Point(25, 25)))
@@ -151,7 +151,7 @@ class ApngWriterTest {
   @Test
   fun writesFramesAsSmallestDiffRect() {
     val testPath = tempFolderRule.newFile("writesFramesAsSmallestDiffRect.png").path.toPath()
-    ApngWriter(testPath, 2, 1).use { writer ->
+    ApngWriter(testPath, 1).use { writer ->
       writer.writeImage(createImage(squareOffset = Point(5, 5)))
       writer.writeImage(createImage(squareOffset = Point(15, 15)))
     }
@@ -179,7 +179,7 @@ class ApngWriterTest {
   @Test
   fun writesEqualFramesAsSinglePixelFrameDiff() {
     val testPath = tempFolderRule.newFile("writesEqualFramesAsSinglePixelFrameDiff.png").path.toPath()
-    ApngWriter(testPath, 2, 1).use { writer ->
+    ApngWriter(testPath, 1).use { writer ->
       writer.writeImage(createImage(squareOffset = Point(5, 5)))
       writer.writeImage(createImage(squareOffset = Point(5, 5)))
     }
@@ -216,7 +216,7 @@ class ApngWriterTest {
   @Test
   fun rewritesFirstFrameWhenSmallerThanMaxFrame() {
     val testPath = tempFolderRule.newFile("rewritesFirstFrameWhenSmallerThanMaxFrame.png").path.toPath()
-    ApngWriter(testPath, 2, 1).use { writer ->
+    ApngWriter(testPath, 1).use { writer ->
       writer.writeImage(createImage(imageSize = DEFAULT_SIZE, squareOffset = Point(5, 5)))
       writer.writeImage(createImage(imageSize = MAX_SIZE, squareOffset = Point(15, 15)))
     }
@@ -237,14 +237,6 @@ class ApngWriterTest {
         val decompress = idatData.decompress()
         assertThat(decompress.size).isEqualTo((MAX_SIZE * MAX_SIZE * 4L) + MAX_SIZE) // 4 Bytes Per Pixel + 1 Byte Per Row
       }
-    }
-  }
-
-  @Test(expected = IllegalStateException::class)
-  fun throwsExceptionWhenWrittenFramesNotEqualTotalFrames() {
-    val testPath = tempFolderRule.newFile("throwsExceptionWhenWrittenFramesNotEqualTotalFrames.png").path.toPath()
-    ApngWriter(testPath, 2, 1).use { writer ->
-      writer.writeImage(createImage(squareOffset = Point(5, 5)))
     }
   }
 
