@@ -330,4 +330,4 @@ private fun Directory.relativize(child: Directory): String {
 private fun DirectoryProperty.asRelativePathString(child: Provider<Directory>): Provider<String> =
   flatMap { root -> child.map { root.relativize(it) } }
 
-private const val DEFAULT_COMPILE_SDK_VERSION = 33
+private const val DEFAULT_COMPILE_SDK_VERSION = 34
