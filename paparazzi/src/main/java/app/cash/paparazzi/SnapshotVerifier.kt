@@ -23,7 +23,7 @@ import javax.imageio.ImageIO
 
 class SnapshotVerifier @JvmOverloads constructor(
   private val maxPercentDifference: Double,
-  rootDirectory: File = File("src/test/snapshots")
+  rootDirectory: File = File(System.getProperty("paparazzi.snapshot.dir"))
 ) : SnapshotHandler {
   private val imagesDirectory: File = File(rootDirectory, "images")
   private val videosDirectory: File = File(rootDirectory, "videos")
