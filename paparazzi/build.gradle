@@ -135,6 +135,10 @@ tasks.withType(Test).configureEach {
     project.extensions.getByType(ReportingExtension).baseDirectory.dir("paparazzi").get().toString()
   )
   systemProperty(
+    "paparazzi.snapshot.dir",
+    project.layout.projectDirectory.dir("src/test/snapshots").toString()
+  )
+  systemProperty(
     "paparazzi.artifacts.cache.dir",
     project.gradle.gradleUserHomeDir.path
   )
