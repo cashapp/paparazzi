@@ -127,7 +127,6 @@ class PaparazziPlugin : Plugin<Project> {
       val buildDirectory = project.layout.buildDirectory
       val gradleUserHomeDir = project.gradle.gradleUserHomeDir
       val reportOutputDir = project.extensions.getByType(ReportingExtension::class.java).baseDirectory.dir("paparazzi/${variant.name}")
-      val snapshotOutputDir = project.layout.projectDirectory.dir("src/test/snapshots")
 
       val localResourceDirs = project
         .files(variant.sourceSets.flatMap { it.resDirectories })
@@ -186,6 +185,8 @@ class PaparazziPlugin : Plugin<Project> {
         testVariant.javaCompileProvider.configure { it.dependsOn(writeResourcesTask) }
       }
 
+      lateinit var snapshotSourceSet: String
+
       if (project.plugins.hasPlugin(KotlinMultiplatformPluginWrapper::class.java)) {
         val kotlin = project.extensions.getByType(KotlinMultiplatformExtension::class.java)
         val target = checkNotNull(kotlin.targets.find { it is KotlinAndroidTarget }) {
@@ -193,14 +194,21 @@ class PaparazziPlugin : Plugin<Project> {
         }
         val compilation = target.compilations.getByName(testVariant.name)
         compilation.compileTaskProvider.configure { it.dependsOn(writeResourcesTask) }
+
+        snapshotSourceSet = compilation.defaultSourceSet.name
       } else if (project.plugins.hasPlugin(KotlinAndroidPluginWrapper::class.java)) {
         val kotlin = project.extensions.getByType(KotlinAndroidProjectExtension::class.java)
         val target = kotlin.target
         val compilation = target.compilations.getByName(testVariant.name)
         compilation.compileTaskProvider.configure { it.dependsOn(writeResourcesTask) }
+
+        snapshotSourceSet = compilation.kotlinSourceSets.last().name
       } else {
         project.logger.log(INFO, "No kotlin plugin applied!")
+        snapshotSourceSet = testVariant.name
       }
+
+      val snapshotOutputDir = project.layout.projectDirectory.dir("src/$snapshotSourceSet/snapshots")
 
       val recordTaskProvider = project.tasks.register("recordPaparazzi$variantSlug", PaparazziTask::class.java) {
         it.group = VERIFICATION_GROUP
