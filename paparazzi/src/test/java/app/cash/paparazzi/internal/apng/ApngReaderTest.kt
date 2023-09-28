@@ -37,7 +37,13 @@ class ApngReaderTest {
       val expectedFile = javaClass.classLoader.getResource("simple_animation_$i.png")
       val expectedImage = ImageIO.read(expectedFile)
       val actualImage = reader.readNextFrame()!!
-      ImageUtils.assertImageSimilar(expectedFile!!.path, expectedImage, actualImage, 0.0)
+      ImageUtils.assertImageSimilar(
+        expectedFile!!.path,
+        File(file.path).parentFile,
+        expectedImage,
+        actualImage,
+        0.0
+      )
     }
 
     assertThat(reader.isFinished()).isTrue()

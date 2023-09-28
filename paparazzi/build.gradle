@@ -55,8 +55,6 @@ dependencies {
   api platform(libs.kotlin.bom)
   implementation libs.moshi.core
   implementation libs.moshi.adapters
-  implementation libs.jcodec.core
-  implementation libs.jcodec.javase
 
   ksp libs.moshi.kotlinCodegen
 

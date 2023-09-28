@@ -129,6 +129,7 @@ class AccessibilityRenderExtensionTest {
           val expected = File("src/test/resources/${snapshot.name}.png")
           ImageUtils.assertImageSimilar(
             relativePath = expected.path,
+            failureDir = expected.parentFile,
             image = image,
             goldenImage = ImageIO.read(expected),
             maxPercentDifferent = 0.1

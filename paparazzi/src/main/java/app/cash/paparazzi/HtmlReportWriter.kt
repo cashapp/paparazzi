@@ -17,21 +17,21 @@ package app.cash.paparazzi
 
 import app.cash.paparazzi.SnapshotHandler.FrameHandler
 import app.cash.paparazzi.internal.PaparazziJson
+import app.cash.paparazzi.internal.apng.ApngWriter
 import com.google.common.base.CharMatcher
 import okio.BufferedSink
 import okio.HashingSink
+import okio.Path.Companion.toPath
 import okio.blackholeSink
 import okio.buffer
 import okio.sink
 import okio.source
-import org.jcodec.api.awt.AWTSequenceEncoder
 import java.awt.image.BufferedImage
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
-import javax.imageio.ImageIO
 
 /**
  * Creates an HTML report that avoids writing files that have already been written.
@@ -89,58 +89,32 @@ class HtmlReportWriter @JvmOverloads constructor(
     fps: Int
   ): FrameHandler {
     return object : FrameHandler {
+      val snapshotDir = if (fps == -1) imagesDirectory else videosDirectory
+      val goldenDir = if (fps == -1) goldenImagesDirectory else goldenVideosDirectory
       val hashes = mutableListOf<String>()
+      val file = File(snapshotDir, snapshot.toFileName(extension = "temp.png"))
+      val writer = ApngWriter(file.path.toPath(), fps)
 
       override fun handle(image: BufferedImage) {
-        hashes += writeImage(image)
+        hashes += hash(image)
+        writer.writeImage(image)
       }
 
       override fun close() {
         if (hashes.isEmpty()) return
+        writer.close()
+        val hashedFile = File(snapshotDir, "${hash(hashes)}.png")
+        file.renameTo(hashedFile)
+        file.delete()
 
-        val shot = if (hashes.size == 1) {
-          val original = File(imagesDirectory, "${hashes[0]}.png")
-          if (isRecording) {
-            val goldenFile = File(goldenImagesDirectory, snapshot.toFileName("_", "png"))
-            original.copyTo(goldenFile, overwrite = true)
-          }
-          snapshot.copy(file = original.toJsonPath())
-        } else {
-          val hash = writeVideo(hashes, fps)
-
-          if (isRecording) {
-            for ((index, frameHash) in hashes.withIndex()) {
-              val originalFrame = File(imagesDirectory, "$frameHash.png")
-              val frameSnapshot = snapshot.copy(name = "${snapshot.name} $index")
-              val goldenFile = File(goldenImagesDirectory, frameSnapshot.toFileName("_", "png"))
-              if (!goldenFile.exists()) {
-                originalFrame.copyTo(goldenFile)
-              }
-            }
-          }
-          val original = File(videosDirectory, "$hash.mov")
-          if (isRecording) {
-            val goldenFile = File(goldenVideosDirectory, snapshot.toFileName("_", "mov"))
-            if (!goldenFile.exists()) {
-              original.copyTo(goldenFile)
-            }
-          }
-          snapshot.copy(file = original.toJsonPath())
+        if (isRecording) {
+          val goldenFile = File(goldenDir, snapshot.toFileName("_", "png"))
+          hashedFile.copyTo(target = goldenFile, overwrite = true)
         }
 
-        shots += shot
+        shots += snapshot.copy(file = hashedFile.toJsonPath())
       }
     }
-  }
-
-  /** Returns the hash of the image. */
-  private fun writeImage(image: BufferedImage): String {
-    val hash = hash(image)
-    val file = File(imagesDirectory, "$hash.png")
-    if (!file.exists()) {
-      file.writeAtomically(image)
-    }
-    return hash
   }
 
   /** Returns a SHA-1 hash of the pixels of [image]. */
@@ -154,25 +128,6 @@ class HtmlReportWriter @JvmOverloads constructor(
       }
     }
     return hashingSink.hash.hex()
-  }
-
-  private fun writeVideo(
-    frameHashes: List<String>,
-    fps: Int
-  ): String {
-    val hash = hash(frameHashes)
-    val file = File(videosDirectory, "$hash.mov")
-    if (!file.exists()) {
-      val tmpFile = File(videosDirectory, "$hash.mov.tmp")
-      val encoder = AWTSequenceEncoder.createSequenceEncoder(tmpFile, fps)
-      for (frameHash in frameHashes) {
-        val frame = ImageIO.read(File(imagesDirectory, "$frameHash.png"))
-        encoder.encodeImage(frame)
-      }
-      encoder.finish()
-      tmpFile.renameTo(file)
-    }
-    return hash
   }
 
   /** Returns a SHA-1 hash of [lines]. */
@@ -255,13 +210,6 @@ class HtmlReportWriter @JvmOverloads constructor(
         writeAll(HtmlReportWriter::class.java.classLoader.getResourceAsStream(staticFile).source())
       }
     }
-  }
-
-  private fun File.writeAtomically(bufferedImage: BufferedImage) {
-    val tmpFile = File(parentFile, "$name.tmp")
-    ImageIO.write(bufferedImage, "PNG", tmpFile)
-    delete()
-    tmpFile.renameTo(this)
   }
 
   private fun File.writeAtomically(writerAction: BufferedSink.() -> Unit) {

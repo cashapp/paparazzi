@@ -51,18 +51,10 @@ internal object ImageUtils {
 
   private const val THUMBNAIL_SIZE = 1000
 
-  /** Directory where to write the thumbnails and deltas. */
-  private val failureDir: File
-    get() {
-      val buildDirString = System.getProperty("paparazzi.build.dir")
-      val failureDir = File(buildDirString, "paparazzi/failures")
-      failureDir.mkdirs()
-      return failureDir
-    }
-
   @Throws(IOException::class)
   fun requireSimilar(
     relativePath: String,
+    failureDir: File,
     image: BufferedImage,
     maxPercentDifference: Double
   ) {
@@ -74,7 +66,7 @@ internal object ImageUtils {
       null
     ) {
       var message = "Unable to load golden thumbnail: $relativePath\n"
-      message = saveImageAndAppendMessage(thumbnail, message, relativePath)
+      message = saveImageAndAppendMessage(thumbnail, message, relativePath, failureDir)
       if (FAIL_ON_MISSING_THUMBNAIL) {
         fail(message)
       } else {
@@ -85,6 +77,7 @@ internal object ImageUtils {
         val goldenImage = ImageIO.read(`is`)
         assertImageSimilar(
           relativePath,
+          failureDir,
           goldenImage,
           thumbnail,
           maxPercentDifference
@@ -98,10 +91,46 @@ internal object ImageUtils {
   @Throws(IOException::class)
   fun assertImageSimilar(
     relativePath: String,
+    failureDir: File,
     goldenImage: BufferedImage,
     image: BufferedImage,
     maxPercentDifferent: Double
   ) {
+    val (deltaImage, percentDifference) = compareImages(goldenImage, image)
+
+    var error: String? = null
+    val imageName = getName(relativePath)
+    if (percentDifference > maxPercentDifferent) {
+      error = String.format("Images differ (by %.1f%%)", percentDifference)
+    } else if (Math.abs(goldenImage.width - image.width) >= 2) {
+      error = "Widths differ too much for " + imageName + ": " +
+        goldenImage.width + "x" + goldenImage.height +
+        "vs" + image.width + "x" + image.height
+    } else if (Math.abs(goldenImage.height - image.height) >= 2) {
+      error = "Heights differ too much for " + imageName + ": " +
+        goldenImage.width + "x" + goldenImage.height +
+        "vs" + image.width + "x" + image.height
+    }
+
+    if (error != null) {
+      val output = File(failureDir, "delta-$imageName")
+      if (output.exists()) {
+        val deleted = output.delete()
+        assertTrue(deleted)
+      }
+      ImageIO.write(deltaImage, "PNG", output)
+      error += " - see details in file://" + output.path + "\n"
+      error = saveImageAndAppendMessage(image, error, relativePath, failureDir)
+      println(error)
+      fail(error)
+    }
+  }
+
+  @Throws(IOException::class)
+  fun compareImages(
+    goldenImage: BufferedImage,
+    image: BufferedImage
+  ): Pair<BufferedImage, Float> {
     var goldenImage = goldenImage
     if (goldenImage.type != TYPE_INT_ARGB) {
       val temp = BufferedImage(
@@ -166,50 +195,25 @@ internal object ImageUtils {
       }
     }
 
+    // Expected on the left
+    // Golden on the right
+    g.drawImage(goldenImage, 0, 0, null)
+    g.drawImage(image, 2 * imageWidth, 0, null)
+
+    // Labels
+    if (imageWidth > 80) {
+      g.color = Color.RED
+      g.drawString("Expected", 10, 20)
+      g.drawString("Actual", 2 * imageWidth + 10, 20)
+    }
+
+    g.dispose()
+
     // 3 different colors, 256 color levels
     val total = imageHeight.toLong() * imageWidth.toLong() * 3L * 256L
     val percentDifference = (delta * 100 / total.toDouble()).toFloat()
 
-    var error: String? = null
-    val imageName = getName(relativePath)
-    if (percentDifference > maxPercentDifferent) {
-      error = String.format("Images differ (by %.1f%%)", percentDifference)
-    } else if (Math.abs(goldenImage.width - image.width) >= 2) {
-      error = "Widths differ too much for " + imageName + ": " +
-        goldenImage.width + "x" + goldenImage.height +
-        "vs" + image.width + "x" + image.height
-    } else if (Math.abs(goldenImage.height - image.height) >= 2) {
-      error = "Heights differ too much for " + imageName + ": " +
-        goldenImage.width + "x" + goldenImage.height +
-        "vs" + image.width + "x" + image.height
-    }
-
-    if (error != null) {
-      // Expected on the left
-      // Golden on the right
-      g.drawImage(goldenImage, 0, 0, null)
-      g.drawImage(image, 2 * imageWidth, 0, null)
-
-      // Labels
-      if (imageWidth > 80) {
-        g.color = Color.RED
-        g.drawString("Expected", 10, 20)
-        g.drawString("Actual", 2 * imageWidth + 10, 20)
-      }
-
-      val output = File(failureDir, "delta-$imageName")
-      if (output.exists()) {
-        val deleted = output.delete()
-        assertTrue(deleted)
-      }
-      ImageIO.write(deltaImage, "PNG", output)
-      error += " - see details in file://" + output.path + "\n"
-      error = saveImageAndAppendMessage(image, error, relativePath)
-      println(error)
-      fail(error)
-    }
-
-    g.dispose()
+    return deltaImage to percentDifference
   }
 
   /**
@@ -371,7 +375,8 @@ internal object ImageUtils {
   private fun saveImageAndAppendMessage(
     image: BufferedImage,
     initialMessage: String,
-    relativePath: String
+    relativePath: String,
+    failureDir: File
   ): String {
     var initialMessage = initialMessage
     val output = File(

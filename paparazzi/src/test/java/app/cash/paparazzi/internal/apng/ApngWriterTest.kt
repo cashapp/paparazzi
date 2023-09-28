@@ -26,6 +26,8 @@ import app.cash.paparazzi.internal.apng.PngConstants.Header.IHDR
 import app.cash.paparazzi.internal.apng.PngConstants.PNG_BITS_PER_PIXEL
 import app.cash.paparazzi.internal.apng.PngConstants.PNG_COLOR_TYPE_RGBA
 import app.cash.paparazzi.internal.apng.PngConstants.PNG_SIG
+import app.cash.paparazzi.internal.apng.TestPngUtils.BACKGROUND_COLOR
+import app.cash.paparazzi.internal.apng.TestPngUtils.createImage
 import com.google.common.truth.Truth.assertThat
 import okio.Buffer
 import okio.BufferedSource
@@ -36,9 +38,7 @@ import okio.internal.commonToUtf8String
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import java.awt.Color
 import java.awt.Point
-import java.awt.image.BufferedImage
 import java.util.zip.CRC32
 import java.util.zip.Inflater
 
@@ -260,18 +260,6 @@ class ApngWriterTest {
     return Header.valueOf(chunkId.commonToUtf8String().uppercase()) to dataBuffer
   }
 
-  private fun createImage(imageSize: Int = DEFAULT_SIZE, squareOffset: Point) =
-    BufferedImage(imageSize, imageSize, BufferedImage.TYPE_INT_ARGB).apply {
-      val g = graphics
-      g.color = BACKGROUND_COLOR
-      g.fillRect(0, 0, width, height)
-
-      g.color = Color.GREEN
-      g.fillRect(squareOffset.x, squareOffset.y, SQUARE_SIZE, SQUARE_SIZE)
-
-      g.dispose()
-    }
-
   private fun BufferedSource.decompress(): Buffer {
     val inflater = Inflater().apply {
       val readByteArray = readByteArray()
@@ -288,13 +276,10 @@ class ApngWriterTest {
   }
 
   companion object {
-    private val BACKGROUND_COLOR = Color.BLUE
-
     // ColorInt is encoded as ARGB, PNG is encoded as RGBA rotating to move A to the end
     private val BACKGROUND_PIXEL_INT = BACKGROUND_COLOR.toColorInt().rotateLeft(8)
 
     private const val DEFAULT_SIZE = 100
     private const val MAX_SIZE = 200
-    private const val SQUARE_SIZE = 50
   }
 }

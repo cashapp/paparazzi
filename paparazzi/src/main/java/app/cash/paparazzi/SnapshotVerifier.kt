@@ -17,6 +17,8 @@ package app.cash.paparazzi
 
 import app.cash.paparazzi.SnapshotHandler.FrameHandler
 import app.cash.paparazzi.internal.ImageUtils
+import app.cash.paparazzi.internal.apng.ApngVerifier
+import okio.Path.Companion.toOkioPath
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
@@ -39,9 +41,18 @@ class SnapshotVerifier @JvmOverloads constructor(
     fps: Int
   ): FrameHandler {
     return object : FrameHandler {
+      val snapshotDir = if (fps == -1) imagesDirectory else videosDirectory
+      val expected = File(snapshotDir, snapshot.toFileName(extension = "png"))
+      val failurePath = File(failureDir, "delta-${expected.name}").toOkioPath()
+      val pngVerifier: ApngVerifier? =
+        if (fps != -1) ApngVerifier(expected.toOkioPath(), failurePath, fps, frameCount, maxPercentDifference) else null
+
       override fun handle(image: BufferedImage) {
-        // Note: does not handle videos or its frames at the moment
-        val expected = File(imagesDirectory, snapshot.toFileName(extension = "png"))
+        if (pngVerifier != null) {
+          pngVerifier.verifyFrame(image)
+          return
+        }
+
         if (!expected.exists()) {
           throw AssertionError("File $expected does not exist")
         }
@@ -49,15 +60,33 @@ class SnapshotVerifier @JvmOverloads constructor(
         val goldenImage = ImageIO.read(expected)
         ImageUtils.assertImageSimilar(
           relativePath = expected.path,
+          failureDir = failureDir,
           image = image,
           goldenImage = goldenImage,
           maxPercentDifferent = maxPercentDifference
         )
       }
 
-      override fun close() = Unit
+      override fun close() {
+        try {
+          pngVerifier?.assertFinished()
+        } finally {
+          pngVerifier?.close()
+        }
+      }
     }
   }
 
   override fun close() = Unit
+
+  companion object {
+    /** Directory where to write the thumbnails and deltas. */
+    private val failureDir: File
+      get() {
+        val buildDirString = System.getProperty("paparazzi.build.dir")
+        val failureDir = File(buildDirString, "paparazzi/failures")
+        failureDir.mkdirs()
+        return failureDir
+      }
+  }
 }
