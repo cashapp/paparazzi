@@ -37,6 +37,7 @@ import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.artifacts.transform.UnzipTransform
+import org.gradle.api.logging.LogLevel.INFO
 import org.gradle.api.logging.LogLevel.LIFECYCLE
 import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.api.provider.Provider
@@ -47,6 +48,7 @@ import org.gradle.api.tasks.options.Option
 import org.gradle.api.tasks.testing.Test
 import org.gradle.internal.os.OperatingSystem
 import org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
+import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinAndroidPluginWrapper
 import org.jetbrains.kotlin.gradle.plugin.KotlinMultiplatformPluginWrapper
@@ -180,26 +182,24 @@ class PaparazziPlugin : Plugin<Project> {
         task.paparazziResources.set(buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.txt"))
       }
 
-      val testVariantSlug = testVariant.name.capitalize(Locale.US)
-
       project.plugins.withType(JavaBasePlugin::class.java) {
-        project.tasks.named("compile${testVariantSlug}JavaWithJavac")
-          .configure { it.dependsOn(writeResourcesTask) }
+        testVariant.javaCompileProvider.configure { it.dependsOn(writeResourcesTask) }
       }
 
-      project.plugins.withType(KotlinMultiplatformPluginWrapper::class.java) {
-        val multiplatformExtension =
-          project.extensions.getByType(KotlinMultiplatformExtension::class.java)
-        check(multiplatformExtension.targets.any { target -> target is KotlinAndroidTarget }) {
+      if (project.plugins.hasPlugin(KotlinMultiplatformPluginWrapper::class.java)) {
+        val kotlin = project.extensions.getByType(KotlinMultiplatformExtension::class.java)
+        val target = checkNotNull(kotlin.targets.find { it is KotlinAndroidTarget }) {
           "There must be an Android target configured when using Paparazzi with the Kotlin Multiplatform Plugin"
         }
-        project.tasks.named("compile${testVariantSlug}KotlinAndroid")
-          .configure { it.dependsOn(writeResourcesTask) }
-      }
-
-      project.plugins.withType(KotlinAndroidPluginWrapper::class.java) {
-        project.tasks.named("compile${testVariantSlug}Kotlin")
-          .configure { it.dependsOn(writeResourcesTask) }
+        val compilation = target.compilations.getByName(testVariant.name)
+        compilation.compileTaskProvider.configure { it.dependsOn(writeResourcesTask) }
+      } else if (project.plugins.hasPlugin(KotlinAndroidPluginWrapper::class.java)) {
+        val kotlin = project.extensions.getByType(KotlinAndroidProjectExtension::class.java)
+        val target = kotlin.target
+        val compilation = target.compilations.getByName(testVariant.name)
+        compilation.compileTaskProvider.configure { it.dependsOn(writeResourcesTask) }
+      } else {
+        project.logger.log(INFO, "No kotlin plugin applied!")
       }
 
       val recordTaskProvider = project.tasks.register("recordPaparazzi$variantSlug", PaparazziTask::class.java) {
@@ -221,6 +221,7 @@ class PaparazziPlugin : Plugin<Project> {
         isVerifyRun.set(verifyTaskProvider.map { graph.hasTask(it) })
       }
 
+      val testVariantSlug = testVariant.name.capitalize(Locale.US)
       val testTaskProvider = project.tasks.named("test$testVariantSlug", Test::class.java) { test ->
         test.systemProperties["paparazzi.test.resources"] =
           writeResourcesTask.flatMap { it.paparazziResources.asFile }.get().path
