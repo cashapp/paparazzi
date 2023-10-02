@@ -76,5 +76,5 @@ plugin-dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version = "
 plugin-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 plugin-ksp = { module = "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
 plugin-mavenPublish = { module = "com.vanniktech:gradle-maven-publish-plugin", version = "0.25.3" }
-plugin-spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version = "6.21.0" }
+plugin-spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version = "6.22.0" }
 plugin-versions = { module = "com.github.ben-manes:gradle-versions-plugin", version = "0.48.0" }
