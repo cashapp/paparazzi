@@ -18,3 +18,7 @@ docs/1.x
 docs/changelog.md
 docs/index.md
 site/
+
+# Generated in tests
+/paparazzi-gradle-plugin/src/test/projects/rerun-resource-change/src/main/res/values/colors.xml
+/paparazzi-gradle-plugin/src/test/projects/rerun-asset-change/src/main/assets/secret.txt
