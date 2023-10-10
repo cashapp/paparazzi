@@ -18,6 +18,7 @@ package app.cash.paparazzi.gradle
 import app.cash.paparazzi.gradle.utils.artifactViewFor
 import app.cash.paparazzi.gradle.utils.artifactsFor
 import com.android.build.api.artifact.SingleArtifact
+import com.android.build.api.artifact.impl.ArtifactsImpl
 import com.android.build.api.variant.AndroidComponentsExtension
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension
 import com.android.build.api.variant.DynamicFeatureAndroidComponentsExtension
@@ -26,7 +27,7 @@ import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import com.android.build.api.variant.Variant
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactType
-import com.android.build.gradle.tasks.MergeResources
+import com.android.build.gradle.internal.scope.InternalArtifactType
 import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -138,6 +139,7 @@ class PaparazziPlugin : Plugin<Project> {
     }
 
     val mergeAssetsProvider = variant.artifacts.get(SingleArtifact.ASSETS)
+    val mergeResourcesProvider = (variant.artifacts as ArtifactsImpl).get(InternalArtifactType.MERGED_RES)
     val projectDirectory = project.layout.projectDirectory
     val buildDirectory = project.layout.buildDirectory
     val gradleUserHomeDir = project.gradle.gradleUserHomeDir
@@ -187,6 +189,7 @@ class PaparazziPlugin : Plugin<Project> {
       task.targetSdkVersion.set(android.targetSdkVersion())
       task.compileSdkVersion.set(android.compileSdkVersion())
       task.mergeAssetsOutputDir.set(buildDirectory.asRelativePathString(mergeAssetsProvider))
+      task.mergeResourcesOutputDir.set(buildDirectory.asRelativePathString(mergeResourcesProvider))
       localResourceDirs?.let {
         task.projectResourceDirs.from(it)
       }
@@ -202,7 +205,7 @@ class PaparazziPlugin : Plugin<Project> {
 
     val testVariantSlug = testVariant.name.capitalize(Locale.US)
 
-    // TODO this task isn't actually produced by the JavaBasePlugin, this is a KGP task
+    // TODO this task isn't actually produced by the JavaBasePlugin, this is a Kotlin task
     project.plugins.withType(JavaBasePlugin::class.java) {
       project.tasks
         .matching {
@@ -248,8 +251,9 @@ class PaparazziPlugin : Plugin<Project> {
       isVerifyRun.set(verifyTaskProvider.map { graph.hasTask(it) })
     }
 
-    val testTaskProvider = project.tasks.matching {
-      it is Test && it.name == "test$testVariantSlug"
+    val testTaskName = "test$testVariantSlug"
+    project.tasks.matching {
+      it is Test && it.name == testTaskName
     }.configureEach { rawTest ->
       val test = rawTest as Test
       test.systemProperties["paparazzi.test.resources"] =
@@ -266,6 +270,7 @@ class PaparazziPlugin : Plugin<Project> {
       test.inputs.property("paparazzi.test.verify", isVerifyRun)
 
       test.inputs.dir(mergeAssetsProvider)
+      test.inputs.dir(mergeResourcesProvider)
       test.inputs.files(nativePlatformFileCollection)
         .withPropertyName("paparazzi.nativePlatform")
         .withPathSensitivity(PathSensitivity.NONE)
@@ -288,23 +293,12 @@ class PaparazziPlugin : Plugin<Project> {
       }
     }
 
-    // TODO switch to artifact outputs when AGP adds one for this
-    project.tasks
-      .matching { it is MergeResources && it.name == "merge${variantSlug}Resources" }
-      .configureEach { mergeResourcesTask ->
-        val provider = (mergeResourcesTask as MergeResources).outputDir
-        // TODO
-//        testTaskProvider.configure {
-//          it.inputs.dir(provider)
-//        }
-        writeResourcesTask.configure {
-          it.dependsOn(mergeResourcesTask)
-          it.mergeResourcesOutputDir.set(buildDirectory.asRelativePathString(provider))
-        }
-      }
-
-    recordTaskProvider.configure { it.dependsOn(testTaskProvider) }
-    verifyTaskProvider.configure { it.dependsOn(testTaskProvider) }
+    recordTaskProvider.configure {
+      it.dependsOn(testTaskName)
+    }
+    verifyTaskProvider.configure {
+      it.dependsOn(testTaskName)
+    }
   }
 
   open class PaparazziTask : DefaultTask() {
