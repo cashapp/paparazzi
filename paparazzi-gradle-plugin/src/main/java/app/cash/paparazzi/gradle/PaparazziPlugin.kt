@@ -220,8 +220,9 @@ class PaparazziPlugin : Plugin<Project> {
       check(multiplatformExtension.targets.any { target -> target is KotlinAndroidTarget }) {
         "There must be an Android target configured when using Paparazzi with the Kotlin Multiplatform Plugin"
       }
-      project.tasks.named("compile${testVariantSlug}KotlinAndroid")
-        .configure { it.dependsOn(writeResourcesTask) }
+      project.tasks
+        .matching { it.name == "compile${testVariantSlug}KotlinAndroid" }
+        .configureEach { it.dependsOn(writeResourcesTask) }
     }
 
     project.plugins.withType(KotlinAndroidPluginWrapper::class.java) {
