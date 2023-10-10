@@ -113,9 +113,9 @@ class PaparazziPlugin : Plugin<Project> {
       it.description = "Record golden images for all variants"
     }
 
-    variants.all { variant ->
+    variants.configureEach { variant ->
       val variantSlug = variant.name.capitalize(Locale.US)
-      val testVariant = variant.unitTestVariant ?: return@all
+      val testVariant = variant.unitTestVariant ?: return@configureEach
 
       val mergeResourcesOutputDir = variant.mergeResourcesProvider.flatMap { it.outputDir }
       val mergeAssetsProvider =
