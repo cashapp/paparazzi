@@ -257,7 +257,7 @@ class PaparazziPlugin : Plugin<Project> {
         test.doLast {
           val report = reportOutputDir.get().asFile.resolve("index.html")
           if (report.exists()) {
-            test.logger.log(LIFECYCLE, "See the Paparazzi report at: ${report.toURI()}")
+            test.logger.log(LIFECYCLE, "See the Paparazzi report at: ${report.toPath().toUri()}")
           }
         }
       }
