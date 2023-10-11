@@ -249,46 +249,48 @@ class PaparazziPlugin : Plugin<Project> {
     }
 
     val testTaskName = "test$testVariantSlug"
-    project.tasks.matching {
-      it is Test && it.name == testTaskName
-    }.configureEach { rawTest ->
-      val test = rawTest as Test
-      test.systemProperties["paparazzi.test.resources"] =
-        writeResourcesTask.flatMap { it.paparazziResources.asFile }.get().path
-      test.systemProperties["paparazzi.project.dir"] = projectDirectory.toString()
-      test.systemProperties["paparazzi.build.dir"] = buildDirectory.get().toString()
-      test.systemProperties["paparazzi.report.dir"] = reportOutputDir.get().toString()
-      test.systemProperties["paparazzi.snapshot.dir"] = snapshotOutputDir.toString()
-      test.systemProperties["paparazzi.artifacts.cache.dir"] = gradleUserHomeDir.path
-      test.systemProperties["kotlinx.coroutines.main.delay"] = true
-      test.systemProperties.putAll(project.properties.filterKeys { it.startsWith("app.cash.paparazzi") })
-
-      test.inputs.property("paparazzi.test.record", isRecordRun)
-      test.inputs.property("paparazzi.test.verify", isVerifyRun)
-
-      test.inputs.dir(mergeAssetsProvider)
-      test.inputs.dir(mergeResourcesProvider)
-      test.inputs.files(nativePlatformFileCollection)
-        .withPropertyName("paparazzi.nativePlatform")
-        .withPathSensitivity(PathSensitivity.NONE)
-
-      test.outputs.dir(reportOutputDir)
-      test.outputs.dir(snapshotOutputDir)
-
-      test.doFirst {
-        // Note: these are lazy properties that are not resolvable in the Gradle configuration phase.
-        // They need special handling, so they're added as inputs.property above, and systemProperty here.
-        test.systemProperties["paparazzi.platform.data.root"] =
-          nativePlatformFileCollection.singleFile.absolutePath
-        test.systemProperties["paparazzi.test.record"] = isRecordRun.get()
-        test.systemProperties["paparazzi.test.verify"] = isVerifyRun.get()
+    project.tasks
+      .matching {
+        it is Test && it.name == testTaskName
       }
+      .configureEach { rawTest ->
+        val test = rawTest as Test
+        test.systemProperties["paparazzi.test.resources"] =
+          writeResourcesTask.flatMap { it.paparazziResources.asFile }.get().path
+        test.systemProperties["paparazzi.project.dir"] = projectDirectory.toString()
+        test.systemProperties["paparazzi.build.dir"] = buildDirectory.get().toString()
+        test.systemProperties["paparazzi.report.dir"] = reportOutputDir.get().toString()
+        test.systemProperties["paparazzi.snapshot.dir"] = snapshotOutputDir.toString()
+        test.systemProperties["paparazzi.artifacts.cache.dir"] = gradleUserHomeDir.path
+        test.systemProperties["kotlinx.coroutines.main.delay"] = true
+        test.systemProperties.putAll(project.properties.filterKeys { it.startsWith("app.cash.paparazzi") })
 
-      test.doLast {
-        val uri = reportOutputDir.get().asFile.toPath().resolve("index.html").toUri()
-        test.logger.log(LIFECYCLE, "See the Paparazzi report at: $uri")
+        test.inputs.property("paparazzi.test.record", isRecordRun)
+        test.inputs.property("paparazzi.test.verify", isVerifyRun)
+
+        test.inputs.dir(mergeAssetsProvider)
+        test.inputs.dir(mergeResourcesProvider)
+        test.inputs.files(nativePlatformFileCollection)
+          .withPropertyName("paparazzi.nativePlatform")
+          .withPathSensitivity(PathSensitivity.NONE)
+
+        test.outputs.dir(reportOutputDir)
+        test.outputs.dir(snapshotOutputDir)
+
+        test.doFirst {
+          // Note: these are lazy properties that are not resolvable in the Gradle configuration phase.
+          // They need special handling, so they're added as inputs.property above, and systemProperty here.
+          test.systemProperties["paparazzi.platform.data.root"] =
+            nativePlatformFileCollection.singleFile.absolutePath
+          test.systemProperties["paparazzi.test.record"] = isRecordRun.get()
+          test.systemProperties["paparazzi.test.verify"] = isVerifyRun.get()
+        }
+
+        test.doLast {
+          val uri = reportOutputDir.get().asFile.toPath().resolve("index.html").toUri()
+          test.logger.log(LIFECYCLE, "See the Paparazzi report at: $uri")
+        }
       }
-    }
 
     recordTaskProvider.configure {
       it.dependsOn(testTaskName)
