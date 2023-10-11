@@ -131,11 +131,7 @@ class PaparazziPlugin : Plugin<Project> {
     nativePlatformFileCollection: FileCollection
   ) {
     val variantSlug = variant.name.capitalize(Locale.US)
-    val testVariant = if (variant is HasUnitTest) {
-      (variant as HasUnitTest).unitTest ?: return
-    } else {
-      return
-    }
+    val testVariant = (variant as? HasUnitTest)?.unitTest ?: return
 
     val mergeAssetsProvider = variant.artifacts.get(SingleArtifact.ASSETS)
     val mergeResourcesProvider = (variant.artifacts as ArtifactsImpl).get(InternalArtifactType.MERGED_RES)
