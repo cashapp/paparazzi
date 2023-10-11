@@ -132,8 +132,7 @@ class PaparazziPlugin : Plugin<Project> {
   ) {
     val variantSlug = variant.name.capitalize(Locale.US)
     val testVariant = if (variant is HasUnitTest) {
-      @Suppress("DEPRECATION") // This API isn't actually un-deprecated in any subtypes
-      variant.unitTest ?: return
+      (variant as HasUnitTest).unitTest ?: return
     } else {
       return
     }
