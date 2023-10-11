@@ -134,6 +134,7 @@ class PaparazziPlugin : Plugin<Project> {
     val testVariant = (variant as? HasUnitTest)?.unitTest ?: return
 
     val mergeAssetsProvider = variant.artifacts.get(SingleArtifact.ASSETS)
+    // TODO use public API when one's available: https://issuetracker.google.com/issues/304746899
     val mergeResourcesProvider = (variant.artifacts as ArtifactsImpl).get(InternalArtifactType.MERGED_RES)
     val projectDirectory = project.layout.projectDirectory
     val buildDirectory = project.layout.buildDirectory
