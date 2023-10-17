@@ -38,6 +38,8 @@ dependencies {
   compileOnly files('libs/savedstate-1.2.1.jar')
   compileOnly files('libs/androidx-activity-1.5.0.jar')
 
+  implementation libs.bytebuddy.agent
+  implementation libs.bytebuddy.core
   implementation libs.trove4j
   api libs.layoutlib.native.jdk11
   api libs.tools.common
@@ -55,7 +57,6 @@ dependencies {
   implementation libs.moshi.adapters
   implementation libs.jcodec.core
   implementation libs.jcodec.javase
-  implementation projects.paparazziAgent
 
   ksp libs.moshi.kotlinCodegen
 

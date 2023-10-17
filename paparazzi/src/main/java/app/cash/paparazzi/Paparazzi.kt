@@ -36,8 +36,6 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
-import app.cash.paparazzi.agent.AgentTestRule
-import app.cash.paparazzi.agent.InterceptorRegistrar
 import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.PaparazziCallback
 import app.cash.paparazzi.internal.PaparazziLifecycleOwner
@@ -71,6 +69,7 @@ import com.android.tools.idea.validator.LayoutValidator
 import com.android.tools.idea.validator.ValidatorData.Level
 import com.android.tools.idea.validator.ValidatorData.Policy
 import com.android.tools.idea.validator.ValidatorData.Type
+import net.bytebuddy.agent.ByteBuddyAgent
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
@@ -119,8 +118,20 @@ class Paparazzi @JvmOverloads constructor(
     base: Statement,
     description: Description
   ): Statement {
-    val statement = object : Statement() {
+    return object : Statement() {
       override fun evaluate() {
+        if (!isInitialized) {
+          registerFontLookupInterceptionIfResourceCompatDetected()
+          registerViewEditModeInterception()
+          registerMatrixMultiplyInterception()
+          registerChoreographerDelegateInterception()
+          registerServiceManagerInterception()
+          registerIInputMethodManagerInterception()
+
+          ByteBuddyAgent.install()
+          InterceptorRegistrar.registerMethodInterceptors()
+        }
+
         prepare(description)
         try {
           base.evaluate()
@@ -129,20 +140,6 @@ class Paparazzi @JvmOverloads constructor(
           logger.assertNoErrors()
         }
       }
-    }
-
-    return if (!isInitialized) {
-      registerFontLookupInterceptionIfResourceCompatDetected()
-      registerViewEditModeInterception()
-      registerMatrixMultiplyInterception()
-      registerChoreographerDelegateInterception()
-      registerServiceManagerInterception()
-      registerIInputMethodManagerInterception()
-
-      val outerRule = AgentTestRule()
-      outerRule.apply(statement, description)
-    } else {
-      statement
     }
   }
 
