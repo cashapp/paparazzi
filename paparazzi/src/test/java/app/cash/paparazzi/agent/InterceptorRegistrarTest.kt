@@ -1,4 +1,4 @@
-package app.cash.paparazzi
+package app.cash.paparazzi.agent
 
 import com.google.common.truth.Truth.assertThat
 import net.bytebuddy.agent.ByteBuddyAgent

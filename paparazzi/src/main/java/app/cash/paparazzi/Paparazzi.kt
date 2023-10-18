@@ -36,6 +36,7 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import app.cash.paparazzi.agent.InterceptorRegistrar
 import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.PaparazziCallback
 import app.cash.paparazzi.internal.PaparazziLifecycleOwner

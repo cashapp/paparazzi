@@ -1,4 +1,4 @@
-package app.cash.paparazzi
+package app.cash.paparazzi.agent
 
 import net.bytebuddy.ByteBuddy
 import net.bytebuddy.dynamic.loading.ClassReloadingStrategy
