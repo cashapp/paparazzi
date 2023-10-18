@@ -1,7 +1,7 @@
 [versions]
 agp = "8.1.1"
 androidTools = "31.1.2" # == 23.0.0 + agp version
-bytebuddy = "1.14.8"
+bytebuddy = "1.14.9"
 composeCompiler = "1.5.1"
 javaTarget = "11"
 jcodec = "0.2.5"
