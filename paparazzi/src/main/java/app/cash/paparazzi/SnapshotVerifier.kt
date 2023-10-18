@@ -15,7 +15,6 @@
  */
 package app.cash.paparazzi
 
-import app.cash.paparazzi.SnapshotHandler.FrameHandler
 import app.cash.paparazzi.internal.ImageUtils
 import java.awt.image.BufferedImage
 import java.io.File
