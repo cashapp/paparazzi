@@ -4,6 +4,12 @@ $dokka.location:app.cash.paparazzi.accessibility////PointingToDeclaration/papar
 $dokka.location:app.cash.paparazzi.accessibility/AccessibilityRenderExtension///PointingToDeclaration/paparazzi/app.cash.paparazzi.accessibility/-accessibility-render-extension/index.md
 $dokka.location:app.cash.paparazzi.accessibility/AccessibilityRenderExtension/AccessibilityRenderExtension/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.accessibility/-accessibility-render-extension/-accessibility-render-extension.md
 $dokka.location:app.cash.paparazzi.accessibility/AccessibilityRenderExtension/renderView/#android.view.View/PointingToDeclaration/paparazzi/app.cash.paparazzi.accessibility/-accessibility-render-extension/render-view.md
+$dokka.location:app.cash.paparazzi.agent////PointingToDeclaration/paparazzi/app.cash.paparazzi.agent/index.md
+$dokka.location:app.cash.paparazzi.agent/InterceptorRegistrar///PointingToDeclaration/paparazzi/app.cash.paparazzi.agent/-interceptor-registrar/index.md
+$dokka.location:app.cash.paparazzi.agent/InterceptorRegistrar/addMethodInterceptor/#java.lang.Class[*]#kotlin.String#java.lang.Class[*]/PointingToDeclaration/paparazzi/app.cash.paparazzi.agent/-interceptor-registrar/add-method-interceptor.md
+$dokka.location:app.cash.paparazzi.agent/InterceptorRegistrar/addMethodInterceptors/#java.lang.Class[*]#kotlin.collections.Set[kotlin.Pair[kotlin.String,java.lang.Class[*]]]/PointingToDeclaration/paparazzi/app.cash.paparazzi.agent/-interceptor-registrar/add-method-interceptors.md
+$dokka.location:app.cash.paparazzi.agent/InterceptorRegistrar/clearMethodInterceptors/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.agent/-interceptor-registrar/clear-method-interceptors.md
+$dokka.location:app.cash.paparazzi.agent/InterceptorRegistrar/registerMethodInterceptors/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.agent/-interceptor-registrar/register-method-interceptors.md
 $dokka.location:app.cash.paparazzi.deprecated.com.android.ide.common.resources.deprecated////PointingToDeclaration/paparazzi/app.cash.paparazzi.deprecated.com.android.ide.common.resources.deprecated/index.md
 $dokka.location:app.cash.paparazzi.deprecated.com.android.ide.common.resources.deprecated/FrameworkResources///PointingToDeclaration/paparazzi/app.cash.paparazzi.deprecated.com.android.ide.common.resources.deprecated/-framework-resources/index.md
 $dokka.location:app.cash.paparazzi.deprecated.com.android.ide.common.resources.deprecated/FrameworkResources/FrameworkResources/#app.cash.paparazzi.deprecated.com.android.io.IAbstractFolder/PointingToDeclaration/paparazzi/app.cash.paparazzi.deprecated.com.android.ide.common.resources.deprecated/-framework-resources/-framework-resources.md
@@ -668,6 +674,7 @@ $dokka.location:app.cash.paparazzi/TestName/methodName/#/PointingToDeclaration/
 $dokka.location:app.cash.paparazzi/TestName/packageName/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-test-name/package-name.md
 app.cash.paparazzi
 app.cash.paparazzi.accessibility
+app.cash.paparazzi.agent
 app.cash.paparazzi.deprecated.com.android.ide.common.resources.deprecated
 app.cash.paparazzi.deprecated.com.android.io
 app.cash.paparazzi.internal
