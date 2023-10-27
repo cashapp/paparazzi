@@ -41,9 +41,9 @@ dependencies {
   implementation libs.bytebuddy.agent
   implementation libs.bytebuddy.core
   implementation libs.trove4j
-  api libs.layoutlib.native.jdk11
   api libs.tools.common
   api libs.tools.layoutlib
+  api libs.tools.layoutlib.api
   api libs.tools.ninepatch
   api libs.tools.sdkCommon
   api libs.kxml2
@@ -63,14 +63,14 @@ dependencies {
   if (osName.startsWith("mac")) {
     def osArch = System.getProperty("os.arch").toLowerCase(Locale.US)
     if (osArch.startsWith("x86")) {
-      unzip libs.layoutlib.native.macOsX
+      unzip variantOf(libs.tools.layoutlib.runtime) { classifier("mac") }
     } else {
-      unzip libs.layoutlib.native.macArm
+      unzip variantOf(libs.tools.layoutlib.runtime) { classifier("mac-arm") }
     }
   } else if (osName.startsWith("windows")) {
-    unzip libs.layoutlib.native.windows
+    unzip variantOf(libs.tools.layoutlib.runtime) { classifier("win") }
   } else {
-    unzip libs.layoutlib.native.linux
+    unzip variantOf(libs.tools.layoutlib.runtime) { classifier("linux") }
   }
 
   testImplementation libs.truth
