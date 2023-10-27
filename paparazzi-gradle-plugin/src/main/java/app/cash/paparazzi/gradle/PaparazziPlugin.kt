@@ -292,7 +292,7 @@ public class PaparazziPlugin : Plugin<Project> {
     val nativeLibraryArtifactId = when {
       operatingSystem.isMacOsX -> {
         val osArch = System.getProperty("os.arch").lowercase(Locale.US)
-        if (osArch.startsWith("x86")) "macosx" else "macarm"
+        if (osArch.startsWith("x86")) "mac" else "mac-arm"
       }
       operatingSystem.isWindows -> "win"
       else -> "linux"
@@ -300,7 +300,7 @@ public class PaparazziPlugin : Plugin<Project> {
 
     val nativePlatformConfiguration = configurations.create("nativePlatform")
     nativePlatformConfiguration.dependencies.add(
-      dependencies.create("app.cash.paparazzi:layoutlib-native-$nativeLibraryArtifactId:$NATIVE_LIB_VERSION")
+      dependencies.create("com.android.tools.layoutlib:layoutlib-runtime:$NATIVE_LIB_VERSION:$nativeLibraryArtifactId")
     )
     dependencies.registerTransform(UnzipTransform::class.java) { transform ->
       transform.from.attribute(ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.JAR_TYPE)

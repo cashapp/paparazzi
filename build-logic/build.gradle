@@ -9,7 +9,6 @@ buildscript {
     classpath libs.plugin.kotlin
     classpath libs.plugin.android
     classpath libs.plugin.buildConfig
-    classpath libs.grgit
   }
 }
 

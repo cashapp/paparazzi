@@ -1,1 +1,0 @@
-ext.repoDir = rootProject.layout.buildDirectory.dir("prebuilts/studio/layoutlib").get().asFile
