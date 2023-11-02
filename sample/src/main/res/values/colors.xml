@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <color name="keypadGreen">#00D015</color>
-  <color name="bolt">#EBFF00</color>
+  <color name="bolt">#EB0F00</color>
   <color name="keypadDarkGrey">#595959</color>
   <color name="launchBackground">#dcdccc</color>
   <color name="cameraBody">#332F21</color>
