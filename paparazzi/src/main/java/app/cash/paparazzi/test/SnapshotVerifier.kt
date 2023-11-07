@@ -13,18 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package app.cash.paparazzi
+package app.cash.paparazzi.test
 
-import app.cash.paparazzi.SnapshotHandler.FrameHandler
+import app.cash.paparazzi.formatImage
 import app.cash.paparazzi.internal.ImageUtils
-import java.awt.image.BufferedImage
+import app.cash.paparazzi.snapshotter.Clip
+import app.cash.paparazzi.snapshotter.Snapshot
 import java.io.File
 import javax.imageio.ImageIO
 
 class SnapshotVerifier @JvmOverloads constructor(
   private val maxPercentDifference: Double,
   rootDirectory: File = File(System.getProperty("paparazzi.snapshot.dir"))
-) : SnapshotHandler {
+) : TestSnapshotHandler {
   private val imagesDirectory: File = File(rootDirectory, "images")
   private val videosDirectory: File = File(rootDirectory, "videos")
 
@@ -33,30 +34,25 @@ class SnapshotVerifier @JvmOverloads constructor(
     videosDirectory.mkdirs()
   }
 
-  override fun newFrameHandler(
-    snapshot: Snapshot,
-    frameCount: Int,
-    fps: Int
-  ): FrameHandler {
-    return object : FrameHandler {
-      override fun handle(image: BufferedImage) {
-        // Note: does not handle videos or its frames at the moment
-        val expected = File(imagesDirectory, snapshot.toFileName(extension = "png"))
-        if (!expected.exists()) {
-          throw AssertionError("File $expected does not exist")
-        }
-
-        val goldenImage = ImageIO.read(expected)
-        ImageUtils.assertImageSimilar(
-          relativePath = expected.path,
-          image = image,
-          goldenImage = goldenImage,
-          maxPercentDifferent = maxPercentDifference
-        )
-      }
-
-      override fun close() = Unit
+  override fun handleSnapshot(snapshot: Snapshot, testRecord: TestRecord) {
+    // Note: does not handle videos or its frames at the moment
+    val expected = File(imagesDirectory, testRecord.toFileName(extension = "png"))
+    if (!expected.exists()) {
+      throw AssertionError("File $expected does not exist")
     }
+
+    val goldenImage = ImageIO.read(expected)
+    val formattedImage = snapshot.image.formatImage(snapshot.spec)
+    ImageUtils.assertImageSimilar(
+      relativePath = expected.path,
+      image = formattedImage,
+      goldenImage = goldenImage,
+      maxPercentDifferent = maxPercentDifference
+    )
+  }
+
+  override fun handleClip(clip: Clip, testRecord: TestRecord) {
+    TODO("SnapshotVerifier does not yet support verifying clips")
   }
 
   override fun close() = Unit

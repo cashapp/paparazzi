@@ -27,6 +27,7 @@ import android.view.View
 import android.view.animation.LinearInterpolator
 import android.widget.Button
 import android.widget.TextView
+import app.cash.paparazzi.snapshotter.Device
 import com.android.internal.lang.System_Delegate
 import com.google.common.truth.Truth.assertThat
 import org.junit.Ignore
@@ -217,6 +218,6 @@ class PaparazziTest {
 
   private val time: Long
     get() {
-      return TimeUnit.NANOSECONDS.toMillis(System_Delegate.nanoTime() - Paparazzi.TIME_OFFSET_NANOS)
+      return TimeUnit.NANOSECONDS.toMillis(System_Delegate.nanoTime() - Device.TIME_OFFSET_NANOS)
     }
 }

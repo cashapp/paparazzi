@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package app.cash.paparazzi
+package app.cash.paparazzi.test
 
 import com.squareup.moshi.JsonClass
 import java.util.Date
 import java.util.Locale
 
 @JsonClass(generateAdapter = true)
-data class Snapshot(
+data class TestRecord(
   val name: String?,
   val testName: TestName,
   val timestamp: Date,
@@ -28,7 +28,7 @@ data class Snapshot(
   val file: String? = null
 )
 
-internal fun Snapshot.toFileName(
+internal fun TestRecord.toFileName(
   delimiter: String = "_",
   extension: String
 ): String {

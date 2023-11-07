@@ -13,17 +13,18 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Paparazzi
-import app.cash.paparazzi.Snapshot
-import app.cash.paparazzi.SnapshotHandler
+import app.cash.paparazzi.formatImage
 import app.cash.paparazzi.internal.ImageUtils
+import app.cash.paparazzi.snapshotter.Clip
+import app.cash.paparazzi.snapshotter.Snapshot
+import app.cash.paparazzi.test.TestRecord
+import app.cash.paparazzi.test.TestSnapshotHandler
 import org.junit.Rule
 import org.junit.Test
-import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
 
 class AccessibilityRenderExtensionTest {
-  private val snapshotHandler = TestSnapshotVerifier()
 
   @get:Rule
   val paparazzi = Paparazzi(
@@ -32,8 +33,8 @@ class AccessibilityRenderExtensionTest {
       screenWidth = DeviceConfig.NEXUS_5.screenWidth * 2,
       softButtons = false
     ),
-    snapshotHandler = snapshotHandler,
-    renderExtensions = setOf(AccessibilityRenderExtension())
+    renderExtensions = setOf(AccessibilityRenderExtension()),
+    testSnapshotHandler = TestSnapshotVerifier()
   )
 
   @Test
@@ -118,25 +119,20 @@ class AccessibilityRenderExtensionTest {
       )
     }
 
-  private class TestSnapshotVerifier : SnapshotHandler {
-    override fun newFrameHandler(
-      snapshot: Snapshot,
-      frameCount: Int,
-      fps: Int
-    ): SnapshotHandler.FrameHandler {
-      return object : SnapshotHandler.FrameHandler {
-        override fun handle(image: BufferedImage) {
-          val expected = File("src/test/resources/${snapshot.name}.png")
-          ImageUtils.assertImageSimilar(
-            relativePath = expected.path,
-            image = image,
-            goldenImage = ImageIO.read(expected),
-            maxPercentDifferent = 0.1
-          )
-        }
+  private class TestSnapshotVerifier : TestSnapshotHandler {
+    override fun handleSnapshot(snapshot: Snapshot, testRecord: TestRecord) {
+      val expected = File("src/test/resources/${testRecord.name}.png")
+      val formattedImage = snapshot.image.formatImage(snapshot.spec)
+      ImageUtils.assertImageSimilar(
+        relativePath = expected.path,
+        image = formattedImage,
+        goldenImage = ImageIO.read(expected),
+        maxPercentDifferent = 0.1
+      )
+    }
 
-        override fun close() = Unit
-      }
+    override fun handleClip(clip: Clip, testRecord: TestRecord) {
+      TODO("Not yet implemented")
     }
 
     override fun close() = Unit

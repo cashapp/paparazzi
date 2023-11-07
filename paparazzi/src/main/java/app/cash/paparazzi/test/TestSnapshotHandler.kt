@@ -13,19 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package app.cash.paparazzi
+package app.cash.paparazzi.test
 
-import java.awt.image.BufferedImage
+import app.cash.paparazzi.snapshotter.Clip
+import app.cash.paparazzi.snapshotter.Snapshot
 import java.io.Closeable
 
-interface SnapshotHandler : Closeable {
-  fun newFrameHandler(
-    snapshot: Snapshot,
-    frameCount: Int,
-    fps: Int
-  ): FrameHandler
-
-  interface FrameHandler : Closeable {
-    fun handle(image: BufferedImage)
-  }
+interface TestSnapshotHandler : Closeable {
+  fun handleSnapshot(snapshot: Snapshot, testRecord: TestRecord)
+  fun handleClip(clip: Clip, testRecord: TestRecord)
 }

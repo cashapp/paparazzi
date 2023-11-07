@@ -15,8 +15,8 @@
  */
 package app.cash.paparazzi.internal
 
-import app.cash.paparazzi.Snapshot
-import app.cash.paparazzi.TestName
+import app.cash.paparazzi.test.TestName
+import app.cash.paparazzi.test.TestRecord
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
@@ -31,10 +31,10 @@ internal object PaparazziJson {
     .add(this)
     .build()!!
 
-  val listOfShotsAdapter: JsonAdapter<List<Snapshot>> =
+  val listOfShotsAdapter: JsonAdapter<List<TestRecord>> =
     moshi
-      .adapter<List<Snapshot>>(
-        Types.newParameterizedType(List::class.java, Snapshot::class.java)
+      .adapter<List<TestRecord>>(
+        Types.newParameterizedType(List::class.java, TestRecord::class.java)
       )
       .indent("  ")
 

@@ -15,7 +15,7 @@
  */
 package app.cash.paparazzi.internal
 
-import app.cash.paparazzi.TestName
+import app.cash.paparazzi.test.TestName
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
