@@ -56,6 +56,16 @@ Saves snapshots as golden values to a predefined source-controlled location
 
 Runs tests and verifies against previously-recorded golden values. Failures generate diffs at `sample/build/paparazzi/failures`.
 
+### Run a set of tests
+
+Use the `--tests` flag to run a subset of tests - see some examples [here](https://docs.gradle.org/current/javadoc/org/gradle/api/tasks/testing/TestFilter.html)
+
+```bash
+./gradlew sample:recordPaparazziDebug --tests="MyPaparazziTestClass"
+./gradlew sample:recordPaparazziDebug --tests="com.path.to.test.folder.*"
+```
+
+
 For more examples, check out the [sample][sample] project.
 
 Git LFS
