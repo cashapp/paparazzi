@@ -37,6 +37,7 @@ import java.io.File
 import java.nio.file.Paths
 import java.util.Locale
 import kotlin.io.path.name
+import kotlin.jvm.optionals.getOrNull
 
 /** View rendering. */
 internal class Renderer(
@@ -188,12 +189,28 @@ internal class Renderer(
   }
 
   private fun getNativeLibDir(): String {
-    val osName = System.getProperty("os.name").toLowerCase(Locale.US)
+    val osName = System.getProperty("os.name").lowercase(Locale.US)
     val osLabel = when {
       osName.startsWith("windows") -> "win"
       osName.startsWith("mac") -> {
-        val osArch = System.getProperty("os.arch").lowercase(Locale.US)
-        if (osArch.startsWith("x86")) "mac" else "mac-arm"
+        // System.getProperty("os.arch") returns the os of the jre, not necessarily of the platform we are running on,
+        // try /usr/bin/arch to get the actual architecture
+        val osArch = ProcessBuilder("/usr/bin/arch")
+          .start()
+          .inputStream
+          .bufferedReader()
+          .lines()
+          .findFirst()
+          .getOrNull()
+          ?.lowercase(Locale.US)
+
+        if (osArch != null) {
+          if (osArch.startsWith("i386")) "mac" else "mac-arm"
+        } else {
+          // fallback to jre arch and cross fingers it's correct
+          val jreArch = System.getProperty("os.arch").lowercase(Locale.US)
+          if (jreArch.startsWith("x86")) "mac" else "mac-arm"
+        }
       }
       else -> "linux"
     }
