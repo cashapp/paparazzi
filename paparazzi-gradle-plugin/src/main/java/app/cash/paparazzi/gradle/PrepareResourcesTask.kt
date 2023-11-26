@@ -23,6 +23,7 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
@@ -35,6 +36,7 @@ abstract class PrepareResourcesTask : DefaultTask() {
 
   @Deprecated("legacy resource loading, to be removed in a future release")
   @get:Input
+  @get:Optional
   abstract val mergeResourcesOutputDir: Property<String>
 
   @get:Input
@@ -44,11 +46,11 @@ abstract class PrepareResourcesTask : DefaultTask() {
   abstract val compileSdkVersion: Property<String>
 
   @get:InputFiles
-  @get:PathSensitive(PathSensitivity.NONE)
+  @get:PathSensitive(PathSensitivity.RELATIVE)
   abstract val projectResourceDirs: ConfigurableFileCollection
 
   @get:InputFiles
-  @get:PathSensitive(PathSensitivity.NONE)
+  @get:PathSensitive(PathSensitivity.RELATIVE)
   abstract val moduleResourceDirs: ConfigurableFileCollection
 
   @get:InputFiles
@@ -56,22 +58,23 @@ abstract class PrepareResourcesTask : DefaultTask() {
   abstract val aarExplodedDirs: ConfigurableFileCollection
 
   @get:InputFiles
-  @get:PathSensitive(PathSensitivity.NONE)
+  @get:PathSensitive(PathSensitivity.RELATIVE)
   abstract val projectAssetDirs: ConfigurableFileCollection
 
   @get:InputFiles
-  @get:PathSensitive(PathSensitivity.NONE)
+  @get:PathSensitive(PathSensitivity.RELATIVE)
   abstract val aarAssetDirs: ConfigurableFileCollection
 
   @Deprecated("legacy asset loading, to be removed in a future release")
   @get:Input
+  @get:Optional
   abstract val mergeAssetsOutputDir: Property<String>
 
   @get:Input
   abstract val nonTransitiveRClassEnabled: Property<Boolean>
 
   @get:InputFiles
-  @get:PathSensitive(PathSensitivity.NONE)
+  @get:PathSensitive(PathSensitivity.RELATIVE)
   abstract val artifactFiles: ConfigurableFileCollection
 
   @get:OutputFile
@@ -104,14 +107,14 @@ abstract class PrepareResourcesTask : DefaultTask() {
       .use {
         it.write(mainPackage)
         it.newLine()
-        it.write(mergeResourcesOutputDir.get())
+        it.write(mergeResourcesOutputDir.orNull ?: "")
         it.newLine()
         it.write(targetSdkVersion.get())
         it.newLine()
         // Use compileSdkVersion for system framework resources.
         it.write("platforms/android-${compileSdkVersion.get()}/")
         it.newLine()
-        it.write(mergeAssetsOutputDir.get())
+        it.write(mergeAssetsOutputDir.orNull ?: "")
         it.newLine()
         it.write(resourcePackageNames)
         it.newLine()

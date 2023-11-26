@@ -42,7 +42,6 @@ import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.api.provider.Provider
 import org.gradle.api.reporting.ReportingExtension
 import org.gradle.api.tasks.PathSensitivity
-import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.options.Option
 import org.gradle.api.tasks.testing.Test
 import org.gradle.internal.os.OperatingSystem
@@ -58,8 +57,9 @@ import kotlin.io.path.invariantSeparatorsPathString
 class PaparazziPlugin : Plugin<Project> {
   override fun apply(project: Project) {
     val legacyResourceLoadingEnabled = (project.findProperty("app.cash.paparazzi.legacy.resource.loading") as? String)?.toBoolean() ?: false
+    val legacyAssetLoadingEnabled = (project.findProperty("app.cash.paparazzi.legacy.asset.loading") as? String)?.toBoolean() ?: false
 
-    if (legacyResourceLoadingEnabled) {
+    if (legacyResourceLoadingEnabled || legacyAssetLoadingEnabled) {
       project.afterEvaluate {
         check(!project.plugins.hasPlugin("com.android.application")) {
           error(
@@ -74,7 +74,7 @@ class PaparazziPlugin : Plugin<Project> {
       }
 
       project.plugins.withId("com.android.library") {
-        setupPaparazzi(project, project.extensions.getByType(LibraryExtension::class.java).libraryVariants)
+        setupPaparazzi(project, project.extensions.getByType(LibraryExtension::class.java).libraryVariants, legacyResourceLoadingEnabled, legacyAssetLoadingEnabled)
       }
     } else {
       val supportedPlugins = listOf("com.android.application", "com.android.library", "com.android.dynamic-feature")
@@ -93,13 +93,18 @@ class PaparazziPlugin : Plugin<Project> {
             // exhaustive to avoid potential breaking changes in future AGP releases
             else -> throw IllegalStateException("${extension.javaClass.name} from $plugin is not supported in Paparazzi")
           }
-          setupPaparazzi(project, variants)
+          setupPaparazzi(project, variants, legacyResourceLoadingEnabled, legacyAssetLoadingEnabled)
         }
       }
     }
   }
 
-  private fun <T> setupPaparazzi(project: Project, variants: DomainObjectSet<T>) where T : BaseVariant, T : TestedVariant {
+  private fun <T> setupPaparazzi(
+    project: Project,
+    variants: DomainObjectSet<T>,
+    legacyResourceLoadingEnabled: Boolean,
+    legacyAssetLoadingEnabled: Boolean
+  ) where T : BaseVariant, T : TestedVariant {
     project.addTestDependency()
     val nativePlatformFileCollection = project.setupNativePlatformDependency()
 
@@ -119,7 +124,7 @@ class PaparazziPlugin : Plugin<Project> {
 
       val mergeResourcesOutputDir = variant.mergeResourcesProvider.flatMap { it.outputDir }
       val mergeAssetsProvider =
-        project.tasks.named("merge${variantSlug}Assets") as TaskProvider<MergeSourceSetFolders>
+        project.tasks.named("merge${variantSlug}Assets", MergeSourceSetFolders::class.java)
       val mergeAssetsOutputDir = mergeAssetsProvider.flatMap { it.outputDir }
       val projectDirectory = project.layout.projectDirectory
       val buildDirectory = project.layout.buildDirectory
@@ -168,10 +173,14 @@ class PaparazziPlugin : Plugin<Project> {
         task.packageName.set(android.packageName())
         task.artifactFiles.from(packageAwareArtifactFiles)
         task.nonTransitiveRClassEnabled.set(nonTransitiveRClassEnabled)
-        task.mergeResourcesOutputDir.set(buildDirectory.asRelativePathString(mergeResourcesOutputDir))
+        if (legacyResourceLoadingEnabled) {
+          task.mergeResourcesOutputDir.set(buildDirectory.asRelativePathString(mergeResourcesOutputDir))
+        }
         task.targetSdkVersion.set(android.targetSdkVersion())
         task.compileSdkVersion.set(android.compileSdkVersion())
-        task.mergeAssetsOutputDir.set(buildDirectory.asRelativePathString(mergeAssetsOutputDir))
+        if (legacyAssetLoadingEnabled) {
+          task.mergeAssetsOutputDir.set(buildDirectory.asRelativePathString(mergeAssetsOutputDir))
+        }
         task.projectResourceDirs.from(localResourceDirs)
         task.moduleResourceDirs.from(moduleResourceDirs)
         task.aarExplodedDirs.from(aarExplodedDirs)
@@ -230,13 +239,19 @@ class PaparazziPlugin : Plugin<Project> {
         test.systemProperties["paparazzi.snapshot.dir"] = snapshotOutputDir.toString()
         test.systemProperties["paparazzi.artifacts.cache.dir"] = gradleUserHomeDir.path
         test.systemProperties["kotlinx.coroutines.main.delay"] = true
+        test.systemProperties["app.cash.paparazzi.legacy.resource.loading"] = legacyResourceLoadingEnabled.toString()
+        test.systemProperties["app.cash.paparazzi.legacy.asset.loading"] = legacyAssetLoadingEnabled.toString()
         test.systemProperties.putAll(project.properties.filterKeys { it.startsWith("app.cash.paparazzi") })
 
         test.inputs.property("paparazzi.test.record", isRecordRun)
         test.inputs.property("paparazzi.test.verify", isVerifyRun)
 
-        test.inputs.dir(mergeResourcesOutputDir)
-        test.inputs.dir(mergeAssetsOutputDir)
+        if (legacyResourceLoadingEnabled) {
+          test.inputs.dir(mergeResourcesOutputDir)
+        }
+        if (legacyAssetLoadingEnabled) {
+          test.inputs.dir(mergeAssetsOutputDir)
+        }
         test.inputs.files(nativePlatformFileCollection)
           .withPropertyName("paparazzi.nativePlatform")
           .withPathSensitivity(PathSensitivity.NONE)

@@ -2,6 +2,7 @@ package app.cash.paparazzi.gradle
 
 import app.cash.paparazzi.gradle.ImageSubject.Companion.assertThat
 import com.google.common.truth.Truth.assertThat
+import com.google.common.truth.Truth.assertWithMessage
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome.FROM_CACHE
@@ -308,6 +309,7 @@ class PaparazziPluginTest {
       .withArguments("testDebug", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
 
+    assertThat(result.task(":mergeDebugResources")).isNotNull()
     assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
     assertThat(result.task(":testDebugUnitTest")).isNotNull()
 
@@ -328,6 +330,7 @@ class PaparazziPluginTest {
       .withArguments("testDebug", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
 
+    assertThat(result.task(":mergeDebugResources")).isNull()
     assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
     assertThat(result.task(":testDebugUnitTest")).isNotNull()
 
@@ -480,7 +483,7 @@ class PaparazziPluginTest {
     val secondResourceFile = File(fixtureRoot, "src/test/resources/colors2.xml")
 
     // Original resource
-    firstResourceFile.copyTo(destResourceFile, overwrite = false)
+    firstResourceFile.copyTo(destResourceFile, overwrite = true)
 
     // Take 1
     val firstRunResult = gradleRunner
@@ -531,7 +534,7 @@ class PaparazziPluginTest {
     val secondAssetFile = File(fixtureRoot, "src/test/resources/secret2.txt")
 
     // Original asset
-    firstAssetFile.copyTo(destAssetFile, overwrite = false)
+    firstAssetFile.copyTo(destAssetFile, overwrite = true)
 
     // Take 1
     val firstRunResult = gradleRunner
@@ -826,8 +829,8 @@ class PaparazziPluginTest {
 
     val resourceFileContents = resourcesFile.readLines()
     assertThat(resourceFileContents[0]).isEqualTo("app.cash.paparazzi.plugin.test")
-    assertThat(resourceFileContents[1]).isEqualTo("intermediates/merged_res/debug")
-    assertThat(resourceFileContents[4]).isEqualTo("intermediates/assets/debug")
+    assertThat(resourceFileContents[1]).isEqualTo("")
+    assertThat(resourceFileContents[4]).isEqualTo("")
     assertThat(resourceFileContents[5]).isEqualTo("app.cash.paparazzi.plugin.test,com.example.mylibrary,app.cash.paparazzi.plugin.test.module1,app.cash.paparazzi.plugin.test.module2")
     assertThat(resourceFileContents[6]).isEqualTo("src/main/res,src/debug/res")
     assertThat(resourceFileContents[7]).isEqualTo("../module1/build/intermediates/packaged_res/debug,../module2/build/intermediates/packaged_res/debug")
@@ -849,8 +852,8 @@ class PaparazziPluginTest {
 
     val resourceFileContents = resourcesFile.readLines()
     assertThat(resourceFileContents[0]).isEqualTo("app.cash.paparazzi.plugin.test")
-    assertThat(resourceFileContents[1]).isEqualTo("intermediates/merged_res/debug")
-    assertThat(resourceFileContents[4]).isEqualTo("intermediates/assets/debug")
+    assertThat(resourceFileContents[1]).isEqualTo("")
+    assertThat(resourceFileContents[4]).isEqualTo("")
     assertThat(resourceFileContents[5]).isEqualTo("app.cash.paparazzi.plugin.test,com.example.mylibrary,app.cash.paparazzi.plugin.test.module1,app.cash.paparazzi.plugin.test.module2")
     assertThat(resourceFileContents[6]).isEqualTo("src/main/res,src/debug/res")
     assertThat(resourceFileContents[7]).isEqualTo("../module1/build/intermediates/packaged_res/debug,../module2/build/intermediates/packaged_res/debug")
@@ -897,18 +900,22 @@ class PaparazziPluginTest {
   fun verifyOpenAssetsLegacyAssetLoadingIsOff() {
     val fixtureRoot = File("src/test/projects/open-assets-legacy-asset-loading-off")
 
-    gradleRunner
+    val result = gradleRunner
       .withArguments("consumer:testDebug", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":consumer:mergeDebugAssets")).isNull()
   }
 
   @Test
   fun verifyOpenAssetsLegacyAssetLoadingIsOn() {
     val fixtureRoot = File("src/test/projects/open-assets-legacy-asset-loading-on")
 
-    gradleRunner
+    val result = gradleRunner
       .withArguments("consumer:testDebug", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
+
+    assertWithMessage(result.output).that(result.task(":consumer:mergeDebugAssets")).isNotNull()
   }
 
   @Test
@@ -1395,6 +1402,11 @@ class PaparazziPluginTest {
     val gradleProperties = File(projectRoot, "gradle.properties")
     var generatedSettings = false
     var generatedGradleProperties = false
+
+    File(projectRoot, "build-cache").delete()
+    projectRoot.walkTopDown()
+      .filter { it.name == "build" && it.isDirectory }
+      .forEach { it.deleteRecursively() }
 
     return try {
       if (!settings.exists()) {
