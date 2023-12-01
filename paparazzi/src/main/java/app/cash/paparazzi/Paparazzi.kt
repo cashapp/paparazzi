@@ -32,7 +32,11 @@ import android.view.ViewGroup
 import androidx.activity.setViewTreeOnBackPressedDispatcherOwner
 import androidx.annotation.LayoutRes
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.InternalComposeUiApi
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.WindowRecomposerPolicy
+import androidx.compose.ui.platform.createLifecycleAwareWindowRecomposer
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
@@ -79,7 +83,9 @@ import java.awt.image.BufferedImage
 import java.util.Date
 import java.util.EnumSet
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.Dispatchers
 
+@OptIn(ExperimentalComposeUiApi::class, InternalComposeUiApi::class)
 class Paparazzi @JvmOverloads constructor(
   private val environment: Environment = detectEnvironment(),
   private val deviceConfig: DeviceConfig = DeviceConfig.NEXUS_5,
@@ -289,6 +295,12 @@ class Paparazzi @JvmOverloads constructor(
           // CompositionContext, which requires first finding the "content view", then using that
           // to find a root view with a ViewTreeLifecycleOwner
           viewGroup.id = android.R.id.content
+
+          // By default, Compose UI uses its own implementation of CoroutineDispatcher, `AndroidUiDispatcher`.
+          // Since this dispatcher does not provide its own implementation of Delay, it will default to using DefaultDelay which runs
+          // async to our test Handler. By initializing Recomposer with Dispatchers.Main, Delay will now be backed by our test Handler,
+          // synchronizing expected behavior.
+          WindowRecomposerPolicy.setFactory { it.createLifecycleAwareWindowRecomposer(Dispatchers.Main) }
         }
 
         if (hasLifecycleOwnerRuntime) {

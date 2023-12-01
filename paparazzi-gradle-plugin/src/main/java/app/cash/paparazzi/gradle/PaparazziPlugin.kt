@@ -229,7 +229,6 @@ class PaparazziPlugin : Plugin<Project> {
         test.systemProperties["paparazzi.report.dir"] = reportOutputDir.get().toString()
         test.systemProperties["paparazzi.snapshot.dir"] = snapshotOutputDir.toString()
         test.systemProperties["paparazzi.artifacts.cache.dir"] = gradleUserHomeDir.path
-        test.systemProperties["kotlinx.coroutines.main.delay"] = true
         test.systemProperties.putAll(project.properties.filterKeys { it.startsWith("app.cash.paparazzi") })
 
         test.inputs.property("paparazzi.test.record", isRecordRun)
