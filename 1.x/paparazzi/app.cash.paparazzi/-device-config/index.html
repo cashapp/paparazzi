@@ -392,7 +392,7 @@
 <p>//<a href="../../../">paparazzi</a>/<a href="../">app.cash.paparazzi</a>/<a href="./">DeviceConfig</a></p>
 <h1 id="deviceconfig">DeviceConfig<a class="headerlink" href="#deviceconfig" title="Permanent link">&para;</a></h1>
 <p>[jvm]\
-data class <a href="./">DeviceConfig</a>(val screenHeight: Int = 1280, val screenWidth: Int = 768, val xdpi: Int = 320, val ydpi: Int = 320, val orientation: ScreenOrientation = ScreenOrientation.PORTRAIT, val uiMode: UiMode = UiMode.NORMAL, val nightMode: NightMode = NightMode.NOTNIGHT, val density: Density = Density.XHIGH, val fontScale: Float = 1.0f, val layoutDirection: LayoutDirection = LayoutDirection.LTR, val locale: String? = null, val ratio: ScreenRatio = ScreenRatio.NOTLONG, val size: ScreenSize = ScreenSize.NORMAL, val keyboard: Keyboard = Keyboard.NOKEY, val touchScreen: TouchScreen = TouchScreen.FINGER, val keyboardState: KeyboardState = KeyboardState.SOFT, val softButtons: Boolean = true, val navigation: Navigation = Navigation.NONAV, val screenRound: ScreenRound? = null, val released: String = &quot;November 13, 2012&quot;)</p>
+data class <a href="./">DeviceConfig</a>(val screenHeight: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a> = 1280, val screenWidth: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a> = 768, val xdpi: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a> = 320, val ydpi: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a> = 320, val orientation: ScreenOrientation = ScreenOrientation.PORTRAIT, val uiMode: UiMode = UiMode.NORMAL, val nightMode: NightMode = NightMode.NOTNIGHT, val density: Density = Density.XHIGH, val fontScale: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-float/index.html">Float</a> = 1.0f, val layoutDirection: LayoutDirection = LayoutDirection.LTR, val locale: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>? = null, val ratio: ScreenRatio = ScreenRatio.NOTLONG, val size: ScreenSize = ScreenSize.NORMAL, val keyboard: Keyboard = Keyboard.NOKEY, val touchScreen: TouchScreen = TouchScreen.FINGER, val keyboardState: KeyboardState = KeyboardState.SOFT, val softButtons: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a> = true, val navigation: Navigation = Navigation.NONAV, val screenRound: ScreenRound? = null, val released: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a> = &quot;November 13, 2012&quot;)</p>
 <p>Provides FolderConfiguration and HardwareConfig for various devices. Also provides utility methods to parse <code>build.prop</code> and <code>attrs.xml</code> to generate the appropriate maps.</p>
 <p>Defaults are for a Nexus 4 device.</p>
 <h2 id="constructors">Constructors<a class="headerlink" href="#constructors" title="Permanent link">&para;</a></h2>
@@ -406,7 +406,7 @@ data class <a href="./">DeviceConfig</a>(val screenHeight: Int = 1280, val scree
 <tbody>
 <tr>
 <td><a href="-device-config/">DeviceConfig</a></td>
-<td>[jvm]<br>constructor(screenHeight: Int = 1280, screenWidth: Int = 768, xdpi: Int = 320, ydpi: Int = 320, orientation: ScreenOrientation = ScreenOrientation.PORTRAIT, uiMode: UiMode = UiMode.NORMAL, nightMode: NightMode = NightMode.NOTNIGHT, density: Density = Density.XHIGH, fontScale: Float = 1.0f, layoutDirection: LayoutDirection = LayoutDirection.LTR, locale: String? = null, ratio: ScreenRatio = ScreenRatio.NOTLONG, size: ScreenSize = ScreenSize.NORMAL, keyboard: Keyboard = Keyboard.NOKEY, touchScreen: TouchScreen = TouchScreen.FINGER, keyboardState: KeyboardState = KeyboardState.SOFT, softButtons: Boolean = true, navigation: Navigation = Navigation.NONAV, screenRound: ScreenRound? = null, released: String = &quot;November 13, 2012&quot;)</td>
+<td>[jvm]<br>constructor(screenHeight: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a> = 1280, screenWidth: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a> = 768, xdpi: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a> = 320, ydpi: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a> = 320, orientation: ScreenOrientation = ScreenOrientation.PORTRAIT, uiMode: UiMode = UiMode.NORMAL, nightMode: NightMode = NightMode.NOTNIGHT, density: Density = Density.XHIGH, fontScale: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-float/index.html">Float</a> = 1.0f, layoutDirection: LayoutDirection = LayoutDirection.LTR, locale: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>? = null, ratio: ScreenRatio = ScreenRatio.NOTLONG, size: ScreenSize = ScreenSize.NORMAL, keyboard: Keyboard = Keyboard.NOKEY, touchScreen: TouchScreen = TouchScreen.FINGER, keyboardState: KeyboardState = KeyboardState.SOFT, softButtons: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a> = true, navigation: Navigation = Navigation.NONAV, screenRound: ScreenRound? = null, released: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a> = &quot;November 13, 2012&quot;)</td>
 </tr>
 </tbody>
 </table>
@@ -444,7 +444,7 @@ data class <a href="./">DeviceConfig</a>(val screenHeight: Int = 1280, val scree
 </tr>
 <tr>
 <td><a href="font-scale/">fontScale</a></td>
-<td>[jvm]<br>val <a href="font-scale/">fontScale</a>: Float = 1.0f</td>
+<td>[jvm]<br>val <a href="font-scale/">fontScale</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-float/index.html">Float</a> = 1.0f</td>
 </tr>
 <tr>
 <td><a href="hardware-config/">hardwareConfig</a></td>
@@ -464,7 +464,7 @@ data class <a href="./">DeviceConfig</a>(val screenHeight: Int = 1280, val scree
 </tr>
 <tr>
 <td><a href="locale/">locale</a></td>
-<td>[jvm]<br>val <a href="locale/">locale</a>: String? = null</td>
+<td>[jvm]<br>val <a href="locale/">locale</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>? = null</td>
 </tr>
 <tr>
 <td><a href="navigation/">navigation</a></td>
@@ -484,11 +484,11 @@ data class <a href="./">DeviceConfig</a>(val screenHeight: Int = 1280, val scree
 </tr>
 <tr>
 <td><a href="released/">released</a></td>
-<td>[jvm]<br>val <a href="released/">released</a>: String</td>
+<td>[jvm]<br>val <a href="released/">released</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
 </tr>
 <tr>
 <td><a href="screen-height/">screenHeight</a></td>
-<td>[jvm]<br>val <a href="screen-height/">screenHeight</a>: Int = 1280</td>
+<td>[jvm]<br>val <a href="screen-height/">screenHeight</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a> = 1280</td>
 </tr>
 <tr>
 <td><a href="screen-round/">screenRound</a></td>
@@ -496,7 +496,7 @@ data class <a href="./">DeviceConfig</a>(val screenHeight: Int = 1280, val scree
 </tr>
 <tr>
 <td><a href="screen-width/">screenWidth</a></td>
-<td>[jvm]<br>val <a href="screen-width/">screenWidth</a>: Int = 768</td>
+<td>[jvm]<br>val <a href="screen-width/">screenWidth</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a> = 768</td>
 </tr>
 <tr>
 <td><a href="size/">size</a></td>
@@ -504,7 +504,7 @@ data class <a href="./">DeviceConfig</a>(val screenHeight: Int = 1280, val scree
 </tr>
 <tr>
 <td><a href="soft-buttons/">softButtons</a></td>
-<td>[jvm]<br>val <a href="soft-buttons/">softButtons</a>: Boolean = true</td>
+<td>[jvm]<br>val <a href="soft-buttons/">softButtons</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a> = true</td>
 </tr>
 <tr>
 <td><a href="touch-screen/">touchScreen</a></td>
@@ -516,15 +516,15 @@ data class <a href="./">DeviceConfig</a>(val screenHeight: Int = 1280, val scree
 </tr>
 <tr>
 <td><a href="ui-mode-mask/">uiModeMask</a></td>
-<td>[jvm]<br>val <a href="ui-mode-mask/">uiModeMask</a>: Int</td>
+<td>[jvm]<br>val <a href="ui-mode-mask/">uiModeMask</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></td>
 </tr>
 <tr>
 <td><a href="xdpi/">xdpi</a></td>
-<td>[jvm]<br>val <a href="xdpi/">xdpi</a>: Int = 320</td>
+<td>[jvm]<br>val <a href="xdpi/">xdpi</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a> = 320</td>
 </tr>
 <tr>
 <td><a href="ydpi/">ydpi</a></td>
-<td>[jvm]<br>val <a href="ydpi/">ydpi</a>: Int = 320</td>
+<td>[jvm]<br>val <a href="ydpi/">ydpi</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a> = 320</td>
 </tr>
 </tbody>
 </table>

@@ -401,7 +401,7 @@
 <p>//<a href="../../../">paparazzi</a>/<a href="../">app.cash.paparazzi.internal.resources</a>/<a href="./">RepositoryLoader</a></p>
 <h1 id="repositoryloader">RepositoryLoader<a class="headerlink" href="#repositoryloader" title="Permanent link">&para;</a></h1>
 <p>[jvm]\
-abstract class <a href="./">RepositoryLoader</a>&lt;<a href="./">T</a> : <a href="../-loadable-resource-repository/">LoadableResourceRepository</a>&gt;(val resourceDirectoryOrFile: <a href="https://docs.oracle.com/javase/8/docs/api/java/nio/file/Path.html">Path</a>, val resourceFilesAndFolders: Collection&lt;PathString&gt;?, val namespace: ResourceNamespace) : FileFilter</p>
+abstract class <a href="./">RepositoryLoader</a>&lt;<a href="./">T</a> : <a href="../-loadable-resource-repository/">LoadableResourceRepository</a>&gt;(val resourceDirectoryOrFile: <a href="https://docs.oracle.com/javase/8/docs/api/java/nio/file/Path.html">Path</a>, val resourceFilesAndFolders: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-collection/index.html">Collection</a>&lt;PathString&gt;?, val namespace: ResourceNamespace) : FileFilter</p>
 <p>Ported from: <a href="https://cs.android.com/android-studio/platform/tools/base/+/876aaf229c1e3b8144736d3338c628ba43ccac45:resource-repository/main/java/com/android/resources/base/RepositoryLoader.java">RepositoryLoader.java</a></p>
 <h2 id="constructors">Constructors<a class="headerlink" href="#constructors" title="Permanent link">&para;</a></h2>
 <table>
@@ -414,7 +414,7 @@ abstract class <a href="./">RepositoryLoader</a>&lt;<a href="./">T</a> : <a href
 <tbody>
 <tr>
 <td><a href="-repository-loader/">RepositoryLoader</a></td>
-<td>[jvm]<br>constructor(resourceDirectoryOrFile: <a href="https://docs.oracle.com/javase/8/docs/api/java/nio/file/Path.html">Path</a>, resourceFilesAndFolders: Collection&lt;PathString&gt;?, namespace: ResourceNamespace)</td>
+<td>[jvm]<br>constructor(resourceDirectoryOrFile: <a href="https://docs.oracle.com/javase/8/docs/api/java/nio/file/Path.html">Path</a>, resourceFilesAndFolders: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-collection/index.html">Collection</a>&lt;PathString&gt;?, namespace: ResourceNamespace)</td>
 </tr>
 </tbody>
 </table>
@@ -452,19 +452,19 @@ abstract class <a href="./">RepositoryLoader</a>&lt;<a href="./">T</a> : <a href
 </tr>
 <tr>
 <td><a href="resource-files-and-folders/">resourceFilesAndFolders</a></td>
-<td>[jvm]<br>val <a href="resource-files-and-folders/">resourceFilesAndFolders</a>: Collection&lt;PathString&gt;?</td>
+<td>[jvm]<br>val <a href="resource-files-and-folders/">resourceFilesAndFolders</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-collection/index.html">Collection</a>&lt;PathString&gt;?</td>
 </tr>
 <tr>
 <td><a href="resource-path-prefix/">resourcePathPrefix</a></td>
-<td>[jvm]<br>val <a href="resource-path-prefix/">resourcePathPrefix</a>: String</td>
+<td>[jvm]<br>val <a href="resource-path-prefix/">resourcePathPrefix</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
 </tr>
 <tr>
 <td><a href="resource-url-prefix/">resourceUrlPrefix</a></td>
-<td>[jvm]<br>val <a href="resource-url-prefix/">resourceUrlPrefix</a>: String</td>
+<td>[jvm]<br>val <a href="resource-url-prefix/">resourceUrlPrefix</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
 </tr>
 <tr>
 <td><a href="source-file-protocol/">sourceFileProtocol</a></td>
-<td>[jvm]<br>val <a href="source-file-protocol/">sourceFileProtocol</a>: String</td>
+<td>[jvm]<br>val <a href="source-file-protocol/">sourceFileProtocol</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
 </tr>
 </tbody>
 </table>
@@ -479,7 +479,7 @@ abstract class <a href="./">RepositoryLoader</a>&lt;<a href="./">T</a> : <a href
 <tbody>
 <tr>
 <td><a href="is-ignored/">isIgnored</a></td>
-<td>[jvm]<br>open override fun <a href="is-ignored/">isIgnored</a>(fileOrDirectory: <a href="https://docs.oracle.com/javase/8/docs/api/java/nio/file/Path.html">Path</a>, attrs: <a href="https://docs.oracle.com/javase/8/docs/api/java/nio/file/attribute/BasicFileAttributes.html">BasicFileAttributes</a>): Boolean<br>Returns true to skip the file or directory, or false to accept it.</td>
+<td>[jvm]<br>open override fun <a href="is-ignored/">isIgnored</a>(fileOrDirectory: <a href="https://docs.oracle.com/javase/8/docs/api/java/nio/file/Path.html">Path</a>, attrs: <a href="https://docs.oracle.com/javase/8/docs/api/java/nio/file/attribute/BasicFileAttributes.html">BasicFileAttributes</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><br>Returns true to skip the file or directory, or false to accept it.</td>
 </tr>
 <tr>
 <td><a href="load-repository-contents/">loadRepositoryContents</a></td>

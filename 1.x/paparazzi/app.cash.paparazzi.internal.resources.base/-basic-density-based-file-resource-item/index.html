@@ -392,7 +392,7 @@
 <p>//<a href="../../../">paparazzi</a>/<a href="../">app.cash.paparazzi.internal.resources.base</a>/<a href="./">BasicDensityBasedFileResourceItem</a></p>
 <h1 id="basicdensitybasedfileresourceitem">BasicDensityBasedFileResourceItem<a class="headerlink" href="#basicdensitybasedfileresourceitem" title="Permanent link">&para;</a></h1>
 <p>[jvm]\
-class <a href="./">BasicDensityBasedFileResourceItem</a>(type: ResourceType, name: String, configuration: <a href="../../app.cash.paparazzi.internal.resources/-repository-configuration/">RepositoryConfiguration</a>, visibility: ResourceVisibility, relativePath: String, density: Density) : <a href="../-basic-file-resource-item/">BasicFileResourceItem</a>, DensityBasedResourceValue</p>
+class <a href="./">BasicDensityBasedFileResourceItem</a>(type: ResourceType, name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, configuration: <a href="../../app.cash.paparazzi.internal.resources/-repository-configuration/">RepositoryConfiguration</a>, visibility: ResourceVisibility, relativePath: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, density: Density) : <a href="../-basic-file-resource-item/">BasicFileResourceItem</a>, DensityBasedResourceValue</p>
 <p>Ported from: <a href="https://cs.android.com/android-studio/platform/tools/base/+/47d204001bf0cb6273d8b135c7eece3a982cf0e0:resource-repository/main/java/com/android/resources/base/BasicDensityBasedFileResourceItem.java">BasicDensityBasedFileResourceItem.java</a></p>
 <p>Resource item representing a density-specific file resource inside an AAR, e.g. a drawable or a layout.</p>
 <h2 id="constructors">Constructors<a class="headerlink" href="#constructors" title="Permanent link">&para;</a></h2>
@@ -406,7 +406,7 @@ class <a href="./">BasicDensityBasedFileResourceItem</a>(type: ResourceType, nam
 <tbody>
 <tr>
 <td><a href="-basic-density-based-file-resource-item/">BasicDensityBasedFileResourceItem</a></td>
-<td>[jvm]<br>constructor(type: ResourceType, name: String, configuration: <a href="../../app.cash.paparazzi.internal.resources/-repository-configuration/">RepositoryConfiguration</a>, visibility: ResourceVisibility, relativePath: String, density: Density)</td>
+<td>[jvm]<br>constructor(type: ResourceType, name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, configuration: <a href="../../app.cash.paparazzi.internal.resources/-repository-configuration/">RepositoryConfiguration</a>, visibility: ResourceVisibility, relativePath: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, density: Density)</td>
 </tr>
 </tbody>
 </table>
@@ -440,7 +440,7 @@ class <a href="./">BasicDensityBasedFileResourceItem</a>(type: ResourceType, nam
 </tr>
 <tr>
 <td><a href="equals/">equals</a></td>
-<td>[jvm]<br>open operator override fun <a href="equals/">equals</a>(other: Any?): Boolean</td>
+<td>[jvm]<br>open operator override fun <a href="equals/">equals</a>(other: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a>?): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
 </tr>
 <tr>
 <td><a href="../-basic-resource-item/get-configuration/">getConfiguration</a></td>
@@ -448,15 +448,15 @@ class <a href="./">BasicDensityBasedFileResourceItem</a>(type: ResourceType, nam
 </tr>
 <tr>
 <td><a href="../-basic-resource-item/get-key/">getKey</a></td>
-<td>[jvm]<br>open override fun <a href="../-basic-resource-item/get-key/">getKey</a>(): String</td>
+<td>[jvm]<br>open override fun <a href="../-basic-resource-item/get-key/">getKey</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
 </tr>
 <tr>
 <td><a href="../-basic-resource-item/get-library-name/">getLibraryName</a></td>
-<td>[jvm]<br>open override fun <a href="../-basic-resource-item/get-library-name/">getLibraryName</a>(): String?</td>
+<td>[jvm]<br>open override fun <a href="../-basic-resource-item/get-library-name/">getLibraryName</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?</td>
 </tr>
 <tr>
 <td><a href="../-basic-resource-item/get-name/">getName</a></td>
-<td>[jvm]<br>open override fun <a href="../-basic-resource-item/get-name/">getName</a>(): String</td>
+<td>[jvm]<br>open override fun <a href="../-basic-resource-item/get-name/">getName</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
 </tr>
 <tr>
 <td><a href="../-basic-resource-item/get-namespace/">getNamespace</a></td>
@@ -472,11 +472,11 @@ class <a href="./">BasicDensityBasedFileResourceItem</a>(type: ResourceType, nam
 </tr>
 <tr>
 <td><a href="../-basic-value-resource-item-base/#1114844795%2FFunctions%2F-2095620550">getQualifiedNameWithType</a></td>
-<td>[jvm]<br>open fun <a href="../-basic-value-resource-item-base/#1114844795%2FFunctions%2F-2095620550">getQualifiedNameWithType</a>(): String</td>
+<td>[jvm]<br>open fun <a href="../-basic-value-resource-item-base/#1114844795%2FFunctions%2F-2095620550">getQualifiedNameWithType</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
 </tr>
 <tr>
 <td><a href="../-basic-value-resource-item-base/#-821168389%2FFunctions%2F-2095620550">getRawXmlValue</a></td>
-<td>[jvm]<br>open fun <a href="../-basic-value-resource-item-base/#-821168389%2FFunctions%2F-2095620550">getRawXmlValue</a>(): String</td>
+<td>[jvm]<br>open fun <a href="../-basic-value-resource-item-base/#-821168389%2FFunctions%2F-2095620550">getRawXmlValue</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
 </tr>
 <tr>
 <td><a href="../-basic-file-resource-item/get-reference/">getReference</a></td>
@@ -516,7 +516,7 @@ class <a href="./">BasicDensityBasedFileResourceItem</a>(type: ResourceType, nam
 </tr>
 <tr>
 <td><a href="../-basic-file-resource-item/get-value/">getValue</a></td>
-<td>[jvm]<br>open override fun <a href="../-basic-file-resource-item/get-value/">getValue</a>(): String</td>
+<td>[jvm]<br>open override fun <a href="../-basic-file-resource-item/get-value/">getValue</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
 </tr>
 <tr>
 <td><a href="../-basic-resource-item/get-visibility/">getVisibility</a></td>
@@ -524,27 +524,27 @@ class <a href="./">BasicDensityBasedFileResourceItem</a>(type: ResourceType, nam
 </tr>
 <tr>
 <td><a href="hash-code/">hashCode</a></td>
-<td>[jvm]<br>open override fun <a href="hash-code/">hashCode</a>(): Int</td>
+<td>[jvm]<br>open override fun <a href="hash-code/">hashCode</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></td>
 </tr>
 <tr>
 <td><a href="../-basic-file-resource-item/is-file-based/">isFileBased</a></td>
-<td>[jvm]<br>open override fun <a href="../-basic-file-resource-item/is-file-based/">isFileBased</a>(): Boolean</td>
+<td>[jvm]<br>open override fun <a href="../-basic-file-resource-item/is-file-based/">isFileBased</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
 </tr>
 <tr>
 <td><a href="../-basic-resource-item/is-framework/">isFramework</a></td>
-<td>[jvm]<br>open override fun <a href="../-basic-resource-item/is-framework/">isFramework</a>(): Boolean</td>
+<td>[jvm]<br>open override fun <a href="../-basic-resource-item/is-framework/">isFramework</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
 </tr>
 <tr>
 <td><a href="../-basic-resource-item/is-user-defined/">isUserDefined</a></td>
-<td>[jvm]<br>open override fun <a href="../-basic-resource-item/is-user-defined/">isUserDefined</a>(): Boolean</td>
+<td>[jvm]<br>open override fun <a href="../-basic-resource-item/is-user-defined/">isUserDefined</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
 </tr>
 <tr>
 <td><a href="../-basic-resource-item/set-value/">setValue</a></td>
-<td>[jvm]<br>open override fun <a href="../-basic-resource-item/set-value/">setValue</a>(value: String?)</td>
+<td>[jvm]<br>open override fun <a href="../-basic-resource-item/set-value/">setValue</a>(value: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?)</td>
 </tr>
 <tr>
 <td><a href="to-string/">toString</a></td>
-<td>[jvm]<br>open override fun <a href="to-string/">toString</a>(): String</td>
+<td>[jvm]<br>open override fun <a href="to-string/">toString</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
 </tr>
 </tbody>
 </table>

@@ -392,9 +392,9 @@
 <p>//<a href="../../../">paparazzi</a>/<a href="../">app.cash.paparazzi.internal.resources</a>/<a href="./">ResourceFile</a></p>
 <h1 id="resourcefile">ResourceFile<a class="headerlink" href="#resourcefile" title="Permanent link">&para;</a></h1>
 <p>[jvm]\
-class <a href="./">ResourceFile</a>(val file: <a href="https://docs.oracle.com/javase/8/docs/api/java/io/File.html">File</a>?, val configuration: <a href="../-repository-configuration/">RepositoryConfiguration</a>) : <a href="../-resource-source-file/">ResourceSourceFile</a>, Iterable&lt;<a href="../../app.cash.paparazzi.internal.resources.base/-basic-resource-item/">BasicResourceItem</a>&gt; </p>
+class <a href="./">ResourceFile</a>(val file: <a href="https://docs.oracle.com/javase/8/docs/api/java/io/File.html">File</a>?, val configuration: <a href="../-repository-configuration/">RepositoryConfiguration</a>) : <a href="../-resource-source-file/">ResourceSourceFile</a>, <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-iterable/index.html">Iterable</a>&lt;<a href="../../app.cash.paparazzi.internal.resources.base/-basic-resource-item/">BasicResourceItem</a>&gt; </p>
 <p>Ported from: <a href="https://cs.android.com/android-studio/platform/tools/adt/idea/+/1c8e6b0a85b2dc96826c185854504f7d476868c8:android/src/com/android/tools/idea/res/ResourceItemSources.kt">ResourceItemSources.kt</a></p>
-<p>Represents a resource file from which com.android.ide.common.resources.ResourceItems are created by <a href="../-resource-folder-repository/">ResourceFolderRepository</a>. An Iterable of <a href="../../app.cash.paparazzi.internal.resources.base/-basic-resource-item/">BasicResourceItem</a>s.</p>
+<p>Represents a resource file from which com.android.ide.common.resources.ResourceItems are created by <a href="../-resource-folder-repository/">ResourceFolderRepository</a>. An <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-iterable/index.html">Iterable</a> of <a href="../../app.cash.paparazzi.internal.resources.base/-basic-resource-item/">BasicResourceItem</a>s.</p>
 <h2 id="constructors">Constructors<a class="headerlink" href="#constructors" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -433,7 +433,7 @@ class <a href="./">ResourceFile</a>(val file: <a href="https://docs.oracle.com/j
 </tr>
 <tr>
 <td><a href="relative-path/">relativePath</a></td>
-<td>[jvm]<br>open override val <a href="relative-path/">relativePath</a>: String?<br>The path of the file relative to the resource directory, or null if the source file of the resource is not available.</td>
+<td>[jvm]<br>open override val <a href="relative-path/">relativePath</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?<br>The path of the file relative to the resource directory, or null if the source file of the resource is not available.</td>
 </tr>
 <tr>
 <td><a href="repository/">repository</a></td>
@@ -460,11 +460,11 @@ class <a href="./">ResourceFile</a>(val file: <a href="https://docs.oracle.com/j
 </tr>
 <tr>
 <td><a href="is-valid/">isValid</a></td>
-<td>[jvm]<br>fun <a href="is-valid/">isValid</a>(): Boolean</td>
+<td>[jvm]<br>fun <a href="is-valid/">isValid</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
 </tr>
 <tr>
 <td><a href="iterator/">iterator</a></td>
-<td>[jvm]<br>open operator override fun <a href="iterator/">iterator</a>(): Iterator&lt;<a href="../../app.cash.paparazzi.internal.resources.base/-basic-resource-item/">BasicResourceItem</a>&gt;</td>
+<td>[jvm]<br>open operator override fun <a href="iterator/">iterator</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-iterator/index.html">Iterator</a>&lt;<a href="../../app.cash.paparazzi.internal.resources.base/-basic-resource-item/">BasicResourceItem</a>&gt;</td>
 </tr>
 <tr>
 <td><a href="../../app.cash.paparazzi.internal.resources.base/-basic-array-resource-item/#-1387152138%2FFunctions%2F-2095620550">spliterator</a></td>

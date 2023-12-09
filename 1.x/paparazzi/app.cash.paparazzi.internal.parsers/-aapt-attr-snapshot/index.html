@@ -392,7 +392,7 @@
 <p>//<a href="../../../">paparazzi</a>/<a href="../">app.cash.paparazzi.internal.parsers</a>/<a href="./">AaptAttrSnapshot</a></p>
 <h1 id="aaptattrsnapshot">AaptAttrSnapshot<a class="headerlink" href="#aaptattrsnapshot" title="Permanent link">&para;</a></h1>
 <p>[jvm]\
-class <a href="./">AaptAttrSnapshot</a>(val namespace: String, val prefix: String, val name: String, val id: String, val bundledTag: <a href="../-tag-snapshot/">TagSnapshot</a>) : <a href="../-attribute-snapshot/">AttributeSnapshot</a></p>
+class <a href="./">AaptAttrSnapshot</a>(val namespace: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, val prefix: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, val name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, val id: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, val bundledTag: <a href="../-tag-snapshot/">TagSnapshot</a>) : <a href="../-attribute-snapshot/">AttributeSnapshot</a></p>
 <p>Derived from <a href="https://cs.android.com/android-studio/platform/tools/adt/idea/+/mirror-goog-studio-master-dev:android/src/com/android/tools/idea/rendering/parsers/AaptAttrAttributeSnapshot.java">https://cs.android.com/android-studio/platform/tools/adt/idea/+/mirror-goog-studio-master-dev:android/src/com/android/tools/idea/rendering/parsers/AaptAttrAttributeSnapshot.java</a></p>
 <p>Aapt attributes are attributes that instead of containing a reference, contain the inlined value of the reference. This snapshot will generate a dynamic reference that will be used by the resource resolution to be able to retrieve the inlined value.</p>
 <h2 id="constructors">Constructors<a class="headerlink" href="#constructors" title="Permanent link">&para;</a></h2>
@@ -406,7 +406,7 @@ class <a href="./">AaptAttrSnapshot</a>(val namespace: String, val prefix: Strin
 <tbody>
 <tr>
 <td><a href="-aapt-attr-snapshot/">AaptAttrSnapshot</a></td>
-<td>[jvm]<br>constructor(namespace: String, prefix: String, name: String, id: String, bundledTag: <a href="../-tag-snapshot/">TagSnapshot</a>)</td>
+<td>[jvm]<br>constructor(namespace: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, prefix: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, id: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, bundledTag: <a href="../-tag-snapshot/">TagSnapshot</a>)</td>
 </tr>
 </tbody>
 </table>
@@ -425,23 +425,23 @@ class <a href="./">AaptAttrSnapshot</a>(val namespace: String, val prefix: Strin
 </tr>
 <tr>
 <td><a href="id/">id</a></td>
-<td>[jvm]<br>val <a href="id/">id</a>: String</td>
+<td>[jvm]<br>val <a href="id/">id</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
 </tr>
 <tr>
 <td><a href="name/">name</a></td>
-<td>[jvm]<br>open override val <a href="name/">name</a>: String</td>
+<td>[jvm]<br>open override val <a href="name/">name</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
 </tr>
 <tr>
 <td><a href="namespace/">namespace</a></td>
-<td>[jvm]<br>open override val <a href="namespace/">namespace</a>: String</td>
+<td>[jvm]<br>open override val <a href="namespace/">namespace</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
 </tr>
 <tr>
 <td><a href="prefix/">prefix</a></td>
-<td>[jvm]<br>open override val <a href="prefix/">prefix</a>: String</td>
+<td>[jvm]<br>open override val <a href="prefix/">prefix</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
 </tr>
 <tr>
 <td><a href="../-attribute-snapshot/value/">value</a></td>
-<td>[jvm]<br>open val <a href="../-attribute-snapshot/value/">value</a>: String</td>
+<td>[jvm]<br>open val <a href="../-attribute-snapshot/value/">value</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
 </tr>
 </tbody>
 </table>
@@ -456,15 +456,15 @@ class <a href="./">AaptAttrSnapshot</a>(val namespace: String, val prefix: Strin
 <tbody>
 <tr>
 <td><a href="../-attribute-snapshot/equals/">equals</a></td>
-<td>[jvm]<br>open operator override fun <a href="../-attribute-snapshot/equals/">equals</a>(other: Any?): Boolean</td>
+<td>[jvm]<br>open operator override fun <a href="../-attribute-snapshot/equals/">equals</a>(other: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a>?): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
 </tr>
 <tr>
 <td><a href="../-attribute-snapshot/hash-code/">hashCode</a></td>
-<td>[jvm]<br>open override fun <a href="../-attribute-snapshot/hash-code/">hashCode</a>(): Int</td>
+<td>[jvm]<br>open override fun <a href="../-attribute-snapshot/hash-code/">hashCode</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></td>
 </tr>
 <tr>
 <td><a href="../-attribute-snapshot/to-string/">toString</a></td>
-<td>[jvm]<br>open override fun <a href="../-attribute-snapshot/to-string/">toString</a>(): String</td>
+<td>[jvm]<br>open override fun <a href="../-attribute-snapshot/to-string/">toString</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
 </tr>
 </tbody>
 </table>

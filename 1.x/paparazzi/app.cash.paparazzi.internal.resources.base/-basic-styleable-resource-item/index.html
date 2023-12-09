@@ -401,7 +401,7 @@
 <p>//<a href="../../../">paparazzi</a>/<a href="../">app.cash.paparazzi.internal.resources.base</a>/<a href="./">BasicStyleableResourceItem</a></p>
 <h1 id="basicstyleableresourceitem">BasicStyleableResourceItem<a class="headerlink" href="#basicstyleableresourceitem" title="Permanent link">&para;</a></h1>
 <p>[jvm]\
-class <a href="./">BasicStyleableResourceItem</a>(name: String, val sourceFile: <a href="../../app.cash.paparazzi.internal.resources/-resource-source-file/">ResourceSourceFile</a>, visibility: ResourceVisibility, attrs: List&lt;AttrResourceValue&gt;) : <a href="../-basic-value-resource-item-base/">BasicValueResourceItemBase</a>, StyleableResourceValue</p>
+class <a href="./">BasicStyleableResourceItem</a>(name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, val sourceFile: <a href="../../app.cash.paparazzi.internal.resources/-resource-source-file/">ResourceSourceFile</a>, visibility: ResourceVisibility, attrs: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;AttrResourceValue&gt;) : <a href="../-basic-value-resource-item-base/">BasicValueResourceItemBase</a>, StyleableResourceValue</p>
 <p>Ported from: <a href="https://cs.android.com/android-studio/platform/tools/base/+/18047faf69512736b8ddb1f6a6785f58d47c893f:resource-repository/main/java/com/android/resources/base/BasicStyleableResourceItem.java">BasicStyleableResourceItem.java</a></p>
 <p>Resource item representing a styleable resource.</p>
 <h2 id="constructors">Constructors<a class="headerlink" href="#constructors" title="Permanent link">&para;</a></h2>
@@ -415,7 +415,7 @@ class <a href="./">BasicStyleableResourceItem</a>(name: String, val sourceFile: 
 <tbody>
 <tr>
 <td><a href="-basic-styleable-resource-item/">BasicStyleableResourceItem</a></td>
-<td>[jvm]<br>constructor(name: String, sourceFile: <a href="../../app.cash.paparazzi.internal.resources/-resource-source-file/">ResourceSourceFile</a>, visibility: ResourceVisibility, attrs: List&lt;AttrResourceValue&gt;)</td>
+<td>[jvm]<br>constructor(name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, sourceFile: <a href="../../app.cash.paparazzi.internal.resources/-resource-source-file/">ResourceSourceFile</a>, visibility: ResourceVisibility, attrs: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;AttrResourceValue&gt;)</td>
 </tr>
 </tbody>
 </table>
@@ -468,11 +468,11 @@ class <a href="./">BasicStyleableResourceItem</a>(name: String, val sourceFile: 
 </tr>
 <tr>
 <td><a href="equals/">equals</a></td>
-<td>[jvm]<br>open operator override fun <a href="equals/">equals</a>(other: Any?): Boolean</td>
+<td>[jvm]<br>open operator override fun <a href="equals/">equals</a>(other: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a>?): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
 </tr>
 <tr>
 <td><a href="get-all-attributes/">getAllAttributes</a></td>
-<td>[jvm]<br>open override fun <a href="get-all-attributes/">getAllAttributes</a>(): List&lt;AttrResourceValue&gt;</td>
+<td>[jvm]<br>open override fun <a href="get-all-attributes/">getAllAttributes</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;AttrResourceValue&gt;</td>
 </tr>
 <tr>
 <td><a href="../-basic-resource-item/get-configuration/">getConfiguration</a></td>
@@ -480,15 +480,15 @@ class <a href="./">BasicStyleableResourceItem</a>(name: String, val sourceFile: 
 </tr>
 <tr>
 <td><a href="../-basic-resource-item/get-key/">getKey</a></td>
-<td>[jvm]<br>open override fun <a href="../-basic-resource-item/get-key/">getKey</a>(): String</td>
+<td>[jvm]<br>open override fun <a href="../-basic-resource-item/get-key/">getKey</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
 </tr>
 <tr>
 <td><a href="../-basic-resource-item/get-library-name/">getLibraryName</a></td>
-<td>[jvm]<br>open override fun <a href="../-basic-resource-item/get-library-name/">getLibraryName</a>(): String?</td>
+<td>[jvm]<br>open override fun <a href="../-basic-resource-item/get-library-name/">getLibraryName</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?</td>
 </tr>
 <tr>
 <td><a href="../-basic-resource-item/get-name/">getName</a></td>
-<td>[jvm]<br>open override fun <a href="../-basic-resource-item/get-name/">getName</a>(): String</td>
+<td>[jvm]<br>open override fun <a href="../-basic-resource-item/get-name/">getName</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
 </tr>
 <tr>
 <td><a href="../-basic-resource-item/get-namespace/">getNamespace</a></td>
@@ -504,11 +504,11 @@ class <a href="./">BasicStyleableResourceItem</a>(name: String, val sourceFile: 
 </tr>
 <tr>
 <td><a href="../-basic-value-resource-item-base/#1114844795%2FFunctions%2F-2095620550">getQualifiedNameWithType</a></td>
-<td>[jvm]<br>open fun <a href="../-basic-value-resource-item-base/#1114844795%2FFunctions%2F-2095620550">getQualifiedNameWithType</a>(): String</td>
+<td>[jvm]<br>open fun <a href="../-basic-value-resource-item-base/#1114844795%2FFunctions%2F-2095620550">getQualifiedNameWithType</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
 </tr>
 <tr>
 <td><a href="../-basic-value-resource-item-base/#-821168389%2FFunctions%2F-2095620550">getRawXmlValue</a></td>
-<td>[jvm]<br>open fun <a href="../-basic-value-resource-item-base/#-821168389%2FFunctions%2F-2095620550">getRawXmlValue</a>(): String</td>
+<td>[jvm]<br>open fun <a href="../-basic-value-resource-item-base/#-821168389%2FFunctions%2F-2095620550">getRawXmlValue</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
 </tr>
 <tr>
 <td><a href="../-basic-value-resource-item-base/#-1154767950%2FFunctions%2F-2095620550">getReference</a></td>
@@ -544,7 +544,7 @@ class <a href="./">BasicStyleableResourceItem</a>(name: String, val sourceFile: 
 </tr>
 <tr>
 <td><a href="../-basic-value-resource-item-base/get-value/">getValue</a></td>
-<td>[jvm]<br>open override fun <a href="../-basic-value-resource-item-base/get-value/">getValue</a>(): String?</td>
+<td>[jvm]<br>open override fun <a href="../-basic-value-resource-item-base/get-value/">getValue</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?</td>
 </tr>
 <tr>
 <td><a href="../-basic-resource-item/get-visibility/">getVisibility</a></td>
@@ -552,19 +552,19 @@ class <a href="./">BasicStyleableResourceItem</a>(name: String, val sourceFile: 
 </tr>
 <tr>
 <td><a href="../-basic-value-resource-item-base/hash-code/">hashCode</a></td>
-<td>[jvm]<br>open override fun <a href="../-basic-value-resource-item-base/hash-code/">hashCode</a>(): Int</td>
+<td>[jvm]<br>open override fun <a href="../-basic-value-resource-item-base/hash-code/">hashCode</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></td>
 </tr>
 <tr>
 <td><a href="../-basic-value-resource-item-base/is-file-based/">isFileBased</a></td>
-<td>[jvm]<br>open override fun <a href="../-basic-value-resource-item-base/is-file-based/">isFileBased</a>(): Boolean</td>
+<td>[jvm]<br>open override fun <a href="../-basic-value-resource-item-base/is-file-based/">isFileBased</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
 </tr>
 <tr>
 <td><a href="../-basic-resource-item/is-framework/">isFramework</a></td>
-<td>[jvm]<br>open override fun <a href="../-basic-resource-item/is-framework/">isFramework</a>(): Boolean</td>
+<td>[jvm]<br>open override fun <a href="../-basic-resource-item/is-framework/">isFramework</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
 </tr>
 <tr>
 <td><a href="../-basic-resource-item/is-user-defined/">isUserDefined</a></td>
-<td>[jvm]<br>open override fun <a href="../-basic-resource-item/is-user-defined/">isUserDefined</a>(): Boolean</td>
+<td>[jvm]<br>open override fun <a href="../-basic-resource-item/is-user-defined/">isUserDefined</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
 </tr>
 <tr>
 <td><a href="../-basic-value-resource-item-base/set-namespace-resolver/">setNamespaceResolver</a></td>
@@ -572,11 +572,11 @@ class <a href="./">BasicStyleableResourceItem</a>(name: String, val sourceFile: 
 </tr>
 <tr>
 <td><a href="../-basic-resource-item/set-value/">setValue</a></td>
-<td>[jvm]<br>open override fun <a href="../-basic-resource-item/set-value/">setValue</a>(value: String?)</td>
+<td>[jvm]<br>open override fun <a href="../-basic-resource-item/set-value/">setValue</a>(value: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?)</td>
 </tr>
 <tr>
 <td><a href="../-basic-resource-item/to-string/">toString</a></td>
-<td>[jvm]<br>open override fun <a href="../-basic-resource-item/to-string/">toString</a>(): String</td>
+<td>[jvm]<br>open override fun <a href="../-basic-resource-item/to-string/">toString</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
 </tr>
 </tbody>
 </table>
