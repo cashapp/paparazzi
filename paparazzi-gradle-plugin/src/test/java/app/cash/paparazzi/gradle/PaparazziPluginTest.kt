@@ -1387,6 +1387,18 @@ class PaparazziPluginTest {
     )
   }
 
+  @Test
+  fun jacoco() {
+    val fixtureRoot = File("src/test/projects/jacoco")
+
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val jacocoExecutionData = File(fixtureRoot, "build/jacoco/testDebugUnitTest.exec")
+    assertThat(jacocoExecutionData.exists()).isTrue()
+  }
+
   private fun GradleRunner.runFixture(
     projectRoot: File,
     action: GradleRunner.() -> BuildResult
