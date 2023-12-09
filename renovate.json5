@@ -11,7 +11,7 @@
       "automerge": true,
     },
     {
-      description: "Compose compiler is tightly coupled to Kotlin version",
+      "description": "Compose compiler is tightly coupled to Kotlin version",
       "groupName": "Kotlin and Compose",
       "matchPackagePrefixes": [
         "androidx.compose.compiler",
@@ -21,7 +21,7 @@
       "automerge": false,
     },
     {
-      description: "Android Gradle Plugin is tightly coupled to its android/platform/tools/base dependencies",
+      "description": "Android Gradle Plugin is tightly coupled to its android/platform/tools/base dependencies",
       "groupName": "Android Tools",
       "matchPackagePrefixes": [
         "com.android.tools:",
