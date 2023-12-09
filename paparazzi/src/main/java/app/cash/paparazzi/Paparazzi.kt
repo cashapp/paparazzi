@@ -551,9 +551,8 @@ class Paparazzi @JvmOverloads constructor(
    */
   private fun registerFontLookupInterceptionIfResourceCompatDetected() {
     try {
-      val resourcesCompatClass = Class.forName("androidx.core.content.res.ResourcesCompat")
       InterceptorRegistrar.addMethodInterceptor(
-        resourcesCompatClass,
+        "androidx.core.content.res.ResourcesCompat",
         "getFont",
         ResourcesInterceptor::class.java
       )
@@ -563,36 +562,32 @@ class Paparazzi @JvmOverloads constructor(
   }
 
   private fun registerServiceManagerInterception() {
-    val serviceManager = Class.forName("android.os.ServiceManager")
     InterceptorRegistrar.addMethodInterceptor(
-      serviceManager,
+      "android.os.ServiceManager",
       "getServiceOrThrow",
       ServiceManagerInterceptor::class.java
     )
   }
 
   private fun registerIInputMethodManagerInterception() {
-    val iimm = Class.forName("com.android.internal.view.IInputMethodManager\$Stub")
     InterceptorRegistrar.addMethodInterceptor(
-      iimm,
+      "com.android.internal.view.IInputMethodManager\$Stub",
       "asInterface",
       IInputMethodManagerInterceptor::class.java
     )
   }
 
   private fun registerViewEditModeInterception() {
-    val viewClass = Class.forName("android.view.View")
     InterceptorRegistrar.addMethodInterceptor(
-      viewClass,
+      "android.view.View",
       "isInEditMode",
       EditModeInterceptor::class.java
     )
   }
 
   private fun registerMatrixMultiplyInterception() {
-    val matrixClass = Class.forName("android.opengl.Matrix")
     InterceptorRegistrar.addMethodInterceptors(
-      matrixClass,
+      "android.opengl.Matrix",
       setOf(
         "multiplyMM" to MatrixMatrixMultiplicationInterceptor::class.java,
         "multiplyMV" to MatrixVectorMultiplicationInterceptor::class.java
@@ -601,9 +596,8 @@ class Paparazzi @JvmOverloads constructor(
   }
 
   private fun registerChoreographerDelegateInterception() {
-    val choreographerDelegateClass = Class.forName("android.view.Choreographer_Delegate")
     InterceptorRegistrar.addMethodInterceptor(
-      choreographerDelegateClass,
+      "android.view.Choreographer_Delegate",
       "getFrameTimeNanos",
       ChoreographerDelegateInterceptor::class.java
     )

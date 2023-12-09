@@ -1,27 +1,36 @@
 package app.cash.paparazzi.agent
 
 import net.bytebuddy.ByteBuddy
+import net.bytebuddy.dynamic.ClassFileLocator
 import net.bytebuddy.dynamic.loading.ClassReloadingStrategy
 import net.bytebuddy.implementation.MethodDelegation
 import net.bytebuddy.matcher.ElementMatchers
+import net.bytebuddy.pool.TypePool
 
 object InterceptorRegistrar {
   private val byteBuddy = ByteBuddy()
+  private val systemClassFileLocator = ClassFileLocator.ForClassLoader.ofSystemLoader()
+  private val systemTypePool = TypePool.Default.ofSystemLoader()
+  private val systemClassLoader = ClassLoader.getSystemClassLoader()
+
   private val methodInterceptors = mutableListOf<() -> Unit>()
 
   fun addMethodInterceptor(
-    receiver: Class<*>,
+    receiverClass: String,
     methodName: String,
     interceptor: Class<*>
-  ) = addMethodInterceptors(receiver, setOf(methodName to interceptor))
+  ) = addMethodInterceptors(receiverClass, setOf(methodName to interceptor))
 
   fun addMethodInterceptors(
-    receiver: Class<*>,
+    receiverClass: String,
     methodNamesToInterceptors: Set<Pair<String, Class<*>>>
   ) {
+    val typeResolution = systemTypePool.describe(receiverClass)
+    if (!typeResolution.isResolved) return
+
     methodInterceptors += {
       var builder = byteBuddy
-        .redefine(receiver)
+        .redefine<Any>(typeResolution.resolve(), systemClassFileLocator)
 
       methodNamesToInterceptors.forEach {
         builder = builder
@@ -31,7 +40,7 @@ object InterceptorRegistrar {
 
       builder
         .make()
-        .load(receiver.classLoader, ClassReloadingStrategy.fromInstalledAgent())
+        .load(systemClassLoader, ClassReloadingStrategy.fromInstalledAgent())
     }
   }
 

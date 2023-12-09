@@ -10,7 +10,7 @@ class InterceptorRegistrarTest {
   @Before
   fun setup() {
     InterceptorRegistrar.addMethodInterceptors(
-      Utils::class.java,
+      "app.cash.paparazzi.agent.InterceptorRegistrarTest\$Utils",
       setOf(
         "log1" to Interceptor1::class.java,
         "log2" to Interceptor2::class.java
