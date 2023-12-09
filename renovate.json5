@@ -29,6 +29,14 @@
         // LayoutLib intentionally omitted to be updated independently.
       ],
       "automerge": false,
-    }
+    },
+    {
+      "description": "LayoutLib shouldn't auto-merge, because updating it is a complex process, see libs/README.md.",
+      "matchPackagePrefixes": [
+        "app.cash.paparazzi:layoutlib-native-",
+        "com.android.tools.layoutlib:layoutlib-api",
+      ],
+      "automerge": false,
+    },
   ],
 }
