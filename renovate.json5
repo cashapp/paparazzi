@@ -5,6 +5,12 @@
   ],
   "packageRules": [
     {
+      "description": "Auto-merge most dependency updates.",
+      "matchUpdateTypes": ["minor", "patch"],
+      "matchCurrentVersion": "!/^0/",
+      "automerge": true,
+    },
+    {
       description: "Compose compiler is tightly coupled to Kotlin version",
       "groupName": "Kotlin and Compose",
       "matchPackagePrefixes": [
@@ -12,6 +18,7 @@
         "org.jetbrains.kotlin:kotlin",
         "com.google.devtools.ksp"
       ],
+      "automerge": false,
     },
     {
       description: "Android Gradle Plugin is tightly coupled to its android/platform/tools/base dependencies",
@@ -21,6 +28,7 @@
         "com.android.tools.build:",
         // LayoutLib intentionally omitted to be updated independently
       ],
+      "automerge": false,
     }
   ],
 }
