@@ -30,7 +30,7 @@ compose-compiler = { module = "androidx.compose.compiler:compiler", version.ref 
 composeUi-material = { module = "androidx.compose.material:material", version = "1.5.4" }
 composeUi-uiTooling = { module = "androidx.compose.ui:ui-tooling" }
 
-grgit = { module = "org.ajoberstar.grgit:grgit-core", version = "5.2.0" }
+grgit = { module = "org.ajoberstar.grgit:grgit-core", version = "5.2.1" }
 guava = { module = "com.google.guava:guava", version = "32.0.1-jre" }
 
 jcodec-core = { module = "org.jcodec:jcodec", version.ref = "jcodec" }
