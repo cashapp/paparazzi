@@ -33,7 +33,7 @@
     {
       "description": "LayoutLib shouldn't auto-merge, because updating it is a complex process, see libs/README.md.",
       "matchPackagePrefixes": [
-        "app.cash.paparazzi:layoutlib-native-",
+        "app.cash.paparazzi:layoutlib-",
         "com.android.tools.layoutlib:layoutlib-api",
       ],
       "automerge": false,
