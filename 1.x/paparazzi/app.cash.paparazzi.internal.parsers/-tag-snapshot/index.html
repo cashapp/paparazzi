@@ -401,7 +401,7 @@
 <p>//<a href="../../../">paparazzi</a>/<a href="../">app.cash.paparazzi.internal.parsers</a>/<a href="./">TagSnapshot</a></p>
 <h1 id="tagsnapshot">TagSnapshot<a class="headerlink" href="#tagsnapshot" title="Permanent link">&para;</a></h1>
 <p>[jvm]\
-data class <a href="./">TagSnapshot</a>(val name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, val namespace: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, val prefix: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, val attributes: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="../-attribute-snapshot/">AttributeSnapshot</a>&gt;, val children: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="./">TagSnapshot</a>&gt;, val hasDeclaredAaptAttrs: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a> = false)</p>
+data class <a href="./">TagSnapshot</a>(val name: String, val namespace: String, val prefix: String?, val attributes: List&lt;<a href="../-attribute-snapshot/">AttributeSnapshot</a>&gt;, val children: List&lt;<a href="./">TagSnapshot</a>&gt;, val hasDeclaredAaptAttrs: Boolean = false)</p>
 <p>Derived from <a href="https://cs.android.com/android-studio/platform/tools/adt/idea/+/mirror-goog-studio-master-dev:android/src/com/android/tools/idea/rendering/parsers/TagSnapshot.java">https://cs.android.com/android-studio/platform/tools/adt/idea/+/mirror-goog-studio-master-dev:android/src/com/android/tools/idea/rendering/parsers/TagSnapshot.java</a></p>
 <p>A snapshot of the state of an xml tag.</p>
 <p>Used by the rendering architecture to be able to hold a consistent view of the layout files across a long rendering operation without holding read locks, as well as to for example let the property sheet evaluate and paint the values of properties as they were at the time of rendering, not as they are at the current instant.</p>
@@ -416,7 +416,7 @@ data class <a href="./">TagSnapshot</a>(val name: <a href="https://kotlinlang.or
 <tbody>
 <tr>
 <td><a href="-tag-snapshot/">TagSnapshot</a></td>
-<td>[jvm]<br>constructor(name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, namespace: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, prefix: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, attributes: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="../-attribute-snapshot/">AttributeSnapshot</a>&gt;, children: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="./">TagSnapshot</a>&gt;, hasDeclaredAaptAttrs: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a> = false)</td>
+<td>[jvm]<br>constructor(name: String, namespace: String, prefix: String?, attributes: List&lt;<a href="../-attribute-snapshot/">AttributeSnapshot</a>&gt;, children: List&lt;<a href="./">TagSnapshot</a>&gt;, hasDeclaredAaptAttrs: Boolean = false)</td>
 </tr>
 </tbody>
 </table>
@@ -446,23 +446,23 @@ data class <a href="./">TagSnapshot</a>(val name: <a href="https://kotlinlang.or
 <tbody>
 <tr>
 <td><a href="attributes/">attributes</a></td>
-<td>[jvm]<br>val <a href="attributes/">attributes</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="../-attribute-snapshot/">AttributeSnapshot</a>&gt;</td>
+<td>[jvm]<br>val <a href="attributes/">attributes</a>: List&lt;<a href="../-attribute-snapshot/">AttributeSnapshot</a>&gt;</td>
 </tr>
 <tr>
 <td><a href="children/">children</a></td>
-<td>[jvm]<br>val <a href="children/">children</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="./">TagSnapshot</a>&gt;</td>
+<td>[jvm]<br>val <a href="children/">children</a>: List&lt;<a href="./">TagSnapshot</a>&gt;</td>
 </tr>
 <tr>
 <td><a href="has-declared-aapt-attrs/">hasDeclaredAaptAttrs</a></td>
-<td>[jvm]<br>val <a href="has-declared-aapt-attrs/">hasDeclaredAaptAttrs</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a> = false</td>
+<td>[jvm]<br>val <a href="has-declared-aapt-attrs/">hasDeclaredAaptAttrs</a>: Boolean = false</td>
 </tr>
 <tr>
 <td><a href="name/">name</a></td>
-<td>[jvm]<br>val <a href="name/">name</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
+<td>[jvm]<br>val <a href="name/">name</a>: String</td>
 </tr>
 <tr>
 <td><a href="namespace/">namespace</a></td>
-<td>[jvm]<br>val <a href="namespace/">namespace</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
+<td>[jvm]<br>val <a href="namespace/">namespace</a>: String</td>
 </tr>
 <tr>
 <td><a href="next/">next</a></td>
@@ -470,7 +470,7 @@ data class <a href="./">TagSnapshot</a>(val name: <a href="https://kotlinlang.or
 </tr>
 <tr>
 <td><a href="prefix/">prefix</a></td>
-<td>[jvm]<br>val <a href="prefix/">prefix</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?</td>
+<td>[jvm]<br>val <a href="prefix/">prefix</a>: String?</td>
 </tr>
 </tbody>
 </table>
@@ -485,7 +485,7 @@ data class <a href="./">TagSnapshot</a>(val name: <a href="https://kotlinlang.or
 <tbody>
 <tr>
 <td><a href="print-formatted/">printFormatted</a></td>
-<td>[jvm]<br>fun <a href="print-formatted/">printFormatted</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
+<td>[jvm]<br>fun <a href="print-formatted/">printFormatted</a>(): String</td>
 </tr>
 </tbody>
 </table>

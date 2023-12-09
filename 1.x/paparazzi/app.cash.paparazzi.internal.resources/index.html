@@ -384,7 +384,7 @@
 <tbody>
 <tr>
 <td><a href="-aar-source-resource-repository/">AarSourceResourceRepository</a></td>
-<td>[jvm]<br>open class <a href="-aar-source-resource-repository/">AarSourceResourceRepository</a>(loader: <a href="-repository-loader/">RepositoryLoader</a>&lt;out <a href="-aar-source-resource-repository/">AarSourceResourceRepository</a>&gt;, val libraryName: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?) : <a href="-abstract-aar-resource-repository/">AbstractAarResourceRepository</a><br>A resource repository representing unpacked contents of a non-namespaced AAR.</td>
+<td>[jvm]<br>open class <a href="-aar-source-resource-repository/">AarSourceResourceRepository</a>(loader: <a href="-repository-loader/">RepositoryLoader</a>&lt;out <a href="-aar-source-resource-repository/">AarSourceResourceRepository</a>&gt;, val libraryName: String?) : <a href="-abstract-aar-resource-repository/">AbstractAarResourceRepository</a><br>A resource repository representing unpacked contents of a non-namespaced AAR.</td>
 </tr>
 <tr>
 <td><a href="-abstract-aar-resource-repository/">AbstractAarResourceRepository</a></td>
@@ -436,11 +436,11 @@
 </tr>
 <tr>
 <td><a href="-repository-loader/">RepositoryLoader</a></td>
-<td>[jvm]<br>abstract class <a href="-repository-loader/">RepositoryLoader</a>&lt;<a href="-repository-loader/">T</a> : <a href="-loadable-resource-repository/">LoadableResourceRepository</a>&gt;(val resourceDirectoryOrFile: <a href="https://docs.oracle.com/javase/8/docs/api/java/nio/file/Path.html">Path</a>, val resourceFilesAndFolders: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-collection/index.html">Collection</a>&lt;PathString&gt;?, val namespace: ResourceNamespace) : FileFilter<br>Ported from: <a href="https://cs.android.com/android-studio/platform/tools/base/+/876aaf229c1e3b8144736d3338c628ba43ccac45:resource-repository/main/java/com/android/resources/base/RepositoryLoader.java">RepositoryLoader.java</a></td>
+<td>[jvm]<br>abstract class <a href="-repository-loader/">RepositoryLoader</a>&lt;<a href="-repository-loader/">T</a> : <a href="-loadable-resource-repository/">LoadableResourceRepository</a>&gt;(val resourceDirectoryOrFile: <a href="https://docs.oracle.com/javase/8/docs/api/java/nio/file/Path.html">Path</a>, val resourceFilesAndFolders: Collection&lt;PathString&gt;?, val namespace: ResourceNamespace) : FileFilter<br>Ported from: <a href="https://cs.android.com/android-studio/platform/tools/base/+/876aaf229c1e3b8144736d3338c628ba43ccac45:resource-repository/main/java/com/android/resources/base/RepositoryLoader.java">RepositoryLoader.java</a></td>
 </tr>
 <tr>
 <td><a href="-resource-file/">ResourceFile</a></td>
-<td>[jvm]<br>class <a href="-resource-file/">ResourceFile</a>(val file: <a href="https://docs.oracle.com/javase/8/docs/api/java/io/File.html">File</a>?, val configuration: <a href="-repository-configuration/">RepositoryConfiguration</a>) : <a href="-resource-source-file/">ResourceSourceFile</a>, <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-iterable/index.html">Iterable</a>&lt;<a href="../app.cash.paparazzi.internal.resources.base/-basic-resource-item/">BasicResourceItem</a>&gt; <br>Ported from: <a href="https://cs.android.com/android-studio/platform/tools/adt/idea/+/1c8e6b0a85b2dc96826c185854504f7d476868c8:android/src/com/android/tools/idea/res/ResourceItemSources.kt">ResourceItemSources.kt</a></td>
+<td>[jvm]<br>class <a href="-resource-file/">ResourceFile</a>(val file: <a href="https://docs.oracle.com/javase/8/docs/api/java/io/File.html">File</a>?, val configuration: <a href="-repository-configuration/">RepositoryConfiguration</a>) : <a href="-resource-source-file/">ResourceSourceFile</a>, Iterable&lt;<a href="../app.cash.paparazzi.internal.resources.base/-basic-resource-item/">BasicResourceItem</a>&gt; <br>Ported from: <a href="https://cs.android.com/android-studio/platform/tools/adt/idea/+/1c8e6b0a85b2dc96826c185854504f7d476868c8:android/src/com/android/tools/idea/res/ResourceItemSources.kt">ResourceItemSources.kt</a></td>
 </tr>
 <tr>
 <td><a href="-resource-folder-repository/">ResourceFolderRepository</a></td>
@@ -448,7 +448,7 @@
 </tr>
 <tr>
 <td><a href="-resource-namespacing/">ResourceNamespacing</a></td>
-<td>[jvm]<br>enum <a href="-resource-namespacing/">ResourceNamespacing</a> : <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-enum/index.html">Enum</a>&lt;<a href="-resource-namespacing/">ResourceNamespacing</a>&gt;</td>
+<td>[jvm]<br>enum <a href="-resource-namespacing/">ResourceNamespacing</a> : Enum&lt;<a href="-resource-namespacing/">ResourceNamespacing</a>&gt;</td>
 </tr>
 <tr>
 <td><a href="-resource-serialization-util/">ResourceSerializationUtil</a></td>
@@ -460,7 +460,7 @@
 </tr>
 <tr>
 <td><a href="-resource-source-file-impl/">ResourceSourceFileImpl</a></td>
-<td>[jvm]<br>data class <a href="-resource-source-file-impl/">ResourceSourceFileImpl</a>(val relativePath: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, val configuration: <a href="-repository-configuration/">RepositoryConfiguration</a>) : <a href="-resource-source-file/">ResourceSourceFile</a><br>Ported from: <a href="https://cs.android.com/android-studio/platform/tools/base/+/18047faf69512736b8ddb1f6a6785f58d47c893f:resource-repository/main/java/com/android/resources/base/ResourceSourceFileImpl.kt">ResourceSourceFileImpl.kt</a></td>
+<td>[jvm]<br>data class <a href="-resource-source-file-impl/">ResourceSourceFileImpl</a>(val relativePath: String?, val configuration: <a href="-repository-configuration/">RepositoryConfiguration</a>) : <a href="-resource-source-file/">ResourceSourceFile</a><br>Ported from: <a href="https://cs.android.com/android-studio/platform/tools/base/+/18047faf69512736b8ddb1f6a6785f58d47c893f:resource-repository/main/java/com/android/resources/base/ResourceSourceFileImpl.kt">ResourceSourceFileImpl.kt</a></td>
 </tr>
 <tr>
 <td><a href="-resource-url-parser/">ResourceUrlParser</a></td>

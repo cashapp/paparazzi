@@ -392,7 +392,7 @@
 <p>//<a href="../../../">paparazzi</a>/<a href="../">app.cash.paparazzi.internal.resources</a>/<a href="./">ResourceSourceFileImpl</a></p>
 <h1 id="resourcesourcefileimpl">ResourceSourceFileImpl<a class="headerlink" href="#resourcesourcefileimpl" title="Permanent link">&para;</a></h1>
 <p>[jvm]\
-data class <a href="./">ResourceSourceFileImpl</a>(val relativePath: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, val configuration: <a href="../-repository-configuration/">RepositoryConfiguration</a>) : <a href="../-resource-source-file/">ResourceSourceFile</a></p>
+data class <a href="./">ResourceSourceFileImpl</a>(val relativePath: String?, val configuration: <a href="../-repository-configuration/">RepositoryConfiguration</a>) : <a href="../-resource-source-file/">ResourceSourceFile</a></p>
 <p>Ported from: <a href="https://cs.android.com/android-studio/platform/tools/base/+/18047faf69512736b8ddb1f6a6785f58d47c893f:resource-repository/main/java/com/android/resources/base/ResourceSourceFileImpl.kt">ResourceSourceFileImpl.kt</a></p>
 <p>A simple implementation of the <a href="../-resource-source-file/">ResourceSourceFile</a> interface.</p>
 <p><a href="relative-path/">relativePath</a> path of the file relative to the resource directory, or null if the source file of the resource is not available <a href="configuration/">configuration</a> configuration the resource file is associated with</p>
@@ -407,7 +407,7 @@ data class <a href="./">ResourceSourceFileImpl</a>(val relativePath: <a href="ht
 <tbody>
 <tr>
 <td><a href="-resource-source-file-impl/">ResourceSourceFileImpl</a></td>
-<td>[jvm]<br>constructor(relativePath: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, configuration: <a href="../-repository-configuration/">RepositoryConfiguration</a>)</td>
+<td>[jvm]<br>constructor(relativePath: String?, configuration: <a href="../-repository-configuration/">RepositoryConfiguration</a>)</td>
 </tr>
 </tbody>
 </table>
@@ -441,7 +441,7 @@ data class <a href="./">ResourceSourceFileImpl</a>(val relativePath: <a href="ht
 </tr>
 <tr>
 <td><a href="relative-path/">relativePath</a></td>
-<td>[jvm]<br>open override val <a href="relative-path/">relativePath</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?<br>The path of the file relative to the resource directory, or null if the source file of the resource is not available.</td>
+<td>[jvm]<br>open override val <a href="relative-path/">relativePath</a>: String?<br>The path of the file relative to the resource directory, or null if the source file of the resource is not available.</td>
 </tr>
 <tr>
 <td><a href="../-resource-source-file/repository/">repository</a></td>

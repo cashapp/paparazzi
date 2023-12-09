@@ -384,7 +384,7 @@
 <h1 id="snapshot">Snapshot<a class="headerlink" href="#snapshot" title="Permanent link">&para;</a></h1>
 <p>[jvm]\
 @JsonClass(generateAdapter = true)</p>
-<p>data class <a href="./">Snapshot</a>(val name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, val testName: <a href="../-test-name/">TestName</a>, val timestamp: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Date.html">Date</a>, val tags: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>&gt; = listOf(), val file: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>? = null)</p>
+<p>data class <a href="./">Snapshot</a>(val name: String?, val testName: <a href="../-test-name/">TestName</a>, val timestamp: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Date.html">Date</a>, val tags: List&lt;String&gt; = listOf(), val file: String? = null)</p>
 <h2 id="constructors">Constructors<a class="headerlink" href="#constructors" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -396,7 +396,7 @@
 <tbody>
 <tr>
 <td><a href="-snapshot/">Snapshot</a></td>
-<td>[jvm]<br>constructor(name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, testName: <a href="../-test-name/">TestName</a>, timestamp: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Date.html">Date</a>, tags: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>&gt; = listOf(), file: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>? = null)</td>
+<td>[jvm]<br>constructor(name: String?, testName: <a href="../-test-name/">TestName</a>, timestamp: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Date.html">Date</a>, tags: List&lt;String&gt; = listOf(), file: String? = null)</td>
 </tr>
 </tbody>
 </table>
@@ -411,15 +411,15 @@
 <tbody>
 <tr>
 <td><a href="file/">file</a></td>
-<td>[jvm]<br>val <a href="file/">file</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>? = null</td>
+<td>[jvm]<br>val <a href="file/">file</a>: String? = null</td>
 </tr>
 <tr>
 <td><a href="name/">name</a></td>
-<td>[jvm]<br>val <a href="name/">name</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?</td>
+<td>[jvm]<br>val <a href="name/">name</a>: String?</td>
 </tr>
 <tr>
 <td><a href="tags/">tags</a></td>
-<td>[jvm]<br>val <a href="tags/">tags</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>&gt;</td>
+<td>[jvm]<br>val <a href="tags/">tags</a>: List&lt;String&gt;</td>
 </tr>
 <tr>
 <td><a href="test-name/">testName</a></td>
