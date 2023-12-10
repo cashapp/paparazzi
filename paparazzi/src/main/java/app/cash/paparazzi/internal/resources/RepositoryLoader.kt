@@ -120,17 +120,6 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
   val resourceFilesAndFolders: Collection<PathString>?,
   val namespace: ResourceNamespace
 ) : FileFilter {
-  /** The set of attribute formats that is used when no formats are explicitly specified and the attribute is not a flag or enum.  */
-  private val DEFAULT_ATTR_FORMATS: Set<AttributeFormat> = Sets.immutableEnumSet(
-    AttributeFormat.BOOLEAN,
-    AttributeFormat.COLOR,
-    AttributeFormat.DIMENSION,
-    AttributeFormat.FLOAT,
-    AttributeFormat.FRACTION,
-    AttributeFormat.INTEGER,
-    AttributeFormat.REFERENCE,
-    AttributeFormat.STRING
-  )
   private val fileFilter =
     PatternBasedFileFilter(AndroidAaptIgnore(System.getenv(ANDROID_AAPT_IGNORE)))
 
@@ -1118,6 +1107,18 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
     private val LOG: Logger = Logger.getLogger(RepositoryLoader::class.java.name)
     const val JAR_PROTOCOL = "jar"
     const val JAR_SEPARATOR = "!/"
+
+    /** The set of attribute formats that is used when no formats are explicitly specified and the attribute is not a flag or enum.  */
+    private val DEFAULT_ATTR_FORMATS: Set<AttributeFormat> = Sets.immutableEnumSet(
+      AttributeFormat.BOOLEAN,
+      AttributeFormat.COLOR,
+      AttributeFormat.DIMENSION,
+      AttributeFormat.FLOAT,
+      AttributeFormat.FRACTION,
+      AttributeFormat.INTEGER,
+      AttributeFormat.REFERENCE,
+      AttributeFormat.STRING
+    )
 
     @JvmStatic
     protected fun isXmlFile(file: PathString) = isXmlFile(file.fileName)
