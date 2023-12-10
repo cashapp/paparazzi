@@ -21,18 +21,16 @@ object MatrixVectorMultiplicationInterceptor {
     val w = rhsVec[rhsVecOffset + 3]
     val o = lhsMatOffset
     resultVec[resultVecOffset + 0] =
-      lhsMat[I(0, 0, o)] * x + lhsMat[I(1, 0, o)] * y + lhsMat[I(2, 0, o)] * z + lhsMat[I(3, 0, o)] * w
+      lhsMat[index(0, 0, o)] * x + lhsMat[index(1, 0, o)] * y + lhsMat[index(2, 0, o)] * z + lhsMat[index(3, 0, o)] * w
     resultVec[resultVecOffset + 1] =
-      lhsMat[I(0, 1, o)] * x + lhsMat[I(1, 1, o)] * y + lhsMat[I(2, 1, o)] * z + lhsMat[I(3, 1, o)] * w
+      lhsMat[index(0, 1, o)] * x + lhsMat[index(1, 1, o)] * y + lhsMat[index(2, 1, o)] * z + lhsMat[index(3, 1, o)] * w
     resultVec[resultVecOffset + 2] =
-      lhsMat[I(0, 2, o)] * x + lhsMat[I(1, 2, o)] * y + lhsMat[I(2, 2, o)] * z + lhsMat[I(3, 2, o)] * w
+      lhsMat[index(0, 2, o)] * x + lhsMat[index(1, 2, o)] * y + lhsMat[index(2, 2, o)] * z + lhsMat[index(3, 2, o)] * w
     resultVec[resultVecOffset + 3] =
-      lhsMat[I(0, 3, o)] * x + lhsMat[I(1, 3, o)] * y + lhsMat[I(2, 3, o)] * z + lhsMat[I(3, 3, o)] * w
+      lhsMat[index(0, 3, o)] * x + lhsMat[index(1, 3, o)] * y + lhsMat[index(2, 3, o)] * z + lhsMat[index(3, 3, o)] * w
   }
 
-  @Suppress("FunctionName")
-  private fun I(i: Int, j: Int, offset: Int): Int {
+  private fun index(i: Int, j: Int, offset: Int): Int =
     // #define I(_i, _j) ((_j)+ 4*(_i))
-    return offset + j + 4 * i
-  }
+    offset + j + 4 * i
 }
