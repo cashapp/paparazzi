@@ -81,10 +81,15 @@ class PseudolocaleGeneratorTest {
     // STRING
     with(table[ResourceNamespace.TODO(), ResourceType.STRING]!!) {
       assertThat(size).isEqualTo(4)
-      assertThat(getValue("string_name").value).isEqualTo("${bidiWordStart}Test$bidiWordEnd ${bidiWordStart}String$bidiWordEnd")
-      assertThat(getValue("string_name_xliff").value).isEqualTo("${bidiWordStart}Test$bidiWordEnd ${bidiWordStart}String$bidiWordEnd $bidiWordStart{0}$bidiWordEnd ${bidiWordStart}with$bidiWordEnd ${bidiWordStart}suffix$bidiWordEnd")
-      assertThat(getValue("string_name_html").value).isEqualTo("${bidiWordStart}This$bidiWordEnd ${bidiWordStart}Test$bidiWordEnd ${bidiWordStart}String$bidiWordEnd")
-      assertThat(getValue("string_name_html").rawXmlValue).isEqualTo("${bidiWordStart}This$bidiWordEnd $bidiWordStart<b>Test</b>$bidiWordEnd ${bidiWordStart}String$bidiWordEnd")
+      assertThat(getValue("string_name").value)
+        .isEqualTo("${bidiWordStart}Test$bidiWordEnd ${bidiWordStart}String$bidiWordEnd")
+      @Suppress("ktlint:standard:max-line-length")
+      assertThat(getValue("string_name_xliff").value)
+        .isEqualTo("${bidiWordStart}Test$bidiWordEnd ${bidiWordStart}String$bidiWordEnd $bidiWordStart{0}$bidiWordEnd ${bidiWordStart}with$bidiWordEnd ${bidiWordStart}suffix$bidiWordEnd")
+      assertThat(getValue("string_name_html").value)
+        .isEqualTo("${bidiWordStart}This$bidiWordEnd ${bidiWordStart}Test$bidiWordEnd ${bidiWordStart}String$bidiWordEnd")
+      assertThat(getValue("string_name_html").rawXmlValue)
+        .isEqualTo("${bidiWordStart}This$bidiWordEnd $bidiWordStart<b>Test</b>$bidiWordEnd ${bidiWordStart}String$bidiWordEnd")
       assertThat(getValue("string_not_translate").value).isEqualTo("Not Translatable String")
     }
 
@@ -93,8 +98,10 @@ class PseudolocaleGeneratorTest {
       assertThat(size).isEqualTo(1)
       with(getValue("string_array_name") as ArrayResourceValue) {
         assertThat(elementCount).isEqualTo(2)
-        assertThat(getElement(0)).isEqualTo("${bidiWordStart}First$bidiWordEnd ${bidiWordStart}Test$bidiWordEnd ${bidiWordStart}String$bidiWordEnd")
-        assertThat(getElement(1)).isEqualTo("${bidiWordStart}Second$bidiWordEnd ${bidiWordStart}Test$bidiWordEnd ${bidiWordStart}String$bidiWordEnd")
+        assertThat(getElement(0))
+          .isEqualTo("${bidiWordStart}First$bidiWordEnd ${bidiWordStart}Test$bidiWordEnd ${bidiWordStart}String$bidiWordEnd")
+        assertThat(getElement(1))
+          .isEqualTo("${bidiWordStart}Second$bidiWordEnd ${bidiWordStart}Test$bidiWordEnd ${bidiWordStart}String$bidiWordEnd")
       }
     }
 

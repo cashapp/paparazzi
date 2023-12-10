@@ -786,7 +786,9 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
   private fun addAttrWithAdjustedFormats(attr: BasicAttrResourceItem) {
     var attr = attr
     if (attr.formats.isEmpty()) {
-      attr = BasicAttrResourceItem(attr.name, attr.sourceFile, attr.visibility, attr.description, attr.groupName, DEFAULT_ATTR_FORMATS, emptyMap(), emptyMap())
+      attr = BasicAttrResourceItem(
+        attr.name, attr.sourceFile, attr.visibility, attr.description, attr.groupName, DEFAULT_ATTR_FORMATS, emptyMap(), emptyMap()
+      )
     }
     addResourceItem(attr)
   }
