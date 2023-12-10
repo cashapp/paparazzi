@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import app.cash.paparazzi.sample.ResourcesDemoView.Companion.plurals
 
-const val imageSize = 120f
+const val IMAGE_SIZE = 120f
 
 @Preview
 @Composable
@@ -37,7 +37,7 @@ fun ResourcesDemo() {
     Image(
       modifier = Modifier
         .align(alignment = Alignment.CenterHorizontally)
-        .size(imageSize.dp),
+        .size(IMAGE_SIZE.dp),
       contentScale = ContentScale.FillBounds,
       painter = painterResource(id = R.drawable.camera),
       contentDescription = "camera"
@@ -45,7 +45,7 @@ fun ResourcesDemo() {
     Image(
       modifier = Modifier
         .align(alignment = Alignment.CenterHorizontally)
-        .size(imageSize.dp),
+        .size(IMAGE_SIZE.dp),
       contentScale = ContentScale.FillBounds,
       painter = painterResource(id = R.drawable.ic_android_black_24dp),
       contentDescription = "android"

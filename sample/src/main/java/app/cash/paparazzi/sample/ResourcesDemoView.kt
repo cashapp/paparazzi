@@ -69,8 +69,8 @@ class ResourcesDemoView(context: Context) : LinearLayout(context) {
         )
           .apply {
             gravity = Gravity.CENTER
-            height = dip(imageSize)
-            width = dip(imageSize)
+            height = dip(IMAGE_SIZE)
+            width = dip(IMAGE_SIZE)
           }
         setImageResource(drawableRes)
       }
