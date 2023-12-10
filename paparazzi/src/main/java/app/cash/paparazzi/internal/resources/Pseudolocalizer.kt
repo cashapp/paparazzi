@@ -15,7 +15,7 @@
  */
 package app.cash.paparazzi.internal.resources
 
-/**
+/*
  * Ported from: [Pseudolocalizer.kt](https://cs.android.com/android-studio/platform/tools/base/+/cbf409d1cccb87e8b23798638a8fbf0362af070d:build-system/aaptcompiler/src/main/java/com/android/aaptcompiler/Pseudolocalizer.kt)
  */
 
