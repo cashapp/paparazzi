@@ -347,9 +347,11 @@ class PseudoMethodAccent : PseudoMethodImpl() {
     return currentIndex
   }
 
-  // Yes, "fiveteen".
-  private val EXPANSION_STRING = "one two three four five six seven eight nine ten eleven " +
-    "twelve thirteen fourteen fiveteen sixteen seventeen nineteen twenty"
+  companion object {
+    // Yes, "fiveteen".
+    private const val EXPANSION_STRING = "one two three four five six seven eight nine ten eleven " +
+      "twelve thirteen fourteen fiveteen sixteen seventeen nineteen twenty"
+  }
 }
 
 class Pseudolocalizer(method: Method) {
