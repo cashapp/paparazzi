@@ -354,14 +354,14 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
           }
         } while (event != XmlPullParser.END_DOCUMENT)
       }
-    } // KXmlParser throws RuntimeException for an undefined prefix and an illegal attribute name.
-    catch (e: IOException) {
+    } catch (e: IOException) {
       handleParsingError(file, e)
     } catch (e: XmlPullParserException) {
       handleParsingError(file, e)
     } catch (e: XmlSyntaxException) {
       handleParsingError(file, e)
     } catch (e: RuntimeException) {
+      // KXmlParser throws RuntimeException for an undefined prefix and an illegal attribute name.
       handleParsingError(file, e)
     }
     addValueFileResources()
@@ -423,12 +423,12 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
           }
         } while (event != XmlPullParser.END_DOCUMENT)
       }
-    } // KXmlParser throws RuntimeException for an undefined prefix and an illegal attribute name.
-    catch (e: IOException) {
+    } catch (e: IOException) {
       handleParsingError(file, e)
     } catch (e: XmlPullParserException) {
       handleParsingError(file, e)
     } catch (e: java.lang.RuntimeException) {
+      // KXmlParser throws RuntimeException for an undefined prefix and an illegal attribute name.
       handleParsingError(file, e)
     }
     addValueFileResources()
