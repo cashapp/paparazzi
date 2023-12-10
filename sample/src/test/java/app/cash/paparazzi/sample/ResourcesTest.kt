@@ -28,6 +28,9 @@ class ResourcesTest(
   }
 
   enum class Locale(val tag: String?) {
-    Default(null), Arabic("ar"), Accent("en-rXA"), Bidi("ar-rXB")
+    Default(null),
+    Arabic("ar"),
+    Accent("en-rXA"),
+    Bidi("ar-rXB")
   }
 }
