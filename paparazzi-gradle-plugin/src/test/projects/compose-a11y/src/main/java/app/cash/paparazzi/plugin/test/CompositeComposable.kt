@@ -48,7 +48,8 @@ fun CompositeComposable() {
     Row(modifier = Modifier.semantics(mergeDescendants = true) {}) {
       Image(
         imageVector = Icons.Filled.Add,
-        contentDescription = null // decorative
+        // decorative
+        contentDescription = null
       )
       Column(modifier = Modifier.semantics(mergeDescendants = true) {}) {
         Text("Text")

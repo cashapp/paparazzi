@@ -84,7 +84,8 @@ internal class Renderer(
                 val resourceDirPath = Paths.get(dir)
                 AarSourceResourceRepository.create(
                   resourceDirectoryOrFile = resourceDirPath,
-                  libraryName = resourceDirPath.parent.fileName.name // segment before /res
+                  // segment before /res
+                  libraryName = resourceDirPath.parent.fileName.name
                 )
               }
             )

@@ -43,7 +43,8 @@ internal class ModuleResourceRepository private constructor(
       resourceDirectories: List<File>
     ): LocalResourceRepository {
       return ModuleResourceRepository(
-        displayName = "", // TODO
+        // TODO
+        displayName = "",
         namespace = namespace,
         delegates = addRepositoriesInReverseOverlayOrder(resourceDirectories, namespace)
       )
