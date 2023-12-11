@@ -1,5 +1,0 @@
-buildCache {
-  local {
-    directory = new File(rootDir, 'build-cache')
-  }
-}

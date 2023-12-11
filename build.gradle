@@ -1,8 +1,6 @@
 apply plugin: 'com.github.ben-manes.versions'
 
 buildscript {
-  apply from: 'gradle/dependencies.gradle'
-
   repositories {
     mavenCentral()
     google()
@@ -11,10 +9,15 @@ buildscript {
   }
 
   dependencies {
-    classpath deps.plugins.kotlin
-    classpath deps.plugins.android
-    classpath deps.plugins.versions
-    classpath deps.plugins.spotless
+    classpath libs.plugin.kotlin
+    classpath libs.plugin.android
+    classpath libs.plugin.mavenPublish
+    classpath libs.plugin.dokka
+    classpath libs.plugin.versions
+    classpath libs.plugin.spotless
+    classpath libs.plugin.buildConfig
+    classpath libs.plugin.ksp
+    classpath libs.grgit
 
     // Normally you would declare a version here, but we use dependency substitution in
     // settings.gradle to use the version built from inside the repo.
@@ -23,6 +26,8 @@ buildscript {
 }
 
 subprojects {
+  version = property("VERSION_NAME") as String
+
   repositories {
     mavenCentral()
     google()
@@ -31,7 +36,7 @@ subprojects {
 
   tasks.withType(Test).configureEach {
     testLogging {
-      events "failed"
+      events "passed", "failed", "skipped", "standardOut", "standardError"
       exceptionFormat "full"
       showExceptions true
       showStackTraces true
@@ -40,14 +45,47 @@ subprojects {
   }
 
   tasks.withType(JavaCompile).configureEach {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = libs.versions.javaTarget.get()
+    targetCompatibility = libs.versions.javaTarget.get()
   }
 
-  tasks.withType(org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile).configureEach {
+  tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile).configureEach {
     kotlinOptions {
-      jvmTarget = "1.8"
+      jvmTarget = libs.versions.javaTarget.get()
     }
+  }
+
+  plugins.withId('com.vanniktech.maven.publish') {
+    publishing {
+      repositories {
+        maven {
+          name = "projectLocalMaven"
+          url = rootProject.layout.buildDirectory.dir("localMaven")
+        }
+        /**
+         * Want to push to an internal repository for testing?
+         * Set the following properties in ~/.gradle/gradle.properties.
+         *
+         * internalUrl=YOUR_INTERNAL_URL
+         * internalUsername=YOUR_USERNAME
+         * internalPassword=YOUR_PASSWORD
+         */
+        maven {
+          name = "internal"
+          url = providers.gradleProperty("internalUrl")
+          credentials(PasswordCredentials)
+        }
+      }
+    }
+  }
+
+  tasks.register('emptySourcesJar', Jar) {
+    // TODO: fetch sources from the corresponding AOSP repos.
+    archiveClassifier = 'sources'
+  }
+
+  tasks.register('emptyJavadocJar', Jar) {
+    archiveClassifier = 'javadoc'
   }
 
   apply plugin: 'com.diffplug.spotless'
@@ -55,23 +93,39 @@ subprojects {
     kotlin {
       target("src/**/*.kt")
       // ktlint doesn't honour .editorconfig yet: https://github.com/diffplug/spotless/issues/142
-      ktlint('0.46.1').editorConfigOverride([
+      ktlint(libs.versions.ktlint.get()).editorConfigOverride([
         'insert_final_newline': 'true',
         'end_of_line': 'lf',
         'charset': 'utf-8',
         'indent_size': '2',
         'trim_trailing_whitespace': 'true',
-        'ij_kotlin_imports_layout': '*,java.**,javax.**,kotlin.**,kotlinx.**,^'
+        'ij_kotlin_imports_layout': '*,java.**,javax.**,kotlin.**,kotlinx.**,^',
+        'ij_kotlin_allow_trailing_comma': 'false',
+        'ij_kotlin_allow_trailing_comma_on_call_site': 'false',
+        'ktlint_standard_argument-list-wrapping': 'disabled',
       ])
     }
   }
 }
 
 tasks.register("clean", Delete).configure {
-  delete rootProject.buildDir
+  delete(rootProject.layout.buildDirectory)
 }
 
-tasks.named("wrapper").configure {
-  distributionType = Wrapper.DistributionType.ALL
+allprojects { project ->
+  tasks.register("mavenLocalize").configure { task ->
+    def projectRootDir = project.projectDir
+    task.doFirst {
+      projectRootDir.eachFileRecurse(groovy.io.FileType.FILES) { file ->
+        if (file.name != 'build.gradle') {
+          return
+        }
+        def text = file.text
+        file.withWriter { w ->
+          // Intentional concatenation to prevent self-replacement
+          w << text.replace("//" + "mavenLocal()", "mavenLocal()")
+        }
+      }
+    }
+  }
 }
-

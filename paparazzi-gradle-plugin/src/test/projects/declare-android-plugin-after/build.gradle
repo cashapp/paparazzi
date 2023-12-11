@@ -1,0 +1,16 @@
+plugins {
+  id 'app.cash.paparazzi'
+  id 'com.android.library' // intentionally declared after paparazzi plugin
+}
+
+android {
+  namespace 'app.cash.paparazzi.plugin.test'
+  compileSdk libs.versions.compileSdk.get() as int
+  defaultConfig {
+    minSdk libs.versions.minSdk.get() as int
+  }
+  compileOptions {
+    sourceCompatibility = libs.versions.javaTarget.get()
+    targetCompatibility = libs.versions.javaTarget.get()
+  }
+}

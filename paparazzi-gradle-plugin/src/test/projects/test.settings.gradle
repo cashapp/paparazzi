@@ -1,0 +1,18 @@
+dependencyResolutionManagement {
+  versionCatalogs {
+    libs {
+      from(files("../../../../gradle/libs.versions.toml"))
+    }
+  }
+
+  repositories {
+    maven {
+      url "file://${rootDir}/../../../../../build/localMaven"
+    }
+    mavenCentral()
+    //mavenLocal()
+    google()
+  }
+}
+
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")

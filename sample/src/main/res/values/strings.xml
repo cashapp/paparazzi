@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+  <plurals name="plural_name">
+    <item quantity="zero">No String</item>
+    <item quantity="one">One String</item>
+    <item quantity="two">Two Strings</item>
+    <item quantity="few">Few Strings</item>
+    <item quantity="many">Many Strings</item>
+    <item quantity="other">Other Strings</item>
+  </plurals>
+  <string name="string_name" translatable="false">Test String</string>
+  <string name="string_escaped_chars" translatable="false">\"Test\nString \uD83D\uDE00\uD83D\uDC4C\"</string>
+  <string name="string_name_xliff" translatable="false">Test String <xliff:g id="number" example="9">{0}</xliff:g> with suffix</string>
+  <string name="string_name_html" translatable="false">This <b>Test</b> String</string>
+  <string-array name="string_array_name">
+    <item>First Test String</item>
+    <item>Second Test String</item>
+  </string-array>
+</resources>

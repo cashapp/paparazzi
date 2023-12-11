@@ -1,0 +1,32 @@
+buildscript {
+  repositories {
+    mavenCentral()
+    google()
+    gradlePluginPortal()
+  }
+
+  dependencies {
+    classpath libs.plugin.kotlin
+    classpath libs.plugin.android
+    classpath libs.plugin.buildConfig
+    classpath libs.grgit
+  }
+}
+
+subprojects {
+  repositories {
+    mavenCentral()
+    google()
+  }
+
+  tasks.withType(JavaCompile).configureEach {
+    sourceCompatibility = libs.versions.javaTarget.get()
+    targetCompatibility = libs.versions.javaTarget.get()
+  }
+
+  tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile).configureEach {
+    kotlinOptions {
+      jvmTarget = libs.versions.javaTarget.get()
+    }
+  }
+}

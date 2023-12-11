@@ -35,25 +35,26 @@ See the [project website][paparazzi] for documentation and APIs.
 
 Tasks
 -------
-```
-$ ./gradlew sample:testDebug
+
+```bash
+./gradlew sample:testDebug
 ```
 
 Runs tests and generates an HTML report at `sample/build/reports/paparazzi/` showing all
 test runs and snapshots.
 
-```
-$ ./gradlew sample:recordPaparazziDebug
+```bash
+./gradlew sample:recordPaparazziDebug
 ```
 
 Saves snapshots as golden values to a predefined source-controlled location
 (defaults to `src/test/snapshots`).
 
-```
-$ ./gradlew sample:verifyPaparazziDebug
+```bash
+./gradlew sample:verifyPaparazziDebug
 ```
 
-Runs tests and verifies against previously-recorded golden values. Failures generate diffs at `sample/out/failures`.
+Runs tests and verifies against previously-recorded golden values. Failures generate diffs at `sample/build/paparazzi/failures`.
 
 For more examples, check out the [sample][sample] project.
 
@@ -62,11 +63,11 @@ Git LFS
 It is recommended you use [Git LFS][lfs] to store your snapshots.  Here's a quick setup:
 
 ```bash
-$ brew install git-lfs
-$ git config core.hooksPath  # optional, confirm where your git hooks will be installed
-$ git lfs install --local
-$ git lfs track "**/snapshots/**/*.png"
-$ git add .gitattributes
+brew install git-lfs
+git config core.hooksPath  # optional, confirm where your git hooks will be installed
+git lfs install --local
+git lfs track "**/snapshots/**/*.png"
+git add .gitattributes
 ```
 
 On CI, you might set up something like:
@@ -99,8 +100,39 @@ Jetifier
 If using Jetifier to migrate off Support libraries, add the following to your `gradle.properties` to
 exclude bundled Android dependencies.
 
-```text
+```properties
 android.jetifier.ignorelist=android-base-common,common
+```
+
+Lottie
+--------
+
+When taking screenshots of Lottie animations, you need to force Lottie to not run on a background thread, otherwise Paparazzi can throw exceptions [#494](https://github.com/cashapp/paparazzi/issues/494), [#630](https://github.com/cashapp/paparazzi/issues/630).
+
+```kotlin
+@Before
+fun setup() {
+    LottieTask.EXECUTOR = Executor(Runnable::run)
+}
+```
+
+LocalInspectionMode
+--------
+Some Composables -- such as `GoogleMap()` -- check for `LocalInspectionMode` to short-circuit to a `@Preview`-safe Composable.
+
+However, Paparazzi does not set `LocalInspectionMode` globally to ensure that the snapshot represents the true production output, similar to how it overrides `View.isInEditMode` for legacy views.
+
+As a workaround, we recommend wrapping such a Composable in a custom Composable with a `CompositionLocalProvider` and setting `LocalInspectionMode` there.
+
+```kotlin
+ @Test
+  fun inspectionModeView() {
+    paparazzi.snapshot(
+      CompositionLocalProvider(LocalInspectionMode provides true) {
+        YourComposable()
+      }
+    )
+  }
 ```
 
 Releases
@@ -116,7 +148,7 @@ buildscript {
     google()
   }
   dependencies {
-    classpath 'app.cash.paparazzi:paparazzi-gradle-plugin:1.0.0'
+    classpath 'app.cash.paparazzi:paparazzi-gradle-plugin:1.3.1'
   }
 }
 
@@ -126,19 +158,19 @@ apply plugin: 'app.cash.paparazzi'
 Using the plugins DSL:
 ```groovy
 plugins {
-  id 'app.cash.paparazzi' version '1.0.0'
+  id 'app.cash.paparazzi' version '1.3.1'
 }
 ```
 
 Snapshots of the development version are available in [Sonatype's `snapshots` repository][snap].
 
 ```groovy
- repositories {
-   // ...
-   maven {
-     url 'https://oss.sonatype.org/content/repositories/snapshots/'
-   }
- }
+repositories {
+  // ...
+  maven {
+    url 'https://oss.sonatype.org/content/repositories/snapshots/'
+  }
+}
 ```
 
 License

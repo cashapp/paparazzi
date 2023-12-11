@@ -1,22 +1,36 @@
 apply plugin: 'com.android.library'
 apply plugin: 'org.jetbrains.kotlin.android'
 apply plugin: 'app.cash.paparazzi'
+apply plugin: 'jacoco'
 
 android {
-  compileSdk 31
+  namespace 'app.cash.paparazzi.sample'
+
+  compileSdk libs.versions.compileSdk.get() as int
   defaultConfig {
-    minSdk 25
+    minSdk libs.versions.minSdk.get() as int
+  }
+  compileOptions {
+    sourceCompatibility = libs.versions.javaTarget.get()
+    targetCompatibility = libs.versions.javaTarget.get()
   }
   buildFeatures {
     compose true
+    viewBinding true
   }
   composeOptions {
-    kotlinCompilerExtensionVersion '1.1.1'
+    kotlinCompilerExtensionVersion libs.versions.composeCompiler.get()
   }
 }
 
 dependencies {
-  implementation 'androidx.compose.material:material:1.1.1'
+  implementation libs.composeUi.material
+  implementation libs.composeUi.uiTooling
 
-  testImplementation deps.testparameterinjector
+  testImplementation libs.testParameterInjector
+}
+
+// https://github.com/diffplug/spotless/issues/1572
+tasks.withType(com.diffplug.gradle.spotless.SpotlessTask).configureEach {
+  dependsOn(tasks.withType(Test))
 }

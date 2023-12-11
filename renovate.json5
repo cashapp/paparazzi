@@ -1,0 +1,42 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base"
+  ],
+  "packageRules": [
+    {
+      "description": "Auto-merge most dependency updates.",
+      "matchUpdateTypes": ["minor", "patch"],
+      "matchCurrentVersion": "!/^0/",
+      "automerge": true,
+    },
+    {
+      "description": "Compose compiler is tightly coupled to Kotlin version.",
+      "groupName": "Kotlin and Compose",
+      "matchPackagePrefixes": [
+        "androidx.compose.compiler",
+        "org.jetbrains.kotlin:kotlin",
+        "com.google.devtools.ksp"
+      ],
+      "automerge": false,
+    },
+    {
+      "description": "Android Gradle Plugin is tightly coupled to its android/platform/tools/base dependencies.",
+      "groupName": "Android Tools",
+      "matchPackagePrefixes": [
+        "com.android.tools:",
+        "com.android.tools.build:",
+        // LayoutLib intentionally omitted to be updated independently.
+      ],
+      "automerge": false,
+    },
+    {
+      "description": "LayoutLib shouldn't auto-merge, because updating it is a complex process, see libs/README.md.",
+      "matchPackagePrefixes": [
+        "app.cash.paparazzi:layoutlib-",
+        "com.android.tools.layoutlib:layoutlib-api",
+      ],
+      "automerge": false,
+    },
+  ],
+}
