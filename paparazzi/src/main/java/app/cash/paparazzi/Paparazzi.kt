@@ -97,7 +97,7 @@ class Paparazzi @JvmOverloads constructor(
   private val renderExtensions: Set<RenderExtension> = setOf(),
   private val supportsRtl: Boolean = false,
   private val showSystemUi: Boolean = false,
-  private val validateAccessibility: Boolean = false
+  private val validateAccessibility: Boolean = false,
   private val imageSize: ImageSize = ImageSize.Limit()
 ) : TestRule {
   private val logger = PaparazziLogger()
