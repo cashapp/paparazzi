@@ -828,10 +828,19 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
     file: PathString
   ): ResourceType? {
     var type = ResourceType.fromXmlTagName(tagName)
+
     if (type == null) {
       if (TAG_EAT_COMMENT == tagName || TAG_SKIP == tagName) {
         return null
       }
+
+      // TODO: replace with SdkConstants.TAG_JAVA_SYMBOL once available in com.android.tools:common
+      if ("java-symbol" == tagName) {
+        // java-symbol is only used within framework and does not provide any public
+        // information so we can safely ignore it.
+        return null
+      }
+
       if (tagName == TAG_ITEM) {
         val typeAttr = parser.getAttributeValue(null, ATTR_TYPE)
         if (typeAttr != null) {
