@@ -16,6 +16,7 @@
 package app.cash.paparazzi
 
 import android.animation.AnimationHandler
+import android.animation.ValueAnimator
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Bitmap
@@ -49,6 +50,7 @@ import app.cash.paparazzi.internal.PaparazziOnBackPressedDispatcherOwner
 import app.cash.paparazzi.internal.PaparazziSavedStateRegistryOwner
 import app.cash.paparazzi.internal.Renderer
 import app.cash.paparazzi.internal.SessionParamsBuilder
+import app.cash.paparazzi.internal.InstantMotionDurationScale
 import app.cash.paparazzi.internal.interceptors.ChoreographerDelegateInterceptor
 import app.cash.paparazzi.internal.interceptors.EditModeInterceptor
 import app.cash.paparazzi.internal.interceptors.IInputMethodManagerInterceptor
@@ -112,6 +114,10 @@ class Paparazzi @JvmOverloads constructor(
 
   val context: Context
     get() = RenderAction.getCurrentContext()
+
+  private val getDurationScale = ValueAnimator::class.java.getDeclaredMethod(
+    "getDurationScale"
+  )
 
   private val contentRoot = """
         |<?xml version="1.0" encoding="utf-8"?>
@@ -296,11 +302,17 @@ class Paparazzi @JvmOverloads constructor(
           // to find a root view with a ViewTreeLifecycleOwner
           viewGroup.id = android.R.id.content
 
+          val coroutineContext = if (getDurationScale.invoke(null) as Float <= 0) {
+            Dispatchers.Main + InstantMotionDurationScale()
+          } else {
+            Dispatchers.Main
+          }
+
           // By default, Compose UI uses its own implementation of CoroutineDispatcher, `AndroidUiDispatcher`.
           // Since this dispatcher does not provide its own implementation of Delay, it will default to using DefaultDelay which runs
           // async to our test Handler. By initializing Recomposer with Dispatchers.Main, Delay will now be backed by our test Handler,
           // synchronizing expected behavior.
-          WindowRecomposerPolicy.setFactory { it.createLifecycleAwareWindowRecomposer(Dispatchers.Main) }
+          WindowRecomposerPolicy.setFactory { it.createLifecycleAwareWindowRecomposer(coroutineContext) }
         }
 
         if (hasLifecycleOwnerRuntime) {
