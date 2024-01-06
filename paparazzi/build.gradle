@@ -96,11 +96,11 @@ tasks.named("dokkaGfm").configure {
 }
 
 def generateTestConfig = tasks.register("generateTestConfig") {
-  def resources = "$buildDir/intermediates/paparazzi/resources.txt"
+  def resources = layout.buildDirectory.file('intermediates/paparazzi/resources.txt')
   outputs.file(resources)
 
   doLast {
-    File configFile = new File(resources)
+    File configFile = resources.get().asFile
     configFile.withWriter('utf-8') { writer ->
       writer.writeLine("app.cash.paparazzi")
       writer.writeLine(".")
