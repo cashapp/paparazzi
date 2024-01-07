@@ -27,8 +27,8 @@ class BuildClassTest {
 
   @Test
   fun verifyFields() {
-    assertThat(Build.ID).isEqualTo("URD9.230712.002.A1")
-    assertThat(Build.DISPLAY).isEqualTo("sdk_phone_armv7-userdebug UpsideDownCakePrivacySandbox URD9.230712.002.A1 10628788 test-keys")
+    assertThat(Build.DISPLAY).isEqualTo("sdk_phone_armv7-userdebug UpsideDownCakePrivacySandbox URD9.231106.004.A2 11164158 test-keys")
+    assertThat(Build.ID).isEqualTo("URD9.231106.004.A2")
     assertThat(Build.PRODUCT).isEqualTo("unknown")
     assertThat(Build.DEVICE).isEqualTo("generic")
     assertThat(Build.BOARD).isEqualTo("unknown")
@@ -43,7 +43,7 @@ class BuildClassTest {
     assertThat(Build.SKU).isEqualTo("unknown")
     assertThat(Build.ODM_SKU).isEqualTo("unknown")
 
-    assertThat(Build.VERSION.INCREMENTAL).isEqualTo("10628788")
+    assertThat(Build.VERSION.INCREMENTAL).isEqualTo("11164158")
     assertThat(Build.VERSION.RELEASE).isNotNull()
     assertThat(Build.VERSION.RELEASE_OR_CODENAME).isNotNull()
     assertThat(Build.VERSION.BASE_OS).isEqualTo("")

@@ -256,8 +256,11 @@ class PaparazziPluginTest {
   fun buildClassNextSdkAccess() {
     val fixtureRoot = File("src/test/projects/build-class-next-sdk")
 
+    // Paparazzi detects Android platform dir contents to be static. Therefore, it re-runs only on
+    // compileSdk changes.  Sandbox previews are an exception, so let's disable caching for this
+    // test task.
     gradleRunner
-      .withArguments("testDebug", "--stacktrace")
+      .withArguments("testDebug", "-Dorg.gradle.caching=false", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
 
     val snapshotsDir = File(fixtureRoot, "custom/reports/paparazzi/debug/images")
