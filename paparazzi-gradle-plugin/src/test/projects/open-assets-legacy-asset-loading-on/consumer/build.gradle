@@ -25,3 +25,5 @@ dependencies {
   implementation projects.producer2
   testImplementation libs.truth
 }
+
+apply from: '../../common.gradle'
