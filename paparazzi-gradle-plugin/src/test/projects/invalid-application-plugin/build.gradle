@@ -2,3 +2,5 @@ plugins {
   id 'com.android.application'
   id 'app.cash.paparazzi'
 }
+
+apply from: '../guava-fix.gradle'

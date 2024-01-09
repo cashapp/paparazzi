@@ -29,3 +29,5 @@ dependencies {
   implementation libs.composeUi.material
   implementation libs.androidx.appcompat
 }
+
+apply from: '../guava-fix.gradle'
