@@ -50,7 +50,9 @@ class ApngReaderTest {
 
     try {
       val reader = ApngReader(FileSystem.SYSTEM.openReadOnly(file.path.toPath()))
-      while (!reader.isFinished()) { reader.readNextFrame() }
+      while (!reader.isFinished()) {
+        reader.readNextFrame()
+      }
       fail("Chunks are out of order, expected to fail to decode")
     } catch (e: IOException) {
       assertThat(e).hasMessageThat().isEqualTo("Out of order sequence, expected: 1 actual: 0")
@@ -63,7 +65,9 @@ class ApngReaderTest {
 
     try {
       val reader = ApngReader(FileSystem.SYSTEM.openReadOnly(file.path.toPath()))
-      while (!reader.isFinished()) { reader.readNextFrame() }
+      while (!reader.isFinished()) {
+        reader.readNextFrame()
+      }
       fail("File has invalid CRC, should fail")
     } catch (e: IOException) {
       assertThat(e).hasMessageThat().isEqualTo("CRC Mismatch decoding IHDR, invalid data")

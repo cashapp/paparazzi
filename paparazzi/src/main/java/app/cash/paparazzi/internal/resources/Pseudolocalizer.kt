@@ -347,6 +347,7 @@ class PseudoMethodAccent : PseudoMethodImpl() {
     return currentIndex
   }
 
+  @Suppress("ktlint:standard:property-naming")
   // Yes, "fiveteen".
   private val EXPANSION_STRING = "one two three four five six seven eight nine ten eleven " +
     "twelve thirteen fourteen fiveteen sixteen seventeen nineteen twenty"

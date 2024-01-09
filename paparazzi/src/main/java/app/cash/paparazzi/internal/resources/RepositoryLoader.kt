@@ -120,6 +120,7 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
   val resourceFilesAndFolders: Collection<PathString>?,
   val namespace: ResourceNamespace
 ) : FileFilter {
+  @Suppress("ktlint:standard:property-naming")
   /** The set of attribute formats that is used when no formats are explicitly specified and the attribute is not a flag or enum.  */
   private val DEFAULT_ATTR_FORMATS: Set<AttributeFormat> = Sets.immutableEnumSet(
     AttributeFormat.BOOLEAN,
@@ -615,8 +616,13 @@ abstract class RepositoryLoader<T : LoadableResourceRepository>(
     forSubTags(null) {
       if (parser.prefix == null) {
         val tagName = parser.name
-        val format =
-          if (tagName == TAG_ENUM) AttributeFormat.ENUM else if (tagName == TAG_FLAG) AttributeFormat.FLAGS else null
+        val format = if (tagName == TAG_ENUM) {
+          AttributeFormat.ENUM
+        } else if (tagName == TAG_FLAG) {
+          AttributeFormat.FLAGS
+        } else {
+          null
+        }
         if (format != null) {
           formats += format
           val valueName = parser.getAttributeValue(null, ATTR_NAME)

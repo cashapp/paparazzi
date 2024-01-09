@@ -18,7 +18,7 @@ class LifecycleUsageTest {
   @get:Rule
   val paparazzi = Paparazzi()
 
-  @Test fun LifecycleOwner() {
+  @Test fun lifecycleOwner() {
     val view = View(paparazzi.context).apply {
       setBackgroundColor(Color.BLUE)
     }
@@ -34,7 +34,7 @@ class LifecycleUsageTest {
     assertThat(currentLifecycleState).isEqualTo(Lifecycle.State.RESUMED)
   }
 
-  @Test fun SavedStateRegistryOwner() {
+  @Test fun savedStateRegistryOwner() {
     val view = View(paparazzi.context).apply {
       setBackgroundColor(Color.RED)
     }
@@ -49,7 +49,7 @@ class LifecycleUsageTest {
     assertThat(savedStateRegistry).isNotNull()
   }
 
-  @Test fun OnBackPressedDispatcherOwner() {
+  @Test fun onBackPressedDispatcherOwner() {
     val view = View(paparazzi.context).apply {
       setBackgroundColor(Color.YELLOW)
     }
