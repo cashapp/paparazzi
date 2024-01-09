@@ -24,3 +24,5 @@ dependencies {
 
   testImplementation libs.testParameterInjector
 }
+
+apply from: '../guava-fix.gradle'

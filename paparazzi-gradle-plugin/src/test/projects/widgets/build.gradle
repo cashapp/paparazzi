@@ -29,3 +29,5 @@ dependencies {
   testImplementation libs.composeUi.material
   testImplementation libs.testParameterInjector
 }
+
+apply from: '../guava-fix.gradle'

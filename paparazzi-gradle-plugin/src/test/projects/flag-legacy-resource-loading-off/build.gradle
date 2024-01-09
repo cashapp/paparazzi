@@ -24,3 +24,5 @@ tasks.withType(Test).configureEach {
     showStandardStreams true
   }
 }
+
+apply from: '../guava-fix.gradle'

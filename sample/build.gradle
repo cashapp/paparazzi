@@ -34,3 +34,5 @@ dependencies {
 tasks.withType(com.diffplug.gradle.spotless.SpotlessTask).configureEach {
   dependsOn(tasks.withType(Test))
 }
+
+apply from: 'guava-fix.gradle'

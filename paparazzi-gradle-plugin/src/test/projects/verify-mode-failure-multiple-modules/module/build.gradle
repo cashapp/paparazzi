@@ -18,3 +18,5 @@ android {
     jvmTarget = libs.versions.javaTarget.get()
   }
 }
+
+apply from: '../../guava-fix.gradle'
