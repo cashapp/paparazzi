@@ -6,6 +6,7 @@ import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome.FROM_CACHE
 import org.gradle.testkit.runner.TaskOutcome.SUCCESS
+import org.junit.After
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
@@ -13,12 +14,19 @@ import java.io.File
 import java.nio.file.Files
 
 class PaparazziPluginTest {
+  private val filesToDelete = mutableListOf<File>()
+
   private lateinit var gradleRunner: GradleRunner
 
   @Before
   fun setUp() {
     gradleRunner = GradleRunner.create()
       .withPluginClasspath()
+  }
+
+  @After
+  fun tearDown() {
+    filesToDelete.forEach(File::deleteRecursively)
   }
 
   @Test
@@ -158,6 +166,8 @@ class PaparazziPluginTest {
   @Test
   fun prepareResourcesCaching() {
     val fixtureRoot = File("src/test/projects/prepare-resources-task-caching")
+    val buildDir = fixtureRoot.resolve("build").registerForDeletionOnExit()
+    fixtureRoot.resolve("build-cache").registerForDeletionOnExit()
 
     val firstRun = gradleRunner
       .withArguments("testRelease", "testDebug", "--build-cache", "--stacktrace")
@@ -183,7 +193,8 @@ class PaparazziPluginTest {
     resourceFileContents = resourcesFile.readLines()
     assertThat(resourceFileContents.any { it.contains("debug") }).isFalse()
 
-    fixtureRoot.resolve("build").deleteRecursively()
+    // delete now (regardless of future cleanup)
+    buildDir.deleteRecursively()
 
     val secondRun = gradleRunner
       .withArguments("testDebug", "--build-cache", "--stacktrace")
@@ -203,6 +214,7 @@ class PaparazziPluginTest {
   @Test
   fun customBuildDir() {
     val fixtureRoot = File("src/test/projects/custom-build-dir")
+    fixtureRoot.resolve("custom").registerForDeletionOnExit()
 
     val result = gradleRunner
       .withArguments("testDebug", "--stacktrace")
@@ -216,13 +228,12 @@ class PaparazziPluginTest {
 
     val snapshotsDir = File(fixtureRoot, "custom/reports/paparazzi/debug/images")
     assertThat(snapshotsDir.exists()).isTrue()
-
-    fixtureRoot.resolve("custom").deleteRecursively()
   }
 
   @Test
   fun customReportDir() {
     val fixtureRoot = File("src/test/projects/custom-report-dir")
+    fixtureRoot.resolve("custom").registerForDeletionOnExit()
 
     val result = gradleRunner
       .withArguments("testDebug", "--stacktrace")
@@ -236,8 +247,6 @@ class PaparazziPluginTest {
 
     val snapshotsDir = File(fixtureRoot, "custom/our-reports/paparazzi/debug/images")
     assertThat(snapshotsDir.exists()).isTrue()
-
-    fixtureRoot.resolve("custom").deleteRecursively()
   }
 
   @Test
@@ -295,6 +304,8 @@ class PaparazziPluginTest {
   @Test
   fun flagDebugLinkedObjectsIsOn() {
     val fixtureRoot = File("src/test/projects/flag-debug-linked-objects-on")
+    // this is only a warning message, so subsequent runs would otherwise be UP-TO-DATE
+    fixtureRoot.resolve("build").registerForDeletionOnExit()
 
     val result = gradleRunner
       .withArguments("testDebug", "--stacktrace")
@@ -346,6 +357,8 @@ class PaparazziPluginTest {
   @Test
   fun cacheable() {
     val fixtureRoot = File("src/test/projects/cacheable")
+    val buildDir = fixtureRoot.resolve("build").registerForDeletionOnExit()
+    fixtureRoot.resolve("build-cache").registerForDeletionOnExit()
 
     val firstRun = gradleRunner
       .withArguments("testDebug", "--build-cache", "--stacktrace")
@@ -356,7 +369,7 @@ class PaparazziPluginTest {
       assertThat(this!!.outcome).isNotEqualTo(FROM_CACHE)
     }
 
-    fixtureRoot.resolve("build").deleteRecursively()
+    buildDir.deleteRecursively()
 
     val secondRun = gradleRunner
       .withArguments("testDebug", "--build-cache", "--stacktrace")
@@ -366,8 +379,6 @@ class PaparazziPluginTest {
       assertThat(this).isNotNull()
       assertThat(this!!.outcome).isEqualTo(FROM_CACHE)
     }
-
-    fixtureRoot.resolve("build-cache").deleteRecursively()
   }
 
   @Test
@@ -400,20 +411,19 @@ class PaparazziPluginTest {
 
     assertThat(result.task(":testDebugUnitTest")).isNotNull()
 
-    val snapshotsDir = File(fixtureRoot, "src/test/snapshots")
+    val snapshotsDir = File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
 
     val snapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_RecordTest_record.png")
     assertThat(snapshot.exists()).isTrue()
 
     val snapshotWithLabel = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_RecordTest_record_label.png")
     assertThat(snapshotWithLabel.exists()).isTrue()
-
-    snapshotsDir.deleteRecursively()
   }
 
   @Test
   fun recordAllVariants() {
     val fixtureRoot = File("src/test/projects/record-mode")
+    File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
 
     val result = gradleRunner
       .withArguments("recordPaparazzi", "--stacktrace")
@@ -421,9 +431,6 @@ class PaparazziPluginTest {
 
     assertThat(result.task(":recordPaparazziDebug")).isNotNull()
     assertThat(result.task(":recordPaparazziRelease")).isNotNull()
-
-    val snapshotsDir = File(fixtureRoot, "src/test/snapshots")
-    snapshotsDir.deleteRecursively()
   }
 
   @Test
@@ -437,15 +444,13 @@ class PaparazziPluginTest {
 
     assertThat(result.task(":module:testDebugUnitTest")).isNotNull()
 
-    val snapshotsDir = File(moduleRoot, "src/test/snapshots")
+    val snapshotsDir = File(moduleRoot, "src/test/snapshots").registerForDeletionOnExit()
 
     val snapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_RecordTest_record.png")
     assertThat(snapshot.exists()).isTrue()
 
     val snapshotWithLabel = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_RecordTest_record_label.png")
     assertThat(snapshotWithLabel.exists()).isTrue()
-
-    snapshotsDir.deleteRecursively()
   }
 
   @Test
@@ -459,25 +464,23 @@ class PaparazziPluginTest {
 
     assertThat(result.task(":module:testDebugUnitTest")).isNotNull()
 
-    val snapshotsDir = File(moduleRoot, "src/test/snapshots")
+    val snapshotsDir = File(moduleRoot, "src/test/snapshots").registerForDeletionOnExit()
 
     val firstSnapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_RecordTest_recordFirst.png")
     assertThat(firstSnapshot.exists()).isFalse()
 
     val secondSnapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_RecordTest_recordSecond_label.png")
     assertThat(secondSnapshot.exists()).isTrue()
-
-    snapshotsDir.deleteRecursively()
   }
 
   @Test
   fun rerunOnResourceChange() {
     val fixtureRoot = File("src/test/projects/rerun-resource-change")
 
-    val snapshotsDir = File(fixtureRoot, "src/test/snapshots")
+    val snapshotsDir = File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
     val snapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_RecordTest_record.png")
 
-    val valuesDir = File(fixtureRoot, "src/main/res/values/")
+    val valuesDir = File(fixtureRoot, "src/main/res/values/").registerForDeletionOnExit()
     val destResourceFile = File(valuesDir, "colors.xml")
     val firstResourceFile = File(fixtureRoot, "src/test/resources/colors1.xml")
     val secondResourceFile = File(fixtureRoot, "src/test/resources/colors2.xml")
@@ -516,19 +519,16 @@ class PaparazziPluginTest {
 
     // should be different colors
     assertThat(firstRunBytes).isNotEqualTo(secondRunBytes)
-
-    snapshotsDir.deleteRecursively()
-    valuesDir.deleteRecursively()
   }
 
   @Test
   fun rerunOnAssetChange() {
     val fixtureRoot = File("src/test/projects/rerun-asset-change")
 
-    val snapshotsDir = File(fixtureRoot, "src/test/snapshots")
+    val snapshotsDir = File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
     val snapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_RecordTest_record.png")
 
-    val assetsDir = File(fixtureRoot, "src/main/assets/")
+    val assetsDir = File(fixtureRoot, "src/main/assets/").registerForDeletionOnExit()
     val destAssetFile = File(assetsDir, "secret.txt")
     val firstAssetFile = File(fixtureRoot, "src/test/resources/secret1.txt")
     val secondAssetFile = File(fixtureRoot, "src/test/resources/secret2.txt")
@@ -567,18 +567,16 @@ class PaparazziPluginTest {
 
     // should be different
     assertThat(firstRunBytes).isNotEqualTo(secondRunBytes)
-
-    snapshotsDir.deleteRecursively()
-    assetsDir.deleteRecursively()
   }
 
   @Test
   fun rerunOnReportDeletion() {
     val fixtureRoot = File("src/test/projects/rerun-report")
-
-    val reportDir = File(fixtureRoot, "build/reports/paparazzi/debug")
+    val reportDir = File(fixtureRoot, "build/reports/paparazzi/debug").registerForDeletionOnExit()
     val reportHtml = File(reportDir, "index.html")
     assertThat(reportHtml.exists()).isFalse()
+
+    File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
 
     // Take 1
     val firstRunResult = gradleRunner
@@ -605,18 +603,13 @@ class PaparazziPluginTest {
       assertThat(this!!.outcome).isEqualTo(SUCCESS) // not UP-TO-DATE
     }
     assertThat(reportHtml.exists()).isTrue()
-
-    reportDir.deleteRecursively()
-
-    val snapshotsDir = File(fixtureRoot, "src/test/snapshots")
-    snapshotsDir.deleteRecursively()
   }
 
   @Test
   fun rerunOnSnapshotDeletion() {
     val fixtureRoot = File("src/test/projects/rerun-snapshots")
 
-    val snapshotsDir = File(fixtureRoot, "src/test/snapshots")
+    val snapshotsDir = File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
     val snapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_RecordTest_record.png")
     assertThat(snapshot.exists()).isFalse()
 
@@ -645,8 +638,6 @@ class PaparazziPluginTest {
       assertThat(this!!.outcome).isEqualTo(SUCCESS) // not UP-TO-DATE
     }
     assertThat(snapshot.exists()).isTrue()
-
-    snapshotsDir.deleteRecursively()
   }
 
   @Test
@@ -720,14 +711,12 @@ class PaparazziPluginTest {
 
     assertThat(result.task(":testDebugUnitTest")).isNotNull()
 
-    val failureDir = File(fixtureRoot, "build/paparazzi/failures")
+    val failureDir = File(fixtureRoot, "build/paparazzi/failures").registerForDeletionOnExit()
     val delta = File(failureDir, "delta-app.cash.paparazzi.plugin.test_VerifyTest_verify.png")
     assertThat(delta.exists()).isTrue()
 
     val goldenImage = File(fixtureRoot, "src/test/resources/expected_delta.png")
     assertThat(delta).isSimilarTo(goldenImage).withDefaultThreshold()
-
-    failureDir.deleteRecursively()
   }
 
   @Test
@@ -752,14 +741,12 @@ class PaparazziPluginTest {
 
     assertThat(result.task(":module:testDebugUnitTest")).isNotNull()
 
-    val failureDir = File(moduleRoot, "build/paparazzi/failures")
+    val failureDir = File(moduleRoot, "build/paparazzi/failures").registerForDeletionOnExit()
     val delta = File(failureDir, "delta-app.cash.paparazzi.plugin.test_VerifyTest_verify.png")
     assertThat(delta.exists()).isTrue()
 
     val goldenImage = File(moduleRoot, "src/test/resources/expected_delta.png")
     assertThat(delta).isSimilarTo(goldenImage).withDefaultThreshold()
-
-    failureDir.deleteRecursively()
   }
 
   @Test
@@ -1377,6 +1364,8 @@ class PaparazziPluginTest {
   @Test
   fun accessibilityErrorsLogged() {
     val fixtureRoot = File("src/test/projects/validate-accessibility")
+    // this is only a warning message, so subsequent runs would otherwise be UP-TO-DATE
+    fixtureRoot.resolve("build").registerForDeletionOnExit()
 
     val result = gradleRunner
       .withArguments("testDebug", "--stacktrace")
@@ -1430,4 +1419,6 @@ class PaparazziPluginTest {
       if (generatedGradleProperties) gradleProperties.delete()
     }
   }
+
+  private fun File.registerForDeletionOnExit() = apply { filesToDelete += this }
 }

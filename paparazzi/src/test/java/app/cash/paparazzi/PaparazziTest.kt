@@ -36,7 +36,10 @@ import java.util.concurrent.TimeUnit
 
 class PaparazziTest {
   @get:Rule
-  val paparazzi = Paparazzi()
+  val testRule = PaparazziTestRule()
+
+  val paparazzi
+    get() = testRule.paparazzi
 
   @Test
   fun drawCalls() {
