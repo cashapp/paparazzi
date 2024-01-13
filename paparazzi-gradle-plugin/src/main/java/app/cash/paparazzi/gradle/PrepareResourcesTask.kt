@@ -44,23 +44,23 @@ abstract class PrepareResourcesTask : DefaultTask() {
   abstract val compileSdkVersion: Property<String>
 
   @get:InputFiles
-  @get:PathSensitive(PathSensitivity.NONE)
+  @get:PathSensitive(PathSensitivity.RELATIVE)
   abstract val projectResourceDirs: ConfigurableFileCollection
 
   @get:InputFiles
-  @get:PathSensitive(PathSensitivity.NONE)
+  @get:PathSensitive(PathSensitivity.RELATIVE)
   abstract val moduleResourceDirs: ConfigurableFileCollection
 
   @get:InputFiles
-  @get:PathSensitive(PathSensitivity.NONE)
+  @get:PathSensitive(PathSensitivity.RELATIVE)
   abstract val aarExplodedDirs: ConfigurableFileCollection
 
   @get:InputFiles
-  @get:PathSensitive(PathSensitivity.NONE)
+  @get:PathSensitive(PathSensitivity.RELATIVE)
   abstract val projectAssetDirs: ConfigurableFileCollection
 
   @get:InputFiles
-  @get:PathSensitive(PathSensitivity.NONE)
+  @get:PathSensitive(PathSensitivity.RELATIVE)
   abstract val aarAssetDirs: ConfigurableFileCollection
 
   @Deprecated("legacy asset loading, to be removed in a future release")
