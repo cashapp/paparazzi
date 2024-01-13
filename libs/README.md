@@ -11,30 +11,27 @@ Note that layoutlib's version tracks [Android Studio Releases][studio_releases] 
    Flamingo => 2022.2.1
    ```
 2. Find and click the [tag][prebuilt_refs] for the prebuilt corresponding to that version.
-3. Copy the commit short sha from the resulting page
+3. Copy the end of the tag name from the resulting page
+   Example: https://android.googlesource.com/platform/prebuilts/studio/layoutlib/+/refs/tags/studio-2022.2.1
    ```
-   # Example: https://android.googlesource.com/platform/prebuilts/studio/layoutlib/+/refs/tags/studio-2022.2.1
-
-   512837137ea60b9b86836cab7169fec5c635f422 => 5128371
+   refs/tags/studio-2022.2.1 => studio-2022.2.1
    ```
-4. Update commit link, `layoutlib` and `layoutlibPrebuiltSha` in `libs.versions.toml` as expected.
+4. Update & commit the link and `layoutlib` version in `libs.versions.toml`:
    ```
-   https://android.googlesource.com/platform/prebuilts/studio/layoutlib/+/5128371
-   ...
-   layoutlib = "2022.2.1-5128371"
-   layoutlibPrebuiltSha = "5128371"
+   # Maps to this tag: https://android.googlesource.com/platform/prebuilts/studio/layoutlib/+/refs/tags/studio-2022.2.1
+   layoutlib = "2022.2.1"
    ```
 5. Build and upload:
-    ```
-    ./gradlew publishMavenNativeLibraryPublicationToMavenCentralRepository
-    ```
+   ```
+   ./gradlew publishMavenNativeLibraryPublicationToMavenCentralRepository
+   ```
 
-   This may take a few minutes. It clones a large repo (2.4 GiB) and then uploads a large artifact
-   (30 MiB) to Maven Central.
+   This may take a few minutes.
+   It clones a large repo (300 MiB) and then uploads a large artifact (30 MiB) to Maven Central.
 
 6. Visit [Sonatype Nexus][nexus] to promote the artifact. Or drop it if there is a problem!
 7. Once deploy is live, continue with changeset from step 4 to update Paparazzi to consume this
-   latest version.  Here's an [example PR][dolphin_bump].
+   latest version. Here's an [example PR][dolphin_bump].
 
 
 Prerequisites

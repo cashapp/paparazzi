@@ -9,7 +9,7 @@ apply plugin: 'com.vanniktech.maven.publish'
  */
 tasks.register('cloneLayoutlib') {
   it.outputs.dir(repoDir)
-  it.inputs.property('sha', libs.versions.layoutlibPrebuiltSha)
+  it.inputs.property('layoutlibVersion', libs.versions.layoutlib)
 
   doFirst {
     // Gradle aggressively creates outputs directories, which interferes with the git clone check
@@ -17,24 +17,33 @@ tasks.register('cloneLayoutlib') {
       repoDir.delete()
     }
     Grgit grgit
+    String tag = "refs/tags/studio-${libs.versions.layoutlib.get()}"
     if (!repoDir.exists()) {
-      logger.warn('Cloning prebuilt layoutlib: this may take a few minutes...')
+      logger.lifecycle("Cloning prebuilt layoutlib to ${repoDir}...")
       grgit = Grgit.clone {
         dir = repoDir
         uri = "https://android.googlesource.com/platform/prebuilts/studio/layoutlib"
+        depth = 1
+        branches = [ tag ]
+        all = false
+        refToCheckout = tag
       }
-      logger.warn('Cloned prebuilt layoutlib.')
+      logger.lifecycle('Cloned prebuilt layoutlib.')
     } else {
-      logger.warn('Using existing prebuilt layoutlib clone.')
+      logger.lifecycle("Using existing prebuilt layoutlib clone in ${repoDir}.")
       grgit = Grgit.open {
         dir = repoDir
       }
     }
     grgit.withCloseable { repo ->
-      repo.fetch()
-      logger.warn("Checking out SHA ${libs.versions.layoutlibPrebuiltSha.get()}")
+      logger.lifecycle("Fetching tag ${tag}")
+      repo.fetch {
+        refSpecs = [ tag ]
+        depth = 1
+      }
+      logger.lifecycle("Checking out tag ${tag}")
       repo.checkout {
-        branch = libs.versions.layoutlibPrebuiltSha.get()
+        branch = tag
       }
     }
   }
