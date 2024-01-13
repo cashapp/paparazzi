@@ -2,6 +2,50 @@
 
 ## [Unreleased]
 
+## [1.3.2] - 2024-01-13
+
+### New
+* Support for pseudolocalization tests!  To get started:
+```agsl
+@RunWith(TestParameterInjector::class)
+class PseudolocalizationTest(
+  @TestParameter locale: Locale
+) {
+  @get:Rule val paparazzi = Paparazzi(
+    deviceConfig = DeviceConfig.PIXEL_5.copy(locale = locale.tag)
+  )
+
+  @Test fun test() {
+    paparazzi.snapshot { SomeComposable() }
+  }
+
+  enum class Locale(val tag: String?) {
+    Default(null),
+    Accent("en-rXA"),
+    Bidi("ar-rXB")
+  }
+}
+```
+
+* Migrate Paparazzi to layoutlib Giraffe 2022.3.1
+* Compose 1.5.0
+* Kotlin 1.9.0
+* [Gradle Plugin] Gradle 8.5
+* [Gradle Plugin] Android Gradle Plugin 8.1.1
+
+### Fixed
+* Fix relativePath bug in port of ResourceFile
+* Resolve report dir from ReportingExtension instead of hardcoding
+* Make report folder variant-aware
+* Remove reliance on kotlinx.coroutines.main.delay
+* Use a class file locator that queries the system class loader
+* Filter out unrecognized java-symbol tag warning
+* Skip synthetic fields in R classes
+* Update task inputs for resources and assets to account for file renames and moves
+* Update delta images to support showing diff when width and height differ
+
+Kudos to @kevinzheng-ap, @TWiStErRob, @gamepro65, @adamalyyan, @larryng, and others for contributions this release!
+
 ## [1.3.1] - 2023-07-18
 
 ### New
@@ -264,7 +308,8 @@ As of this release, consumers must build on Java 11 environments.
 
 
 
-[Unreleased]: https://github.com/cashapp/paparazzi/compare/1.3.1...HEAD
+[Unreleased]: https://github.com/cashapp/paparazzi/compare/1.3.2...HEAD
+[1.3.2]: https://github.com/cashapp/paparazzi/releases/tag/1.3.2
 [1.3.1]: https://github.com/cashapp/paparazzi/releases/tag/1.3.1
 [1.3.0]: https://github.com/cashapp/paparazzi/releases/tag/1.3.0
 [1.2.0]: https://github.com/cashapp/paparazzi/releases/tag/1.2.0
