@@ -848,6 +848,286 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun verifyResourcesUpdatedWhenLocalResourceChanges() {
+    val fixtureRoot = File("src/test/projects/verify-update-local-resources-change")
+    val buildDir = fixtureRoot.resolve("build").registerForDeletionOnExit()
+    fixtureRoot.resolve("build-cache").registerForDeletionOnExit()
+
+    val valuesDir = File(fixtureRoot, "src/main/res/values/").registerForDeletionOnExit()
+    val destResourceFile = File(valuesDir, "colors.xml")
+    val firstResourceFile = File(fixtureRoot, "src/test/resources/colors1.xml")
+    val secondResourceFile = File(fixtureRoot, "src/test/resources/colors2.xml")
+
+    // Original resource
+    firstResourceFile.copyTo(destResourceFile, overwrite = false)
+
+    val firstRun = gradleRunner
+      .withArguments(":preparePaparazziDebugResources", "--build-cache", "--stacktrace")
+      .forwardOutput()
+      .runFixture(fixtureRoot) { build() }
+
+    with(firstRun.task(":preparePaparazziDebugResources")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(SUCCESS)
+    }
+
+    val resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/debug/resources.txt")
+
+    var resourceFileContents = resourcesFile.readLines()
+    assertThat(resourceFileContents[6]).isEqualTo("src/main/res,src/debug/res")
+
+    buildDir.deleteRecursively()
+
+    // Update resource
+    secondResourceFile.copyTo(destResourceFile, overwrite = true)
+
+    val secondRun = gradleRunner
+      .withArguments(":preparePaparazziDebugResources", "--build-cache", "--stacktrace")
+      .forwardOutput()
+      .runFixture(fixtureRoot) { build() }
+
+    with(secondRun.task(":preparePaparazziDebugResources")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(SUCCESS)
+    }
+
+    resourceFileContents = resourcesFile.readLines()
+    assertThat(resourceFileContents[6]).isEqualTo("src/main/res,src/debug/res")
+  }
+
+  @Test
+  fun verifyResourcesUpdatedWhenModuleResourceChanges() {
+    val fixtureRoot = File("src/test/projects/verify-update-module-resources-change")
+    fixtureRoot.resolve("build-cache").registerForDeletionOnExit()
+
+    val consumerModuleRoot = File(fixtureRoot, "consumer")
+    val buildDir = consumerModuleRoot.resolve("build").registerForDeletionOnExit()
+
+    val producerModuleRoot = File(fixtureRoot, "producer")
+    val valuesDir = File(producerModuleRoot, "src/main/res/values/").registerForDeletionOnExit()
+    val destResourceFile = File(valuesDir, "colors.xml")
+    val firstResourceFile = File(producerModuleRoot, "src/test/resources/colors1.xml")
+    val secondResourceFile = File(producerModuleRoot, "src/test/resources/colors2.xml")
+
+    // Original resource
+    firstResourceFile.copyTo(destResourceFile, overwrite = false)
+
+    val firstRun = gradleRunner
+      .withArguments(":consumer:preparePaparazziDebugResources", "--build-cache", "--stacktrace")
+      .forwardOutput()
+      .runFixture(fixtureRoot) { build() }
+
+    with(firstRun.task(":consumer:preparePaparazziDebugResources")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(SUCCESS)
+    }
+
+    val resourcesFile = File(consumerModuleRoot, "build/intermediates/paparazzi/debug/resources.txt")
+
+    var resourceFileContents = resourcesFile.readLines()
+    assertThat(resourceFileContents[7]).isEqualTo("../producer/build/intermediates/packaged_res/debug")
+
+    buildDir.deleteRecursively()
+
+    // Update resource
+    secondResourceFile.copyTo(destResourceFile, overwrite = true)
+
+    val secondRun = gradleRunner
+      .withArguments(":consumer:preparePaparazziDebugResources", "--build-cache", "--stacktrace")
+      .forwardOutput()
+      .runFixture(fixtureRoot) { build() }
+
+    with(secondRun.task(":consumer:preparePaparazziDebugResources")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(SUCCESS)
+    }
+
+    resourceFileContents = resourcesFile.readLines()
+    assertThat(resourceFileContents[7]).isEqualTo("../producer/build/intermediates/packaged_res/debug")
+  }
+
+  @Test
+  fun verifyResourcesUpdatedWhenExternalDependencyChanges() {
+    val fixtureRoot = File("src/test/projects/verify-update-aar-resources-change")
+    val buildDir = fixtureRoot.resolve("build").registerForDeletionOnExit()
+    fixtureRoot.resolve("build-cache").registerForDeletionOnExit()
+
+    System.setProperty("isFirstRun", "true")
+
+    val firstRun = gradleRunner
+      .withArguments(":preparePaparazziDebugResources", "--build-cache", "--stacktrace")
+      .forwardOutput()
+      .runFixture(fixtureRoot) { build() }
+
+    with(firstRun.task(":preparePaparazziDebugResources")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(SUCCESS)
+    }
+
+    val resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/debug/resources.txt")
+
+    var resourceFileContents = resourcesFile.readLines()
+    assertThat(resourceFileContents[8]).matches("^caches/transforms-3/[0-9a-f]{32}/transformed/external1/res\$")
+
+    buildDir.deleteRecursively()
+
+    System.setProperty("isFirstRun", "false")
+
+    val secondRun = gradleRunner
+      .withArguments(":preparePaparazziDebugResources", "--build-cache", "--stacktrace")
+      .forwardOutput()
+      .runFixture(fixtureRoot) { build() }
+
+    with(secondRun.task(":preparePaparazziDebugResources")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(SUCCESS)
+    }
+
+    resourceFileContents = resourcesFile.readLines()
+    assertThat(resourceFileContents[8]).matches("^caches/transforms-3/[0-9a-f]{32}/transformed/external2/res\$")
+  }
+
+  @Test
+  fun verifyAssetsUpdatedWhenLocalAssetChanges() {
+    val fixtureRoot = File("src/test/projects/verify-update-local-assets-change")
+    val buildDir = fixtureRoot.resolve("build").registerForDeletionOnExit()
+    fixtureRoot.resolve("build-cache").registerForDeletionOnExit()
+
+    val assetsDir = File(fixtureRoot, "src/main/assets/").registerForDeletionOnExit()
+    val destAssetFile = File(assetsDir, "secret.txt")
+    val firstAssetFile = File(fixtureRoot, "src/test/resources/secret1.txt")
+    val secondAssetFile = File(fixtureRoot, "src/test/resources/secret2.txt")
+
+    // Original asset
+    firstAssetFile.copyTo(destAssetFile, overwrite = false)
+
+    val firstRun = gradleRunner
+      .withArguments(":preparePaparazziDebugResources", "--build-cache", "--stacktrace")
+      .forwardOutput()
+      .runFixture(fixtureRoot) { build() }
+
+    with(firstRun.task(":preparePaparazziDebugResources")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(SUCCESS)
+    }
+
+    val resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/debug/resources.txt")
+
+    var resourceFileContents = resourcesFile.readLines()
+    assertThat(resourceFileContents[9]).isEqualTo("src/main/assets,src/debug/assets")
+
+    buildDir.deleteRecursively()
+
+    // Update asset
+    secondAssetFile.copyTo(destAssetFile, overwrite = true)
+
+    val secondRun = gradleRunner
+      .withArguments(":preparePaparazziDebugResources", "--build-cache", "--stacktrace")
+      .forwardOutput()
+      .runFixture(fixtureRoot) { build() }
+
+    with(secondRun.task(":preparePaparazziDebugResources")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(SUCCESS)
+    }
+
+    resourceFileContents = resourcesFile.readLines()
+    assertThat(resourceFileContents[9]).isEqualTo("src/main/assets,src/debug/assets")
+  }
+
+  @Test
+  fun verifyAssetsUpdatedWhenModuleAssetChanges() {
+    val fixtureRoot = File("src/test/projects/verify-update-module-assets-change")
+    fixtureRoot.resolve("build-cache").registerForDeletionOnExit()
+
+    val consumerModuleRoot = File(fixtureRoot, "consumer")
+    val buildDir = consumerModuleRoot.resolve("build").registerForDeletionOnExit()
+
+    val producerModuleRoot = File(fixtureRoot, "producer")
+    val assetsDir = File(producerModuleRoot, "src/main/assets/").registerForDeletionOnExit()
+    val destAssetFile = File(assetsDir, "secret.txt")
+    val firstAssetFile = File(producerModuleRoot, "src/test/resources/secret1.txt")
+    val secondAssetFile = File(producerModuleRoot, "src/test/resources/secret2.txt")
+
+    // Original asset
+    firstAssetFile.copyTo(destAssetFile, overwrite = false)
+
+    val firstRun = gradleRunner
+      .withArguments(":consumer:preparePaparazziDebugResources", "--build-cache", "--stacktrace")
+      .forwardOutput()
+      .runFixture(fixtureRoot) { build() }
+
+    with(firstRun.task(":consumer:preparePaparazziDebugResources")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(SUCCESS)
+    }
+
+    val resourcesFile = File(consumerModuleRoot, "build/intermediates/paparazzi/debug/resources.txt")
+
+    var resourceFileContents = resourcesFile.readLines()
+    assertThat(resourceFileContents[9]).isEqualTo("src/main/assets,src/debug/assets,../producer/build/intermediates/library_assets/debug/out")
+
+    buildDir.deleteRecursively()
+
+    // Update asset
+    secondAssetFile.copyTo(destAssetFile, overwrite = true)
+
+    val secondRun = gradleRunner
+      .withArguments(":consumer:preparePaparazziDebugResources", "--build-cache", "--stacktrace")
+      .forwardOutput()
+      .runFixture(fixtureRoot) { build() }
+
+    with(secondRun.task(":consumer:preparePaparazziDebugResources")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(SUCCESS)
+    }
+
+    resourceFileContents = resourcesFile.readLines()
+    assertThat(resourceFileContents[9]).isEqualTo("src/main/assets,src/debug/assets,../producer/build/intermediates/library_assets/debug/out")
+  }
+
+  @Test
+  fun verifyAssetsUpdatedWhenExternalDependencyChanges() {
+    val fixtureRoot = File("src/test/projects/verify-update-aar-assets-change")
+    val buildDir = fixtureRoot.resolve("build").registerForDeletionOnExit()
+    fixtureRoot.resolve("build-cache").registerForDeletionOnExit()
+
+    System.setProperty("isFirstRun", "true")
+
+    val firstRun = gradleRunner
+      .withArguments(":preparePaparazziDebugResources", "--build-cache", "--stacktrace")
+      .forwardOutput()
+      .runFixture(fixtureRoot) { build() }
+
+    with(firstRun.task(":preparePaparazziDebugResources")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(SUCCESS)
+    }
+
+    val resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/debug/resources.txt")
+
+    var resourceFileContents = resourcesFile.readLines()
+    assertThat(resourceFileContents[10]).matches("^caches/transforms-3/[0-9a-f]{32}/transformed/external1/assets\$")
+
+    buildDir.deleteRecursively()
+
+    System.setProperty("isFirstRun", "false")
+
+    val secondRun = gradleRunner
+      .withArguments(":preparePaparazziDebugResources", "--build-cache", "--stacktrace")
+      .forwardOutput()
+      .runFixture(fixtureRoot) { build() }
+
+    with(secondRun.task(":preparePaparazziDebugResources")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(SUCCESS)
+    }
+
+    resourceFileContents = resourcesFile.readLines()
+    assertThat(resourceFileContents[10]).matches("^caches/transforms-3/[0-9a-f]{32}/transformed/external2/assets\$")
+  }
+
+  @Test
   fun verifyTargetSdkIsSameAsCompileSdk() {
     val fixtureRoot = File("src/test/projects/verify-resources-java")
 
