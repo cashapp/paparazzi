@@ -50,7 +50,7 @@ jobs:
           path: |
             **/build/reports/tests/*/
             **/build/paparazzi/failures/
-            paparazzi/paparazzi-gradle-plugin/src/test/projects/**/build/reports/paparazzi/**/images/
+            paparazzi-gradle-plugin/src/test/projects/**/build/reports/paparazzi/**/images/
 
   publish:
     runs-on: ubuntu-latest
