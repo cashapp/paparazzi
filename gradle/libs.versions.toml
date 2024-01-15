@@ -14,8 +14,8 @@ minSdk = "25"
 compileSdk = "33"
 
 # Maps to this commit: https://android.googlesource.com/platform/prebuilts/studio/layoutlib/+/a73a761
-layoutlib = "2023.1.1-a73a761"
-layoutlibPrebuiltSha = "a73a761"
+layoutlib = "2023.2.1-beta02-6c7316c"
+layoutlibPrebuiltSha = "6c7316c"
 
 [libraries]
 androidx-annotations = { module = "androidx.annotation:annotation", version = "1.7.1" }
@@ -58,7 +58,7 @@ moshi-kotlinReflect = { module = "com.squareup.moshi:moshi-kotlin", version.ref 
 okio = { module = "com.squareup.okio:okio", version = "3.8.0" }
 
 tools-common = { module = "com.android.tools:common", version.ref = "androidTools" }
-tools-layoutlib = { module = "com.android.tools.layoutlib:layoutlib-api", version = "31.2.2" }
+tools-layoutlib = { module = "com.android.tools.layoutlib:layoutlib-api", version = "31.3.0-beta02" }
 tools-ninepatch = { module = "com.android.tools:ninepatch", version.ref = "androidTools" }
 tools-sdkCommon = { module = "com.android.tools:sdk-common", version.ref = "androidTools" }
 
