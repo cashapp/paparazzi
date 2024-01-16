@@ -4,6 +4,30 @@
 
 ## [1.3.2] - 2024-01-13
 
+### NOTE: Due to a known issue with [how Guava now publishes its artifact](https://github.com/google/guava/issues/6567), you will need to apply the following snippet workaround to your root build.gradle:
+```
+subprojects {
+  plugins.withId("app.cash.paparazzi") {
+    // Defer until afterEvaluate so that testImplementation is created by Android plugin.
+    afterEvaluate {
+      dependencies.constraints {
+        add("testImplementation", "com.google.guava:guava") {
+          attributes {
+            attribute(
+              TargetJvmEnvironment.TARGET_JVM_ENVIRONMENT_ATTRIBUTE,
+              objects.named(TargetJvmEnvironment, TargetJvmEnvironment.STANDARD_JVM)
+            )
+          }
+          because("LayoutLib and sdk-common depend on Guava's -jre published variant." +
+            "See https://github.com/cashapp/paparazzi/issues/906.")
+        }
+      }
+    }
+  }
+}
+```
+See also: https://github.com/google/guava/issues/6801.
+
 ### New
 * Support for pseudolocalization tests!  To get started:
 ```agsl
