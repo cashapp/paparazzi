@@ -23,6 +23,7 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
@@ -35,6 +36,7 @@ abstract class PrepareResourcesTask : DefaultTask() {
 
   @Deprecated("legacy resource loading, to be removed in a future release")
   @get:Input
+  @get:Optional
   abstract val mergeResourcesOutputDir: Property<String>
 
   @get:Input
@@ -104,7 +106,9 @@ abstract class PrepareResourcesTask : DefaultTask() {
       .use {
         it.write(mainPackage)
         it.newLine()
-        it.write(mergeResourcesOutputDir.get())
+        if (mergeResourcesOutputDir.isPresent) {
+          it.write(mergeResourcesOutputDir.get())
+        }
         it.newLine()
         it.write(targetSdkVersion.get())
         it.newLine()
