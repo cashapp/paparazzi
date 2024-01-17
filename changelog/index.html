@@ -334,6 +334,15 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#note-due-to-a-known-issue-with-how-guava-now-publishes-its-artifact-you-will-need-to-apply-the-following-snippet-workaround-to-your-root-buildgradle" class="md-nav__link">
+    <span class="md-ellipsis">
+      NOTE: Due to a known issue with how Guava now publishes its artifact, you will need to apply the following snippet workaround to your root build.gradle:
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#new" class="md-nav__link">
     <span class="md-ellipsis">
       New
@@ -885,6 +894,15 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#note-due-to-a-known-issue-with-how-guava-now-publishes-its-artifact-you-will-need-to-apply-the-following-snippet-workaround-to-your-root-buildgradle" class="md-nav__link">
+    <span class="md-ellipsis">
+      NOTE: Due to a known issue with how Guava now publishes its artifact, you will need to apply the following snippet workaround to your root build.gradle:
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#new" class="md-nav__link">
     <span class="md-ellipsis">
       New
@@ -1363,6 +1381,28 @@
 <h1 id="change-log">Change Log<a class="headerlink" href="#change-log" title="Permanent link">&para;</a></h1>
 <h2 id="unreleased"><a href="https://github.com/cashapp/paparazzi/compare/1.3.2...HEAD">Unreleased</a><a class="headerlink" href="#unreleased" title="Permanent link">&para;</a></h2>
 <h2 id="132-2024-01-13"><a href="https://github.com/cashapp/paparazzi/releases/tag/1.3.2">1.3.2</a> - 2024-01-13<a class="headerlink" href="#132-2024-01-13" title="Permanent link">&para;</a></h2>
+<h3 id="note-due-to-a-known-issue-with-how-guava-now-publishes-its-artifact-you-will-need-to-apply-the-following-snippet-workaround-to-your-root-buildgradle">NOTE: Due to a known issue with <a href="https://github.com/google/guava/issues/6567">how Guava now publishes its artifact</a>, you will need to apply the following snippet workaround to your root build.gradle:<a class="headerlink" href="#note-due-to-a-known-issue-with-how-guava-now-publishes-its-artifact-you-will-need-to-apply-the-following-snippet-workaround-to-your-root-buildgradle" title="Permanent link">&para;</a></h3>
+<p><div class="highlight"><pre><span></span><code>subprojects {
+  plugins.withId(&quot;app.cash.paparazzi&quot;) {
+    // Defer until afterEvaluate so that testImplementation is created by Android plugin.
+    afterEvaluate {
+      dependencies.constraints {
+        add(&quot;testImplementation&quot;, &quot;com.google.guava:guava&quot;) {
+          attributes {
+            attribute(
+              TargetJvmEnvironment.TARGET_JVM_ENVIRONMENT_ATTRIBUTE,
+              objects.named(TargetJvmEnvironment, TargetJvmEnvironment.STANDARD_JVM)
+            )
+          }
+          because(&quot;LayoutLib and sdk-common depend on Guava&#39;s -jre published variant.&quot; +
+            &quot;See https://github.com/cashapp/paparazzi/issues/906.&quot;)
+        }
+      }
+    }
+  }
+}
+</code></pre></div>
+See also: <a href="https://github.com/google/guava/issues/6801">https://github.com/google/guava/issues/6801</a>.</p>
 <h3 id="new">New<a class="headerlink" href="#new" title="Permanent link">&para;</a></h3>
 <ul>
 <li>
