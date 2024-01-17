@@ -11,7 +11,8 @@
   <string name="string_name" translatable="false">Test String</string>
   <string name="string_escaped_chars" translatable="false">\"Test\nString \uD83D\uDE00\uD83D\uDC4C\"</string>
   <string name="string_name_xliff" translatable="false">Test String <xliff:g id="number" example="9">{0}</xliff:g> with suffix</string>
-  <string name="string_name_html" translatable="false">This <b>Test</b> String</string>
+  <string name="string_name_html_escaped" translatable="false">This &lt;b>Test&lt;/b> String</string>
+  <string name="string_name_html_unescaped" translatable="false">This <b>Test</b> String</string>
   <string-array name="string_array_name">
     <item>First Test String</item>
     <item>Second Test String</item>

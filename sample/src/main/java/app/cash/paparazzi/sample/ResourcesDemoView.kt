@@ -53,11 +53,12 @@ class ResourcesDemoView(context: Context) : LinearLayout(context) {
     addTextView(MessageFormat.format(context.resources.getString(R.string.string_name_xliff), 5))
     addTextView(
       Html.fromHtml(
-        resources.getString(R.string.string_name_html),
+        resources.getString(R.string.string_name_html_escaped),
         Html.FROM_HTML_MODE_LEGACY
       )
     )
-    addTextView(context.resources.getStringArray(R.array.string_array_name).joinToString())
+    addTextView(resources.getText(R.string.string_name_html_unescaped))
+    addTextView(resources.getStringArray(R.array.string_array_name).joinToString())
   }
 
   private fun LinearLayout.addImageView(@DrawableRes drawableRes: Int) {

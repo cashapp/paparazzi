@@ -109,8 +109,14 @@ fun ResourcesDemo() {
     AndroidView(
       factory = { context -> TextView(context) },
       update = {
-        it.text =
-          Html.fromHtml(resources.getString(R.string.string_name_html), Html.FROM_HTML_MODE_LEGACY)
+        it.text = Html.fromHtml(resources.getString(R.string.string_name_html_escaped), Html.FROM_HTML_MODE_LEGACY)
+        it.setTextColor(android.graphics.Color.BLACK)
+      }
+    )
+    AndroidView(
+      factory = { context -> TextView(context) },
+      update = {
+        it.text = resources.getText(R.string.string_name_html_unescaped)
         it.setTextColor(android.graphics.Color.BLACK)
       }
     )
