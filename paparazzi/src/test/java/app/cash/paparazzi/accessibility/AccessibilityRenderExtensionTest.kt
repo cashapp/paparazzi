@@ -27,11 +27,7 @@ class AccessibilityRenderExtensionTest {
 
   @get:Rule
   val paparazzi = Paparazzi(
-    deviceConfig = DeviceConfig.NEXUS_5.copy(
-      // Needed to render accessibility content next to main content.
-      screenWidth = DeviceConfig.NEXUS_5.screenWidth * 2,
-      softButtons = false
-    ),
+    deviceConfig = DeviceConfig.NEXUS_5,
     snapshotHandler = snapshotHandler,
     renderExtensions = setOf(AccessibilityRenderExtension())
   )

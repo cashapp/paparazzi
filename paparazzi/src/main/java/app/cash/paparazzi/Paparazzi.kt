@@ -40,6 +40,7 @@ import androidx.compose.ui.platform.createLifecycleAwareWindowRecomposer
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import app.cash.paparazzi.accessibility.AccessibilityRenderExtension
 import app.cash.paparazzi.agent.InterceptorRegistrar
 import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.PaparazziCallback
@@ -166,7 +167,7 @@ class Paparazzi @JvmOverloads constructor(
     sessionParamsBuilder = sessionParamsBuilder
       .copy(
         layoutPullParser = LayoutPullParser.createFromString(contentRoot),
-        deviceConfig = deviceConfig,
+        deviceConfig = deviceConfig.updateIfAccessibilityTest(),
         renderingMode = renderingMode,
         supportsRtl = supportsRtl,
         decor = showSystemUi
@@ -249,7 +250,9 @@ class Paparazzi @JvmOverloads constructor(
       )
 
     if (deviceConfig != null) {
-      sessionParamsBuilder = sessionParamsBuilder.copy(deviceConfig = deviceConfig)
+      sessionParamsBuilder = sessionParamsBuilder.copy(
+        deviceConfig = deviceConfig.updateIfAccessibilityTest()
+      )
     }
 
     if (theme != null) {
@@ -619,6 +622,16 @@ class Paparazzi @JvmOverloads constructor(
       Handler_Delegate.executeCallbacks()
     }
   }
+
+  private fun DeviceConfig.updateIfAccessibilityTest(): DeviceConfig =
+    if (renderExtensions.any { it is AccessibilityRenderExtension }) {
+      copy(
+        screenWidth = screenWidth * 2,
+        softButtons = false
+      )
+    } else {
+      this
+    }
 
   companion object {
     /** The choreographer doesn't like 0 as a frame time, so start an hour later. */
