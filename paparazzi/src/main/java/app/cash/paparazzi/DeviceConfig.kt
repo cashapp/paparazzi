@@ -54,6 +54,7 @@ import org.xmlpull.v1.XmlPullParserFactory
 import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
+import java.lang.UnsupportedOperationException
 import java.util.Properties
 import kotlin.math.max
 import kotlin.math.min
@@ -113,16 +114,16 @@ data class DeviceConfig(
       }
 
   private val currentWidth: Int
-    get() = if (orientation == ScreenOrientation.PORTRAIT) {
-      min(screenWidth, screenHeight)
-    } else {
-      max(screenWidth, screenHeight)
+    get() = when (orientation) {
+      ScreenOrientation.PORTRAIT -> min(screenWidth, screenHeight)
+      ScreenOrientation.LANDSCAPE -> max(screenWidth, screenHeight)
+      else -> throw UnsupportedOperationException("Only Portrait or Landscape orientations are supported")
     }
   private val currentHeight: Int
-    get() = if (orientation == ScreenOrientation.PORTRAIT) {
-      max(screenWidth, screenHeight)
-    } else {
-      min(screenWidth, screenHeight)
+    get() = when (orientation) {
+      ScreenOrientation.PORTRAIT -> max(screenWidth, screenHeight)
+      ScreenOrientation.LANDSCAPE -> min(screenWidth, screenHeight)
+      else -> throw UnsupportedOperationException("Only Portrait or Landscape orientations are supported")
     }
 
   val hardwareConfig: HardwareConfig
