@@ -55,6 +55,8 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
 import java.util.Properties
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * Provides [FolderConfiguration] and [HardwareConfig] for various devices. Also provides utility
@@ -110,9 +112,22 @@ data class DeviceConfig(
         versionQualifier = VersionQualifier()
       }
 
+  private val currentWidth: Int
+    get() = if (orientation == ScreenOrientation.PORTRAIT) {
+      min(screenWidth, screenHeight)
+    } else {
+      max(screenWidth, screenHeight)
+    }
+  private val currentHeight: Int
+    get() = if (orientation == ScreenOrientation.PORTRAIT) {
+      max(screenWidth, screenHeight)
+    } else {
+      min(screenWidth, screenHeight)
+    }
+
   val hardwareConfig: HardwareConfig
     get() = HardwareConfig(
-      screenWidth, screenHeight, density, xdpi.toFloat(), ydpi.toFloat(), size,
+      currentWidth, currentHeight, density, xdpi.toFloat(), ydpi.toFloat(), size,
       orientation, screenRound, softButtons
     )
 
