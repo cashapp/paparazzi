@@ -20,11 +20,11 @@ import android.content.Context
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.os.Handler_Delegate
-import android.os.SystemClock_Delegate
 import android.util.AttributeSet
 import android.util.DisplayMetrics
 import android.view.BridgeInflater
 import android.view.Choreographer
+import android.view.Choreographer_Delegate
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.NO_ID
@@ -64,7 +64,6 @@ import com.android.ide.common.rendering.api.Result.Status.ERROR_UNKNOWN
 import com.android.ide.common.rendering.api.SessionParams
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode
 import com.android.internal.lang.System_Delegate
-import com.android.layoutlib.bridge.Bridge
 import com.android.layoutlib.bridge.Bridge.cleanupThread
 import com.android.layoutlib.bridge.Bridge.prepareThread
 import com.android.layoutlib.bridge.BridgeRenderSession
@@ -291,8 +290,10 @@ public class Paparazzi @JvmOverloads constructor(
 
       System_Delegate.setBootTimeNanos(0L)
       try {
-        withTime(0L) {
-          // Initialize the choreographer at time=0.
+        withTime(-Choreographer_Delegate.sChoreographerTime) {
+          // Initialize the choreographer at time=0. sChoreographerTime is added to the
+          // set nanoTime on System_Delegate, so to achieve a start time of 0 it needs
+          // to be negated here.
         }
 
         if (hasComposeRuntime) {
@@ -357,29 +358,19 @@ public class Paparazzi @JvmOverloads constructor(
   ) {
     val frameNanos = TIME_OFFSET_NANOS + timeNanos
 
+    // System_Delegate.nanoTime() is nanoTime - previousNanoTime + sChoreographerTime.
+    // Because of that setNanosTime needs to be called with 0 first so that the previous time will be 0 for the actual
+    // call. sChoreographerTime does not matter because doFrame which modifies it is not called by Paparazzi.
+    System_Delegate.setNanosTime(0L)
     // Execute the block at the requested time.
     System_Delegate.setNanosTime(frameNanos)
 
-    val choreographer = Choreographer.getInstance()
-    val areCallbacksRunningField = choreographer::class.java.getDeclaredField("mCallbacksRunning")
-    areCallbacksRunningField.isAccessible = true
+    // should happen before doCallbacks so that compose re-composition happens
+    executeHandlerCallbacks()
+    // 1 is the only callbackType allowed by doCallbacks
+    Choreographer_Delegate.doCallbacks(Choreographer.getInstance(), 1, frameNanos)
 
-    try {
-      areCallbacksRunningField.setBoolean(choreographer, true)
-
-      executeHandlerCallbacks()
-      val currentTimeMs = SystemClock_Delegate.uptimeMillis()
-      val choreographerCallbacks =
-        RenderAction.getCurrentContext().sessionInteractiveData.choreographerCallbacks
-      choreographerCallbacks.execute(currentTimeMs, Bridge.getLog())
-
-      block()
-    } catch (e: Throwable) {
-      Bridge.getLog().error("broken", "Failed executing Choreographer#doFrame", e, null, null)
-      throw e
-    } finally {
-      areCallbacksRunningField.setBoolean(choreographer, false)
-    }
+    block()
   }
 
   private fun createRenderSession(sessionParams: SessionParams): RenderSessionImpl {
