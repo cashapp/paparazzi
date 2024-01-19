@@ -29,8 +29,6 @@ import kotlin.io.path.exists
 data class Environment(
   val platformDir: String,
   val appTestDir: String,
-  val resDir: String,
-  val assetsDir: String,
   val packageName: String,
   val compileSdkVersion: Int,
   val resourcePackageNames: List<String>,
@@ -72,8 +70,6 @@ fun detectEnvironment(): Environment {
   return Environment(
     platformDir = androidHome.resolve(config.platformDir).toString(),
     appTestDir = appTestDir.toString(),
-    resDir = appTestDir.resolve(config.mergeResourcesOutputDir).toString(),
-    assetsDir = appTestDir.resolve(config.mergeAssetsOutputDir).toString(),
     packageName = config.mainPackage,
     compileSdkVersion = config.targetSdkVersion.toInt(),
     resourcePackageNames = config.resourcePackageNames,
@@ -88,10 +84,8 @@ fun detectEnvironment(): Environment {
 @JsonClass(generateAdapter = true)
 data class Config(
   val mainPackage: String,
-  val mergeResourcesOutputDir: String,
   val targetSdkVersion: String,
   val platformDir: String,
-  val mergeAssetsOutputDir: String,
   val resourcePackageNames: List<String>,
   val projectResourceDirs: List<String>,
   val moduleResourceDirs: List<String>,
