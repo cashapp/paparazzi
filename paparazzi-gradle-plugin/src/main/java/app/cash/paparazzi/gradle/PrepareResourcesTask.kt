@@ -15,7 +15,9 @@
  */
 package app.cash.paparazzi.gradle
 
-import app.cash.paparazzi.gradle.utils.joinFiles
+import app.cash.paparazzi.gradle.utils.relativize
+import com.squareup.moshi.JsonClass
+import com.squareup.moshi.Moshi
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.RegularFileProperty
@@ -95,36 +97,42 @@ abstract class PrepareResourcesTask : DefaultTask() {
         artifactFiles.files.forEach { file ->
           add(file.useLines { lines -> lines.first() })
         }
-      }.joinToString(",")
+      }
     } else {
-      mainPackage
+      listOf(mainPackage)
     }
 
-    out.bufferedWriter()
-      .use {
-        it.write(mainPackage)
-        it.newLine()
-        it.write(mergeResourcesOutputDir.get())
-        it.newLine()
-        it.write(targetSdkVersion.get())
-        it.newLine()
-        // Use compileSdkVersion for system framework resources.
-        it.write("platforms/android-${compileSdkVersion.get()}/")
-        it.newLine()
-        it.write(mergeAssetsOutputDir.get())
-        it.newLine()
-        it.write(resourcePackageNames)
-        it.newLine()
-        it.write(projectResourceDirs.joinFiles(projectDirectory))
-        it.newLine()
-        it.write(moduleResourceDirs.joinFiles(projectDirectory))
-        it.newLine()
-        it.write(aarExplodedDirs.joinFiles(gradleUserHomeDirectory))
-        it.newLine()
-        it.write(projectAssetDirs.joinFiles(projectDirectory))
-        it.newLine()
-        it.write(aarAssetDirs.joinFiles(gradleUserHomeDirectory))
-        it.newLine()
-      }
+    val config = Config(
+      mainPackage = mainPackage,
+      mergeResourcesOutputDir = mergeResourcesOutputDir.get(),
+      targetSdkVersion = targetSdkVersion.get(),
+      // Use compileSdkVersion for system framework resources.
+      platformDir = "platforms/android-${compileSdkVersion.get()}/",
+      mergeAssetsOutputDir = mergeAssetsOutputDir.get(),
+      resourcePackageNames = resourcePackageNames,
+      projectResourceDirs = projectResourceDirs.relativize(projectDirectory),
+      moduleResourceDirs = moduleResourceDirs.relativize(projectDirectory),
+      aarExplodedDirs = aarExplodedDirs.relativize(gradleUserHomeDirectory),
+      projectAssetDirs = projectAssetDirs.relativize(projectDirectory),
+      aarAssetDirs = aarAssetDirs.relativize(gradleUserHomeDirectory)
+    )
+    val moshi = Moshi.Builder().build()!!
+    val json = moshi.adapter(Config::class.java).indent("  ").toJson(config)
+    out.writeText(json)
   }
+
+  @JsonClass(generateAdapter = true)
+  data class Config(
+    val mainPackage: String,
+    val mergeResourcesOutputDir: String,
+    val targetSdkVersion: String,
+    val platformDir: String,
+    val mergeAssetsOutputDir: String,
+    val resourcePackageNames: List<String>,
+    val projectResourceDirs: List<String>,
+    val moduleResourceDirs: List<String>,
+    val aarExplodedDirs: List<String>,
+    val projectAssetDirs: List<String>,
+    val aarAssetDirs: List<String>
+  )
 }

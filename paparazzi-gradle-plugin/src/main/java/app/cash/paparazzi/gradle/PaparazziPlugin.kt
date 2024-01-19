@@ -177,7 +177,7 @@ class PaparazziPlugin : Plugin<Project> {
         task.aarExplodedDirs.from(aarExplodedDirs)
         task.projectAssetDirs.from(localAssetDirs.plus(moduleAssetDirs))
         task.aarAssetDirs.from(aarAssetDirs)
-        task.paparazziResources.set(buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.txt"))
+        task.paparazziResources.set(buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.json"))
       }
 
       val testVariantSlug = testVariant.name.capitalize(Locale.US)

@@ -19,9 +19,7 @@ import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.Directory
 import java.io.File
 
-fun ConfigurableFileCollection.joinFiles(directory: Directory) = files.joinToString(",") { file ->
-  directory.relativize(file)
-}
+fun ConfigurableFileCollection.relativize(directory: Directory) = files.map(directory::relativize)
 
 fun Directory.relativize(child: File): String {
   return asFile.toPath().relativize(child.toPath()).toFile().invariantSeparatorsPath
