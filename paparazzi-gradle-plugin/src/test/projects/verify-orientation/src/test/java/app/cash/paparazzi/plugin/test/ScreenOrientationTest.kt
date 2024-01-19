@@ -18,28 +18,40 @@ package app.cash.paparazzi.plugin.test
 import android.widget.FrameLayout
 import app.cash.paparazzi.DeviceConfig.Companion.PIXEL_C
 import app.cash.paparazzi.Paparazzi
-import com.android.resources.ScreenOrientation.PORTRAIT
+import com.android.resources.ScreenOrientation
+import com.google.testing.junit.testparameterinjector.TestParameter
+import com.google.testing.junit.testparameterinjector.TestParameterInjector
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
 
-class ScreenOrientationTest {
+@RunWith(TestParameterInjector::class)
+class ScreenOrientationTest(
+  @TestParameter val configuration: OrientationTestConfiguration
+) {
   @get:Rule
-  val paparazzi = Paparazzi(deviceConfig = PIXEL_C)
+  val paparazzi = Paparazzi(deviceConfig = PIXEL_C.copy(orientation = configuration.orientation))
 
   @Test
   fun test() {
     paparazzi.snapshot(
       view = FrameLayout(paparazzi.context).apply {
-        setBackgroundColor(0)
-      },
-      name = "landscape"
-    )
-    paparazzi.unsafeUpdateConfig(deviceConfig = PIXEL_C.copy(orientation = PORTRAIT))
-    paparazzi.snapshot(
-      view = FrameLayout(paparazzi.context).apply {
-        setBackgroundColor(-1)
-      },
-      name = "portrait"
+        setBackgroundColor(configuration.backgroundColor)
+      }
     )
   }
+}
+
+enum class OrientationTestConfiguration(
+  val orientation: ScreenOrientation,
+  val backgroundColor: Int
+) {
+  PORTRAIT(
+    orientation = ScreenOrientation.PORTRAIT,
+    backgroundColor = -1
+  ),
+  LANDSCAPE(
+    orientation = ScreenOrientation.LANDSCAPE,
+    backgroundColor = 0
+  )
 }
