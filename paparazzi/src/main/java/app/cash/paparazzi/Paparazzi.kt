@@ -621,7 +621,7 @@ public class Paparazzi @JvmOverloads constructor(
     synchronized(this) {
       // https://android.googlesource.com/platform/frameworks/layoutlib/+/d58aa4703369e109b24419548f38b422d5a44738/bridge/src/com/android/layoutlib/bridge/BridgeRenderSession.java#171
       // BridgeRenderSession.executeCallbacks aggressively tears down the main Looper and BridgeContext, so we call the static delegates ourselves.
-      Handler_Delegate.executeCallbacks()
+      Handler_Delegate.executeCallbacks(System_Delegate.nanoTime())
     }
   }
 
