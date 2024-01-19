@@ -301,4 +301,4 @@ public class PaparazziPlugin : Plugin<Project> {
   }
 }
 
-private const val DEFAULT_COMPILE_SDK_VERSION = 33
+private const val DEFAULT_COMPILE_SDK_VERSION = 34
