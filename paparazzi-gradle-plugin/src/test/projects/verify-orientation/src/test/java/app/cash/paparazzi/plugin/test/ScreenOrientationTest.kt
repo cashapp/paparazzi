@@ -29,22 +29,17 @@ class ScreenOrientationTest {
   @Test
   fun test() {
     paparazzi.snapshot(
-      FrameLayout(paparazzi.context).apply {
+      view = FrameLayout(paparazzi.context).apply {
         setBackgroundColor(0)
       },
-      landscape_snapshot_name
+      name = "landscape"
     )
     paparazzi.unsafeUpdateConfig(deviceConfig = PIXEL_C.copy(orientation = PORTRAIT))
     paparazzi.snapshot(
-      FrameLayout(paparazzi.context).apply {
+      view = FrameLayout(paparazzi.context).apply {
         setBackgroundColor(-1)
       },
-      portrait_snapshot_name
+      name = "portrait"
     )
-  }
-
-  companion object {
-    private const val landscape_snapshot_name = "landscape"
-    private const val portrait_snapshot_name = "portrait"
   }
 }
