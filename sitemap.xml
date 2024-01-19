@@ -36,6 +36,71 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi/-config/</loc>
+         <lastmod>2024-01-19</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi/-config/-config/</loc>
+         <lastmod>2024-01-19</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi/-config/aar-asset-dirs/</loc>
+         <lastmod>2024-01-19</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi/-config/aar-exploded-dirs/</loc>
+         <lastmod>2024-01-19</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi/-config/main-package/</loc>
+         <lastmod>2024-01-19</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi/-config/merge-assets-output-dir/</loc>
+         <lastmod>2024-01-19</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi/-config/merge-resources-output-dir/</loc>
+         <lastmod>2024-01-19</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi/-config/module-resource-dirs/</loc>
+         <lastmod>2024-01-19</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi/-config/platform-dir/</loc>
+         <lastmod>2024-01-19</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi/-config/project-asset-dirs/</loc>
+         <lastmod>2024-01-19</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi/-config/project-resource-dirs/</loc>
+         <lastmod>2024-01-19</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi/-config/resource-package-names/</loc>
+         <lastmod>2024-01-19</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi/-config/target-sdk-version/</loc>
+         <lastmod>2024-01-19</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi/-device-config/</loc>
          <lastmod>2024-01-19</lastmod>
          <changefreq>daily</changefreq>
