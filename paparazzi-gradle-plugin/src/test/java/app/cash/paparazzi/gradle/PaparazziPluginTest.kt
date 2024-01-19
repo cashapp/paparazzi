@@ -1,7 +1,12 @@
 package app.cash.paparazzi.gradle
 
 import app.cash.paparazzi.gradle.ImageSubject.Companion.assertThat
+import app.cash.paparazzi.gradle.PrepareResourcesTask.Config
+import com.google.common.truth.Correspondence
 import com.google.common.truth.Truth.assertThat
+import com.squareup.moshi.Moshi
+import okio.buffer
+import okio.source
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome.FROM_CACHE
@@ -183,12 +188,12 @@ class PaparazziPluginTest {
       assertThat(this!!.outcome).isNotEqualTo(FROM_CACHE)
     }
 
-    var resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/debug/resources.txt")
+    var resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/debug/resources.json")
     assertThat(resourcesFile.exists()).isTrue()
     var resourceFileContents = resourcesFile.readLines()
     assertThat(resourceFileContents.any { it.contains("release") }).isFalse()
 
-    resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/release/resources.txt")
+    resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/release/resources.json")
     assertThat(resourcesFile.exists()).isTrue()
     resourceFileContents = resourcesFile.readLines()
     assertThat(resourceFileContents.any { it.contains("debug") }).isFalse()
@@ -205,7 +210,7 @@ class PaparazziPluginTest {
       assertThat(this!!.outcome).isEqualTo(FROM_CACHE)
     }
 
-    resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/debug/resources.txt")
+    resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/debug/resources.json")
     assertThat(resourcesFile.exists()).isTrue()
     resourceFileContents = resourcesFile.readLines()
     assertThat(resourceFileContents.any { it.contains("release") }).isFalse()
@@ -223,7 +228,7 @@ class PaparazziPluginTest {
 
     assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
 
-    val resourcesFile = File(fixtureRoot, "custom/intermediates/paparazzi/debug/resources.txt")
+    val resourcesFile = File(fixtureRoot, "custom/intermediates/paparazzi/debug/resources.json")
     assertThat(resourcesFile.exists()).isTrue()
 
     val snapshotsDir = File(fixtureRoot, "custom/reports/paparazzi/debug/images")
@@ -242,7 +247,7 @@ class PaparazziPluginTest {
 
     assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
 
-    val resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/debug/resources.txt")
+    val resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/debug/resources.json")
     assertThat(resourcesFile.exists()).isTrue()
 
     val snapshotsDir = File(fixtureRoot, "custom/our-reports/paparazzi/debug/images")
@@ -811,17 +816,27 @@ class PaparazziPluginTest {
 
     assertThat(result.task(":consumer:preparePaparazziDebugResources")).isNotNull()
 
-    val resourcesFile = File(fixtureRoot, "consumer/build/intermediates/paparazzi/debug/resources.txt")
+    val resourcesFile = File(fixtureRoot, "consumer/build/intermediates/paparazzi/debug/resources.json")
     assertThat(resourcesFile.exists()).isTrue()
 
-    val resourceFileContents = resourcesFile.readLines()
-    assertThat(resourceFileContents[0]).isEqualTo("app.cash.paparazzi.plugin.test")
-    assertThat(resourceFileContents[1]).isEqualTo("intermediates/merged_res/debug")
-    assertThat(resourceFileContents[4]).isEqualTo("intermediates/assets/debug")
-    assertThat(resourceFileContents[5]).isEqualTo("app.cash.paparazzi.plugin.test,com.example.mylibrary,app.cash.paparazzi.plugin.test.module1,app.cash.paparazzi.plugin.test.module2")
-    assertThat(resourceFileContents[6]).isEqualTo("src/main/res,src/debug/res")
-    assertThat(resourceFileContents[7]).isEqualTo("../module1/build/intermediates/packaged_res/debug,../module2/build/intermediates/packaged_res/debug")
-    assertThat(resourceFileContents[8]).matches("^caches/transforms-3/[0-9a-f]{32}/transformed/external/res\$")
+    val config = resourcesFile.loadConfig()
+    assertThat(config.mainPackage).isEqualTo("app.cash.paparazzi.plugin.test")
+    assertThat(config.mergeResourcesOutputDir).isEqualTo("intermediates/merged_res/debug")
+    assertThat(config.mergeAssetsOutputDir).isEqualTo("intermediates/assets/debug")
+    assertThat(config.resourcePackageNames).containsExactly(
+      "app.cash.paparazzi.plugin.test",
+      "com.example.mylibrary",
+      "app.cash.paparazzi.plugin.test.module1",
+      "app.cash.paparazzi.plugin.test.module2"
+    )
+    assertThat(config.projectResourceDirs).containsExactly("src/main/res", "src/debug/res")
+    assertThat(config.moduleResourceDirs).containsExactly(
+      "../module1/build/intermediates/packaged_res/debug",
+      "../module2/build/intermediates/packaged_res/debug"
+    )
+    assertThat(config.aarExplodedDirs)
+      .comparingElementsUsing(MATCHES_PATTERN)
+      .containsExactly("^caches/transforms-3/[0-9a-f]{32}/transformed/external/res\$")
   }
 
   @Test
@@ -834,17 +849,27 @@ class PaparazziPluginTest {
 
     assertThat(result.task(":consumer:preparePaparazziDebugResources")).isNotNull()
 
-    val resourcesFile = File(fixtureRoot, "consumer/build/intermediates/paparazzi/debug/resources.txt")
+    val resourcesFile = File(fixtureRoot, "consumer/build/intermediates/paparazzi/debug/resources.json")
     assertThat(resourcesFile.exists()).isTrue()
 
-    val resourceFileContents = resourcesFile.readLines()
-    assertThat(resourceFileContents[0]).isEqualTo("app.cash.paparazzi.plugin.test")
-    assertThat(resourceFileContents[1]).isEqualTo("intermediates/merged_res/debug")
-    assertThat(resourceFileContents[4]).isEqualTo("intermediates/assets/debug")
-    assertThat(resourceFileContents[5]).isEqualTo("app.cash.paparazzi.plugin.test,com.example.mylibrary,app.cash.paparazzi.plugin.test.module1,app.cash.paparazzi.plugin.test.module2")
-    assertThat(resourceFileContents[6]).isEqualTo("src/main/res,src/debug/res")
-    assertThat(resourceFileContents[7]).isEqualTo("../module1/build/intermediates/packaged_res/debug,../module2/build/intermediates/packaged_res/debug")
-    assertThat(resourceFileContents[8]).matches("^caches/transforms-3/[0-9a-f]{32}/transformed/external/res\$")
+    val config = resourcesFile.loadConfig()
+    assertThat(config.mainPackage).isEqualTo("app.cash.paparazzi.plugin.test")
+    assertThat(config.mergeResourcesOutputDir).isEqualTo("intermediates/merged_res/debug")
+    assertThat(config.mergeAssetsOutputDir).isEqualTo("intermediates/assets/debug")
+    assertThat(config.resourcePackageNames).containsExactly(
+      "app.cash.paparazzi.plugin.test",
+      "com.example.mylibrary",
+      "app.cash.paparazzi.plugin.test.module1",
+      "app.cash.paparazzi.plugin.test.module2"
+    )
+    assertThat(config.projectResourceDirs).containsExactly("src/main/res", "src/debug/res")
+    assertThat(config.moduleResourceDirs).containsExactly(
+      "../module1/build/intermediates/packaged_res/debug",
+      "../module2/build/intermediates/packaged_res/debug"
+    )
+    assertThat(config.aarExplodedDirs)
+      .comparingElementsUsing(MATCHES_PATTERN)
+      .containsExactly("^caches/transforms-3/[0-9a-f]{32}/transformed/external/res\$")
   }
 
   @Test
@@ -871,10 +896,10 @@ class PaparazziPluginTest {
       assertThat(this!!.outcome).isEqualTo(SUCCESS)
     }
 
-    val resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/debug/resources.txt")
+    val resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/debug/resources.json")
 
-    var resourceFileContents = resourcesFile.readLines()
-    assertThat(resourceFileContents[6]).isEqualTo("src/main/res,src/debug/res")
+    var config = resourcesFile.loadConfig()
+    assertThat(config.projectResourceDirs).containsExactly("src/main/res", "src/debug/res")
 
     buildDir.deleteRecursively()
 
@@ -891,8 +916,8 @@ class PaparazziPluginTest {
       assertThat(this!!.outcome).isEqualTo(SUCCESS)
     }
 
-    resourceFileContents = resourcesFile.readLines()
-    assertThat(resourceFileContents[6]).isEqualTo("src/main/res,src/debug/res")
+    config = resourcesFile.loadConfig()
+    assertThat(config.projectResourceDirs).containsExactly("src/main/res", "src/debug/res")
   }
 
   @Test
@@ -922,10 +947,10 @@ class PaparazziPluginTest {
       assertThat(this!!.outcome).isEqualTo(SUCCESS)
     }
 
-    val resourcesFile = File(consumerModuleRoot, "build/intermediates/paparazzi/debug/resources.txt")
+    val resourcesFile = File(consumerModuleRoot, "build/intermediates/paparazzi/debug/resources.json")
 
-    var resourceFileContents = resourcesFile.readLines()
-    assertThat(resourceFileContents[7]).isEqualTo("../producer/build/intermediates/packaged_res/debug")
+    var config = resourcesFile.loadConfig()
+    assertThat(config.moduleResourceDirs).containsExactly("../producer/build/intermediates/packaged_res/debug")
 
     buildDir.deleteRecursively()
 
@@ -942,8 +967,8 @@ class PaparazziPluginTest {
       assertThat(this!!.outcome).isEqualTo(SUCCESS)
     }
 
-    resourceFileContents = resourcesFile.readLines()
-    assertThat(resourceFileContents[7]).isEqualTo("../producer/build/intermediates/packaged_res/debug")
+    config = resourcesFile.loadConfig()
+    assertThat(config.moduleResourceDirs).containsExactly("../producer/build/intermediates/packaged_res/debug")
   }
 
   @Test
@@ -964,10 +989,12 @@ class PaparazziPluginTest {
       assertThat(this!!.outcome).isEqualTo(SUCCESS)
     }
 
-    val resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/debug/resources.txt")
+    val resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/debug/resources.json")
 
-    var resourceFileContents = resourcesFile.readLines()
-    assertThat(resourceFileContents[8]).matches("^caches/transforms-3/[0-9a-f]{32}/transformed/external1/res\$")
+    var config = resourcesFile.loadConfig()
+    assertThat(config.aarExplodedDirs)
+      .comparingElementsUsing(MATCHES_PATTERN)
+      .containsExactly("^caches/transforms-3/[0-9a-f]{32}/transformed/external1/res\$")
 
     buildDir.deleteRecursively()
 
@@ -983,8 +1010,10 @@ class PaparazziPluginTest {
       assertThat(this!!.outcome).isEqualTo(SUCCESS)
     }
 
-    resourceFileContents = resourcesFile.readLines()
-    assertThat(resourceFileContents[8]).matches("^caches/transforms-3/[0-9a-f]{32}/transformed/external2/res\$")
+    config = resourcesFile.loadConfig()
+    assertThat(config.aarExplodedDirs)
+      .comparingElementsUsing(MATCHES_PATTERN)
+      .containsExactly("^caches/transforms-3/[0-9a-f]{32}/transformed/external2/res\$")
   }
 
   @Test
@@ -1011,10 +1040,10 @@ class PaparazziPluginTest {
       assertThat(this!!.outcome).isEqualTo(SUCCESS)
     }
 
-    val resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/debug/resources.txt")
+    val resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/debug/resources.json")
 
-    var resourceFileContents = resourcesFile.readLines()
-    assertThat(resourceFileContents[9]).isEqualTo("src/main/assets,src/debug/assets")
+    var config = resourcesFile.loadConfig()
+    assertThat(config.projectAssetDirs).containsExactly("src/main/assets", "src/debug/assets")
 
     buildDir.deleteRecursively()
 
@@ -1031,8 +1060,8 @@ class PaparazziPluginTest {
       assertThat(this!!.outcome).isEqualTo(SUCCESS)
     }
 
-    resourceFileContents = resourcesFile.readLines()
-    assertThat(resourceFileContents[9]).isEqualTo("src/main/assets,src/debug/assets")
+    config = resourcesFile.loadConfig()
+    assertThat(config.projectAssetDirs).containsExactly("src/main/assets", "src/debug/assets")
   }
 
   @Test
@@ -1062,10 +1091,14 @@ class PaparazziPluginTest {
       assertThat(this!!.outcome).isEqualTo(SUCCESS)
     }
 
-    val resourcesFile = File(consumerModuleRoot, "build/intermediates/paparazzi/debug/resources.txt")
+    val resourcesFile = File(consumerModuleRoot, "build/intermediates/paparazzi/debug/resources.json")
 
-    var resourceFileContents = resourcesFile.readLines()
-    assertThat(resourceFileContents[9]).isEqualTo("src/main/assets,src/debug/assets,../producer/build/intermediates/library_assets/debug/out")
+    var config = resourcesFile.loadConfig()
+    assertThat(config.projectAssetDirs).containsExactly(
+      "src/main/assets",
+      "src/debug/assets",
+      "../producer/build/intermediates/library_assets/debug/out"
+    )
 
     buildDir.deleteRecursively()
 
@@ -1082,8 +1115,12 @@ class PaparazziPluginTest {
       assertThat(this!!.outcome).isEqualTo(SUCCESS)
     }
 
-    resourceFileContents = resourcesFile.readLines()
-    assertThat(resourceFileContents[9]).isEqualTo("src/main/assets,src/debug/assets,../producer/build/intermediates/library_assets/debug/out")
+    config = resourcesFile.loadConfig()
+    assertThat(config.projectAssetDirs).containsExactly(
+      "src/main/assets",
+      "src/debug/assets",
+      "../producer/build/intermediates/library_assets/debug/out"
+    )
   }
 
   @Test
@@ -1104,10 +1141,12 @@ class PaparazziPluginTest {
       assertThat(this!!.outcome).isEqualTo(SUCCESS)
     }
 
-    val resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/debug/resources.txt")
+    val resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/debug/resources.json")
 
-    var resourceFileContents = resourcesFile.readLines()
-    assertThat(resourceFileContents[10]).matches("^caches/transforms-3/[0-9a-f]{32}/transformed/external1/assets\$")
+    var config = resourcesFile.loadConfig()
+    assertThat(config.aarAssetDirs)
+      .comparingElementsUsing(MATCHES_PATTERN)
+      .containsExactly("^caches/transforms-3/[0-9a-f]{32}/transformed/external1/assets\$")
 
     buildDir.deleteRecursively()
 
@@ -1123,8 +1162,10 @@ class PaparazziPluginTest {
       assertThat(this!!.outcome).isEqualTo(SUCCESS)
     }
 
-    resourceFileContents = resourcesFile.readLines()
-    assertThat(resourceFileContents[10]).matches("^caches/transforms-3/[0-9a-f]{32}/transformed/external2/assets\$")
+    config = resourcesFile.loadConfig()
+    assertThat(config.aarAssetDirs)
+      .comparingElementsUsing(MATCHES_PATTERN)
+      .containsExactly("^caches/transforms-3/[0-9a-f]{32}/transformed/external2/assets\$")
   }
 
   @Test
@@ -1137,12 +1178,12 @@ class PaparazziPluginTest {
 
     assertThat(result.task(":consumer:preparePaparazziDebugResources")).isNotNull()
 
-    val resourcesFile = File(fixtureRoot, "consumer/build/intermediates/paparazzi/debug/resources.txt")
+    val resourcesFile = File(fixtureRoot, "consumer/build/intermediates/paparazzi/debug/resources.json")
     assertThat(resourcesFile.exists()).isTrue()
 
-    val resourceFileContents = resourcesFile.readLines()
-    assertThat(resourceFileContents[2]).isEqualTo("33")
-    assertThat(resourceFileContents[3]).isEqualTo("platforms/android-33/")
+    val config = resourcesFile.loadConfig()
+    assertThat(config.targetSdkVersion).isEqualTo("33")
+    assertThat(config.platformDir).isEqualTo("platforms/android-33/")
   }
 
   @Test
@@ -1155,12 +1196,12 @@ class PaparazziPluginTest {
 
     assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
 
-    val resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/debug/resources.txt")
+    val resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/debug/resources.json")
     assertThat(resourcesFile.exists()).isTrue()
 
-    val resourceFileContents = resourcesFile.readLines()
-    assertThat(resourceFileContents[2]).isEqualTo("29")
-    assertThat(resourceFileContents[3]).isEqualTo("platforms/android-33/")
+    val config = resourcesFile.loadConfig()
+    assertThat(config.targetSdkVersion).isEqualTo("29")
+    assertThat(config.platformDir).isEqualTo("platforms/android-33/")
   }
 
   @Test
@@ -1671,6 +1712,8 @@ class PaparazziPluginTest {
     assertThat(jacocoExecutionData.exists()).isTrue()
   }
 
+  private fun File.loadConfig() = CONFIG_ADAPTER.fromJson(source().buffer())!!
+
   private fun GradleRunner.runFixture(
     projectRoot: File,
     action: GradleRunner.() -> BuildResult
@@ -1701,4 +1744,11 @@ class PaparazziPluginTest {
   }
 
   private fun File.registerForDeletionOnExit() = apply { filesToDelete += this }
+
+  companion object {
+    private val CONFIG_ADAPTER = Moshi.Builder().build()!!.adapter(Config::class.java)
+    private val MATCHES_PATTERN = Correspondence.from<String, String>(
+      { actual, expected -> actual.matches(expected.toRegex()) }, "matches"
+    )
+  }
 }

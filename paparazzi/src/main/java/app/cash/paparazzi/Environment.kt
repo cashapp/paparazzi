@@ -15,6 +15,10 @@
  */
 package app.cash.paparazzi
 
+import com.squareup.moshi.JsonClass
+import com.squareup.moshi.Moshi
+import okio.buffer
+import okio.source
 import java.io.File
 import java.io.FileNotFoundException
 import java.nio.file.Path
@@ -55,31 +59,45 @@ fun androidHome() = System.getenv("ANDROID_SDK_ROOT")
 fun detectEnvironment(): Environment {
   checkInstalledJvm()
 
-  val resourcesFile = File(System.getProperty("paparazzi.test.resources"))
-  val configLines = resourcesFile.readLines()
-
   val projectDir = Paths.get(System.getProperty("paparazzi.project.dir"))
   val appTestDir = Paths.get(System.getProperty("paparazzi.build.dir"))
   val artifactsCacheDir = Paths.get(System.getProperty("paparazzi.artifacts.cache.dir"))
   val androidHome = Paths.get(androidHome())
+
+  val resourcesFile = File(System.getProperty("paparazzi.test.resources"))
+  val moshi = Moshi.Builder().build()!!
+  val config = moshi.adapter(Config::class.java).fromJson(resourcesFile.source().buffer())!!
+
   return Environment(
-    platformDir = androidHome.resolve(configLines[3]).toString(),
+    platformDir = androidHome.resolve(config.platformDir).toString(),
     appTestDir = appTestDir.toString(),
-    resDir = appTestDir.resolve(configLines[1]).toString(),
-    assetsDir = appTestDir.resolve(configLines[4]).toString(),
-    packageName = configLines[0],
-    compileSdkVersion = configLines[2].toInt(),
-    resourcePackageNames = configLines[5].split(),
-    localResourceDirs = configLines[6].split().map { projectDir.resolve(it).toString() },
-    moduleResourceDirs = configLines[7].split().map { projectDir.resolve(it).toString() },
-    libraryResourceDirs = configLines[8].split().map { artifactsCacheDir.resolve(it).toString() },
-    allModuleAssetDirs = configLines[9].split().map { projectDir.resolve(it).toString() },
-    libraryAssetDirs = configLines[10].split().map { artifactsCacheDir.resolve(it).toString() }
+    resDir = appTestDir.resolve(config.mergeResourcesOutputDir).toString(),
+    assetsDir = appTestDir.resolve(config.mergeAssetsOutputDir).toString(),
+    packageName = config.mainPackage,
+    compileSdkVersion = config.targetSdkVersion.toInt(),
+    resourcePackageNames = config.resourcePackageNames,
+    localResourceDirs = config.projectResourceDirs.map { projectDir.resolve(it).toString() },
+    moduleResourceDirs = config.moduleResourceDirs.map { projectDir.resolve(it).toString() },
+    libraryResourceDirs = config.aarExplodedDirs.map { artifactsCacheDir.resolve(it).toString() },
+    allModuleAssetDirs = config.projectAssetDirs.map { projectDir.resolve(it).toString() },
+    libraryAssetDirs = config.aarAssetDirs.map { artifactsCacheDir.resolve(it).toString() }
   )
 }
 
-private fun String.split(): List<String> =
-  this.split(",").filter { it.isNotEmpty() }
+@JsonClass(generateAdapter = true)
+data class Config(
+  val mainPackage: String,
+  val mergeResourcesOutputDir: String,
+  val targetSdkVersion: String,
+  val platformDir: String,
+  val mergeAssetsOutputDir: String,
+  val resourcePackageNames: List<String>,
+  val projectResourceDirs: List<String>,
+  val moduleResourceDirs: List<String>,
+  val aarExplodedDirs: List<String>,
+  val projectAssetDirs: List<String>,
+  val aarAssetDirs: List<String>
+)
 
 private fun androidSdkPath(): String {
   val osName = System.getProperty("os.name").lowercase(Locale.US)
