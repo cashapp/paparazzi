@@ -21,6 +21,7 @@ import com.squareup.moshi.Moshi
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
@@ -45,21 +46,18 @@ abstract class PrepareResourcesTask : DefaultTask() {
   @get:Input
   abstract val compileSdkVersion: Property<String>
 
-  @get:InputFiles
-  @get:PathSensitive(PathSensitivity.RELATIVE)
-  abstract val projectResourceDirs: ConfigurableFileCollection
+  @get:Input
+  abstract val projectResourceDirs: ListProperty<String>
 
-  @get:InputFiles
-  @get:PathSensitive(PathSensitivity.RELATIVE)
-  abstract val moduleResourceDirs: ConfigurableFileCollection
+  @get:Input
+  abstract val moduleResourceDirs: ListProperty<String>
 
   @get:InputFiles
   @get:PathSensitive(PathSensitivity.RELATIVE)
   abstract val aarExplodedDirs: ConfigurableFileCollection
 
-  @get:InputFiles
-  @get:PathSensitive(PathSensitivity.RELATIVE)
-  abstract val projectAssetDirs: ConfigurableFileCollection
+  @get:Input
+  abstract val projectAssetDirs: ListProperty<String>
 
   @get:InputFiles
   @get:PathSensitive(PathSensitivity.RELATIVE)
@@ -110,10 +108,10 @@ abstract class PrepareResourcesTask : DefaultTask() {
       platformDir = "platforms/android-${compileSdkVersion.get()}/",
       mergeAssetsOutputDir = mergeAssetsOutputDir.get(),
       resourcePackageNames = resourcePackageNames,
-      projectResourceDirs = projectResourceDirs.relativize(projectDirectory),
-      moduleResourceDirs = moduleResourceDirs.relativize(projectDirectory),
+      projectResourceDirs = projectResourceDirs.get(),
+      moduleResourceDirs = moduleResourceDirs.get(),
       aarExplodedDirs = aarExplodedDirs.relativize(gradleUserHomeDirectory),
-      projectAssetDirs = projectAssetDirs.relativize(projectDirectory),
+      projectAssetDirs = projectAssetDirs.get(),
       aarAssetDirs = aarAssetDirs.relativize(gradleUserHomeDirectory)
     )
     val moshi = Moshi.Builder().build()!!

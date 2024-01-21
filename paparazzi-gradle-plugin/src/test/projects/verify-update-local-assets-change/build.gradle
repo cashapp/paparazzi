@@ -14,4 +14,7 @@ android {
     sourceCompatibility = libs.versions.javaTarget.get()
     targetCompatibility = libs.versions.javaTarget.get()
   }
+  kotlinOptions {
+    jvmTarget = libs.versions.javaTarget.get()
+  }
 }
