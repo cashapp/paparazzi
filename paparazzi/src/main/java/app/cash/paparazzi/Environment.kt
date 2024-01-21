@@ -66,7 +66,8 @@ fun detectEnvironment(): Environment {
 
   val resourcesFile = File(System.getProperty("paparazzi.test.resources"))
   val moshi = Moshi.Builder().build()!!
-  val config = moshi.adapter(Config::class.java).fromJson(resourcesFile.source().buffer())!!
+  val config =
+    resourcesFile.source().buffer().use { moshi.adapter(Config::class.java).fromJson(it)!! }
 
   return Environment(
     platformDir = androidHome.resolve(config.platformDir).toString(),
