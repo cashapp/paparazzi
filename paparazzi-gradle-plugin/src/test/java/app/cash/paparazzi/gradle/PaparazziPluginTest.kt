@@ -1712,7 +1712,7 @@ class PaparazziPluginTest {
     assertThat(jacocoExecutionData.exists()).isTrue()
   }
 
-  private fun File.loadConfig() = CONFIG_ADAPTER.fromJson(source().buffer())!!
+  private fun File.loadConfig() = source().buffer().use { CONFIG_ADAPTER.fromJson(it)!! }
 
   private fun GradleRunner.runFixture(
     projectRoot: File,
