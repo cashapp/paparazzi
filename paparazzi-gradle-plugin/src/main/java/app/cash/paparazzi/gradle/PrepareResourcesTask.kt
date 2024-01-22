@@ -36,10 +36,6 @@ abstract class PrepareResourcesTask : DefaultTask() {
   @get:Input
   abstract val packageName: Property<String>
 
-  @Deprecated("legacy resource loading, to be removed in a future release")
-  @get:Input
-  abstract val mergeResourcesOutputDir: Property<String>
-
   @get:Input
   abstract val targetSdkVersion: Property<String>
 
@@ -63,10 +59,6 @@ abstract class PrepareResourcesTask : DefaultTask() {
   @get:PathSensitive(PathSensitivity.RELATIVE)
   abstract val aarAssetDirs: ConfigurableFileCollection
 
-  @Deprecated("legacy asset loading, to be removed in a future release")
-  @get:Input
-  abstract val mergeAssetsOutputDir: Property<String>
-
   @get:Input
   abstract val nonTransitiveRClassEnabled: Property<Boolean>
 
@@ -82,8 +74,6 @@ abstract class PrepareResourcesTask : DefaultTask() {
   private val gradleUserHomeDirectory = projectDirectory.dir(project.gradle.gradleUserHomeDir.path)
 
   @TaskAction
-  // TODO: figure out why this can't be removed as of Kotlin 1.6+
-  @OptIn(ExperimentalStdlibApi::class)
   fun writeResourcesFile() {
     val out = paparazziResources.get().asFile
     out.delete()
@@ -102,11 +92,9 @@ abstract class PrepareResourcesTask : DefaultTask() {
 
     val config = Config(
       mainPackage = mainPackage,
-      mergeResourcesOutputDir = mergeResourcesOutputDir.get(),
       targetSdkVersion = targetSdkVersion.get(),
       // Use compileSdkVersion for system framework resources.
       platformDir = "platforms/android-${compileSdkVersion.get()}/",
-      mergeAssetsOutputDir = mergeAssetsOutputDir.get(),
       resourcePackageNames = resourcePackageNames,
       projectResourceDirs = projectResourceDirs.get(),
       moduleResourceDirs = moduleResourceDirs.get(),
@@ -122,10 +110,8 @@ abstract class PrepareResourcesTask : DefaultTask() {
   @JsonClass(generateAdapter = true)
   data class Config(
     val mainPackage: String,
-    val mergeResourcesOutputDir: String,
     val targetSdkVersion: String,
     val platformDir: String,
-    val mergeAssetsOutputDir: String,
     val resourcePackageNames: List<String>,
     val projectResourceDirs: List<String>,
     val moduleResourceDirs: List<String>,

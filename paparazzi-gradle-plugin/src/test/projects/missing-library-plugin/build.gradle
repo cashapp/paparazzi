@@ -1,5 +1,0 @@
-plugins {
-  id 'app.cash.paparazzi'
-}
-
-apply from: '../guava-fix.gradle'

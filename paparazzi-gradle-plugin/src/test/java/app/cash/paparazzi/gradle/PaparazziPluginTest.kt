@@ -93,35 +93,6 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun missingAndroidLibraryPluginWhenLegacyResourceLoadingIsOn() {
-    val fixtureRoot = File("src/test/projects/missing-library-plugin")
-
-    val result = gradleRunner
-      .withArguments("preparePaparazziDebugResources", "--stacktrace")
-      .runFixture(fixtureRoot) { buildAndFail() }
-
-    assertThat(result.task(":preparePaparazziDebugResources")).isNull()
-    assertThat(result.output).contains(
-      "The Android Gradle library plugin must be applied for Paparazzi to work properly."
-    )
-  }
-
-  @Test
-  fun invalidAndroidApplicationPluginWhenLegacyResourceLoadingIsOn() {
-    val fixtureRoot = File("src/test/projects/invalid-application-plugin")
-
-    val result = gradleRunner
-      .withArguments("preparePaparazziDebugResources", "--stacktrace")
-      .runFixture(fixtureRoot) { buildAndFail() }
-
-    assertThat(result.task(":preparePaparazziDebugResources")).isNull()
-    assertThat(result.output).contains(
-      "Currently, Paparazzi only works in Android library -- not application -- modules. " +
-        "See https://github.com/cashapp/paparazzi/issues/107"
-    )
-  }
-
-  @Test
   fun declareAndroidPluginAfter() {
     val fixtureRoot = File("src/test/projects/declare-android-plugin-after")
 
@@ -317,46 +288,6 @@ class PaparazziPluginTest {
       .runFixture(fixtureRoot) { build() }
 
     assertThat(result.output).contains("Objects still linked from the DelegateManager:")
-  }
-
-  @Test
-  fun flagLegacyResourceLoadingIsOn() {
-    val fixtureRoot = File("src/test/projects/flag-legacy-resource-loading-on")
-
-    val result = gradleRunner
-      .withArguments("testDebug", "--stacktrace")
-      .runFixture(fixtureRoot) { build() }
-
-    assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
-    assertThat(result.task(":testDebugUnitTest")).isNotNull()
-
-    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/debug/images")
-    val snapshots = snapshotsDir.listFiles()
-    assertThat(snapshots!!).hasLength(1)
-
-    val snapshotImage = snapshots[0]
-    val goldenImage = File(fixtureRoot, "src/test/resources/launch.png")
-    assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
-  }
-
-  @Test
-  fun flagLegacyResourceLoadingIsOff() {
-    val fixtureRoot = File("src/test/projects/flag-legacy-resource-loading-off")
-
-    val result = gradleRunner
-      .withArguments("testDebug", "--stacktrace")
-      .runFixture(fixtureRoot) { build() }
-
-    assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
-    assertThat(result.task(":testDebugUnitTest")).isNotNull()
-
-    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/debug/images")
-    val snapshots = snapshotsDir.listFiles()
-    assertThat(snapshots!!).hasLength(1)
-
-    val snapshotImage = snapshots[0]
-    val goldenImage = File(fixtureRoot, "src/test/resources/launch.png")
-    assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
   }
 
   @Test
@@ -821,8 +752,6 @@ class PaparazziPluginTest {
 
     val config = resourcesFile.loadConfig()
     assertThat(config.mainPackage).isEqualTo("app.cash.paparazzi.plugin.test")
-    assertThat(config.mergeResourcesOutputDir).isEqualTo("intermediates/merged_res/debug")
-    assertThat(config.mergeAssetsOutputDir).isEqualTo("intermediates/assets/debug")
     assertThat(config.resourcePackageNames).containsExactly(
       "app.cash.paparazzi.plugin.test",
       "com.example.mylibrary",
@@ -854,8 +783,6 @@ class PaparazziPluginTest {
 
     val config = resourcesFile.loadConfig()
     assertThat(config.mainPackage).isEqualTo("app.cash.paparazzi.plugin.test")
-    assertThat(config.mergeResourcesOutputDir).isEqualTo("intermediates/merged_res/debug")
-    assertThat(config.mergeAssetsOutputDir).isEqualTo("intermediates/assets/debug")
     assertThat(config.resourcePackageNames).containsExactly(
       "app.cash.paparazzi.plugin.test",
       "com.example.mylibrary",
@@ -1241,17 +1168,8 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun verifyOpenAssetsLegacyAssetLoadingIsOff() {
-    val fixtureRoot = File("src/test/projects/open-assets-legacy-asset-loading-off")
-
-    gradleRunner
-      .withArguments("consumer:testDebug", "--stacktrace")
-      .runFixture(fixtureRoot) { build() }
-  }
-
-  @Test
-  fun verifyOpenAssetsLegacyAssetLoadingIsOn() {
-    val fixtureRoot = File("src/test/projects/open-assets-legacy-asset-loading-on")
+  fun verifyOpenAssets() {
+    val fixtureRoot = File("src/test/projects/open-assets")
 
     gradleRunner
       .withArguments("consumer:testDebug", "--stacktrace")
