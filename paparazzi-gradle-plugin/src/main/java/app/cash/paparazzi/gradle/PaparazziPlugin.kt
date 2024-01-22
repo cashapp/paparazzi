@@ -17,6 +17,7 @@ package app.cash.paparazzi.gradle
 
 import app.cash.paparazzi.gradle.utils.artifactViewFor
 import app.cash.paparazzi.gradle.utils.artifactsFor
+import app.cash.paparazzi.gradle.utils.relativize
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.LibraryExtension
 import com.android.build.gradle.TestedExtension
@@ -172,10 +173,10 @@ class PaparazziPlugin : Plugin<Project> {
         task.targetSdkVersion.set(android.targetSdkVersion())
         task.compileSdkVersion.set(android.compileSdkVersion())
         task.mergeAssetsOutputDir.set(buildDirectory.asRelativePathString(mergeAssetsOutputDir))
-        task.projectResourceDirs.from(localResourceDirs)
-        task.moduleResourceDirs.from(moduleResourceDirs)
+        task.projectResourceDirs.set(localResourceDirs.relativize(projectDirectory))
+        task.moduleResourceDirs.set(moduleResourceDirs.relativize(projectDirectory))
         task.aarExplodedDirs.from(aarExplodedDirs)
-        task.projectAssetDirs.from(localAssetDirs.plus(moduleAssetDirs))
+        task.projectAssetDirs.set(localAssetDirs.plus(moduleAssetDirs).relativize(projectDirectory))
         task.aarAssetDirs.from(aarAssetDirs)
         task.paparazziResources.set(buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.json"))
       }
@@ -236,6 +237,18 @@ class PaparazziPlugin : Plugin<Project> {
 
         test.inputs.dir(mergeResourcesOutputDir)
         test.inputs.dir(mergeAssetsOutputDir)
+        test.inputs.files(localResourceDirs)
+          .withPropertyName("paparazzi.localResourceDirs")
+          .withPathSensitivity(PathSensitivity.RELATIVE)
+        test.inputs.files(moduleResourceDirs)
+          .withPropertyName("paparazzi.moduleResourceDirs")
+          .withPathSensitivity(PathSensitivity.RELATIVE)
+        test.inputs.files(localAssetDirs)
+          .withPropertyName("paparazzi.localAssetDirs")
+          .withPathSensitivity(PathSensitivity.RELATIVE)
+        test.inputs.files(moduleAssetDirs)
+          .withPropertyName("paparazzi.moduleAssetDirs")
+          .withPathSensitivity(PathSensitivity.RELATIVE)
         test.inputs.files(nativePlatformFileCollection)
           .withPropertyName("paparazzi.nativePlatform")
           .withPathSensitivity(PathSensitivity.NONE)

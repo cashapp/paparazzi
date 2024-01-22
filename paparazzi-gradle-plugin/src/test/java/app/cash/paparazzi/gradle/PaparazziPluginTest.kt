@@ -887,11 +887,15 @@ class PaparazziPluginTest {
     firstResourceFile.copyTo(destResourceFile, overwrite = false)
 
     val firstRun = gradleRunner
-      .withArguments(":preparePaparazziDebugResources", "--build-cache", "--stacktrace")
+      .withArguments("testDebug", "--build-cache", "--stacktrace")
       .forwardOutput()
       .runFixture(fixtureRoot) { build() }
 
     with(firstRun.task(":preparePaparazziDebugResources")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(SUCCESS)
+    }
+    with(firstRun.task(":testDebugUnitTest")) {
       assertThat(this).isNotNull()
       assertThat(this!!.outcome).isEqualTo(SUCCESS)
     }
@@ -907,13 +911,17 @@ class PaparazziPluginTest {
     secondResourceFile.copyTo(destResourceFile, overwrite = true)
 
     val secondRun = gradleRunner
-      .withArguments(":preparePaparazziDebugResources", "--build-cache", "--stacktrace")
+      .withArguments(":testDebug", "--build-cache", "--stacktrace")
       .forwardOutput()
       .runFixture(fixtureRoot) { build() }
 
     with(secondRun.task(":preparePaparazziDebugResources")) {
       assertThat(this).isNotNull()
-      assertThat(this!!.outcome).isEqualTo(SUCCESS)
+      assertThat(this!!.outcome).isEqualTo(FROM_CACHE) // paths didn't change
+    }
+    with(secondRun.task(":testDebugUnitTest")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(SUCCESS) // but contents did
     }
 
     config = resourcesFile.loadConfig()
@@ -938,11 +946,15 @@ class PaparazziPluginTest {
     firstResourceFile.copyTo(destResourceFile, overwrite = false)
 
     val firstRun = gradleRunner
-      .withArguments(":consumer:preparePaparazziDebugResources", "--build-cache", "--stacktrace")
+      .withArguments(":consumer:testDebug", "--build-cache", "--stacktrace")
       .forwardOutput()
       .runFixture(fixtureRoot) { build() }
 
     with(firstRun.task(":consumer:preparePaparazziDebugResources")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(SUCCESS)
+    }
+    with(firstRun.task(":consumer:testDebugUnitTest")) {
       assertThat(this).isNotNull()
       assertThat(this!!.outcome).isEqualTo(SUCCESS)
     }
@@ -958,13 +970,17 @@ class PaparazziPluginTest {
     secondResourceFile.copyTo(destResourceFile, overwrite = true)
 
     val secondRun = gradleRunner
-      .withArguments(":consumer:preparePaparazziDebugResources", "--build-cache", "--stacktrace")
+      .withArguments(":consumer:testDebug", "--build-cache", "--stacktrace")
       .forwardOutput()
       .runFixture(fixtureRoot) { build() }
 
     with(secondRun.task(":consumer:preparePaparazziDebugResources")) {
       assertThat(this).isNotNull()
-      assertThat(this!!.outcome).isEqualTo(SUCCESS)
+      assertThat(this!!.outcome).isEqualTo(FROM_CACHE) // paths didn't change
+    }
+    with(secondRun.task(":consumer:testDebugUnitTest")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(SUCCESS) // but contents did
     }
 
     config = resourcesFile.loadConfig()
@@ -1031,11 +1047,16 @@ class PaparazziPluginTest {
     firstAssetFile.copyTo(destAssetFile, overwrite = false)
 
     val firstRun = gradleRunner
-      .withArguments(":preparePaparazziDebugResources", "--build-cache", "--stacktrace")
+      .withArguments("testDebug", "--build-cache", "--stacktrace")
       .forwardOutput()
       .runFixture(fixtureRoot) { build() }
 
     with(firstRun.task(":preparePaparazziDebugResources")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(SUCCESS)
+    }
+
+    with(firstRun.task(":testDebugUnitTest")) {
       assertThat(this).isNotNull()
       assertThat(this!!.outcome).isEqualTo(SUCCESS)
     }
@@ -1051,13 +1072,18 @@ class PaparazziPluginTest {
     secondAssetFile.copyTo(destAssetFile, overwrite = true)
 
     val secondRun = gradleRunner
-      .withArguments(":preparePaparazziDebugResources", "--build-cache", "--stacktrace")
+      .withArguments(":testDebug", "--build-cache", "--stacktrace")
       .forwardOutput()
       .runFixture(fixtureRoot) { build() }
 
     with(secondRun.task(":preparePaparazziDebugResources")) {
       assertThat(this).isNotNull()
-      assertThat(this!!.outcome).isEqualTo(SUCCESS)
+      assertThat(this!!.outcome).isEqualTo(FROM_CACHE) // paths didn't change
+    }
+
+    with(secondRun.task(":testDebugUnitTest")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(SUCCESS) // but contents did
     }
 
     config = resourcesFile.loadConfig()
@@ -1082,11 +1108,16 @@ class PaparazziPluginTest {
     firstAssetFile.copyTo(destAssetFile, overwrite = false)
 
     val firstRun = gradleRunner
-      .withArguments(":consumer:preparePaparazziDebugResources", "--build-cache", "--stacktrace")
+      .withArguments(":consumer:testDebug", "--build-cache", "--stacktrace")
       .forwardOutput()
       .runFixture(fixtureRoot) { build() }
 
     with(firstRun.task(":consumer:preparePaparazziDebugResources")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(SUCCESS)
+    }
+
+    with(firstRun.task(":consumer:testDebugUnitTest")) {
       assertThat(this).isNotNull()
       assertThat(this!!.outcome).isEqualTo(SUCCESS)
     }
@@ -1106,13 +1137,18 @@ class PaparazziPluginTest {
     secondAssetFile.copyTo(destAssetFile, overwrite = true)
 
     val secondRun = gradleRunner
-      .withArguments(":consumer:preparePaparazziDebugResources", "--build-cache", "--stacktrace")
+      .withArguments(":consumer:testDebug", "--build-cache", "--stacktrace")
       .forwardOutput()
       .runFixture(fixtureRoot) { build() }
 
     with(secondRun.task(":consumer:preparePaparazziDebugResources")) {
       assertThat(this).isNotNull()
-      assertThat(this!!.outcome).isEqualTo(SUCCESS)
+      assertThat(this!!.outcome).isEqualTo(FROM_CACHE) // paths didn't change
+    }
+
+    with(secondRun.task(":consumer:testDebugUnitTest")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(SUCCESS) // but contents did
     }
 
     config = resourcesFile.loadConfig()
