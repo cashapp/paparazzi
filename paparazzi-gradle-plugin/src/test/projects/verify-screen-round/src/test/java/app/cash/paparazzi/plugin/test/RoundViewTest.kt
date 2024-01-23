@@ -13,7 +13,6 @@ import org.junit.runner.RunWith
 class RoundViewTest(
   @TestParameter val configuration: ScreenRoundTestConfiguration
 ) {
-
   @get:Rule
   val paparazzi = Paparazzi(
     deviceConfig = DeviceConfig.GALAXY_WATCH4_CLASSIC_LARGE.copy(screenRound = configuration.round),
@@ -21,9 +20,9 @@ class RoundViewTest(
   )
 
   @Test
-  fun textShouldSayRound() {
+  fun test() {
     paparazzi.snapshot(
-      view = paparazzi.inflate<RoundView>(R.layout.custom_view),
+      view = paparazzi.inflate(R.layout.custom_view),
       name = configuration.testName
     )
   }
