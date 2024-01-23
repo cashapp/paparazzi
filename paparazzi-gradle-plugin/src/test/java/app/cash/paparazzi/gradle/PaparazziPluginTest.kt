@@ -1678,13 +1678,13 @@ class PaparazziPluginTest {
     val snapshots = snapshotsDir.listFiles()?.sortedBy { it.lastModified() }
     assertThat(snapshots!!).hasSize(2)
 
-    val landscapeSnapshotImage = snapshots[0]
-    val landscapeGoldenImage = File(fixtureRoot, "src/test/resources/landscape_orientation.png")
-    assertThat(landscapeSnapshotImage).isSimilarTo(landscapeGoldenImage).withDefaultThreshold()
-
-    val portraitSnapshotImage = snapshots[1]
+    val portraitSnapshotImage = snapshots[0]
     val portraitGoldenImage = File(fixtureRoot, "src/test/resources/portrait_orientation.png")
     assertThat(portraitSnapshotImage).isSimilarTo(portraitGoldenImage).withDefaultThreshold()
+
+    val landscapeSnapshotImage = snapshots[1]
+    val landscapeGoldenImage = File(fixtureRoot, "src/test/resources/landscape_orientation.png")
+    assertThat(landscapeSnapshotImage).isSimilarTo(landscapeGoldenImage).withDefaultThreshold()
   }
 
   private fun File.loadConfig() = source().buffer().use { CONFIG_ADAPTER.fromJson(it)!! }
