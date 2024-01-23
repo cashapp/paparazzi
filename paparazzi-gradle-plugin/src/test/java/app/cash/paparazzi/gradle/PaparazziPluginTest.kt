@@ -1687,6 +1687,27 @@ class PaparazziPluginTest {
     assertThat(landscapeSnapshotImage).isSimilarTo(landscapeGoldenImage).withDefaultThreshold()
   }
 
+  @Test
+  fun screenRound() {
+    val fixtureRoot = File("src/test/projects/verify-screen-round")
+
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/debug/images")
+    val snapshots = snapshotsDir.listFiles()?.sortedBy { it.lastModified() }
+    assertThat(snapshots!!).hasSize(2)
+
+    val roundSnapshot = snapshots[0]
+    val roundGoldenImage = File(fixtureRoot, "src/test/resources/round.png")
+    assertThat(roundSnapshot).isSimilarTo(roundGoldenImage).withDefaultThreshold()
+
+    val notRoundSnapshot = snapshots[1]
+    val notRoundGoldenImage = File(fixtureRoot, "src/test/resources/not_round.png")
+    assertThat(notRoundSnapshot).isSimilarTo(notRoundGoldenImage).withDefaultThreshold()
+  }
+
   private fun File.loadConfig() = source().buffer().use { CONFIG_ADAPTER.fromJson(it)!! }
 
   private fun GradleRunner.runFixture(

@@ -30,6 +30,7 @@ import com.android.ide.common.resources.configuration.NightModeQualifier
 import com.android.ide.common.resources.configuration.ScreenDimensionQualifier
 import com.android.ide.common.resources.configuration.ScreenOrientationQualifier
 import com.android.ide.common.resources.configuration.ScreenRatioQualifier
+import com.android.ide.common.resources.configuration.ScreenRoundQualifier
 import com.android.ide.common.resources.configuration.ScreenSizeQualifier
 import com.android.ide.common.resources.configuration.TextInputMethodQualifier
 import com.android.ide.common.resources.configuration.TouchScreenQualifier
@@ -84,7 +85,7 @@ data class DeviceConfig(
   val keyboardState: KeyboardState = KeyboardState.SOFT,
   val softButtons: Boolean = true,
   val navigation: Navigation = Navigation.NONAV,
-  val screenRound: com.android.resources.ScreenRound? = null,
+  val screenRound: ScreenRound? = null,
   val released: String = "November 13, 2012"
 ) {
   val folderConfiguration: FolderConfiguration
@@ -111,6 +112,7 @@ data class DeviceConfig(
         networkCodeQualifier = NetworkCodeQualifier()
         localeQualifier = if (locale != null) LocaleQualifier.getQualifier(locale) else LocaleQualifier()
         versionQualifier = VersionQualifier()
+        screenRoundQualifier = ScreenRoundQualifier(screenRound)
       }
 
   private val currentWidth: Int
