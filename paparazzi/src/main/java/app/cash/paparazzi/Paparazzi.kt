@@ -70,6 +70,7 @@ import com.android.layoutlib.bridge.Bridge.prepareThread
 import com.android.layoutlib.bridge.BridgeRenderSession
 import com.android.layoutlib.bridge.impl.RenderAction
 import com.android.layoutlib.bridge.impl.RenderSessionImpl
+import com.android.resources.ScreenOrientation
 import com.android.resources.ScreenRound
 import com.android.tools.idea.validator.LayoutValidator
 import com.android.tools.idea.validator.ValidatorData.Level
@@ -625,9 +626,12 @@ class Paparazzi @JvmOverloads constructor(
 
   private fun DeviceConfig.updateIfAccessibilityTest(): DeviceConfig =
     if (renderExtensions.any { it is AccessibilityRenderExtension }) {
+      val newWidth = screenWidth * 2
+      val newOrientation = if (newWidth > screenHeight) ScreenOrientation.LANDSCAPE else ScreenOrientation.PORTRAIT
       copy(
         screenWidth = screenWidth * 2,
-        softButtons = false
+        softButtons = false,
+        orientation = newOrientation
       )
     } else {
       this

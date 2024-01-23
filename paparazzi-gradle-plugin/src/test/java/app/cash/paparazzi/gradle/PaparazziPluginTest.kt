@@ -1666,6 +1666,27 @@ class PaparazziPluginTest {
     assertThat(jacocoExecutionData.exists()).isTrue()
   }
 
+  @Test
+  fun screenOrientation() {
+    val fixtureRoot = File("src/test/projects/verify-orientation")
+
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/debug/images")
+    val snapshots = snapshotsDir.listFiles()?.sortedBy { it.lastModified() }
+    assertThat(snapshots!!).hasSize(2)
+
+    val portraitSnapshotImage = snapshots[0]
+    val portraitGoldenImage = File(fixtureRoot, "src/test/resources/portrait_orientation.png")
+    assertThat(portraitSnapshotImage).isSimilarTo(portraitGoldenImage).withDefaultThreshold()
+
+    val landscapeSnapshotImage = snapshots[1]
+    val landscapeGoldenImage = File(fixtureRoot, "src/test/resources/landscape_orientation.png")
+    assertThat(landscapeSnapshotImage).isSimilarTo(landscapeGoldenImage).withDefaultThreshold()
+  }
+
   private fun File.loadConfig() = source().buffer().use { CONFIG_ADAPTER.fromJson(it)!! }
 
   private fun GradleRunner.runFixture(
