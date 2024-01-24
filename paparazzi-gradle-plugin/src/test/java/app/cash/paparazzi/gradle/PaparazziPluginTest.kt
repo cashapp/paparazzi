@@ -1708,6 +1708,27 @@ class PaparazziPluginTest {
     assertThat(notRoundSnapshot).isSimilarTo(notRoundGoldenImage).withDefaultThreshold()
   }
 
+  @Test
+  fun visualTransformation() {
+    val fixtureRoot = File("src/test/projects/verify-visual-transformation")
+
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/debug/images")
+    val snapshots = snapshotsDir.listFiles()?.sortedBy { it.lastModified() }
+    assertThat(snapshots!!).hasSize(2)
+
+    val decimalSnapshot = snapshots[0]
+    val decimalGoldenImage = File(fixtureRoot, "src/test/resources/decimal.png")
+    assertThat(decimalSnapshot).isSimilarTo(decimalGoldenImage).withDefaultThreshold()
+
+    val fractionalSnapshot = snapshots[1]
+    val fractionalGoldenImage = File(fixtureRoot, "src/test/resources/fractional.png")
+    assertThat(fractionalSnapshot).isSimilarTo(fractionalGoldenImage).withDefaultThreshold()
+  }
+
   private fun File.loadConfig() = source().buffer().use { CONFIG_ADAPTER.fromJson(it)!! }
 
   private fun GradleRunner.runFixture(
