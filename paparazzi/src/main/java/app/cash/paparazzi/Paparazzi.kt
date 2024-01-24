@@ -323,7 +323,7 @@ class Paparazzi @JvmOverloads constructor(
               }
               validateLayoutAccessibility(modifiedView, image)
             }
-            frameHandler.handle(scaleImage(frameImage(image)))
+            frameHandler.handle(scaleImage(frameImage(image)), frame)
           }
         }
       } finally {
@@ -656,6 +656,13 @@ class Paparazzi @JvmOverloads constructor(
     private fun determineHandler(maxPercentDifference: Double): SnapshotHandler =
       if (isVerifying) {
         SnapshotVerifier(maxPercentDifference)
+      } else {
+        HtmlReportWriter()
+      }
+
+    fun determineGifHandler(maxPercentDifference: Double = 0.1): SnapshotHandler =
+      if (isVerifying) {
+        GifSnapshotHandler(maxPercentDifference)
       } else {
         HtmlReportWriter()
       }

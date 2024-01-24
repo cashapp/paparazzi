@@ -21,8 +21,8 @@ import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
 
-class SnapshotVerifier @JvmOverloads constructor(
-  private val maxPercentDifference: Double,
+class GifSnapshotHandler @JvmOverloads constructor(
+  private val maxPercentDifference: Double = 0.1,
   rootDirectory: File = File(System.getProperty("paparazzi.snapshot.dir"))
 ) : SnapshotHandler {
   private val imagesDirectory: File = File(rootDirectory, "images")
@@ -39,13 +39,21 @@ class SnapshotVerifier @JvmOverloads constructor(
     fps: Int
   ): FrameHandler {
     return object : FrameHandler {
-      override fun handle(image: BufferedImage, frameIndex: Int?) {
-        // Note: does not handle videos or its frames at the moment
-        val expected = File(imagesDirectory, snapshot.toFileName(extension = "png"))
+      override fun handle(
+        image: BufferedImage,
+        frameIndex: Int?,
+      ) {
+        // handle() gets called with each image when gif() is used
+        val expected = File(
+          imagesDirectory,
+          snapshot.toFileName(
+            extension = "png",
+            frameIndex = frameIndex
+          )
+        )
         if (!expected.exists()) {
           throw AssertionError("File $expected does not exist")
         }
-
         val goldenImage = ImageIO.read(expected)
         ImageUtils.assertImageSimilar(
           relativePath = expected.path,

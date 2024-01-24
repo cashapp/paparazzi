@@ -30,12 +30,18 @@ data class Snapshot(
 
 internal fun Snapshot.toFileName(
   delimiter: String = "_",
-  extension: String
+  extension: String,
+  frameIndex: Int? = null,
 ): String {
   val formattedLabel = if (name != null) {
     "$delimiter${name.toLowerCase(Locale.US).replace("\\s".toRegex(), delimiter)}"
   } else {
     ""
   }
-  return "${testName.packageName}${delimiter}${testName.className}${delimiter}${testName.methodName}$formattedLabel.$extension"
+  return if (frameIndex != null) {
+    "${testName.packageName}${delimiter}${testName.className}${delimiter}${testName.methodName}_$frameIndex.$extension"
+  } else {
+    "${testName.packageName}${delimiter}${testName.className}${delimiter}${testName.methodName}$formattedLabel.$extension"
+  }
+
 }

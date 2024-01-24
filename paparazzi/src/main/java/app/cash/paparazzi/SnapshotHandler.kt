@@ -26,6 +26,6 @@ interface SnapshotHandler : Closeable {
   ): FrameHandler
 
   interface FrameHandler : Closeable {
-    fun handle(image: BufferedImage)
+    fun handle(image: BufferedImage, frameIndex: Int? = null)
   }
 }

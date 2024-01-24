@@ -91,7 +91,7 @@ class HtmlReportWriter @JvmOverloads constructor(
     return object : FrameHandler {
       val hashes = mutableListOf<String>()
 
-      override fun handle(image: BufferedImage) {
+      override fun handle(image: BufferedImage, frameIndex: Int?) {
         hashes += writeImage(image)
       }
 
@@ -111,7 +111,8 @@ class HtmlReportWriter @JvmOverloads constructor(
           if (isRecording) {
             for ((index, frameHash) in hashes.withIndex()) {
               val originalFrame = File(imagesDirectory, "$frameHash.png")
-              val frameSnapshot = snapshot.copy(name = "${snapshot.name} $index")
+              val name = snapshot.name?.let { "$it $index" } ?: "$index"
+              val frameSnapshot = snapshot.copy(name = name)
               val goldenFile = File(goldenImagesDirectory, frameSnapshot.toFileName("_", "png"))
               if (!goldenFile.exists()) {
                 originalFrame.copyTo(goldenFile)
