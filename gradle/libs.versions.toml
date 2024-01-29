@@ -53,7 +53,7 @@ layoutlib-native-windows = { module = "app.cash.paparazzi:layoutlib-native-win",
 
 moshi-adapters = { module = "com.squareup.moshi:moshi-adapters", version.ref = "moshi" }
 moshi-core = { module = "com.squareup.moshi:moshi", version.ref = "moshi" }
-moshi-kotlinCodegen = { module = "com.squareup.moshi:moshi-kotlin-codegen", version.ref = "moshi" }
+moshi-kotlinReflect = { module = "com.squareup.moshi:moshi-kotlin", version.ref = "moshi" }
 
 okio = { module = "com.squareup.okio:okio", version = "3.7.0" }
 

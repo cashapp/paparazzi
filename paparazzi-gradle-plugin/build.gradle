@@ -1,7 +1,6 @@
 apply plugin: 'org.jetbrains.kotlin.jvm'
 apply plugin: 'java-gradle-plugin'
 apply plugin: 'com.github.gmazzo.buildconfig'
-apply plugin: 'com.google.devtools.ksp'
 
 // This module is included in two projects:
 // - In the root project where it's released as one of our artifacts
@@ -31,7 +30,7 @@ dependencies {
   }
   implementation libs.moshi.core
   implementation libs.moshi.adapters
-  ksp libs.moshi.kotlinCodegen
+  implementation libs.moshi.kotlinReflect
 
   testImplementation libs.junit
   testImplementation libs.truth

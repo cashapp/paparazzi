@@ -16,8 +16,8 @@
 package app.cash.paparazzi.gradle
 
 import app.cash.paparazzi.gradle.utils.relativize
-import com.squareup.moshi.JsonClass
 import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.RegularFileProperty
@@ -102,12 +102,11 @@ abstract class PrepareResourcesTask : DefaultTask() {
       projectAssetDirs = projectAssetDirs.get(),
       aarAssetDirs = aarAssetDirs.relativize(gradleUserHomeDirectory)
     )
-    val moshi = Moshi.Builder().build()!!
+    val moshi = Moshi.Builder().addLast(KotlinJsonAdapterFactory()).build()!!
     val json = moshi.adapter(Config::class.java).indent("  ").toJson(config)
     out.writeText(json)
   }
 
-  @JsonClass(generateAdapter = true)
   data class Config(
     val mainPackage: String,
     val targetSdkVersion: String,

@@ -15,8 +15,8 @@
  */
 package app.cash.paparazzi
 
-import com.squareup.moshi.JsonClass
 import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import okio.buffer
 import okio.source
 import java.io.File
@@ -63,7 +63,7 @@ fun detectEnvironment(): Environment {
   val androidHome = Paths.get(androidHome())
 
   val resourcesFile = File(System.getProperty("paparazzi.test.resources"))
-  val moshi = Moshi.Builder().build()!!
+  val moshi = Moshi.Builder().addLast(KotlinJsonAdapterFactory()).build()!!
   val config =
     resourcesFile.source().buffer().use { moshi.adapter(Config::class.java).fromJson(it)!! }
 
@@ -81,7 +81,6 @@ fun detectEnvironment(): Environment {
   )
 }
 
-@JsonClass(generateAdapter = true)
 data class Config(
   val mainPackage: String,
   val targetSdkVersion: String,
