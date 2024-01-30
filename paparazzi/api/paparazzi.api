@@ -5,7 +5,6 @@ public final class app/cash/paparazzi/DeviceConfig {
 	public static final field NEXUS_10 Lapp/cash/paparazzi/DeviceConfig;
 	public static final field NEXUS_4 Lapp/cash/paparazzi/DeviceConfig;
 	public static final field NEXUS_5 Lapp/cash/paparazzi/DeviceConfig;
-	public static final field NEXUS_5_LAND Lapp/cash/paparazzi/DeviceConfig;
 	public static final field NEXUS_7 Lapp/cash/paparazzi/DeviceConfig;
 	public static final field NEXUS_7_2012 Lapp/cash/paparazzi/DeviceConfig;
 	public static final field PIXEL Lapp/cash/paparazzi/DeviceConfig;

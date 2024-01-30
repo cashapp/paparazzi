@@ -264,24 +264,6 @@ public class DeviceConfig(
     )
 
     @JvmField
-    public val NEXUS_5_LAND: DeviceConfig = DeviceConfig(
-      screenHeight = 1080,
-      screenWidth = 1920,
-      xdpi = 445,
-      ydpi = 445,
-      orientation = ScreenOrientation.LANDSCAPE,
-      density = Density.XXHIGH,
-      ratio = ScreenRatio.NOTLONG,
-      size = ScreenSize.NORMAL,
-      keyboard = Keyboard.NOKEY,
-      touchScreen = TouchScreen.FINGER,
-      keyboardState = KeyboardState.SOFT,
-      softButtons = true,
-      navigation = Navigation.NONAV,
-      released = "October 31, 2013"
-    )
-
-    @JvmField
     public val NEXUS_7_2012: DeviceConfig = DeviceConfig(
       screenHeight = 1280,
       screenWidth = 800,
