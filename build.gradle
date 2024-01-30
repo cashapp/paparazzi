@@ -16,7 +16,6 @@ buildscript {
     classpath libs.plugin.versions
     classpath libs.plugin.spotless
     classpath libs.plugin.buildConfig
-    classpath libs.plugin.ksp
     classpath libs.grgit
 
     // Normally you would declare a version here, but we use dependency substitution in

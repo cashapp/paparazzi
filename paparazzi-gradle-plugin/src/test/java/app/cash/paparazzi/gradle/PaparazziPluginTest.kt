@@ -5,6 +5,7 @@ import app.cash.paparazzi.gradle.PrepareResourcesTask.Config
 import com.google.common.truth.Correspondence
 import com.google.common.truth.Truth.assertThat
 import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import okio.buffer
 import okio.source
 import org.gradle.testkit.runner.BuildResult
@@ -1742,7 +1743,8 @@ class PaparazziPluginTest {
   private fun File.registerForDeletionOnExit() = apply { filesToDelete += this }
 
   companion object {
-    private val CONFIG_ADAPTER = Moshi.Builder().build()!!.adapter(Config::class.java)
+    private val CONFIG_ADAPTER =
+      Moshi.Builder().addLast(KotlinJsonAdapterFactory()).build()!!.adapter(Config::class.java)
     private val MATCHES_PATTERN = Correspondence.from<String, String>(
       { actual, expected -> actual.matches(expected.toRegex()) }, "matches"
     )
