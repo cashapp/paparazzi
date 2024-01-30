@@ -4,6 +4,7 @@ import android.widget.LinearLayout
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Paparazzi
 import app.cash.paparazzi.sample.databinding.KeypadBinding
+import com.android.resources.ScreenOrientation.LANDSCAPE
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
 import org.junit.Rule
@@ -19,7 +20,7 @@ class TestParameterInjectorTest(
   ) {
     NEXUS_4(deviceConfig = DeviceConfig.NEXUS_4),
     NEXUS_5(deviceConfig = DeviceConfig.NEXUS_5),
-    NEXUS_5_LAND(deviceConfig = DeviceConfig.NEXUS_5_LAND)
+    NEXUS_5_LAND(deviceConfig = DeviceConfig.NEXUS_5.copy(orientation = LANDSCAPE))
   }
 
   enum class Theme(val themeName: String) {
