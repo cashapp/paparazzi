@@ -371,6 +371,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Functions
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -392,7 +401,7 @@
 <p>//<a href="../../../">paparazzi</a>/<a href="../">app.cash.paparazzi</a>/<a href="./">DeviceConfig</a></p>
 <h1 id="deviceconfig">DeviceConfig<a class="headerlink" href="#deviceconfig" title="Permanent link">&para;</a></h1>
 <p>[jvm]\
-data class <a href="./">DeviceConfig</a>(val screenHeight: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a> = 1280, val screenWidth: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a> = 768, val xdpi: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a> = 320, val ydpi: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a> = 320, val orientation: ScreenOrientation = ScreenOrientation.PORTRAIT, val uiMode: UiMode = UiMode.NORMAL, val nightMode: NightMode = NightMode.NOTNIGHT, val density: Density = Density.XHIGH, val fontScale: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-float/index.html">Float</a> = 1.0f, val layoutDirection: LayoutDirection = LayoutDirection.LTR, val locale: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>? = null, val ratio: ScreenRatio = ScreenRatio.NOTLONG, val size: ScreenSize = ScreenSize.NORMAL, val keyboard: Keyboard = Keyboard.NOKEY, val touchScreen: TouchScreen = TouchScreen.FINGER, val keyboardState: KeyboardState = KeyboardState.SOFT, val softButtons: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a> = true, val navigation: Navigation = Navigation.NONAV, val screenRound: ScreenRound? = null, val released: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a> = &quot;November 13, 2012&quot;)</p>
+class <a href="./">DeviceConfig</a>(val screenHeight: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a> = 1280, val screenWidth: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a> = 768, val xdpi: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a> = 320, val ydpi: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a> = 320, val orientation: ScreenOrientation = ScreenOrientation.PORTRAIT, val uiMode: UiMode = UiMode.NORMAL, val nightMode: NightMode = NightMode.NOTNIGHT, val density: Density = Density.XHIGH, val fontScale: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-float/index.html">Float</a> = 1.0f, val layoutDirection: LayoutDirection = LayoutDirection.LTR, val locale: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>? = null, val ratio: ScreenRatio = ScreenRatio.NOTLONG, val size: ScreenSize = ScreenSize.NORMAL, val keyboard: Keyboard = Keyboard.NOKEY, val touchScreen: TouchScreen = TouchScreen.FINGER, val keyboardState: KeyboardState = KeyboardState.SOFT, val softButtons: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a> = true, val navigation: Navigation = Navigation.NONAV, val screenRound: ScreenRound? = null, val released: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a> = &quot;November 13, 2012&quot;)</p>
 <p>Provides FolderConfiguration and HardwareConfig for various devices. Also provides utility methods to parse <code>build.prop</code> and <code>attrs.xml</code> to generate the appropriate maps.</p>
 <p>Defaults are for a Nexus 4 device.</p>
 <h2 id="constructors">Constructors<a class="headerlink" href="#constructors" title="Permanent link">&para;</a></h2>
@@ -525,6 +534,21 @@ data class <a href="./">DeviceConfig</a>(val screenHeight: <a href="https://kotl
 <tr>
 <td><a href="ydpi/">ydpi</a></td>
 <td>[jvm]<br>val <a href="ydpi/">ydpi</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a> = 320</td>
+</tr>
+</tbody>
+</table>
+<h2 id="functions">Functions<a class="headerlink" href="#functions" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Summary</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="copy/">copy</a></td>
+<td>[jvm]<br>fun <a href="copy/">copy</a>(screenHeight: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a> = this.screenHeight, screenWidth: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a> = this.screenWidth, xdpi: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a> = this.xdpi, ydpi: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a> = this.ydpi, orientation: ScreenOrientation = this.orientation, uiMode: UiMode = this.uiMode, nightMode: NightMode = this.nightMode, density: Density = this.density, fontScale: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-float/index.html">Float</a> = this.fontScale, layoutDirection: LayoutDirection = this.layoutDirection, locale: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>? = this.locale, ratio: ScreenRatio = this.ratio, size: ScreenSize = this.size, keyboard: Keyboard = this.keyboard, touchScreen: TouchScreen = this.touchScreen, keyboardState: KeyboardState = this.keyboardState, softButtons: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a> = this.softButtons, navigation: Navigation = this.navigation, screenRound: ScreenRound? = this.screenRound): <a href="./">DeviceConfig</a></td>
 </tr>
 </tbody>
 </table>

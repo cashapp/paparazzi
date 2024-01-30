@@ -362,6 +362,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Functions
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -383,7 +392,7 @@
 <p>//<a href="../../../">paparazzi</a>/<a href="../">app.cash.paparazzi</a>/<a href="./">Snapshot</a></p>
 <h1 id="snapshot">Snapshot<a class="headerlink" href="#snapshot" title="Permanent link">&para;</a></h1>
 <p>[jvm]\
-data class <a href="./">Snapshot</a>(val name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, val testName: <a href="../-test-name/">TestName</a>, val timestamp: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Date.html">Date</a>, val tags: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>&gt; = listOf(), val file: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>? = null)</p>
+class <a href="./">Snapshot</a>(val name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, val testName: <a href="../-test-name/">TestName</a>, val timestamp: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Date.html">Date</a>, val tags: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>&gt; = listOf(), val file: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>? = null)</p>
 <h2 id="constructors">Constructors<a class="headerlink" href="#constructors" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -427,6 +436,21 @@ data class <a href="./">Snapshot</a>(val name: <a href="https://kotlinlang.org/a
 <tr>
 <td><a href="timestamp/">timestamp</a></td>
 <td>[jvm]<br>val <a href="timestamp/">timestamp</a>: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Date.html">Date</a></td>
+</tr>
+</tbody>
+</table>
+<h2 id="functions">Functions<a class="headerlink" href="#functions" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Summary</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="copy/">copy</a></td>
+<td>[jvm]<br>fun <a href="copy/">copy</a>(name: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>? = this.name, testName: <a href="../-test-name/">TestName</a> = this.testName, timestamp: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Date.html">Date</a> = this.timestamp, tags: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>&gt; = this.tags, file: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>? = this.file): <a href="./">Snapshot</a></td>
 </tr>
 </tbody>
 </table>
