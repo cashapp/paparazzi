@@ -32,49 +32,49 @@ import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 
 @CacheableTask
-abstract class PrepareResourcesTask : DefaultTask() {
+public abstract class PrepareResourcesTask : DefaultTask() {
   @get:Input
-  abstract val packageName: Property<String>
+  public abstract val packageName: Property<String>
 
   @get:Input
-  abstract val targetSdkVersion: Property<String>
+  public abstract val targetSdkVersion: Property<String>
 
   @get:Input
-  abstract val compileSdkVersion: Property<String>
+  public abstract val compileSdkVersion: Property<String>
 
   @get:Input
-  abstract val projectResourceDirs: ListProperty<String>
+  public abstract val projectResourceDirs: ListProperty<String>
 
   @get:Input
-  abstract val moduleResourceDirs: ListProperty<String>
+  public abstract val moduleResourceDirs: ListProperty<String>
 
   @get:InputFiles
   @get:PathSensitive(PathSensitivity.RELATIVE)
-  abstract val aarExplodedDirs: ConfigurableFileCollection
+  public abstract val aarExplodedDirs: ConfigurableFileCollection
 
   @get:Input
-  abstract val projectAssetDirs: ListProperty<String>
+  public abstract val projectAssetDirs: ListProperty<String>
 
   @get:InputFiles
   @get:PathSensitive(PathSensitivity.RELATIVE)
-  abstract val aarAssetDirs: ConfigurableFileCollection
+  public abstract val aarAssetDirs: ConfigurableFileCollection
 
   @get:Input
-  abstract val nonTransitiveRClassEnabled: Property<Boolean>
+  public abstract val nonTransitiveRClassEnabled: Property<Boolean>
 
   @get:InputFiles
   @get:PathSensitive(PathSensitivity.NONE)
-  abstract val artifactFiles: ConfigurableFileCollection
+  public abstract val artifactFiles: ConfigurableFileCollection
 
   @get:OutputFile
-  abstract val paparazziResources: RegularFileProperty
+  public abstract val paparazziResources: RegularFileProperty
 
   private val projectDirectory = project.layout.projectDirectory
 
   private val gradleUserHomeDirectory = projectDirectory.dir(project.gradle.gradleUserHomeDir.path)
 
   @TaskAction
-  fun writeResourcesFile() {
+  public fun writeResourcesFile() {
     val out = paparazziResources.get().asFile
     out.delete()
 

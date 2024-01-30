@@ -28,17 +28,17 @@ import java.util.Locale
 import kotlin.io.path.exists
 
 @Poko
-class Environment(
-  val platformDir: String,
-  val appTestDir: String,
-  val packageName: String,
-  val compileSdkVersion: Int,
-  val resourcePackageNames: List<String>,
-  val localResourceDirs: List<String>,
-  val moduleResourceDirs: List<String>,
-  val libraryResourceDirs: List<String>,
-  val allModuleAssetDirs: List<String>,
-  val libraryAssetDirs: List<String>
+public class Environment(
+  public val platformDir: String,
+  public val appTestDir: String,
+  public val packageName: String,
+  public val compileSdkVersion: Int,
+  public val resourcePackageNames: List<String>,
+  public val localResourceDirs: List<String>,
+  public val moduleResourceDirs: List<String>,
+  public val libraryResourceDirs: List<String>,
+  public val allModuleAssetDirs: List<String>,
+  public val libraryAssetDirs: List<String>
 ) {
   init {
     val platformDirPath = Path.of(platformDir)
@@ -50,7 +50,7 @@ class Environment(
     }
   }
 
-  fun copy(
+  public fun copy(
     platformDir: String = this.platformDir,
     appTestDir: String = this.appTestDir,
     packageName: String = this.packageName,
@@ -77,11 +77,11 @@ class Environment(
 }
 
 @Suppress("unused")
-fun androidHome() = System.getenv("ANDROID_SDK_ROOT")
+public fun androidHome(): String = System.getenv("ANDROID_SDK_ROOT")
   ?: System.getenv("ANDROID_HOME")
   ?: androidSdkPath()
 
-fun detectEnvironment(): Environment {
+public fun detectEnvironment(): Environment {
   checkInstalledJvm()
 
   val projectDir = Paths.get(System.getProperty("paparazzi.project.dir"))

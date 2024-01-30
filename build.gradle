@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.KotlinTopLevelExtension
+
 apply plugin: 'com.github.ben-manes.versions'
 
 buildscript {
@@ -60,6 +62,10 @@ subprojects {
     kotlinOptions {
       jvmTarget = libs.versions.javaTarget.get()
     }
+  }
+
+  plugins.withId('org.jetbrains.kotlin.jvm') {
+    extensions.getByName('kotlin').explicitApi()
   }
 
   plugins.withId('com.vanniktech.maven.publish') {

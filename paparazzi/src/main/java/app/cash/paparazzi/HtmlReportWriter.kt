@@ -57,7 +57,7 @@ import javax.imageio.ImageIO
  * paparazzi.js
  * ```
  */
-class HtmlReportWriter @JvmOverloads constructor(
+public class HtmlReportWriter @JvmOverloads constructor(
   private val runName: String = defaultRunName(),
   private val rootDirectory: File = File(System.getProperty("paparazzi.report.dir")),
   snapshotRootDirectory: File = File(System.getProperty("paparazzi.snapshot.dir"))

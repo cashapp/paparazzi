@@ -18,14 +18,14 @@ package app.cash.paparazzi
 import java.awt.image.BufferedImage
 import java.io.Closeable
 
-interface SnapshotHandler : Closeable {
-  fun newFrameHandler(
+public interface SnapshotHandler : Closeable {
+  public fun newFrameHandler(
     snapshot: Snapshot,
     frameCount: Int,
     fps: Int
   ): FrameHandler
 
-  interface FrameHandler : Closeable {
-    fun handle(image: BufferedImage)
+  public interface FrameHandler : Closeable {
+    public fun handle(image: BufferedImage)
   }
 }
