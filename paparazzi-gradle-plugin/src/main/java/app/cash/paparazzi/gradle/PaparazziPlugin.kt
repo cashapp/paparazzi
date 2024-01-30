@@ -50,7 +50,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
 import java.util.Locale
 
 @Suppress("unused")
-class PaparazziPlugin : Plugin<Project> {
+public class PaparazziPlugin : Plugin<Project> {
   override fun apply(project: Project) {
     val supportedPlugins = listOf("com.android.application", "com.android.library", "com.android.dynamic-feature")
     project.afterEvaluate {
@@ -241,9 +241,9 @@ class PaparazziPlugin : Plugin<Project> {
     }
   }
 
-  abstract class PaparazziTask : DefaultTask() {
+  public abstract class PaparazziTask : DefaultTask() {
     @Option(option = "tests", description = "Sets test class or method name to be included, '*' is supported.")
-    open fun setTestNameIncludePatterns(testNamePattern: List<String>): PaparazziTask {
+    public open fun setTestNameIncludePatterns(testNamePattern: List<String>): PaparazziTask {
       project.tasks.withType(Test::class.java).configureEach {
         it.setTestNameIncludePatterns(testNamePattern)
       }

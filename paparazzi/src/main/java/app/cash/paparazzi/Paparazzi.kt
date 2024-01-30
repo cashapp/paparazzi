@@ -88,7 +88,7 @@ import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.Dispatchers
 
 @OptIn(ExperimentalComposeUiApi::class, InternalComposeUiApi::class)
-class Paparazzi @JvmOverloads constructor(
+public class Paparazzi @JvmOverloads constructor(
   private val environment: Environment = detectEnvironment(),
   private val deviceConfig: DeviceConfig = DeviceConfig.NEXUS_5,
   private val theme: String = "android:Theme.Material.NoActionBar.Fullscreen",
@@ -106,13 +106,13 @@ class Paparazzi @JvmOverloads constructor(
   private lateinit var bridgeRenderSession: RenderSession
   private var testName: TestName? = null
 
-  val layoutInflater: LayoutInflater
+  public val layoutInflater: LayoutInflater
     get() = RenderAction.getCurrentContext().getSystemService("layout_inflater") as BridgeInflater
 
-  val resources: Resources
+  public val resources: Resources
     get() = RenderAction.getCurrentContext().resources
 
-  val context: Context
+  public val context: Context
     get() = RenderAction.getCurrentContext()
 
   private val contentRoot = """
@@ -152,7 +152,7 @@ class Paparazzi @JvmOverloads constructor(
     }
   }
 
-  fun prepare(description: Description) {
+  public fun prepare(description: Description) {
     val layoutlibCallback =
       PaparazziCallback(logger, environment.packageName, environment.resourcePackageNames)
     layoutlibCallback.initResources()
@@ -189,7 +189,7 @@ class Paparazzi @JvmOverloads constructor(
     bridgeRenderSession = createBridgeSession(renderSession, renderSession.inflate())
   }
 
-  fun close() {
+  public fun close() {
     testName = null
     renderSession.release()
     bridgeRenderSession.dispose()
@@ -199,9 +199,10 @@ class Paparazzi @JvmOverloads constructor(
     renderer.dumpDelegates()
   }
 
-  fun <V : View> inflate(@LayoutRes layoutId: Int): V = layoutInflater.inflate(layoutId, null) as V
+  public fun <V : View> inflate(@LayoutRes layoutId: Int): V =
+    layoutInflater.inflate(layoutId, null) as V
 
-  fun snapshot(name: String? = null, composable: @Composable () -> Unit) {
+  public fun snapshot(name: String? = null, composable: @Composable () -> Unit) {
     val hostView = ComposeView(context)
     hostView.setContent(composable)
 
@@ -209,12 +210,12 @@ class Paparazzi @JvmOverloads constructor(
   }
 
   @JvmOverloads
-  fun snapshot(view: View, name: String? = null, offsetMillis: Long = 0L) {
+  public fun snapshot(view: View, name: String? = null, offsetMillis: Long = 0L) {
     takeSnapshots(view, name, TimeUnit.MILLISECONDS.toNanos(offsetMillis), -1, 1)
   }
 
   @JvmOverloads
-  fun gif(
+  public fun gif(
     view: View,
     name: String? = null,
     start: Long = 0L,
@@ -230,7 +231,7 @@ class Paparazzi @JvmOverloads constructor(
     takeSnapshots(view, name, startNanos, fps, frameCount)
   }
 
-  fun unsafeUpdateConfig(
+  public fun unsafeUpdateConfig(
     deviceConfig: DeviceConfig? = null,
     theme: String? = null,
     renderingMode: RenderingMode? = null

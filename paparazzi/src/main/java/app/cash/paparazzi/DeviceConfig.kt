@@ -68,29 +68,29 @@ import kotlin.math.min
  * Defaults are for a Nexus 4 device.
  */
 @Poko
-class DeviceConfig(
-  val screenHeight: Int = 1280,
-  val screenWidth: Int = 768,
-  val xdpi: Int = 320,
-  val ydpi: Int = 320,
-  val orientation: ScreenOrientation = ScreenOrientation.PORTRAIT,
-  val uiMode: UiMode = UiMode.NORMAL,
-  val nightMode: NightMode = NightMode.NOTNIGHT,
-  val density: Density = Density.XHIGH,
-  val fontScale: Float = 1f,
-  val layoutDirection: LayoutDirection = LayoutDirection.LTR,
-  val locale: String? = null,
-  val ratio: ScreenRatio = ScreenRatio.NOTLONG,
-  val size: ScreenSize = ScreenSize.NORMAL,
-  val keyboard: Keyboard = Keyboard.NOKEY,
-  val touchScreen: TouchScreen = TouchScreen.FINGER,
-  val keyboardState: KeyboardState = KeyboardState.SOFT,
-  val softButtons: Boolean = true,
-  val navigation: Navigation = Navigation.NONAV,
-  val screenRound: ScreenRound? = null,
-  val released: String = "November 13, 2012"
+public class DeviceConfig(
+  public val screenHeight: Int = 1280,
+  public val screenWidth: Int = 768,
+  public val xdpi: Int = 320,
+  public val ydpi: Int = 320,
+  public val orientation: ScreenOrientation = ScreenOrientation.PORTRAIT,
+  public val uiMode: UiMode = UiMode.NORMAL,
+  public val nightMode: NightMode = NightMode.NOTNIGHT,
+  public val density: Density = Density.XHIGH,
+  public val fontScale: Float = 1f,
+  public val layoutDirection: LayoutDirection = LayoutDirection.LTR,
+  public val locale: String? = null,
+  public val ratio: ScreenRatio = ScreenRatio.NOTLONG,
+  public val size: ScreenSize = ScreenSize.NORMAL,
+  public val keyboard: Keyboard = Keyboard.NOKEY,
+  public val touchScreen: TouchScreen = TouchScreen.FINGER,
+  public val keyboardState: KeyboardState = KeyboardState.SOFT,
+  public val softButtons: Boolean = true,
+  public val navigation: Navigation = Navigation.NONAV,
+  public val screenRound: ScreenRound? = null,
+  public val released: String = "November 13, 2012"
 ) {
-  val folderConfiguration: FolderConfiguration
+  public val folderConfiguration: FolderConfiguration
     get() = FolderConfiguration.createDefault()
       .apply {
         densityQualifier = DensityQualifier(density)
@@ -117,7 +117,7 @@ class DeviceConfig(
         screenRoundQualifier = ScreenRoundQualifier(screenRound)
       }
 
-  fun copy(
+  public fun copy(
     screenHeight: Int = this.screenHeight,
     screenWidth: Int = this.screenWidth,
     xdpi: Int = this.xdpi,
@@ -137,7 +137,7 @@ class DeviceConfig(
     softButtons: Boolean = this.softButtons,
     navigation: Navigation = this.navigation,
     screenRound: ScreenRound? = this.screenRound
-  ) = DeviceConfig(
+  ): DeviceConfig = DeviceConfig(
     screenHeight,
     screenWidth,
     xdpi,
@@ -160,26 +160,13 @@ class DeviceConfig(
     this.released
   )
 
-  private val currentWidth: Int
-    get() = when (orientation) {
-      ScreenOrientation.PORTRAIT -> min(screenWidth, screenHeight)
-      ScreenOrientation.LANDSCAPE -> max(screenWidth, screenHeight)
-      else -> throw UnsupportedOperationException("Only Portrait or Landscape orientations are supported")
-    }
-  private val currentHeight: Int
-    get() = when (orientation) {
-      ScreenOrientation.PORTRAIT -> max(screenWidth, screenHeight)
-      ScreenOrientation.LANDSCAPE -> min(screenWidth, screenHeight)
-      else -> throw UnsupportedOperationException("Only Portrait or Landscape orientations are supported")
-    }
-
-  val hardwareConfig: HardwareConfig
+  public val hardwareConfig: HardwareConfig
     get() = HardwareConfig(
       currentWidth, currentHeight, density, xdpi.toFloat(), ydpi.toFloat(), size,
       orientation, screenRound, softButtons
     )
 
-  val uiModeMask: Int
+  public val uiModeMask: Int
     get() {
       val nightMask = if (nightMode == NightMode.NIGHT) {
         Configuration.UI_MODE_NIGHT_YES
@@ -198,6 +185,19 @@ class DeviceConfig(
       return nightMask or typeMask
     }
 
+  private val currentWidth: Int
+    get() = when (orientation) {
+      ScreenOrientation.PORTRAIT -> min(screenWidth, screenHeight)
+      ScreenOrientation.LANDSCAPE -> max(screenWidth, screenHeight)
+      else -> throw UnsupportedOperationException("Only Portrait or Landscape orientations are supported")
+    }
+  private val currentHeight: Int
+    get() = when (orientation) {
+      ScreenOrientation.PORTRAIT -> max(screenWidth, screenHeight)
+      ScreenOrientation.LANDSCAPE -> min(screenWidth, screenHeight)
+      else -> throw UnsupportedOperationException("Only Portrait or Landscape orientations are supported")
+    }
+
   /**
    * Device specs per:
    * https://android.googlesource.com/platform/tools/base/+/mirror-goog-studio-master-dev/sdklib/src/main/java/com/android/sdklib/devices/nexus.xml
@@ -205,12 +205,12 @@ class DeviceConfig(
    * Release dates obtained from Wikipedia.
    */
 
-  companion object {
+  public companion object {
     @JvmField
-    val NEXUS_4 = DeviceConfig()
+    public val NEXUS_4: DeviceConfig = DeviceConfig()
 
     @JvmField
-    val NEXUS_5 = DeviceConfig(
+    public val NEXUS_5: DeviceConfig = DeviceConfig(
       screenHeight = 1920,
       screenWidth = 1080,
       xdpi = 445,
@@ -228,7 +228,7 @@ class DeviceConfig(
     )
 
     @JvmField
-    val NEXUS_7 = DeviceConfig(
+    public val NEXUS_7: DeviceConfig = DeviceConfig(
       screenHeight = 1920,
       screenWidth = 1200,
       xdpi = 323,
@@ -246,7 +246,7 @@ class DeviceConfig(
     )
 
     @JvmField
-    val NEXUS_10 = DeviceConfig(
+    public val NEXUS_10: DeviceConfig = DeviceConfig(
       screenHeight = 1600,
       screenWidth = 2560,
       xdpi = 300,
@@ -264,7 +264,7 @@ class DeviceConfig(
     )
 
     @JvmField
-    val NEXUS_5_LAND = DeviceConfig(
+    public val NEXUS_5_LAND: DeviceConfig = DeviceConfig(
       screenHeight = 1080,
       screenWidth = 1920,
       xdpi = 445,
@@ -282,7 +282,7 @@ class DeviceConfig(
     )
 
     @JvmField
-    val NEXUS_7_2012 = DeviceConfig(
+    public val NEXUS_7_2012: DeviceConfig = DeviceConfig(
       screenHeight = 1280,
       screenWidth = 800,
       xdpi = 195,
@@ -300,7 +300,7 @@ class DeviceConfig(
     )
 
     @JvmField
-    val PIXEL_C = DeviceConfig(
+    public val PIXEL_C: DeviceConfig = DeviceConfig(
       screenHeight = 1800,
       screenWidth = 2560,
       xdpi = 308,
@@ -318,7 +318,7 @@ class DeviceConfig(
     )
 
     @JvmField
-    val PIXEL = DeviceConfig(
+    public val PIXEL: DeviceConfig = DeviceConfig(
       screenHeight = 1920,
       screenWidth = 1080,
       xdpi = 440,
@@ -336,7 +336,7 @@ class DeviceConfig(
     )
 
     @JvmField
-    val PIXEL_XL = DeviceConfig(
+    public val PIXEL_XL: DeviceConfig = DeviceConfig(
       screenHeight = 2560,
       screenWidth = 1440,
       xdpi = 534,
@@ -354,7 +354,7 @@ class DeviceConfig(
     )
 
     @JvmField
-    val PIXEL_2 = DeviceConfig(
+    public val PIXEL_2: DeviceConfig = DeviceConfig(
       screenHeight = 1920,
       screenWidth = 1080,
       xdpi = 442,
@@ -372,7 +372,7 @@ class DeviceConfig(
     )
 
     @JvmField
-    val PIXEL_2_XL = DeviceConfig(
+    public val PIXEL_2_XL: DeviceConfig = DeviceConfig(
       screenHeight = 2880,
       screenWidth = 1440,
       xdpi = 537,
@@ -390,7 +390,7 @@ class DeviceConfig(
     )
 
     @JvmField
-    val PIXEL_3 = DeviceConfig(
+    public val PIXEL_3: DeviceConfig = DeviceConfig(
       screenHeight = 2160,
       screenWidth = 1080,
       xdpi = 442,
@@ -408,7 +408,7 @@ class DeviceConfig(
     )
 
     @JvmField
-    val PIXEL_3_XL = DeviceConfig(
+    public val PIXEL_3_XL: DeviceConfig = DeviceConfig(
       screenHeight = 2960,
       screenWidth = 1440,
       xdpi = 522,
@@ -426,7 +426,7 @@ class DeviceConfig(
     )
 
     @JvmField
-    val PIXEL_3A = DeviceConfig(
+    public val PIXEL_3A: DeviceConfig = DeviceConfig(
       screenHeight = 2220,
       screenWidth = 1080,
       xdpi = 442,
@@ -444,7 +444,7 @@ class DeviceConfig(
     )
 
     @JvmField
-    val PIXEL_3A_XL = DeviceConfig(
+    public val PIXEL_3A_XL: DeviceConfig = DeviceConfig(
       screenHeight = 2160,
       screenWidth = 1080,
       xdpi = 397,
@@ -462,7 +462,7 @@ class DeviceConfig(
     )
 
     @JvmField
-    val PIXEL_4 = DeviceConfig(
+    public val PIXEL_4: DeviceConfig = DeviceConfig(
       screenHeight = 2280,
       screenWidth = 1080,
       xdpi = 444,
@@ -480,7 +480,7 @@ class DeviceConfig(
     )
 
     @JvmField
-    val PIXEL_4_XL = DeviceConfig(
+    public val PIXEL_4_XL: DeviceConfig = DeviceConfig(
       screenHeight = 3040,
       screenWidth = 1440,
       xdpi = 537,
@@ -498,7 +498,7 @@ class DeviceConfig(
     )
 
     @JvmField
-    val PIXEL_4A = DeviceConfig(
+    public val PIXEL_4A: DeviceConfig = DeviceConfig(
       screenHeight = 2340,
       screenWidth = 1080,
       xdpi = 442,
@@ -516,7 +516,7 @@ class DeviceConfig(
     )
 
     @JvmField
-    val PIXEL_5 = DeviceConfig(
+    public val PIXEL_5: DeviceConfig = DeviceConfig(
       screenHeight = 2340,
       screenWidth = 1080,
       xdpi = 442,
@@ -535,7 +535,7 @@ class DeviceConfig(
 
     // https://android.googlesource.com/platform/tools/base/+/mirror-goog-studio-master-dev/sdklib/src/main/java/com/android/sdklib/devices/wear.xml
     @JvmField
-    val WEAR_OS_SMALL_ROUND: DeviceConfig = DeviceConfig(
+    public val WEAR_OS_SMALL_ROUND: DeviceConfig = DeviceConfig(
       screenHeight = 384,
       screenWidth = 384,
       xdpi = 320,
@@ -555,7 +555,7 @@ class DeviceConfig(
 
     // https://android.googlesource.com/platform/tools/base/+/mirror-goog-studio-master-dev/sdklib/src/main/java/com/android/sdklib/devices/wear.xml
     @JvmField
-    val WEAR_OS_SQUARE: DeviceConfig = DeviceConfig(
+    public val WEAR_OS_SQUARE: DeviceConfig = DeviceConfig(
       screenHeight = 280,
       screenWidth = 280,
       xdpi = 240,
@@ -575,7 +575,7 @@ class DeviceConfig(
 
     // https://www.techidence.com/galaxy-watch4-features-reviews-and-price/
     @JvmField
-    val GALAXY_WATCH4_CLASSIC_LARGE: DeviceConfig = DeviceConfig(
+    public val GALAXY_WATCH4_CLASSIC_LARGE: DeviceConfig = DeviceConfig(
       screenHeight = 454,
       screenWidth = 454,
       xdpi = 320,
@@ -594,7 +594,7 @@ class DeviceConfig(
     )
 
     @JvmField
-    val PIXEL_6 = DeviceConfig(
+    public val PIXEL_6: DeviceConfig = DeviceConfig(
       screenHeight = 2400,
       screenWidth = 1080,
       xdpi = 406,
@@ -612,7 +612,7 @@ class DeviceConfig(
     )
 
     @JvmField
-    val PIXEL_6_PRO = DeviceConfig(
+    public val PIXEL_6_PRO: DeviceConfig = DeviceConfig(
       screenHeight = 3120,
       screenWidth = 1440,
       xdpi = 512,
