@@ -26,7 +26,7 @@ import com.android.utils.HashCodes
  *
  * Resource item representing a value resource, e.g. a string or a color.
  */
-class BasicTextValueResourceItem(
+internal class BasicTextValueResourceItem(
   type: ResourceType,
   name: String,
   sourceFile: ResourceSourceFile,

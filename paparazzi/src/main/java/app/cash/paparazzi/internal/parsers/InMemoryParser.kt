@@ -23,7 +23,7 @@ import org.xmlpull.v1.XmlPullParserException
  *
  * A parser implementation that walks an in-memory XML DOM tree.
  */
-abstract class InMemoryParser : KXmlParser() {
+internal abstract class InMemoryParser : KXmlParser() {
   abstract fun rootTag(): TagSnapshot
 
   private val nodeStack = mutableListOf<TagSnapshot>()

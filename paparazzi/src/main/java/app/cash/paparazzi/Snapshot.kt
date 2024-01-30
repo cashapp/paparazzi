@@ -15,16 +15,26 @@
  */
 package app.cash.paparazzi
 
+import dev.drewhamilton.poko.Poko
 import java.util.Date
 import java.util.Locale
 
-data class Snapshot(
+@Poko
+class Snapshot(
   val name: String?,
   val testName: TestName,
   val timestamp: Date,
   val tags: List<String> = listOf(),
   val file: String? = null
-)
+) {
+  fun copy(
+    name: String? = this.name,
+    testName: TestName = this.testName,
+    timestamp: Date = this.timestamp,
+    tags: List<String> = this.tags,
+    file: String? = this.file
+  ) = Snapshot(name, testName, timestamp, tags, file)
+}
 
 internal fun Snapshot.toFileName(
   delimiter: String = "_",

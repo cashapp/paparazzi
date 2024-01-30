@@ -32,7 +32,7 @@ import kotlin.io.path.exists
  * Each [ResourceFolderRepository] contains the resources provided by a single res folder.
  */
 @SuppressLint("NewApi")
-class ResourceFolderRepository(
+internal class ResourceFolderRepository(
   val resourceDir: File,
   private val namespace: ResourceNamespace
 ) : LocalResourceRepository(resourceDir.name), LoadableResourceRepository {

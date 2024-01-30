@@ -25,7 +25,7 @@ import java.io.File
  * Represents a resource file from which [com.android.ide.common.resources.ResourceItem]s are
  * created by [ResourceFolderRepository]. An [Iterable] of [BasicResourceItem]s.
  */
-class ResourceFile(
+internal class ResourceFile(
   val file: File?,
   override val configuration: RepositoryConfiguration
 ) : ResourceSourceFile, Iterable<BasicResourceItem> {

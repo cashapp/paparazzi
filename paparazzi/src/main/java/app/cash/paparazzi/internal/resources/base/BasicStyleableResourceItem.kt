@@ -32,7 +32,7 @@ import java.io.IOException
  *
  * Resource item representing a styleable resource.
  */
-class BasicStyleableResourceItem(
+internal class BasicStyleableResourceItem(
   name: String,
   sourceFile: ResourceSourceFile,
   visibility: ResourceVisibility,

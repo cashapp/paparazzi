@@ -21,7 +21,7 @@ package app.cash.paparazzi.internal.parsers
  * A snapshot of an attribute value pulled from an XML resource.
  * Used in conjunction with [TagSnapshot].
  */
-open class AttributeSnapshot(
+internal open class AttributeSnapshot(
   open val namespace: String,
   open val prefix: String?,
   open val name: String,

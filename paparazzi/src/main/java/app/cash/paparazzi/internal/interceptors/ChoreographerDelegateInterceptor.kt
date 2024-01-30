@@ -3,7 +3,7 @@ package app.cash.paparazzi.internal.interceptors
 import android.view.Choreographer
 import com.android.internal.lang.System_Delegate
 
-object ChoreographerDelegateInterceptor {
+internal object ChoreographerDelegateInterceptor {
   @Suppress("unused")
   @JvmStatic
   fun intercept(

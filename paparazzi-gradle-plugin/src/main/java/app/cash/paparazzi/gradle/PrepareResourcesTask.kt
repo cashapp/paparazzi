@@ -107,7 +107,7 @@ abstract class PrepareResourcesTask : DefaultTask() {
     out.writeText(json)
   }
 
-  data class Config(
+  internal data class Config(
     val mainPackage: String,
     val targetSdkVersion: String,
     val platformDir: String,

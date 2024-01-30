@@ -32,7 +32,7 @@ import java.util.stream.Collectors
  * obtained from R.txt instead, when it is available. This means that
  * [ResourceItem.getOriginalSource] method may return null for such ID resources.
  */
-open class AarSourceResourceRepository(
+internal open class AarSourceResourceRepository(
   loader: RepositoryLoader<out AarSourceResourceRepository>,
   libraryName: String?
 ) : AbstractAarResourceRepository(loader.namespace, libraryName) {
