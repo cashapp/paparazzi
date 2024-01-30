@@ -17,6 +17,7 @@ package app.cash.paparazzi
 
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import dev.drewhamilton.poko.Poko
 import okio.buffer
 import okio.source
 import java.io.File
@@ -26,7 +27,8 @@ import java.nio.file.Paths
 import java.util.Locale
 import kotlin.io.path.exists
 
-data class Environment(
+@Poko
+class Environment(
   val platformDir: String,
   val appTestDir: String,
   val packageName: String,
@@ -47,6 +49,31 @@ data class Environment(
       throw FileNotFoundException("Missing platform version $platformVersion. Install with sdkmanager --install \"platforms;$platform\"")
     }
   }
+
+  fun copy(
+    platformDir: String = this.platformDir,
+    appTestDir: String = this.appTestDir,
+    packageName: String = this.packageName,
+    compileSdkVersion: Int = this.compileSdkVersion,
+    resourcePackageNames: List<String> = this.resourcePackageNames,
+    localResourceDirs: List<String> = this.localResourceDirs,
+    moduleResourceDirs: List<String> = this.moduleResourceDirs,
+    libraryResourceDirs: List<String> = this.libraryResourceDirs,
+    allModuleAssetDirs: List<String> = this.allModuleAssetDirs,
+    libraryAssetDirs: List<String> = this.libraryAssetDirs
+  ): Environment =
+    Environment(
+      platformDir,
+      appTestDir,
+      packageName,
+      compileSdkVersion,
+      resourcePackageNames,
+      localResourceDirs,
+      moduleResourceDirs,
+      libraryResourceDirs,
+      allModuleAssetDirs,
+      libraryAssetDirs
+    )
 }
 
 @Suppress("unused")
@@ -81,7 +108,7 @@ fun detectEnvironment(): Environment {
   )
 }
 
-data class Config(
+internal data class Config(
   val mainPackage: String,
   val targetSdkVersion: String,
   val platformDir: String,

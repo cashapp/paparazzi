@@ -10,18 +10,26 @@ buildscript {
 
   dependencies {
     classpath libs.plugin.kotlin
+    classpath libs.plugin.kotlinApiDump
     classpath libs.plugin.android
     classpath libs.plugin.mavenPublish
     classpath libs.plugin.dokka
     classpath libs.plugin.versions
     classpath libs.plugin.spotless
     classpath libs.plugin.buildConfig
+    classpath libs.plugin.poko
     classpath libs.grgit
 
     // Normally you would declare a version here, but we use dependency substitution in
     // settings.gradle to use the version built from inside the repo.
     classpath 'app.cash.paparazzi:paparazzi-gradle-plugin'
   }
+}
+
+apply plugin: 'binary-compatibility-validator'
+
+apiValidation {
+  ignoredProjects += ['libs', 'sample']
 }
 
 subprojects {

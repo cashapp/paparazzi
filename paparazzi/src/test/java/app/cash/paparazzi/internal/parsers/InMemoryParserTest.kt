@@ -82,7 +82,7 @@ class InMemoryParserTest {
     return ResourceParser(resourceInputStream).createTagSnapshot()
   }
 
-  class RealInMemoryParser(private val root: TagSnapshot) : InMemoryParser() {
+  private class RealInMemoryParser(private val root: TagSnapshot) : InMemoryParser() {
     override fun rootTag(): TagSnapshot = root
   }
 

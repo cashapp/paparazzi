@@ -15,8 +15,17 @@
  */
 package app.cash.paparazzi
 
-data class TestName(
+import dev.drewhamilton.poko.Poko
+
+@Poko
+class TestName(
   val packageName: String,
   val className: String,
   val methodName: String
-)
+) {
+  fun copy(
+    packageName: String = this.packageName,
+    className: String = this.className,
+    methodName: String = this.methodName
+  ): TestName = TestName(packageName, className, methodName)
+}

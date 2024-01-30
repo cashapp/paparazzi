@@ -30,7 +30,7 @@ import java.util.Collections
  *
  * Resource item representing an array resource.
  */
-class BasicArrayResourceItem(
+internal class BasicArrayResourceItem(
   name: String,
   sourceFile: ResourceSourceFile,
   visibility: ResourceVisibility,

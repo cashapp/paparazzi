@@ -10,7 +10,7 @@ import android.widget.FrameLayout
  * A wrapper layout for compose-based layouts which allows [android.view.WindowManagerImpl] to find
  * a composable root
  */
-class ComposeViewAdapter(
+internal class ComposeViewAdapter(
   context: Context,
   attrs: AttributeSet
 ) : FrameLayout(context, attrs)

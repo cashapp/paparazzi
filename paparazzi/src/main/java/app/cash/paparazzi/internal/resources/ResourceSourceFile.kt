@@ -20,7 +20,7 @@ package app.cash.paparazzi.internal.resources
  *
  * Represents an XML file from which an Android resource was created.
  */
-interface ResourceSourceFile {
+internal interface ResourceSourceFile {
   /**
    * The path of the file relative to the resource directory, or null if the source file
    * of the resource is not available.

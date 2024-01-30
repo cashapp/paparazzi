@@ -24,7 +24,7 @@ import com.android.SdkConstants.PREFIX_THEME_REF
  * Parser of resource URLs. Unlike [com.android.resources.ResourceUrl], this class is resilient to
  * URL syntax errors that doesn't create any GC overhead.
  */
-class ResourceUrlParser {
+internal class ResourceUrlParser {
   private var resourceUrl = ""
   private var colonPos = 0
   private var slashPos = 0

@@ -7,7 +7,7 @@ import net.bytebuddy.implementation.MethodDelegation
 import net.bytebuddy.matcher.ElementMatchers
 import net.bytebuddy.pool.TypePool
 
-object InterceptorRegistrar {
+internal object InterceptorRegistrar {
   private val byteBuddy = ByteBuddy()
   private val systemClassFileLocator = ClassFileLocator.ForClassLoader.ofSystemLoader()
   private val systemTypePool = TypePool.Default.ofSystemLoader()

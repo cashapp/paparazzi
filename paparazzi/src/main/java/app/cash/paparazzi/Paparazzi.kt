@@ -637,7 +637,7 @@ class Paparazzi @JvmOverloads constructor(
       this
     }
 
-  companion object {
+  internal companion object {
     /** The choreographer doesn't like 0 as a frame time, so start an hour later. */
     internal val TIME_OFFSET_NANOS = TimeUnit.HOURS.toNanos(1L)
 

@@ -241,7 +241,7 @@ class PaparazziPlugin : Plugin<Project> {
     }
   }
 
-  open class PaparazziTask : DefaultTask() {
+  abstract class PaparazziTask : DefaultTask() {
     @Option(option = "tests", description = "Sets test class or method name to be included, '*' is supported.")
     open fun setTestNameIncludePatterns(testNamePattern: List<String>): PaparazziTask {
       project.tasks.withType(Test::class.java).configureEach {

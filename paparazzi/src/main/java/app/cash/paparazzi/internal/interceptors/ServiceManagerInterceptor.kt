@@ -10,7 +10,7 @@ import android.os.IBinder
  *
  * This interceptor overrides ServiceManager.getServiceOrThrow to simply return null instead.
  */
-object ServiceManagerInterceptor {
+internal object ServiceManagerInterceptor {
   @Suppress("unused")
   @JvmStatic
   fun interceptGetServiceOrThrow(@Suppress("UNUSED_PARAMETER") name: String): IBinder? = null

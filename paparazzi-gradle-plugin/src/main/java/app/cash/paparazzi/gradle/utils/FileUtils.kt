@@ -19,8 +19,8 @@ import org.gradle.api.file.Directory
 import org.gradle.api.file.FileCollection
 import java.io.File
 
-fun FileCollection.relativize(directory: Directory) = files.map(directory::relativize)
+internal fun FileCollection.relativize(directory: Directory) = files.map(directory::relativize)
 
-fun Directory.relativize(child: File): String {
+internal fun Directory.relativize(child: File): String {
   return asFile.toPath().relativize(child.toPath()).toFile().invariantSeparatorsPath
 }

@@ -35,7 +35,7 @@ import java.util.logging.Logger
  *
  * Resource item representing a style resource.
  */
-class BasicStyleResourceItem(
+internal class BasicStyleResourceItem(
   name: String,
   sourceFile: ResourceSourceFile,
   visibility: ResourceVisibility,

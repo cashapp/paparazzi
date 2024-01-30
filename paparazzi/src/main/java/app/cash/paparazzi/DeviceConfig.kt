@@ -49,6 +49,7 @@ import com.android.resources.ScreenSize
 import com.android.resources.TouchScreen
 import com.android.resources.UiMode
 import com.google.android.collect.Maps
+import dev.drewhamilton.poko.Poko
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
 import org.xmlpull.v1.XmlPullParserFactory
@@ -66,7 +67,8 @@ import kotlin.math.min
  *
  * Defaults are for a Nexus 4 device.
  */
-data class DeviceConfig(
+@Poko
+class DeviceConfig(
   val screenHeight: Int = 1280,
   val screenWidth: Int = 768,
   val xdpi: Int = 320,
@@ -114,6 +116,49 @@ data class DeviceConfig(
         versionQualifier = VersionQualifier()
         screenRoundQualifier = ScreenRoundQualifier(screenRound)
       }
+
+  fun copy(
+    screenHeight: Int = this.screenHeight,
+    screenWidth: Int = this.screenWidth,
+    xdpi: Int = this.xdpi,
+    ydpi: Int = this.ydpi,
+    orientation: ScreenOrientation = this.orientation,
+    uiMode: UiMode = this.uiMode,
+    nightMode: NightMode = this.nightMode,
+    density: Density = this.density,
+    fontScale: Float = this.fontScale,
+    layoutDirection: LayoutDirection = this.layoutDirection,
+    locale: String? = this.locale,
+    ratio: ScreenRatio = this.ratio,
+    size: ScreenSize = this.size,
+    keyboard: Keyboard = this.keyboard,
+    touchScreen: TouchScreen = this.touchScreen,
+    keyboardState: KeyboardState = this.keyboardState,
+    softButtons: Boolean = this.softButtons,
+    navigation: Navigation = this.navigation,
+    screenRound: ScreenRound? = this.screenRound
+  ) = DeviceConfig(
+    screenHeight,
+    screenWidth,
+    xdpi,
+    ydpi,
+    orientation,
+    uiMode,
+    nightMode,
+    density,
+    fontScale,
+    layoutDirection,
+    locale,
+    ratio,
+    size,
+    keyboard,
+    touchScreen,
+    keyboardState,
+    softButtons,
+    navigation,
+    screenRound,
+    this.released
+  )
 
   private val currentWidth: Int
     get() = when (orientation) {
@@ -529,6 +574,7 @@ data class DeviceConfig(
     )
 
     // https://www.techidence.com/galaxy-watch4-features-reviews-and-price/
+    @JvmField
     val GALAXY_WATCH4_CLASSIC_LARGE: DeviceConfig = DeviceConfig(
       screenHeight = 454,
       screenWidth = 454,
@@ -590,7 +636,7 @@ data class DeviceConfig(
     private const val ATTR_VALUE = "value"
 
     @Throws(IOException::class)
-    fun loadProperties(path: File): Map<String, String> {
+    internal fun loadProperties(path: File): Map<String, String> {
       val p = Properties()
       val map = Maps.newHashMap<String, String>()
       p.load(FileInputStream(path))
@@ -601,7 +647,7 @@ data class DeviceConfig(
     }
 
     @Throws(IOException::class, XmlPullParserException::class)
-    fun getEnumMap(path: File): Map<String, Map<String, Int>> {
+    internal fun getEnumMap(path: File): Map<String, Map<String, Int>> {
       val map = mutableMapOf<String, MutableMap<String, Int>>()
 
       val xmlPullParser = XmlPullParserFactory.newInstance()

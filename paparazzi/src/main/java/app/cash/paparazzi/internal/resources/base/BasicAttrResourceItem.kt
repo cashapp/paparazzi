@@ -32,7 +32,7 @@ import java.util.EnumSet
  *
  * Resource item representing an attr resource.
  */
-open class BasicAttrResourceItem(
+internal open class BasicAttrResourceItem(
   name: String,
   sourceFile: ResourceSourceFile,
   visibility: ResourceVisibility,

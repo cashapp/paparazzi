@@ -35,7 +35,7 @@ import java.io.IOException
  *
  * Base class for value resource items.
  */
-abstract class BasicValueResourceItemBase(
+internal abstract class BasicValueResourceItemBase(
   type: ResourceType,
   name: String,
   val sourceFile: ResourceSourceFile,

@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.plugin.AbstractKotlinPluginKt
 apply plugin: 'org.jetbrains.kotlin.jvm'
 apply plugin: 'org.jetbrains.dokka'
 apply plugin: 'com.vanniktech.maven.publish'
+apply plugin: 'dev.drewhamilton.poko'
 
 java {
   sourceCompatibility = libs.versions.javaTarget.get()
