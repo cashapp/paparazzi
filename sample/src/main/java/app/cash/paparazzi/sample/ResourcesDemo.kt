@@ -67,7 +67,7 @@ fun ResourcesDemo() {
       color = Color.Black
     )
     Text(
-      text = resources.getString(R.string.string_escaped_chars),
+      text = resources.getString(app.cash.paparazzi.sample2.R.string.sample2),
       color = Color.Black
     )
     Text(

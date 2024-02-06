@@ -1,5 +1,5 @@
 plugins {
-  id 'com.android.library'
+  id 'com.android.application'
   id 'kotlin-android'
   id 'app.cash.paparazzi'
 }
@@ -9,6 +9,9 @@ android {
   compileSdk libs.versions.compileSdk.get() as int
   defaultConfig {
     minSdk libs.versions.minSdk.get() as int
+    applicationId 'app.cash.paparazzi.plugin.test'
+    versionCode 1
+    versionName '123'
   }
   compileOptions {
     sourceCompatibility = libs.versions.javaTarget.get()

@@ -33,7 +33,7 @@ class HelloComposeTest {
 
   @Test
   fun compose() {
-    paparazzi.snapshot { ResourcesDemo() }
+    paparazzi.snapshot { HelloPaparazzi() }
   }
 }
 

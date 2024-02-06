@@ -1,14 +1,18 @@
-apply plugin: 'com.android.dynamic-feature'
+apply plugin: 'com.android.application'
 apply plugin: 'org.jetbrains.kotlin.android'
 apply plugin: 'app.cash.paparazzi'
 apply plugin: 'jacoco'
 
 android {
-  namespace 'app.cash.paparazzi.sample'
+  namespace 'app.cash.paparazzi.sample2'
 
   compileSdk 34
   defaultConfig {
     minSdk libs.versions.minSdk.get() as int
+    targetSdk 34
+    applicationId = "app.cash.paparazzi"
+    versionCode = 1
+    versionName = "1.0"
   }
   compileOptions {
     sourceCompatibility = libs.versions.javaTarget.get()
@@ -21,12 +25,14 @@ android {
   composeOptions {
     kotlinCompilerExtensionVersion libs.versions.composeCompiler.get()
   }
+
+  dynamicFeatures = [":sample"]
 }
 
 dependencies {
   implementation libs.composeUi.material
   implementation libs.composeUi.uiTooling
-  implementation project(":sample2")
+
   testImplementation libs.testParameterInjector
 }
 

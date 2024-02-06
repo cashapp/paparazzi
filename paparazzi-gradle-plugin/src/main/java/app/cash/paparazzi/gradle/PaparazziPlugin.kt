@@ -24,7 +24,10 @@ import com.android.build.gradle.api.BaseVariant
 import com.android.build.gradle.internal.api.TestedVariant
 import com.android.build.gradle.internal.dsl.BaseAppModuleExtension
 import com.android.build.gradle.internal.dsl.DynamicFeatureExtension
+import com.android.build.gradle.internal.publishing.AndroidArtifacts
+import com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactScope
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactType
+import com.android.build.gradle.internal.publishing.AndroidArtifacts.ConsumedConfigType
 import com.android.build.gradle.tasks.MergeSourceSetFolders
 import org.gradle.api.DefaultTask
 import org.gradle.api.DomainObjectSet
@@ -36,6 +39,7 @@ import org.gradle.api.artifacts.type.ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIB
 import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileCollection
+import org.gradle.api.internal.artifacts.dependencies.DefaultProjectDependency
 import org.gradle.api.internal.artifacts.transform.UnzipTransform
 import org.gradle.api.logging.LogLevel.LIFECYCLE
 import org.gradle.api.plugins.JavaBasePlugin
@@ -133,7 +137,10 @@ class PaparazziPlugin : Plugin<Project> {
       // https://android.googlesource.com/platform/tools/base/+/96015063acd3455a76cdf1cc71b23b0828c0907f/build-system/gradle-core/src/main/java/com/android/build/gradle/tasks/MergeResources.kt#875
 
       val moduleResourceDirs = variant.runtimeConfiguration
-        .artifactsFor(ArtifactType.ANDROID_RES.type) { it is ProjectComponentIdentifier }
+        .incoming
+        .artifactView {  }
+        .artifacts
+        // .artifactsFor(ArtifactType.ANDROID_RES.type)
         .artifactFiles
 
       val aarExplodedDirs = variant.runtimeConfiguration
@@ -153,8 +160,8 @@ class PaparazziPlugin : Plugin<Project> {
         .artifactsFor(ArtifactType.ASSETS.type) { it !is ProjectComponentIdentifier }
         .artifactFiles
 
-      val packageAwareArtifactFiles = variant.runtimeConfiguration
-        .artifactsFor(ArtifactType.SYMBOL_LIST_WITH_PACKAGE_NAME.type)
+      val packageAwareArtifactFiles = variant.compileConfiguration
+        .artifactsFor(ArtifactType.SYMBOL_LIST_WITH_PACKAGE_NAME .type)
         .artifactFiles
 
       val writeResourcesTask = project.tasks.register(

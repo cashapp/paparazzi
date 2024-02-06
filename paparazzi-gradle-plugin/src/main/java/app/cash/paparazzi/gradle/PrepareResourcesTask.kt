@@ -93,7 +93,7 @@ abstract class PrepareResourcesTask : DefaultTask() {
       buildList {
         add(mainPackage)
         artifactFiles.files.forEach { file ->
-          add(file.useLines { lines -> lines.first() })
+          add(file.useLines { lines -> lines.joinToString(",") })
         }
       }.joinToString(",")
     } else {
@@ -113,11 +113,11 @@ abstract class PrepareResourcesTask : DefaultTask() {
         it.newLine()
         it.write(mergeAssetsOutputDir.get())
         it.newLine()
-        it.write(resourcePackageNames)
-        it.newLine()
+        it.write(resourcePackageNames) // + ",app.cash.paparazzi.sample2")
+          it.newLine()
         it.write(projectResourceDirs.joinFiles(projectDirectory))
         it.newLine()
-        it.write(moduleResourceDirs.joinFiles(projectDirectory))
+        it.write(moduleResourceDirs.joinFiles(projectDirectory))// + ",../sample2/build/intermediates/runtime_app_classes_jar/debug")
         it.newLine()
         it.write(aarExplodedDirs.joinFiles(gradleUserHomeDirectory))
         it.newLine()
