@@ -137,10 +137,10 @@ class PaparazziPlugin : Plugin<Project> {
       // https://android.googlesource.com/platform/tools/base/+/96015063acd3455a76cdf1cc71b23b0828c0907f/build-system/gradle-core/src/main/java/com/android/build/gradle/tasks/MergeResources.kt#875
 
       val moduleResourceDirs = variant.runtimeConfiguration
-        .incoming
-        .artifactView {  }
-        .artifacts
-        // .artifactsFor(ArtifactType.ANDROID_RES.type)
+//        .incoming
+//        .artifactView {  }
+//        .artifacts
+         .artifactsFor(ArtifactType.ANDROID_RES.type)
         .artifactFiles
 
       val aarExplodedDirs = variant.runtimeConfiguration
