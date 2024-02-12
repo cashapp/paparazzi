@@ -141,16 +141,9 @@ public class Device(
     images = flow {
       val viewGroup = bridgeRenderSession.rootViews[0].viewObject as ViewGroup
       val modifiedView = prepareSnapshot(view, viewGroup)
-      // Add one to the frame count so we get the last frame. Otherwise a 1 second, 60 FPS animation
-      // our 60th frame will be at time 983 ms, and we want our last frame to be 1,000 ms. This gets
-      // us 61 frames for a 1 second animation, 121 frames for a 2 second animation, etc.
-      val durationMillis = (clipSpec.end - clipSpec.start).toInt()
-      val frameCount = (durationMillis * clipSpec.fps) / 1000 + 1
       var snapshotImage: BufferedImage? = null
-      for (frame in 0 until frameCount) {
-        val nowMillis = clipSpec.start + (frame * 1000 / clipSpec.fps)
-        val snapshotTimeNanos = TimeUnit.MILLISECONDS.toNanos(nowMillis)
-        withTime(snapshotTimeNanos) {
+      clipSpec.frame.forEach { frame ->
+        withTime(frame.snapshotTimeNanos) {
           val result = renderSession.render(true)
           if (result.status == Result.Status.ERROR_UNKNOWN) {
             throw result.exception
