@@ -766,7 +766,7 @@ class PaparazziPluginTest {
     )
     assertThat(config.aarExplodedDirs)
       .comparingElementsUsing(MATCHES_PATTERN)
-      .containsExactly("^caches/transforms-3/[0-9a-f]{32}/transformed/external/res\$")
+      .containsExactly("^caches/transforms-4/[0-9a-f]{32}/transformed/external/res\$")
   }
 
   @Test
@@ -797,7 +797,7 @@ class PaparazziPluginTest {
     )
     assertThat(config.aarExplodedDirs)
       .comparingElementsUsing(MATCHES_PATTERN)
-      .containsExactly("^caches/transforms-3/[0-9a-f]{32}/transformed/external/res\$")
+      .containsExactly("^caches/transforms-4/[0-9a-f]{32}/transformed/external/res\$")
   }
 
   @Test
@@ -938,7 +938,7 @@ class PaparazziPluginTest {
     var config = resourcesFile.loadConfig()
     assertThat(config.aarExplodedDirs)
       .comparingElementsUsing(MATCHES_PATTERN)
-      .containsExactly("^caches/transforms-3/[0-9a-f]{32}/transformed/external1/res\$")
+      .containsExactly("^caches/transforms-4/[0-9a-f]{32}/transformed/external1/res\$")
 
     buildDir.deleteRecursively()
 
@@ -957,7 +957,7 @@ class PaparazziPluginTest {
     config = resourcesFile.loadConfig()
     assertThat(config.aarExplodedDirs)
       .comparingElementsUsing(MATCHES_PATTERN)
-      .containsExactly("^caches/transforms-3/[0-9a-f]{32}/transformed/external2/res\$")
+      .containsExactly("^caches/transforms-4/[0-9a-f]{32}/transformed/external2/res\$")
   }
 
   @Test
@@ -1110,7 +1110,7 @@ class PaparazziPluginTest {
     var config = resourcesFile.loadConfig()
     assertThat(config.aarAssetDirs)
       .comparingElementsUsing(MATCHES_PATTERN)
-      .containsExactly("^caches/transforms-3/[0-9a-f]{32}/transformed/external1/assets\$")
+      .containsExactly("^caches/transforms-4/[0-9a-f]{32}/transformed/external1/assets\$")
 
     buildDir.deleteRecursively()
 
@@ -1129,7 +1129,7 @@ class PaparazziPluginTest {
     config = resourcesFile.loadConfig()
     assertThat(config.aarAssetDirs)
       .comparingElementsUsing(MATCHES_PATTERN)
-      .containsExactly("^caches/transforms-3/[0-9a-f]{32}/transformed/external2/assets\$")
+      .containsExactly("^caches/transforms-4/[0-9a-f]{32}/transformed/external2/assets\$")
   }
 
   @Test

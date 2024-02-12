@@ -22,7 +22,7 @@ internal const val TEST_DATA_DIR = "src/test/resources/aar"
 
 /**
  * Representative of loading an unzipped AAR from the Gradle transforms cache, e.g.,
- * $GRADLE_USER_HOME/caches/transforms-3/93260cec846aa69823e5e1c7eb771238/transformed/appcompat-1.6.1/res
+ * $GRADLE_USER_HOME/caches/transforms-4/93260cec846aa69823e5e1c7eb771238/transformed/appcompat-1.6.1/res
  */
 internal fun makeAarRepositoryFromExplodedAar(
   libraryDirName: String
