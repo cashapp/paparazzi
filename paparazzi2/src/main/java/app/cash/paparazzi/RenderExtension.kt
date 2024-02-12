@@ -20,11 +20,11 @@ import android.view.View
 /**
  * An extension for overlaying additional information on top of each rendered frame.
  */
-interface RenderExtension {
+public interface RenderExtension {
   /**
    * Allows this extension to modify the view hierarchy represented by [contentView].
    *
    * Returns the root view of the modified hierarchy.
    */
-  fun renderView(contentView: View): View
+  public fun renderView(contentView: View): View
 }

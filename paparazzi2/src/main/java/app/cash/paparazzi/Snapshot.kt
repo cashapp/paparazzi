@@ -2,7 +2,7 @@ package app.cash.paparazzi
 
 import java.awt.image.BufferedImage
 
-data class Snapshot(
+public data class Snapshot(
   val spec: FrameSpec,
   val image: BufferedImage
 )

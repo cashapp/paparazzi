@@ -62,7 +62,7 @@ import java.util.Properties
  *
  * Defaults are for a Nexus 4 device.
  */
-data class DeviceConfig(
+public data class DeviceConfig(
   val screenHeight: Int = 1280,
   val screenWidth: Int = 768,
   val xdpi: Int = 320,
@@ -142,12 +142,12 @@ data class DeviceConfig(
    * Release dates obtained from Wikipedia.
    */
 
-  companion object {
+  public companion object {
     @JvmField
-    val NEXUS_4 = DeviceConfig()
+    public val NEXUS_4: DeviceConfig = DeviceConfig()
 
     @JvmField
-    val NEXUS_5 = DeviceConfig(
+    public val NEXUS_5: DeviceConfig = DeviceConfig(
       screenHeight = 1920,
       screenWidth = 1080,
       xdpi = 445,
@@ -165,7 +165,7 @@ data class DeviceConfig(
     )
 
     @JvmField
-    val NEXUS_7 = DeviceConfig(
+    public val NEXUS_7: DeviceConfig = DeviceConfig(
       screenHeight = 1920,
       screenWidth = 1200,
       xdpi = 323,
@@ -183,7 +183,7 @@ data class DeviceConfig(
     )
 
     @JvmField
-    val NEXUS_10 = DeviceConfig(
+    public val NEXUS_10: DeviceConfig = DeviceConfig(
       screenHeight = 1600,
       screenWidth = 2560,
       xdpi = 300,
@@ -201,7 +201,7 @@ data class DeviceConfig(
     )
 
     @JvmField
-    val NEXUS_5_LAND = DeviceConfig(
+    public val NEXUS_5_LAND: DeviceConfig = DeviceConfig(
       screenHeight = 1080,
       screenWidth = 1920,
       xdpi = 445,
@@ -219,7 +219,7 @@ data class DeviceConfig(
     )
 
     @JvmField
-    val NEXUS_7_2012 = DeviceConfig(
+    public val NEXUS_7_2012: DeviceConfig = DeviceConfig(
       screenHeight = 1280,
       screenWidth = 800,
       xdpi = 195,
@@ -237,7 +237,7 @@ data class DeviceConfig(
     )
 
     @JvmField
-    val PIXEL_C = DeviceConfig(
+    public val PIXEL_C: DeviceConfig = DeviceConfig(
       screenHeight = 1800,
       screenWidth = 2560,
       xdpi = 308,
@@ -255,7 +255,7 @@ data class DeviceConfig(
     )
 
     @JvmField
-    val PIXEL = DeviceConfig(
+    public val PIXEL: DeviceConfig = DeviceConfig(
       screenHeight = 1920,
       screenWidth = 1080,
       xdpi = 440,
@@ -273,7 +273,7 @@ data class DeviceConfig(
     )
 
     @JvmField
-    val PIXEL_XL = DeviceConfig(
+    public val PIXEL_XL: DeviceConfig = DeviceConfig(
       screenHeight = 2560,
       screenWidth = 1440,
       xdpi = 534,
@@ -291,7 +291,7 @@ data class DeviceConfig(
     )
 
     @JvmField
-    val PIXEL_2 = DeviceConfig(
+    public val PIXEL_2: DeviceConfig = DeviceConfig(
       screenHeight = 1920,
       screenWidth = 1080,
       xdpi = 442,
@@ -309,7 +309,7 @@ data class DeviceConfig(
     )
 
     @JvmField
-    val PIXEL_2_XL = DeviceConfig(
+    public val PIXEL_2_XL: DeviceConfig = DeviceConfig(
       screenHeight = 2880,
       screenWidth = 1440,
       xdpi = 537,
@@ -327,7 +327,7 @@ data class DeviceConfig(
     )
 
     @JvmField
-    val PIXEL_3 = DeviceConfig(
+    public val PIXEL_3: DeviceConfig = DeviceConfig(
       screenHeight = 2160,
       screenWidth = 1080,
       xdpi = 442,
@@ -345,7 +345,7 @@ data class DeviceConfig(
     )
 
     @JvmField
-    val PIXEL_3_XL = DeviceConfig(
+    public val PIXEL_3_XL: DeviceConfig = DeviceConfig(
       screenHeight = 2960,
       screenWidth = 1440,
       xdpi = 522,
@@ -363,7 +363,7 @@ data class DeviceConfig(
     )
 
     @JvmField
-    val PIXEL_3A = DeviceConfig(
+    public val PIXEL_3A: DeviceConfig = DeviceConfig(
       screenHeight = 2220,
       screenWidth = 1080,
       xdpi = 442,
@@ -381,7 +381,7 @@ data class DeviceConfig(
     )
 
     @JvmField
-    val PIXEL_3A_XL = DeviceConfig(
+    public val PIXEL_3A_XL: DeviceConfig = DeviceConfig(
       screenHeight = 2160,
       screenWidth = 1080,
       xdpi = 397,
@@ -399,7 +399,7 @@ data class DeviceConfig(
     )
 
     @JvmField
-    val PIXEL_4 = DeviceConfig(
+    public val PIXEL_4: DeviceConfig = DeviceConfig(
       screenHeight = 2280,
       screenWidth = 1080,
       xdpi = 444,
@@ -417,7 +417,7 @@ data class DeviceConfig(
     )
 
     @JvmField
-    val PIXEL_4_XL = DeviceConfig(
+    public val PIXEL_4_XL: DeviceConfig = DeviceConfig(
       screenHeight = 3040,
       screenWidth = 1440,
       xdpi = 537,
@@ -435,7 +435,7 @@ data class DeviceConfig(
     )
 
     @JvmField
-    val PIXEL_4A = DeviceConfig(
+    public val PIXEL_4A: DeviceConfig = DeviceConfig(
       screenHeight = 2340,
       screenWidth = 1080,
       xdpi = 442,
@@ -453,7 +453,7 @@ data class DeviceConfig(
     )
 
     @JvmField
-    val PIXEL_5 = DeviceConfig(
+    public val PIXEL_5: DeviceConfig = DeviceConfig(
       screenHeight = 2340,
       screenWidth = 1080,
       xdpi = 442,
@@ -472,7 +472,7 @@ data class DeviceConfig(
 
     // https://android.googlesource.com/platform/tools/base/+/mirror-goog-studio-master-dev/sdklib/src/main/java/com/android/sdklib/devices/wear.xml
     @JvmField
-    val WEAR_OS_SMALL_ROUND: DeviceConfig = DeviceConfig(
+    public val WEAR_OS_SMALL_ROUND: DeviceConfig = DeviceConfig(
       screenHeight = 384,
       screenWidth = 384,
       xdpi = 320,
@@ -492,7 +492,7 @@ data class DeviceConfig(
 
     // https://android.googlesource.com/platform/tools/base/+/mirror-goog-studio-master-dev/sdklib/src/main/java/com/android/sdklib/devices/wear.xml
     @JvmField
-    val WEAR_OS_SQUARE: DeviceConfig = DeviceConfig(
+    public val WEAR_OS_SQUARE: DeviceConfig = DeviceConfig(
       screenHeight = 280,
       screenWidth = 280,
       xdpi = 240,
@@ -511,7 +511,7 @@ data class DeviceConfig(
     )
 
     // https://www.techidence.com/galaxy-watch4-features-reviews-and-price/
-    val GALAXY_WATCH4_CLASSIC_LARGE: DeviceConfig = DeviceConfig(
+    public val GALAXY_WATCH4_CLASSIC_LARGE: DeviceConfig = DeviceConfig(
       screenHeight = 454,
       screenWidth = 454,
       xdpi = 320,
@@ -530,7 +530,7 @@ data class DeviceConfig(
     )
 
     @JvmField
-    val PIXEL_6 = DeviceConfig(
+    public val PIXEL_6: DeviceConfig = DeviceConfig(
       screenHeight = 2400,
       screenWidth = 1080,
       xdpi = 406,
@@ -548,7 +548,7 @@ data class DeviceConfig(
     )
 
     @JvmField
-    val PIXEL_6_PRO = DeviceConfig(
+    public val PIXEL_6_PRO: DeviceConfig = DeviceConfig(
       screenHeight = 3120,
       screenWidth = 1440,
       xdpi = 512,
@@ -572,7 +572,7 @@ data class DeviceConfig(
     private const val ATTR_VALUE = "value"
 
     @Throws(IOException::class)
-    fun loadProperties(path: File): Map<String, String> {
+    public fun loadProperties(path: File): Map<String, String> {
       val p = Properties()
       val map = Maps.newHashMap<String, String>()
       p.load(FileInputStream(path))
@@ -583,7 +583,7 @@ data class DeviceConfig(
     }
 
     @Throws(IOException::class, XmlPullParserException::class)
-    fun getEnumMap(path: File): Map<String, Map<String, Int>> {
+    public fun getEnumMap(path: File): Map<String, Map<String, Int>> {
       val map = mutableMapOf<String, MutableMap<String, Int>>()
 
       val xmlPullParser = XmlPullParserFactory.newInstance()

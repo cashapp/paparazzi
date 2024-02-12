@@ -54,7 +54,7 @@ import java.util.EnumSet
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.flow.flow
 
-class Device(
+public class Device(
   private val environment: Environment = detectEnvironment(),
   private val validateAccessibility: Boolean = false,
   private val frameSpec: FrameSpec,
@@ -67,13 +67,13 @@ class Device(
   private lateinit var renderer: Renderer
   private lateinit var sessionParamsBuilder: SessionParamsBuilder
 
-  val layoutInflater: LayoutInflater
+  public val layoutInflater: LayoutInflater
     get() = RenderAction.getCurrentContext().getSystemService("layout_inflater") as BridgeInflater
 
-  val resources: Resources
+  public val resources: Resources
     get() = RenderAction.getCurrentContext().resources
 
-  val context: Context
+  public val context: Context
     get() = RenderAction.getCurrentContext()
 
   private val contentRoot = """
@@ -133,10 +133,10 @@ class Device(
     return Snapshot(frameSpec, snapshotImage!!)
   }
 
-  override fun clip(
+  public override fun clip(
     view: View,
     clipSpec: ClipSpec
-  ) = Clip(
+  ): Clip = Clip(
     spec = clipSpec,
     images = flow {
       val viewGroup = bridgeRenderSession.rootViews[0].viewObject as ViewGroup
@@ -223,7 +223,7 @@ class Device(
     return modifiedView
   }
 
-  fun close() {
+  public fun close() {
     renderSession.release()
     bridgeRenderSession.dispose()
     Bridge.cleanupThread()
@@ -232,7 +232,7 @@ class Device(
     logger.assertNoErrors()
   }
 
-  fun <V : View> inflate(@LayoutRes layoutId: Int): V = layoutInflater.inflate(layoutId, null) as V
+  public fun <V : View> inflate(@LayoutRes layoutId: Int): V = layoutInflater.inflate(layoutId, null) as V
 
   private fun prepare() {
     val layoutlibCallback =
@@ -524,7 +524,7 @@ class Device(
     }
   }
 
-  companion object {
+  private companion object {
     /** The choreographer doesn't like 0 as a frame time, so start an hour later. */
     internal val TIME_OFFSET_NANOS = TimeUnit.HOURS.toNanos(1L)
 

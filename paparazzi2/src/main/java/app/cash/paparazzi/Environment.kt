@@ -22,7 +22,7 @@ import java.nio.file.Paths
 import java.util.Locale
 import kotlin.io.path.exists
 
-data class Environment(
+public data class Environment(
   val platformDir: String,
   val appTestDir: String,
   val resDir: String,
@@ -48,11 +48,11 @@ data class Environment(
 }
 
 @Suppress("unused")
-fun androidHome() = System.getenv("ANDROID_SDK_ROOT")
+public fun androidHome(): String = System.getenv("ANDROID_SDK_ROOT")
   ?: System.getenv("ANDROID_HOME")
   ?: androidSdkPath()
 
-fun detectEnvironment(): Environment {
+public fun detectEnvironment(): Environment {
   checkInstalledJvm()
 
   val resourcesFile = File(System.getProperty("paparazzi.test.resources"))

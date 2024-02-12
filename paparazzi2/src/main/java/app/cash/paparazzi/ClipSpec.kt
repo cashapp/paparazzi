@@ -1,6 +1,6 @@
 package app.cash.paparazzi
 
-data class ClipSpec(
+public data class ClipSpec(
   val frameSpec: FrameSpec,
   val start: Long,
   val end: Long,

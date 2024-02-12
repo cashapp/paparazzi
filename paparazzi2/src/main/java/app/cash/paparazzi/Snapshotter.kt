@@ -3,23 +3,23 @@ package app.cash.paparazzi
 import android.view.View
 import androidx.compose.runtime.Composable
 
-interface Snapshotter {
-  fun snapshot(
+public interface Snapshotter {
+  public fun snapshot(
     view: View,
     timestampMillis: Long = 0L
   ): Snapshot
 
-  fun snapshot(
+  public fun snapshot(
     composable: @Composable () -> Unit,
     timestampMillis: Long = 0L
   ): Snapshot
 
-  fun clip(
+  public fun clip(
     view: View,
     clipSpec: ClipSpec
   ): Clip
 
-  fun clip(
+  public fun clip(
     composable: @Composable () -> Unit,
     clipSpec: ClipSpec
   ): Clip

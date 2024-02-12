@@ -5,17 +5,17 @@ import net.bytebuddy.dynamic.loading.ClassReloadingStrategy
 import net.bytebuddy.implementation.MethodDelegation
 import net.bytebuddy.matcher.ElementMatchers
 
-object InterceptorRegistrar {
+public object InterceptorRegistrar {
   private val byteBuddy = ByteBuddy()
   private val methodInterceptors = mutableListOf<() -> Unit>()
 
-  fun addMethodInterceptor(
+  public fun addMethodInterceptor(
     receiver: Class<*>,
     methodName: String,
     interceptor: Class<*>
-  ) = addMethodInterceptors(receiver, setOf(methodName to interceptor))
+  ): Unit = addMethodInterceptors(receiver, setOf(methodName to interceptor))
 
-  fun addMethodInterceptors(
+  public fun addMethodInterceptors(
     receiver: Class<*>,
     methodNamesToInterceptors: Set<Pair<String, Class<*>>>
   ) {
@@ -35,11 +35,11 @@ object InterceptorRegistrar {
     }
   }
 
-  fun registerMethodInterceptors() {
+  public fun registerMethodInterceptors() {
     methodInterceptors.forEach { it.invoke() }
   }
 
-  fun clearMethodInterceptors() {
+  public fun clearMethodInterceptors() {
     methodInterceptors.clear()
   }
 }
