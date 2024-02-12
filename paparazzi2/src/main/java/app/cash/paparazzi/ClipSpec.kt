@@ -23,15 +23,9 @@ public data class ClipSpec(
     frameCount = ((end - start).toInt() * fps) / 1000 + 1
   )
 
-  val frame: Sequence<ClipFrameSpec>
+  val frameTimeNanos: Sequence<Long>
     get() = (0 until frameCount).asSequence().map { frameNumber ->
       val nowMillis = start + (frameNumber * frameDelay)
-      val snapshotTimeNanos = TimeUnit.MILLISECONDS.toNanos(nowMillis)
-      ClipFrameSpec(snapshotTimeNanos)
+      TimeUnit.MILLISECONDS.toNanos(nowMillis)
     }
 }
-
-// TODO: This name is shit
-public data class ClipFrameSpec(
-  val snapshotTimeNanos: Long
-)

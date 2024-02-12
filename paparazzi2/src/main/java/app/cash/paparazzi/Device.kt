@@ -142,8 +142,8 @@ public class Device(
       val viewGroup = bridgeRenderSession.rootViews[0].viewObject as ViewGroup
       val modifiedView = prepareSnapshot(view, viewGroup)
       var snapshotImage: BufferedImage? = null
-      clipSpec.frame.forEach { frame ->
-        withTime(frame.snapshotTimeNanos) {
+      clipSpec.frameTimeNanos.forEach { frameTimeNanos ->
+        withTime(frameTimeNanos) {
           val result = renderSession.render(true)
           if (result.status == Result.Status.ERROR_UNKNOWN) {
             throw result.exception
