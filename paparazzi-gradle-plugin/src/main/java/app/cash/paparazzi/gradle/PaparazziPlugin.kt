@@ -140,10 +140,10 @@ public class PaparazziPlugin : Plugin<Project> {
         task.nonTransitiveRClassEnabled.set(nonTransitiveRClassEnabled)
         task.targetSdkVersion.set(android.targetSdkVersion())
         task.compileSdkVersion.set(android.compileSdkVersion())
-        task.projectResourceDirs.set(localResourceDirs.relativize(projectDirectory))
-        task.moduleResourceDirs.set(moduleResourceDirs.relativize(projectDirectory))
+        task.projectResourceDirs.set(project.provider { localResourceDirs.relativize(projectDirectory) })
+        task.moduleResourceDirs.set(project.provider { moduleResourceDirs.relativize(projectDirectory) })
         task.aarExplodedDirs.from(aarExplodedDirs)
-        task.projectAssetDirs.set(localAssetDirs.plus(moduleAssetDirs).relativize(projectDirectory))
+        task.projectAssetDirs.set(project.provider { localAssetDirs.plus(moduleAssetDirs).relativize(projectDirectory) })
         task.aarAssetDirs.from(aarAssetDirs)
         task.paparazziResources.set(buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.json"))
       }
