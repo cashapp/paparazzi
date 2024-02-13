@@ -1729,7 +1729,12 @@ class PaparazziPluginTest {
 
       if (!gradleProperties.exists()) {
         gradleProperties.createNewFile()
-        gradleProperties.writeText("android.useAndroidX=true")
+        gradleProperties.writeText(
+          """
+            |android.useAndroidX=true
+            |android.dependencyResolutionAtConfigurationTime.disallow=true
+          """.trimMargin()
+        )
         generatedGradleProperties = true
       }
 
