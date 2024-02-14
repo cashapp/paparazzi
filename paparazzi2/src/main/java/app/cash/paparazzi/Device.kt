@@ -98,20 +98,19 @@ public class Device(
     prepare()
   }
 
-  override fun snapshot(composable: @Composable () -> Unit, timestampMillis: Long): Snapshot {
+  override fun snapshot(composable: @Composable () -> Unit, timestampNanos: Long): Snapshot {
     val hostView = ComposeView(context)
     hostView.setContent(composable)
 
-    return snapshot(hostView, timestampMillis)
+    return snapshot(hostView, timestampNanos)
   }
 
-  override fun snapshot(view: View, timestampMillis: Long): Snapshot {
+  override fun snapshot(view: View, timestampNanos: Long): Snapshot {
     val viewGroup = bridgeRenderSession.rootViews[0].viewObject as ViewGroup
     val modifiedView = prepareSnapshot(view, viewGroup)
 
-    val snapshotTimeNanos = TimeUnit.MILLISECONDS.toNanos(timestampMillis)
     var snapshotImage: BufferedImage? = null
-    withTime(snapshotTimeNanos) {
+    withTime(timestampNanos) {
       val result = renderSession.render(true)
       if (result.status == Result.Status.ERROR_UNKNOWN) {
         throw result.exception

@@ -6,12 +6,12 @@ import androidx.compose.runtime.Composable
 public interface Snapshotter {
   public fun snapshot(
     view: View,
-    timestampMillis: Long = 0L
+    timestampNanos: Long = 0L
   ): Snapshot
 
   public fun snapshot(
     composable: @Composable () -> Unit,
-    timestampMillis: Long = 0L
+    timestampNanos: Long = 0L
   ): Snapshot
 
   public fun clip(
