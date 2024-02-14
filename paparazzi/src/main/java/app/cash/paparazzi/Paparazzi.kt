@@ -95,7 +95,11 @@ public class Paparazzi @JvmOverloads constructor(
   private val renderingMode: RenderingMode = RenderingMode.NORMAL,
   private val appCompatEnabled: Boolean = true,
   private val maxPercentDifference: Double = 0.1,
-  private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference),
+  private val fileNameProvider: FileNameProvider = DefaultFileNameProvider(),
+  private val snapshotHandler: SnapshotHandler = determineHandler(
+    maxPercentDifference,
+    fileNameProvider
+  ),
   private val renderExtensions: Set<RenderExtension> = setOf(),
   private val supportsRtl: Boolean = false,
   private val showSystemUi: Boolean = false,
@@ -675,11 +679,15 @@ public class Paparazzi @JvmOverloads constructor(
       }
     }
 
-    private fun determineHandler(maxPercentDifference: Double): SnapshotHandler =
-      if (isVerifying) {
-        SnapshotVerifier(maxPercentDifference)
+    private fun determineHandler(
+      maxPercentDifference: Double,
+      fileNameProvider: FileNameProvider
+    ): SnapshotHandler {
+      return if (isVerifying) {
+        SnapshotVerifier(maxPercentDifference, fileNameProvider = fileNameProvider)
       } else {
-        HtmlReportWriter()
+        HtmlReportWriter(fileNameProvider = fileNameProvider)
       }
+    }
   }
 }

@@ -17,7 +17,6 @@ package app.cash.paparazzi
 
 import dev.drewhamilton.poko.Poko
 import java.util.Date
-import java.util.Locale
 
 @Poko
 public class Snapshot(
@@ -34,16 +33,4 @@ public class Snapshot(
     tags: List<String> = this.tags,
     file: String? = this.file
   ): Snapshot = Snapshot(name, testName, timestamp, tags, file)
-}
-
-internal fun Snapshot.toFileName(
-  delimiter: String = "_",
-  extension: String
-): String {
-  val formattedLabel = if (name != null) {
-    "$delimiter${name.toLowerCase(Locale.US).replace("\\s".toRegex(), delimiter)}"
-  } else {
-    ""
-  }
-  return "${testName.packageName}${delimiter}${testName.className}${delimiter}${testName.methodName}$formattedLabel.$extension"
 }
