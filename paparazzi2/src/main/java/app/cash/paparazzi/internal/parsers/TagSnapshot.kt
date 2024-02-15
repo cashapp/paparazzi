@@ -26,7 +26,7 @@ package app.cash.paparazzi.internal.parsers
  * of properties as they were at the time of rendering, not as they are at the current
  * instant.
  */
-data class TagSnapshot(
+internal data class TagSnapshot(
   val name: String,
   val namespace: String,
   val prefix: String?,
@@ -42,7 +42,7 @@ data class TagSnapshot(
     val output = """
       |$name:
       |${pad(indent + 1)}attributes: ${print(attributes)}
-      |${pad(indent + 1)}children: ${print(children)} 
+      |${pad(indent + 1)}children: ${print(children)}
     """.trimMargin()
     indent--
     return output

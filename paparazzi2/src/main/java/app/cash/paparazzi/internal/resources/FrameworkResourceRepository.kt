@@ -35,7 +35,7 @@ import java.util.zip.ZipFile
  *
  * @see FrameworkResJarCreator
  */
-class FrameworkResourceRepository private constructor(
+internal class FrameworkResourceRepository private constructor(
   loader: RepositoryLoader<FrameworkResourceRepository>,
   private val useCompiled9Patches: Boolean
 ) : AarSourceResourceRepository(loader, null) {

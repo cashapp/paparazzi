@@ -12,7 +12,7 @@ import java.nio.file.Path
 /**
  * Repository of resources loaded from a file or a directory on disk.
  */
-interface LoadableResourceRepository : SingleNamespaceResourceRepository {
+internal interface LoadableResourceRepository : SingleNamespaceResourceRepository {
   /**
    * Returns the name of the library, or null if this is not an AAR resource repository.
    */

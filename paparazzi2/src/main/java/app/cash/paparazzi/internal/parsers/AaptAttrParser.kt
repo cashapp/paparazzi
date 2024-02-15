@@ -20,7 +20,7 @@ package app.cash.paparazzi.internal.parsers
  *
  * Interface for parsers that support declaration of inlined {@code aapt:attr} attributes
  */
-interface AaptAttrParser {
+internal interface AaptAttrParser {
   /**
    * Returns a [Map] that contains all the `aapt:attr` elements declared in this or any
    * children parsers. This list can be used to resolve `@aapt/_aapt` references into this parser.

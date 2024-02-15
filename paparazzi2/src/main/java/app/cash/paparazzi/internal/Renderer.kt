@@ -16,6 +16,7 @@
 
 package app.cash.paparazzi.internal
 
+import app.cash.paparazzi.Device
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Environment
 import app.cash.paparazzi.Flags
@@ -28,7 +29,6 @@ import app.cash.paparazzi.internal.resources.AarSourceResourceRepository
 import app.cash.paparazzi.internal.resources.AppResourceRepository
 import app.cash.paparazzi.internal.resources.FrameworkResourceRepository
 import app.cash.paparazzi.setStaticValue
-import app.cash.paparazzi2.Device
 import com.android.layoutlib.bridge.Bridge
 import com.android.layoutlib.bridge.android.RenderParamsFlags
 import com.android.layoutlib.bridge.impl.DelegateManager

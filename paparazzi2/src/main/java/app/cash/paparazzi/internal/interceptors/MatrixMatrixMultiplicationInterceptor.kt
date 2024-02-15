@@ -1,7 +1,7 @@
 package app.cash.paparazzi.internal.interceptors
 
 // Sampled from https://cs.android.com/android/platform/superproject/+/master:external/robolectric-shadows/shadows/framework/src/main/java/org/robolectric/shadows/ShadowOpenGLMatrix.java;l=10-67
-object MatrixMatrixMultiplicationInterceptor {
+internal object MatrixMatrixMultiplicationInterceptor {
   @Suppress("unused")
   @JvmStatic
   fun intercept(

@@ -26,7 +26,7 @@ import org.xmlpull.v1.XmlPullParser
  * Simple implementation of the [ResourceNamespace.Resolver] interface intended to be used
  * together with [XmlPullParser].
  */
-class NamespaceResolver : ResourceNamespace.Resolver {
+internal class NamespaceResolver : ResourceNamespace.Resolver {
   /** Interleaved prefixes and the corresponding URIs in order of descending priority.  */
   private val prefixesAndUris: Array<String>
 

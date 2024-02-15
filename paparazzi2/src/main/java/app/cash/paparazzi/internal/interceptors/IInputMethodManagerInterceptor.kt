@@ -8,7 +8,7 @@ import com.android.internal.view.IInputMethodManager
  * in [com.android.internal.view.IInputMethodManager.Stub.asInterface] to return the default
  * implementation of [IInputMethodManager].
  */
-object IInputMethodManagerInterceptor {
+internal object IInputMethodManagerInterceptor {
   @Suppress("unused")
   @JvmStatic
   fun interceptAsInterface(@Suppress("UNUSED_PARAMETER") obj: IBinder?): IInputMethodManager =

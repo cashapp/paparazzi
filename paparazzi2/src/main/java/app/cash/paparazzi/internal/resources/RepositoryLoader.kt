@@ -115,7 +115,7 @@ import java.util.zip.ZipFile
 /**
  * Ported from: [RepositoryLoader.java](https://cs.android.com/android-studio/platform/tools/base/+/876aaf229c1e3b8144736d3338c628ba43ccac45:resource-repository/main/java/com/android/resources/base/RepositoryLoader.java)
  */
-abstract class RepositoryLoader<T : LoadableResourceRepository>(
+internal abstract class RepositoryLoader<T : LoadableResourceRepository>(
   val resourceDirectoryOrFile: Path,
   val resourceFilesAndFolders: Collection<PathString>?,
   val namespace: ResourceNamespace

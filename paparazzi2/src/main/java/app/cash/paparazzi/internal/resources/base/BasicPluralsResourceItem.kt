@@ -30,7 +30,7 @@ import java.io.IOException
  *
  * Resource item representing a plurals resource.
  */
-class BasicPluralsResourceItem private constructor(
+internal class BasicPluralsResourceItem private constructor(
   name: String,
   sourceFile: ResourceSourceFile,
   visibility: ResourceVisibility,

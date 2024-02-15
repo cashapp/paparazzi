@@ -109,19 +109,19 @@ private fun Char.isPossiblePlaceHolderEnd() = when (this) {
   else -> false
 }
 
-abstract class PseudoMethodImpl {
+internal abstract class PseudoMethodImpl {
   open fun start() = ""
   open fun end() = ""
   abstract fun text(originalText: String): String
   abstract fun placeholder(originalText: String): String
 }
 
-object PseudoMethodNone : PseudoMethodImpl() {
+internal object PseudoMethodNone : PseudoMethodImpl() {
   override fun text(originalText: String) = originalText
   override fun placeholder(originalText: String) = originalText
 }
 
-object PseudoMethodBidi : PseudoMethodImpl() {
+internal object PseudoMethodBidi : PseudoMethodImpl() {
   private const val ESCAPE_CHAR = '\\'
 
   override fun text(originalText: String): String {
@@ -165,7 +165,7 @@ object PseudoMethodBidi : PseudoMethodImpl() {
     RLM + RLO + originalText + PDF + RLM
 }
 
-class PseudoMethodAccent : PseudoMethodImpl() {
+internal class PseudoMethodAccent : PseudoMethodImpl() {
   var depth = 0
   var wordCount = 0
   var length = 0
@@ -352,7 +352,7 @@ class PseudoMethodAccent : PseudoMethodImpl() {
     "twelve thirteen fourteen fiveteen sixteen seventeen nineteen twenty"
 }
 
-class Pseudolocalizer(method: Method) {
+internal class Pseudolocalizer(method: Method) {
   private var implementation: PseudoMethodImpl
   var lastDepth = 0
     private set

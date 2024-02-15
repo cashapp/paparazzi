@@ -23,7 +23,7 @@ import java.io.InputStream
 /**
  * An XML resource parser that creates a tree of [TagSnapshot]s
  */
-class ResourceParser(inputStream: InputStream) : KXmlParser() {
+internal class ResourceParser(inputStream: InputStream) : KXmlParser() {
   init {
     setFeature(FEATURE_PROCESS_NAMESPACES, true)
     setInput(inputStream, null)
