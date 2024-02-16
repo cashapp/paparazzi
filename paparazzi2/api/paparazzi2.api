@@ -1,78 +1,78 @@
-public final class app/cash/paparazzi/Clip {
+public final class app/cash/paparazzi/snapshot/Clip {
 	public static final field $stable I
-	public fun <init> (Lapp/cash/paparazzi/ClipSpec;Lkotlinx/coroutines/flow/Flow;)V
-	public final fun component1 ()Lapp/cash/paparazzi/ClipSpec;
+	public fun <init> (Lapp/cash/paparazzi/snapshot/ClipSpec;Lkotlinx/coroutines/flow/Flow;)V
+	public final fun component1 ()Lapp/cash/paparazzi/snapshot/ClipSpec;
 	public final fun component2 ()Lkotlinx/coroutines/flow/Flow;
-	public final fun copy (Lapp/cash/paparazzi/ClipSpec;Lkotlinx/coroutines/flow/Flow;)Lapp/cash/paparazzi/Clip;
-	public static synthetic fun copy$default (Lapp/cash/paparazzi/Clip;Lapp/cash/paparazzi/ClipSpec;Lkotlinx/coroutines/flow/Flow;ILjava/lang/Object;)Lapp/cash/paparazzi/Clip;
+	public final fun copy (Lapp/cash/paparazzi/snapshot/ClipSpec;Lkotlinx/coroutines/flow/Flow;)Lapp/cash/paparazzi/snapshot/Clip;
+	public static synthetic fun copy$default (Lapp/cash/paparazzi/snapshot/Clip;Lapp/cash/paparazzi/snapshot/ClipSpec;Lkotlinx/coroutines/flow/Flow;ILjava/lang/Object;)Lapp/cash/paparazzi/snapshot/Clip;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getImages ()Lkotlinx/coroutines/flow/Flow;
-	public final fun getSpec ()Lapp/cash/paparazzi/ClipSpec;
+	public final fun getSpec ()Lapp/cash/paparazzi/snapshot/ClipSpec;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class app/cash/paparazzi/ClipSpec {
+public final class app/cash/paparazzi/snapshot/ClipSpec {
 	public static final field $stable I
-	public fun <init> (Lapp/cash/paparazzi/FrameSpec;IJJ)V
-	public fun <init> (Lapp/cash/paparazzi/FrameSpec;JJI)V
-	public final fun component1 ()Lapp/cash/paparazzi/FrameSpec;
+	public fun <init> (Lapp/cash/paparazzi/snapshot/FrameSpec;IJJ)V
+	public fun <init> (Lapp/cash/paparazzi/snapshot/FrameSpec;JJI)V
+	public final fun component1 ()Lapp/cash/paparazzi/snapshot/FrameSpec;
 	public final fun component2 ()J
 	public final fun component3 ()J
 	public final fun component4 ()I
-	public final fun copy (Lapp/cash/paparazzi/FrameSpec;JJI)Lapp/cash/paparazzi/ClipSpec;
-	public static synthetic fun copy$default (Lapp/cash/paparazzi/ClipSpec;Lapp/cash/paparazzi/FrameSpec;JJIILjava/lang/Object;)Lapp/cash/paparazzi/ClipSpec;
+	public final fun copy (Lapp/cash/paparazzi/snapshot/FrameSpec;JJI)Lapp/cash/paparazzi/snapshot/ClipSpec;
+	public static synthetic fun copy$default (Lapp/cash/paparazzi/snapshot/ClipSpec;Lapp/cash/paparazzi/snapshot/FrameSpec;JJIILjava/lang/Object;)Lapp/cash/paparazzi/snapshot/ClipSpec;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getFrameCount ()I
 	public final fun getFrameDelayNanos ()J
-	public final fun getFrameSpec ()Lapp/cash/paparazzi/FrameSpec;
+	public final fun getFrameSpec ()Lapp/cash/paparazzi/snapshot/FrameSpec;
 	public final fun getFrameTimeNanos ()Lkotlin/sequences/Sequence;
 	public final fun getStart ()J
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class app/cash/paparazzi/Device : app/cash/paparazzi/Snapshotter {
+public final class app/cash/paparazzi/snapshot/Device : app/cash/paparazzi/snapshot/Snapshotter {
 	public static final field $stable I
-	public fun <init> (Lapp/cash/paparazzi/Environment;ZLapp/cash/paparazzi/FrameSpec;Ljava/util/Set;)V
-	public synthetic fun <init> (Lapp/cash/paparazzi/Environment;ZLapp/cash/paparazzi/FrameSpec;Ljava/util/Set;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun clip (Landroid/view/View;Lapp/cash/paparazzi/ClipSpec;)Lapp/cash/paparazzi/Clip;
-	public fun clip (Lkotlin/jvm/functions/Function2;Lapp/cash/paparazzi/ClipSpec;)Lapp/cash/paparazzi/Clip;
+	public fun <init> (Lapp/cash/paparazzi/snapshot/Environment;ZLapp/cash/paparazzi/snapshot/FrameSpec;Ljava/util/Set;)V
+	public synthetic fun <init> (Lapp/cash/paparazzi/snapshot/Environment;ZLapp/cash/paparazzi/snapshot/FrameSpec;Ljava/util/Set;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun clip (Landroid/view/View;Lapp/cash/paparazzi/snapshot/ClipSpec;)Lapp/cash/paparazzi/snapshot/Clip;
+	public fun clip (Lkotlin/jvm/functions/Function2;Lapp/cash/paparazzi/snapshot/ClipSpec;)Lapp/cash/paparazzi/snapshot/Clip;
 	public final fun close ()V
 	public final fun getContext ()Landroid/content/Context;
 	public final fun getLayoutInflater ()Landroid/view/LayoutInflater;
 	public final fun getResources ()Landroid/content/res/Resources;
 	public final fun inflate (I)Landroid/view/View;
-	public fun snapshot (Landroid/view/View;J)Lapp/cash/paparazzi/Snapshot;
-	public fun snapshot (Lkotlin/jvm/functions/Function2;J)Lapp/cash/paparazzi/Snapshot;
+	public fun snapshot (Landroid/view/View;J)Lapp/cash/paparazzi/snapshot/Snapshot;
+	public fun snapshot (Lkotlin/jvm/functions/Function2;J)Lapp/cash/paparazzi/snapshot/Snapshot;
 }
 
-public final class app/cash/paparazzi/DeviceConfig {
+public final class app/cash/paparazzi/snapshot/DeviceConfig {
 	public static final field $stable I
-	public static final field Companion Lapp/cash/paparazzi/DeviceConfig$Companion;
-	public static final field NEXUS_10 Lapp/cash/paparazzi/DeviceConfig;
-	public static final field NEXUS_4 Lapp/cash/paparazzi/DeviceConfig;
-	public static final field NEXUS_5 Lapp/cash/paparazzi/DeviceConfig;
-	public static final field NEXUS_5_LAND Lapp/cash/paparazzi/DeviceConfig;
-	public static final field NEXUS_7 Lapp/cash/paparazzi/DeviceConfig;
-	public static final field NEXUS_7_2012 Lapp/cash/paparazzi/DeviceConfig;
-	public static final field PIXEL Lapp/cash/paparazzi/DeviceConfig;
-	public static final field PIXEL_2 Lapp/cash/paparazzi/DeviceConfig;
-	public static final field PIXEL_2_XL Lapp/cash/paparazzi/DeviceConfig;
-	public static final field PIXEL_3 Lapp/cash/paparazzi/DeviceConfig;
-	public static final field PIXEL_3A Lapp/cash/paparazzi/DeviceConfig;
-	public static final field PIXEL_3A_XL Lapp/cash/paparazzi/DeviceConfig;
-	public static final field PIXEL_3_XL Lapp/cash/paparazzi/DeviceConfig;
-	public static final field PIXEL_4 Lapp/cash/paparazzi/DeviceConfig;
-	public static final field PIXEL_4A Lapp/cash/paparazzi/DeviceConfig;
-	public static final field PIXEL_4_XL Lapp/cash/paparazzi/DeviceConfig;
-	public static final field PIXEL_5 Lapp/cash/paparazzi/DeviceConfig;
-	public static final field PIXEL_6 Lapp/cash/paparazzi/DeviceConfig;
-	public static final field PIXEL_6_PRO Lapp/cash/paparazzi/DeviceConfig;
-	public static final field PIXEL_C Lapp/cash/paparazzi/DeviceConfig;
-	public static final field PIXEL_XL Lapp/cash/paparazzi/DeviceConfig;
-	public static final field WEAR_OS_SMALL_ROUND Lapp/cash/paparazzi/DeviceConfig;
-	public static final field WEAR_OS_SQUARE Lapp/cash/paparazzi/DeviceConfig;
+	public static final field Companion Lapp/cash/paparazzi/snapshot/DeviceConfig$Companion;
+	public static final field NEXUS_10 Lapp/cash/paparazzi/snapshot/DeviceConfig;
+	public static final field NEXUS_4 Lapp/cash/paparazzi/snapshot/DeviceConfig;
+	public static final field NEXUS_5 Lapp/cash/paparazzi/snapshot/DeviceConfig;
+	public static final field NEXUS_5_LAND Lapp/cash/paparazzi/snapshot/DeviceConfig;
+	public static final field NEXUS_7 Lapp/cash/paparazzi/snapshot/DeviceConfig;
+	public static final field NEXUS_7_2012 Lapp/cash/paparazzi/snapshot/DeviceConfig;
+	public static final field PIXEL Lapp/cash/paparazzi/snapshot/DeviceConfig;
+	public static final field PIXEL_2 Lapp/cash/paparazzi/snapshot/DeviceConfig;
+	public static final field PIXEL_2_XL Lapp/cash/paparazzi/snapshot/DeviceConfig;
+	public static final field PIXEL_3 Lapp/cash/paparazzi/snapshot/DeviceConfig;
+	public static final field PIXEL_3A Lapp/cash/paparazzi/snapshot/DeviceConfig;
+	public static final field PIXEL_3A_XL Lapp/cash/paparazzi/snapshot/DeviceConfig;
+	public static final field PIXEL_3_XL Lapp/cash/paparazzi/snapshot/DeviceConfig;
+	public static final field PIXEL_4 Lapp/cash/paparazzi/snapshot/DeviceConfig;
+	public static final field PIXEL_4A Lapp/cash/paparazzi/snapshot/DeviceConfig;
+	public static final field PIXEL_4_XL Lapp/cash/paparazzi/snapshot/DeviceConfig;
+	public static final field PIXEL_5 Lapp/cash/paparazzi/snapshot/DeviceConfig;
+	public static final field PIXEL_6 Lapp/cash/paparazzi/snapshot/DeviceConfig;
+	public static final field PIXEL_6_PRO Lapp/cash/paparazzi/snapshot/DeviceConfig;
+	public static final field PIXEL_C Lapp/cash/paparazzi/snapshot/DeviceConfig;
+	public static final field PIXEL_XL Lapp/cash/paparazzi/snapshot/DeviceConfig;
+	public static final field WEAR_OS_SMALL_ROUND Lapp/cash/paparazzi/snapshot/DeviceConfig;
+	public static final field WEAR_OS_SQUARE Lapp/cash/paparazzi/snapshot/DeviceConfig;
 	public fun <init> ()V
 	public fun <init> (IIIILcom/android/resources/ScreenOrientation;Lcom/android/resources/UiMode;Lcom/android/resources/NightMode;Lcom/android/resources/Density;FLcom/android/resources/LayoutDirection;Ljava/lang/String;Lcom/android/resources/ScreenRatio;Lcom/android/resources/ScreenSize;Lcom/android/resources/Keyboard;Lcom/android/resources/TouchScreen;Lcom/android/resources/KeyboardState;ZLcom/android/resources/Navigation;Lcom/android/resources/ScreenRound;Ljava/lang/String;)V
 	public synthetic fun <init> (IIIILcom/android/resources/ScreenOrientation;Lcom/android/resources/UiMode;Lcom/android/resources/NightMode;Lcom/android/resources/Density;FLcom/android/resources/LayoutDirection;Ljava/lang/String;Lcom/android/resources/ScreenRatio;Lcom/android/resources/ScreenSize;Lcom/android/resources/Keyboard;Lcom/android/resources/TouchScreen;Lcom/android/resources/KeyboardState;ZLcom/android/resources/Navigation;Lcom/android/resources/ScreenRound;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -96,8 +96,8 @@ public final class app/cash/paparazzi/DeviceConfig {
 	public final fun component7 ()Lcom/android/resources/NightMode;
 	public final fun component8 ()Lcom/android/resources/Density;
 	public final fun component9 ()F
-	public final fun copy (IIIILcom/android/resources/ScreenOrientation;Lcom/android/resources/UiMode;Lcom/android/resources/NightMode;Lcom/android/resources/Density;FLcom/android/resources/LayoutDirection;Ljava/lang/String;Lcom/android/resources/ScreenRatio;Lcom/android/resources/ScreenSize;Lcom/android/resources/Keyboard;Lcom/android/resources/TouchScreen;Lcom/android/resources/KeyboardState;ZLcom/android/resources/Navigation;Lcom/android/resources/ScreenRound;Ljava/lang/String;)Lapp/cash/paparazzi/DeviceConfig;
-	public static synthetic fun copy$default (Lapp/cash/paparazzi/DeviceConfig;IIIILcom/android/resources/ScreenOrientation;Lcom/android/resources/UiMode;Lcom/android/resources/NightMode;Lcom/android/resources/Density;FLcom/android/resources/LayoutDirection;Ljava/lang/String;Lcom/android/resources/ScreenRatio;Lcom/android/resources/ScreenSize;Lcom/android/resources/Keyboard;Lcom/android/resources/TouchScreen;Lcom/android/resources/KeyboardState;ZLcom/android/resources/Navigation;Lcom/android/resources/ScreenRound;Ljava/lang/String;ILjava/lang/Object;)Lapp/cash/paparazzi/DeviceConfig;
+	public final fun copy (IIIILcom/android/resources/ScreenOrientation;Lcom/android/resources/UiMode;Lcom/android/resources/NightMode;Lcom/android/resources/Density;FLcom/android/resources/LayoutDirection;Ljava/lang/String;Lcom/android/resources/ScreenRatio;Lcom/android/resources/ScreenSize;Lcom/android/resources/Keyboard;Lcom/android/resources/TouchScreen;Lcom/android/resources/KeyboardState;ZLcom/android/resources/Navigation;Lcom/android/resources/ScreenRound;Ljava/lang/String;)Lapp/cash/paparazzi/snapshot/DeviceConfig;
+	public static synthetic fun copy$default (Lapp/cash/paparazzi/snapshot/DeviceConfig;IIIILcom/android/resources/ScreenOrientation;Lcom/android/resources/UiMode;Lcom/android/resources/NightMode;Lcom/android/resources/Density;FLcom/android/resources/LayoutDirection;Ljava/lang/String;Lcom/android/resources/ScreenRatio;Lcom/android/resources/ScreenSize;Lcom/android/resources/Keyboard;Lcom/android/resources/TouchScreen;Lcom/android/resources/KeyboardState;ZLcom/android/resources/Navigation;Lcom/android/resources/ScreenRound;Ljava/lang/String;ILjava/lang/Object;)Lapp/cash/paparazzi/snapshot/DeviceConfig;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getDensity ()Lcom/android/resources/Density;
 	public final fun getFolderConfiguration ()Lcom/android/ide/common/resources/configuration/FolderConfiguration;
@@ -126,13 +126,13 @@ public final class app/cash/paparazzi/DeviceConfig {
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class app/cash/paparazzi/DeviceConfig$Companion {
+public final class app/cash/paparazzi/snapshot/DeviceConfig$Companion {
 	public final fun getEnumMap (Ljava/io/File;)Ljava/util/Map;
-	public final fun getGALAXY_WATCH4_CLASSIC_LARGE ()Lapp/cash/paparazzi/DeviceConfig;
+	public final fun getGALAXY_WATCH4_CLASSIC_LARGE ()Lapp/cash/paparazzi/snapshot/DeviceConfig;
 	public final fun loadProperties (Ljava/io/File;)Ljava/util/Map;
 }
 
-public final class app/cash/paparazzi/Environment {
+public final class app/cash/paparazzi/snapshot/Environment {
 	public static final field $stable I
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;)V
 	public final fun component1 ()Ljava/lang/String;
@@ -147,8 +147,8 @@ public final class app/cash/paparazzi/Environment {
 	public final fun component7 ()Ljava/util/List;
 	public final fun component8 ()Ljava/util/List;
 	public final fun component9 ()Ljava/util/List;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;)Lapp/cash/paparazzi/Environment;
-	public static synthetic fun copy$default (Lapp/cash/paparazzi/Environment;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;ILjava/lang/Object;)Lapp/cash/paparazzi/Environment;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;)Lapp/cash/paparazzi/snapshot/Environment;
+	public static synthetic fun copy$default (Lapp/cash/paparazzi/snapshot/Environment;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;ILjava/lang/Object;)Lapp/cash/paparazzi/snapshot/Environment;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getAllModuleAssetDirs ()Ljava/util/List;
 	public final fun getAppTestDir ()Ljava/lang/String;
@@ -166,27 +166,27 @@ public final class app/cash/paparazzi/Environment {
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class app/cash/paparazzi/EnvironmentKt {
+public final class app/cash/paparazzi/snapshot/EnvironmentKt {
 	public static final fun androidHome ()Ljava/lang/String;
-	public static final fun detectEnvironment ()Lapp/cash/paparazzi/Environment;
+	public static final fun detectEnvironment ()Lapp/cash/paparazzi/snapshot/Environment;
 }
 
-public final class app/cash/paparazzi/FrameSpec {
+public final class app/cash/paparazzi/snapshot/FrameSpec {
 	public static final field $stable I
 	public fun <init> ()V
-	public fun <init> (Lapp/cash/paparazzi/DeviceConfig;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;Ljava/lang/String;ZZZ)V
-	public synthetic fun <init> (Lapp/cash/paparazzi/DeviceConfig;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;Ljava/lang/String;ZZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Lapp/cash/paparazzi/DeviceConfig;
+	public fun <init> (Lapp/cash/paparazzi/snapshot/DeviceConfig;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;Ljava/lang/String;ZZZ)V
+	public synthetic fun <init> (Lapp/cash/paparazzi/snapshot/DeviceConfig;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;Ljava/lang/String;ZZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Lapp/cash/paparazzi/snapshot/DeviceConfig;
 	public final fun component2 ()Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;
 	public final fun component3 ()Ljava/lang/String;
 	public final fun component4 ()Z
 	public final fun component5 ()Z
 	public final fun component6 ()Z
-	public final fun copy (Lapp/cash/paparazzi/DeviceConfig;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;Ljava/lang/String;ZZZ)Lapp/cash/paparazzi/FrameSpec;
-	public static synthetic fun copy$default (Lapp/cash/paparazzi/FrameSpec;Lapp/cash/paparazzi/DeviceConfig;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;Ljava/lang/String;ZZZILjava/lang/Object;)Lapp/cash/paparazzi/FrameSpec;
+	public final fun copy (Lapp/cash/paparazzi/snapshot/DeviceConfig;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;Ljava/lang/String;ZZZ)Lapp/cash/paparazzi/snapshot/FrameSpec;
+	public static synthetic fun copy$default (Lapp/cash/paparazzi/snapshot/FrameSpec;Lapp/cash/paparazzi/snapshot/DeviceConfig;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;Ljava/lang/String;ZZZILjava/lang/Object;)Lapp/cash/paparazzi/snapshot/FrameSpec;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getAppCompatEnabled ()Z
-	public final fun getDeviceConfig ()Lapp/cash/paparazzi/DeviceConfig;
+	public final fun getDeviceConfig ()Lapp/cash/paparazzi/snapshot/DeviceConfig;
 	public final fun getRenderingMode ()Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;
 	public final fun getShowSystemUi ()Z
 	public final fun getSupportsRtl ()Z
@@ -195,123 +195,123 @@ public final class app/cash/paparazzi/FrameSpec {
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class app/cash/paparazzi/InterceptorRegistrar {
+public final class app/cash/paparazzi/snapshot/InterceptorRegistrar {
 	public static final field $stable I
-	public static final field INSTANCE Lapp/cash/paparazzi/InterceptorRegistrar;
+	public static final field INSTANCE Lapp/cash/paparazzi/snapshot/InterceptorRegistrar;
 	public final fun addMethodInterceptor (Ljava/lang/Class;Ljava/lang/String;Ljava/lang/Class;)V
 	public final fun addMethodInterceptors (Ljava/lang/Class;Ljava/util/Set;)V
 	public final fun clearMethodInterceptors ()V
 	public final fun registerMethodInterceptors ()V
 }
 
-public abstract interface class app/cash/paparazzi/RenderExtension {
+public abstract interface class app/cash/paparazzi/snapshot/RenderExtension {
 	public abstract fun renderView (Landroid/view/View;)Landroid/view/View;
 }
 
-public final class app/cash/paparazzi/Snapshot {
+public final class app/cash/paparazzi/snapshot/Snapshot {
 	public static final field $stable I
-	public fun <init> (Lapp/cash/paparazzi/FrameSpec;Ljava/awt/image/BufferedImage;)V
-	public final fun component1 ()Lapp/cash/paparazzi/FrameSpec;
+	public fun <init> (Lapp/cash/paparazzi/snapshot/FrameSpec;Ljava/awt/image/BufferedImage;)V
+	public final fun component1 ()Lapp/cash/paparazzi/snapshot/FrameSpec;
 	public final fun component2 ()Ljava/awt/image/BufferedImage;
-	public final fun copy (Lapp/cash/paparazzi/FrameSpec;Ljava/awt/image/BufferedImage;)Lapp/cash/paparazzi/Snapshot;
-	public static synthetic fun copy$default (Lapp/cash/paparazzi/Snapshot;Lapp/cash/paparazzi/FrameSpec;Ljava/awt/image/BufferedImage;ILjava/lang/Object;)Lapp/cash/paparazzi/Snapshot;
+	public final fun copy (Lapp/cash/paparazzi/snapshot/FrameSpec;Ljava/awt/image/BufferedImage;)Lapp/cash/paparazzi/snapshot/Snapshot;
+	public static synthetic fun copy$default (Lapp/cash/paparazzi/snapshot/Snapshot;Lapp/cash/paparazzi/snapshot/FrameSpec;Ljava/awt/image/BufferedImage;ILjava/lang/Object;)Lapp/cash/paparazzi/snapshot/Snapshot;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getImage ()Ljava/awt/image/BufferedImage;
-	public final fun getSpec ()Lapp/cash/paparazzi/FrameSpec;
+	public final fun getSpec ()Lapp/cash/paparazzi/snapshot/FrameSpec;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public abstract interface class app/cash/paparazzi/Snapshotter {
-	public abstract fun clip (Landroid/view/View;Lapp/cash/paparazzi/ClipSpec;)Lapp/cash/paparazzi/Clip;
-	public abstract fun clip (Lkotlin/jvm/functions/Function2;Lapp/cash/paparazzi/ClipSpec;)Lapp/cash/paparazzi/Clip;
-	public abstract fun snapshot (Landroid/view/View;J)Lapp/cash/paparazzi/Snapshot;
-	public abstract fun snapshot (Lkotlin/jvm/functions/Function2;J)Lapp/cash/paparazzi/Snapshot;
+public abstract interface class app/cash/paparazzi/snapshot/Snapshotter {
+	public abstract fun clip (Landroid/view/View;Lapp/cash/paparazzi/snapshot/ClipSpec;)Lapp/cash/paparazzi/snapshot/Clip;
+	public abstract fun clip (Lkotlin/jvm/functions/Function2;Lapp/cash/paparazzi/snapshot/ClipSpec;)Lapp/cash/paparazzi/snapshot/Clip;
+	public abstract fun snapshot (Landroid/view/View;J)Lapp/cash/paparazzi/snapshot/Snapshot;
+	public abstract fun snapshot (Lkotlin/jvm/functions/Function2;J)Lapp/cash/paparazzi/snapshot/Snapshot;
 }
 
-public final class app/cash/paparazzi/Snapshotter$DefaultImpls {
-	public static synthetic fun snapshot$default (Lapp/cash/paparazzi/Snapshotter;Landroid/view/View;JILjava/lang/Object;)Lapp/cash/paparazzi/Snapshot;
-	public static synthetic fun snapshot$default (Lapp/cash/paparazzi/Snapshotter;Lkotlin/jvm/functions/Function2;JILjava/lang/Object;)Lapp/cash/paparazzi/Snapshot;
+public final class app/cash/paparazzi/snapshot/Snapshotter$DefaultImpls {
+	public static synthetic fun snapshot$default (Lapp/cash/paparazzi/snapshot/Snapshotter;Landroid/view/View;JILjava/lang/Object;)Lapp/cash/paparazzi/snapshot/Snapshot;
+	public static synthetic fun snapshot$default (Lapp/cash/paparazzi/snapshot/Snapshotter;Lkotlin/jvm/functions/Function2;JILjava/lang/Object;)Lapp/cash/paparazzi/snapshot/Snapshot;
 }
 
-public class app/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/FrameworkResources : app/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ResourceRepository {
+public class app/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/FrameworkResources : app/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ResourceRepository {
 	protected final field mPublicResourceMap Ljava/util/Map;
-	public fun <init> (Lapp/cash/paparazzi/deprecated/com/android/io/IAbstractFolder;)V
-	protected fun createResourceItem (Ljava/lang/String;)Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ResourceItem;
+	public fun <init> (Lapp/cash/paparazzi/snapshot/android/io/IAbstractFolder;)V
+	protected fun createResourceItem (Ljava/lang/String;)Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ResourceItem;
 	public synthetic fun getResourceItemsOfType (Lcom/android/resources/ResourceType;)Ljava/util/Collection;
 	public fun getResourceItemsOfType (Lcom/android/resources/ResourceType;)Ljava/util/List;
 	public fun hasResourcesOfType (Lcom/android/resources/ResourceType;)Z
 	public fun loadPublicResources (Lcom/android/utils/ILogger;)V
 }
 
-public final class app/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/IdGeneratingResourceFile : app/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ResourceFile, app/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ValueResourceParser$IValueResourceRepository {
-	public fun <init> (Lapp/cash/paparazzi/deprecated/com/android/io/IAbstractFile;Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ResourceFolder;Lcom/android/resources/ResourceType;)V
+public final class app/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/IdGeneratingResourceFile : app/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ResourceFile, app/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ValueResourceParser$IValueResourceRepository {
+	public fun <init> (Lapp/cash/paparazzi/snapshot/android/io/IAbstractFile;Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ResourceFolder;Lcom/android/resources/ResourceType;)V
 	public fun addResourceValue (Lcom/android/ide/common/rendering/api/ResourceValue;)V
 	public fun getResourceTypes ()Ljava/util/Collection;
 	public fun getValue (Lcom/android/resources/ResourceType;Ljava/lang/String;)Lcom/android/ide/common/rendering/api/ResourceValue;
 	public fun hasResources (Lcom/android/resources/ResourceType;)Z
 }
 
-public class app/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/IdResourceParser {
-	public fun <init> (Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ValueResourceParser$IValueResourceRepository;Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ScanningContext;Z)V
+public class app/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/IdResourceParser {
+	public fun <init> (Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ValueResourceParser$IValueResourceRepository;Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ScanningContext;Z)V
 	public fun parse (Lcom/android/resources/ResourceType;Ljava/lang/String;Ljava/io/InputStream;)Z
 }
 
-public final class app/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/MultiResourceFile : app/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ResourceFile, app/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ValueResourceParser$IValueResourceRepository {
-	public fun <init> (Lapp/cash/paparazzi/deprecated/com/android/io/IAbstractFile;Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ResourceFolder;)V
+public final class app/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/MultiResourceFile : app/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ResourceFile, app/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ValueResourceParser$IValueResourceRepository {
+	public fun <init> (Lapp/cash/paparazzi/snapshot/android/io/IAbstractFile;Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ResourceFolder;)V
 	public fun addResourceValue (Lcom/android/ide/common/rendering/api/ResourceValue;)V
 	public fun getResourceTypes ()Ljava/util/Collection;
 	public fun getValue (Lcom/android/resources/ResourceType;Ljava/lang/String;)Lcom/android/ide/common/rendering/api/ResourceValue;
 	public fun hasResources (Lcom/android/resources/ResourceType;)Z
 }
 
-public final class app/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ResourceDeltaKind : java/lang/Enum {
-	public static final field ADDED Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ResourceDeltaKind;
-	public static final field CHANGED Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ResourceDeltaKind;
-	public static final field REMOVED Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ResourceDeltaKind;
-	public static fun valueOf (Ljava/lang/String;)Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ResourceDeltaKind;
-	public static fun values ()[Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ResourceDeltaKind;
+public final class app/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ResourceDeltaKind : java/lang/Enum {
+	public static final field ADDED Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ResourceDeltaKind;
+	public static final field CHANGED Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ResourceDeltaKind;
+	public static final field REMOVED Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ResourceDeltaKind;
+	public static fun valueOf (Ljava/lang/String;)Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ResourceDeltaKind;
+	public static fun values ()[Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ResourceDeltaKind;
 }
 
-public abstract class app/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ResourceFile : com/android/ide/common/resources/configuration/Configurable {
-	protected fun <init> (Lapp/cash/paparazzi/deprecated/com/android/io/IAbstractFile;Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ResourceFolder;)V
-	protected abstract fun dispose (Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ScanningContext;)V
+public abstract class app/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ResourceFile : com/android/ide/common/resources/configuration/Configurable {
+	protected fun <init> (Lapp/cash/paparazzi/snapshot/android/io/IAbstractFile;Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ResourceFolder;)V
+	protected abstract fun dispose (Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ScanningContext;)V
 	public fun getConfiguration ()Lcom/android/ide/common/resources/configuration/FolderConfiguration;
-	public final fun getFile ()Lapp/cash/paparazzi/deprecated/com/android/io/IAbstractFile;
-	public final fun getFolder ()Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ResourceFolder;
-	public final fun getRepository ()Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ResourceRepository;
+	public final fun getFile ()Lapp/cash/paparazzi/snapshot/android/io/IAbstractFile;
+	public final fun getFolder ()Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ResourceFolder;
+	public final fun getRepository ()Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ResourceRepository;
 	public abstract fun getResourceTypes ()Ljava/util/Collection;
 	public abstract fun getValue (Lcom/android/resources/ResourceType;Ljava/lang/String;)Lcom/android/ide/common/rendering/api/ResourceValue;
 	public abstract fun hasResources (Lcom/android/resources/ResourceType;)Z
 	public final fun isFramework ()Z
-	protected abstract fun load (Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ScanningContext;)V
+	protected abstract fun load (Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ScanningContext;)V
 	public fun toString ()Ljava/lang/String;
-	protected abstract fun update (Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ScanningContext;)V
+	protected abstract fun update (Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ScanningContext;)V
 }
 
-public final class app/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ResourceFolder : com/android/ide/common/resources/configuration/Configurable {
-	public fun addFile (Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ResourceFile;)V
+public final class app/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ResourceFolder : com/android/ide/common/resources/configuration/Configurable {
+	public fun addFile (Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ResourceFile;)V
 	public fun getConfiguration ()Lcom/android/ide/common/resources/configuration/FolderConfiguration;
-	public fun getFile (Ljava/lang/String;)Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ResourceFile;
-	public fun getFolder ()Lapp/cash/paparazzi/deprecated/com/android/io/IAbstractFolder;
-	public fun getRepository ()Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ResourceRepository;
+	public fun getFile (Ljava/lang/String;)Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ResourceFile;
+	public fun getFolder ()Lapp/cash/paparazzi/snapshot/android/io/IAbstractFolder;
+	public fun getRepository ()Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ResourceRepository;
 	public fun getResourceTypes ()Ljava/util/Collection;
 	public fun getType ()Lcom/android/resources/ResourceFolderType;
 	public fun hasFile (Ljava/lang/String;)Z
 	public fun hasResources (Lcom/android/resources/ResourceType;)Z
-	public fun processFile (Lapp/cash/paparazzi/deprecated/com/android/io/IAbstractFile;Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ResourceDeltaKind;Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ScanningContext;)Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ResourceFile;
+	public fun processFile (Lapp/cash/paparazzi/snapshot/android/io/IAbstractFile;Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ResourceDeltaKind;Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ScanningContext;)Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ResourceFile;
 	public fun toString ()Ljava/lang/String;
 }
 
-public class app/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ResourceItem : java/lang/Comparable {
+public class app/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ResourceItem : java/lang/Comparable {
 	public fun <init> (Ljava/lang/String;)V
-	protected fun add (Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ResourceFile;)V
-	public fun compareTo (Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ResourceItem;)I
+	protected fun add (Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ResourceFile;)V
+	public fun compareTo (Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ResourceItem;)I
 	public synthetic fun compareTo (Ljava/lang/Object;)I
 	public fun getAlternateCount ()I
 	public final fun getName ()Ljava/lang/String;
 	public fun getResourceValue (Lcom/android/resources/ResourceType;Lcom/android/ide/common/resources/configuration/FolderConfiguration;Z)Lcom/android/ide/common/rendering/api/ResourceValue;
-	public fun getSourceFileArray ()[Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ResourceFile;
+	public fun getSourceFileArray ()[Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ResourceFile;
 	public fun getSourceFileList ()Ljava/util/List;
 	public fun getXmlString (Lcom/android/resources/ResourceType;Z)Ljava/lang/String;
 	public fun hasAlternates ()Z
@@ -319,30 +319,30 @@ public class app/cash/paparazzi/deprecated/com/android/ide/common/resources/depr
 	protected fun hasNoSourceFile ()Z
 	public fun isDeclaredInline ()Z
 	public fun isEditableDirectly ()Z
-	protected fun removeFile (Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ResourceFile;)V
+	protected fun removeFile (Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ResourceFile;)V
 	protected fun reset ()V
 	public fun toString ()Ljava/lang/String;
 }
 
-public abstract class app/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ResourceRepository {
+public abstract class app/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ResourceRepository {
 	protected field mFolderMap Ljava/util/Map;
 	protected field mResourceMap Ljava/util/Map;
-	protected fun <init> (Lapp/cash/paparazzi/deprecated/com/android/io/IAbstractFolder;Z)V
+	protected fun <init> (Lapp/cash/paparazzi/snapshot/android/io/IAbstractFolder;Z)V
 	public fun clear ()V
-	protected abstract fun createResourceItem (Ljava/lang/String;)Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ResourceItem;
+	protected abstract fun createResourceItem (Ljava/lang/String;)Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ResourceItem;
 	protected final fun doGetConfiguredResources (Lcom/android/ide/common/resources/configuration/FolderConfiguration;)Ljava/util/Map;
 	public fun ensureInitialized ()Z
-	protected fun findResourceFile (Ljava/io/File;)Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ResourceFile;
+	protected fun findResourceFile (Ljava/io/File;)Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ResourceFile;
 	public fun getAvailableResourceTypes ()Ljava/util/List;
 	public fun getConfiguredResources (Lcom/android/ide/common/resources/configuration/FolderConfiguration;)Ljava/util/Map;
 	public fun getFolders (Lcom/android/resources/ResourceFolderType;)Ljava/util/List;
 	public fun getLanguages ()Ljava/util/SortedSet;
-	public fun getMatchingFile (Ljava/lang/String;Lcom/android/resources/ResourceFolderType;Lcom/android/ide/common/resources/configuration/FolderConfiguration;)Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ResourceFile;
-	public fun getMatchingFile (Ljava/lang/String;Lcom/android/resources/ResourceType;Lcom/android/ide/common/resources/configuration/FolderConfiguration;)Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ResourceFile;
+	public fun getMatchingFile (Ljava/lang/String;Lcom/android/resources/ResourceFolderType;Lcom/android/ide/common/resources/configuration/FolderConfiguration;)Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ResourceFile;
+	public fun getMatchingFile (Ljava/lang/String;Lcom/android/resources/ResourceType;Lcom/android/ide/common/resources/configuration/FolderConfiguration;)Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ResourceFile;
 	public fun getRegions (Ljava/lang/String;)Ljava/util/SortedSet;
-	public fun getResFolder ()Lapp/cash/paparazzi/deprecated/com/android/io/IAbstractFolder;
-	public fun getResourceFolder (Lapp/cash/paparazzi/deprecated/com/android/io/IAbstractFolder;)Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ResourceFolder;
-	public fun getResourceItem (Lcom/android/resources/ResourceType;Ljava/lang/String;)Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ResourceItem;
+	public fun getResFolder ()Lapp/cash/paparazzi/snapshot/android/io/IAbstractFolder;
+	public fun getResourceFolder (Lapp/cash/paparazzi/snapshot/android/io/IAbstractFolder;)Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ResourceFolder;
+	public fun getResourceItem (Lcom/android/resources/ResourceType;Ljava/lang/String;)Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ResourceItem;
 	public fun getResourceItemsOfType (Lcom/android/resources/ResourceType;)Ljava/util/Collection;
 	public fun getSourceFiles (Lcom/android/resources/ResourceType;Ljava/lang/String;Lcom/android/ide/common/resources/configuration/FolderConfiguration;)Ljava/util/List;
 	public fun hasResourceItem (Lcom/android/resources/ResourceType;Ljava/lang/String;)Z
@@ -351,13 +351,13 @@ public abstract class app/cash/paparazzi/deprecated/com/android/ide/common/resou
 	public fun isFrameworkRepository ()Z
 	public fun loadResources ()V
 	public fun postUpdateCleanUp ()V
-	public fun processFolder (Lapp/cash/paparazzi/deprecated/com/android/io/IAbstractFolder;)Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ResourceFolder;
-	protected fun removeFile (Lcom/android/resources/ResourceType;Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ResourceFile;)V
-	protected fun removeFile (Ljava/util/Collection;Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ResourceFile;)V
-	public fun removeFolder (Lcom/android/resources/ResourceFolderType;Lapp/cash/paparazzi/deprecated/com/android/io/IAbstractFolder;Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ScanningContext;)Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ResourceFolder;
+	public fun processFolder (Lapp/cash/paparazzi/snapshot/android/io/IAbstractFolder;)Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ResourceFolder;
+	protected fun removeFile (Lcom/android/resources/ResourceType;Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ResourceFile;)V
+	protected fun removeFile (Ljava/util/Collection;Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ResourceFile;)V
+	public fun removeFolder (Lcom/android/resources/ResourceFolderType;Lapp/cash/paparazzi/snapshot/android/io/IAbstractFolder;Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ScanningContext;)Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ResourceFolder;
 }
 
-public class app/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ScanningContext {
+public class app/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ScanningContext {
 	public fun <init> ()V
 	public fun addError (Ljava/lang/String;)V
 	public fun checkValue (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Z
@@ -366,33 +366,33 @@ public class app/cash/paparazzi/deprecated/com/android/ide/common/resources/depr
 	protected fun requestFullAapt ()V
 }
 
-public class app/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/SingleResourceFile : app/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ResourceFile {
-	public fun <init> (Lapp/cash/paparazzi/deprecated/com/android/io/IAbstractFile;Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ResourceFolder;)V
-	protected fun dispose (Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ScanningContext;)V
+public class app/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/SingleResourceFile : app/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ResourceFile {
+	public fun <init> (Lapp/cash/paparazzi/snapshot/android/io/IAbstractFile;Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ResourceFolder;)V
+	protected fun dispose (Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ScanningContext;)V
 	public fun getResourceTypes ()Ljava/util/Collection;
 	public fun getValue (Lcom/android/resources/ResourceType;Ljava/lang/String;)Lcom/android/ide/common/rendering/api/ResourceValue;
 	public fun hasResources (Lcom/android/resources/ResourceType;)Z
-	protected fun load (Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ScanningContext;)V
-	protected fun update (Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ScanningContext;)V
+	protected fun load (Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ScanningContext;)V
+	protected fun update (Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ScanningContext;)V
 }
 
-public class app/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ValidatingResourceParser {
-	public fun <init> (Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ScanningContext;Z)V
+public class app/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ValidatingResourceParser {
+	public fun <init> (Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ScanningContext;Z)V
 	public fun parse (Ljava/lang/String;Ljava/io/InputStream;)Z
 }
 
-public final class app/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ValueResourceParser : org/xml/sax/helpers/DefaultHandler {
-	public fun <init> (Lapp/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ValueResourceParser$IValueResourceRepository;ZLjava/lang/String;)V
+public final class app/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ValueResourceParser : org/xml/sax/helpers/DefaultHandler {
+	public fun <init> (Lapp/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ValueResourceParser$IValueResourceRepository;ZLjava/lang/String;)V
 	public fun characters ([CII)V
 	public fun endElement (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
 	public fun startElement (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lorg/xml/sax/Attributes;)V
 }
 
-public abstract interface class app/cash/paparazzi/deprecated/com/android/ide/common/resources/deprecated/ValueResourceParser$IValueResourceRepository {
+public abstract interface class app/cash/paparazzi/snapshot/android/ide/common/resources/deprecated/ValueResourceParser$IValueResourceRepository {
 	public abstract fun addResourceValue (Lcom/android/ide/common/rendering/api/ResourceValue;)V
 }
 
-public class app/cash/paparazzi/deprecated/com/android/io/FileWrapper : java/io/File, app/cash/paparazzi/deprecated/com/android/io/IAbstractFile {
+public class app/cash/paparazzi/snapshot/android/io/FileWrapper : java/io/File, app/cash/paparazzi/snapshot/android/io/IAbstractFile {
 	public fun <init> (Ljava/io/File;)V
 	public fun <init> (Ljava/io/File;Ljava/lang/String;)V
 	public fun <init> (Ljava/lang/String;)V
@@ -403,75 +403,75 @@ public class app/cash/paparazzi/deprecated/com/android/io/FileWrapper : java/io/
 	public fun getModificationStamp ()J
 	public fun getOsLocation ()Ljava/lang/String;
 	public fun getOutputStream ()Ljava/io/OutputStream;
-	public fun getParentFolder ()Lapp/cash/paparazzi/deprecated/com/android/io/IAbstractFolder;
-	public fun getPreferredWriteMode ()Lapp/cash/paparazzi/deprecated/com/android/io/IAbstractFile$PreferredWriteMode;
+	public fun getParentFolder ()Lapp/cash/paparazzi/snapshot/android/io/IAbstractFolder;
+	public fun getPreferredWriteMode ()Lapp/cash/paparazzi/snapshot/android/io/IAbstractFile$PreferredWriteMode;
 	public fun setContents (Ljava/io/InputStream;)V
 }
 
-public class app/cash/paparazzi/deprecated/com/android/io/FolderWrapper : java/io/File, app/cash/paparazzi/deprecated/com/android/io/IAbstractFolder {
+public class app/cash/paparazzi/snapshot/android/io/FolderWrapper : java/io/File, app/cash/paparazzi/snapshot/android/io/IAbstractFolder {
 	public fun <init> (Ljava/io/File;)V
 	public fun <init> (Ljava/io/File;Ljava/lang/String;)V
 	public fun <init> (Ljava/lang/String;)V
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
 	public fun <init> (Ljava/net/URI;)V
 	public fun exists ()Z
-	public fun getFile (Ljava/lang/String;)Lapp/cash/paparazzi/deprecated/com/android/io/IAbstractFile;
-	public fun getFolder (Ljava/lang/String;)Lapp/cash/paparazzi/deprecated/com/android/io/IAbstractFolder;
+	public fun getFile (Ljava/lang/String;)Lapp/cash/paparazzi/snapshot/android/io/IAbstractFile;
+	public fun getFolder (Ljava/lang/String;)Lapp/cash/paparazzi/snapshot/android/io/IAbstractFolder;
 	public fun getOsLocation ()Ljava/lang/String;
-	public fun getParentFolder ()Lapp/cash/paparazzi/deprecated/com/android/io/IAbstractFolder;
+	public fun getParentFolder ()Lapp/cash/paparazzi/snapshot/android/io/IAbstractFolder;
 	public fun hasFile (Ljava/lang/String;)Z
-	public fun list (Lapp/cash/paparazzi/deprecated/com/android/io/IAbstractFolder$FilenameFilter;)[Ljava/lang/String;
-	public fun listMembers ()[Lapp/cash/paparazzi/deprecated/com/android/io/IAbstractResource;
+	public fun list (Lapp/cash/paparazzi/snapshot/android/io/IAbstractFolder$FilenameFilter;)[Ljava/lang/String;
+	public fun listMembers ()[Lapp/cash/paparazzi/snapshot/android/io/IAbstractResource;
 }
 
-public abstract interface class app/cash/paparazzi/deprecated/com/android/io/IAbstractFile : app/cash/paparazzi/deprecated/com/android/io/IAbstractResource {
+public abstract interface class app/cash/paparazzi/snapshot/android/io/IAbstractFile : app/cash/paparazzi/snapshot/android/io/IAbstractResource {
 	public abstract fun getContents ()Ljava/io/InputStream;
 	public abstract fun getModificationStamp ()J
 	public abstract fun getOutputStream ()Ljava/io/OutputStream;
-	public abstract fun getPreferredWriteMode ()Lapp/cash/paparazzi/deprecated/com/android/io/IAbstractFile$PreferredWriteMode;
+	public abstract fun getPreferredWriteMode ()Lapp/cash/paparazzi/snapshot/android/io/IAbstractFile$PreferredWriteMode;
 	public abstract fun setContents (Ljava/io/InputStream;)V
 }
 
-public final class app/cash/paparazzi/deprecated/com/android/io/IAbstractFile$PreferredWriteMode : java/lang/Enum {
-	public static final field INPUTSTREAM Lapp/cash/paparazzi/deprecated/com/android/io/IAbstractFile$PreferredWriteMode;
-	public static final field OUTPUTSTREAM Lapp/cash/paparazzi/deprecated/com/android/io/IAbstractFile$PreferredWriteMode;
-	public static fun valueOf (Ljava/lang/String;)Lapp/cash/paparazzi/deprecated/com/android/io/IAbstractFile$PreferredWriteMode;
-	public static fun values ()[Lapp/cash/paparazzi/deprecated/com/android/io/IAbstractFile$PreferredWriteMode;
+public final class app/cash/paparazzi/snapshot/android/io/IAbstractFile$PreferredWriteMode : java/lang/Enum {
+	public static final field INPUTSTREAM Lapp/cash/paparazzi/snapshot/android/io/IAbstractFile$PreferredWriteMode;
+	public static final field OUTPUTSTREAM Lapp/cash/paparazzi/snapshot/android/io/IAbstractFile$PreferredWriteMode;
+	public static fun valueOf (Ljava/lang/String;)Lapp/cash/paparazzi/snapshot/android/io/IAbstractFile$PreferredWriteMode;
+	public static fun values ()[Lapp/cash/paparazzi/snapshot/android/io/IAbstractFile$PreferredWriteMode;
 }
 
-public abstract interface class app/cash/paparazzi/deprecated/com/android/io/IAbstractFolder : app/cash/paparazzi/deprecated/com/android/io/IAbstractResource {
-	public abstract fun getFile (Ljava/lang/String;)Lapp/cash/paparazzi/deprecated/com/android/io/IAbstractFile;
-	public abstract fun getFolder (Ljava/lang/String;)Lapp/cash/paparazzi/deprecated/com/android/io/IAbstractFolder;
+public abstract interface class app/cash/paparazzi/snapshot/android/io/IAbstractFolder : app/cash/paparazzi/snapshot/android/io/IAbstractResource {
+	public abstract fun getFile (Ljava/lang/String;)Lapp/cash/paparazzi/snapshot/android/io/IAbstractFile;
+	public abstract fun getFolder (Ljava/lang/String;)Lapp/cash/paparazzi/snapshot/android/io/IAbstractFolder;
 	public abstract fun hasFile (Ljava/lang/String;)Z
-	public abstract fun list (Lapp/cash/paparazzi/deprecated/com/android/io/IAbstractFolder$FilenameFilter;)[Ljava/lang/String;
-	public abstract fun listMembers ()[Lapp/cash/paparazzi/deprecated/com/android/io/IAbstractResource;
+	public abstract fun list (Lapp/cash/paparazzi/snapshot/android/io/IAbstractFolder$FilenameFilter;)[Ljava/lang/String;
+	public abstract fun listMembers ()[Lapp/cash/paparazzi/snapshot/android/io/IAbstractResource;
 }
 
-public abstract interface class app/cash/paparazzi/deprecated/com/android/io/IAbstractFolder$FilenameFilter {
-	public abstract fun accept (Lapp/cash/paparazzi/deprecated/com/android/io/IAbstractFolder;Ljava/lang/String;)Z
+public abstract interface class app/cash/paparazzi/snapshot/android/io/IAbstractFolder$FilenameFilter {
+	public abstract fun accept (Lapp/cash/paparazzi/snapshot/android/io/IAbstractFolder;Ljava/lang/String;)Z
 }
 
-public abstract interface class app/cash/paparazzi/deprecated/com/android/io/IAbstractResource {
+public abstract interface class app/cash/paparazzi/snapshot/android/io/IAbstractResource {
 	public abstract fun delete ()Z
 	public abstract fun exists ()Z
 	public abstract fun getName ()Ljava/lang/String;
 	public abstract fun getOsLocation ()Ljava/lang/String;
-	public abstract fun getParentFolder ()Lapp/cash/paparazzi/deprecated/com/android/io/IAbstractFolder;
+	public abstract fun getParentFolder ()Lapp/cash/paparazzi/snapshot/android/io/IAbstractFolder;
 	public abstract fun getPath ()Ljava/lang/String;
 }
 
-public class app/cash/paparazzi/deprecated/com/android/io/StreamException : java/lang/Exception {
-	public fun <init> (Ljava/lang/Exception;Lapp/cash/paparazzi/deprecated/com/android/io/IAbstractFile;)V
-	public fun <init> (Ljava/lang/Exception;Lapp/cash/paparazzi/deprecated/com/android/io/IAbstractFile;Lapp/cash/paparazzi/deprecated/com/android/io/StreamException$Error;)V
-	public fun getError ()Lapp/cash/paparazzi/deprecated/com/android/io/StreamException$Error;
-	public fun getFile ()Lapp/cash/paparazzi/deprecated/com/android/io/IAbstractFile;
+public class app/cash/paparazzi/snapshot/android/io/StreamException : java/lang/Exception {
+	public fun <init> (Ljava/lang/Exception;Lapp/cash/paparazzi/snapshot/android/io/IAbstractFile;)V
+	public fun <init> (Ljava/lang/Exception;Lapp/cash/paparazzi/snapshot/android/io/IAbstractFile;Lapp/cash/paparazzi/snapshot/android/io/StreamException$Error;)V
+	public fun getError ()Lapp/cash/paparazzi/snapshot/android/io/StreamException$Error;
+	public fun getFile ()Lapp/cash/paparazzi/snapshot/android/io/IAbstractFile;
 }
 
-public final class app/cash/paparazzi/deprecated/com/android/io/StreamException$Error : java/lang/Enum {
-	public static final field DEFAULT Lapp/cash/paparazzi/deprecated/com/android/io/StreamException$Error;
-	public static final field FILENOTFOUND Lapp/cash/paparazzi/deprecated/com/android/io/StreamException$Error;
-	public static final field OUTOFSYNC Lapp/cash/paparazzi/deprecated/com/android/io/StreamException$Error;
-	public static fun valueOf (Ljava/lang/String;)Lapp/cash/paparazzi/deprecated/com/android/io/StreamException$Error;
-	public static fun values ()[Lapp/cash/paparazzi/deprecated/com/android/io/StreamException$Error;
+public final class app/cash/paparazzi/snapshot/android/io/StreamException$Error : java/lang/Enum {
+	public static final field DEFAULT Lapp/cash/paparazzi/snapshot/android/io/StreamException$Error;
+	public static final field FILENOTFOUND Lapp/cash/paparazzi/snapshot/android/io/StreamException$Error;
+	public static final field OUTOFSYNC Lapp/cash/paparazzi/snapshot/android/io/StreamException$Error;
+	public static fun valueOf (Ljava/lang/String;)Lapp/cash/paparazzi/snapshot/android/io/StreamException$Error;
+	public static fun values ()[Lapp/cash/paparazzi/snapshot/android/io/StreamException$Error;
 }
 
