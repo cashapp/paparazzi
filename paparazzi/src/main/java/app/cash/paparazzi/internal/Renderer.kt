@@ -45,7 +45,10 @@ internal class Renderer(
 
   /** Initialize the bridge and the resource maps. */
   fun prepare(): SessionParamsBuilder {
-    val platformDataResDir = File("${environment.platformDir}/data/res")
+    val resourcesDataRoot = System.getProperty("paparazzi.resources.data.root")
+      ?: throw RuntimeException("Missing system property for 'paparazzi.resources.data.root'")
+    val resourcesDataDir = File(resourcesDataRoot, "data")
+    val platformDataResDir = File(resourcesDataDir, "res")
 
     val frameworkResources = FrameworkResourceRepository.create(
       resourceDirectoryOrFile = platformDataResDir.toPath(),
@@ -80,10 +83,11 @@ internal class Renderer(
     val platformDataRoot = System.getProperty("paparazzi.platform.data.root")
       ?: throw RuntimeException("Missing system property for 'paparazzi.platform.data.root'")
     val platformDataDir = File(platformDataRoot, "data")
-    val fontLocation = File(platformDataDir, "fonts")
     val nativeLibLocation = File(platformDataDir, getNativeLibDir())
-    val icuLocation = File(platformDataDir, "icu" + File.separator + "icudt72l.dat")
-    val keyboardLocation = File(platformDataDir, "keyboards" + File.separator + "Generic.kcm")
+
+    val fontLocation = File(resourcesDataDir, "fonts")
+    val icuLocation = File(resourcesDataDir, "icu" + File.separator + "icudt72l.dat")
+    val keyboardLocation = File(resourcesDataDir, "keyboards" + File.separator + "Generic.kcm")
     val buildProp = File(environment.platformDir, "build.prop")
     val attrs = File(platformDataResDir, "values" + File.separator + "attrs.xml")
     val systemProperties = DeviceConfig.loadProperties(buildProp) + mapOf(

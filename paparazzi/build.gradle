@@ -13,7 +13,10 @@ java {
 }
 
 configurations {
-  unzip {
+  layoutlibPlatform {
+    attributes.attribute(AndroidArtifacts.ARTIFACT_TYPE, ArtifactTypeDefinition.DIRECTORY_TYPE)
+  }
+  layoutlibResources {
     attributes.attribute(AndroidArtifacts.ARTIFACT_TYPE, ArtifactTypeDefinition.DIRECTORY_TYPE)
   }
 }
@@ -56,15 +59,16 @@ dependencies {
   if (osName.startsWith("mac")) {
     def osArch = System.getProperty("os.arch").toLowerCase(Locale.US)
     if (osArch.startsWith("x86")) {
-      unzip variantOf(libs.tools.layoutlib.runtime) { classifier("mac") }
+      layoutlibPlatform variantOf(libs.tools.layoutlib.runtime) { classifier("mac") }
     } else {
-      unzip variantOf(libs.tools.layoutlib.runtime) { classifier("mac-arm") }
+      layoutlibPlatform variantOf(libs.tools.layoutlib.runtime) { classifier("mac-arm") }
     }
   } else if (osName.startsWith("windows")) {
-    unzip variantOf(libs.tools.layoutlib.runtime) { classifier("win") }
+    layoutlibPlatform variantOf(libs.tools.layoutlib.runtime) { classifier("win") }
   } else {
-    unzip variantOf(libs.tools.layoutlib.runtime) { classifier("linux") }
+    layoutlibPlatform variantOf(libs.tools.layoutlib.runtime) { classifier("linux") }
   }
+  layoutlibResources libs.tools.layoutlib.resources
 
   testImplementation libs.truth
 
@@ -137,7 +141,11 @@ tasks.withType(Test).configureEach {
   )
   systemProperty(
     "paparazzi.platform.data.root",
-    configurations.unzip.singleFile.absolutePath
+    configurations.layoutlibPlatform.singleFile.absolutePath
+  )
+  systemProperty(
+    "paparazzi.resources.data.root",
+    configurations.layoutlibResources.singleFile.absolutePath
   )
   // Uncomment to debug JNI issues in layoutlib
   // jvmArgs '-Xcheck:jni'
