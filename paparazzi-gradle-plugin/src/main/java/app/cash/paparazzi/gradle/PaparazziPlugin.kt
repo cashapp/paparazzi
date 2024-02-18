@@ -76,6 +76,7 @@ public class PaparazziPlugin : Plugin<Project> {
   private fun <T> setupPaparazzi(project: Project, variants: DomainObjectSet<T>) where T : BaseVariant, T : TestedVariant {
     project.addTestDependency()
     val nativePlatformFileCollection = project.setupNativePlatformDependency()
+    val layoutlibResourcesFileCollection = project.setupLayoutlibResourcesDependency()
 
     // Create anchor tasks for all variants.
     val verifyVariants = project.tasks.register("verifyPaparazzi") {
@@ -226,6 +227,8 @@ public class PaparazziPlugin : Plugin<Project> {
           // They need special handling, so they're added as inputs.property above, and systemProperty here.
           test.systemProperties["paparazzi.platform.data.root"] =
             nativePlatformFileCollection.singleFile.absolutePath
+          test.systemProperties["paparazzi.resources.data.root"] =
+            layoutlibResourcesFileCollection.singleFile.absolutePath
           test.systemProperties["paparazzi.test.record"] = isRecordRun.get()
           test.systemProperties["paparazzi.test.verify"] = isVerifyRun.get()
         }
@@ -272,6 +275,21 @@ public class PaparazziPlugin : Plugin<Project> {
     }
 
     return nativePlatformConfiguration
+      .artifactViewFor(ArtifactTypeDefinition.DIRECTORY_TYPE)
+      .files
+  }
+
+  private fun Project.setupLayoutlibResourcesDependency(): FileCollection {
+    val layoutlibResourcesConfiguration = configurations.create("layoutlibResources")
+    layoutlibResourcesConfiguration.dependencies.add(
+      dependencies.create("com.android.tools.layoutlib:layoutlib-resources:$NATIVE_LIB_VERSION")
+    )
+    dependencies.registerTransform(UnzipTransform::class.java) { transform ->
+      transform.from.attribute(ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.JAR_TYPE)
+      transform.to.attribute(ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.DIRECTORY_TYPE)
+    }
+
+    return layoutlibResourcesConfiguration
       .artifactViewFor(ArtifactTypeDefinition.DIRECTORY_TYPE)
       .files
   }
