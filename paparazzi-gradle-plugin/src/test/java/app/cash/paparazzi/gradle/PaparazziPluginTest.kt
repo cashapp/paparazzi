@@ -1709,6 +1709,19 @@ class PaparazziPluginTest {
     assertThat(notRoundSnapshot).isSimilarTo(notRoundGoldenImage).withDefaultThreshold()
   }
 
+  @Test
+  fun dataBinding() {
+    val fixtureRoot = File("src/test/projects/verify-data-binding")
+
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/debug/images")
+    val snapshots = snapshotsDir.listFiles()?.sortedBy { it.lastModified() }
+    assertThat(snapshots!!).hasSize(2)
+  }
+
   private fun File.loadConfig() = source().buffer().use { CONFIG_ADAPTER.fromJson(it)!! }
 
   private fun GradleRunner.runFixture(

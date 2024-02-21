@@ -140,7 +140,7 @@ public class PaparazziPlugin : Plugin<Project> {
         task.nonTransitiveRClassEnabled.set(nonTransitiveRClassEnabled)
         task.targetSdkVersion.set(android.targetSdkVersion())
         task.compileSdkVersion.set(android.compileSdkVersion())
-        task.projectResourceDirs.set(project.provider { localResourceDirs.relativize(projectDirectory) })
+        task.projectResourceDirs.set(project.provider { localResourceDirs.relativize(projectDirectory).plus("build/intermediates/packaged_res/debug") })
         task.moduleResourceDirs.set(project.provider { moduleResourceDirs.relativize(projectDirectory) })
         task.aarExplodedDirs.from(aarExplodedDirs)
         task.projectAssetDirs.set(project.provider { localAssetDirs.plus(moduleAssetDirs).relativize(projectDirectory) })

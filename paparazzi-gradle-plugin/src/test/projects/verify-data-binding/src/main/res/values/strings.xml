@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="merge_layout_text">Hello from a merge layout file!</string>
+  <string name="binding_layout_text">Hello from a binding layout file!</string>
+</resources>
