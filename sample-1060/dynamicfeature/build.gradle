@@ -1,0 +1,51 @@
+plugins {
+  id 'com.android.dynamic-feature'
+  id 'org.jetbrains.kotlin.android'
+  id 'app.cash.paparazzi'
+}
+android {
+  namespace 'app.cash.paparazzi.sample1060.dynamicfeature'
+  compileSdk 34
+
+  defaultConfig {
+    minSdk 23
+    testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+  }
+
+  buildTypes {
+    release {
+      minifyEnabled false
+      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+    }
+  }
+
+  buildFeatures {
+    compose true
+    viewBinding true
+  }
+  composeOptions {
+    kotlinCompilerExtensionVersion libs.versions.composeCompiler.get()
+  }
+
+  compileOptions {
+    sourceCompatibility = libs.versions.javaTarget.get()
+    targetCompatibility = libs.versions.javaTarget.get()
+  }
+}
+
+dependencies {
+  implementation(projects.sample1060.app)
+
+  implementation libs.composeUi.material
+  implementation libs.composeUi.uiTooling
+
+  testImplementation libs.testParameterInjector
+
+}
+
+// https://github.com/diffplug/spotless/issues/1572
+tasks.withType(com.diffplug.gradle.spotless.SpotlessTask).configureEach {
+  dependsOn(tasks.withType(Test))
+}
+
+apply from: 'guava-fix.gradle'

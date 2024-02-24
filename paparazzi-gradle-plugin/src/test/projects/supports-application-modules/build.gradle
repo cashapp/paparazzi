@@ -17,6 +17,7 @@ android {
   kotlinOptions {
     jvmTarget = libs.versions.javaTarget.get()
   }
+    dynamicFeatures = [':sample-1060:dynamicfeature']
 }
 
 apply from: '../guava-fix.gradle'

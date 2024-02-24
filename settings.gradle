@@ -12,6 +12,8 @@ include ':paparazzi-preview-processor'
 include ':paparazzi-gradle-plugin'
 
 include ':sample'
+include ':sample-1060:app'
+include ':sample-1060:dynamicfeature'
 
 enableFeaturePreview('TYPESAFE_PROJECT_ACCESSORS')
 
