@@ -13,5 +13,5 @@ import android.annotation.SuppressLint
  */
 @SuppressLint("RestrictedApi")
 class DataBinderMapperImpl : MergedDataBinderMapper() {
-    init { addMapper("app.cash.paparazzi.plugin.test") }
+  init { addMapper("app.cash.paparazzi.plugin.test") }
 }
