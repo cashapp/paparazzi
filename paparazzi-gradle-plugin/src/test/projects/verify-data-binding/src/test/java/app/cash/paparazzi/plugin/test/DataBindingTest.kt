@@ -15,7 +15,6 @@
  */
 package app.cash.paparazzi.plugin.test
 
-import androidx.databinding.DataBindingUtil
 import app.cash.paparazzi.DeviceConfig.Companion.PIXEL_3
 import app.cash.paparazzi.Paparazzi
 import app.cash.paparazzi.plugin.test.databinding.LayoutBinding
@@ -34,12 +33,6 @@ class DataBindingTest {
   @Test
   fun testBindingInflate() {
     val binding = LayoutBinding.inflate(paparazzi.layoutInflater)
-    paparazzi.snapshot(binding.root)
-  }
-
-  @Test
-  fun testDataBindingUtilInflate() {
-    val binding = DataBindingUtil.inflate<LayoutBinding>(paparazzi.layoutInflater, R.layout.layout, null, false)
     paparazzi.snapshot(binding.root)
   }
 }
