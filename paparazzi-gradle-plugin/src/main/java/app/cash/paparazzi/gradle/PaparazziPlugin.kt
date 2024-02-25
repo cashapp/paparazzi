@@ -26,6 +26,8 @@ import com.android.build.gradle.internal.api.TestedVariant
 import com.android.build.gradle.internal.dsl.BaseAppModuleExtension
 import com.android.build.gradle.internal.dsl.DynamicFeatureExtension
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactType
+import com.android.build.gradle.internal.scope.InternalArtifactType
+import com.android.build.gradle.internal.scope.getIntermediateOutputPath
 import org.gradle.api.DefaultTask
 import org.gradle.api.DomainObjectSet
 import org.gradle.api.Plugin
@@ -134,13 +136,16 @@ public class PaparazziPlugin : Plugin<Project> {
         val android = project.extensions.getByType(BaseExtension::class.java)
         val nonTransitiveRClassEnabled =
           (project.findProperty("android.nonTransitiveRClass") as? String)?.toBoolean() ?: true
+        val packagedResFile = InternalArtifactType.PACKAGED_RES
+          .getIntermediateOutputPath(buildDirectory, variant.name)
+        val packagedResPath = projectDirectory.relativize(packagedResFile)
 
         task.packageName.set(android.packageName())
         task.artifactFiles.from(packageAwareArtifactFiles)
         task.nonTransitiveRClassEnabled.set(nonTransitiveRClassEnabled)
         task.targetSdkVersion.set(android.targetSdkVersion())
         task.compileSdkVersion.set(android.compileSdkVersion())
-        task.projectResourceDirs.set(project.provider { localResourceDirs.relativize(projectDirectory).plus("build/intermediates/packaged_res/debug") })
+        task.projectResourceDirs.set(project.provider { localResourceDirs.relativize(projectDirectory).plus(packagedResPath) })
         task.moduleResourceDirs.set(project.provider { moduleResourceDirs.relativize(projectDirectory) })
         task.aarExplodedDirs.from(aarExplodedDirs)
         task.projectAssetDirs.set(project.provider { localAssetDirs.plus(moduleAssetDirs).relativize(projectDirectory) })
