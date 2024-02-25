@@ -26,12 +26,11 @@ class DataBindingTest {
   val paparazzi = Paparazzi(deviceConfig = PIXEL_3)
 
   @Test
-  fun testMergeLayout() {
+  fun test() {
+    // Snapshot a merge layout
     paparazzi.snapshot(PaparazziFrameLayout(paparazzi.context))
-  }
 
-  @Test
-  fun testBindingInflate() {
+    // Snapshot a binding layout
     val binding = LayoutBinding.inflate(paparazzi.layoutInflater)
     paparazzi.snapshot(binding.root)
   }

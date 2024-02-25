@@ -1737,13 +1737,13 @@ class PaparazziPluginTest {
     val snapshots = snapshotsDir.listFiles()?.sortedBy { it.lastModified() }
     assertThat(snapshots!!).hasSize(2)
 
-    val bindingSnapshot = snapshots[0]
-    val bindingGoldenImage = File(fixtureRoot, "src/test/resources/binding.png")
-    assertThat(bindingSnapshot).isSimilarTo(bindingGoldenImage).withDefaultThreshold()
-
-    val mergeSnapshot = snapshots[1]
+    val mergeSnapshot = snapshots[0]
     val mergeGoldenImage = File(fixtureRoot, "src/test/resources/merge.png")
     assertThat(mergeSnapshot).isSimilarTo(mergeGoldenImage).withDefaultThreshold()
+
+    val bindingSnapshot = snapshots[1]
+    val bindingGoldenImage = File(fixtureRoot, "src/test/resources/binding.png")
+    assertThat(bindingSnapshot).isSimilarTo(bindingGoldenImage).withDefaultThreshold()
   }
 
   private fun File.loadConfig() = source().buffer().use { CONFIG_ADAPTER.fromJson(it)!! }
