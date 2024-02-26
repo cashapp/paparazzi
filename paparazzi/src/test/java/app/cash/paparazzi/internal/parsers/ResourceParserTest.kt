@@ -123,9 +123,16 @@ class ResourceParserTest {
     }
   }
 
+  @Test
+  fun parseDataBindingLayout() {
+    val root2 = parseResourceTree("data_binding.xml")
+
+    println(root2)
+  }
+
   private fun parseResourceTree(resourceId: String): TagSnapshot {
     val resourceInputStream = javaClass.classLoader.getResourceAsStream(resourceId)!!
-    return ResourceParser(resourceInputStream).createTagSnapshot()
+    return ResourceParser(inputStream = resourceInputStream).createTagSnapshot()
   }
 
   companion object {

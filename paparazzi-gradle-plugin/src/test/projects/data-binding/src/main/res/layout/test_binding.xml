@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+  <data>
+    <variable name="user" type="app.cash.paparazzi.plugin.test.ViewModel"/>
+  </data>
+  <LinearLayout
+      android:orientation="vertical"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent">
+    <TextView android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""/>
+    <TextView
+        android:id="@+id/testing"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""/>
+    <TextView android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@{user.lastName}"/>
+  </LinearLayout>
+</layout>

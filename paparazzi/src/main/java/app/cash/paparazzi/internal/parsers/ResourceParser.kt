@@ -16,14 +16,19 @@
 package app.cash.paparazzi.internal.parsers
 
 import com.android.SdkConstants.AAPT_URI
+import com.android.SdkConstants.ANDROID_NS_NAME
+import com.android.SdkConstants.ANDROID_URI
+import com.android.SdkConstants.ATTR_TAG
 import com.android.SdkConstants.TAG_ATTR
+import com.android.SdkConstants.TAG_DATA
+import com.android.SdkConstants.TAG_LAYOUT
 import org.kxml2.io.KXmlParser
 import java.io.InputStream
 
 /**
  * An XML resource parser that creates a tree of [TagSnapshot]s
  */
-internal class ResourceParser(inputStream: InputStream) : KXmlParser() {
+internal class ResourceParser(private val fileName: String? = null, inputStream: InputStream) : KXmlParser() {
   init {
     setFeature(FEATURE_PROCESS_NAMESPACES, true)
     setInput(inputStream, null)
@@ -32,7 +37,7 @@ internal class ResourceParser(inputStream: InputStream) : KXmlParser() {
     next()
   }
 
-  fun createTagSnapshot(): TagSnapshot {
+  fun createTagSnapshot(layoutDistance: Int = -1, extraLayoutAttribute: AttributeSnapshot? = null): TagSnapshot {
     require(START_TAG, null, null)
 
     // need to store now, since TagSnapshot is created on end tag after parser mark has moved
@@ -41,9 +46,13 @@ internal class ResourceParser(inputStream: InputStream) : KXmlParser() {
     val prefix = prefix
 
     val attributes = createAttributesForTag()
+    if (tagName != TAG_DATA) {
+      extraLayoutAttribute?.let { attributes += it }
+    }
 
     var hasDeclaredAaptAttrs = false
     var last: TagSnapshot? = null
+    var tagCount = 0
     val children = mutableListOf<TagSnapshot>()
     while (eventType != END_DOCUMENT) {
       when (next()) {
@@ -58,7 +67,29 @@ internal class ResourceParser(inputStream: InputStream) : KXmlParser() {
             }
             // Since we save the aapt:attr tags as an attribute, we do not save them as a child element. Skip.
           } else {
-            val child = createTagSnapshot()
+            val child = if (tagName == TAG_LAYOUT) {
+              createTagSnapshot(
+                1,
+                AttributeSnapshot(
+                  ANDROID_URI,
+                  ANDROID_NS_NAME,
+                  ATTR_TAG,
+                  "layout/${fileName}_${tagCount}"
+                )
+              )
+            } else {
+              if (layoutDistance > 0) {
+                createTagSnapshot(layoutDistance + 1, AttributeSnapshot(
+                  ANDROID_URI,
+                  ANDROID_NS_NAME,
+                  ATTR_TAG,
+                  "binding_${layoutDistance}"
+                ))
+              } else {
+                createTagSnapshot(layoutDistance)
+              }
+            }
+
             hasDeclaredAaptAttrs = hasDeclaredAaptAttrs || child.hasDeclaredAaptAttrs
             children += child
             if (last != null) {
@@ -75,12 +106,26 @@ internal class ResourceParser(inputStream: InputStream) : KXmlParser() {
             attributes,
             children.toList(),
             hasDeclaredAaptAttrs
-          )
+          ).getRootTag()
         }
       }
     }
 
     throw IllegalStateException("We should never reach here")
+  }
+
+  private fun TagSnapshot.getRootTag(): TagSnapshot {
+    if (name == TAG_LAYOUT) {
+      for (subTag in children) {
+        val subTagName: String = subTag.name
+        if (subTagName != TAG_DATA) {
+          return subTag
+        }
+      }
+      throw IllegalStateException("<layout> without a child")
+    }
+
+    return this
   }
 
   private fun createAttrTagSnapshot(): AaptAttrSnapshot? {

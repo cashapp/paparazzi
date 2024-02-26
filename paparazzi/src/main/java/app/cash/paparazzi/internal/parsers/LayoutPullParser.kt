@@ -24,6 +24,7 @@ import com.android.SdkConstants.SPINNER
 import com.android.SdkConstants.TOOLS_URI
 import com.android.ide.common.rendering.api.ILayoutPullParser
 import com.android.ide.common.rendering.api.ResourceNamespace
+import com.android.utils.FileUtils
 import okio.buffer
 import okio.source
 import org.xmlpull.v1.XmlPullParserException
@@ -40,7 +41,7 @@ import java.nio.charset.Charset
  * during the inflation process
  */
 internal class LayoutPullParser : InMemoryParser, AaptAttrParser, ILayoutPullParser {
-  private constructor(inputStream: InputStream) : super() {
+  private constructor(inputStream: InputStream, fileName: String? = null) : super() {
     try {
       val buffer = inputStream.source().buffer()
 
@@ -51,7 +52,7 @@ internal class LayoutPullParser : InMemoryParser, AaptAttrParser, ILayoutPullPar
       // leaving XmlPullParser for Android to parse resources as usual
       // Here, we use the same XmlPullParser approach for both, which means
       // we need reinitialize the document stream between the two passes.
-      val resourceParser = ResourceParser(buffer.inputStream())
+      val resourceParser = ResourceParser(fileName, buffer.inputStream())
       root = resourceParser.createTagSnapshot()
 
       // Obtain a list of all the aapt declared attributes
@@ -69,6 +70,7 @@ internal class LayoutPullParser : InMemoryParser, AaptAttrParser, ILayoutPullPar
   private val root: TagSnapshot
   private val declaredAaptAttrs: Map<String, TagSnapshot>
 
+  private var fileName: String? = null
   private var layoutNamespace = ResourceNamespace.RES_AUTO
 
   override fun rootTag() = root
@@ -134,7 +136,10 @@ internal class LayoutPullParser : InMemoryParser, AaptAttrParser, ILayoutPullPar
 
   companion object {
     @Throws(FileNotFoundException::class)
-    fun createFromFile(layoutFile: File) = LayoutPullParser(FileInputStream(layoutFile))
+    fun createFromFile(layoutFile: File) = LayoutPullParser(
+      FileInputStream(layoutFile),
+      layoutFile.nameWithoutExtension
+    )
 
     /**
      * @param layoutPath Must start with '/' and be relative to test resources.
