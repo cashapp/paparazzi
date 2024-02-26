@@ -7,11 +7,20 @@ import app.cash.paparazzi.Paparazzi
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.test.resetMain
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class CoroutineDelayMainTest {
   @get:Rule
   val paparazzi = Paparazzi()
+
+  init {
+    // coroutines-test installs a TestMainDispatcher which is incompatible with ComposeUi
+    Dispatchers.resetMain()
+  }
 
   @Test fun delayUsesMainDispatcher() {
     var start = 0L
