@@ -19,6 +19,7 @@ import android.animation.AnimationHandler
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Bitmap
+import android.os.Handler
 import android.os.Handler_Delegate
 import android.os.SystemClock_Delegate
 import android.util.AttributeSet
@@ -85,7 +86,7 @@ import java.awt.image.BufferedImage
 import java.util.Date
 import java.util.EnumSet
 import java.util.concurrent.TimeUnit
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.android.asCoroutineDispatcher
 
 @OptIn(ExperimentalComposeUiApi::class, InternalComposeUiApi::class)
 public class Paparazzi @JvmOverloads constructor(
@@ -303,9 +304,9 @@ public class Paparazzi @JvmOverloads constructor(
 
           // By default, Compose UI uses its own implementation of CoroutineDispatcher, `AndroidUiDispatcher`.
           // Since this dispatcher does not provide its own implementation of Delay, it will default to using DefaultDelay which runs
-          // async to our test Handler. By initializing Recomposer with Dispatchers.Main, Delay will now be backed by our test Handler,
-          // synchronizing expected behavior.
-          WindowRecomposerPolicy.setFactory { it.createLifecycleAwareWindowRecomposer(Dispatchers.Main) }
+          // async to our test Handler. By initializing Recomposer with our own HandlerDispatcher, Delay will now be backed
+          // by our test Handler, synchronizing expected behavior.
+          WindowRecomposerPolicy.setFactory { it.createLifecycleAwareWindowRecomposer(MAIN_DISPATCHER) }
         }
 
         if (hasLifecycleOwnerRuntime) {
@@ -646,6 +647,10 @@ public class Paparazzi @JvmOverloads constructor(
     internal val isInitialized get() = ::renderer.isInitialized
 
     internal lateinit var sessionParamsBuilder: SessionParamsBuilder
+
+    private val MAIN_DISPATCHER by lazy {
+      Handler.getMain().asCoroutineDispatcher("Paparazzi-Main")
+    }
 
     private val isVerifying: Boolean =
       System.getProperty("paparazzi.test.verify")?.toBoolean() == true

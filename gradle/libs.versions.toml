@@ -3,6 +3,7 @@ agp = "8.2.2"
 androidTools = "31.2.2" # == 23.0.0 + agp version
 bytebuddy = "1.14.12"
 composeCompiler = "1.5.8"
+coroutines = "1.8.0"
 javaTarget = "11"
 jcodec = "0.2.5"
 kotlin = "1.9.22"
@@ -37,7 +38,8 @@ jcodec-core = { module = "org.jcodec:jcodec", version.ref = "jcodec" }
 jcodec-javase = { module = "org.jcodec:jcodec-javase", version.ref = "jcodec" }
 
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
-kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.8.0" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
 
 ksp = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }
 
