@@ -9,6 +9,7 @@ android {
   compileSdk libs.versions.compileSdk.get() as int
   defaultConfig {
     minSdk libs.versions.minSdk.get() as int
+    resValue("string", "generated_string_name", "Generated Test String")
   }
   compileOptions {
     sourceCompatibility = libs.versions.javaTarget.get()
