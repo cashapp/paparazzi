@@ -124,5 +124,9 @@ fun ResourcesDemo() {
       resources.getStringArray(R.array.string_array_name).joinToString(),
       color = Color.Black
     )
+    Text(
+      resources.getString(R.string.generated_string_name),
+      color = Color.Black
+    )
   }
 }
