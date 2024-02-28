@@ -26,6 +26,7 @@ import com.android.build.gradle.internal.api.TestedVariant
 import com.android.build.gradle.internal.dsl.BaseAppModuleExtension
 import com.android.build.gradle.internal.dsl.DynamicFeatureExtension
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactType
+import com.android.build.gradle.tasks.GenerateResValues
 import org.gradle.api.DefaultTask
 import org.gradle.api.DomainObjectSet
 import org.gradle.api.Plugin
@@ -140,7 +141,12 @@ public class PaparazziPlugin : Plugin<Project> {
         task.nonTransitiveRClassEnabled.set(nonTransitiveRClassEnabled)
         task.targetSdkVersion.set(android.targetSdkVersion())
         task.compileSdkVersion.set(android.compileSdkVersion())
-        task.projectResourceDirs.set(project.provider { localResourceDirs.relativize(projectDirectory) })
+        task.projectResourceDirs.set(
+          project.provider {
+            val generateResValuesDirs = project.tasks.withType(GenerateResValues::class.java).filter { it.variantName == variant.name }.map { it.resOutputDir }
+            localResourceDirs.relativize(projectDirectory) + generateResValuesDirs.map(projectDirectory::relativize)
+          }
+        )
         task.moduleResourceDirs.set(project.provider { moduleResourceDirs.relativize(projectDirectory) })
         task.aarExplodedDirs.from(aarExplodedDirs)
         task.projectAssetDirs.set(project.provider { localAssetDirs.plus(moduleAssetDirs).relativize(projectDirectory) })

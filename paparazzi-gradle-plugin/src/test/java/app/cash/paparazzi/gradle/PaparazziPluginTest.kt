@@ -759,7 +759,7 @@ class PaparazziPluginTest {
       "app.cash.paparazzi.plugin.test.module1",
       "app.cash.paparazzi.plugin.test.module2"
     )
-    assertThat(config.projectResourceDirs).containsExactly("src/main/res", "src/debug/res")
+    assertThat(config.projectResourceDirs).containsExactly("src/main/res", "src/debug/res", "build/generated/res/resValues/debug")
     assertThat(config.moduleResourceDirs).containsExactly(
       "../module1/build/intermediates/packaged_res/debug",
       "../module2/build/intermediates/packaged_res/debug"
@@ -790,7 +790,7 @@ class PaparazziPluginTest {
       "app.cash.paparazzi.plugin.test.module1",
       "app.cash.paparazzi.plugin.test.module2"
     )
-    assertThat(config.projectResourceDirs).containsExactly("src/main/res", "src/debug/res")
+    assertThat(config.projectResourceDirs).containsExactly("src/main/res", "src/debug/res", "build/generated/res/resValues/debug")
     assertThat(config.moduleResourceDirs).containsExactly(
       "../module1/build/intermediates/packaged_res/debug",
       "../module2/build/intermediates/packaged_res/debug"
@@ -831,7 +831,7 @@ class PaparazziPluginTest {
     val resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/debug/resources.json")
 
     var config = resourcesFile.loadConfig()
-    assertThat(config.projectResourceDirs).containsExactly("src/main/res", "src/debug/res")
+    assertThat(config.projectResourceDirs).containsExactly("src/main/res", "src/debug/res", "build/generated/res/resValues/debug")
 
     buildDir.deleteRecursively()
 
@@ -853,7 +853,7 @@ class PaparazziPluginTest {
     }
 
     config = resourcesFile.loadConfig()
-    assertThat(config.projectResourceDirs).containsExactly("src/main/res", "src/debug/res")
+    assertThat(config.projectResourceDirs).containsExactly("src/main/res", "src/debug/res", "build/generated/res/resValues/debug")
   }
 
   @Test
