@@ -172,7 +172,8 @@ public class Paparazzi @JvmOverloads constructor(
         deviceConfig = deviceConfig.updateIfAccessibilityTest(),
         renderingMode = renderingMode,
         supportsRtl = supportsRtl,
-        decor = showSystemUi
+        decor = showSystemUi,
+        logger = logger
       )
       .withTheme(theme)
 
