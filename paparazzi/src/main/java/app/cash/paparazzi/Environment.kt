@@ -134,18 +134,56 @@ private fun androidSdkPath(): String {
 }
 
 private fun checkInstalledJvm() {
-  val feature = try {
+  if (jvmVersion < 11) {
+    throw IllegalStateException(
+      "Unsupported JRE detected! Please install and run Paparazzi test suites on JDK 11+."
+    )
+  }
+
+  if (osArch != null && osArch != jreArch) {
+    throw IllegalStateException(
+      "Mismatched architectures detected, OS = $osArch, JRE = $jreArch. Please install and configure the correct JRE for your system's architecture."
+    )
+  }
+}
+
+private val osArch: String? by lazy {
+  if (!osName.startsWith("mac")) {
+    osName
+  } else {
+    // System.getProperty("os.arch") returns the OS of the JRE, not necessarily of the platform
+    // we are running on.  Try /usr/bin/arch to get the actual architecture.
+    ProcessBuilder("/usr/bin/arch")
+      .start()
+      .inputStream
+      .bufferedReader()
+      .readLine()
+      ?.lowercase(Locale.US)
+      ?.let {
+        if (it.startsWith("i386")) "mac" else "mac-arm"
+      }
+  }
+}
+
+private val jreArch: String by lazy {
+  if (!osName.startsWith("mac")) {
+    osName
+  } else {
+    System.getProperty("os.arch").lowercase(Locale.US).let {
+      if (it.startsWith("x86")) "mac" else "mac-arm"
+    }
+  }
+}
+
+private val osName: String by lazy { System.getProperty("os.name").lowercase(Locale.US) }
+
+private val jvmVersion: Int by lazy {
+  try {
     // Runtime#version() only available as of Java 9.
     val version = Runtime::class.java.getMethod("version").invoke(null)
     // Runtime.Version#feature() only available as of Java 10.
     version.javaClass.getMethod("feature").invoke(version) as Int
   } catch (e: NoSuchMethodException) {
     -1
-  }
-
-  if (feature < 11) {
-    throw IllegalStateException(
-      "Unsupported JRE detected! Please install and run Paparazzi test suites on JDK 11+."
-    )
   }
 }
