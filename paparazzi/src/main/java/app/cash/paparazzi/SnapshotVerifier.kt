@@ -23,7 +23,8 @@ import javax.imageio.ImageIO
 
 public class SnapshotVerifier @JvmOverloads constructor(
   private val maxPercentDifference: Double,
-  rootDirectory: File = File(System.getProperty("paparazzi.snapshot.dir"))
+  rootDirectory: File = File(System.getProperty("paparazzi.snapshot.dir")),
+  private val fileNameProvider: FileNameProvider = DefaultFileNameProvider()
 ) : SnapshotHandler {
   private val imagesDirectory: File = File(rootDirectory, "images")
   private val videosDirectory: File = File(rootDirectory, "videos")
@@ -41,7 +42,8 @@ public class SnapshotVerifier @JvmOverloads constructor(
     return object : FrameHandler {
       override fun handle(image: BufferedImage) {
         // Note: does not handle videos or its frames at the moment
-        val expected = File(imagesDirectory, snapshot.toFileName(extension = "png"))
+        val expected =
+          File(imagesDirectory, fileNameProvider.snapshotFileName(snapshot, extension = "png"))
         if (!expected.exists()) {
           throw AssertionError("File $expected does not exist")
         }

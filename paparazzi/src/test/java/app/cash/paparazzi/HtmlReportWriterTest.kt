@@ -158,6 +158,43 @@ class HtmlReportWriterTest {
     }
   }
 
+  @Test
+  fun useFileNameProvider() {
+    // set record mode
+    System.setProperty("paparazzi.test.record", "true")
+
+    val htmlReportWriter = HtmlReportWriter(
+      "record_run",
+      fileNameProvider = object : FileNameProvider {
+        override fun snapshotFileName(snapshot: Snapshot, extension: String): String {
+          return "${snapshot.name}.$extension"
+        }
+      },
+      rootDirectory = reportRoot.root,
+      snapshotRootDirectory = snapshotRoot.root
+    )
+    htmlReportWriter.use {
+      val snapshot = Snapshot(
+        name = "test",
+        testName = TestName("app.cash.paparazzi", "HomeView", "testSettings"),
+        timestamp = Instant.parse("2021-02-23T10:27:43Z").toDate()
+      )
+      val golden = File("${snapshotRoot.root}/images/test.png")
+
+      // precondition
+      assertThat(golden).doesNotExist()
+
+      // take 1
+      val frameHandler1 = htmlReportWriter.newFrameHandler(
+        snapshot = snapshot,
+        frameCount = 1,
+        fps = -1
+      )
+      frameHandler1.use { frameHandler1.handle(anyImage) }
+      assertThat(golden).exists()
+    }
+  }
+
   private fun Instant.toDate() = Date(toEpochMilli())
 
   private fun File.lastModifiedTime(): FileTime {
