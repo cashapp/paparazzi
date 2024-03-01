@@ -712,17 +712,17 @@ class PaparazziPluginTest {
     val fixtureRoot = File("src/test/projects/delete-snapshots")
     val snapshotsDir = File(fixtureRoot, "src/test/snapshots")
     val snapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_DeleteTest_delete.png")
-    val snapshotWithKeep = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_DeleteTest_delete_label.png")
+    val snapshotWithLabel = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_DeleteTest_delete_label.png")
 
     assertThat(snapshot.exists()).isTrue()
-    assertThat(snapshotWithKeep.exists()).isTrue()
+    assertThat(snapshotWithLabel.exists()).isTrue()
 
     gradleRunner
       .withArguments("deletePaparazziSnapshots", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
 
     assertThat(snapshot.exists()).isFalse()
-    assertThat(snapshotWithKeep.exists()).isFalse()
+    assertThat(snapshotWithLabel.exists()).isFalse()
   }
 
   @Test
