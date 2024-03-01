@@ -621,9 +621,14 @@ public class Paparazzi @JvmOverloads constructor(
     // RenderAction.currentContext.sessionInteractiveData.handlerMessageQueue.runnablesMap which is a WeakHashMap
     // https://android.googlesource.com/platform/tools/adt/idea/+/c331c9b2f4334748c55c29adec3ad1cd67e45df2/designer/src/com/android/tools/idea/uibuilder/scene/LayoutlibSceneManager.java#1558
     synchronized(this) {
+      // https://android.googlesource.com/platform/frameworks/layoutlib/+/ebdd83e4be7e8d89a38e3f316b2e15112f61ca30%5E%21/#F1
+      // Note that SystemClock_Delegate#uptimeNanos() is package-private
+      // https://android.googlesource.com/platform/frameworks/layoutlib/+/refs/tags/studio-2023.2.1-rc1/bridge/src/android/os/SystemClock_Delegate.java#56
+      val uptimeNanos = System_Delegate.nanoTime() - System_Delegate.bootTime()
+
       // https://android.googlesource.com/platform/frameworks/layoutlib/+/d58aa4703369e109b24419548f38b422d5a44738/bridge/src/com/android/layoutlib/bridge/BridgeRenderSession.java#171
       // BridgeRenderSession.executeCallbacks aggressively tears down the main Looper and BridgeContext, so we call the static delegates ourselves.
-      Handler_Delegate.executeCallbacks()
+      Handler_Delegate.executeCallbacks(uptimeNanos)
     }
   }
 
