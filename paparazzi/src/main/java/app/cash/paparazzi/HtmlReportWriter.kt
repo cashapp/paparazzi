@@ -15,6 +15,7 @@
  */
 package app.cash.paparazzi
 
+import app.cash.paparazzi.SnapshotHandler.FrameHandler
 import app.cash.paparazzi.internal.PaparazziJson
 import com.google.common.base.CharMatcher
 import okio.BufferedSink

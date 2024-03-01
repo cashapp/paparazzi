@@ -12,7 +12,6 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import app.cash.paparazzi.DeviceConfig
-import app.cash.paparazzi.FrameHandler
 import app.cash.paparazzi.Paparazzi
 import app.cash.paparazzi.Snapshot
 import app.cash.paparazzi.SnapshotHandler
@@ -24,11 +23,12 @@ import java.io.File
 import javax.imageio.ImageIO
 
 class AccessibilityRenderExtensionTest {
+  private val snapshotHandler = TestSnapshotVerifier()
 
   @get:Rule
   val paparazzi = Paparazzi(
     deviceConfig = DeviceConfig.NEXUS_5,
-    snapshotHandler = TestSnapshotVerifier(),
+    snapshotHandler = snapshotHandler,
     renderExtensions = setOf(AccessibilityRenderExtension())
   )
 
@@ -119,8 +119,8 @@ class AccessibilityRenderExtensionTest {
       snapshot: Snapshot,
       frameCount: Int,
       fps: Int
-    ): FrameHandler {
-      return object : FrameHandler {
+    ): SnapshotHandler.FrameHandler {
+      return object : SnapshotHandler.FrameHandler {
         override fun handle(image: BufferedImage) {
           val expected = File("src/test/resources/${snapshot.name}.png")
           ImageUtils.assertImageSimilar(

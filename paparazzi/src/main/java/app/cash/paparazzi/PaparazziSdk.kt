@@ -40,6 +40,7 @@ import androidx.compose.ui.platform.createLifecycleAwareWindowRecomposer
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import app.cash.paparazzi.SnapshotHandler.FrameHandler
 import app.cash.paparazzi.accessibility.AccessibilityRenderExtension
 import app.cash.paparazzi.agent.InterceptorRegistrar
 import app.cash.paparazzi.internal.ImageUtils
@@ -167,12 +168,12 @@ public class PaparazziSdk @JvmOverloads constructor(
     bridgeRenderSession = createBridgeSession(renderSession, renderSession.inflate())
   }
 
-  public fun close() {
-    frameHandler?.close()
-    frameHandler = null
+  public fun tearDown() {
     renderSession.release()
     bridgeRenderSession.dispose()
     cleanupThread()
+    frameHandler?.close()
+    frameHandler = null
 
     renderer.dumpDelegates()
     logger.assertNoErrors()
