@@ -15,7 +15,7 @@ minSdk = "25"
 compileSdk = "33"
 
 # Maps to this commit: https://android.googlesource.com/platform/prebuilts/studio/layoutlib/+/a73a761
-layoutlib = "2023.1.1-a73a761"
+layoutlib = "2023.2.1-6c7316c"
 layoutlibPrebuiltSha = "a73a761"
 
 [libraries]
