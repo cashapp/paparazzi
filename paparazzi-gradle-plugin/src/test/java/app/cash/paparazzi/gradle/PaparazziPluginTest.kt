@@ -708,6 +708,43 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun deleteSnapshots() {
+    val fixtureRoot = File("src/test/projects/delete-snapshots")
+
+    gradleRunner
+      .withArguments("deletePaparazziSnapshots", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
+
+    val snapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_DeleteTest_delete.png")
+    assertThat(snapshot.exists()).isFalse()
+
+    val snapshotWithKeep = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_DeleteTest_delete_keep.png")
+    assertThat(snapshotWithKeep.exists()).isFalse()
+  }
+
+  @Test
+  fun cleanRecord() {
+    val fixtureRoot = File("src/test/projects/delete-snapshots")
+
+    val result = gradleRunner
+      .withArguments("cleanRecordPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":deletePaparazziSnapshots")).isNotNull()
+    assertThat(result.task(":recordPaparazziDebug")).isNotNull()
+
+    val snapshotsDir = File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
+
+    val snapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_DeleteTest_delete.png")
+    assertThat(snapshot.exists()).isFalse()
+
+    val snapshotWithKeep = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_DeleteTest_delete_keep.png")
+    assertThat(snapshotWithKeep.exists()).isTrue()
+  }
+
+  @Test
   fun widgets() {
     val fixtureRoot = File("src/test/projects/widgets")
 
