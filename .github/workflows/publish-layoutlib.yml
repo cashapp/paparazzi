@@ -22,8 +22,9 @@ jobs:
           distribution: 'zulu'
           java-version: 17
 
+      # VERSION_NAME needs to be a non-snapshot version to ensure we can publish signed artifacts
       - name: Publish Artifacts
-        run: ./gradlew publishMavenNativeLibraryPublicationToMavenCentralRepository
+        run: ./gradlew publishMavenNativeLibraryPublicationToMavenCentralRepository -PVERSION_NAME=1.0.0
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
