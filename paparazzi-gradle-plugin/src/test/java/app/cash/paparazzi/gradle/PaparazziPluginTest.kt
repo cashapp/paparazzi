@@ -710,23 +710,30 @@ class PaparazziPluginTest {
   @Test
   fun deleteSnapshots() {
     val fixtureRoot = File("src/test/projects/delete-snapshots")
+    val snapshotsDir = File(fixtureRoot, "src/test/snapshots")
+    val snapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_DeleteTest_delete.png")
+    val snapshotWithKeep = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_DeleteTest_delete_label.png")
+
+    assertThat(snapshot.exists()).isTrue()
+    assertThat(snapshotWithKeep.exists()).isTrue()
 
     gradleRunner
       .withArguments("deletePaparazziSnapshots", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
 
-    val snapshotsDir = File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
-
-    val snapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_DeleteTest_delete.png")
     assertThat(snapshot.exists()).isFalse()
-
-    val snapshotWithKeep = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_DeleteTest_delete_keep.png")
     assertThat(snapshotWithKeep.exists()).isFalse()
   }
 
   @Test
   fun cleanRecord() {
-    val fixtureRoot = File("src/test/projects/delete-snapshots")
+    val fixtureRoot = File("src/test/projects/clean-record")
+    val snapshotsDir = File(fixtureRoot, "src/test/snapshots")
+    val snapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_CleanRecordTest_clean.png")
+    val snapshotWithKeep = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_CleanRecordTest_clean_keep.png")
+
+    assertThat(snapshot.exists()).isTrue()
+    assertThat(snapshotWithKeep.exists()).isTrue()
 
     val result = gradleRunner
       .withArguments("cleanRecordPaparazziDebug", "--stacktrace")
@@ -735,12 +742,7 @@ class PaparazziPluginTest {
     assertThat(result.task(":deletePaparazziSnapshots")).isNotNull()
     assertThat(result.task(":recordPaparazziDebug")).isNotNull()
 
-    val snapshotsDir = File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
-
-    val snapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_DeleteTest_delete.png")
     assertThat(snapshot.exists()).isFalse()
-
-    val snapshotWithKeep = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_DeleteTest_delete_keep.png")
     assertThat(snapshotWithKeep.exists()).isTrue()
   }
 

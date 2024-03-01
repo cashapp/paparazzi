@@ -20,13 +20,12 @@ import app.cash.paparazzi.Paparazzi
 import org.junit.Rule
 import org.junit.Test
 
-class DeleteTest {
+class CleanRecordTest {
   @get:Rule
   val paparazzi = Paparazzi()
 
   @Test
-  fun delete() {
-    paparazzi.snapshot(LinearLayout(paparazzi.context))
-    paparazzi.snapshot(LinearLayout(paparazzi.context), "label")
+  fun clean() {
+    paparazzi.snapshot(LinearLayout(paparazzi.context), "keep")
   }
 }

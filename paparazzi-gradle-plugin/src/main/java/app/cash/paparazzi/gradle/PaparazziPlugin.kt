@@ -96,7 +96,11 @@ public class PaparazziPlugin : Plugin<Project> {
     val deleteSnapshots = project.tasks.register("deletePaparazziSnapshots", Delete::class.java) {
       it.group = VERIFICATION_GROUP
       it.description = "Delete all golden images"
-      it.delete(project.fileTree(snapshotOutputDir))
+      val files = project.fileTree(snapshotOutputDir) { tree ->
+        tree.include("**/*.png")
+        tree.include("**/*.mov")
+      }
+      it.delete(files)
     }
 
     variants.all { variant ->
