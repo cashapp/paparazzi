@@ -131,7 +131,9 @@ public class PaparazziSdk @JvmOverloads constructor(
       ByteBuddyAgent.install()
       InterceptorRegistrar.registerMethodInterceptors()
     }
+  }
 
+  public fun prepare() {
     val layoutlibCallback =
       PaparazziCallback(logger, environment.packageName, environment.resourcePackageNames)
     layoutlibCallback.initResources()
@@ -167,7 +169,7 @@ public class PaparazziSdk @JvmOverloads constructor(
     bridgeRenderSession = createBridgeSession(renderSession, renderSession.inflate())
   }
 
-  public fun tearDown() {
+  public fun teardown() {
     renderSession.release()
     bridgeRenderSession.dispose()
     cleanupThread()

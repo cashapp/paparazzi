@@ -168,13 +168,14 @@ public final class app/cash/paparazzi/PaparazziSdk {
 	public final fun gif (Landroid/view/View;JJI)V
 	public static synthetic fun gif$default (Lapp/cash/paparazzi/PaparazziSdk;Landroid/view/View;JJIILjava/lang/Object;)V
 	public final fun inflate (I)Landroid/view/View;
+	public final fun prepare ()V
 	public final fun setFrameHandler (Lapp/cash/paparazzi/SnapshotHandler$FrameHandler;)V
 	public final fun setup ()V
 	public final fun snapshot (Landroid/view/View;)V
 	public final fun snapshot (Landroid/view/View;J)V
 	public final fun snapshot (Lkotlin/jvm/functions/Function2;)V
 	public static synthetic fun snapshot$default (Lapp/cash/paparazzi/PaparazziSdk;Landroid/view/View;JILjava/lang/Object;)V
-	public final fun tearDown ()V
+	public final fun teardown ()V
 	public final fun unsafeUpdateConfig (Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;)V
 	public static synthetic fun unsafeUpdateConfig$default (Lapp/cash/paparazzi/PaparazziSdk;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ILjava/lang/Object;)V
 }

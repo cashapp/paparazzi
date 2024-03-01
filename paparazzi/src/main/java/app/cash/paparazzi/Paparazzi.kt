@@ -69,6 +69,7 @@ public class Paparazzi @JvmOverloads constructor(
           showSystemUi = showSystemUi,
           validateAccessibility = validateAccessibility
         )
+        sdk.setup()
         prepare(description)
         try {
           base.evaluate()
@@ -81,12 +82,12 @@ public class Paparazzi @JvmOverloads constructor(
 
   public fun prepare(description: Description) {
     testName = description.toTestName()
-    sdk.setup()
+    sdk.prepare()
   }
 
   public fun close() {
     testName = null
-    sdk.tearDown()
+    sdk.teardown()
   }
 
   public fun <V : View> inflate(@LayoutRes layoutId: Int): V = sdk.inflate(layoutId)
