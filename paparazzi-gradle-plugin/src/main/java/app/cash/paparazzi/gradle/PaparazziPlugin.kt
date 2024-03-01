@@ -39,6 +39,7 @@ import org.gradle.api.internal.artifacts.transform.UnzipTransform
 import org.gradle.api.logging.LogLevel.LIFECYCLE
 import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.api.reporting.ReportingExtension
+import org.gradle.api.tasks.Delete
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.options.Option
 import org.gradle.api.tasks.testing.Test
@@ -77,6 +78,7 @@ public class PaparazziPlugin : Plugin<Project> {
   private fun <T> setupPaparazzi(project: Project, variants: DomainObjectSet<T>) where T : BaseVariant, T : TestedVariant {
     project.addTestDependency()
     val nativePlatformFileCollection = project.setupNativePlatformDependency()
+    val snapshotOutputDir = project.layout.projectDirectory.dir("src/test/snapshots")
 
     // Create anchor tasks for all variants.
     val verifyVariants = project.tasks.register("verifyPaparazzi") {
@@ -87,6 +89,19 @@ public class PaparazziPlugin : Plugin<Project> {
       it.group = VERIFICATION_GROUP
       it.description = "Record golden images for all variants"
     }
+    val cleanRecordVariants = project.tasks.register("cleanRecordPaparazzi") {
+      it.group = VERIFICATION_GROUP
+      it.description = "Clean and record golden images for all variants"
+    }
+    val deleteSnapshots = project.tasks.register("deletePaparazziSnapshots", Delete::class.java) {
+      it.group = VERIFICATION_GROUP
+      it.description = "Delete all golden images"
+      val files = project.fileTree(snapshotOutputDir) { tree ->
+        tree.include("**/*.png")
+        tree.include("**/*.mov")
+      }
+      it.delete(files)
+    }
 
     variants.all { variant ->
       val variantSlug = variant.name.capitalize(Locale.US)
@@ -96,7 +111,6 @@ public class PaparazziPlugin : Plugin<Project> {
       val buildDirectory = project.layout.buildDirectory
       val gradleUserHomeDir = project.gradle.gradleUserHomeDir
       val reportOutputDir = project.extensions.getByType(ReportingExtension::class.java).baseDirectory.dir("paparazzi/${variant.name}")
-      val snapshotOutputDir = project.layout.projectDirectory.dir("src/test/snapshots")
 
       val localResourceDirs = project
         .files(variant.sourceSets.flatMap { it.resDirectories })
@@ -179,8 +193,15 @@ public class PaparazziPlugin : Plugin<Project> {
       val recordTaskProvider = project.tasks.register("recordPaparazzi$variantSlug", PaparazziTask::class.java) {
         it.group = VERIFICATION_GROUP
         it.description = "Record golden images for variant '${variant.name}'"
+        it.mustRunAfter(deleteSnapshots)
       }
       recordVariants.configure { it.dependsOn(recordTaskProvider) }
+      val cleanRecordTaskProvider = project.tasks.register("cleanRecordPaparazzi$variantSlug") {
+        it.group = VERIFICATION_GROUP
+        it.description = "Clean and record golden images for variant '${variant.name}'"
+        it.dependsOn(deleteSnapshots, recordTaskProvider)
+      }
+      cleanRecordVariants.configure { it.dependsOn(cleanRecordTaskProvider) }
       val verifyTaskProvider = project.tasks.register("verifyPaparazzi$variantSlug", PaparazziTask::class.java) {
         it.group = VERIFICATION_GROUP
         it.description = "Run screenshot tests for variant '${variant.name}'"
