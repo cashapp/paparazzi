@@ -193,13 +193,13 @@ public class PaparazziPlugin : Plugin<Project> {
       val recordTaskProvider = project.tasks.register("recordPaparazzi$variantSlug", PaparazziTask::class.java) {
         it.group = VERIFICATION_GROUP
         it.description = "Record golden images for variant '${variant.name}'"
+        it.mustRunAfter(deleteSnapshots)
       }
       recordVariants.configure { it.dependsOn(recordTaskProvider) }
       val cleanRecordTaskProvider = project.tasks.register("cleanRecordPaparazzi$variantSlug") {
         it.group = VERIFICATION_GROUP
         it.description = "Clean and record golden images for variant '${variant.name}'"
         it.dependsOn(deleteSnapshots, recordTaskProvider)
-        recordTaskProvider.get().mustRunAfter(deleteSnapshots)
       }
       cleanRecordVariants.configure { it.dependsOn(cleanRecordTaskProvider) }
       val verifyTaskProvider = project.tasks.register("verifyPaparazzi$variantSlug", PaparazziTask::class.java) {
