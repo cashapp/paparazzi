@@ -28,39 +28,29 @@ import org.junit.runners.model.Statement
 import java.util.Date
 
 public class Paparazzi @JvmOverloads constructor(
-  environment: Environment = detectEnvironment(),
-  deviceConfig: DeviceConfig = DeviceConfig.NEXUS_5,
-  theme: String = "android:Theme.Material.NoActionBar.Fullscreen",
-  renderingMode: RenderingMode = RenderingMode.NORMAL,
-  appCompatEnabled: Boolean = true,
-  renderExtensions: Set<RenderExtension> = setOf(),
-  supportsRtl: Boolean = false,
-  showSystemUi: Boolean = false,
-  validateAccessibility: Boolean = false,
+  private val environment: Environment = detectEnvironment(),
+  private val deviceConfig: DeviceConfig = DeviceConfig.NEXUS_5,
+  private val theme: String = "android:Theme.Material.NoActionBar.Fullscreen",
+  private val renderingMode: RenderingMode = RenderingMode.NORMAL,
+  private val appCompatEnabled: Boolean = true,
   private val maxPercentDifference: Double = 0.1,
-  private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference)
+  private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference),
+  private val renderExtensions: Set<RenderExtension> = setOf(),
+  private val supportsRtl: Boolean = false,
+  private val showSystemUi: Boolean = false,
+  private val validateAccessibility: Boolean = false
 ) : TestRule {
-  private val paparazziSdk = PaparazziSdk(
-    environment,
-    deviceConfig,
-    theme,
-    renderingMode,
-    appCompatEnabled,
-    renderExtensions,
-    supportsRtl,
-    showSystemUi,
-    validateAccessibility
-  )
+  private lateinit var sdk: PaparazziSdk
   private var testName: TestName? = null
 
   public val layoutInflater: LayoutInflater
-    get() = paparazziSdk.layoutInflater
+    get() = sdk.layoutInflater
 
   public val resources: Resources
-    get() = paparazziSdk.resources
+    get() = sdk.resources
 
   public val context: Context
-    get() = paparazziSdk.context
+    get() = sdk.context
 
   override fun apply(
     base: Statement,
@@ -68,6 +58,17 @@ public class Paparazzi @JvmOverloads constructor(
   ): Statement {
     return object : Statement() {
       override fun evaluate() {
+        sdk = PaparazziSdk(
+          environment = environment,
+          deviceConfig = deviceConfig,
+          theme = theme,
+          renderingMode = renderingMode,
+          appCompatEnabled = appCompatEnabled,
+          renderExtensions = renderExtensions,
+          supportsRtl = supportsRtl,
+          showSystemUi = showSystemUi,
+          validateAccessibility = validateAccessibility
+        )
         prepare(description)
         try {
           base.evaluate()
@@ -78,50 +79,56 @@ public class Paparazzi @JvmOverloads constructor(
     }
   }
 
-  public fun <V : View> inflate(@LayoutRes layoutId: Int): V = paparazziSdk.inflate(layoutId)
+  public fun prepare(description: Description) {
+    testName = description.toTestName()
+    sdk.setup()
+  }
+
+  public fun close() {
+    testName = null
+    sdk.tearDown()
+  }
+
+  public fun <V : View> inflate(@LayoutRes layoutId: Int): V = sdk.inflate(layoutId)
 
   public fun snapshot(name: String? = null, composable: @Composable () -> Unit) {
     setupFrameHandler(name)
-    paparazziSdk.snapshot(composable)
+    sdk.snapshot(composable)
   }
 
   @JvmOverloads
   public fun snapshot(view: View, name: String? = null, offsetMillis: Long = 0L) {
     setupFrameHandler(name)
-    paparazziSdk.snapshot(view, offsetMillis)
+    sdk.snapshot(view, offsetMillis)
   }
 
   @JvmOverloads
-  public fun gif(view: View, name: String? = null, start: Long = 0L, end: Long = 500L, fps: Int = 30) {
+  public fun gif(
+    view: View,
+    name: String? = null,
+    start: Long = 0L,
+    end: Long = 500L,
+    fps: Int = 30
+  ) {
     // Add one to the frame count so we get the last frame. Otherwise a 1 second, 60 FPS animation
     // our 60th frame will be at time 983 ms, and we want our last frame to be 1,000 ms. This gets
     // us 61 frames for a 1 second animation, 121 frames for a 2 second animation, etc.
     val durationMillis = (end - start).toInt()
     val frameCount = (durationMillis * fps) / 1000 + 1
     setupFrameHandler(name, frameCount, fps)
-    paparazziSdk.gif(view, start, end, fps)
+    sdk.gif(view, start, end, fps)
   }
 
   public fun unsafeUpdateConfig(
     deviceConfig: DeviceConfig? = null,
     theme: String? = null,
     renderingMode: RenderingMode? = null
-  ): Unit = paparazziSdk.unsafeUpdateConfig(deviceConfig, theme, renderingMode)
+  ): Unit = sdk.unsafeUpdateConfig(deviceConfig, theme, renderingMode)
 
-  private fun prepare(description: Description) {
-    testName = description.toTestName()
-    paparazziSdk.prepare()
-  }
-
-  private fun close() {
-    testName = null
-    paparazziSdk.tearDown()
-  }
-
-  private fun setupFrameHandler(name: String? = null, frameCount: Int = -1, fps: Int = -1) {
+  private fun setupFrameHandler(name: String? = null, frameCount: Int = -1, fps: Int = 1) {
     val snapshot = Snapshot(name, testName!!, Date())
     val frameHandler = snapshotHandler.newFrameHandler(snapshot, frameCount, fps)
-    paparazziSdk.setFrameHandler(frameHandler)
+    sdk.setFrameHandler(frameHandler)
   }
 
   private fun Description.toTestName(): TestName {

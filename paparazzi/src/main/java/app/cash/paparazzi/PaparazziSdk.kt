@@ -19,6 +19,7 @@ import android.animation.AnimationHandler
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Bitmap
+import android.os.Handler
 import android.os.Handler_Delegate
 import android.os.SystemClock_Delegate
 import android.util.AttributeSet
@@ -82,9 +83,9 @@ import java.awt.geom.Ellipse2D
 import java.awt.image.BufferedImage
 import java.util.EnumSet
 import java.util.concurrent.TimeUnit
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.android.asCoroutineDispatcher
 
-@OptIn(InternalComposeUiApi::class, ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, InternalComposeUiApi::class)
 public class PaparazziSdk @JvmOverloads constructor(
   private val environment: Environment = detectEnvironment(),
   private val deviceConfig: DeviceConfig = DeviceConfig.NEXUS_5,
@@ -118,7 +119,7 @@ public class PaparazziSdk @JvmOverloads constructor(
         |              android:layout_height="${if (renderingMode.vertAction == RenderingMode.SizeAction.SHRINK) "wrap_content" else "match_parent"}"/>
   """.trimMargin()
 
-  init {
+  public fun setup() {
     if (!isInitialized) {
       registerFontLookupInterceptionIfResourceCompatDetected()
       registerViewEditModeInterception()
@@ -130,9 +131,7 @@ public class PaparazziSdk @JvmOverloads constructor(
       ByteBuddyAgent.install()
       InterceptorRegistrar.registerMethodInterceptors()
     }
-  }
 
-  public fun prepare() {
     val layoutlibCallback =
       PaparazziCallback(logger, environment.packageName, environment.resourcePackageNames)
     layoutlibCallback.initResources()
@@ -287,7 +286,7 @@ public class PaparazziSdk @JvmOverloads constructor(
           // Since this dispatcher does not provide its own implementation of Delay, it will default to using DefaultDelay which runs
           // async to our test Handler. By initializing Recomposer with Dispatchers.Main, Delay will now be backed by our test Handler,
           // synchronizing expected behavior.
-          WindowRecomposerPolicy.setFactory { it.createLifecycleAwareWindowRecomposer(Dispatchers.Main) }
+          WindowRecomposerPolicy.setFactory { it.createLifecycleAwareWindowRecomposer(MAIN_DISPATCHER) }
         }
 
         if (hasLifecycleOwnerRuntime) {
@@ -462,9 +461,6 @@ public class PaparazziSdk @JvmOverloads constructor(
     } catch (e: ClassNotFoundException) {
       logger.verbose("AppCompat not found on classpath")
       return
-    } catch (e: NoClassDefFoundError) {
-      logger.verbose("AppCompat not found on classpath")
-      return
     }
 
     // See androidx.appcompat.app.AppCompatDelegateImpl#installViewFactory()
@@ -624,6 +620,10 @@ public class PaparazziSdk @JvmOverloads constructor(
     internal val isInitialized get() = ::renderer.isInitialized
 
     internal lateinit var sessionParamsBuilder: SessionParamsBuilder
+
+    private val MAIN_DISPATCHER by lazy {
+      Handler.getMain().asCoroutineDispatcher("Paparazzi-Main")
+    }
 
     private val hasComposeRuntime: Boolean = isPresentInClasspath(
       "androidx.compose.runtime.snapshots.SnapshotKt",
