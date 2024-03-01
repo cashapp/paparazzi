@@ -13,7 +13,10 @@ java {
 def artifactType = Attribute.of('artifactType', String)
 
 configurations {
-  unzip {
+  layoutlibPlatform {
+    attributes.attribute(artifactType, ArtifactTypeDefinition.DIRECTORY_TYPE)
+  }
+  layoutlibResources {
     attributes.attribute(artifactType, ArtifactTypeDefinition.DIRECTORY_TYPE)
   }
 }
@@ -41,9 +44,9 @@ dependencies {
   implementation libs.bytebuddy.agent
   implementation libs.bytebuddy.core
   implementation libs.trove4j
-  api libs.layoutlib.native.jdk11
   api libs.tools.common
   api libs.tools.layoutlib
+  api libs.tools.layoutlib.api
   api libs.tools.ninepatch
   api libs.tools.sdkCommon
   api libs.kxml2
@@ -63,15 +66,16 @@ dependencies {
   if (osName.startsWith("mac")) {
     def osArch = System.getProperty("os.arch").toLowerCase(Locale.US)
     if (osArch.startsWith("x86")) {
-      unzip libs.layoutlib.native.macOsX
+      layoutlibPlatform variantOf(libs.tools.layoutlib.runtime) { classifier("mac") }
     } else {
-      unzip libs.layoutlib.native.macArm
+      layoutlibPlatform variantOf(libs.tools.layoutlib.runtime) { classifier("mac-arm") }
     }
   } else if (osName.startsWith("windows")) {
-    unzip libs.layoutlib.native.windows
+    layoutlibPlatform variantOf(libs.tools.layoutlib.runtime) { classifier("win") }
   } else {
-    unzip libs.layoutlib.native.linux
+    layoutlibPlatform variantOf(libs.tools.layoutlib.runtime) { classifier("linux") }
   }
+  layoutlibResources libs.tools.layoutlib.resources
 
   testImplementation libs.truth
 
@@ -103,8 +107,8 @@ def generateTestConfig = tasks.register("generateTestConfig") {
     configFile.write("""{
       "mainPackage": "app.cash.paparazzi",
       "mergeResourcesOutputDir": ".",
-      "targetSdkVersion": "31",
-      "platformDir": "platforms/android-31/",
+      "targetSdkVersion": "34",
+      "platformDir": "platforms/android-34/",
       "mergeAssetsOutputDir": ".",
       "resourcePackageNames": ["app.cash.paparazzi"],
       "projectResourceDirs": [],
@@ -144,7 +148,11 @@ tasks.withType(Test).configureEach {
   )
   systemProperty(
     "paparazzi.platform.data.root",
-    configurations.unzip.singleFile.absolutePath
+    configurations.layoutlibPlatform.singleFile.absolutePath
+  )
+  systemProperty(
+    "paparazzi.resources.data.root",
+    configurations.layoutlibResources.singleFile.absolutePath
   )
   // Uncomment to debug JNI issues in layoutlib
   // jvmArgs '-Xcheck:jni'
