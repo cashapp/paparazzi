@@ -24,15 +24,8 @@ Note that layoutlib's version tracks [Android Studio Releases][studio_releases] 
    layoutlib = "2022.2.1-5128371"
    layoutlibPrebuiltSha = "5128371"
    ```
-5. Build and upload:
-    ```
-    ./gradlew publishMavenNativeLibraryPublicationToMavenCentralRepository
-    ```
-
-   This may take a few minutes. It clones a large repo (2.4 GiB) and then uploads a large artifact
-   (30 MiB) to Maven Central.
-
-6. Visit [Sonatype Nexus][nexus] to promote the artifact. Or drop it if there is a problem!
+5. Create a branch that matches the `**/publish-layoutlib**` filter and push to GitHub.
+6. Go to [GitHub Actions][publish_action] and run the `publish-layoutlib` action using this branch.
 7. Once deploy is live, continue with changeset from step 4 to update Paparazzi to consume this
    latest version.  Here's an [example PR][dolphin_bump].
 
@@ -49,6 +42,6 @@ In `~/.gradle/gradle.properties`, set the following:
 [android_studio]: https://developer.android.com/studio
 [studio_releases]: https://developer.android.com/studio/releases
 [studio_versions]: https://developer.android.com/studio/releases#android_gradle_plugin_and_android_studio_compatibility
-[nexus]: https://oss.sonatype.org/
 [prebuilt_refs]: https://android.googlesource.com/platform/prebuilts/studio/layoutlib/+refs
 [dolphin_bump]: https://github.com/cashapp/paparazzi/pull/639
+[publish_action]: https://github.com/cashapp/paparazzi/actions/workflows/publish-layoutlib.yml
