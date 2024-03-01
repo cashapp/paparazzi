@@ -10,7 +10,7 @@ jobs:
 
   publish:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/**/layoutlib**'
+    if: github.ref =~ 'refs/heads/**/publish-layoutlib**'
 
     steps:
       - name: Checkout
