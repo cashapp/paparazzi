@@ -2,6 +2,31 @@
 
 ## [Unreleased]
 
+## [1.3.3] - 2024-03-01
+
+### New
+* Migrate Paparazzi to layoutlib Hedgehog 2023.1.1
+* Compose 1.5.8
+* Kotlin 1.9.22
+* [Gradle Plugin] Gradle 8.6
+* [Gradle Plugin] Android Gradle Plugin 8.2.1
+
+### Fixed
+* Update the DeviceConfig screenWidth internally for accessibility tests
+* Fix variant caching issues in new resource/asset loading mechanisms
+* Remove legacy resources/assets loading mechanism
+* Set HardwareConfig width and height based on orientation
+* Apply round screen qualifier to device config
+* Restrict Paparazzi's public API
+* Remove obsolete NEXUS_5_LAND DeviceConfig
+* Fix formatting so that all digits show upon failure
+* Stop resolving dependencies at configuration time
+* Use our own internal HandlerDispatcher for Compose Ui tests
+* Include generated string resources
+* Reset logger to prevent swallowing exceptions
+
+Kudos to @gamepro65, @kevinzheng-ap, @BrianGardnerAtl, @adamalyyan, and others for contributions this release!
+
 ## [1.3.2] - 2024-01-13
 
 ### NOTE: Due to a known issue with [how Guava now publishes its artifact](https://github.com/google/guava/issues/6567), you will need to apply the following snippet workaround to your root build.gradle:
@@ -332,7 +357,8 @@ As of this release, consumers must build on Java 11 environments.
 
 
 
-[Unreleased]: https://github.com/cashapp/paparazzi/compare/1.3.2...HEAD
+[Unreleased]: https://github.com/cashapp/paparazzi/compare/1.3.3...HEAD
+[1.3.3]: https://github.com/cashapp/paparazzi/releases/tag/1.3.3
 [1.3.2]: https://github.com/cashapp/paparazzi/releases/tag/1.3.2
 [1.3.1]: https://github.com/cashapp/paparazzi/releases/tag/1.3.1
 [1.3.0]: https://github.com/cashapp/paparazzi/releases/tag/1.3.0
