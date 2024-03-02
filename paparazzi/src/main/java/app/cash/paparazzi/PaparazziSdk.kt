@@ -15,7 +15,6 @@
  */
 package app.cash.paparazzi
 
-import android.animation.AnimationHandler
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Bitmap
@@ -326,7 +325,6 @@ public class PaparazziSdk @JvmOverloads constructor(
         }
       } finally {
         viewGroup.removeView(modifiedView)
-        AnimationHandler.sAnimatorHandler.set(null)
         if (hasComposeRuntime) {
           forceReleaseComposeReferenceLeaks()
         }
