@@ -761,8 +761,8 @@ class PaparazziPluginTest {
     )
     assertThat(config.projectResourceDirs).containsExactly("src/main/res", "src/debug/res", "build/generated/res/resValues/debug")
     assertThat(config.moduleResourceDirs).containsExactly(
-      "../module1/build/intermediates/packaged_res/debug",
-      "../module2/build/intermediates/packaged_res/debug"
+      "../module1/build/intermediates/packaged_res/debug/packageDebugResources",
+      "../module2/build/intermediates/packaged_res/debug/packageDebugResources"
     )
     assertThat(config.aarExplodedDirs)
       .comparingElementsUsing(MATCHES_PATTERN)
@@ -792,8 +792,8 @@ class PaparazziPluginTest {
     )
     assertThat(config.projectResourceDirs).containsExactly("src/main/res", "src/debug/res", "build/generated/res/resValues/debug")
     assertThat(config.moduleResourceDirs).containsExactly(
-      "../module1/build/intermediates/packaged_res/debug",
-      "../module2/build/intermediates/packaged_res/debug"
+      "../module1/build/intermediates/packaged_res/debug/packageDebugResources",
+      "../module2/build/intermediates/packaged_res/debug/packageDebugResources"
     )
     assertThat(config.aarExplodedDirs)
       .comparingElementsUsing(MATCHES_PATTERN)
@@ -890,7 +890,7 @@ class PaparazziPluginTest {
     val resourcesFile = File(consumerModuleRoot, "build/intermediates/paparazzi/debug/resources.json")
 
     var config = resourcesFile.loadConfig()
-    assertThat(config.moduleResourceDirs).containsExactly("../producer/build/intermediates/packaged_res/debug")
+    assertThat(config.moduleResourceDirs).containsExactly("../producer/build/intermediates/packaged_res/debug/packageDebugResources")
 
     buildDir.deleteRecursively()
 
@@ -912,7 +912,7 @@ class PaparazziPluginTest {
     }
 
     config = resourcesFile.loadConfig()
-    assertThat(config.moduleResourceDirs).containsExactly("../producer/build/intermediates/packaged_res/debug")
+    assertThat(config.moduleResourceDirs).containsExactly("../producer/build/intermediates/packaged_res/debug/packageDebugResources")
   }
 
   @Test
@@ -1056,7 +1056,7 @@ class PaparazziPluginTest {
     assertThat(config.projectAssetDirs).containsExactly(
       "src/main/assets",
       "src/debug/assets",
-      "../producer/build/intermediates/library_assets/debug/out"
+      "../producer/build/intermediates/library_assets/debug/packageDebugAssets/out"
     )
 
     buildDir.deleteRecursively()
@@ -1083,7 +1083,7 @@ class PaparazziPluginTest {
     assertThat(config.projectAssetDirs).containsExactly(
       "src/main/assets",
       "src/debug/assets",
-      "../producer/build/intermediates/library_assets/debug/out"
+      "../producer/build/intermediates/library_assets/debug/packageDebugAssets/out"
     )
   }
 
