@@ -88,6 +88,7 @@ public class Paparazzi @JvmOverloads constructor(
   public fun close() {
     testName = null
     sdk.teardown()
+    snapshotHandler.close()
   }
 
   public fun <V : View> inflate(@LayoutRes layoutId: Int): V = sdk.inflate(layoutId)
