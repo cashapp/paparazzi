@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [1.3.4] - 20204-03-07
+
+### New
+* Split Paparazzi logic into an sdk and test rule
+* Added cleanRecordPaparazzi{Variant} task to tidy orphaned snapshots
+
+### Fixed
+* Close snapshot handler so HtmlReportWriter saves all test data
+
+
 ## [1.3.3] - 2024-03-01
 
 ### New
@@ -357,7 +367,8 @@ As of this release, consumers must build on Java 11 environments.
 
 
 
-[Unreleased]: https://github.com/cashapp/paparazzi/compare/1.3.3...HEAD
+[Unreleased]: https://github.com/cashapp/paparazzi/compare/1.3.4...HEAD
+[1.3.4]: https://github.com/cashapp/paparazzi/releases/tag/1.3.4
 [1.3.3]: https://github.com/cashapp/paparazzi/releases/tag/1.3.3
 [1.3.2]: https://github.com/cashapp/paparazzi/releases/tag/1.3.2
 [1.3.1]: https://github.com/cashapp/paparazzi/releases/tag/1.3.1
