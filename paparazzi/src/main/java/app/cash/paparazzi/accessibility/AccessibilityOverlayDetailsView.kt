@@ -69,14 +69,16 @@ internal class AccessibilityOverlayDetailsView(context: Context) : FrameLayout(c
       canvas.save()
 
       val text = it.contentDescription
+      val textX = badge.right + innerMargin
+      val textY = badge.top
+      val textLayoutWidth = (width - textX).toInt()
+
       val textLayout = StaticLayout.Builder
-        .obtain(text, 0, text.length, textPaint, width)
+        .obtain(text, 0, text.length, textPaint, textLayoutWidth)
         .setEllipsize(TextUtils.TruncateAt.END)
         .build()
       canvas.save()
 
-      val textX = badge.right + innerMargin
-      val textY = badge.top
       canvas.translate(textX, textY)
       textLayout.draw(canvas)
       canvas.restore()

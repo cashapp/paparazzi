@@ -36,7 +36,7 @@ fun CompositeComposable() {
       Text(
         "Option",
         Modifier.weight(1f)
-          .semantics { contentDescription = "Custom content description for Text" }
+          .semantics { contentDescription = "Custom content description for Text. This is a really long description, bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla. " }
       )
       Checkbox(checked = true, onCheckedChange = null)
     }
