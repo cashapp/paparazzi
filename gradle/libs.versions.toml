@@ -32,7 +32,7 @@ composeUi-material = { module = "androidx.compose.material:material", version = 
 composeUi-uiTooling = { module = "androidx.compose.ui:ui-tooling" }
 
 grgit = { module = "org.ajoberstar.grgit:grgit-core", version = "5.2.2" }
-guava = { module = "com.google.guava:guava", version = "33.0.0-jre" }
+guava = { module = "com.google.guava:guava", version = "33.1.0-jre" }
 
 jcodec-core = { module = "org.jcodec:jcodec", version.ref = "jcodec" }
 jcodec-javase = { module = "org.jcodec:jcodec-javase", version.ref = "jcodec" }
