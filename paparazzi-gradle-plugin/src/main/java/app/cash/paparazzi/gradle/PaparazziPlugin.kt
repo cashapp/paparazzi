@@ -27,6 +27,7 @@ import com.android.build.gradle.internal.dsl.BaseAppModuleExtension
 import com.android.build.gradle.internal.dsl.DynamicFeatureExtension
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactType
 import com.android.build.gradle.tasks.GenerateResValues
+import com.android.build.gradle.tasks.MapSourceSetPathsTask
 import org.gradle.api.DefaultTask
 import org.gradle.api.DomainObjectSet
 import org.gradle.api.Plugin
@@ -49,6 +50,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinAndroidPluginWrapper
 import org.jetbrains.kotlin.gradle.plugin.KotlinMultiplatformPluginWrapper
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
+import java.io.File
 import java.util.Locale
 
 @Suppress("unused")
@@ -158,7 +160,8 @@ public class PaparazziPlugin : Plugin<Project> {
         task.projectResourceDirs.set(
           project.provider {
             val generateResValuesDirs = project.tasks.withType(GenerateResValues::class.java).filter { it.variantName == variant.name }.map { it.resOutputDir }
-            localResourceDirs.relativize(projectDirectory) + generateResValuesDirs.map(projectDirectory::relativize)
+            val extraGeneratedResDirs = project.tasks.withType(MapSourceSetPathsTask::class.java).filter { it.variantName == variant.name }.map { it.extraGeneratedResDir.get().map { File(it) } }.flatten()
+            extraGeneratedResDirs.map(projectDirectory::relativize) + localResourceDirs.relativize(projectDirectory) + generateResValuesDirs.map(projectDirectory::relativize)
           }
         )
         task.moduleResourceDirs.set(project.provider { moduleResourceDirs.relativize(projectDirectory) })

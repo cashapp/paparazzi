@@ -798,7 +798,7 @@ class PaparazziPluginTest {
       "app.cash.paparazzi.plugin.test.module1",
       "app.cash.paparazzi.plugin.test.module2"
     )
-    assertThat(config.projectResourceDirs).containsExactly("src/main/res", "src/debug/res", "build/generated/res/resValues/debug")
+    assertThat(config.projectResourceDirs).containsExactly("build/generated/res/extra", "src/main/res", "src/debug/res", "build/generated/res/resValues/debug")
     assertThat(config.moduleResourceDirs).containsExactly(
       "../module1/build/intermediates/packaged_res/debug",
       "../module2/build/intermediates/packaged_res/debug"
@@ -829,7 +829,7 @@ class PaparazziPluginTest {
       "app.cash.paparazzi.plugin.test.module1",
       "app.cash.paparazzi.plugin.test.module2"
     )
-    assertThat(config.projectResourceDirs).containsExactly("src/main/res", "src/debug/res", "build/generated/res/resValues/debug")
+    assertThat(config.projectResourceDirs).containsExactly("build/generated/res/extra", "src/main/res", "src/debug/res", "build/generated/res/resValues/debug")
     assertThat(config.moduleResourceDirs).containsExactly(
       "../module1/build/intermediates/packaged_res/debug",
       "../module2/build/intermediates/packaged_res/debug"
