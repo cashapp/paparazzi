@@ -79,11 +79,13 @@ import com.android.tools.idea.validator.ValidatorData.Level
 import com.android.tools.idea.validator.ValidatorData.Policy
 import com.android.tools.idea.validator.ValidatorData.Type
 import net.bytebuddy.agent.ByteBuddyAgent
+import okio.use
 import java.awt.geom.Ellipse2D
 import java.awt.image.BufferedImage
 import java.util.EnumSet
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.android.asCoroutineDispatcher
+import kotlinx.coroutines.internal.synchronized
 
 @OptIn(ExperimentalComposeUiApi::class, InternalComposeUiApi::class)
 public class PaparazziSdk @JvmOverloads constructor(
@@ -95,7 +97,8 @@ public class PaparazziSdk @JvmOverloads constructor(
   private val renderExtensions: Set<RenderExtension> = setOf(),
   private val supportsRtl: Boolean = false,
   private val showSystemUi: Boolean = false,
-  private val validateAccessibility: Boolean = false
+  private val validateAccessibility: Boolean = false,
+  private val imageSize: ImageSize = ImageSize.Limit(),
 ) {
   private val logger = PaparazziLogger()
   private lateinit var renderSession: RenderSessionImpl
@@ -406,9 +409,14 @@ public class PaparazziSdk @JvmOverloads constructor(
   }
 
   private fun scaleImage(image: BufferedImage): BufferedImage {
-    val scale = ImageUtils.getThumbnailScale(image)
-    // Only scale images down so we don't waste storage space enlarging smaller layouts.
-    return if (scale < 1f) ImageUtils.scale(image, scale, scale) else image
+    return when (imageSize) {
+      ImageSize.FullBleed -> image
+      is ImageSize.Limit -> {
+        val scale = ImageUtils.getThumbnailScale(image)
+        // Only scale images down so we don't waste storage space enlarging smaller layouts.
+        return if (scale < 1f) ImageUtils.scale(image, scale, scale) else image
+      }
+    }
   }
 
   private fun validateLayoutAccessibility(view: View, image: BufferedImage? = null) {
