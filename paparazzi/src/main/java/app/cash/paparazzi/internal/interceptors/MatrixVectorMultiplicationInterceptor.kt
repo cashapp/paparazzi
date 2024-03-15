@@ -1,8 +1,8 @@
 package app.cash.paparazzi.internal.interceptors
 
 // Sampled from https://cs.android.com/android/platform/superproject/+/master:external/robolectric-shadows/shadows/framework/src/main/java/org/robolectric/shadows/ShadowOpenGLMatrix.java;l=69-121
-object MatrixVectorMultiplicationInterceptor {
-  @Suppress("unused")
+internal object MatrixVectorMultiplicationInterceptor {
+  @Suppress("unused", "ktlint:standard:property-naming")
   @JvmStatic
   fun intercept(
     resultVec: FloatArray,

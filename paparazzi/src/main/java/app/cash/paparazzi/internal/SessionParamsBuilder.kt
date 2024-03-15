@@ -17,8 +17,6 @@
 package app.cash.paparazzi.internal
 
 import app.cash.paparazzi.DeviceConfig
-import app.cash.paparazzi.internal.ResourceRepositoryBridge.Legacy
-import app.cash.paparazzi.internal.ResourceRepositoryBridge.New
 import app.cash.paparazzi.internal.parsers.LayoutPullParser
 import app.cash.paparazzi.internal.resources.pseudolocalizeIfNeeded
 import com.android.SdkConstants
@@ -28,6 +26,7 @@ import com.android.ide.common.rendering.api.ResourceReference
 import com.android.ide.common.rendering.api.SessionParams
 import com.android.ide.common.rendering.api.SessionParams.Key
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode
+import com.android.ide.common.resources.ResourceRepository
 import com.android.ide.common.resources.ResourceResolver
 import com.android.ide.common.resources.ResourceValueMap
 import com.android.ide.common.resources.getConfiguredResources
@@ -39,9 +38,9 @@ import com.android.resources.ResourceType
 internal data class SessionParamsBuilder(
   private val layoutlibCallback: PaparazziCallback,
   private val logger: PaparazziLogger,
-  private val frameworkResources: ResourceRepositoryBridge,
+  private val frameworkResources: ResourceRepository,
   private val assetRepository: AssetRepository,
-  private val projectResources: ResourceRepositoryBridge,
+  private val projectResources: ResourceRepository,
   private val deviceConfig: DeviceConfig = DeviceConfig.NEXUS_5,
   private val renderingMode: RenderingMode = RenderingMode.NORMAL,
   private val targetSdk: Int = 22,
@@ -81,32 +80,15 @@ internal data class SessionParamsBuilder(
     val folderConfiguration = deviceConfig.folderConfiguration
     val resourceResolver = ResourceResolver.create(
       mapOf<ResourceNamespace, Map<ResourceType, ResourceValueMap>>(
-        when (frameworkResources) {
-          is Legacy ->
-            ResourceNamespace.ANDROID to
-              frameworkResources.repository.getConfiguredResources(folderConfiguration)
-
-          is New ->
-            ResourceNamespace.ANDROID to
-              frameworkResources.repository.getConfiguredResources(folderConfiguration)
-                .pseudolocalizeIfNeeded(folderConfiguration.localeQualifier)
-                .row(ResourceNamespace.ANDROID)
-        },
-        *when (projectResources) {
-          is Legacy -> {
-            arrayOf(
-              ResourceNamespace.TODO() to
-                projectResources.repository.getConfiguredResources(folderConfiguration)
-            )
-          }
-
-          is New ->
-            projectResources.repository.getConfiguredResources(folderConfiguration)
-              .pseudolocalizeIfNeeded(folderConfiguration.localeQualifier)
-              .rowMap()
-              .map { (key, value) -> key to value }
-              .toTypedArray()
-        }
+        ResourceNamespace.ANDROID to
+          frameworkResources.getConfiguredResources(folderConfiguration)
+            .pseudolocalizeIfNeeded(folderConfiguration.localeQualifier)
+            .row(ResourceNamespace.ANDROID),
+        *projectResources.getConfiguredResources(folderConfiguration)
+          .pseudolocalizeIfNeeded(folderConfiguration.localeQualifier)
+          .rowMap()
+          .map { (key, value) -> key to value }
+          .toTypedArray()
       ),
       ResourceReference(
         ResourceNamespace.fromBoolean(!isProjectTheme),

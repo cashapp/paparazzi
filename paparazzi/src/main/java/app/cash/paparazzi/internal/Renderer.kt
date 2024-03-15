@@ -20,10 +20,6 @@ import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Environment
 import app.cash.paparazzi.Flags
 import app.cash.paparazzi.Paparazzi
-import app.cash.paparazzi.deprecated.com.android.ide.common.resources.deprecated.FrameworkResources
-import app.cash.paparazzi.deprecated.com.android.ide.common.resources.deprecated.ResourceItem
-import app.cash.paparazzi.deprecated.com.android.ide.common.resources.deprecated.ResourceRepository
-import app.cash.paparazzi.deprecated.com.android.io.FolderWrapper
 import app.cash.paparazzi.getFieldReflectively
 import app.cash.paparazzi.internal.resources.AarSourceResourceRepository
 import app.cash.paparazzi.internal.resources.AppResourceRepository
@@ -51,59 +47,30 @@ internal class Renderer(
   fun prepare(): SessionParamsBuilder {
     val platformDataResDir = File("${environment.platformDir}/data/res")
 
-    val useLegacyResourceLoading = System.getProperty(Flags.LEGACY_RESOURCE_LOADING).toBoolean()
-    val (frameworkResources, projectResources) =
-      if (useLegacyResourceLoading) {
-        ResourceRepositoryBridge.Legacy(
-          FrameworkResources(FolderWrapper(platformDataResDir))
-            .apply {
-              loadResources()
-              loadPublicResources(logger)
-            }
-        ) to
-          ResourceRepositoryBridge.Legacy(
-            object : ResourceRepository(FolderWrapper(environment.resDir), false) {
-              override fun createResourceItem(name: String): ResourceItem {
-                return ResourceItem(name)
-              }
-            }.apply { loadResources() }
-          )
-      } else {
-        ResourceRepositoryBridge.New(
-          FrameworkResourceRepository.create(
-            resourceDirectoryOrFile = platformDataResDir.toPath(),
-            languagesToLoad = emptySet(),
-            useCompiled9Patches = false
-          )
-        ) to
-          ResourceRepositoryBridge.New(
-            AppResourceRepository.create(
-              localResourceDirectories = environment.localResourceDirs.map { File(it) },
-              moduleResourceDirectories = environment.moduleResourceDirs.map { File(it) },
-              libraryRepositories = environment.libraryResourceDirs.map { dir ->
-                val resourceDirPath = Paths.get(dir)
-                AarSourceResourceRepository.create(
-                  resourceDirectoryOrFile = resourceDirPath,
-                  libraryName = resourceDirPath.parent.fileName.name // segment before /res
-                )
-              }
-            )
-          )
+    val frameworkResources = FrameworkResourceRepository.create(
+      resourceDirectoryOrFile = platformDataResDir.toPath(),
+      languagesToLoad = emptySet(),
+      useCompiled9Patches = false
+    )
+    val projectResources = AppResourceRepository.create(
+      localResourceDirectories = environment.localResourceDirs.map { File(it) },
+      moduleResourceDirectories = environment.moduleResourceDirs.map { File(it) },
+      libraryRepositories = environment.libraryResourceDirs.map { dir ->
+        val resourceDirPath = Paths.get(dir)
+        AarSourceResourceRepository.create(
+          resourceDirectoryOrFile = resourceDirPath,
+          libraryName = resourceDirPath.parent.fileName.name // segment before /res
+        )
       }
+    )
 
-    val useLegacyAssetLoading = System.getProperty(Flags.LEGACY_ASSET_LOADING).toBoolean()
     sessionParamsBuilder = SessionParamsBuilder(
       layoutlibCallback = layoutlibCallback,
       logger = logger,
       frameworkResources = frameworkResources,
       projectResources = projectResources,
       assetRepository = PaparazziAssetRepository(
-        assetPath = environment.assetsDir,
-        assetDirs = if (useLegacyAssetLoading) {
-          emptyList()
-        } else {
-          environment.allModuleAssetDirs + environment.libraryAssetDirs
-        }
+        assetDirs = environment.allModuleAssetDirs + environment.libraryAssetDirs
       )
     )
       .plusFlag(RenderParamsFlags.FLAG_DO_NOT_RENDER_ON_CREATE, true)

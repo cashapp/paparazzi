@@ -1,0 +1,11 @@
+public final class app/cash/paparazzi/preview/processor/PreviewProcessor : com/google/devtools/ksp/processing/SymbolProcessor {
+	public fun <init> (Lcom/google/devtools/ksp/processing/SymbolProcessorEnvironment;)V
+	public fun process (Lcom/google/devtools/ksp/processing/Resolver;)Ljava/util/List;
+}
+
+public final class app/cash/paparazzi/preview/processor/PreviewProcessorProvider : com/google/devtools/ksp/processing/SymbolProcessorProvider {
+	public fun <init> ()V
+	public fun create (Lcom/google/devtools/ksp/processing/SymbolProcessorEnvironment;)Lapp/cash/paparazzi/preview/processor/PreviewProcessor;
+	public synthetic fun create (Lcom/google/devtools/ksp/processing/SymbolProcessorEnvironment;)Lcom/google/devtools/ksp/processing/SymbolProcessor;
+}
+

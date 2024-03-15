@@ -28,7 +28,7 @@ import com.google.common.base.MoreObjects
  *
  * Resource item representing a density-specific file resource inside an AAR, e.g. a drawable or a layout.
  */
-class BasicDensityBasedFileResourceItem(
+internal class BasicDensityBasedFileResourceItem(
   type: ResourceType,
   name: String,
   configuration: RepositoryConfiguration,

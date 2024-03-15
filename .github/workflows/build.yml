@@ -37,20 +37,20 @@ jobs:
           java-version: ${{ matrix.java-version }}
 
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v3
 
       - name: Run All Tests
         run: ./gradlew check
 
       - name: Upload Test Failures
         if: failure()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: test-failures
+          name: test-failures-${{ matrix.os }}-${{ matrix.java-version }}
           path: |
             **/build/reports/tests/*/
             **/build/paparazzi/failures/
-            paparazzi/paparazzi-gradle-plugin/src/test/projects/**/build/reports/paparazzi/**/images/
+            paparazzi-gradle-plugin/src/test/projects/**/build/reports/paparazzi/**/images/
 
   publish:
     runs-on: ubuntu-latest

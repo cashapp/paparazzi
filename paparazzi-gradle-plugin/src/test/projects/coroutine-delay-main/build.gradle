@@ -27,4 +27,8 @@ android {
 
 dependencies {
   implementation libs.composeUi.material
+
+  testImplementation libs.kotlinx.coroutines.test
 }
+
+apply from: '../guava-fix.gradle'

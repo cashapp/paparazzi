@@ -2,6 +2,99 @@
 
 ## [Unreleased]
 
+## [1.3.3] - 2024-03-01
+
+### New
+* Migrate Paparazzi to layoutlib Hedgehog 2023.1.1
+* Compose 1.5.8
+* Kotlin 1.9.22
+* [Gradle Plugin] Gradle 8.6
+* [Gradle Plugin] Android Gradle Plugin 8.2.1
+
+### Fixed
+* Update the DeviceConfig screenWidth internally for accessibility tests
+* Fix variant caching issues in new resource/asset loading mechanisms
+* Remove legacy resources/assets loading mechanism
+* Set HardwareConfig width and height based on orientation
+* Apply round screen qualifier to device config
+* Restrict Paparazzi's public API
+* Remove obsolete NEXUS_5_LAND DeviceConfig
+* Fix formatting so that all digits show upon failure
+* Stop resolving dependencies at configuration time
+* Use our own internal HandlerDispatcher for Compose Ui tests
+* Include generated string resources
+* Reset logger to prevent swallowing exceptions
+
+Kudos to @gamepro65, @kevinzheng-ap, @BrianGardnerAtl, @adamalyyan, and others for contributions this release!
+
+## [1.3.2] - 2024-01-13
+
+### NOTE: Due to a known issue with [how Guava now publishes its artifact](https://github.com/google/guava/issues/6567), you will need to apply the following snippet workaround to your root build.gradle:
+```
+subprojects {
+  plugins.withId("app.cash.paparazzi") {
+    // Defer until afterEvaluate so that testImplementation is created by Android plugin.
+    afterEvaluate {
+      dependencies.constraints {
+        add("testImplementation", "com.google.guava:guava") {
+          attributes {
+            attribute(
+              TargetJvmEnvironment.TARGET_JVM_ENVIRONMENT_ATTRIBUTE,
+              objects.named(TargetJvmEnvironment, TargetJvmEnvironment.STANDARD_JVM)
+            )
+          }
+          because("LayoutLib and sdk-common depend on Guava's -jre published variant." +
+            "See https://github.com/cashapp/paparazzi/issues/906.")
+        }
+      }
+    }
+  }
+}
+```
+See also: https://github.com/google/guava/issues/6801.
+
+### New
+* Support for pseudolocalization tests!  To get started:
+```agsl
+@RunWith(TestParameterInjector::class)
+class PseudolocalizationTest(
+  @TestParameter locale: Locale
+) {
+  @get:Rule val paparazzi = Paparazzi(
+    deviceConfig = DeviceConfig.PIXEL_5.copy(locale = locale.tag)
+  )
+
+  @Test fun test() {
+    paparazzi.snapshot { SomeComposable() }
+  }
+
+  enum class Locale(val tag: String?) {
+    Default(null),
+    Accent("en-rXA"),
+    Bidi("ar-rXB")
+  }
+}
+```
+
+* Migrate Paparazzi to layoutlib Giraffe 2022.3.1
+* Compose 1.5.0
+* Kotlin 1.9.0
+* [Gradle Plugin] Gradle 8.5
+* [Gradle Plugin] Android Gradle Plugin 8.1.1
+
+### Fixed
+* Fix relativePath bug in port of ResourceFile
+* Resolve report dir from ReportingExtension instead of hardcoding
+* Make report folder variant-aware
+* Remove reliance on kotlinx.coroutines.main.delay
+* Use a class file locator that queries the system class loader
+* Filter out unrecognized java-symbol tag warning
+* Skip synthetic fields in R classes
+* Update task inputs for resources and assets to account for file renames and moves
+* Update delta images to support showing diff when width and height differ
+
+Kudos to @kevinzheng-ap, @TWiStErRob, @gamepro65, @adamalyyan, @larryng, and others for contributions this release!
+
 ## [1.3.1] - 2023-07-18
 
 ### New
@@ -264,7 +357,9 @@ As of this release, consumers must build on Java 11 environments.
 
 
 
-[Unreleased]: https://github.com/cashapp/paparazzi/compare/1.3.1...HEAD
+[Unreleased]: https://github.com/cashapp/paparazzi/compare/1.3.3...HEAD
+[1.3.3]: https://github.com/cashapp/paparazzi/releases/tag/1.3.3
+[1.3.2]: https://github.com/cashapp/paparazzi/releases/tag/1.3.2
 [1.3.1]: https://github.com/cashapp/paparazzi/releases/tag/1.3.1
 [1.3.0]: https://github.com/cashapp/paparazzi/releases/tag/1.3.0
 [1.2.0]: https://github.com/cashapp/paparazzi/releases/tag/1.2.0

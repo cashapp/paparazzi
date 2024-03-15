@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.plugin.AbstractKotlinPluginKt
 apply plugin: 'org.jetbrains.kotlin.jvm'
 apply plugin: 'org.jetbrains.dokka'
 apply plugin: 'com.vanniktech.maven.publish'
-apply plugin: 'com.google.devtools.ksp'
+apply plugin: 'dev.drewhamilton.poko'
 
 java {
   sourceCompatibility = libs.versions.javaTarget.get()
@@ -55,10 +55,9 @@ dependencies {
   api platform(libs.kotlin.bom)
   implementation libs.moshi.core
   implementation libs.moshi.adapters
+  implementation libs.moshi.kotlinReflect
   implementation libs.jcodec.core
   implementation libs.jcodec.javase
-
-  ksp libs.moshi.kotlinCodegen
 
   def osName = System.getProperty("os.name").toLowerCase(Locale.US)
   if (osName.startsWith("mac")) {
@@ -96,24 +95,24 @@ tasks.named("dokkaGfm").configure {
 }
 
 def generateTestConfig = tasks.register("generateTestConfig") {
-  def resources = "$buildDir/intermediates/paparazzi/resources.txt"
+  def resources = layout.buildDirectory.file('intermediates/paparazzi/resources.json')
   outputs.file(resources)
 
   doLast {
-    File configFile = new File(resources)
-    configFile.withWriter('utf-8') { writer ->
-      writer.writeLine("app.cash.paparazzi")
-      writer.writeLine(".")
-      writer.writeLine("31")
-      writer.writeLine("platforms/android-31/")
-      writer.writeLine(".")
-      writer.writeLine("app.cash.paparazzi")
-      writer.writeLine("")
-      writer.writeLine("")
-      writer.writeLine("")
-      writer.writeLine("")
-      writer.writeLine("")
-    }
+    File configFile = resources.get().asFile
+    configFile.write("""{
+      "mainPackage": "app.cash.paparazzi",
+      "mergeResourcesOutputDir": ".",
+      "targetSdkVersion": "31",
+      "platformDir": "platforms/android-31/",
+      "mergeAssetsOutputDir": ".",
+      "resourcePackageNames": ["app.cash.paparazzi"],
+      "projectResourceDirs": [],
+      "moduleResourceDirs": [],
+      "aarExplodedDirs": [],
+      "projectAssetDirs": [],
+      "aarAssetDirs": []
+    }""")
   }
 }
 

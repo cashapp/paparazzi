@@ -25,3 +25,5 @@ android {
 dependencies {
   implementation libs.androidx.recyclerview
 }
+
+apply from: '../guava-fix.gradle'

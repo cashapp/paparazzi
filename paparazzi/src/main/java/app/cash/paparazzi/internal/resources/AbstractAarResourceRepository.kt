@@ -33,7 +33,7 @@ import java.util.EnumMap
 /**
  * Ported from: [AbstractAarResourceRepository.java](https://cs.android.com/android-studio/platform/tools/base/+/47d204001bf0cb6273d8b135c7eece3a982cf0e0:resource-repository/main/java/com/android/resources/aar/AbstractAarResourceRepository.java)
  */
-abstract class AbstractAarResourceRepository internal constructor(
+internal abstract class AbstractAarResourceRepository internal constructor(
   private val namespace: ResourceNamespace,
   override val libraryName: String?
 ) : AbstractResourceRepository(), LoadableResourceRepository {

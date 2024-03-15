@@ -15,18 +15,26 @@
  */
 package app.cash.paparazzi
 
-import com.squareup.moshi.JsonClass
+import dev.drewhamilton.poko.Poko
 import java.util.Date
 import java.util.Locale
 
-@JsonClass(generateAdapter = true)
-data class Snapshot(
-  val name: String?,
-  val testName: TestName,
-  val timestamp: Date,
-  val tags: List<String> = listOf(),
-  val file: String? = null
-)
+@Poko
+public class Snapshot(
+  public val name: String?,
+  public val testName: TestName,
+  public val timestamp: Date,
+  public val tags: List<String> = listOf(),
+  public val file: String? = null
+) {
+  public fun copy(
+    name: String? = this.name,
+    testName: TestName = this.testName,
+    timestamp: Date = this.timestamp,
+    tags: List<String> = this.tags,
+    file: String? = this.file
+  ): Snapshot = Snapshot(name, testName, timestamp, tags, file)
+}
 
 internal fun Snapshot.toFileName(
   delimiter: String = "_",

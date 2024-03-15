@@ -26,7 +26,7 @@ import java.io.IOException
  * [relativePath] path of the file relative to the resource directory, or null if the source file of the resource is not available
  * [configuration] configuration the resource file is associated with
  */
-data class ResourceSourceFileImpl(
+internal data class ResourceSourceFileImpl(
   override val relativePath: String?,
   override val configuration: RepositoryConfiguration
 ) : ResourceSourceFile {

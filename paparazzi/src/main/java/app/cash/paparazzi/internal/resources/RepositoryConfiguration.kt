@@ -24,7 +24,7 @@ import com.android.utils.HashCodes
  * and [FolderConfiguration]. This indirection saves memory because the number of [RepositoryConfiguration]
  * instances is a tiny fraction of the number of [BasicResourceItem] instances.
  */
-class RepositoryConfiguration(
+internal class RepositoryConfiguration(
   repository: LoadableResourceRepository,
   val folderConfiguration: FolderConfiguration
 ) {

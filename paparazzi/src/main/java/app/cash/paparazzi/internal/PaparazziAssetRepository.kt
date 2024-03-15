@@ -24,7 +24,6 @@ import java.io.IOException
 import java.io.InputStream
 
 internal class PaparazziAssetRepository(
-  private val assetPath: String,
   private val assetDirs: List<String> = emptyList()
 ) : AssetRepository() {
   @Throws(FileNotFoundException::class)
@@ -43,17 +42,13 @@ internal class PaparazziAssetRepository(
     path: String,
     mode: Int
   ): InputStream? {
-    if (assetDirs.isEmpty()) {
-      return open("$assetPath/$path")
-    } else {
-      for (assetDir in assetDirs) {
-        val assetFile = open("$assetDir/$path")
-        if (assetFile != null) {
-          return assetFile
-        }
+    for (assetDir in assetDirs) {
+      val assetFile = open("$assetDir/$path")
+      if (assetFile != null) {
+        return assetFile
       }
-      return null
     }
+    return null
   }
 
   @Throws(IOException::class)

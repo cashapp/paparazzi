@@ -39,7 +39,7 @@ import java.io.IOException
  *
  * A merger of [BasicResourceItemBase] and [BasicResourceItem] from AOSP, to simplify.
  */
-abstract class BasicResourceItem(
+internal abstract class BasicResourceItem(
   private val type: ResourceType,
   private val name: String,
   visibility: ResourceVisibility

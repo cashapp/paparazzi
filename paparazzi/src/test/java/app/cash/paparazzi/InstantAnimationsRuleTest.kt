@@ -27,10 +27,13 @@ import org.junit.Test
 
 class InstantAnimationsRuleTest {
   @get:Rule
-  val paparazzi = Paparazzi()
+  val testRule = PaparazziTestRule()
 
   @get:Rule
   val instantAnimationsRule = InstantAnimationsRule()
+
+  val paparazzi
+    get() = testRule.paparazzi
 
   /**
    * Confirm that animations and their event listeners are all executed immediately, even though

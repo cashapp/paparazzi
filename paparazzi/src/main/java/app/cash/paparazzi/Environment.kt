@@ -15,6 +15,11 @@
  */
 package app.cash.paparazzi
 
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import dev.drewhamilton.poko.Poko
+import okio.buffer
+import okio.source
 import java.io.File
 import java.io.FileNotFoundException
 import java.nio.file.Path
@@ -22,19 +27,18 @@ import java.nio.file.Paths
 import java.util.Locale
 import kotlin.io.path.exists
 
-data class Environment(
-  val platformDir: String,
-  val appTestDir: String,
-  val resDir: String,
-  val assetsDir: String,
-  val packageName: String,
-  val compileSdkVersion: Int,
-  val resourcePackageNames: List<String>,
-  val localResourceDirs: List<String>,
-  val moduleResourceDirs: List<String>,
-  val libraryResourceDirs: List<String>,
-  val allModuleAssetDirs: List<String>,
-  val libraryAssetDirs: List<String>
+@Poko
+public class Environment(
+  public val platformDir: String,
+  public val appTestDir: String,
+  public val packageName: String,
+  public val compileSdkVersion: Int,
+  public val resourcePackageNames: List<String>,
+  public val localResourceDirs: List<String>,
+  public val moduleResourceDirs: List<String>,
+  public val libraryResourceDirs: List<String>,
+  public val allModuleAssetDirs: List<String>,
+  public val libraryAssetDirs: List<String>
 ) {
   init {
     val platformDirPath = Path.of(platformDir)
@@ -45,41 +49,76 @@ data class Environment(
       throw FileNotFoundException("Missing platform version $platformVersion. Install with sdkmanager --install \"platforms;$platform\"")
     }
   }
+
+  public fun copy(
+    platformDir: String = this.platformDir,
+    appTestDir: String = this.appTestDir,
+    packageName: String = this.packageName,
+    compileSdkVersion: Int = this.compileSdkVersion,
+    resourcePackageNames: List<String> = this.resourcePackageNames,
+    localResourceDirs: List<String> = this.localResourceDirs,
+    moduleResourceDirs: List<String> = this.moduleResourceDirs,
+    libraryResourceDirs: List<String> = this.libraryResourceDirs,
+    allModuleAssetDirs: List<String> = this.allModuleAssetDirs,
+    libraryAssetDirs: List<String> = this.libraryAssetDirs
+  ): Environment =
+    Environment(
+      platformDir,
+      appTestDir,
+      packageName,
+      compileSdkVersion,
+      resourcePackageNames,
+      localResourceDirs,
+      moduleResourceDirs,
+      libraryResourceDirs,
+      allModuleAssetDirs,
+      libraryAssetDirs
+    )
 }
 
 @Suppress("unused")
-fun androidHome() = System.getenv("ANDROID_SDK_ROOT")
+public fun androidHome(): String = System.getenv("ANDROID_SDK_ROOT")
   ?: System.getenv("ANDROID_HOME")
   ?: androidSdkPath()
 
-fun detectEnvironment(): Environment {
+public fun detectEnvironment(): Environment {
   checkInstalledJvm()
-
-  val resourcesFile = File(System.getProperty("paparazzi.test.resources"))
-  val configLines = resourcesFile.readLines()
 
   val projectDir = Paths.get(System.getProperty("paparazzi.project.dir"))
   val appTestDir = Paths.get(System.getProperty("paparazzi.build.dir"))
   val artifactsCacheDir = Paths.get(System.getProperty("paparazzi.artifacts.cache.dir"))
   val androidHome = Paths.get(androidHome())
+
+  val resourcesFile = File(System.getProperty("paparazzi.test.resources"))
+  val moshi = Moshi.Builder().addLast(KotlinJsonAdapterFactory()).build()!!
+  val config =
+    resourcesFile.source().buffer().use { moshi.adapter(Config::class.java).fromJson(it)!! }
+
   return Environment(
-    platformDir = androidHome.resolve(configLines[3]).toString(),
+    platformDir = androidHome.resolve(config.platformDir).toString(),
     appTestDir = appTestDir.toString(),
-    resDir = appTestDir.resolve(configLines[1]).toString(),
-    assetsDir = appTestDir.resolve(configLines[4]).toString(),
-    packageName = configLines[0],
-    compileSdkVersion = configLines[2].toInt(),
-    resourcePackageNames = configLines[5].split(),
-    localResourceDirs = configLines[6].split().map { projectDir.resolve(it).toString() },
-    moduleResourceDirs = configLines[7].split().map { projectDir.resolve(it).toString() },
-    libraryResourceDirs = configLines[8].split().map { artifactsCacheDir.resolve(it).toString() },
-    allModuleAssetDirs = configLines[9].split().map { projectDir.resolve(it).toString() },
-    libraryAssetDirs = configLines[10].split().map { artifactsCacheDir.resolve(it).toString() }
+    packageName = config.mainPackage,
+    compileSdkVersion = config.targetSdkVersion.toInt(),
+    resourcePackageNames = config.resourcePackageNames,
+    localResourceDirs = config.projectResourceDirs.map { projectDir.resolve(it).toString() },
+    moduleResourceDirs = config.moduleResourceDirs.map { projectDir.resolve(it).toString() },
+    libraryResourceDirs = config.aarExplodedDirs.map { artifactsCacheDir.resolve(it).toString() },
+    allModuleAssetDirs = config.projectAssetDirs.map { projectDir.resolve(it).toString() },
+    libraryAssetDirs = config.aarAssetDirs.map { artifactsCacheDir.resolve(it).toString() }
   )
 }
 
-private fun String.split(): List<String> =
-  this.split(",").filter { it.isNotEmpty() }
+internal data class Config(
+  val mainPackage: String,
+  val targetSdkVersion: String,
+  val platformDir: String,
+  val resourcePackageNames: List<String>,
+  val projectResourceDirs: List<String>,
+  val moduleResourceDirs: List<String>,
+  val aarExplodedDirs: List<String>,
+  val projectAssetDirs: List<String>,
+  val aarAssetDirs: List<String>
+)
 
 private fun androidSdkPath(): String {
   val osName = System.getProperty("os.name").lowercase(Locale.US)

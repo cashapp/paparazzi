@@ -11,7 +11,7 @@ import com.google.common.collect.ListMultimap
  * Repository for Android application resources, e.g. those that show up in {@code R},
  * not {@code android.R} (which are referred to as framework resources.).
  */
-abstract class LocalResourceRepository protected constructor(
+internal abstract class LocalResourceRepository protected constructor(
   val displayName: String
 ) : AbstractResourceRepository() {
   protected abstract fun getMap(

@@ -9,6 +9,7 @@ android {
   compileSdk libs.versions.compileSdk.get() as int
   defaultConfig {
     minSdk libs.versions.minSdk.get() as int
+    resValue("string", "generated_string_name", "Generated Test String")
   }
   compileOptions {
     sourceCompatibility = libs.versions.javaTarget.get()
@@ -34,3 +35,5 @@ dependencies {
 tasks.withType(com.diffplug.gradle.spotless.SpotlessTask).configureEach {
   dependsOn(tasks.withType(Test))
 }
+
+apply from: 'guava-fix.gradle'

@@ -114,33 +114,48 @@ internal object ImageUtils {
     }
     assertEquals(TYPE_INT_ARGB.toLong(), goldenImage.type.toLong())
 
-    val imageWidth = Math.min(goldenImage.width, image.width)
-    val imageHeight = Math.min(goldenImage.height, image.height)
+    val goldenImageWidth = goldenImage.width
+    val goldenImageHeight = goldenImage.height
+
+    val imageWidth = image.width
+    val imageHeight = image.height
+
+    val deltaWidth = Math.max(goldenImageWidth, imageWidth)
+    val deltaHeight = Math.max(goldenImageHeight, imageHeight)
 
     // Blur the images to account for the scenarios where there are pixel
     // differences
     // in where a sharp edge occurs
     // goldenImage = blur(goldenImage, 6);
     // image = blur(image, 6);
-
-    val width = 3 * imageWidth
-    val deltaImage = BufferedImage(width, imageHeight, TYPE_INT_ARGB)
+    val width = goldenImageWidth + deltaWidth + imageWidth
+    val deltaImage = BufferedImage(width, deltaHeight, TYPE_INT_ARGB)
     val g = deltaImage.graphics
 
     // Compute delta map
     var delta: Long = 0
-    for (y in 0 until imageHeight) {
-      for (x in 0 until imageWidth) {
-        val goldenRgb = goldenImage.getRGB(x, y)
-        val rgb = image.getRGB(x, y)
+    for (y in 0 until deltaHeight) {
+      for (x in 0 until deltaWidth) {
+        val goldenRgb = if (x >= goldenImageWidth || y >= goldenImageHeight) {
+          0x00808080
+        } else {
+          goldenImage.getRGB(x, y)
+        }
+
+        val rgb = if (x >= imageWidth || y >= imageHeight) {
+          0x00808080
+        } else {
+          image.getRGB(x, y)
+        }
+
         if (goldenRgb == rgb) {
-          deltaImage.setRGB(imageWidth + x, y, 0x00808080)
+          deltaImage.setRGB(goldenImageWidth + x, y, 0x00808080)
           continue
         }
 
         // If the pixels have no opacity, don't delta colors at all
         if (goldenRgb and -0x1000000 == 0 && rgb and -0x1000000 == 0) {
-          deltaImage.setRGB(imageWidth + x, y, 0x00808080)
+          deltaImage.setRGB(goldenImageWidth + x, y, 0x00808080)
           continue
         }
 
@@ -155,7 +170,7 @@ internal object ImageUtils {
           ((goldenRgb and -0x1000000).ushr(24) + (rgb and -0x1000000).ushr(24)) / 2 shl 24
 
         val newRGB = avgAlpha or (newR shl 16) or (newG shl 8) or newB
-        deltaImage.setRGB(imageWidth + x, y, newRGB)
+        deltaImage.setRGB(goldenImageWidth + x, y, newRGB)
 
         delta += Math.abs(deltaR)
           .toLong()
@@ -167,34 +182,34 @@ internal object ImageUtils {
     }
 
     // 3 different colors, 256 color levels
-    val total = imageHeight.toLong() * imageWidth.toLong() * 3L * 256L
+    val total = deltaHeight.toLong() * deltaWidth.toLong() * 3L * 256L
     val percentDifference = (delta * 100 / total.toDouble()).toFloat()
 
     var error: String? = null
     val imageName = getName(relativePath)
     if (percentDifference > maxPercentDifferent) {
-      error = String.format("Images differ (by %.1f%%)", percentDifference)
-    } else if (Math.abs(goldenImage.width - image.width) >= 2) {
+      error = String.format("Images differ (by %f%%)", percentDifference)
+    } else if (Math.abs(goldenImageWidth - imageWidth) >= 2) {
       error = "Widths differ too much for " + imageName + ": " +
-        goldenImage.width + "x" + goldenImage.height +
-        "vs" + image.width + "x" + image.height
-    } else if (Math.abs(goldenImage.height - image.height) >= 2) {
+        goldenImageWidth + "x" + goldenImageHeight +
+        "vs" + imageWidth + "x" + imageHeight
+    } else if (Math.abs(goldenImageHeight - imageHeight) >= 2) {
       error = "Heights differ too much for " + imageName + ": " +
-        goldenImage.width + "x" + goldenImage.height +
-        "vs" + image.width + "x" + image.height
+        goldenImageWidth + "x" + goldenImageHeight +
+        "vs" + imageWidth + "x" + imageHeight
     }
 
     if (error != null) {
       // Expected on the left
       // Golden on the right
       g.drawImage(goldenImage, 0, 0, null)
-      g.drawImage(image, 2 * imageWidth, 0, null)
+      g.drawImage(image, goldenImageWidth + deltaWidth, 0, null)
 
       // Labels
-      if (imageWidth > 80) {
+      if (deltaWidth > 80) {
         g.color = Color.RED
         g.drawString("Expected", 10, 20)
-        g.drawString("Actual", 2 * imageWidth + 10, 20)
+        g.drawString("Actual", goldenImageWidth + deltaWidth + 10, 20)
       }
 
       val output = File(failureDir, "delta-$imageName")

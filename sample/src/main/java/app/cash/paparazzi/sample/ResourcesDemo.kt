@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import app.cash.paparazzi.sample.ResourcesDemoView.Companion.plurals
 
-const val imageSize = 120f
+const val IMAGE_SIZE = 120f
 
 @Preview
 @Composable
@@ -37,7 +37,7 @@ fun ResourcesDemo() {
     Image(
       modifier = Modifier
         .align(alignment = Alignment.CenterHorizontally)
-        .size(imageSize.dp),
+        .size(IMAGE_SIZE.dp),
       contentScale = ContentScale.FillBounds,
       painter = painterResource(id = R.drawable.camera),
       contentDescription = "camera"
@@ -45,7 +45,7 @@ fun ResourcesDemo() {
     Image(
       modifier = Modifier
         .align(alignment = Alignment.CenterHorizontally)
-        .size(imageSize.dp),
+        .size(IMAGE_SIZE.dp),
       contentScale = ContentScale.FillBounds,
       painter = painterResource(id = R.drawable.ic_android_black_24dp),
       contentDescription = "android"
@@ -109,13 +109,23 @@ fun ResourcesDemo() {
     AndroidView(
       factory = { context -> TextView(context) },
       update = {
-        it.text =
-          Html.fromHtml(resources.getString(R.string.string_name_html), Html.FROM_HTML_MODE_LEGACY)
+        it.text = Html.fromHtml(resources.getString(R.string.string_name_html_escaped), Html.FROM_HTML_MODE_LEGACY)
+        it.setTextColor(android.graphics.Color.BLACK)
+      }
+    )
+    AndroidView(
+      factory = { context -> TextView(context) },
+      update = {
+        it.text = resources.getText(R.string.string_name_html_unescaped)
         it.setTextColor(android.graphics.Color.BLACK)
       }
     )
     Text(
       resources.getStringArray(R.array.string_array_name).joinToString(),
+      color = Color.Black
+    )
+    Text(
+      resources.getString(R.string.generated_string_name),
       color = Color.Black
     )
   }

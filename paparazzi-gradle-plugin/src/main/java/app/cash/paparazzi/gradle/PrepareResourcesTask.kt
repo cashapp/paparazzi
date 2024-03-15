@@ -15,10 +15,13 @@
  */
 package app.cash.paparazzi.gradle
 
-import app.cash.paparazzi.gradle.utils.joinFiles
+import app.cash.paparazzi.gradle.utils.relativize
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
@@ -29,62 +32,49 @@ import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 
 @CacheableTask
-abstract class PrepareResourcesTask : DefaultTask() {
+public abstract class PrepareResourcesTask : DefaultTask() {
   @get:Input
-  abstract val packageName: Property<String>
-
-  @Deprecated("legacy resource loading, to be removed in a future release")
-  @get:Input
-  abstract val mergeResourcesOutputDir: Property<String>
+  public abstract val packageName: Property<String>
 
   @get:Input
-  abstract val targetSdkVersion: Property<String>
+  public abstract val targetSdkVersion: Property<String>
 
   @get:Input
-  abstract val compileSdkVersion: Property<String>
+  public abstract val compileSdkVersion: Property<String>
+
+  @get:Input
+  public abstract val projectResourceDirs: ListProperty<String>
+
+  @get:Input
+  public abstract val moduleResourceDirs: ListProperty<String>
+
+  @get:InputFiles
+  @get:PathSensitive(PathSensitivity.RELATIVE)
+  public abstract val aarExplodedDirs: ConfigurableFileCollection
+
+  @get:Input
+  public abstract val projectAssetDirs: ListProperty<String>
+
+  @get:InputFiles
+  @get:PathSensitive(PathSensitivity.RELATIVE)
+  public abstract val aarAssetDirs: ConfigurableFileCollection
+
+  @get:Input
+  public abstract val nonTransitiveRClassEnabled: Property<Boolean>
 
   @get:InputFiles
   @get:PathSensitive(PathSensitivity.NONE)
-  abstract val projectResourceDirs: ConfigurableFileCollection
-
-  @get:InputFiles
-  @get:PathSensitive(PathSensitivity.NONE)
-  abstract val moduleResourceDirs: ConfigurableFileCollection
-
-  @get:InputFiles
-  @get:PathSensitive(PathSensitivity.NONE)
-  abstract val aarExplodedDirs: ConfigurableFileCollection
-
-  @get:InputFiles
-  @get:PathSensitive(PathSensitivity.NONE)
-  abstract val projectAssetDirs: ConfigurableFileCollection
-
-  @get:InputFiles
-  @get:PathSensitive(PathSensitivity.NONE)
-  abstract val aarAssetDirs: ConfigurableFileCollection
-
-  @Deprecated("legacy asset loading, to be removed in a future release")
-  @get:Input
-  abstract val mergeAssetsOutputDir: Property<String>
-
-  @get:Input
-  abstract val nonTransitiveRClassEnabled: Property<Boolean>
-
-  @get:InputFiles
-  @get:PathSensitive(PathSensitivity.NONE)
-  abstract val artifactFiles: ConfigurableFileCollection
+  public abstract val artifactFiles: ConfigurableFileCollection
 
   @get:OutputFile
-  abstract val paparazziResources: RegularFileProperty
+  public abstract val paparazziResources: RegularFileProperty
 
   private val projectDirectory = project.layout.projectDirectory
 
   private val gradleUserHomeDirectory = projectDirectory.dir(project.gradle.gradleUserHomeDir.path)
 
   @TaskAction
-  // TODO: figure out why this can't be removed as of Kotlin 1.6+
-  @OptIn(ExperimentalStdlibApi::class)
-  fun writeResourcesFile() {
+  public fun writeResourcesFile() {
     val out = paparazziResources.get().asFile
     out.delete()
 
@@ -95,36 +85,37 @@ abstract class PrepareResourcesTask : DefaultTask() {
         artifactFiles.files.forEach { file ->
           add(file.useLines { lines -> lines.first() })
         }
-      }.joinToString(",")
+      }
     } else {
-      mainPackage
+      listOf(mainPackage)
     }
 
-    out.bufferedWriter()
-      .use {
-        it.write(mainPackage)
-        it.newLine()
-        it.write(mergeResourcesOutputDir.get())
-        it.newLine()
-        it.write(targetSdkVersion.get())
-        it.newLine()
-        // Use compileSdkVersion for system framework resources.
-        it.write("platforms/android-${compileSdkVersion.get()}/")
-        it.newLine()
-        it.write(mergeAssetsOutputDir.get())
-        it.newLine()
-        it.write(resourcePackageNames)
-        it.newLine()
-        it.write(projectResourceDirs.joinFiles(projectDirectory))
-        it.newLine()
-        it.write(moduleResourceDirs.joinFiles(projectDirectory))
-        it.newLine()
-        it.write(aarExplodedDirs.joinFiles(gradleUserHomeDirectory))
-        it.newLine()
-        it.write(projectAssetDirs.joinFiles(projectDirectory))
-        it.newLine()
-        it.write(aarAssetDirs.joinFiles(gradleUserHomeDirectory))
-        it.newLine()
-      }
+    val config = Config(
+      mainPackage = mainPackage,
+      targetSdkVersion = targetSdkVersion.get(),
+      // Use compileSdkVersion for system framework resources.
+      platformDir = "platforms/android-${compileSdkVersion.get()}/",
+      resourcePackageNames = resourcePackageNames,
+      projectResourceDirs = projectResourceDirs.get(),
+      moduleResourceDirs = moduleResourceDirs.get(),
+      aarExplodedDirs = aarExplodedDirs.relativize(gradleUserHomeDirectory),
+      projectAssetDirs = projectAssetDirs.get(),
+      aarAssetDirs = aarAssetDirs.relativize(gradleUserHomeDirectory)
+    )
+    val moshi = Moshi.Builder().addLast(KotlinJsonAdapterFactory()).build()!!
+    val json = moshi.adapter(Config::class.java).indent("  ").toJson(config)
+    out.writeText(json)
   }
+
+  internal data class Config(
+    val mainPackage: String,
+    val targetSdkVersion: String,
+    val platformDir: String,
+    val resourcePackageNames: List<String>,
+    val projectResourceDirs: List<String>,
+    val moduleResourceDirs: List<String>,
+    val aarExplodedDirs: List<String>,
+    val projectAssetDirs: List<String>,
+    val aarAssetDirs: List<String>
+  )
 }

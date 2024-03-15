@@ -21,7 +21,7 @@ import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
 
-class SnapshotVerifier @JvmOverloads constructor(
+public class SnapshotVerifier @JvmOverloads constructor(
   private val maxPercentDifference: Double,
   rootDirectory: File = File(System.getProperty("paparazzi.snapshot.dir"))
 ) : SnapshotHandler {
@@ -59,5 +59,5 @@ class SnapshotVerifier @JvmOverloads constructor(
     }
   }
 
-  override fun close() = Unit
+  override fun close(): Unit = Unit
 }

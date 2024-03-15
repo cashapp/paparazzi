@@ -32,7 +32,7 @@ import androidx.compose.ui.semantics.getOrNull
 import app.cash.paparazzi.RenderExtension
 import com.android.internal.view.OneShotPreDrawListener
 
-class AccessibilityRenderExtension : RenderExtension {
+public class AccessibilityRenderExtension : RenderExtension {
   override fun renderView(
     contentView: View
   ): View {

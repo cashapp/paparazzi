@@ -23,3 +23,5 @@ dependencies {
   testImplementation 'androidx.activity:activity-compose:1.6.1'
   testImplementation libs.truth
 }
+
+apply from: '../guava-fix.gradle'

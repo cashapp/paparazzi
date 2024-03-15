@@ -26,7 +26,7 @@ import com.android.resources.ResourceVisibility
  * Resource item representing an attr resource that is defined in a namespace different from the namespace
  * of the owning AAR.
  */
-class BasicForeignAttrResourceItem(
+internal class BasicForeignAttrResourceItem(
   private val namespace: ResourceNamespace,
   name: String,
   sourceFile: ResourceSourceFile,

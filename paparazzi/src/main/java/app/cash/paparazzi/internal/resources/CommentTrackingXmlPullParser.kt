@@ -36,7 +36,7 @@ import java.io.Reader
  * &lt;eat-comment/&gt;
 </pre> *
  */
-open class CommentTrackingXmlPullParser : KXmlParser() {
+internal open class CommentTrackingXmlPullParser : KXmlParser() {
   /**
    * Returns the last encountered comment that is not an ASCII art.
    */

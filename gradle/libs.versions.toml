@@ -1,26 +1,27 @@
 [versions]
-agp = "8.1.1"
-androidTools = "31.1.2" # == 23.0.0 + agp version
-bytebuddy = "1.14.10"
-composeCompiler = "1.5.1"
+agp = "8.2.2"
+androidTools = "31.2.2" # == 23.0.0 + agp version
+bytebuddy = "1.14.12"
+composeCompiler = "1.5.10"
+coroutines = "1.8.0"
 javaTarget = "11"
 jcodec = "0.2.5"
-kotlin = "1.9.0"
-ksp = "1.9.0-1.0.13"
+kotlin = "1.9.22"
+ksp = "1.9.22-1.0.18"
 ktlint = "0.50.0"
-moshi = "1.15.0"
+moshi = "1.15.1"
 
 minSdk = "25"
 compileSdk = "33"
 
-# Maps to this commit: https://android.googlesource.com/platform/prebuilts/studio/layoutlib/+/5e972ea
-layoutlib = "2022.3.1-5e972ea"
-layoutlibPrebuiltSha = "5e972ea"
+# Maps to this commit: https://android.googlesource.com/platform/prebuilts/studio/layoutlib/+/a73a761
+layoutlib = "2023.1.1-a73a761"
+layoutlibPrebuiltSha = "a73a761"
 
 [libraries]
-androidx-annotations = { module = "androidx.annotation:annotation", version = "1.7.0" }
+androidx-annotations = { module = "androidx.annotation:annotation", version = "1.7.1" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version = "1.6.1" }
-androidx-lifecycleCommon = { module = "androidx.lifecycle:lifecycle-common", version = "2.6.2" }
+androidx-lifecycleCommon = { module = "androidx.lifecycle:lifecycle-common", version = "2.7.0" }
 androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version = "1.3.2" }
 
 bytebuddy-agent = { module = "net.bytebuddy:byte-buddy-agent", version.ref = "bytebuddy" }
@@ -30,14 +31,15 @@ compose-compiler = { module = "androidx.compose.compiler:compiler", version.ref 
 composeUi-material = { module = "androidx.compose.material:material", version = "1.5.4" }
 composeUi-uiTooling = { module = "androidx.compose.ui:ui-tooling" }
 
-grgit = { module = "org.ajoberstar.grgit:grgit-core", version = "5.2.1" }
-guava = { module = "com.google.guava:guava", version = "32.0.1-jre" }
+grgit = { module = "org.ajoberstar.grgit:grgit-core", version = "5.2.2" }
+guava = { module = "com.google.guava:guava", version = "33.1.0-jre" }
 
 jcodec-core = { module = "org.jcodec:jcodec", version.ref = "jcodec" }
 jcodec-javase = { module = "org.jcodec:jcodec-javase", version.ref = "jcodec" }
 
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
-kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.7.3" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
 
 ksp = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }
 
@@ -53,12 +55,12 @@ layoutlib-native-windows = { module = "app.cash.paparazzi:layoutlib-native-win",
 
 moshi-adapters = { module = "com.squareup.moshi:moshi-adapters", version.ref = "moshi" }
 moshi-core = { module = "com.squareup.moshi:moshi", version.ref = "moshi" }
-moshi-kotlinCodegen = { module = "com.squareup.moshi:moshi-kotlin-codegen", version.ref = "moshi" }
+moshi-kotlinReflect = { module = "com.squareup.moshi:moshi-kotlin", version.ref = "moshi" }
 
-okio = { module = "com.squareup.okio:okio", version = "3.6.0" }
+okio = { module = "com.squareup.okio:okio", version = "3.9.0" }
 
 tools-common = { module = "com.android.tools:common", version.ref = "androidTools" }
-tools-layoutlib = { module = "com.android.tools.layoutlib:layoutlib-api", version = "31.1.1" }
+tools-layoutlib = { module = "com.android.tools.layoutlib:layoutlib-api", version = "31.2.2" }
 tools-ninepatch = { module = "com.android.tools:ninepatch", version.ref = "androidTools" }
 tools-sdkCommon = { module = "com.android.tools:sdk-common", version.ref = "androidTools" }
 
@@ -66,15 +68,17 @@ trove4j = { module = "org.jetbrains.intellij.deps:trove4j", version = "1.0.20200
 
 # Test libraries
 junit = { module = "junit:junit", version = "4.13.2" }
-testParameterInjector = { module = "com.google.testparameterinjector:test-parameter-injector", version = "1.14" }
-truth = { module = "com.google.truth:truth", version = "1.1.5" }
+testParameterInjector = { module = "com.google.testparameterinjector:test-parameter-injector", version = "1.15" }
+truth = { module = "com.google.truth:truth", version = "1.4.2" }
 
 # Plugins
 plugin-android = { module = "com.android.tools.build:gradle", version.ref = "agp" }
-plugin-buildConfig = { module = "com.github.gmazzo.buildconfig:plugin", version = "4.2.0" }
-plugin-dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version = "1.9.10" }
+plugin-buildConfig = { module = "com.github.gmazzo.buildconfig:plugin", version = "5.3.5" }
+plugin-dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version = "1.9.20" }
 plugin-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+plugin-kotlinApiDump = { module = "org.jetbrains.kotlinx:binary-compatibility-validator", version = '0.14.0' }
 plugin-ksp = { module = "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
-plugin-mavenPublish = { module = "com.vanniktech:gradle-maven-publish-plugin", version = "0.25.3" }
-plugin-spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version = "6.23.3" }
-plugin-versions = { module = "com.github.ben-manes:gradle-versions-plugin", version = "0.50.0" }
+plugin-mavenPublish = { module = "com.vanniktech:gradle-maven-publish-plugin", version = "0.28.0" }
+plugin-poko = { module = "dev.drewhamilton.poko:poko-gradle-plugin", version = "0.15.2" }
+plugin-spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version = "6.25.0" }
+plugin-versions = { module = "com.github.ben-manes:gradle-versions-plugin", version = "0.51.0" }

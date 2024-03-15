@@ -6,11 +6,13 @@ import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.processing.SymbolProcessorProvider
 import com.google.devtools.ksp.symbol.KSAnnotated
 
-class PreviewProcessorProvider : SymbolProcessorProvider {
-  override fun create(environment: SymbolProcessorEnvironment) = PreviewProcessor(environment)
+public class PreviewProcessorProvider : SymbolProcessorProvider {
+  override fun create(
+    environment: SymbolProcessorEnvironment
+  ): PreviewProcessor = PreviewProcessor(environment)
 }
 
-class PreviewProcessor(
+public class PreviewProcessor(
   private val environment: SymbolProcessorEnvironment
 ) : SymbolProcessor {
   override fun process(resolver: Resolver): List<KSAnnotated> = emptyList()

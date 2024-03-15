@@ -32,7 +32,7 @@ import java.io.IOException
  *
  * Resource item representing a file resource, e.g. a drawable or a layout.
  */
-open class BasicFileResourceItem(
+internal open class BasicFileResourceItem(
   type: ResourceType,
   name: String,
   override val repositoryConfiguration: RepositoryConfiguration,

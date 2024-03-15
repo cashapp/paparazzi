@@ -29,7 +29,7 @@ import org.junit.runners.model.Statement
  * [AnimatorListener.onAnimationEnd]. This way views from fade-ins and moves are rendered as they
  * do when the animations complete.
  */
-class InstantAnimationsRule : TestRule {
+public class InstantAnimationsRule : TestRule {
   private val getDurationScale = ValueAnimator::class.java.getDeclaredMethod(
     "getDurationScale"
   )

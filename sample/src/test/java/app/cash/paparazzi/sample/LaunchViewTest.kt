@@ -17,9 +17,9 @@ package app.cash.paparazzi.sample
 
 import android.widget.LinearLayout
 import app.cash.paparazzi.DeviceConfig.Companion.NEXUS_5
-import app.cash.paparazzi.DeviceConfig.Companion.NEXUS_5_LAND
 import app.cash.paparazzi.DeviceConfig.Companion.PIXEL_3
 import app.cash.paparazzi.Paparazzi
+import com.android.resources.ScreenOrientation.LANDSCAPE
 import org.junit.Rule
 import org.junit.Test
 
@@ -50,7 +50,7 @@ class LaunchViewTest {
     var launch = paparazzi.inflate<LinearLayout>(R.layout.launch)
     paparazzi.snapshot(launch, "portrait")
 
-    paparazzi.unsafeUpdateConfig(deviceConfig = NEXUS_5_LAND)
+    paparazzi.unsafeUpdateConfig(deviceConfig = NEXUS_5.copy(orientation = LANDSCAPE))
     launch = paparazzi.inflate(R.layout.launch)
     paparazzi.snapshot(launch, "landscape")
   }

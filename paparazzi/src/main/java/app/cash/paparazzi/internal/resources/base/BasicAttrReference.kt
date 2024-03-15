@@ -29,7 +29,7 @@ import com.android.utils.HashCodes
  * Resource value representing a reference to an attr resource, but potentially with its own description
  * and group name. Unlike [BasicAttrResourceItem], does not contain formats and enum or flag information.
  */
-class BasicAttrReference(
+internal class BasicAttrReference(
   private val namespace: ResourceNamespace,
   name: String,
   sourceFile: ResourceSourceFile,

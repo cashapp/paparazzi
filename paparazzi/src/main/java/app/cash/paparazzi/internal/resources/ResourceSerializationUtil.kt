@@ -26,7 +26,7 @@ import java.util.function.Function
 /**
  * Ported from: [ResourceSerializationUtil.java](https://cs.android.com/android-studio/platform/tools/base/+/18047faf69512736b8ddb1f6a6785f58d47c893f:resource-repository/main/java/com/android/resources/base/ResourceSerializationUtil.java)
  */
-object ResourceSerializationUtil {
+internal object ResourceSerializationUtil {
   /**
    * Loads resources from the given input stream and passes them to the given consumer.
    */

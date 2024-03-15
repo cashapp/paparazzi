@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.KotlinTopLevelExtension
+
 apply plugin: 'com.github.ben-manes.versions'
 
 buildscript {
@@ -10,19 +12,26 @@ buildscript {
 
   dependencies {
     classpath libs.plugin.kotlin
+    classpath libs.plugin.kotlinApiDump
     classpath libs.plugin.android
     classpath libs.plugin.mavenPublish
     classpath libs.plugin.dokka
     classpath libs.plugin.versions
     classpath libs.plugin.spotless
     classpath libs.plugin.buildConfig
-    classpath libs.plugin.ksp
+    classpath libs.plugin.poko
     classpath libs.grgit
 
     // Normally you would declare a version here, but we use dependency substitution in
     // settings.gradle to use the version built from inside the repo.
     classpath 'app.cash.paparazzi:paparazzi-gradle-plugin'
   }
+}
+
+apply plugin: 'binary-compatibility-validator'
+
+apiValidation {
+  ignoredProjects += ['libs', 'sample']
 }
 
 subprojects {
@@ -53,6 +62,10 @@ subprojects {
     kotlinOptions {
       jvmTarget = libs.versions.javaTarget.get()
     }
+  }
+
+  plugins.withId('org.jetbrains.kotlin.jvm') {
+    extensions.getByName('kotlin').explicitApi()
   }
 
   plugins.withId('com.vanniktech.maven.publish') {
@@ -92,18 +105,8 @@ subprojects {
   spotless {
     kotlin {
       target("src/**/*.kt")
-      // ktlint doesn't honour .editorconfig yet: https://github.com/diffplug/spotless/issues/142
-      ktlint(libs.versions.ktlint.get()).editorConfigOverride([
-        'insert_final_newline': 'true',
-        'end_of_line': 'lf',
-        'charset': 'utf-8',
-        'indent_size': '2',
-        'trim_trailing_whitespace': 'true',
-        'ij_kotlin_imports_layout': '*,java.**,javax.**,kotlin.**,kotlinx.**,^',
-        'ij_kotlin_allow_trailing_comma': 'false',
-        'ij_kotlin_allow_trailing_comma_on_call_site': 'false',
-        'ktlint_standard_argument-list-wrapping': 'disabled',
-      ])
+      ktlint(libs.versions.ktlint.get())
+        .setEditorConfigPath(rootProject.file(".editorconfig"))
     }
   }
 }

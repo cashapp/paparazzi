@@ -28,7 +28,7 @@ import java.io.IOException
  *
  * Resource item representing a value resource, e.g. a string or a color.
  */
-open class BasicValueResourceItem(
+internal open class BasicValueResourceItem(
   type: ResourceType,
   name: String,
   sourceFile: ResourceSourceFile,
