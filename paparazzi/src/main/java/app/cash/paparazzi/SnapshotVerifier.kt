@@ -46,7 +46,16 @@ public class SnapshotVerifier @JvmOverloads constructor(
           throw AssertionError("File $expected does not exist")
         }
 
-        val goldenImage = ImageIO.read(expected)
+        val goldenImage = ImageIO.read(expected) ?: throw NullPointerException(
+          """
+          Failed to read the snapshot file from the file system.
+
+          If your project uses git LFS, it's possible that it's misconfigured on your machine and
+          Paparazzi has just loaded a pointer file instead of the real snapshot file. Follow git
+          LFS troubleshooting instructions and try again.
+
+          """.trimIndent()
+        )
         ImageUtils.assertImageSimilar(
           relativePath = expected.path,
           image = image,
