@@ -14,6 +14,9 @@ android {
     sourceCompatibility = libs.versions.javaTarget.get()
     targetCompatibility = libs.versions.javaTarget.get()
   }
+  libraryVariants.configureEach {
+    it.registerGeneratedResFolders(project.files("${project.buildDir.path}/generated/res/extra"))
+  }
 }
 
 dependencies {
