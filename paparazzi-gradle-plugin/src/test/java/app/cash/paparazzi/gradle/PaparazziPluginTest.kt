@@ -977,7 +977,12 @@ class PaparazziPluginTest {
     var config = resourcesFile.loadConfig()
     assertThat(config.aarExplodedDirs)
       .comparingElementsUsing(MATCHES_PATTERN)
-      .containsExactly("^caches/transforms-4/[0-9a-f]{32}/transformed/external1/res\$")
+      .containsExactly(
+        "^caches/transforms-4/[0-9a-f]{32}/transformed/external1/res\$",
+        "^caches/transforms-4/[0-9a-f]{32}/transformed/core-1.10.0/res\$",
+        "^caches/transforms-4/[0-9a-f]{32}/transformed/annotation-experimental-1.3.0/res\$",
+        "^caches/transforms-4/[0-9a-f]{32}/transformed/lifecycle-runtime-2.3.1/res\$"
+      )
 
     buildDir.deleteRecursively()
 
@@ -996,7 +1001,12 @@ class PaparazziPluginTest {
     config = resourcesFile.loadConfig()
     assertThat(config.aarExplodedDirs)
       .comparingElementsUsing(MATCHES_PATTERN)
-      .containsExactly("^caches/transforms-4/[0-9a-f]{32}/transformed/external2/res\$")
+      .containsExactly(
+        "^caches/transforms-4/[0-9a-f]{32}/transformed/external2/res\$",
+        "^caches/transforms-4/[0-9a-f]{32}/transformed/core-1.10.1/res\$",
+        "^caches/transforms-4/[0-9a-f]{32}/transformed/annotation-experimental-1.3.0/res\$",
+        "^caches/transforms-4/[0-9a-f]{32}/transformed/lifecycle-runtime-2.3.1/res\$"
+      )
   }
 
   @Test

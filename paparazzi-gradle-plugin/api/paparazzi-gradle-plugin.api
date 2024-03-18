@@ -12,7 +12,9 @@ public abstract class app/cash/paparazzi/gradle/PaparazziPlugin$PaparazziTask : 
 public abstract class app/cash/paparazzi/gradle/PrepareResourcesTask : org/gradle/api/DefaultTask {
 	public fun <init> ()V
 	public abstract fun getAarAssetDirs ()Lorg/gradle/api/file/ConfigurableFileCollection;
+	public final fun getAarExplodedAssetsBaseDirs ()Lorg/gradle/api/provider/Provider;
 	public abstract fun getAarExplodedDirs ()Lorg/gradle/api/file/ConfigurableFileCollection;
+	public final fun getAarExplodedResourcesBaseDirs ()Lorg/gradle/api/provider/Provider;
 	public abstract fun getArtifactFiles ()Lorg/gradle/api/file/ConfigurableFileCollection;
 	public abstract fun getCompileSdkVersion ()Lorg/gradle/api/provider/Property;
 	public abstract fun getModuleResourceDirs ()Lorg/gradle/api/provider/ListProperty;
