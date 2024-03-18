@@ -93,9 +93,9 @@ public class Paparazzi @JvmOverloads constructor(
 
   public fun <V : View> inflate(@LayoutRes layoutId: Int): V = sdk.inflate(layoutId)
 
-  public fun snapshot(name: String? = null, composable: @Composable () -> Unit) {
+  public fun snapshot(name: String? = null, offsetMillis: Long = 0L, composable: @Composable () -> Unit) {
     setupFrameHandler(name)
-    sdk.snapshot(composable)
+    sdk.snapshot(composable = composable, offsetMillis = offsetMillis)
   }
 
   @JvmOverloads
