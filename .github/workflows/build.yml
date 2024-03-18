@@ -18,7 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [
-          macOS-latest,
+          macOS-14, # Uses Mac OS Arm, TODO: Replace with macOS-latest once the version is bumped
           windows-latest,
           ubuntu-latest
         ]
