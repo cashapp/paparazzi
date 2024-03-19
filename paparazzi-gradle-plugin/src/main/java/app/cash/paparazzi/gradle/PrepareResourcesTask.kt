@@ -15,7 +15,6 @@
  */
 package app.cash.paparazzi.gradle
 
-import app.cash.paparazzi.gradle.utils.relativize
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import org.gradle.api.DefaultTask
@@ -48,16 +47,14 @@ public abstract class PrepareResourcesTask : DefaultTask() {
   @get:Input
   public abstract val moduleResourceDirs: ListProperty<String>
 
-  @get:InputFiles
-  @get:PathSensitive(PathSensitivity.RELATIVE)
-  public abstract val aarExplodedDirs: ConfigurableFileCollection
+  @get:Input
+  public abstract val aarExplodedDirs: ListProperty<String>
 
   @get:Input
   public abstract val projectAssetDirs: ListProperty<String>
 
-  @get:InputFiles
-  @get:PathSensitive(PathSensitivity.RELATIVE)
-  public abstract val aarAssetDirs: ConfigurableFileCollection
+  @get:Input
+  public abstract val aarAssetDirs: ListProperty<String>
 
   @get:Input
   public abstract val nonTransitiveRClassEnabled: Property<Boolean>
@@ -68,10 +65,6 @@ public abstract class PrepareResourcesTask : DefaultTask() {
 
   @get:OutputFile
   public abstract val paparazziResources: RegularFileProperty
-
-  private val projectDirectory = project.layout.projectDirectory
-
-  private val gradleUserHomeDirectory = projectDirectory.dir(project.gradle.gradleUserHomeDir.path)
 
   @TaskAction
   public fun writeResourcesFile() {
@@ -98,9 +91,9 @@ public abstract class PrepareResourcesTask : DefaultTask() {
       resourcePackageNames = resourcePackageNames,
       projectResourceDirs = projectResourceDirs.get(),
       moduleResourceDirs = moduleResourceDirs.get(),
-      aarExplodedDirs = aarExplodedDirs.relativize(gradleUserHomeDirectory),
+      aarExplodedDirs = aarExplodedDirs.get(),
       projectAssetDirs = projectAssetDirs.get(),
-      aarAssetDirs = aarAssetDirs.relativize(gradleUserHomeDirectory)
+      aarAssetDirs = aarAssetDirs.get()
     )
     val moshi = Moshi.Builder().addLast(KotlinJsonAdapterFactory()).build()!!
     val json = moshi.adapter(Config::class.java).indent("  ").toJson(config)

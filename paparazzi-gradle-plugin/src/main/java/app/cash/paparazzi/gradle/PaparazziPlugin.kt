@@ -151,6 +151,7 @@ public class PaparazziPlugin : Plugin<Project> {
         val android = project.extensions.getByType(BaseExtension::class.java)
         val nonTransitiveRClassEnabled =
           (project.findProperty("android.nonTransitiveRClass") as? String)?.toBoolean() ?: true
+        val gradleHomeDir = projectDirectory.dir(project.gradle.gradleUserHomeDir.path)
 
         task.packageName.set(android.packageName())
         task.artifactFiles.from(packageAwareArtifactFiles)
@@ -165,9 +166,9 @@ public class PaparazziPlugin : Plugin<Project> {
           }
         )
         task.moduleResourceDirs.set(project.provider { moduleResourceDirs.relativize(projectDirectory) })
-        task.aarExplodedDirs.from(aarExplodedDirs)
+        task.aarExplodedDirs.set(project.provider { aarExplodedDirs.relativize(gradleHomeDir) })
         task.projectAssetDirs.set(project.provider { localAssetDirs.plus(moduleAssetDirs).relativize(projectDirectory) })
-        task.aarAssetDirs.from(aarAssetDirs)
+        task.aarAssetDirs.set(project.provider { aarAssetDirs.relativize(gradleHomeDir) })
         task.paparazziResources.set(buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.json"))
       }
 
