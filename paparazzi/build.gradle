@@ -1,3 +1,4 @@
+import app.cash.paparazzi.gradle.UnpackAarKt
 import org.jetbrains.kotlin.gradle.plugin.AbstractKotlinPluginKt
 
 apply plugin: 'org.jetbrains.kotlin.jvm'
@@ -18,7 +19,10 @@ configurations {
   }
 }
 
-dependencies {
+UnpackAarKt.configureAar(project)
+dependencies { DependencyHandler dependency ->
+  UnpackAarKt.configureAarUnpacking(dependency)
+
   registerTransform(org.gradle.api.internal.artifacts.transform.UnzipTransform) {
     from.attribute(artifactType, ArtifactTypeDefinition.JAR_TYPE)
     to.attribute(artifactType, ArtifactTypeDefinition.DIRECTORY_TYPE)
@@ -26,17 +30,12 @@ dependencies {
 }
 
 dependencies {
-  // Paparazzi is a Kotlin JVM module and thus cannot depend on Android library artifacts (AARs)
-  // TODO: Use Gradle transforms to extract/rename classes.jar's from AARs
-  api files('libs/compose-runtime-android-1.5.0.jar')
-  implementation files('libs/compose-ui-android-1.5.0.jar') // Need implementation dependency to reference AbstractComposeView for AccessibilityRenderExtension
-  // Needed to get compose bounds and annotated strings for Compose support for AccessibilityRenderExtension
-  compileOnly files('libs/compose-ui-geometry-android-1.5.0.jar')
-  compileOnly files('libs/compose-ui-text-android-1.5.0.jar')
-  compileOnly libs.androidx.lifecycleCommon
-  compileOnly files('libs/lifecycle-runtime-2.6.1.jar')
-  compileOnly files('libs/savedstate-1.2.1.jar')
-  compileOnly files('libs/androidx-activity-1.7.1.jar')
+  implementation(libs.androidx.compose.ui.android) {
+    // We want to use compileOnly dependency below and not at runtime as it uses an `R` class that wont be on the classpath after Aar -> Jar conversion
+    exclude group: 'androidx.lifecycle', module: 'lifecycle-runtime'
+  }
+  compileOnly libs.androidx.activity
+  compileOnly libs.androidx.lifecycle.common
 
   implementation libs.bytebuddy.agent
   implementation libs.bytebuddy.core
