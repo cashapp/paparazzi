@@ -39,9 +39,14 @@ public class SnapshotVerifier @JvmOverloads constructor(
     fps: Int
   ): FrameHandler {
     return object : FrameHandler {
+      var frame = 0
       override fun handle(image: BufferedImage) {
-        // Note: does not handle videos or its frames at the moment
-        val expected = File(imagesDirectory, snapshot.toFileName(extension = "png"))
+        // Note: does not handle videos at the moment
+        val expected = if (frameCount == 1) {
+          snapshot.goldenFile(imagesDirectory)
+        } else {
+          snapshot.goldenFile(imagesDirectory, frame++)
+        }
         if (!expected.exists()) {
           throw AssertionError("File $expected does not exist")
         }
@@ -64,7 +69,9 @@ public class SnapshotVerifier @JvmOverloads constructor(
         )
       }
 
-      override fun close() = Unit
+      override fun close() {
+        frame = 0
+      }
     }
   }
 
