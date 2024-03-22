@@ -29,6 +29,7 @@ bytebuddy-core = { module = "net.bytebuddy:byte-buddy", version.ref = "bytebuddy
 
 compose-compiler = { module = "androidx.compose.compiler:compiler", version.ref = "composeCompiler" }
 composeUi-material = { module = "androidx.compose.material:material", version = "1.5.4" }
+composeUi-material3 = { module = "androidx.compose.material3:material3", version = "1.1.0" }
 composeUi-uiTooling = { module = "androidx.compose.ui:ui-tooling" }
 
 grgit = { module = "org.ajoberstar.grgit:grgit-core", version = "5.2.2" }

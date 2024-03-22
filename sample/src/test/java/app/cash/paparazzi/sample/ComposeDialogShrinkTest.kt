@@ -9,6 +9,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.Text
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
@@ -26,6 +28,16 @@ class ComposeDialogShrinkTest {
     deviceConfig = DeviceConfig.PIXEL_5.copy(softButtons = false),
     renderingMode = RenderingMode.SHRINK
   )
+
+  @OptIn(ExperimentalMaterial3Api::class)
+  @Test
+  fun material() {
+    paparazzi.snapshot {
+      DatePickerDialog(onDismissRequest = { /*TODO*/ }, confirmButton = { /*TODO*/ }) {
+        Text(text = "Test")
+      }
+    }
+  }
 
   @Test
   fun test() {
