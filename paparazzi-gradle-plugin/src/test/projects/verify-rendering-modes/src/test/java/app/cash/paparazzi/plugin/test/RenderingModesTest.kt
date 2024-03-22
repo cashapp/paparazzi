@@ -39,5 +39,14 @@ class RenderingModesTest {
     paparazzi.unsafeUpdateConfig(renderingMode = RenderingMode.V_SCROLL)
     linearLayout.orientation = LinearLayout.VERTICAL
     paparazzi.snapshot(view = linearLayout)
+
+    paparazzi.unsafeUpdateConfig(renderingMode = RenderingMode.SHRINK)
+    paparazzi.snapshot(
+      view = TextView(paparazzi.context).apply {
+        text = "0"
+        textSize = 20f
+        layoutParams = LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
+      }
+    )
   }
 }
