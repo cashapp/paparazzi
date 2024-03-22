@@ -696,15 +696,17 @@ class PaparazziPluginTest {
 
     val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/debug/images")
     val snapshots = snapshotsDir.listFiles().apply { sortBy { it.lastModified() } }
-    assertThat(snapshots!!).hasLength(3)
+    assertThat(snapshots!!).hasLength(4)
 
     val normal = File(fixtureRoot, "src/test/resources/normal.png")
     val horizontalScroll = File(fixtureRoot, "src/test/resources/horizontal_scroll.png")
     val verticalScroll = File(fixtureRoot, "src/test/resources/vertical_scroll.png")
+    val shrink = File(fixtureRoot, "src/test/resources/shrink.png")
 
     assertThat(snapshots[0]).isSimilarTo(normal).withDefaultThreshold()
     assertThat(snapshots[1]).isSimilarTo(horizontalScroll).withDefaultThreshold()
     assertThat(snapshots[2]).isSimilarTo(verticalScroll).withDefaultThreshold()
+    assertThat(snapshots[3]).isSimilarTo(shrink).withDefaultThreshold()
   }
 
   @Test

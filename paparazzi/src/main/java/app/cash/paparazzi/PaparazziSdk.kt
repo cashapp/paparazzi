@@ -111,14 +111,6 @@ public class PaparazziSdk @JvmOverloads constructor(
   public val context: Context
     get() = RenderAction.getCurrentContext()
 
-  private val contentRoot = """
-        |<?xml version="1.0" encoding="utf-8"?>
-        |<${if (hasComposeRuntime) "app.cash.paparazzi.internal.ComposeViewAdapter" else "FrameLayout"}
-        |     xmlns:android="http://schemas.android.com/apk/res/android"
-        |              android:layout_width="${if (renderingMode.horizAction == RenderingMode.SizeAction.SHRINK) "wrap_content" else "match_parent"}"
-        |              android:layout_height="${if (renderingMode.vertAction == RenderingMode.SizeAction.SHRINK) "wrap_content" else "match_parent"}"/>
-  """.trimMargin()
-
   public fun setup() {
     if (!isInitialized) {
       registerFontLookupInterceptionIfResourceCompatDetected()
@@ -146,7 +138,7 @@ public class PaparazziSdk @JvmOverloads constructor(
 
     sessionParamsBuilder = sessionParamsBuilder
       .copy(
-        layoutPullParser = LayoutPullParser.createFromString(contentRoot),
+        layoutPullParser = LayoutPullParser.createFromString(contentRoot(renderingMode)),
         deviceConfig = deviceConfig.updateIfAccessibilityTest(),
         renderingMode = renderingMode,
         supportsRtl = supportsRtl,
@@ -232,7 +224,7 @@ public class PaparazziSdk @JvmOverloads constructor(
     sessionParamsBuilder = sessionParamsBuilder
       .copy(
         // Required to reset underlying parser stream
-        layoutPullParser = LayoutPullParser.createFromString(contentRoot)
+        layoutPullParser = LayoutPullParser.createFromString(contentRoot(renderingMode ?: this.renderingMode))
       )
 
     if (deviceConfig != null) {
@@ -640,6 +632,14 @@ public class PaparazziSdk @JvmOverloads constructor(
     private val hasAndroidxActivityRuntime = isPresentInClasspath(
       "androidx.activity.ViewTreeOnBackPressedDispatcherOwner"
     )
+
+    private fun contentRoot(renderingMode: RenderingMode) = """
+        |<?xml version="1.0" encoding="utf-8"?>
+        |<${if (hasComposeRuntime) "app.cash.paparazzi.internal.ComposeViewAdapter" else "FrameLayout"}
+        |     xmlns:android="http://schemas.android.com/apk/res/android"
+        |              android:layout_width="${if (renderingMode.horizAction == RenderingMode.SizeAction.SHRINK) "wrap_content" else "match_parent"}"
+        |              android:layout_height="${if (renderingMode.vertAction == RenderingMode.SizeAction.SHRINK) "wrap_content" else "match_parent"}"/>
+    """.trimMargin()
 
     private fun isPresentInClasspath(vararg classNames: String): Boolean {
       return try {
