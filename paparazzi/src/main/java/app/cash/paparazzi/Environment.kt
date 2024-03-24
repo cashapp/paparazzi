@@ -26,6 +26,7 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.Locale
 import kotlin.io.path.exists
+import kotlin.jvm.optionals.getOrNull
 
 @Poko
 public class Environment(
@@ -147,5 +148,35 @@ private fun checkInstalledJvm() {
     throw IllegalStateException(
       "Unsupported JRE detected! Please install and run Paparazzi test suites on JDK 11+."
     )
+  }
+}
+
+internal val OsLabel: String by lazy {
+  val osName = System.getProperty("os.name").lowercase(Locale.US)
+  when {
+    osName.startsWith("windows") -> "win"
+    osName.startsWith("mac") -> {
+      // System.getProperty("os.arch") returns the os of the jre, not necessarily of the platform we are running on,
+      // try /usr/bin/arch to get the actual architecture
+      val osArch = ProcessBuilder("/usr/bin/arch")
+        .start()
+        .inputStream
+        .bufferedReader()
+        .lines()
+        .findFirst()
+        .getOrNull()
+        ?.lowercase(Locale.US)
+        ?.let {
+          if (it.startsWith("i386")) "mac" else "mac-arm"
+        }
+      val jreArch = System.getProperty("os.arch").lowercase(Locale.US).let {
+        if (it.startsWith("x86")) "mac" else "mac-arm"
+      }
+      if (osArch != null && osArch != jreArch) {
+        System.err.println("Mismatched architectures, os is:$osArch but the JRE is running with:$jreArch. Installing the correct JDK for your architecture will improve performance.")
+      }
+      osArch ?: jreArch
+    }
+    else -> "linux"
   }
 }
