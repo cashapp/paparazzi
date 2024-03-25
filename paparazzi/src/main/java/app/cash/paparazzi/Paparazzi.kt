@@ -38,7 +38,8 @@ public class Paparazzi @JvmOverloads constructor(
   private val renderExtensions: Set<RenderExtension> = setOf(),
   private val supportsRtl: Boolean = false,
   private val showSystemUi: Boolean = false,
-  private val validateAccessibility: Boolean = false
+  private val validateAccessibility: Boolean = false,
+  private val imageSize: ImageSize = ImageSize.Limit()
 ) : TestRule {
   private lateinit var sdk: PaparazziSdk
   private var testName: TestName? = null
@@ -67,7 +68,8 @@ public class Paparazzi @JvmOverloads constructor(
           renderExtensions = renderExtensions,
           supportsRtl = supportsRtl,
           showSystemUi = showSystemUi,
-          validateAccessibility = validateAccessibility
+          validateAccessibility = validateAccessibility,
+          imageSize = imageSize,
         )
         sdk.setup()
         prepare(description)
