@@ -91,8 +91,6 @@ internal abstract class BasicResourceItem(
     }
   }
 
-  override fun setValue(value: String?): Unit = throw UnsupportedOperationException()
-
   override fun equals(other: Any?): Boolean {
     if (this === other) {
       return true
