@@ -18,7 +18,9 @@ jobs:
       fail-fast: false
       matrix:
         os: [
-          macOS-latest,
+          # Migrate back to macOS-latest once 'latest' workflow label is updated (April – June 2024)
+          # https://github.blog/changelog/2024-01-30-github-actions-macos-14-sonoma-is-now-available/
+          macOS-14,
           windows-latest,
           ubuntu-latest
         ]
