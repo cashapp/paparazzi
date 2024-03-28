@@ -8,7 +8,7 @@ javaTarget = "11"
 jcodec = "0.2.5"
 kotlin = "1.9.22"
 ksp = "1.9.22-1.0.18"
-ktlint = "0.50.0"
+ktlint = "1.2.1"
 moshi = "1.15.1"
 
 minSdk = "25"
