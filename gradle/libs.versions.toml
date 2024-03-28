@@ -2,12 +2,12 @@
 agp = "8.3.1"
 androidTools = "31.2.2" # == 23.0.0 + agp version
 bytebuddy = "1.14.13"
-composeCompiler = "1.5.10"
+composeCompiler = "1.5.11"
 coroutines = "1.8.0"
 javaTarget = "11"
 jcodec = "0.2.5"
-kotlin = "1.9.22"
-ksp = "1.9.22-1.0.18"
+kotlin = "1.9.23"
+ksp = "1.9.23-1.0.19"
 ktlint = "0.50.0"
 moshi = "1.15.1"
 
