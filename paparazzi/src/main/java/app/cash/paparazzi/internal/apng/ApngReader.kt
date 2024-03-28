@@ -85,8 +85,8 @@ internal class ApngReader(
     return getFrame()
   }
 
-  fun getDelay(): Pair<Int, Int> {
-    return frameInfo?.let { it.delayNumerator.toInt() to it.delayDenominator.toInt() } ?: (1 to 0)
+  fun getFps(): Int {
+    return frameInfo?.delayDenominator?.toInt() ?: 0
   }
 
   fun reset() {

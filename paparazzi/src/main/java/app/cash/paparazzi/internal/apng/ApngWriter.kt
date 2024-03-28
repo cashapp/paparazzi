@@ -62,8 +62,8 @@ internal class ApngWriter(
   private var maxHeight = 0
   private var ihdrWidth = 0
   private var ihdrHeight = 0
-  private var frameCount = 0
   private var sequenceNumber = 1
+  internal var frameCount = 0
 
   fun writeImage(image: BufferedImage) {
     if (frameCount == 0) {

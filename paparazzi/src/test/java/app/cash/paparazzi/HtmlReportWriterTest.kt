@@ -36,7 +36,7 @@ class HtmlReportWriterTest {
   val snapshotRoot: TemporaryFolder = TemporaryFolder()
 
   private val anyImage = BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB)
-  private val anyImageHash = "9069ca78e7450a285173431b3e52c5c25299e473"
+  private val anyImageHash = "2ef6a6e795a2b8cffabefb6d9a2066a183c8e3b6"
 
   @Test
   fun happyPath() {
