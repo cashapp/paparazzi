@@ -1197,8 +1197,8 @@ class PaparazziPluginTest {
     assertThat(resourcesFile.exists()).isTrue()
 
     val config = resourcesFile.loadConfig()
-    assertThat(config.targetSdkVersion).isEqualTo("33")
-    assertThat(config.platformDir).isEqualTo("platforms/android-33/")
+    assertThat(config.targetSdkVersion).isEqualTo("34")
+    assertThat(config.platformDir).isEqualTo("platforms/android-34/")
   }
 
   @Test
@@ -1216,7 +1216,7 @@ class PaparazziPluginTest {
 
     val config = resourcesFile.loadConfig()
     assertThat(config.targetSdkVersion).isEqualTo("29")
-    assertThat(config.platformDir).isEqualTo("platforms/android-33/")
+    assertThat(config.platformDir).isEqualTo("platforms/android-34/")
   }
 
   @Test
