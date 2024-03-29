@@ -41,6 +41,7 @@ public class Paparazzi @JvmOverloads constructor(
   private val validateAccessibility: Boolean = false
 ) : TestRule {
   private lateinit var sdk: PaparazziSdk
+  private lateinit var frameHandler: SnapshotHandler.FrameHandler
   private var testName: TestName? = null
 
   public val layoutInflater: LayoutInflater
@@ -67,7 +68,8 @@ public class Paparazzi @JvmOverloads constructor(
           renderExtensions = renderExtensions,
           supportsRtl = supportsRtl,
           showSystemUi = showSystemUi,
-          validateAccessibility = validateAccessibility
+          validateAccessibility = validateAccessibility,
+          onNewFrame = { frameHandler.handle(it) }
         )
         sdk.setup()
         prepare(description)
@@ -94,14 +96,18 @@ public class Paparazzi @JvmOverloads constructor(
   public fun <V : View> inflate(@LayoutRes layoutId: Int): V = sdk.inflate(layoutId)
 
   public fun snapshot(name: String? = null, composable: @Composable () -> Unit) {
-    setupFrameHandler(name)
-    sdk.snapshot(composable)
+    createFrameHandler(name).use { handler ->
+      frameHandler = handler
+      sdk.snapshot(composable)
+    }
   }
 
   @JvmOverloads
   public fun snapshot(view: View, name: String? = null, offsetMillis: Long = 0L) {
-    setupFrameHandler(name)
-    sdk.snapshot(view, offsetMillis)
+    createFrameHandler(name).use { handler ->
+      frameHandler = handler
+      sdk.snapshot(view, offsetMillis)
+    }
   }
 
   @JvmOverloads
@@ -117,8 +123,10 @@ public class Paparazzi @JvmOverloads constructor(
     // us 61 frames for a 1 second animation, 121 frames for a 2 second animation, etc.
     val durationMillis = (end - start).toInt()
     val frameCount = (durationMillis * fps) / 1000 + 1
-    setupFrameHandler(name, frameCount, fps)
-    sdk.gif(view, start, end, fps)
+    createFrameHandler(name, frameCount, fps).use { handler ->
+      frameHandler = handler
+      sdk.gif(view, start, end, fps)
+    }
   }
 
   public fun unsafeUpdateConfig(
@@ -127,10 +135,9 @@ public class Paparazzi @JvmOverloads constructor(
     renderingMode: RenderingMode? = null
   ): Unit = sdk.unsafeUpdateConfig(deviceConfig, theme, renderingMode)
 
-  private fun setupFrameHandler(name: String? = null, frameCount: Int = -1, fps: Int = 1) {
+  private fun createFrameHandler(name: String? = null, frameCount: Int = -1, fps: Int = 1): SnapshotHandler.FrameHandler {
     val snapshot = Snapshot(name, testName!!, Date())
-    val frameHandler = snapshotHandler.newFrameHandler(snapshot, frameCount, fps)
-    sdk.setFrameHandler(frameHandler)
+    return snapshotHandler.newFrameHandler(snapshot, frameCount, fps)
   }
 
   private fun Description.toTestName(): TestName {
