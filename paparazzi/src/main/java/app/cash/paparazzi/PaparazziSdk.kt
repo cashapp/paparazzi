@@ -40,7 +40,6 @@ import androidx.compose.ui.platform.createLifecycleAwareWindowRecomposer
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
-import app.cash.paparazzi.SnapshotHandler.FrameHandler
 import app.cash.paparazzi.accessibility.AccessibilityRenderExtension
 import app.cash.paparazzi.agent.InterceptorRegistrar
 import app.cash.paparazzi.internal.ImageUtils
@@ -93,12 +92,12 @@ public class PaparazziSdk @JvmOverloads constructor(
   private val renderExtensions: Set<RenderExtension> = setOf(),
   private val supportsRtl: Boolean = false,
   private val showSystemUi: Boolean = false,
-  private val validateAccessibility: Boolean = false
+  private val validateAccessibility: Boolean = false,
+  private val onNewFrame: (BufferedImage) -> Unit
 ) {
   private val logger = PaparazziLogger()
   private lateinit var renderSession: RenderSessionImpl
   private lateinit var bridgeRenderSession: RenderSession
-  private var frameHandler: FrameHandler? = null
 
   public val layoutInflater: LayoutInflater
     get() = RenderAction.getCurrentContext().getSystemService("layout_inflater") as BridgeInflater
@@ -162,15 +161,9 @@ public class PaparazziSdk @JvmOverloads constructor(
     renderSession.release()
     bridgeRenderSession.dispose()
     cleanupThread()
-    frameHandler?.close()
-    frameHandler = null
 
     renderer.dumpDelegates()
     logger.assertNoErrors()
-  }
-
-  public fun setFrameHandler(handler: FrameHandler) {
-    frameHandler = handler
   }
 
   public fun <V : View> inflate(@LayoutRes layoutId: Int): V =
@@ -252,74 +245,68 @@ public class PaparazziSdk @JvmOverloads constructor(
     fps: Int,
     frameCount: Int
   ) {
-    val handler = frameHandler
-      ?: throw IllegalStateException("Cannot take snapshot without a FrameHandler.")
+    val viewGroup = bridgeRenderSession.rootViews[0].viewObject as ViewGroup
+    val modifiedView = renderExtensions.fold(view) { view, renderExtension ->
+      renderExtension.renderView(view)
+    }
 
-    handler.use {
-      val viewGroup = bridgeRenderSession.rootViews[0].viewObject as ViewGroup
-      val modifiedView = renderExtensions.fold(view) { view, renderExtension ->
-        renderExtension.renderView(view)
+    System_Delegate.setNanosTime(0L)
+    try {
+      withTime(0L) {
+        // Initialize the choreographer at time=0.
       }
 
-      System_Delegate.setNanosTime(0L)
-      System_Delegate.setBootTimeNanos(0L)
-      try {
-        withTime(0L) {
-          // Initialize the choreographer at time=0.
+      if (hasComposeRuntime) {
+        // During onAttachedToWindow, AbstractComposeView will attempt to resolve its parent's
+        // CompositionContext, which requires first finding the "content view", then using that
+        // to find a root view with a ViewTreeLifecycleOwner
+        viewGroup.id = android.R.id.content
+
+        // By default, Compose UI uses its own implementation of CoroutineDispatcher, `AndroidUiDispatcher`.
+        // Since this dispatcher does not provide its own implementation of Delay, it will default to using DefaultDelay which runs
+        // async to our test Handler. By initializing Recomposer with Dispatchers.Main, Delay will now be backed by our test Handler,
+        // synchronizing expected behavior.
+        WindowRecomposerPolicy.setFactory { it.createLifecycleAwareWindowRecomposer(MAIN_DISPATCHER) }
+      }
+
+      if (hasLifecycleOwnerRuntime) {
+        val lifecycleOwner = PaparazziLifecycleOwner()
+        modifiedView.setViewTreeLifecycleOwner(lifecycleOwner)
+
+        if (hasSavedStateRegistryOwnerRuntime) {
+          modifiedView.setViewTreeSavedStateRegistryOwner(PaparazziSavedStateRegistryOwner(lifecycleOwner))
         }
-
-        if (hasComposeRuntime) {
-          // During onAttachedToWindow, AbstractComposeView will attempt to resolve its parent's
-          // CompositionContext, which requires first finding the "content view", then using that
-          // to find a root view with a ViewTreeLifecycleOwner
-          viewGroup.id = android.R.id.content
-
-          // By default, Compose UI uses its own implementation of CoroutineDispatcher, `AndroidUiDispatcher`.
-          // Since this dispatcher does not provide its own implementation of Delay, it will default to using DefaultDelay which runs
-          // async to our test Handler. By initializing Recomposer with Dispatchers.Main, Delay will now be backed by our test Handler,
-          // synchronizing expected behavior.
-          WindowRecomposerPolicy.setFactory { it.createLifecycleAwareWindowRecomposer(MAIN_DISPATCHER) }
+        if (hasAndroidxActivityRuntime) {
+          modifiedView.setViewTreeOnBackPressedDispatcherOwner(PaparazziOnBackPressedDispatcherOwner(lifecycleOwner))
         }
+        // Must be changed after the SavedStateRegistryOwner above has finished restoring its state.
+        lifecycleOwner.registry.currentState = Lifecycle.State.RESUMED
+      }
 
-        if (hasLifecycleOwnerRuntime) {
-          val lifecycleOwner = PaparazziLifecycleOwner()
-          modifiedView.setViewTreeLifecycleOwner(lifecycleOwner)
-
-          if (hasSavedStateRegistryOwnerRuntime) {
-            modifiedView.setViewTreeSavedStateRegistryOwner(PaparazziSavedStateRegistryOwner(lifecycleOwner))
+      viewGroup.addView(modifiedView)
+      for (frame in 0 until frameCount) {
+        val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
+        withTime(nowNanos) {
+          val result = renderSession.render(true)
+          if (result.status == ERROR_UNKNOWN) {
+            throw result.exception
           }
-          if (hasAndroidxActivityRuntime) {
-            modifiedView.setViewTreeOnBackPressedDispatcherOwner(PaparazziOnBackPressedDispatcherOwner(lifecycleOwner))
-          }
-          // Must be changed after the SavedStateRegistryOwner above has finished restoring its state.
-          lifecycleOwner.registry.currentState = Lifecycle.State.RESUMED
-        }
 
-        viewGroup.addView(modifiedView)
-        for (frame in 0 until frameCount) {
-          val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
-          withTime(nowNanos) {
-            val result = renderSession.render(true)
-            if (result.status == ERROR_UNKNOWN) {
-              throw result.exception
+          val image = bridgeRenderSession.image
+          if (validateAccessibility) {
+            require(renderExtensions.isEmpty()) {
+              "Running accessibility validation and render extensions simultaneously is not supported."
             }
-
-            val image = bridgeRenderSession.image
-            if (validateAccessibility) {
-              require(renderExtensions.isEmpty()) {
-                "Running accessibility validation and render extensions simultaneously is not supported."
-              }
-              validateLayoutAccessibility(modifiedView, image)
-            }
-            handler.handle(scaleImage(frameImage(image)))
+            validateLayoutAccessibility(modifiedView, image)
           }
+          onNewFrame(scaleImage(frameImage(image)))
         }
-      } finally {
-        viewGroup.removeView(modifiedView)
-        AnimationHandler.sAnimatorHandler.set(null)
-        if (hasComposeRuntime) {
-          forceReleaseComposeReferenceLeaks()
-        }
+      }
+    } finally {
+      viewGroup.removeView(modifiedView)
+      AnimationHandler.sAnimatorHandler.set(null)
+      if (hasComposeRuntime) {
+        forceReleaseComposeReferenceLeaks()
       }
     }
   }
