@@ -1,0 +1,130 @@
+//file:noinspection GroovyAssignabilityCheck
+import com.android.build.api.attributes.BuildTypeAttr
+import org.gradle.work.DisableCachingByDefault
+
+import java.util.zip.ZipFile
+import java.nio.file.Files
+import org.gradle.api.artifacts.transform.TransformParameters
+
+def artifactType = Attribute.of("artifactType", String)
+
+def implementationFiles
+def compileOnlyFiles
+
+project.configurations {
+  aarAsJar {
+    transitive = true
+    canBeConsumed = false
+    canBeResolved = true
+    attributes.attribute(
+      BuildTypeAttr.ATTRIBUTE,
+      project.getObjects().named(BuildTypeAttr, "release")
+    )
+    attributes.attribute(
+      Usage.USAGE_ATTRIBUTE,
+      project.getObjects().named(Usage, Usage.JAVA_API)
+    )
+  }
+
+  implementationAarAsJar {
+    extendsFrom aarAsJar
+
+    implementationFiles = incoming.artifactView {
+      it.attributes.attribute(
+        artifactType, "aarAsJar"
+      )
+    }.files
+  }
+
+  compileOnlyAarAsJar {
+    extendsFrom aarAsJar
+
+    compileOnlyFiles = incoming.artifactView {
+      it.attributes.attribute(
+        artifactType, "aarAsJar"
+      )
+    }.files
+  }
+}
+
+project.dependencies {
+  registerTransform(IdentityTransform) {
+    from.attribute(artifactType, "jar")
+    to.attribute(artifactType, "aarAsJar")
+  }
+
+  registerTransform(ExtractClassesJarTransform) {
+    from.attribute(artifactType, "aar")
+    to.attribute(artifactType, "aarAsJar")
+  }
+
+  def implementationDeps = create(implementationFiles)
+  def compileOnlyDeps = create(compileOnlyFiles)
+  project.configurations.named("implementation") {
+    it.dependencies.add(implementationDeps)
+  }
+  project.configurations.named("compileOnly") {
+    it.dependencies.add(compileOnlyDeps)
+  }
+}
+
+@DisableCachingByDefault
+abstract class IdentityTransform implements TransformAction<TransformParameters.None> {
+  @PathSensitive(PathSensitivity.ABSOLUTE)
+  @InputArtifact
+  abstract Provider<FileSystemLocation> getInputArtifact()
+
+  @Override
+  void transform(TransformOutputs transformOutputs) {
+    def input = getInputArtifact().get().asFile
+    if (input.isDirectory()) {
+      transformOutputs.dir(input)
+    } else if (input.isFile()) {
+      transformOutputs.file(input)
+    } else {
+      throw new IllegalArgumentException(
+        "File/directory does not exist: ${input.absolutePath}"
+      )
+    }
+  }
+}
+
+@DisableCachingByDefault
+abstract class ExtractClassesJarTransform implements TransformAction<TransformParameters.None> {
+
+  @PathSensitive(PathSensitivity.NAME_ONLY)
+  @InputArtifact
+  abstract Provider<FileSystemLocation> getPrimaryInput()
+
+  @Override
+  void transform(TransformOutputs outputs) {
+    ZipFile zip = null
+    try {
+      def file = getPrimaryInput().get().asFile
+      def aarFilename = file.name.substring(0, file.name.lastIndexOf('.'))
+      zip = new ZipFile(file)
+      def entries = zip.entries()
+      while (entries.hasMoreElements()) {
+        def item = entries.nextElement()
+        if (item.isDirectory()) continue
+
+        if (item.name.endsWith("classes.jar") || item.name.matches("libs/.*.jar")) {
+          def output = outputs.file(aarFilename + "-" + item.name)
+          def inputStream = null
+          try {
+            inputStream = zip.getInputStream(item)
+            Files.copy(inputStream, output.toPath())
+          } finally {
+            if (inputStream != null) {
+              inputStream.close()
+            }
+          }
+        }
+      }
+    } finally {
+      if (zip != null) {
+        zip.close()
+      }
+    }
+  }
+}

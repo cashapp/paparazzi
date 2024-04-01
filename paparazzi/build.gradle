@@ -1,10 +1,10 @@
-import app.cash.paparazzi.gradle.UnpackAarKt
 import org.jetbrains.kotlin.gradle.plugin.AbstractKotlinPluginKt
 
 apply plugin: 'org.jetbrains.kotlin.jvm'
 apply plugin: 'org.jetbrains.dokka'
 apply plugin: 'com.vanniktech.maven.publish'
 apply plugin: 'dev.drewhamilton.poko'
+apply from: "customConfiguration.gradle"
 
 java {
   sourceCompatibility = libs.versions.javaTarget.get()
@@ -19,10 +19,7 @@ configurations {
   }
 }
 
-UnpackAarKt.configureAar(project)
 dependencies { DependencyHandler dependency ->
-  UnpackAarKt.configureAarUnpacking(dependency)
-
   registerTransform(org.gradle.api.internal.artifacts.transform.UnzipTransform) {
     from.attribute(artifactType, ArtifactTypeDefinition.JAR_TYPE)
     to.attribute(artifactType, ArtifactTypeDefinition.DIRECTORY_TYPE)
@@ -30,12 +27,12 @@ dependencies { DependencyHandler dependency ->
 }
 
 dependencies {
-  implementation(libs.androidx.compose.ui.android) {
+  implementationAarAsJar(libs.androidx.compose.ui.android) {
     // We want to use compileOnly dependency below and not at runtime as it uses an `R` class that wont be on the classpath after Aar -> Jar conversion
     exclude group: 'androidx.lifecycle', module: 'lifecycle-runtime'
   }
-  compileOnly libs.androidx.activity
-  compileOnly libs.androidx.lifecycle.common
+  compileOnlyAarAsJar libs.androidx.activity
+  compileOnlyAarAsJar libs.androidx.lifecycle.common
 
   implementation libs.bytebuddy.agent
   implementation libs.bytebuddy.core

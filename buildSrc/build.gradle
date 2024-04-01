@@ -1,15 +1,9 @@
-plugins {
-  id "org.gradle.kotlin.kotlin-dsl" version "4.2.1"
-}
-
 repositories {
   mavenCentral()
   google()
 }
 
 dependencies {
-  // Needed to fix issue with android kotlin project
   implementation libs.plugin.android
-  implementation libs.plugin.kotlin
 }
 
