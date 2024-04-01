@@ -1,5 +1,7 @@
 plugins {
   id 'com.android.application'
+  id 'kotlin-android'
+  id 'app.cash.paparazzi'
 }
 
 android {
@@ -15,3 +17,9 @@ android {
 
   dynamicFeatures = [':dynamic_feature']
 }
+
+dependencies {
+  implementation files('libs/external.aar')
+}
+
+apply from: '../../guava-fix.gradle'

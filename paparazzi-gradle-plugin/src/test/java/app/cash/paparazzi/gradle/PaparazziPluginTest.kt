@@ -70,6 +70,19 @@ class PaparazziPluginTest {
     assertThat(result.task(":dynamic_feature:preparePaparazziDebugResources")).isNotNull()
     assertThat(result.task(":dynamic_feature:testDebugUnitTest")).isNotNull()
 
+    val resourcesFile = File(fixtureRoot, "dynamic_feature/build/intermediates/paparazzi/debug/resources.json")
+    assertThat(resourcesFile.exists()).isTrue()
+
+    val config = resourcesFile.loadConfig()
+    assertThat(config.resourcePackageNames).containsExactly(
+      "app.cash.paparazzi.plugin.dynamic.feature.feature",
+      "app.cash.paparazzi.plugin.dynamic.feature.app",
+      "com.example.mylibrary"
+    )
+    assertThat(config.moduleResourceDirs).containsExactly(
+      "../app/build/intermediates/packaged_res/debug/packageDebugResources"
+    )
+
     val snapshotsDir = File(fixtureRoot, "dynamic_feature/build/reports/paparazzi/debug/images")
     val snapshots = snapshotsDir.listFiles()
     assertThat(snapshots!!).hasLength(1)
