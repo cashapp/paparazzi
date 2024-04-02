@@ -8,9 +8,6 @@ import org.gradle.api.artifacts.transform.TransformParameters
 
 def artifactType = Attribute.of("artifactType", String)
 
-def implementationFiles
-def compileOnlyFiles
-
 project.configurations {
   aarAsJar {
     transitive = true
@@ -28,22 +25,10 @@ project.configurations {
 
   implementationAarAsJar {
     extendsFrom aarAsJar
-
-    implementationFiles = incoming.artifactView {
-      it.attributes.attribute(
-        artifactType, "aarAsJar"
-      )
-    }.files
   }
 
   compileOnlyAarAsJar {
     extendsFrom aarAsJar
-
-    compileOnlyFiles = incoming.artifactView {
-      it.attributes.attribute(
-        artifactType, "aarAsJar"
-      )
-    }.files
   }
 }
 
@@ -58,14 +43,24 @@ project.dependencies {
     to.attribute(artifactType, "aarAsJar")
   }
 
-  def implementationDeps = create(implementationFiles)
-  def compileOnlyDeps = create(compileOnlyFiles)
-  project.configurations.named("implementation") {
-    it.dependencies.add(implementationDeps)
-  }
-  project.configurations.named("compileOnly") {
-    it.dependencies.add(compileOnlyDeps)
-  }
+  project.configurations.implementation.dependencies.add(
+    create(
+      project.configurations.implementationAarAsJar.incoming.artifactView {
+        it.attributes.attribute(
+          artifactType, "aarAsJar"
+        )
+      }.files
+    )
+  )
+  project.configurations.compileOnly.dependencies.add(
+    create(
+      project.configurations.compileOnlyAarAsJar.incoming.artifactView {
+        it.attributes.attribute(
+          artifactType, "aarAsJar"
+        )
+      }.files
+    )
+  )
 }
 
 @DisableCachingByDefault

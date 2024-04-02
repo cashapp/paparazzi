@@ -4,7 +4,7 @@ apply plugin: 'org.jetbrains.kotlin.jvm'
 apply plugin: 'org.jetbrains.dokka'
 apply plugin: 'com.vanniktech.maven.publish'
 apply plugin: 'dev.drewhamilton.poko'
-apply from: "customConfiguration.gradle"
+apply from: "../gradle/aarToJarConfiguration.gradle"
 
 java {
   sourceCompatibility = libs.versions.javaTarget.get()
@@ -19,7 +19,7 @@ configurations {
   }
 }
 
-dependencies { DependencyHandler dependency ->
+dependencies {
   registerTransform(org.gradle.api.internal.artifacts.transform.UnzipTransform) {
     from.attribute(artifactType, ArtifactTypeDefinition.JAR_TYPE)
     to.attribute(artifactType, ArtifactTypeDefinition.DIRECTORY_TYPE)
