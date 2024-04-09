@@ -158,10 +158,10 @@ public class PaparazziPlugin : Plugin<Project> {
         task.projectResourceDirs.set(
           project.provider {
             val resourcesComputer = variant.mergeResourcesProvider?.get()?.resourcesComputer
-            val generateResValuesDirs = resourcesComputer?.generatedResOutputDir
-            val extraGeneratedResDirs = resourcesComputer?.extraGeneratedResFolders
+            val generateResValuesDirs = resourcesComputer?.generatedResOutputDir ?: project.files()
+            val extraGeneratedResDirs = resourcesComputer?.extraGeneratedResFolders ?: project.files()
 
-            (extraGeneratedResDirs?.map(projectDirectory::relativize) ?: emptyList()) + localResourceDirs.relativize(projectDirectory) + (generateResValuesDirs?.map(projectDirectory::relativize) ?: emptyList())
+            extraGeneratedResDirs.map(projectDirectory::relativize) + localResourceDirs.relativize(projectDirectory) + generateResValuesDirs.map(projectDirectory::relativize)
           }
         )
         task.moduleResourceDirs.set(project.provider { moduleResourceDirs.relativize(projectDirectory) })
