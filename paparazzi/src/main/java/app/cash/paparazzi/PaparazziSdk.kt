@@ -38,7 +38,7 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.WindowRecomposerPolicy
 import androidx.compose.ui.platform.createLifecycleAwareWindowRecomposer
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.setViewTreeLifecycleOwner
+import androidx.lifecycle.ViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import app.cash.paparazzi.accessibility.AccessibilityRenderExtension
 import app.cash.paparazzi.agent.InterceptorRegistrar
@@ -271,7 +271,7 @@ public class PaparazziSdk @JvmOverloads constructor(
 
       if (hasLifecycleOwnerRuntime) {
         val lifecycleOwner = PaparazziLifecycleOwner()
-        modifiedView.setViewTreeLifecycleOwner(lifecycleOwner)
+        ViewTreeLifecycleOwner.set(modifiedView, lifecycleOwner)
 
         if (hasSavedStateRegistryOwnerRuntime) {
           modifiedView.setViewTreeSavedStateRegistryOwner(PaparazziSavedStateRegistryOwner(lifecycleOwner))
