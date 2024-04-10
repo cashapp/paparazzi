@@ -135,7 +135,7 @@ public class Paparazzi @JvmOverloads constructor(
     renderingMode: RenderingMode? = null
   ): Unit = sdk.unsafeUpdateConfig(deviceConfig, theme, renderingMode)
 
-  private fun createFrameHandler(name: String? = null, frameCount: Int = -1, fps: Int = 1): SnapshotHandler.FrameHandler {
+  private fun createFrameHandler(name: String? = null, frameCount: Int = 1, fps: Int = -1): SnapshotHandler.FrameHandler {
     val snapshot = Snapshot(name, testName!!, Date())
     return snapshotHandler.newFrameHandler(snapshot, frameCount, fps)
   }

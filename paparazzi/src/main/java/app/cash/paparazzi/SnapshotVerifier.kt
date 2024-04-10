@@ -60,7 +60,8 @@ public class SnapshotVerifier @JvmOverloads constructor(
           relativePath = expected.path,
           image = image,
           goldenImage = goldenImage,
-          maxPercentDifferent = maxPercentDifference
+          maxPercentDifferent = maxPercentDifference,
+          failureDir = failureDir
         )
       }
 
@@ -69,4 +70,15 @@ public class SnapshotVerifier @JvmOverloads constructor(
   }
 
   override fun close(): Unit = Unit
+
+  private companion object {
+    /** Directory where to write the thumbnails and deltas. */
+    private val failureDir: File
+      get() {
+        val buildDirString = System.getProperty("paparazzi.build.dir")
+        val failureDir = File(buildDirString, "paparazzi/failures")
+        failureDir.mkdirs()
+        return failureDir
+      }
+  }
 }

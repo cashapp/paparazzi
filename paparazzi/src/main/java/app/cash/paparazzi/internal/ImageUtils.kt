@@ -51,20 +51,12 @@ internal object ImageUtils {
 
   private const val THUMBNAIL_SIZE = 1000
 
-  /** Directory where to write the thumbnails and deltas. */
-  private val failureDir: File
-    get() {
-      val buildDirString = System.getProperty("paparazzi.build.dir")
-      val failureDir = File(buildDirString, "paparazzi/failures")
-      failureDir.mkdirs()
-      return failureDir
-    }
-
   @Throws(IOException::class)
   fun requireSimilar(
     relativePath: String,
     image: BufferedImage,
-    maxPercentDifference: Double
+    maxPercentDifference: Double,
+    failureDir: File
   ) {
     val scale = getThumbnailScale(image)
     val thumbnail = scale(image, scale, scale)
@@ -74,7 +66,7 @@ internal object ImageUtils {
       null
     ) {
       var message = "Unable to load golden thumbnail: $relativePath\n"
-      message = saveImageAndAppendMessage(thumbnail, message, relativePath)
+      message = saveImageAndAppendMessage(thumbnail, message, relativePath, failureDir)
       if (FAIL_ON_MISSING_THUMBNAIL) {
         fail(message)
       } else {
@@ -83,12 +75,7 @@ internal object ImageUtils {
     } else {
       try {
         val goldenImage = ImageIO.read(`is`)
-        assertImageSimilar(
-          relativePath,
-          goldenImage,
-          thumbnail,
-          maxPercentDifference
-        )
+        assertImageSimilar(relativePath, goldenImage, thumbnail, maxPercentDifference, failureDir)
       } finally {
         `is`.close()
       }
@@ -100,7 +87,8 @@ internal object ImageUtils {
     relativePath: String,
     goldenImage: BufferedImage,
     image: BufferedImage,
-    maxPercentDifferent: Double
+    maxPercentDifferent: Double,
+    failureDir: File
   ) {
     var goldenImage = goldenImage
     if (goldenImage.type != TYPE_INT_ARGB) {
@@ -219,7 +207,7 @@ internal object ImageUtils {
       }
       ImageIO.write(deltaImage, "PNG", output)
       error += " - see details in file://" + output.path + "\n"
-      error = saveImageAndAppendMessage(image, error, relativePath)
+      error = saveImageAndAppendMessage(image, error, relativePath, failureDir)
       println(error)
       fail(error)
     }
@@ -386,13 +374,11 @@ internal object ImageUtils {
   private fun saveImageAndAppendMessage(
     image: BufferedImage,
     initialMessage: String,
-    relativePath: String
+    relativePath: String,
+    outputDir: File
   ): String {
     var initialMessage = initialMessage
-    val output = File(
-      failureDir,
-      getName(relativePath)
-    )
+    val output = File(outputDir, getName(relativePath))
     if (output.exists()) {
       val deleted = output.delete()
       assertTrue(deleted)

@@ -18,11 +18,15 @@ import app.cash.paparazzi.SnapshotHandler
 import app.cash.paparazzi.internal.ImageUtils
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.TemporaryFolder
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
 
 class AccessibilityRenderExtensionTest {
+  @get:Rule
+  val tempDir = TemporaryFolder()
+
   private val snapshotHandler = TestSnapshotVerifier()
 
   @get:Rule
@@ -114,7 +118,7 @@ class AccessibilityRenderExtensionTest {
       )
     }
 
-  private class TestSnapshotVerifier : SnapshotHandler {
+  private inner class TestSnapshotVerifier : SnapshotHandler {
     override fun newFrameHandler(
       snapshot: Snapshot,
       frameCount: Int,
@@ -127,7 +131,8 @@ class AccessibilityRenderExtensionTest {
             relativePath = expected.path,
             image = image,
             goldenImage = ImageIO.read(expected),
-            maxPercentDifferent = 0.1
+            maxPercentDifferent = 0.1,
+            failureDir = tempDir.newFolder()
           )
         }
 
