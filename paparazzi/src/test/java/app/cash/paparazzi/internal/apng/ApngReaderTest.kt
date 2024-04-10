@@ -21,12 +21,16 @@ import com.google.common.truth.Truth.assertThat
 import okio.FileSystem
 import okio.Path.Companion.toPath
 import org.junit.Assert.fail
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.TemporaryFolder
 import java.io.File
 import java.io.IOException
 import javax.imageio.ImageIO
 
 class ApngReaderTest {
+  @get:Rule
+  val tempDir = TemporaryFolder()
 
   @Test
   fun decodesAllFrames() {
@@ -37,7 +41,13 @@ class ApngReaderTest {
       val expectedFile = javaClass.classLoader.getResource("simple_animation_$i.png")
       val expectedImage = ImageIO.read(expectedFile)
       val actualImage = reader.readNextFrame()!!
-      ImageUtils.assertImageSimilar(expectedFile!!.path, expectedImage, actualImage, 0.0)
+      ImageUtils.assertImageSimilar(
+        relativePath = expectedFile!!.path,
+        goldenImage = expectedImage,
+        image = actualImage,
+        maxPercentDifferent = 0.0,
+        failureDir = tempDir.newFolder()
+      )
     }
 
     assertThat(reader.isFinished()).isTrue()
