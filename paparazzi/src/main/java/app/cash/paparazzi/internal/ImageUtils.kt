@@ -90,6 +90,48 @@ internal object ImageUtils {
     maxPercentDifferent: Double,
     failureDir: File
   ) {
+    val (deltaImage, percentDifference) = compareImages(goldenImage, image)
+
+    val goldenImageWidth = goldenImage.width
+    val goldenImageHeight = goldenImage.height
+
+    val imageWidth = image.width
+    val imageHeight = image.height
+
+    var error: String? = null
+    val imageName = getName(relativePath)
+    if (percentDifference > maxPercentDifferent) {
+      error = String.format("Images differ (by %f%%)", percentDifference)
+    } else if (Math.abs(goldenImageWidth - imageWidth) >= 2) {
+      error = "Widths differ too much for " + imageName + ": " +
+        goldenImageWidth + "x" + goldenImageHeight +
+        "vs" + imageWidth + "x" + imageHeight
+    } else if (Math.abs(goldenImageHeight - imageHeight) >= 2) {
+      error = "Heights differ too much for " + imageName + ": " +
+        goldenImageWidth + "x" + goldenImageHeight +
+        "vs" + imageWidth + "x" + imageHeight
+    }
+
+    if (error != null) {
+      val output = File(failureDir, "delta-$imageName")
+      if (output.exists()) {
+        val deleted = output.delete()
+        assertTrue(deleted)
+      }
+      ImageIO.write(deltaImage, "PNG", output)
+      error += " - see details in file://" + output.path + "\n"
+      error = saveImageAndAppendMessage(image, error, relativePath, failureDir)
+      println(error)
+      fail(error)
+    }
+  }
+
+  @Throws(IOException::class)
+  fun compareImages(
+    goldenImage: BufferedImage,
+    image: BufferedImage,
+    withText: Boolean = true
+  ): Pair<BufferedImage, Float> {
     var goldenImage = goldenImage
     if (goldenImage.type != TYPE_INT_ARGB) {
       val temp = BufferedImage(
@@ -169,50 +211,25 @@ internal object ImageUtils {
       }
     }
 
-    // 3 different colors, 256 color levels
-    val total = deltaHeight.toLong() * deltaWidth.toLong() * 3L * 256L
-    val percentDifference = (delta * 100 / total.toDouble()).toFloat()
+    // Expected on the left
+    // Golden on the right
+    g.drawImage(goldenImage, 0, 0, null)
+    g.drawImage(image, goldenImageWidth + deltaWidth, 0, null)
 
-    var error: String? = null
-    val imageName = getName(relativePath)
-    if (percentDifference > maxPercentDifferent) {
-      error = String.format("Images differ (by %f%%)", percentDifference)
-    } else if (Math.abs(goldenImageWidth - imageWidth) >= 2) {
-      error = "Widths differ too much for " + imageName + ": " +
-        goldenImageWidth + "x" + goldenImageHeight +
-        "vs" + imageWidth + "x" + imageHeight
-    } else if (Math.abs(goldenImageHeight - imageHeight) >= 2) {
-      error = "Heights differ too much for " + imageName + ": " +
-        goldenImageWidth + "x" + goldenImageHeight +
-        "vs" + imageWidth + "x" + imageHeight
-    }
-
-    if (error != null) {
-      // Expected on the left
-      // Golden on the right
-      g.drawImage(goldenImage, 0, 0, null)
-      g.drawImage(image, goldenImageWidth + deltaWidth, 0, null)
-
-      // Labels
-      if (deltaWidth > 80) {
-        g.color = Color.RED
-        g.drawString("Expected", 10, 20)
-        g.drawString("Actual", goldenImageWidth + deltaWidth + 10, 20)
-      }
-
-      val output = File(failureDir, "delta-$imageName")
-      if (output.exists()) {
-        val deleted = output.delete()
-        assertTrue(deleted)
-      }
-      ImageIO.write(deltaImage, "PNG", output)
-      error += " - see details in file://" + output.path + "\n"
-      error = saveImageAndAppendMessage(image, error, relativePath, failureDir)
-      println(error)
-      fail(error)
+    // Labels
+    if (withText && deltaWidth > 80) {
+      g.color = Color.RED
+      g.drawString("Expected", 10, 20)
+      g.drawString("Actual", goldenImageWidth + deltaWidth + 10, 20)
     }
 
     g.dispose()
+
+    // 3 different colors, 256 color levels
+    val total = imageHeight.toLong() * imageWidth.toLong() * 3L * 256L
+    val percentDifference = (delta * 100 / total.toDouble()).toFloat()
+
+    return deltaImage to percentDifference
   }
 
   /**

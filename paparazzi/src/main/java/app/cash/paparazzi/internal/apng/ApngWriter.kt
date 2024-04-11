@@ -62,8 +62,8 @@ internal class ApngWriter(
   private var maxHeight = 0
   private var ihdrWidth = 0
   private var ihdrHeight = 0
-  private var frameCount = 0
   private var sequenceNumber = 1
+  internal var frameCount = 0
 
   fun writeImage(image: BufferedImage) {
     if (frameCount == 0) {
@@ -126,7 +126,8 @@ internal class ApngWriter(
       // https://www.w3.org/TR/png/#3colourType
       val colorType = when (bufferedImage.type) {
         BufferedImage.TYPE_INT_RGB -> PNG_COLOR_TYPE_RGB
-        BufferedImage.TYPE_INT_ARGB -> PNG_COLOR_TYPE_RGBA
+        // We use getRGB to extract the image data which returns ARGB color space
+        BufferedImage.TYPE_INT_ARGB_PRE, BufferedImage.TYPE_INT_ARGB -> PNG_COLOR_TYPE_RGBA
         else -> throw IllegalStateException("Unsupported image type")
       }
 

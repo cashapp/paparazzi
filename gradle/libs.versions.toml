@@ -5,7 +5,6 @@ bytebuddy = "1.14.13"
 composeCompiler = "1.5.11"
 coroutines = "1.8.0"
 javaTarget = "11"
-jcodec = "0.2.5"
 kotlin = "1.9.23"
 ksp = "1.9.23-1.0.20"
 ktlint = "0.50.0"
@@ -33,9 +32,6 @@ composeUi-uiTooling = { module = "androidx.compose.ui:ui-tooling" }
 
 grgit = { module = "org.ajoberstar.grgit:grgit-core", version = "5.2.2" }
 guava = { module = "com.google.guava:guava", version = "33.1.0-jre" }
-
-jcodec-core = { module = "org.jcodec:jcodec", version.ref = "jcodec" }
-jcodec-javase = { module = "org.jcodec:jcodec-javase", version.ref = "jcodec" }
 
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
