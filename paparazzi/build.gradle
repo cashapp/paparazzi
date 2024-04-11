@@ -36,7 +36,7 @@ dependencies {
   compileOnly libs.androidx.lifecycleCommon
   compileOnly files('libs/lifecycle-runtime-2.6.1.jar')
   compileOnly files('libs/savedstate-1.2.1.jar')
-  compileOnly files('libs/androidx-activity-1.5.0.jar')
+  compileOnly files('libs/androidx-activity-1.7.1.jar')
 
   implementation libs.bytebuddy.agent
   implementation libs.bytebuddy.core
