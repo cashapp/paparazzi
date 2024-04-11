@@ -41,7 +41,7 @@ public class SnapshotVerifier @JvmOverloads constructor(
     return object : FrameHandler {
       override fun handle(image: BufferedImage) {
         // Note: does not handle videos or its frames at the moment
-        val expected = File(imagesDirectory, snapshot.toFileName(extension = "png"))
+        val expected = snapshot.goldenFile(imagesDirectory)
         if (!expected.exists()) {
           throw AssertionError("File $expected does not exist")
         }

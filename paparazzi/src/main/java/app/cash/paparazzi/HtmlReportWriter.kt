@@ -101,7 +101,7 @@ public class HtmlReportWriter @JvmOverloads constructor(
         val shot = if (hashes.size == 1) {
           val original = File(imagesDirectory, "${hashes[0]}.png")
           if (isRecording) {
-            val goldenFile = File(goldenImagesDirectory, snapshot.toFileName("_", "png"))
+            val goldenFile = snapshot.goldenFile(goldenImagesDirectory)
             original.copyTo(goldenFile, overwrite = true)
           }
           snapshot.copy(file = original.toJsonPath())
@@ -110,11 +110,10 @@ public class HtmlReportWriter @JvmOverloads constructor(
 
           if (isRecording) {
             for ((index, frameHash) in hashes.withIndex()) {
-              val originalFrame = File(imagesDirectory, "$frameHash.png")
-              val frameSnapshot = snapshot.copy(name = "${snapshot.name} $index")
-              val goldenFile = File(goldenImagesDirectory, frameSnapshot.toFileName("_", "png"))
+              val goldenFile = snapshot.goldenFile(goldenImagesDirectory, frame = index)
               if (!goldenFile.exists()) {
-                originalFrame.copyTo(goldenFile)
+                val original = File(imagesDirectory, "$frameHash.png")
+                original.copyTo(goldenFile)
               }
             }
           }
