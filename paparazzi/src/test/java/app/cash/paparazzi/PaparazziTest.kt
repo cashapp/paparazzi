@@ -21,6 +21,7 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.graphics.Canvas
 import android.graphics.Color
+import android.os.SystemClock
 import android.view.Choreographer
 import android.view.Choreographer.CALLBACK_ANIMATION
 import android.view.View
@@ -135,11 +136,11 @@ class PaparazziTest {
     }
     animator.addListener(object : AnimatorListenerAdapter() {
       override fun onAnimationStart(animation: Animator?, isReverse: Boolean) {
-        log += "onAnimationStart uptimeMillis=$time"
+        log += "onAnimationStart uptimeMillis=$uptime"
       }
 
       override fun onAnimationEnd(animator: Animator) {
-        log += "onAnimationEnd uptimeMillis=$time"
+        log += "onAnimationEnd uptimeMillis=$uptime"
       }
     })
 
@@ -218,8 +219,36 @@ class PaparazziTest {
     assertThat(thrown).isTrue()
   }
 
+  @Test
+  fun preDrawOnEveryFrame() {
+    val log = mutableListOf<String>()
+
+    val view = object : View(paparazzi.context) {
+      override fun onAttachedToWindow() {
+        viewTreeObserver.addOnPreDrawListener {
+          log += "predraw"
+          true
+        }
+      }
+
+      override fun onDraw(canvas: Canvas?) {
+        super.onDraw(canvas)
+        log += "draw"
+      }
+    }
+
+    paparazzi.gif(view, fps = 4)
+
+    assertThat(log).isEqualTo(listOf("draw", "predraw", "predraw", "predraw"))
+  }
+
   private val time: Long
     get() {
       return TimeUnit.NANOSECONDS.toMillis(System_Delegate.nanoTime())
+    }
+
+  private val uptime: Long
+    get() {
+      return SystemClock.uptimeMillis()
     }
 }

@@ -1,4 +1,9 @@
+import org.gradle.work.DisableCachingByDefault
 import org.jetbrains.kotlin.gradle.plugin.AbstractKotlinPluginKt
+import com.android.build.gradle.internal.publishing.AndroidArtifacts
+import org.gradle.api.artifacts.transform.TransformParameters
+import java.nio.file.Files
+import java.util.zip.ZipFile
 
 apply plugin: 'org.jetbrains.kotlin.jvm'
 apply plugin: 'org.jetbrains.dokka'
@@ -10,33 +15,34 @@ java {
   targetCompatibility = libs.versions.javaTarget.get()
 }
 
-def artifactType = Attribute.of('artifactType', String)
-
 configurations {
   unzip {
-    attributes.attribute(artifactType, ArtifactTypeDefinition.DIRECTORY_TYPE)
+    attributes.attribute(AndroidArtifacts.ARTIFACT_TYPE, ArtifactTypeDefinition.DIRECTORY_TYPE)
   }
 }
+
+configureAarAsJarForConfiguration("compileOnly")
+configureAarAsJarForConfiguration("testImplementation")
 
 dependencies {
   registerTransform(org.gradle.api.internal.artifacts.transform.UnzipTransform) {
-    from.attribute(artifactType, ArtifactTypeDefinition.JAR_TYPE)
-    to.attribute(artifactType, ArtifactTypeDefinition.DIRECTORY_TYPE)
+    from.attribute(AndroidArtifacts.ARTIFACT_TYPE, ArtifactTypeDefinition.JAR_TYPE)
+    to.attribute(AndroidArtifacts.ARTIFACT_TYPE, ArtifactTypeDefinition.DIRECTORY_TYPE)
+  }
+  registerTransform(IdentityTransform) {
+    from.attribute(AndroidArtifacts.ARTIFACT_TYPE, "jar")
+    to.attribute(AndroidArtifacts.ARTIFACT_TYPE, "aarAsJar")
+  }
+  registerTransform(ExtractClassesJarTransform) {
+    from.attribute(AndroidArtifacts.ARTIFACT_TYPE, "aar")
+    to.attribute(AndroidArtifacts.ARTIFACT_TYPE, "aarAsJar")
   }
 }
 
 dependencies {
-  // Paparazzi is a Kotlin JVM module and thus cannot depend on Android library artifacts (AARs)
-  // TODO: Use Gradle transforms to extract/rename classes.jar's from AARs
-  api files('libs/compose-runtime-android-1.5.0.jar')
-  implementation files('libs/compose-ui-android-1.5.0.jar') // Need implementation dependency to reference AbstractComposeView for AccessibilityRenderExtension
-  // Needed to get compose bounds and annotated strings for Compose support for AccessibilityRenderExtension
-  compileOnly files('libs/compose-ui-geometry-android-1.5.0.jar')
-  compileOnly files('libs/compose-ui-text-android-1.5.0.jar')
-  compileOnly libs.androidx.lifecycleCommon
-  compileOnly files('libs/lifecycle-runtime-2.6.1.jar')
-  compileOnly files('libs/savedstate-1.2.1.jar')
-  compileOnly files('libs/androidx-activity-1.5.0.jar')
+  testImplementationAarAsJar libs.androidx.compose.ui.android
+  compileOnlyAarAsJar libs.androidx.compose.ui.android
+  compileOnlyAarAsJar libs.androidx.activity
 
   implementation libs.bytebuddy.agent
   implementation libs.bytebuddy.core
@@ -152,5 +158,89 @@ tasks.withType(Test).configureEach {
     showCauses true
     showExceptions true
     showStackTraces true
+  }
+}
+
+def configureAarAsJarForConfiguration(String configuration) {
+  def aarAsJar = project.configurations
+    .create("${configuration}AarAsJar") {
+      canBeResolved = true
+      attributes.attribute(
+        AndroidArtifacts.ARTIFACT_TYPE,
+        "release"
+      )
+      attributes.attribute(
+        Usage.USAGE_ATTRIBUTE,
+        project.getObjects().named(Usage, Usage.JAVA_API)
+      )
+    }.incoming
+    .artifactView { viewConfiguration ->
+      viewConfiguration.attributes.attribute(AndroidArtifacts.ARTIFACT_TYPE, "aarAsJar")
+    }
+    .files
+
+  project.configurations
+    .getByName(configuration)
+    .dependencies
+    .add(project.dependencies.create(aarAsJar))
+}
+
+@DisableCachingByDefault
+abstract class IdentityTransform implements TransformAction<TransformParameters.None> {
+  @PathSensitive(PathSensitivity.ABSOLUTE)
+  @InputArtifact
+  abstract Provider<FileSystemLocation> getInputArtifact()
+
+  @Override
+  void transform(TransformOutputs transformOutputs) {
+    def input = getInputArtifact().get().asFile
+    if (input.isDirectory()) {
+      transformOutputs.dir(input)
+    } else if (input.isFile()) {
+      transformOutputs.file(input)
+    } else {
+      throw new IllegalArgumentException(
+        "File/directory does not exist: ${input.absolutePath}"
+      )
+    }
+  }
+}
+
+@DisableCachingByDefault
+abstract class ExtractClassesJarTransform implements TransformAction<TransformParameters.None> {
+  @PathSensitive(PathSensitivity.NAME_ONLY)
+  @InputArtifact
+  abstract Provider<FileSystemLocation> getPrimaryInput()
+
+  @Override
+  void transform(TransformOutputs outputs) {
+    ZipFile zip = null
+    try {
+      def file = getPrimaryInput().get().asFile
+      def aarFilename = file.name.substring(0, file.name.lastIndexOf('.'))
+      zip = new ZipFile(file)
+      def entries = zip.entries()
+      while (entries.hasMoreElements()) {
+        def item = entries.nextElement()
+        if (item.isDirectory()) continue
+
+        if (item.name == "classes.jar") {
+          def output = outputs.file(aarFilename + "-" + item.name)
+          def inputStream = null
+          try {
+            inputStream = zip.getInputStream(item)
+            Files.copy(inputStream, output.toPath())
+          } finally {
+            if (inputStream != null) {
+              inputStream.close()
+            }
+          }
+        }
+      }
+    } finally {
+      if (zip != null) {
+        zip.close()
+      }
+    }
   }
 }

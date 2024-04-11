@@ -4,9 +4,13 @@ package app.cash.paparazzi.internal.resources
 
 import com.android.SdkConstants.DOT_AAR
 import com.android.ide.common.util.toPathString
+import java.nio.file.FileVisitResult
 import java.nio.file.FileVisitResult.CONTINUE
+import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.nio.file.SimpleFileVisitor
+import java.nio.file.attribute.BasicFileAttributes
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 import kotlin.io.path.ExperimentalPathApi
@@ -14,7 +18,6 @@ import kotlin.io.path.exists
 import kotlin.io.path.invariantSeparatorsPathString
 import kotlin.io.path.outputStream
 import kotlin.io.path.readBytes
-import kotlin.io.path.visitFileTree
 
 internal const val AAR_LIBRARY_NAME = "com.test:test-library:1.0.0"
 internal const val AAR_PACKAGE_NAME = "com.test.testlibrary"
@@ -68,16 +71,19 @@ internal fun makeAarRepositoryFromAarArtifact(
 private fun createAar(tempDir: Path, sourceDirectory: Path): Path {
   return tempDir.resolve("${sourceDirectory.fileName}$DOT_AAR").also { aarPath ->
     ZipOutputStream(aarPath.outputStream().buffered()).use { zip ->
-      sourceDirectory.visitFileTree {
-        onVisitFile { file, _ ->
-          val relativePath = sourceDirectory.relativize(file).invariantSeparatorsPathString
-          val entry = ZipEntry(relativePath)
-          zip.putNextEntry(entry)
-          zip.write(file.readBytes())
-          zip.closeEntry()
-          return@onVisitFile CONTINUE
+      Files.walkFileTree(
+        sourceDirectory,
+        object : SimpleFileVisitor<Path>() {
+          override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
+            val relativePath = sourceDirectory.relativize(file).invariantSeparatorsPathString
+            val entry = ZipEntry(relativePath)
+            zip.putNextEntry(entry)
+            zip.write(file.readBytes())
+            zip.closeEntry()
+            return CONTINUE
+          }
         }
-      }
+      )
     }
   }
 }
