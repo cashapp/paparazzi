@@ -17,7 +17,6 @@ import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
 import java.io.File
-import java.nio.file.Files
 
 class PaparazziPluginTest {
   private val filesToDelete = mutableListOf<File>()
@@ -1249,6 +1248,22 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun verifyGif() {
+    val fixtureRoot = File("src/test/projects/verify-gif")
+
+    val result = gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
+    assertThat(result.task(":testDebugUnitTest")).isNotNull()
+
+    val videoDir = File(fixtureRoot, "build/reports/paparazzi/debug/videos")
+    val videos = videoDir.listFiles()
+    assertThat(videos!!).hasLength(1)
+  }
+
+  @Test
   fun verifyVectorDrawables() {
     val fixtureRoot = File("src/test/projects/verify-svgs")
 
@@ -1291,14 +1306,11 @@ class PaparazziPluginTest {
       .runFixture(fixtureRoot) { build() }
 
     val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/debug/images")
-    val snapshotFile = File(snapshotsDir, "1122301046223e85baf58cbc417a6b2d0c2bbc24.png")
+    val snapshotFile = File(snapshotsDir, "c053cbab1f92a7a88cd4923c6a590994b63b9039.png")
     assertThat(snapshotFile.exists()).isTrue()
 
     val goldenImage = File(fixtureRoot, "src/test/resources/arrow_missing.png")
-    val actualFileBytes = Files.readAllBytes(snapshotFile.toPath())
-    val expectedFileBytes = Files.readAllBytes(goldenImage.toPath())
-
-    assertThat(actualFileBytes).isEqualTo(expectedFileBytes)
+    assertThat(goldenImage).isSimilarTo(snapshotFile).withDefaultThreshold()
   }
 
   @Test

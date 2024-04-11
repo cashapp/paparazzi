@@ -62,6 +62,76 @@ internal object ImageUtils {
     failureDir: File,
     differ: ImageDiffer? = null
   ) {
+    val (deltaImage, percentDifference, result) = compareImages(goldenImage, image, differ = differ)
+
+    val goldenImageWidth = goldenImage.width
+    val goldenImageHeight = goldenImage.height
+
+    val imageWidth = image.width
+    val imageHeight = image.height
+
+    var error: String? = null
+    val imageName = getName(relativePath)
+    if (percentDifference > maxPercentDifferent) {
+      error = String.format("Images differ (by %f%%)", percentDifference)
+    } else if (Math.abs(goldenImageWidth - imageWidth) >= 2) {
+      error = "Widths differ too much for " + imageName + ": " +
+        goldenImageWidth + "x" + goldenImageHeight +
+        "vs" + imageWidth + "x" + imageHeight
+    } else if (Math.abs(goldenImageHeight - imageHeight) >= 2) {
+      error = "Heights differ too much for " + imageName + ": " +
+        goldenImageWidth + "x" + goldenImageHeight +
+        "vs" + imageWidth + "x" + imageHeight
+    }
+
+    if (error != null) {
+      val deltaOutput = File(failureDir, "delta-$imageName")
+      if (deltaOutput.exists()) {
+        val deleted = deltaOutput.delete()
+        assertTrue(deleted)
+      }
+      ImageIO.write(deltaImage, "PNG", deltaOutput)
+      error += " - see details in file://" + deltaOutput.path + "\n"
+      val actualOutput = File(failureDir, getName(relativePath))
+      if (actualOutput.exists()) {
+        val deleted = actualOutput.delete()
+        assertTrue(deleted)
+      }
+      ImageIO.write(image, "PNG", actualOutput)
+      error += "Thumbnail for current rendering stored at file://" + actualOutput.path
+      error += "\nRun the following command to accept the changes:\n"
+      error += "mv ${actualOutput.path} $relativePath"
+      // The above has been commented out, since the destination path returned is in out dir
+      // and it makes the tests pass without the code being actually checked in.
+      println(error)
+
+      when (result) {
+        is DiffResult.Different -> {
+          println("results are different: ${result.numDifferentPixels} of ${result.numTotalPixels}")
+          fail(error)
+        }
+        is DiffResult.Similar -> {
+          println("results are similar: ${result.numSimilarPixels} of ${result.numTotalPixels}")
+          val highlights = File(failureDir, "highlights-$imageName.png")
+          if (highlights.exists()) {
+            highlights.delete()
+          }
+          ImageIO.write(result.highlights, "PNG", highlights)
+        }
+        is DiffResult.Identical -> {
+          println("results are identical")
+        }
+      }
+    }
+  }
+
+  @Throws(IOException::class)
+  fun compareImages(
+    goldenImage: BufferedImage,
+    image: BufferedImage,
+    withText: Boolean = true,
+    differ: ImageDiffer? = null
+  ): Triple<BufferedImage, Float, DiffResult> {
     var goldenImage = goldenImage
     if (goldenImage.type != TYPE_INT_ARGB) {
       val temp = BufferedImage(
@@ -143,96 +213,44 @@ internal object ImageUtils {
       }
     }
 
-    // 3 different colors, 256 color levels
-    val total = deltaHeight.toLong() * deltaWidth.toLong() * 3L * 256L
-    val percentDifference = (delta * 100 / total.toDouble()).toFloat()
+    // Expected on the left
+    // Golden on the right
+    g.drawImage(goldenImage, 0, 0, null)
+    g.drawImage(image, goldenImageWidth + deltaWidth, 0, null)
 
-    var error: String? = null
-    val imageName = getName(relativePath)
-    if (percentDifference > 0.0) {
-      error = String.format("Images differ (by %f%%)", percentDifference)
-    } else if (Math.abs(goldenImageWidth - imageWidth) >= 2) {
-      error = "Widths differ too much for " + imageName + ": " +
-        goldenImageWidth + "x" + goldenImageHeight +
-        "vs" + imageWidth + "x" + imageHeight
-    } else if (Math.abs(goldenImageHeight - imageHeight) >= 2) {
-      error = "Heights differ too much for " + imageName + ": " +
-        goldenImageWidth + "x" + goldenImageHeight +
-        "vs" + imageWidth + "x" + imageHeight
-    }
-
-    if (error != null) {
-      // Expected on the left
-      // Golden on the right
-      g.drawImage(goldenImage, 0, 0, null)
-      g.drawImage(image, goldenImageWidth + deltaWidth, 0, null)
-
-      // Labels
-      if (deltaWidth > 80) {
-        /**
-         * AWT uses native text rendering under the hood, making it extremely difficult to get
-         * consistent cross-platform label text rendering, due to antialiasing, etc. This can
-         * result in false negatives when comparing delta images.
-         *
-         * As a workaround, we instead use text images pre-rendered on MacOSX 14 with the default
-         * font=Dialog, size=12 and composite them into the delta image here.
-         *
-         * We use that original font's ascent to offset the labels, which is determined by running
-         * the following on MacOSX 14:
-         *
-         * ```
-         * val z = BufferedImage(1, 1, TYPE_INT_ARGB)
-         * val MAC_OSX_FONT_DIALOG_SIZE_12_ASCENT = z.graphics.fontMetrics.ascent
-         * ```
-         */
-        val yOffset = 20 - MAC_OSX_FONT_DIALOG_SIZE_12_ASCENT
-        val myClassLoader = ImageUtils::class.java.classLoader!!
-        val expectedLabel = ImageIO.read(myClassLoader.getResourceAsStream("expected_label.png"))
-        g.drawImage(expectedLabel, 10, yOffset, null)
-        val actualLabel = ImageIO.read(myClassLoader.getResourceAsStream("actual_label.png"))
-        g.drawImage(actualLabel, goldenImageWidth + deltaWidth + 10, yOffset, null)
-      }
-
-      val deltaOutput = File(failureDir, "delta-$imageName")
-      if (deltaOutput.exists()) {
-        val deleted = deltaOutput.delete()
-        assertTrue(deleted)
-      }
-      ImageIO.write(deltaImage, "PNG", deltaOutput)
-      error += " - see details in file://" + deltaOutput.path + "\n"
-      val actualOutput = File(failureDir, getName(relativePath))
-      if (actualOutput.exists()) {
-        val deleted = actualOutput.delete()
-        assertTrue(deleted)
-      }
-      ImageIO.write(image, "PNG", actualOutput)
-      error += "Thumbnail for current rendering stored at file://" + actualOutput.path
-      error += "\nRun the following command to accept the changes:\n"
-      error += "mv ${actualOutput.path} $relativePath"
-      // The above has been commented out, since the destination path returned is in out dir
-      // and it makes the tests pass without the code being actually checked in.
-      println(error)
-
-      when (result) {
-        is DiffResult.Different -> {
-          println("results are different: ${result.numDifferentPixels} of ${result.numTotalPixels}")
-          fail(error)
-        }
-        is DiffResult.Similar -> {
-          println("results are similar: ${result.numSimilarPixels} of ${result.numTotalPixels}")
-          val highlights = File(failureDir, "highlights-$imageName.png")
-          if (highlights.exists()) {
-            highlights.delete()
-          }
-          ImageIO.write(result.highlights, "PNG", highlights)
-        }
-        is DiffResult.Identical -> {
-          println("results are identical")
-        }
-      }
+    // Labels
+    if (withText && deltaWidth > 80) {
+      /**
+       * AWT uses native text rendering under the hood, making it extremely difficult to get
+       * consistent cross-platform label text rendering, due to antialiasing, etc. This can
+       * result in false negatives when comparing delta images.
+       *
+       * As a workaround, we instead use text images pre-rendered on MacOSX 14 with the default
+       * font=Dialog, size=12 and composite them into the delta image here.
+       *
+       * We use that original font's ascent to offset the labels, which is determined by running
+       * the following on MacOSX 14:
+       *
+       * ```
+       * val z = BufferedImage(1, 1, TYPE_INT_ARGB)
+       * val MAC_OSX_FONT_DIALOG_SIZE_12_ASCENT = z.graphics.fontMetrics.ascent
+       * ```
+       */
+      val yOffset = 20 - MAC_OSX_FONT_DIALOG_SIZE_12_ASCENT
+      val myClassLoader = ImageUtils::class.java.classLoader!!
+      val expectedLabel = ImageIO.read(myClassLoader.getResourceAsStream("expected_label.png"))
+      g.drawImage(expectedLabel, 10, yOffset, null)
+      val actualLabel = ImageIO.read(myClassLoader.getResourceAsStream("actual_label.png"))
+      g.drawImage(actualLabel, goldenImageWidth + deltaWidth + 10, yOffset, null)
     }
 
     g.dispose()
+
+    // 3 different colors, 256 color levels
+    val total = imageHeight.toLong() * imageWidth.toLong() * 3L * 256L
+    val percentDifference = (delta * 100 / total.toDouble()).toFloat()
+
+    return Triple(deltaImage, percentDifference, result)
   }
 
   /**
