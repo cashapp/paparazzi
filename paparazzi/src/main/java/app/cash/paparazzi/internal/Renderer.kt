@@ -74,6 +74,7 @@ internal class Renderer(
       )
     )
       .plusFlag(RenderParamsFlags.FLAG_DO_NOT_RENDER_ON_CREATE, true)
+      .plusFlag(RenderParamsFlags.FLAG_KEY_DISABLE_BITMAP_CACHING, true)
       .withTheme("AppTheme", true)
 
     val platformDataRoot = System.getProperty("paparazzi.platform.data.root")

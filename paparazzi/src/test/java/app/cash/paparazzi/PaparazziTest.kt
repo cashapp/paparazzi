@@ -218,6 +218,29 @@ class PaparazziTest {
     assertThat(thrown).isTrue()
   }
 
+  @Test
+  fun preDrawOnEveryFrame() {
+    val log = mutableListOf<String>()
+
+    val view = object : View(paparazzi.context) {
+      override fun onAttachedToWindow() {
+        viewTreeObserver.addOnPreDrawListener {
+          log += "predraw"
+          true
+        }
+      }
+
+      override fun onDraw(canvas: Canvas?) {
+        super.onDraw(canvas)
+        log += "draw"
+      }
+    }
+
+    paparazzi.gif(view, fps = 4)
+
+    assertThat(log).isEqualTo(listOf("draw", "predraw", "predraw", "predraw"))
+  }
+
   private val time: Long
     get() {
       return TimeUnit.NANOSECONDS.toMillis(System_Delegate.nanoTime())
