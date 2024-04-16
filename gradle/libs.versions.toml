@@ -14,7 +14,7 @@ minSdk = "25"
 compileSdk = "34"
 
 layoutlibApi = "31.4.0-beta02"
-layoutlib = "14.0.5"
+layoutlib = "14.0.6"
 
 [libraries]
 androidx-annotations = { module = "androidx.annotation:annotation", version = "1.8.0" }
