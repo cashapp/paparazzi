@@ -21,6 +21,7 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.graphics.Canvas
 import android.graphics.Color
+import android.os.SystemClock
 import android.view.Choreographer
 import android.view.Choreographer.CALLBACK_ANIMATION
 import android.view.View
@@ -135,11 +136,11 @@ class PaparazziTest {
     }
     animator.addListener(object : AnimatorListenerAdapter() {
       override fun onAnimationStart(animation: Animator?, isReverse: Boolean) {
-        log += "onAnimationStart uptimeMillis=$time"
+        log += "onAnimationStart uptimeMillis=$uptime"
       }
 
       override fun onAnimationEnd(animator: Animator) {
-        log += "onAnimationEnd uptimeMillis=$time"
+        log += "onAnimationEnd uptimeMillis=$uptime"
       }
     })
 
@@ -244,5 +245,10 @@ class PaparazziTest {
   private val time: Long
     get() {
       return TimeUnit.NANOSECONDS.toMillis(System_Delegate.nanoTime())
+    }
+
+  private val uptime: Long
+    get() {
+      return SystemClock.uptimeMillis()
     }
 }

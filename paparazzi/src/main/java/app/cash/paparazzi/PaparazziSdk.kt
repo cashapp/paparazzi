@@ -251,6 +251,7 @@ public class PaparazziSdk @JvmOverloads constructor(
     }
 
     System_Delegate.setNanosTime(0L)
+    System_Delegate.setBootTimeNanos(0L)
     try {
       withTime(0L) {
         // Initialize the choreographer at time=0.
