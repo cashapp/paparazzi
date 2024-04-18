@@ -7,6 +7,7 @@ composeRuntime = "1.6.5"
 coroutines = "1.8.0"
 javaTarget = "11"
 kotlin = "1.9.23"
+kotlinPoet = "1.16.0"
 ksp = "1.9.23-1.0.20"
 ktlint = "0.50.0"
 moshi = "1.15.1"
@@ -37,6 +38,8 @@ grgit = { module = "org.ajoberstar.grgit:grgit-core", version = "5.2.2" }
 guava = { module = "com.google.guava:guava", version = "33.1.0-jre" }
 
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
+kotlinpoet = { module = "com.squareup:kotlinpoet", version.ref = "kotlinPoet" }
+kotlinpoet-ksp = { module = "com.squareup:kotlinpoet-ksp", version.ref = "kotlinPoet" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
 
