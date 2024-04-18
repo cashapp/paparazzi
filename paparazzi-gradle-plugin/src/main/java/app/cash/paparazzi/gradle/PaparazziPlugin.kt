@@ -57,6 +57,8 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
 import java.util.Locale
 import javax.inject.Inject
 
+public interface PaparazziExtension
+
 @Suppress("unused")
 public class PaparazziPlugin @Inject constructor(
   private val providerFactory: ProviderFactory,
