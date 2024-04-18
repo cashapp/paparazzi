@@ -1,0 +1,9 @@
+repositories {
+  mavenCentral()
+  google()
+}
+
+dependencies {
+  implementation libs.plugin.android
+  implementation libs.plugin.kotlin
+}
