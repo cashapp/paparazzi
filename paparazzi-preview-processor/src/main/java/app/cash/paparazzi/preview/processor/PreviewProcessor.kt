@@ -11,35 +11,23 @@ import com.squareup.kotlinpoet.ksp.writeTo
 import java.io.File
 
 public class PreviewProcessorProvider : SymbolProcessorProvider {
-  override fun create(environment: SymbolProcessorEnvironment): PreviewProcessor = PreviewProcessor(environment)
+  override fun create(
+    environment: SymbolProcessorEnvironment
+  ): PreviewProcessor = PreviewProcessor(environment)
 }
 
 public class PreviewProcessor(
   private val environment: SymbolProcessorEnvironment
 ) : SymbolProcessor {
 
-  override fun process(resolver: Resolver): List<KSAnnotated> {
-    val allFiles = resolver.getAllFiles().toList()
-    val newFiles = resolver.getNewFiles().toList()
+  private var invoked = false
 
-    when {
-      allFiles.isEmpty() -> {
-        "Skipping due to 0 files to process".log()
-        return emptyList()
-      }
-      newFiles.isEmpty() -> {
-        "Skipping due to no new files to process since last processing run".log()
-        return emptyList()
-      }
-      // Due to codgen and multi-round processing of ksp
-      // https://kotlinlang.org/docs/ksp-multi-round.html
-      newFiles.any {
-        (it.filePath.contains("ksp") && it.fileName.contains("PaparazziPreviews"))
-      } -> {
-        "Skipping subsequent run due to PaparazziPreviews.kt already created and caused ksp re-run".log()
-        return emptyList()
-      }
-    }
+  override fun process(resolver: Resolver): List<KSAnnotated> {
+    if (invoked) return emptyList()
+    invoked = true
+
+    val allFiles = resolver.getAllFiles().toList()
+    if (allFiles.isEmpty()) return emptyList()
 
     val env = EnvironmentOptions(
       namespace = environment.options["app.cash.paparazzi.preview.namespace"]!!
@@ -53,7 +41,7 @@ public class PreviewProcessor(
       .also { functions ->
         "found ${functions.count()} function(s)".log()
         PaparazziPoet.buildFiles(functions, isTestSourceSet, env).forEach { file ->
-          "writing file: ${file.packageName}.${file.name}.kt".log()
+          "writing file: ${file.packageName}.${file.name}".log()
           file.writeTo(environment.codeGenerator, dependencies)
         }
       }
