@@ -50,9 +50,16 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinMultiplatformPluginWrapper
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
 import java.util.Locale
 
+public interface PaparazziExtension
+
 @Suppress("unused")
 public class PaparazziPlugin : Plugin<Project> {
+
+  private lateinit var config: PaparazziExtension
+
   override fun apply(project: Project) {
+    config = project.createDslConfig()
+
     val supportedPlugins = listOf("com.android.application", "com.android.library", "com.android.dynamic-feature")
     project.afterEvaluate {
       check(supportedPlugins.any { project.plugins.hasPlugin(it) }) {
@@ -287,6 +294,8 @@ public class PaparazziPlugin : Plugin<Project> {
     }
   }
 
+  private fun Project.createDslConfig() = extensions.create(EXTENSION_NAME, PaparazziExtension::class.java)
+
   private fun Project.setupNativePlatformDependency(): FileCollection {
     val operatingSystem = OperatingSystem.current()
     val nativeLibraryArtifactId = when {
@@ -338,3 +347,4 @@ public class PaparazziPlugin : Plugin<Project> {
 }
 
 private const val DEFAULT_COMPILE_SDK_VERSION = 34
+private const val EXTENSION_NAME = "paparazzi"
