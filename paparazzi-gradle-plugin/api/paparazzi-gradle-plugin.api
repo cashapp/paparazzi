@@ -1,3 +1,6 @@
+public abstract interface class app/cash/paparazzi/gradle/PaparazziExtension {
+}
+
 public final class app/cash/paparazzi/gradle/PaparazziPlugin : org/gradle/api/Plugin {
 	public fun <init> (Lorg/gradle/api/provider/ProviderFactory;)V
 	public synthetic fun apply (Ljava/lang/Object;)V
