@@ -51,6 +51,7 @@ dependencies {
   implementation libs.moshi.core
   implementation libs.moshi.adapters
   implementation libs.moshi.kotlinReflect
+  implementation projects.paparazziAnnotations
 
   def osName = System.getProperty("os.name").toLowerCase(Locale.US)
   def osLabel
