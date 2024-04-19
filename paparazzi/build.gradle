@@ -15,31 +15,27 @@ java {
   targetCompatibility = libs.versions.javaTarget.get()
 }
 
-def artifactType = Attribute.of('artifactType', String)
-
 configurations {
   unzip {
-    attributes.attribute(artifactType, ArtifactTypeDefinition.DIRECTORY_TYPE)
+    attributes.attribute(AndroidArtifacts.ARTIFACT_TYPE, ArtifactTypeDefinition.DIRECTORY_TYPE)
   }
 }
 
-createAarConfiguration("testImplementation")
-createAarConfiguration("compileOnly")
+configureAarAsJarForConfiguration("compileOnly")
+configureAarAsJarForConfiguration("testImplementation")
 
 dependencies {
   registerTransform(org.gradle.api.internal.artifacts.transform.UnzipTransform) {
-    from.attribute(artifactType, ArtifactTypeDefinition.JAR_TYPE)
-    to.attribute(artifactType, ArtifactTypeDefinition.DIRECTORY_TYPE)
+    from.attribute(AndroidArtifacts.ARTIFACT_TYPE, ArtifactTypeDefinition.JAR_TYPE)
+    to.attribute(AndroidArtifacts.ARTIFACT_TYPE, ArtifactTypeDefinition.DIRECTORY_TYPE)
   }
-
   registerTransform(IdentityTransform) {
-    from.attribute(artifactType, "jar")
-    to.attribute(artifactType, "aarAsJar")
+    from.attribute(AndroidArtifacts.ARTIFACT_TYPE, "jar")
+    to.attribute(AndroidArtifacts.ARTIFACT_TYPE, "aarAsJar")
   }
-
   registerTransform(ExtractClassesJarTransform) {
-    from.attribute(artifactType, "aar")
-    to.attribute(artifactType, "aarAsJar")
+    from.attribute(AndroidArtifacts.ARTIFACT_TYPE, "aar")
+    to.attribute(AndroidArtifacts.ARTIFACT_TYPE, "aarAsJar")
   }
 }
 
@@ -165,27 +161,23 @@ tasks.withType(Test).configureEach {
   }
 }
 
-def createAarConfiguration(String configuration) {
-  def artifactType = Attribute.of('artifactType', String)
-
-  def aarAsJar = project.configurations.create("${configuration}AarAsJar") {
-    transitive = true
-    canBeConsumed = false
-    canBeResolved = true
-    attributes.attribute(
-      AndroidArtifacts.ARTIFACT_TYPE,
-      "release"
-    )
-    attributes.attribute(
-      Usage.USAGE_ATTRIBUTE,
-      project.getObjects().named(Usage, Usage.JAVA_API)
-    )
-  }.incoming
+def configureAarAsJarForConfiguration(String configuration) {
+  def aarAsJar = project.configurations
+    .create("${configuration}AarAsJar") {
+      canBeResolved = true
+      attributes.attribute(
+        AndroidArtifacts.ARTIFACT_TYPE,
+        "release"
+      )
+      attributes.attribute(
+        Usage.USAGE_ATTRIBUTE,
+        project.getObjects().named(Usage, Usage.JAVA_API)
+      )
+    }.incoming
     .artifactView { viewConfiguration ->
-      viewConfiguration.attributes.attribute(artifactType, "aarAsJar")
+      viewConfiguration.attributes.attribute(AndroidArtifacts.ARTIFACT_TYPE, "aarAsJar")
     }
     .files
-
 
   project.configurations
     .getByName(configuration)
@@ -232,7 +224,7 @@ abstract class ExtractClassesJarTransform implements TransformAction<TransformPa
         def item = entries.nextElement()
         if (item.isDirectory()) continue
 
-        if (item.name.endsWith("classes.jar")) {
+        if (item.name == "classes.jar") {
           def output = outputs.file(aarFilename + "-" + item.name)
           def inputStream = null
           try {
