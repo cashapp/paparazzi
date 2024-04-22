@@ -246,8 +246,8 @@ public class PaparazziSdk @JvmOverloads constructor(
     frameCount: Int
   ) {
     val viewGroup = bridgeRenderSession.rootViews[0].viewObject as ViewGroup
-    val modifiedView = renderExtensions.fold(view) { view, renderExtension ->
-      renderExtension.renderView(view)
+    val modifiedView = renderExtensions.fold(view) { currentView, renderExtension ->
+      renderExtension.renderView(currentView)
     }
 
     System_Delegate.setNanosTime(0L)
@@ -303,7 +303,11 @@ public class PaparazziSdk @JvmOverloads constructor(
         }
       }
     } finally {
-      viewGroup.removeView(modifiedView)
+      // Remove original view from parent, even if there aren't render extensions applied
+      (view.parent as ViewGroup).removeView(view)
+      if (modifiedView !== view) {
+        viewGroup.removeView(modifiedView)
+      }
       AnimationHandler.sAnimatorHandler.set(null)
       if (hasComposeRuntime) {
         forceReleaseComposeReferenceLeaks()
