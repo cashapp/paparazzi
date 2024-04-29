@@ -30,6 +30,15 @@ import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import com.android.build.gradle.BaseExtension
 import com.google.devtools.ksp.gradle.KspExtension
 import com.google.devtools.ksp.gradle.KspGradleSubplugin
+import com.android.build.gradle.LibraryExtension
+import com.android.build.gradle.TestedExtension
+import com.android.build.gradle.api.BaseVariant
+import com.android.build.gradle.internal.api.TestedVariant
+import com.android.build.gradle.internal.dsl.BaseAppModuleExtension
+import com.android.build.gradle.internal.dsl.DynamicFeatureExtension
+import com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactType
+import com.google.devtools.ksp.gradle.KspExtension
+import com.google.devtools.ksp.gradle.KspGradleSubplugin
 import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -57,7 +66,9 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
 import java.util.Locale
 import javax.inject.Inject
 
-public interface PaparazziExtension
+public interface PaparazziExtension {
+  public val generatePreviewTestClass: Property<Boolean>
+}
 
 @Suppress("unused")
 public class PaparazziPlugin @Inject constructor(
@@ -382,6 +393,24 @@ public class PaparazziPlugin @Inject constructor(
     } else {
       dependencies.create("app.cash.paparazzi:paparazzi-preview-processor:$VERSION")
     }
+    configurations.getByName("ksp").dependencies.add(dependency)
+  }
+
+  private fun Project.addAnnotationsDependency() {
+    val dependency = if (isInternal()) {
+      dependencies.project(mapOf("path" to ":paparazzi-annotations"))
+    } else {
+      dependencies.create("app.cash.paparazzi:paparazzi-annotations:$VERSION")
+    }
+    configurations.getByName("implementation").dependencies.add(dependency)
+  }
+
+  private fun Project.addProcessorDependency() {
+    val dependency = if (isInternal()) {
+      dependencies.project(mapOf("path" to ":paparazzi-preview-processor"))
+    } else {
+      dependencies.create("app.cash.paparazzi:paparazzi-preview-processor:$VERSION")
+    }
     if (project.plugins.hasPlugin("org.jetbrains.kotlin.multiplatform")) {
       configurations.getByName("kspCommonMainMetadata").dependencies.add(dependency)
     } else {
@@ -412,4 +441,5 @@ public class PaparazziPlugin @Inject constructor(
 }
 
 private const val DEFAULT_COMPILE_SDK_VERSION = 34
+private const val KSP_ARG_NAMESPACE = "app.cash.paparazzi.preview.namespace"
 private const val KSP_ARG_NAMESPACE = "app.cash.paparazzi.preview.namespace"
