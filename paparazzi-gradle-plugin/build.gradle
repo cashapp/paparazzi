@@ -33,6 +33,7 @@ dependencies {
   compileOnly gradleApi()
   implementation platform(libs.kotlin.bom)
   implementation libs.plugin.kotlin
+  implementation libs.plugin.ksp
   implementation libs.plugin.android
   implementation(libs.tools.sdkCommon) {
     because "SymbolUtils.getPackageNameFromManifest removed in AGP 7.0.  Replace?"
@@ -63,6 +64,7 @@ buildConfig {
 tasks.withType(Test).configureEach {
   dependsOn(':paparazzi:publishMavenPublicationToProjectLocalMavenRepository')
   dependsOn(':paparazzi-annotations:publishMavenPublicationToProjectLocalMavenRepository')
+  dependsOn(':paparazzi-preview-processor:publishMavenPublicationToProjectLocalMavenRepository')
   dependsOn(':paparazzi-preview-test-junit:publishMavenPublicationToProjectLocalMavenRepository')
 }
 
