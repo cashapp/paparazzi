@@ -1,7 +1,11 @@
+import org.jetbrains.kotlin.gradle.plugin.AbstractKotlinPluginKt
+
 apply plugin: 'org.jetbrains.kotlin.jvm'
 apply plugin: 'com.vanniktech.maven.publish'
 apply from: "../gradle/aarAsJar.gradle"
 
 dependencies {
   compileOnlyAarAsJar libs.compose.runtime
+
+  add(AbstractKotlinPluginKt.PLUGIN_CLASSPATH_CONFIGURATION_NAME, libs.compose.compiler)
 }
