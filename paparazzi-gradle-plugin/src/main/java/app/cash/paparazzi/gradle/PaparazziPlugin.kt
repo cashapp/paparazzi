@@ -15,6 +15,7 @@
  */
 package app.cash.paparazzi.gradle
 
+import app.cash.paparazzi.gradle.utils.registerGeneratePreviewTask
 import app.cash.paparazzi.gradle.utils.artifactViewFor
 import app.cash.paparazzi.gradle.utils.artifactsFor
 import app.cash.paparazzi.gradle.utils.relativize
@@ -26,6 +27,8 @@ import com.android.build.gradle.internal.api.TestedVariant
 import com.android.build.gradle.internal.dsl.BaseAppModuleExtension
 import com.android.build.gradle.internal.dsl.DynamicFeatureExtension
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactType
+import com.google.devtools.ksp.gradle.KspExtension
+import com.google.devtools.ksp.gradle.KspGradleSubplugin
 import org.gradle.api.DefaultTask
 import org.gradle.api.DomainObjectSet
 import org.gradle.api.Plugin
@@ -37,6 +40,7 @@ import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.artifacts.transform.UnzipTransform
 import org.gradle.api.logging.LogLevel.LIFECYCLE
 import org.gradle.api.plugins.JavaBasePlugin
+import org.gradle.api.provider.Property
 import org.gradle.api.reporting.ReportingExtension
 import org.gradle.api.tasks.Delete
 import org.gradle.api.tasks.PathSensitivity
@@ -50,7 +54,9 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinMultiplatformPluginWrapper
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
 import java.util.Locale
 
-public interface PaparazziExtension
+public interface PaparazziExtension {
+  public val generatePreviewTestClass: Property<Boolean>
+}
 
 @Suppress("unused")
 public class PaparazziPlugin : Plugin<Project> {
@@ -77,6 +83,7 @@ public class PaparazziPlugin : Plugin<Project> {
           else -> error("${extension.javaClass.name} from $plugin is not supported in Paparazzi")
         }
         setupPaparazzi(project, variants)
+        setupPreviewProcessor(project, variants)
       }
     }
   }
@@ -278,6 +285,25 @@ public class PaparazziPlugin : Plugin<Project> {
     }
   }
 
+  private fun <T> setupPreviewProcessor(
+    project: Project,
+    variants: DomainObjectSet<T>
+  ) where T : BaseVariant, T : TestedVariant {
+    project.pluginManager.apply(KspGradleSubplugin::class.java)
+
+    project.addAnnotationsDependency()
+    project.addProcessorDependency()
+
+    project.afterEvaluate {
+      // pass the namespace to the processor
+      val kspExtension = project.extensions.getByType(KspExtension::class.java)
+      val android = project.extensions.getByType(BaseExtension::class.java)
+      kspExtension.arg(KSP_ARG_NAMESPACE, android.packageName())
+
+      project.registerGeneratePreviewTask(variants, config)
+    }
+  }
+
   public abstract class PaparazziTask : DefaultTask() {
     @Option(option = "tests", description = "Sets test class or method name to be included, '*' is supported.")
     public open fun setTestNameIncludePatterns(testNamePattern: List<String>): PaparazziTask {
@@ -288,7 +314,10 @@ public class PaparazziPlugin : Plugin<Project> {
     }
   }
 
-  private fun Project.createDslConfig() = extensions.create(EXTENSION_NAME, PaparazziExtension::class.java)
+  private fun Project.createDslConfig() =
+    extensions.create(EXTENSION_NAME, PaparazziExtension::class.java).apply {
+      generatePreviewTestClass.convention(true)
+    }
 
   private fun Project.setupNativePlatformDependency(): FileCollection {
     val operatingSystem = OperatingSystem.current()
@@ -324,6 +353,24 @@ public class PaparazziPlugin : Plugin<Project> {
     configurations.getByName("testImplementation").dependencies.add(dependency)
   }
 
+  private fun Project.addAnnotationsDependency() {
+    val dependency = if (isInternal()) {
+      dependencies.project(mapOf("path" to ":paparazzi-annotations"))
+    } else {
+      dependencies.create("app.cash.paparazzi:paparazzi-annotations:$VERSION")
+    }
+    configurations.getByName("implementation").dependencies.add(dependency)
+  }
+
+  private fun Project.addProcessorDependency() {
+    val dependency = if (isInternal()) {
+      dependencies.project(mapOf("path" to ":paparazzi-preview-processor"))
+    } else {
+      dependencies.create("app.cash.paparazzi:paparazzi-preview-processor:$VERSION")
+    }
+    configurations.getByName("ksp").dependencies.add(dependency)
+  }
+
   private fun Project.isInternal(): Boolean {
     return properties["app.cash.paparazzi.internal"].toString() == "true"
   }
@@ -342,3 +389,4 @@ public class PaparazziPlugin : Plugin<Project> {
 
 private const val DEFAULT_COMPILE_SDK_VERSION = 34
 private const val EXTENSION_NAME = "paparazzi"
+private const val KSP_ARG_NAMESPACE = "app.cash.paparazzi.preview.namespace"
