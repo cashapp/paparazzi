@@ -24,6 +24,7 @@ internal object Gc {
     var obj: Any? = Any()
     val ref = WeakReference<Any>(obj)
 
+    @Suppress("UNUSED_VALUE") // The null is unused, but it's important that the obj local variable loses the reference.
     obj = null
     while (ref.get() != null) {
       System.gc()

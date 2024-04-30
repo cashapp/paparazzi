@@ -84,7 +84,7 @@ internal class LayoutPullParser : InMemoryParser, AaptAttrParser, ILayoutPullPar
       val count = attributeCount
       for (i in 0 until count) {
         val namespace = getAttributeNamespace(i)
-        if (namespace != null && namespace == TOOLS_URI) {
+        if (namespace == TOOLS_URI) {
           val attribute = getAttributeName(i)!!
           if (attribute == ATTR_IGNORE) {
             continue
