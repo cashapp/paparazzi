@@ -32,7 +32,7 @@ composeUi-material = { module = "androidx.compose.material:material", version = 
 composeUi-uiTooling = { module = "androidx.compose.ui:ui-tooling" }
 
 grgit = { module = "org.ajoberstar.grgit:grgit-core", version = "5.2.2" }
-guava = { module = "com.google.guava:guava", version = "33.1.0-jre" }
+guava = { module = "com.google.guava:guava", version = "33.2.0-jre" }
 
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
