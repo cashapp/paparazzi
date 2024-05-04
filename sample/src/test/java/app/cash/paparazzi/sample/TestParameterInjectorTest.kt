@@ -7,6 +7,7 @@ import app.cash.paparazzi.sample.databinding.KeypadBinding
 import com.android.resources.ScreenOrientation.LANDSCAPE
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
+import com.google.testing.junit.testparameterinjector.TestParameterValuesProvider
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -28,8 +29,8 @@ class TestParameterInjectorTest(
     LIGHT_NO_ACTION_BAR("android:Theme.Material.Light.NoActionBar")
   }
 
-  object AmountProvider : TestParameter.TestParameterValuesProvider {
-    override fun provideValues(): List<String> = listOf("\$1.00", "\$2.00", "\$5.00", "\$10.00")
+  object AmountProvider : TestParameterValuesProvider() {
+    override fun provideValues(context: Context): List<String> = listOf("\$1.00", "\$2.00", "\$5.00", "\$10.00")
   }
 
   @get:Rule
