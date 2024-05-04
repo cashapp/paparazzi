@@ -293,7 +293,7 @@ internal abstract class RepositoryLoader<T : LoadableResourceRepository>(
       return repositoryConfiguration
     }
 
-    repositoryConfiguration = RepositoryConfiguration(repository, folderConfiguration!!)
+    repositoryConfiguration = RepositoryConfiguration(repository, folderConfiguration)
     configCache[folderConfiguration] = repositoryConfiguration
     return repositoryConfiguration
   }
