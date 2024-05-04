@@ -102,12 +102,8 @@ internal abstract class InMemoryParser : KXmlParser() {
 
   private fun onNextFromStartDocument() {
     val rootTag = rootTag()
-    parsingState = if (rootTag != null) {
-      push(rootTag)
-      START_TAG
-    } else {
-      END_DOCUMENT
-    }
+    push(rootTag)
+    parsingState = START_TAG
   }
 
   private fun onNextFromStartTag() {
