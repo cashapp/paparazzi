@@ -122,22 +122,22 @@ internal abstract class MultiResourceRepository internal constructor(displayName
 
   override fun getMap(
     namespace: ResourceNamespace,
-    type: ResourceType
+    resourceType: ResourceType
   ): ListMultimap<String, ResourceItem>? {
     val repositoriesForNamespace = leafsByNamespace[namespace]
     if (repositoriesForNamespace.size == 1) {
       val repository = repositoriesForNamespace[0]
-      return getResources(repository, namespace, type)
+      return getResources(repository, namespace, resourceType)
     }
 
-    var map = cachedMaps[namespace, type]
+    var map = cachedMaps[namespace, resourceType]
     if (map != null) {
       return map
     }
 
     // Merge all items of the given type.
     for (repository in repositoriesForNamespace) {
-      val items = getResources(repository, namespace, type)
+      val items = getResources(repository, namespace, resourceType)
       if (!items.isEmpty) {
         if (map == null) {
           // Create a new map.
@@ -145,16 +145,16 @@ internal abstract class MultiResourceRepository internal constructor(displayName
           // is not a styleable or an id. Styleables and ids are allowed to be defined in multiple
           // places even with the same qualifiers.
           map =
-            if (type === ResourceType.STYLEABLE || type === ResourceType.ID) {
+            if (resourceType === ResourceType.STYLEABLE || resourceType === ResourceType.ID) {
               ArrayListMultimap.create<String, ResourceItem>()
             } else {
               PerConfigResourceMap(resourceComparator)
             }
-          cachedMaps.put(namespace, type, map)
+          cachedMaps.put(namespace, resourceType, map)
         }
         map!!.putAll(items)
         if (repository is LocalResourceRepository) {
-          resourceNames.put(repository, type, items.keySet().toSet())
+          resourceNames.put(repository, resourceType, items.keySet().toSet())
         }
       }
     }
@@ -332,19 +332,19 @@ internal abstract class MultiResourceRepository internal constructor(displayName
 
       override fun get(index: Int): ResourceItem = resourceItems[index][0]
 
-      override fun add(item: ResourceItem): Boolean {
-        add(item, 0)
+      override fun add(element: ResourceItem): Boolean {
+        add(element, 0)
         return true
       }
 
-      override fun addAll(items: Collection<ResourceItem>): Boolean {
-        if (items.isEmpty()) {
+      override fun addAll(elements: Collection<ResourceItem>): Boolean {
+        if (elements.isEmpty()) {
           return false
         }
-        if (items.size == 1) {
-          return add(items.iterator().next())
+        if (elements.size == 1) {
+          return add(elements.iterator().next())
         }
-        val sortedItems: List<ResourceItem> = sortedItems(items)
+        val sortedItems: List<ResourceItem> = sortedItems(elements)
         var start = 0
         for (item in sortedItems) {
           start = add(item, start)
