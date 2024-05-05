@@ -37,5 +37,7 @@ class LoggerLeakTest {
   }
 
   @Composable
-  private fun ComposeContent() { throw Exception() }
+  private fun ComposeContent() {
+    throw Exception()
+  }
 }

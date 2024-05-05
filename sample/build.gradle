@@ -33,7 +33,7 @@ dependencies {
 
 // https://github.com/diffplug/spotless/issues/1572
 tasks.withType(com.diffplug.gradle.spotless.SpotlessTask).configureEach {
-  dependsOn(tasks.withType(Test))
+  mustRunAfter(tasks.withType(Test))
 }
 
 apply from: 'guava-fix.gradle'
