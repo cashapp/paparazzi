@@ -107,6 +107,7 @@ class CustomFontsTest {
 
         doOnPreDraw {
           println("On PreDraw")
+          it.invalidate()
         }
       }
 
@@ -120,7 +121,7 @@ class CustomFontsTest {
         println("Layout $left $top $right $bottom")
       }
 
-      override fun onDraw(canvas: Canvas?) {
+      override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         println("Draw")
       }
