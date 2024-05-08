@@ -54,7 +54,7 @@ class PaparazziTest {
 
     paparazzi.snapshot(view)
 
-    assertThat(log).containsExactly("onDraw time=0")
+    assertThat(log).containsExactly("onDraw time=0", "onDraw time=0")
   }
 
   @Test
@@ -105,6 +105,7 @@ class PaparazziTest {
 
     assertThat(log).containsExactly(
       "onDraw time=1000 animationElapsed=0.0",
+      "onDraw time=1000 animationElapsed=0.0",
       "onAnimationStart time=2000 animationElapsed=0.0",
       "onAnimationUpdate time=2000 animationElapsed=0.0",
       "onDraw time=2000 animationElapsed=0.0",
@@ -153,6 +154,7 @@ class PaparazziTest {
 
     paparazzi.snapshot(view, offsetMillis = 0L)
     assertThat(log).containsExactly(
+      "onDraw text=",
       "onDraw text="
     )
     log.clear()
@@ -239,7 +241,7 @@ class PaparazziTest {
 
     paparazzi.gif(view, fps = 4)
 
-    assertThat(log).isEqualTo(listOf("draw", "predraw", "predraw", "predraw"))
+    assertThat(log).isEqualTo(listOf("predraw", "draw", "draw", "predraw", "predraw", "predraw"))
   }
 
   private val time: Long
