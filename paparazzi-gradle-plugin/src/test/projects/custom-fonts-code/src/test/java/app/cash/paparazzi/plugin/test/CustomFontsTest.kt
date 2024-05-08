@@ -16,7 +16,6 @@
 package app.cash.paparazzi.plugin.test
 
 import android.content.Context
-import android.graphics.Canvas
 import android.graphics.Typeface
 import android.view.Gravity.CENTER
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
@@ -27,10 +26,6 @@ import android.widget.LinearLayout.VERTICAL
 import android.widget.TextView
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.content.res.ResourcesCompat
-import androidx.core.view.doOnAttach
-import androidx.core.view.doOnDetach
-import androidx.core.view.doOnLayout
-import androidx.core.view.doOnPreDraw
 import app.cash.paparazzi.Paparazzi
 import org.junit.Rule
 import org.junit.Test
@@ -84,7 +79,7 @@ class CustomFontsTest {
 
   @Test
   fun singleLine() {
-    val text = object: TextView(paparazzi.context) {
+    val text = object : TextView(paparazzi.context) {
       init {
         layoutParams = LayoutParams(MATCH_PARENT, WRAP_CONTENT, 1f)
         textSize = 32f

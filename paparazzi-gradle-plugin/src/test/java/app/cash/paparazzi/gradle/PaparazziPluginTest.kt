@@ -1387,7 +1387,6 @@ class PaparazziPluginTest {
     snapshotImage = snapshots[1]
     goldenImage = File(fixtureRoot, "src/test/resources/textviews.png")
     assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
-
   }
 
   @Test
