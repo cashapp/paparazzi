@@ -92,38 +92,6 @@ class CustomFontsTest {
         text = "Single line sample"
         isSingleLine = true
         gravity = CENTER
-
-        doOnLayout {
-          println("On Layout")
-        }
-
-        doOnAttach {
-          println("On Attach")
-
-          doOnDetach {
-            println("On Detach")
-          }
-        }
-
-        doOnPreDraw {
-          println("On PreDraw")
-          it.invalidate()
-        }
-      }
-
-      override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-        println("Measure $measuredWidth x $measuredHeight")
-      }
-
-      override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
-        super.onLayout(changed, left, top, right, bottom)
-        println("Layout $left $top $right $bottom")
-      }
-
-      override fun onDraw(canvas: Canvas) {
-        super.onDraw(canvas)
-        println("Draw")
       }
     }
     paparazzi.snapshot(text, "singleLine")
