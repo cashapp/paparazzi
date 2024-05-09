@@ -1377,8 +1377,8 @@ class PaparazziPluginTest {
       .runFixture(fixtureRoot) { build() }
 
     val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/debug/images")
-    val snapshots = snapshotsDir.listFiles()
-    assertThat(snapshots!!).hasLength(2)
+    val snapshots = snapshotsDir.listFiles()?.sortedBy { it.lastModified() }
+    assertThat(snapshots!!).hasSize(2)
 
     var snapshotImage = snapshots[0]
     var goldenImage = File(fixtureRoot, "src/test/resources/singleLine.png")
