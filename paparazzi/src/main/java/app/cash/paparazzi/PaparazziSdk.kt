@@ -351,12 +351,6 @@ public class PaparazziSdk @JvmOverloads constructor(
   private fun createRenderSession(sessionParams: SessionParams): RenderSessionImpl {
     val renderSession = RenderSessionImpl(sessionParams)
     renderSession.setElapsedFrameTimeNanos(0L)
-    RenderSessionImpl::class.java
-      .getDeclaredField("mFirstFrameExecuted")
-      .apply {
-        isAccessible = true
-        set(renderSession, true)
-      }
     return renderSession
   }
 
