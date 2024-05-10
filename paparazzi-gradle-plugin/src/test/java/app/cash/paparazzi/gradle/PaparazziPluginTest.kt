@@ -695,8 +695,8 @@ class PaparazziPluginTest {
       .runFixture(fixtureRoot) { build() }
 
     val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/debug/images")
-    val snapshots = snapshotsDir.listFiles().apply { sortBy { it.lastModified() } }
-    assertThat(snapshots!!).hasLength(4)
+    val snapshots = snapshotsDir.listFilesSorted()
+    assertThat(snapshots!!).hasSize(4)
 
     val normal = File(fixtureRoot, "src/test/resources/normal.png")
     val horizontalScroll = File(fixtureRoot, "src/test/resources/horizontal_scroll.png")
@@ -759,7 +759,7 @@ class PaparazziPluginTest {
       .runFixture(fixtureRoot) { build() }
 
     val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/debug/images")
-    val snapshots = snapshotsDir.listFiles()?.sortedBy { it.lastModified() }
+    val snapshots = snapshotsDir.listFilesSorted()
     assertThat(snapshots!!).hasSize(2)
 
     val widgetImage = File(fixtureRoot, "src/test/resources/widget.png")
@@ -777,8 +777,8 @@ class PaparazziPluginTest {
       .runFixture(fixtureRoot) { build() }
 
     val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/debug/images")
-    val snapshots = snapshotsDir.listFiles()
-    assertThat(snapshots!!).hasLength(3)
+    val snapshots = snapshotsDir.listFilesSorted()
+    assertThat(snapshots!!).hasSize(3)
   }
 
   @Test
@@ -1593,7 +1593,7 @@ class PaparazziPluginTest {
       .runFixture(fixtureRoot) { build() }
 
     val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/debug/images")
-    val snapshots = snapshotsDir.listFiles()?.sortedBy { it.lastModified() }
+    val snapshots = snapshotsDir.listFilesSorted()
     assertThat(snapshots!!).hasSize(2)
 
     val pixel3SnapshotImage = snapshots[0]
@@ -1613,7 +1613,7 @@ class PaparazziPluginTest {
       .runFixture(fixtureRoot) { build() }
 
     val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/debug/images")
-    val snapshots = snapshotsDir.listFiles()?.sortedBy { it.lastModified() }
+    val snapshots = snapshotsDir.listFilesSorted()
     assertThat(snapshots!!).hasSize(2)
 
     val localeDefaultSnapshotImage = snapshots[0]
@@ -1633,7 +1633,7 @@ class PaparazziPluginTest {
       .runFixture(fixtureRoot) { build() }
 
     val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/debug/images")
-    val snapshots = snapshotsDir.listFiles()?.sortedBy { it.lastModified() }
+    val snapshots = snapshotsDir.listFilesSorted()
     assertThat(snapshots!!).hasSize(2)
 
     val localeDefaultRtlSnapshotImage = snapshots[0]
@@ -1653,7 +1653,7 @@ class PaparazziPluginTest {
       .runFixture(fixtureRoot) { build() }
 
     val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/debug/images")
-    val snapshots = snapshotsDir.listFiles()?.sortedBy { it.lastModified() }
+    val snapshots = snapshotsDir.listFilesSorted()
     assertThat(snapshots!!).hasSize(2)
 
     val lightModeSnapshotImage = snapshots[0]
@@ -1673,7 +1673,7 @@ class PaparazziPluginTest {
       .runFixture(fixtureRoot) { build() }
 
     val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/debug/images")
-    val snapshots = snapshotsDir.listFiles()?.sortedBy { it.lastModified() }
+    val snapshots = snapshotsDir.listFilesSorted()
     assertThat(snapshots!!).hasSize(2)
 
     val lightModeSnapshotImage = snapshots[0]
@@ -1742,7 +1742,7 @@ class PaparazziPluginTest {
       .runFixture(fixtureRoot) { build() }
 
     val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/debug/images")
-    val snapshots = snapshotsDir.listFiles()?.sortedBy { it.lastModified() }
+    val snapshots = snapshotsDir.listFilesSorted()
     assertThat(snapshots!!).hasSize(2)
 
     val portraitSnapshotImage = snapshots[0]
@@ -1763,7 +1763,7 @@ class PaparazziPluginTest {
       .runFixture(fixtureRoot) { build() }
 
     val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/debug/images")
-    val snapshots = snapshotsDir.listFiles()?.sortedBy { it.lastModified() }
+    val snapshots = snapshotsDir.listFilesSorted()
     assertThat(snapshots!!).hasSize(2)
 
     val roundSnapshot = snapshots[0]
@@ -1812,6 +1812,8 @@ class PaparazziPluginTest {
   }
 
   private fun File.registerForDeletionOnExit() = apply { filesToDelete += this }
+
+  private fun File.listFilesSorted() = listFiles()?.sortedBy { it.lastModified() }
 
   companion object {
     private val CONFIG_ADAPTER =
