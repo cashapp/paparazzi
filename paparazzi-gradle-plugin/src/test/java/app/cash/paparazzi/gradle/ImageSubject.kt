@@ -5,12 +5,9 @@ import com.google.common.truth.Subject
 import com.google.common.truth.Subject.Factory
 import com.google.common.truth.Truth.assertAbout
 import com.google.common.truth.Truth.assertWithMessage
-import org.junit.Assert
 import org.junit.Assert.fail
-import java.awt.Color
 import java.awt.image.BufferedImage
 import java.io.File
-import java.io.IOException
 import javax.annotation.CheckReturnValue
 import javax.imageio.ImageIO
 import kotlin.math.abs
@@ -28,17 +25,16 @@ internal class ImageSubject private constructor(
   }
 
   @CheckReturnValue
-  fun isSimilarTo(expected: File?, name: String = expected?.path?.replace(File.pathSeparatorChar, '_') ?: "image"): ImageAssert {
+  fun isSimilarTo(expected: File?): ImageAssert {
     assertThat(actual).exists()
     assertThat(expected).exists()
 
-    return ImageAssert(ImageIO.read(actual), ImageIO.read(expected), name)
+    return ImageAssert(ImageIO.read(actual), ImageIO.read(expected))
   }
 
   class ImageAssert(
     private val img1: BufferedImage,
-    private val img2: BufferedImage,
-    private val name: String
+    private val img2: BufferedImage
   ) {
     fun withDefaultThreshold() {
       withThreshold(DEFAULT_PERCENT_DIFFERENCE_THRESHOLD)
@@ -53,127 +49,10 @@ internal class ImageSubject private constructor(
         .isAtMost(1.0)
 
       // Based on https://rosettacode.org/wiki/Percentage_difference_between_images#Kotlin
-      // val percentDiff = getDifferencePercent(img1, img2)
-      val (deltaImage, percentDiff) = compareImages(img1, img2)
-
+      val percentDiff = getDifferencePercent(img1, img2)
       if (percentDiff > threshold) {
-        val output = File(failureDir, "delta-$name.png")
-        output.mkdirs()
-
-        if (output.exists()) {
-          val deleted = output.delete()
-          Assert.assertTrue(deleted)
-        }
-        ImageIO.write(deltaImage, "PNG", output)
-
         fail("Expected % diff less than $threshold, but was: $percentDiff")
       }
-    }
-
-    @Throws(IOException::class)
-    private fun compareImages(
-      goldenImage: BufferedImage,
-      image: BufferedImage,
-      withText: Boolean = true
-    ): Pair<BufferedImage, Float> {
-      var goldenImage = goldenImage
-      if (goldenImage.type != BufferedImage.TYPE_INT_ARGB) {
-        val temp = BufferedImage(
-          goldenImage.width,
-          goldenImage.height,
-          BufferedImage.TYPE_INT_ARGB
-        )
-        temp.graphics.drawImage(goldenImage, 0, 0, null)
-        goldenImage = temp
-      }
-      Assert.assertEquals(BufferedImage.TYPE_INT_ARGB.toLong(), goldenImage.type.toLong())
-
-      val goldenImageWidth = goldenImage.width
-      val goldenImageHeight = goldenImage.height
-
-      val imageWidth = image.width
-      val imageHeight = image.height
-
-      val deltaWidth = Math.max(goldenImageWidth, imageWidth)
-      val deltaHeight = Math.max(goldenImageHeight, imageHeight)
-
-      // Blur the images to account for the scenarios where there are pixel
-      // differences
-      // in where a sharp edge occurs
-      // goldenImage = blur(goldenImage, 6);
-      // image = blur(image, 6);
-      val width = goldenImageWidth + deltaWidth + imageWidth
-      val deltaImage = BufferedImage(width, deltaHeight, BufferedImage.TYPE_INT_ARGB)
-      val g = deltaImage.graphics
-
-      // Compute delta map
-      var delta: Long = 0
-      for (y in 0 until deltaHeight) {
-        for (x in 0 until deltaWidth) {
-          val goldenRgb = if (x >= goldenImageWidth || y >= goldenImageHeight) {
-            0x00808080
-          } else {
-            goldenImage.getRGB(x, y)
-          }
-
-          val rgb = if (x >= imageWidth || y >= imageHeight) {
-            0x00808080
-          } else {
-            image.getRGB(x, y)
-          }
-
-          if (goldenRgb == rgb) {
-            deltaImage.setRGB(goldenImageWidth + x, y, 0x00808080)
-            continue
-          }
-
-          // If the pixels have no opacity, don't delta colors at all
-          if (goldenRgb and -0x1000000 == 0 && rgb and -0x1000000 == 0) {
-            deltaImage.setRGB(goldenImageWidth + x, y, 0x00808080)
-            continue
-          }
-
-          val deltaR = (rgb and 0xFF0000).ushr(16) - (goldenRgb and 0xFF0000).ushr(16)
-          val newR = 128 + deltaR and 0xFF
-          val deltaG = (rgb and 0x00FF00).ushr(8) - (goldenRgb and 0x00FF00).ushr(8)
-          val newG = 128 + deltaG and 0xFF
-          val deltaB = (rgb and 0x0000FF) - (goldenRgb and 0x0000FF)
-          val newB = 128 + deltaB and 0xFF
-
-          val avgAlpha =
-            ((goldenRgb and -0x1000000).ushr(24) + (rgb and -0x1000000).ushr(24)) / 2 shl 24
-
-          val newRGB = avgAlpha or (newR shl 16) or (newG shl 8) or newB
-          deltaImage.setRGB(goldenImageWidth + x, y, newRGB)
-
-          delta += Math.abs(deltaR)
-            .toLong()
-          delta += Math.abs(deltaG)
-            .toLong()
-          delta += Math.abs(deltaB)
-            .toLong()
-        }
-      }
-
-      // Expected on the left
-      // Golden on the right
-      g.drawImage(goldenImage, 0, 0, null)
-      g.drawImage(image, goldenImageWidth + deltaWidth, 0, null)
-
-      // Labels
-      if (withText && deltaWidth > 80) {
-        g.color = Color.RED
-        g.drawString("Expected", 10, 20)
-        g.drawString("Actual", goldenImageWidth + deltaWidth + 10, 20)
-      }
-
-      g.dispose()
-
-      // 3 different colors, 256 color levels
-      val total = imageHeight.toLong() * imageWidth.toLong() * 3L * 256L
-      val percentDifference = (delta * 100 / total.toDouble()).toFloat()
-
-      return deltaImage to percentDifference
     }
 
     private fun getDifferencePercent(
@@ -217,14 +96,6 @@ internal class ImageSubject private constructor(
     private val IMAGE_SUBJECT_FACTORY = Factory<ImageSubject, File> { metadata, actual ->
       ImageSubject(metadata, actual)
     }
-
-    private val failureDir: File
-      get() {
-        val buildDirString = System.getProperty("paparazzi.build.dir")
-        val failureDir = File(buildDirString, "paparazzi/failures")
-        failureDir.mkdirs()
-        return failureDir
-      }
 
     fun assertThat(actual: File?): ImageSubject {
       return assertAbout(IMAGE_SUBJECT_FACTORY).that(actual)

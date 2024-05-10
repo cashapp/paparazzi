@@ -49,10 +49,6 @@ buildConfig {
 
 tasks.withType(Test).configureEach {
   dependsOn(':paparazzi:publishMavenPublicationToProjectLocalMavenRepository')
-  systemProperty(
-    "paparazzi.build.dir",
-    project.layout.buildDirectory.get().toString()
-  )
 }
 
 // When cleaning this project, we also want to clean the test projects.
