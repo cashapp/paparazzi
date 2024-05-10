@@ -70,7 +70,7 @@ class InstantAnimationsRuleTest {
 
     paparazzi.snapshot(view)
     assertThat(log)
-      .containsExactly("onAnimationStart", "onAnimationEnd", "onDraw text=1.0").inOrder()
+      .containsExactly("onAnimationStart", "onAnimationEnd", "onDraw text=1.0", "onDraw text=1.0").inOrder()
     log.clear()
   }
 }
