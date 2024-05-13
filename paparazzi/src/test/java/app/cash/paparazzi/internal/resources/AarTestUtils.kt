@@ -75,7 +75,8 @@ private fun createAar(tempDir: Path, sourceDirectory: Path): Path {
           zip.putNextEntry(entry)
           zip.write(file.readBytes())
           zip.closeEntry()
-          return@onVisitFile CONTINUE
+
+          CONTINUE
         }
       }
     }

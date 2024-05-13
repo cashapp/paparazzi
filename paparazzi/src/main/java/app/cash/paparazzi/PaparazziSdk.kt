@@ -52,8 +52,6 @@ import app.cash.paparazzi.internal.Renderer
 import app.cash.paparazzi.internal.SessionParamsBuilder
 import app.cash.paparazzi.internal.interceptors.EditModeInterceptor
 import app.cash.paparazzi.internal.interceptors.IInputMethodManagerInterceptor
-import app.cash.paparazzi.internal.interceptors.MatrixMatrixMultiplicationInterceptor
-import app.cash.paparazzi.internal.interceptors.MatrixVectorMultiplicationInterceptor
 import app.cash.paparazzi.internal.interceptors.ResourcesInterceptor
 import app.cash.paparazzi.internal.interceptors.ServiceManagerInterceptor
 import app.cash.paparazzi.internal.parsers.LayoutPullParser
@@ -113,7 +111,6 @@ public class PaparazziSdk @JvmOverloads constructor(
     if (!isInitialized) {
       registerFontLookupInterceptionIfResourceCompatDetected()
       registerViewEditModeInterception()
-      registerMatrixMultiplyInterception()
       registerServiceManagerInterception()
       registerIInputMethodManagerInterception()
 
@@ -247,11 +244,12 @@ public class PaparazziSdk @JvmOverloads constructor(
     frameCount: Int
   ) {
     val viewGroup = bridgeRenderSession.rootViews[0].viewObject as ViewGroup
-    val modifiedView = renderExtensions.fold(view) { view, renderExtension ->
-      renderExtension.renderView(view)
+    val modifiedView = renderExtensions.fold(view) { currentView, renderExtension ->
+      renderExtension.renderView(currentView)
     }
 
     System_Delegate.setNanosTime(0L)
+    System_Delegate.setBootTimeNanos(0L)
     try {
       withTime(0L) {
         // Initialize the choreographer at time=0.
@@ -304,7 +302,11 @@ public class PaparazziSdk @JvmOverloads constructor(
         }
       }
     } finally {
-      viewGroup.removeView(modifiedView)
+      // Remove original view from parent, even if there aren't render extensions applied
+      (view.parent as ViewGroup).removeView(view)
+      if (modifiedView !== view) {
+        viewGroup.removeView(modifiedView)
+      }
       AnimationHandler.sAnimatorHandler.set(null)
       if (hasComposeRuntime) {
         forceReleaseComposeReferenceLeaks()
@@ -347,12 +349,6 @@ public class PaparazziSdk @JvmOverloads constructor(
   private fun createRenderSession(sessionParams: SessionParams): RenderSessionImpl {
     val renderSession = RenderSessionImpl(sessionParams)
     renderSession.setElapsedFrameTimeNanos(0L)
-    RenderSessionImpl::class.java
-      .getDeclaredField("mFirstFrameExecuted")
-      .apply {
-        isAccessible = true
-        set(renderSession, true)
-      }
     return renderSession
   }
 
@@ -542,16 +538,6 @@ public class PaparazziSdk @JvmOverloads constructor(
       "android.view.View",
       "isInEditMode",
       EditModeInterceptor::class.java
-    )
-  }
-
-  private fun registerMatrixMultiplyInterception() {
-    InterceptorRegistrar.addMethodInterceptors(
-      "android.opengl.Matrix",
-      setOf(
-        "multiplyMM" to MatrixMatrixMultiplicationInterceptor::class.java,
-        "multiplyMV" to MatrixVectorMultiplicationInterceptor::class.java
-      )
     )
   }
 

@@ -21,6 +21,7 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.graphics.Canvas
 import android.graphics.Color
+import android.os.SystemClock
 import android.view.Choreographer
 import android.view.Choreographer.CALLBACK_ANIMATION
 import android.view.View
@@ -53,7 +54,7 @@ class PaparazziTest {
 
     paparazzi.snapshot(view)
 
-    assertThat(log).containsExactly("onDraw time=0")
+    assertThat(log).containsExactly("onDraw time=0", "onDraw time=0")
   }
 
   @Test
@@ -104,6 +105,7 @@ class PaparazziTest {
 
     assertThat(log).containsExactly(
       "onDraw time=1000 animationElapsed=0.0",
+      "onDraw time=1000 animationElapsed=0.0",
       "onAnimationStart time=2000 animationElapsed=0.0",
       "onAnimationUpdate time=2000 animationElapsed=0.0",
       "onDraw time=2000 animationElapsed=0.0",
@@ -135,11 +137,11 @@ class PaparazziTest {
     }
     animator.addListener(object : AnimatorListenerAdapter() {
       override fun onAnimationStart(animation: Animator?, isReverse: Boolean) {
-        log += "onAnimationStart uptimeMillis=$time"
+        log += "onAnimationStart uptimeMillis=$uptime"
       }
 
       override fun onAnimationEnd(animator: Animator) {
-        log += "onAnimationEnd uptimeMillis=$time"
+        log += "onAnimationEnd uptimeMillis=$uptime"
       }
     })
 
@@ -152,6 +154,7 @@ class PaparazziTest {
 
     paparazzi.snapshot(view, offsetMillis = 0L)
     assertThat(log).containsExactly(
+      "onDraw text=",
       "onDraw text="
     )
     log.clear()
@@ -238,11 +241,16 @@ class PaparazziTest {
 
     paparazzi.gif(view, fps = 4)
 
-    assertThat(log).isEqualTo(listOf("draw", "predraw", "predraw", "predraw"))
+    assertThat(log).isEqualTo(listOf("predraw", "draw", "draw", "predraw", "predraw", "predraw"))
   }
 
   private val time: Long
     get() {
       return TimeUnit.NANOSECONDS.toMillis(System_Delegate.nanoTime())
+    }
+
+  private val uptime: Long
+    get() {
+      return SystemClock.uptimeMillis()
     }
 }

@@ -127,7 +127,6 @@ internal object PseudoMethodBidi : PseudoMethodImpl() {
   override fun text(originalText: String): String {
     val result = StringBuilder()
     var lastSpace = true
-    var space = true
     var escape = false
 
     for (i in originalText.indices) {
@@ -137,8 +136,7 @@ internal object PseudoMethodBidi : PseudoMethodImpl() {
         escape = true
         continue
       }
-
-      space = (!escape && currentChar.isWhitespace()) ||
+      val space = (!escape && currentChar.isWhitespace()) ||
         (escape && (currentChar == 'n' || currentChar == 't'))
       if (lastSpace && !space) {
         // Word start.
