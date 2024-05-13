@@ -9,18 +9,14 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(TestParameterInjector::class)
-class DeviceResolutionQualifierTest(
-  @TestParameter useDeviceResolutionFlag: OriginalDeviceResolutionFlag
+class DeviceResolutionTest(
+  @TestParameter useDeviceResolutionFlag: Boolean
 ) {
-  enum class OriginalDeviceResolutionFlag(val useDeviceResolution: Boolean) {
-    Default(false),
-    UseDeviceRes(true)
-  }
 
   @get:Rule
   val paparazzi = Paparazzi(
     deviceConfig = DeviceConfig.NEXUS_5,
-    useDeviceResolution = useDeviceResolutionFlag.useDeviceResolution
+    useDeviceResolution = useDeviceResolutionFlag
   )
 
   @Test
