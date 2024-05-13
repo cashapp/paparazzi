@@ -1609,7 +1609,7 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun deviceResolutionQualifier(){
+  fun deviceResolutionQualifier() {
     val fixtureRoot = File("src/test/projects/device-resolution-qualifier")
 
     gradleRunner
@@ -1622,10 +1622,15 @@ class PaparazziPluginTest {
 
     val deviceResolutionDefaultSnapshotImage = snapshots[0]
     val deviceResolutionUseDeviceResSnapshotImage = snapshots[1]
-    val deviceResolutionDefaultGoldenImage = File(fixtureRoot, "src/test/resources/resolution_default.png")
-    val deviceResolutionDeviceResGoldenImage = File(fixtureRoot, "src/test/resources/resolution_full_res.png")
-    assertThat(deviceResolutionDefaultSnapshotImage).isSimilarTo(deviceResolutionDefaultGoldenImage).withDefaultThreshold()
-    assertThat(deviceResolutionUseDeviceResSnapshotImage).isSimilarTo(deviceResolutionDeviceResGoldenImage).withDefaultThreshold()
+    val deviceResolutionDefaultGoldenImage =
+      File(fixtureRoot, "src/test/resources/resolution_default.png")
+    val deviceResolutionDeviceResGoldenImage =
+      File(fixtureRoot, "src/test/resources/resolution_full_res.png")
+    assertThat(deviceResolutionDefaultSnapshotImage).isSimilarTo(deviceResolutionDefaultGoldenImage)
+      .withDefaultThreshold()
+    assertThat(deviceResolutionUseDeviceResSnapshotImage).isSimilarTo(
+      deviceResolutionDeviceResGoldenImage
+    ).withDefaultThreshold()
   }
 
 
