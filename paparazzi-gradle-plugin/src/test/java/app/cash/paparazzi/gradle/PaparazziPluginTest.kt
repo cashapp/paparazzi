@@ -1633,7 +1633,6 @@ class PaparazziPluginTest {
     ).withDefaultThreshold()
   }
 
-
   @Test
   fun localeQualifier() {
     val fixtureRoot = File("src/test/projects/locale-qualifier")
