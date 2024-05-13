@@ -25,4 +25,3 @@ tasks.withType(Test).configureEach {
   }
 }
 
-apply from: '../guava-fix.gradle'

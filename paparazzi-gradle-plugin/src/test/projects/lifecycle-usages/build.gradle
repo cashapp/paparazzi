@@ -24,4 +24,3 @@ dependencies {
   testImplementation libs.truth
 }
 
-apply from: '../guava-fix.gradle'
