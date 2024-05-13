@@ -9,7 +9,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(TestParameterInjector::class)
-class LocaleQualifierTest(
+class DeviceResolutionQualifierTest(
   @TestParameter useDeviceResolutionFlag: OriginalDeviceResolutionFlag
 ) {
   enum class OriginalDeviceResolutionFlag(val useDeviceResolution: Boolean) {

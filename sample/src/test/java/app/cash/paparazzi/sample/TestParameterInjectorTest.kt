@@ -34,7 +34,7 @@ class TestParameterInjectorTest(
   }
 
   @get:Rule
-  val paparazzi = Paparazzi(deviceConfig = config.deviceConfig, useDeviceResolution = true)
+  val paparazzi = Paparazzi(deviceConfig = config.deviceConfig)
 
   @Test
   fun simple() {

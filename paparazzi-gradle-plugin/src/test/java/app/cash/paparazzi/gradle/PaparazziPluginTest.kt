@@ -1623,9 +1623,9 @@ class PaparazziPluginTest {
     val deviceResolutionDefaultSnapshotImage = snapshots[0]
     val deviceResolutionUseDeviceResSnapshotImage = snapshots[1]
     val deviceResolutionDefaultGoldenImage =
-      File(fixtureRoot, "src/test/resources/resolution_default.png")
+      File(fixtureRoot, "src/test/resources/default_resolution.png")
     val deviceResolutionDeviceResGoldenImage =
-      File(fixtureRoot, "src/test/resources/resolution_full_res.png")
+      File(fixtureRoot, "src/test/resources/full_resolution.png")
     assertThat(deviceResolutionDefaultSnapshotImage).isSimilarTo(deviceResolutionDefaultGoldenImage)
       .withDefaultThreshold()
     assertThat(deviceResolutionUseDeviceResSnapshotImage).isSimilarTo(
