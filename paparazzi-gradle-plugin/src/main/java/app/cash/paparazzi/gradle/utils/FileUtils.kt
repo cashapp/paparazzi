@@ -17,9 +17,11 @@ package app.cash.paparazzi.gradle.utils
 
 import org.gradle.api.file.Directory
 import org.gradle.api.file.FileCollection
+import org.gradle.api.provider.Provider
 import java.io.File
 
-internal fun FileCollection.relativize(directory: Directory) = files.map(directory::relativize)
+internal fun FileCollection.relativize(directory: Directory): Provider<List<String>> =
+  elements.map { files -> files.map { file -> directory.relativize(file.asFile) } }
 
 internal fun Directory.relativize(child: File): String {
   return asFile.toPath().relativize(child.toPath()).toFile().invariantSeparatorsPath

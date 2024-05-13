@@ -31,4 +31,3 @@ dependencies {
   testImplementation libs.kotlinx.coroutines.test
 }
 
-apply from: '../guava-fix.gradle'

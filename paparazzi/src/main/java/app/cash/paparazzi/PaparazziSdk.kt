@@ -52,8 +52,6 @@ import app.cash.paparazzi.internal.Renderer
 import app.cash.paparazzi.internal.SessionParamsBuilder
 import app.cash.paparazzi.internal.interceptors.EditModeInterceptor
 import app.cash.paparazzi.internal.interceptors.IInputMethodManagerInterceptor
-import app.cash.paparazzi.internal.interceptors.MatrixMatrixMultiplicationInterceptor
-import app.cash.paparazzi.internal.interceptors.MatrixVectorMultiplicationInterceptor
 import app.cash.paparazzi.internal.interceptors.ResourcesInterceptor
 import app.cash.paparazzi.internal.interceptors.ServiceManagerInterceptor
 import app.cash.paparazzi.internal.parsers.LayoutPullParser
@@ -113,7 +111,6 @@ public class PaparazziSdk @JvmOverloads constructor(
     if (!isInitialized) {
       registerFontLookupInterceptionIfResourceCompatDetected()
       registerViewEditModeInterception()
-      registerMatrixMultiplyInterception()
       registerServiceManagerInterception()
       registerIInputMethodManagerInterception()
 
@@ -311,10 +308,10 @@ public class PaparazziSdk @JvmOverloads constructor(
         }
       }
     } finally {
-      // Remove original view from parent, even if there aren't render extensions applied
-      (view.parent as ViewGroup).removeView(view)
+      viewGroup.removeView(modifiedView)
+      // Remove any applied render extensions
       if (modifiedView !== view) {
-        viewGroup.removeView(modifiedView)
+        (view.parent as ViewGroup).removeView(view)
       }
       AnimationHandler.sAnimatorHandler.set(null)
       if (hasComposeRuntime) {
@@ -543,16 +540,6 @@ public class PaparazziSdk @JvmOverloads constructor(
       "android.view.View",
       "isInEditMode",
       EditModeInterceptor::class.java
-    )
-  }
-
-  private fun registerMatrixMultiplyInterception() {
-    InterceptorRegistrar.addMethodInterceptors(
-      "android.opengl.Matrix",
-      setOf(
-        "multiplyMM" to MatrixMatrixMultiplicationInterceptor::class.java,
-        "multiplyMV" to MatrixVectorMultiplicationInterceptor::class.java
-      )
     )
   }
 

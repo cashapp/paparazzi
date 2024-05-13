@@ -19,8 +19,6 @@ android {
   }
 }
 
-apply from: '../guava-fix.gradle'
-
 //tasks.withType(Test).configureEach {
 //  debugOptions {
 //    enabled = true

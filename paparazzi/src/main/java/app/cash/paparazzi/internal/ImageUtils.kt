@@ -18,9 +18,6 @@ package app.cash.paparazzi.internal
 
 import app.cash.paparazzi.ImageDiffer
 import app.cash.paparazzi.ImageDiffer.DiffResult
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
-import org.junit.Assert.fail
 import java.awt.AlphaComposite
 import java.awt.Color
 import java.awt.Graphics2D
@@ -88,14 +85,18 @@ internal object ImageUtils {
       val deltaOutput = File(failureDir, "delta-$imageName")
       if (deltaOutput.exists()) {
         val deleted = deltaOutput.delete()
-        assertTrue(deleted)
+        if (!deleted) {
+          throw IllegalStateException("Unable to delete $deltaOutput")
+        }
       }
       ImageIO.write(deltaImage, "PNG", deltaOutput)
       error += " - see details in file://" + deltaOutput.path + "\n"
       val actualOutput = File(failureDir, getName(relativePath))
       if (actualOutput.exists()) {
         val deleted = actualOutput.delete()
-        assertTrue(deleted)
+        if (!deleted) {
+          throw IllegalStateException("Unable to delete $actualOutput")
+        }
       }
       ImageIO.write(image, "PNG", actualOutput)
       error += "Thumbnail for current rendering stored at file://" + actualOutput.path
@@ -108,7 +109,7 @@ internal object ImageUtils {
       when (result) {
         is DiffResult.Different -> {
           println("results are different: ${result.numDifferentPixels} of ${result.numTotalPixels}")
-          fail(error)
+          throw AssertionError(error)
         }
         is DiffResult.Similar -> {
           println("results are similar: ${result.numSimilarPixels} of ${result.numTotalPixels}")
@@ -142,8 +143,9 @@ internal object ImageUtils {
       temp.graphics.drawImage(goldenImage, 0, 0, null)
       goldenImage = temp
     }
-    assertEquals(TYPE_INT_ARGB.toLong(), goldenImage.type.toLong())
-
+    if (TYPE_INT_ARGB != goldenImage.type) {
+      throw IllegalStateException("expected:<$TYPE_INT_ARGB> but was:<${goldenImage.type}>")
+    }
     val goldenImageWidth = goldenImage.width
     val goldenImageHeight = goldenImage.height
 

@@ -1,0 +1,36 @@
+plugins {
+  id 'com.android.library'
+  id 'kotlin-android'
+  id 'app.cash.paparazzi'
+}
+
+android {
+  namespace 'app.cash.paparazzi.plugin.test'
+  compileSdk libs.versions.compileSdk.get() as int
+  defaultConfig {
+    minSdk libs.versions.minSdk.get() as int
+  }
+  compileOptions {
+    sourceCompatibility = libs.versions.javaTarget.get()
+    targetCompatibility = libs.versions.javaTarget.get()
+  }
+  kotlinOptions {
+    jvmTarget = libs.versions.javaTarget.get()
+  }
+}
+
+androidComponents {
+  onVariants(selector().all()) { variant ->
+    def sourceGen = project.tasks.register("do${variant.name.capitalize()}SourceGen", SourceGenTask)
+    variant.sources.res.addGeneratedSourceDirectory(
+      sourceGen,
+      { task -> task.outputDirectory }
+    )
+  }
+}
+
+abstract class SourceGenTask extends DefaultTask {
+  @OutputDirectory
+  abstract DirectoryProperty getOutputDirectory()
+}
+
