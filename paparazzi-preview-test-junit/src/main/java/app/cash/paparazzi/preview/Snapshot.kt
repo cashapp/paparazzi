@@ -1,6 +1,7 @@
 // Copyright Square, Inc.
 package app.cash.paparazzi.preview
 
+import androidx.compose.runtime.Composable
 import app.cash.paparazzi.Paparazzi
 import app.cash.paparazzi.preview.runtime.PaparazziPreviewData
 import com.google.testing.junit.testparameterinjector.TestParameter.TestParameterValuesProvider
@@ -10,10 +11,11 @@ import com.google.testing.junit.testparameterinjector.TestParameter.TestParamete
  */
 public fun Paparazzi.snapshot(
   previewData: PaparazziPreviewData,
-  name: String? = null
+  name: String? = null,
+  wrapper: @Composable (@Composable () -> Unit) -> Unit = { it() }
 ) {
   when (previewData) {
-    is PaparazziPreviewData.Default -> snapshotDefault(previewData, name)
+    is PaparazziPreviewData.Default -> snapshotDefault(previewData, name, wrapper)
   }
 }
 
