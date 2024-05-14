@@ -30,4 +30,3 @@ dependencies {
   implementation libs.androidx.appcompat
 }
 
-apply from: '../guava-fix.gradle'
