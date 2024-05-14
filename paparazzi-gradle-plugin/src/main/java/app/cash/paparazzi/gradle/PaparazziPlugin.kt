@@ -54,8 +54,6 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
 import java.util.Locale
 import javax.inject.Inject
 
-public interface PaparazziExtension
-
 @Suppress("unused")
 public class PaparazziPlugin @Inject constructor(
   private val providerFactory: ProviderFactory,
@@ -63,10 +61,7 @@ public class PaparazziPlugin @Inject constructor(
   private val buildOperationExecutor: BuildOperationExecutor
 ) : Plugin<Project> {
 
-  private lateinit var config: PaparazziExtension
   override fun apply(project: Project) {
-    config = project.createDslConfig()
-
     val supportedPlugins = listOf("com.android.application", "com.android.library", "com.android.dynamic-feature")
     project.afterEvaluate {
       check(supportedPlugins.any { project.plugins.hasPlugin(it) }) {
@@ -364,4 +359,3 @@ public class PaparazziPlugin @Inject constructor(
 }
 
 private const val DEFAULT_COMPILE_SDK_VERSION = 34
-private const val EXTENSION_NAME = "paparazzi"

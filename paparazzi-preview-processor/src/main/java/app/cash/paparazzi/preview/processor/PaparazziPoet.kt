@@ -42,19 +42,19 @@ internal object PaparazziPoet {
             val visibilityCheck = checkVisibility(func)
             val snapshotName = func.snapshotName(env)
 
-              when {
-                visibilityCheck.isPrivate -> addError(
-                  function = func,
-                  snapshotName = snapshotName,
-                  buildErrorMessage = {
-                    "$it is private. Make it internal or public to generate a snapshot."
-                  }
+            when {
+              visibilityCheck.isPrivate -> addError(
+                function = func,
+                snapshotName = snapshotName,
+                buildErrorMessage = {
+                  "$it is private. Make it internal or public to generate a snapshot."
+                }
               )
               previewParam != null -> addError(
-                  function = func,
-                  snapshotName = snapshotName,
-                  buildErrorMessage = {
-                    "$it preview uses PreviewParameters which aren't currently supported."
+                function = func,
+                snapshotName = snapshotName,
+                buildErrorMessage = {
+                  "$it preview uses PreviewParameters which aren't currently supported."
                 }
               )
               else -> addDefault(
@@ -101,10 +101,7 @@ internal object PaparazziPoet {
     addStatement("),")
   }
 
-  private fun CodeBlock.Builder.addDefault(
-    function: KSFunctionDeclaration,
-    snapshotName: String
-  ) {
+  private fun CodeBlock.Builder.addDefault(function: KSFunctionDeclaration, snapshotName: String) {
     addStatement("%L.PaparazziPreviewData.Default(", PACKAGE_NAME)
     indent()
     addStatement("snapshotName = %S,", snapshotName)
@@ -123,11 +120,10 @@ internal object PaparazziPoet {
       add(simpleName.asString())
     }.joinToString("_")
 
-  private fun checkVisibility(
-    function: KSFunctionDeclaration
-  ) = VisibilityCheck(
-    isFunctionPrivate = function.getVisibility() == Visibility.PRIVATE
-  )
+  private fun checkVisibility(function: KSFunctionDeclaration) =
+    VisibilityCheck(
+      isFunctionPrivate = function.getVisibility() == Visibility.PRIVATE
+    )
 }
 
 internal data class VisibilityCheck(
