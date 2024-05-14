@@ -1620,8 +1620,8 @@ class PaparazziPluginTest {
     val snapshots = snapshotsDir.listFiles()?.sortedBy { it.lastModified() }
     assertThat(snapshots!!).hasSize(2)
 
-    val defaultSnapshotImage = snapshots[1]
-    val deviceResolutionSnapshotImage = snapshots[0]
+    val defaultSnapshotImage = snapshots[0]
+    val deviceResolutionSnapshotImage = snapshots[1]
     val defaultGoldenImage =
       File(fixtureRoot, "src/test/resources/default_resolution.png")
     val deviceResolutionGoldenImage =
