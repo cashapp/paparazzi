@@ -18,7 +18,7 @@ layoutlib = "2023.2.1-6c7316c"
 layoutlibPrebuiltSha = "6c7316c"
 
 [libraries]
-androidx-annotations = { module = "androidx.annotation:annotation", version = "1.7.1" }
+androidx-annotations = { module = "androidx.annotation:annotation", version = "1.8.0" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version = "1.6.1" }
 androidx-activity = { module = "androidx.activity:activity", version = "1.9.0" }
 androidx-compose-ui-android = { module = "androidx.compose.ui:ui-android", version = "1.6.7" }
