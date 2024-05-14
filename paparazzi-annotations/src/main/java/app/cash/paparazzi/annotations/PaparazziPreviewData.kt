@@ -18,9 +18,7 @@ public sealed interface PaparazziPreviewData {
     override fun toString(): String = snapshotName
   }
 
-  public data object Empty : PaparazziPreviewData {
-    override fun toString(): String = "Empty"
-  }
+  public data object Empty : PaparazziPreviewData
 
   public data class Error(
     val snapshotName: String,
