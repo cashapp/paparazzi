@@ -156,18 +156,24 @@ public class PaparazziPlugin : Plugin<Project> {
         task.targetSdkVersion.set(android.targetSdkVersion())
         task.compileSdkVersion.set(android.compileSdkVersion())
         task.projectResourceDirs.set(
-          project.provider {
-            val resourcesComputer = variant.mergeResourcesProvider?.get()?.resourcesComputer
-            val generateResValuesDirs = resourcesComputer?.generatedResOutputDir ?: project.files()
-            val extraGeneratedResDirs = resourcesComputer?.extraGeneratedResFolders ?: project.files()
-
-            extraGeneratedResDirs.map(projectDirectory::relativize) + localResourceDirs.relativize(projectDirectory) + generateResValuesDirs.map(projectDirectory::relativize)
+          run {
+            val resourcesComputer = variant.mergeResourcesProvider
+            val extraGeneratedResDirs =
+              resourcesComputer?.map { it.resourcesComputer.extraGeneratedResFolders }
+                ?: project.provider { project.files() }
+            val generatedResOutputDirs =
+              resourcesComputer?.map { it.resourcesComputer.generatedResOutputDir }
+                ?: project.provider { project.files() }
+            extraGeneratedResDirs
+              .zip(project.provider { localResourceDirs }, FileCollection::plus)
+              .zip(generatedResOutputDirs, FileCollection::plus)
+              .flatMap { it.relativize(projectDirectory) }
           }
         )
-        task.moduleResourceDirs.set(project.provider { moduleResourceDirs.relativize(projectDirectory) })
-        task.aarExplodedDirs.set(project.provider { aarExplodedDirs.relativize(gradleHomeDir) })
-        task.projectAssetDirs.set(project.provider { localAssetDirs.plus(moduleAssetDirs).relativize(projectDirectory) })
-        task.aarAssetDirs.set(project.provider { aarAssetDirs.relativize(gradleHomeDir) })
+        task.moduleResourceDirs.set(moduleResourceDirs.relativize(projectDirectory))
+        task.aarExplodedDirs.set(aarExplodedDirs.relativize(gradleHomeDir))
+        task.projectAssetDirs.set(localAssetDirs.plus(moduleAssetDirs).relativize(projectDirectory))
+        task.aarAssetDirs.set(aarAssetDirs.relativize(gradleHomeDir))
         task.paparazziResources.set(buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.json"))
       }
 
