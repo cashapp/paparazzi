@@ -32,7 +32,6 @@ dependencies {
   testImplementationAarAsJar libs.androidx.compose.ui.android
   compileOnlyAarAsJar libs.androidx.compose.ui.android
   compileOnlyAarAsJar libs.androidx.activity
-  compileOnlyAarAsJar libs.composeUi.foundation
 
   implementation libs.bytebuddy.agent
   implementation libs.bytebuddy.core
@@ -48,12 +47,10 @@ dependencies {
   api libs.guava
   api libs.kotlinx.coroutines.android
   api libs.okio
-  api libs.testParameterInjector
   api platform(libs.kotlin.bom)
   implementation libs.moshi.core
   implementation libs.moshi.adapters
   implementation libs.moshi.kotlinReflect
-  implementation projects.paparazziAnnotations
 
   def osName = System.getProperty("os.name").toLowerCase(Locale.US)
   def osLabel

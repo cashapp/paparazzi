@@ -1,0 +1,25 @@
+public final class app/cash/paparazzi/preview/ComposableSingletons$SnapshotKt {
+	public static final field INSTANCE Lapp/cash/paparazzi/preview/ComposableSingletons$SnapshotKt;
+	public static field lambda-1 Lkotlin/jvm/functions/Function3;
+	public fun <init> ()V
+	public final fun getLambda-1$paparazzi_preview_test_junit ()Lkotlin/jvm/functions/Function3;
+}
+
+public final class app/cash/paparazzi/preview/ComposableSingletons$UtilsKt {
+	public static final field INSTANCE Lapp/cash/paparazzi/preview/ComposableSingletons$UtilsKt;
+	public static field lambda-1 Lkotlin/jvm/functions/Function3;
+	public fun <init> ()V
+	public final fun getLambda-1$paparazzi_preview_test_junit ()Lkotlin/jvm/functions/Function3;
+}
+
+public class app/cash/paparazzi/preview/PaparazziValuesProvider : com/google/testing/junit/testparameterinjector/TestParameter$TestParameterValuesProvider {
+	public static final field $stable I
+	public fun <init> (Ljava/util/List;)V
+	public fun provideValues ()Ljava/util/List;
+}
+
+public final class app/cash/paparazzi/preview/SnapshotKt {
+	public static final fun snapshot (Lapp/cash/paparazzi/Paparazzi;Lapp/cash/paparazzi/annotations/PaparazziPreviewData;Ljava/lang/String;Lkotlin/jvm/functions/Function3;)V
+	public static synthetic fun snapshot$default (Lapp/cash/paparazzi/Paparazzi;Lapp/cash/paparazzi/annotations/PaparazziPreviewData;Ljava/lang/String;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)V
+}
+
