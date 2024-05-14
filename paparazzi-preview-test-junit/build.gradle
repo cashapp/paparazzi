@@ -4,4 +4,7 @@ apply plugin: 'com.vanniktech.maven.publish'
 
 dependencies {
   compileOnly libs.compose.runtime
+  implementation projects.paparazzi
+  implementation projects.paparazziAnnotations
+  api libs.testParameterInjector
 }
