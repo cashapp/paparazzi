@@ -1,0 +1,37 @@
+plugins {
+  id 'com.android.library'
+  id 'kotlin-android'
+  id 'app.cash.paparazzi'
+}
+
+paparazzi {
+  generatePreviewTestClass = false
+}
+
+android {
+  namespace 'app.cash.paparazzi.plugin.test'
+  compileSdk libs.versions.compileSdk.get() as int
+  defaultConfig {
+    minSdk libs.versions.minSdk.get() as int
+  }
+  compileOptions {
+    sourceCompatibility = libs.versions.javaTarget.get()
+    targetCompatibility = libs.versions.javaTarget.get()
+  }
+  kotlinOptions {
+    jvmTarget = libs.versions.javaTarget.get()
+  }
+  buildFeatures {
+    compose true
+  }
+  composeOptions {
+    kotlinCompilerExtensionVersion libs.versions.composeCompiler.get()
+  }
+}
+
+dependencies {
+  implementation libs.composeUi.material
+  implementation libs.composeUi.uiTooling
+}
+
+apply from: '../guava-fix.gradle'
