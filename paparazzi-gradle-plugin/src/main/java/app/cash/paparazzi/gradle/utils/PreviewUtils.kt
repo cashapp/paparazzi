@@ -33,9 +33,8 @@ internal fun <T> Project.registerGeneratePreviewTask(
       srcDir(testSourceDir)
     }
 
-    val taskName = "paparazziGeneratePreview${typeNameCap}UnitTestKotlin"
-
     if (config.generatePreviewTestClass.get()) {
+      val taskName = "paparazziGeneratePreview${typeNameCap}UnitTestKotlin"
       tasks.register(taskName) { task ->
         task.description = "Generates the preview test class to the test source set for $typeName"
 
