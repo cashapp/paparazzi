@@ -13,6 +13,7 @@ import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.gradle.testkit.runner.TaskOutcome.FROM_CACHE
 import org.gradle.testkit.runner.TaskOutcome.SUCCESS
+import org.jetbrains.kotlin.gradle.report.TaskExecutionState
 import org.junit.After
 import org.junit.Before
 import org.junit.Ignore
