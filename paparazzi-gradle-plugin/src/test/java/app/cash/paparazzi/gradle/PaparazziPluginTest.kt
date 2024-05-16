@@ -1639,9 +1639,8 @@ class PaparazziPluginTest {
       File(fixtureRoot, "src/test/resources/full_resolution.png")
     assertThat(defaultSnapshotImage).isSimilarTo(defaultGoldenImage)
       .withDefaultThreshold()
-    assertThat(deviceResolutionSnapshotImage).isSimilarTo(
-      deviceResolutionGoldenImage
-    ).withDefaultThreshold()
+    assertThat(deviceResolutionSnapshotImage).isSimilarTo(deviceResolutionGoldenImage)
+      .withDefaultThreshold()
   }
 
   @Test
