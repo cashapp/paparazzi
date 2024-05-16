@@ -23,4 +23,3 @@ android {
   }
 }
 
-apply from: '../guava-fix.gradle'

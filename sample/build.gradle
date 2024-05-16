@@ -35,5 +35,3 @@ dependencies {
 tasks.withType(com.diffplug.gradle.spotless.SpotlessTask).configureEach {
   mustRunAfter(tasks.withType(Test))
 }
-
-apply from: 'guava-fix.gradle'

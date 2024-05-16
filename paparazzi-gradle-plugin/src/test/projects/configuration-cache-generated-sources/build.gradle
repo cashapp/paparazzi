@@ -19,7 +19,18 @@ android {
   }
 }
 
-dependencies {
-  testImplementation libs.truth
+androidComponents {
+  onVariants(selector().all()) { variant ->
+    def sourceGen = project.tasks.register("do${variant.name.capitalize()}SourceGen", SourceGenTask)
+    variant.sources.res.addGeneratedSourceDirectory(
+      sourceGen,
+      { task -> task.outputDirectory }
+    )
+  }
+}
+
+abstract class SourceGenTask extends DefaultTask {
+  @OutputDirectory
+  abstract DirectoryProperty getOutputDirectory()
 }
 

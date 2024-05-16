@@ -302,10 +302,10 @@ public class PaparazziSdk @JvmOverloads constructor(
         }
       }
     } finally {
-      // Remove original view from parent, even if there aren't render extensions applied
-      (view.parent as ViewGroup).removeView(view)
+      viewGroup.removeView(modifiedView)
+      // Remove any applied render extensions
       if (modifiedView !== view) {
-        viewGroup.removeView(modifiedView)
+        (view.parent as ViewGroup).removeView(view)
       }
       AnimationHandler.sAnimatorHandler.set(null)
       if (hasComposeRuntime) {

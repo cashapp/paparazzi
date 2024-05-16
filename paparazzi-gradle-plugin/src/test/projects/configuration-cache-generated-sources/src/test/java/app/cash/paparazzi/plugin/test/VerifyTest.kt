@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Square, Inc.
+ * Copyright (C) 2020 Square, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package app.cash.paparazzi.gradle.utils
+package app.cash.paparazzi.plugin.test
 
-import org.gradle.api.file.Directory
-import org.gradle.api.file.FileCollection
-import org.gradle.api.provider.Provider
-import java.io.File
+import app.cash.paparazzi.Paparazzi
+import org.junit.Rule
+import org.junit.Test
 
-internal fun FileCollection.relativize(directory: Directory): Provider<List<String>> =
-  elements.map { files -> files.map { file -> directory.relativize(file.asFile) } }
+class VerifyTest {
+  @get:Rule
+  val paparazzi = Paparazzi()
 
-internal fun Directory.relativize(child: File): String {
-  return asFile.toPath().relativize(child.toPath()).toFile().invariantSeparatorsPath
+  @Test
+  fun verify() {}
 }
