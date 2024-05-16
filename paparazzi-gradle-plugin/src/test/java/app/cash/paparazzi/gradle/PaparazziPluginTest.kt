@@ -1620,6 +1620,30 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun scaledVersusFullDeviceResolution() {
+    val fixtureRoot = File("src/test/projects/device-resolution")
+
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/debug/images")
+    val snapshots = snapshotsDir.listFiles()?.sortedBy { it.lastModified() }
+    assertThat(snapshots!!).hasSize(2)
+
+    val defaultSnapshotImage = snapshots[0]
+    val deviceResolutionSnapshotImage = snapshots[1]
+    val defaultGoldenImage =
+      File(fixtureRoot, "src/test/resources/default_resolution.png")
+    val deviceResolutionGoldenImage =
+      File(fixtureRoot, "src/test/resources/full_resolution.png")
+    assertThat(defaultSnapshotImage).isSimilarTo(defaultGoldenImage)
+      .withDefaultThreshold()
+    assertThat(deviceResolutionSnapshotImage).isSimilarTo(deviceResolutionGoldenImage)
+      .withDefaultThreshold()
+  }
+
+  @Test
   fun localeQualifier() {
     val fixtureRoot = File("src/test/projects/locale-qualifier")
 

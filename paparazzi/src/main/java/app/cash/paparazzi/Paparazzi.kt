@@ -38,7 +38,8 @@ public class Paparazzi @JvmOverloads constructor(
   private val renderExtensions: Set<RenderExtension> = setOf(),
   private val supportsRtl: Boolean = false,
   private val showSystemUi: Boolean = false,
-  private val validateAccessibility: Boolean = false
+  private val validateAccessibility: Boolean = false,
+  private val useDeviceResolution: Boolean = false
 ) : TestRule {
   private lateinit var sdk: PaparazziSdk
   private lateinit var frameHandler: SnapshotHandler.FrameHandler
@@ -69,7 +70,8 @@ public class Paparazzi @JvmOverloads constructor(
           supportsRtl = supportsRtl,
           showSystemUi = showSystemUi,
           validateAccessibility = validateAccessibility,
-          onNewFrame = { frameHandler.handle(it) }
+          onNewFrame = { frameHandler.handle(it) },
+          useDeviceResolution = useDeviceResolution
         )
         sdk.setup()
         prepare(description)
