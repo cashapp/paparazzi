@@ -17,6 +17,7 @@ enableFeaturePreview('TYPESAFE_PROJECT_ACCESSORS')
 includeBuild('build-logic') {
   dependencySubstitution {
     substitute module('app.cash.paparazzi:paparazzi-gradle-plugin') using project(':paparazzi-gradle-plugin')
+    substitute module('app.cash.paparazzi:aar2jar') using project(':aar2jar')
   }
 }
 

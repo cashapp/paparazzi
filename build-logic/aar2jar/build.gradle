@@ -1,0 +1,21 @@
+apply plugin: 'org.jetbrains.kotlin.jvm'
+apply plugin: 'java-gradle-plugin'
+
+repositories {
+  mavenCentral()
+  google()
+}
+
+dependencies {
+  compileOnly gradleApi()
+  implementation libs.plugin.android
+}
+
+gradlePlugin {
+  plugins {
+    aar2jar {
+      id = 'aar2jar'
+      implementationClass = 'app.cash.paparazzi.gradle.Aar2JarPlugin'
+    }
+  }
+}
