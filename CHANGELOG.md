@@ -2,6 +2,28 @@
 
 ## [Unreleased]
 
+## [1.3.4] - 2024-05-23
+
+### New
+* Support for animated-PNG-based snapshots using Paparazzi#gif
+* New tasks! deletePaparazziSnapshots and cleanRecordPaparazzi${VARIANT} clear orphaned snapshots
+* Add boolean flag to decide if image should be scaled or full-sized
+* Migrate Paparazzi to layoutlib Iguana 2023.2.1
+* Compose 1.5.14
+* Kotlin 1.9.24
+* [Gradle Plugin] Gradle 8.7
+* [Gradle Plugin] Android Gradle Plugin 8.3.2
+
+### Fixed
+* Fix long content description being cut off in accessibility snapshots
+* Include resource references from generated resource folders
+* Fix gradle caching for resources coming from aar dependencies
+* Support SHRINK render mode when using unsafeUpdateConfig
+* Fix issue where multiple snapshots fail when using render extensions
+* Remove guava workaround from [1.3.2] now that Collector APIs are in guava-android
+
+Kudos to @geoff-powell, @gamepro65, @kevinzheng-ap, @nak5ive, @TWiStErRob, @emuguy1 and others for contributions this release!
+
 ## [1.3.3] - 2024-03-01
 
 ### New
@@ -357,7 +379,8 @@ As of this release, consumers must build on Java 11 environments.
 
 
 
-[Unreleased]: https://github.com/cashapp/paparazzi/compare/1.3.3...HEAD
+[Unreleased]: https://github.com/cashapp/paparazzi/compare/1.3.4...HEAD
+[1.3.4]: https://github.com/cashapp/paparazzi/releases/tag/1.3.4
 [1.3.3]: https://github.com/cashapp/paparazzi/releases/tag/1.3.3
 [1.3.2]: https://github.com/cashapp/paparazzi/releases/tag/1.3.2
 [1.3.1]: https://github.com/cashapp/paparazzi/releases/tag/1.3.1
