@@ -591,6 +591,7 @@ class PaparazziPluginTest {
   @Test
   fun rerunTestsOnPropertyChange() {
     val fixtureRoot = File("src/test/projects/rerun-property-change")
+    File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
 
     // Take 1
     val firstRunResult = gradleRunner
@@ -725,9 +726,18 @@ class PaparazziPluginTest {
   @Test
   fun deleteSnapshots() {
     val fixtureRoot = File("src/test/projects/delete-snapshots")
-    val snapshotsDir = File(fixtureRoot, "src/test/snapshots")
-    val snapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_DeleteTest_delete.png")
-    val snapshotWithLabel = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_DeleteTest_delete_label.png")
+    val snapshotsDir = File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
+
+    val snapshotName1 = "app.cash.paparazzi.plugin.test_DeleteTest_delete.png"
+    val snapshotName2 = "app.cash.paparazzi.plugin.test_DeleteTest_delete_label.png"
+    val firstGoldenFile = File(fixtureRoot, "src/test/resources/$snapshotName1")
+    val secondGoldenFile = File(fixtureRoot, "src/test/resources/$snapshotName2")
+
+    val snapshot = File(snapshotsDir, "images/$snapshotName1")
+    val snapshotWithLabel = File(snapshotsDir, "images/$snapshotName2")
+
+    firstGoldenFile.copyTo(snapshot, overwrite = false)
+    secondGoldenFile.copyTo(snapshotWithLabel, overwrite = false)
 
     assertThat(snapshot.exists()).isTrue()
     assertThat(snapshotWithLabel.exists()).isTrue()
@@ -743,12 +753,21 @@ class PaparazziPluginTest {
   @Test
   fun cleanRecord() {
     val fixtureRoot = File("src/test/projects/clean-record")
-    val snapshotsDir = File(fixtureRoot, "src/test/snapshots")
-    val snapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_CleanRecordTest_clean.png")
-    val snapshotWithKeep = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_CleanRecordTest_clean_keep.png")
+    val snapshotsDir = File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
 
-    assertThat(snapshot.exists()).isTrue()
-    assertThat(snapshotWithKeep.exists()).isTrue()
+    val snapshotName1 = "app.cash.paparazzi.plugin.test_CleanRecordTest_clean.png"
+    val snapshotName2 = "app.cash.paparazzi.plugin.test_CleanRecordTest_clean_keep.png"
+    val firstGoldenFile = File(fixtureRoot, "src/test/resources/$snapshotName1")
+    val secondGoldenFile = File(fixtureRoot, "src/test/resources/$snapshotName2")
+
+    val snapshotToBeDeleted = File(snapshotsDir, "images/$snapshotName1")
+    val snapshotToBeKept = File(snapshotsDir, "images/$snapshotName2")
+
+    firstGoldenFile.copyTo(snapshotToBeDeleted, overwrite = false)
+    secondGoldenFile.copyTo(snapshotToBeKept, overwrite = false)
+
+    assertThat(snapshotToBeDeleted.exists()).isTrue()
+    assertThat(snapshotToBeKept.exists()).isTrue()
 
     val result = gradleRunner
       .withArguments("cleanRecordPaparazziDebug", "--stacktrace")
@@ -757,8 +776,8 @@ class PaparazziPluginTest {
     assertThat(result.task(":deletePaparazziSnapshots")).isNotNull()
     assertThat(result.task(":recordPaparazziDebug")).isNotNull()
 
-    assertThat(snapshot.exists()).isFalse()
-    assertThat(snapshotWithKeep.exists()).isTrue()
+    assertThat(snapshotToBeDeleted.exists()).isFalse()
+    assertThat(snapshotToBeKept.exists()).isTrue()
   }
 
   @Test
