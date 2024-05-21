@@ -1507,6 +1507,22 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun composePercentDiff() {
+    val fixtureRoot = File("src/test/projects/compose-percent-diff")
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/debug/images")
+    val snapshots = snapshotsDir.listFiles()
+    assertThat(snapshots!!).hasLength(1)
+
+    val snapshotImage = snapshots[0]
+    val goldenImage = File(fixtureRoot, "src/test/resources/sine_wave.png")
+    assertThat(snapshotImage).isSimilarTo(goldenImage).withThreshold(0.0)
+  }
+
+  @Test
   fun composeRecomposition() {
     val fixtureRoot = File("src/test/projects/compose-recomposition")
 
