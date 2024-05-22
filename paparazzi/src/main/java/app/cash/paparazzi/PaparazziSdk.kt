@@ -18,11 +18,9 @@ package app.cash.paparazzi
 import android.animation.AnimationHandler
 import android.content.Context
 import android.content.res.Resources
-import android.graphics.Bitmap
 import android.os.Handler
 import android.os.Handler_Delegate
 import android.util.AttributeSet
-import android.util.DisplayMetrics
 import android.view.BridgeInflater
 import android.view.Choreographer
 import android.view.LayoutInflater
@@ -148,7 +146,7 @@ public class PaparazziSdk @JvmOverloads constructor(
     renderSession = createRenderSession(sessionParams)
     prepareThread()
     renderSession.init(sessionParams.timeout)
-    Bitmap.setDefaultDensity(DisplayMetrics.DENSITY_DEVICE_STABLE)
+//    Bitmap.setDefaultDensity(DisplayMetrics.DENSITY_DEVICE_STABLE)
 
     // requires LayoutInflater to be created, which is a side-effect of RenderSessionImpl.init()
     if (appCompatEnabled) {
@@ -242,7 +240,7 @@ public class PaparazziSdk @JvmOverloads constructor(
     renderSession = createRenderSession(sessionParams)
     prepareThread()
     renderSession.init(sessionParams.timeout)
-    Bitmap.setDefaultDensity(DisplayMetrics.DENSITY_DEVICE_STABLE)
+//    Bitmap.setDefaultDensity(DisplayMetrics.DENSITY_DEVICE_STABLE)
     bridgeRenderSession = createBridgeSession(renderSession, renderSession.inflate())
   }
 
