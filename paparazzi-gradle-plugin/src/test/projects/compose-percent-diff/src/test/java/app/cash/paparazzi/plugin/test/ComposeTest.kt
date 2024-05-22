@@ -31,7 +31,9 @@ import kotlin.time.Duration.Companion.seconds
 
 class ComposeTest {
   @get:Rule
-  val paparazzi = Paparazzi()
+  val paparazzi = Paparazzi(
+    useDeviceResolution = true
+  )
 
   @Test
   fun compose() {
