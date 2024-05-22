@@ -16,9 +16,6 @@
 
 package app.cash.paparazzi.internal
 
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
-import org.junit.Assert.fail
 import java.awt.AlphaComposite
 import java.awt.Color
 import java.awt.Graphics2D
@@ -68,7 +65,7 @@ internal object ImageUtils {
       var message = "Unable to load golden thumbnail: $relativePath\n"
       message = saveImageAndAppendMessage(thumbnail, message, relativePath, failureDir)
       if (FAIL_ON_MISSING_THUMBNAIL) {
-        fail(message)
+        throw IllegalStateException(message)
       } else {
         println(message)
       }
@@ -116,13 +113,15 @@ internal object ImageUtils {
       val output = File(failureDir, "delta-$imageName")
       if (output.exists()) {
         val deleted = output.delete()
-        assertTrue(deleted)
+        if (!deleted) {
+          throw IllegalStateException("Unable to delete $output")
+        }
       }
       ImageIO.write(deltaImage, "PNG", output)
       error += " - see details in file://" + output.path + "\n"
       error = saveImageAndAppendMessage(image, error, relativePath, failureDir)
       println(error)
-      fail(error)
+      throw AssertionError(error)
     }
   }
 
@@ -142,8 +141,9 @@ internal object ImageUtils {
       temp.graphics.drawImage(goldenImage, 0, 0, null)
       goldenImage = temp
     }
-    assertEquals(TYPE_INT_ARGB.toLong(), goldenImage.type.toLong())
-
+    if (TYPE_INT_ARGB != goldenImage.type) {
+      throw IllegalStateException("expected:<$TYPE_INT_ARGB> but was:<${goldenImage.type}>")
+    }
     val goldenImageWidth = goldenImage.width
     val goldenImageHeight = goldenImage.height
 
@@ -398,7 +398,9 @@ internal object ImageUtils {
     val output = File(outputDir, getName(relativePath))
     if (output.exists()) {
       val deleted = output.delete()
-      assertTrue(deleted)
+      if (!deleted) {
+        throw IllegalStateException("Unable to delete $output")
+      }
     }
     ImageIO.write(image, "PNG", output)
     initialMessage += "Thumbnail for current rendering stored at file://" + output.path

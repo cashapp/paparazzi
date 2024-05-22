@@ -19,7 +19,6 @@ import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.ImageUtils.resize
 import okio.FileSystem
 import okio.Path
-import org.junit.Assert.fail
 import java.awt.image.BufferedImage
 import java.io.Closeable
 import kotlin.math.max
@@ -122,7 +121,7 @@ internal class ApngVerifier(
     }
 
     if (error.isNotEmpty()) {
-      fail(error)
+      throw AssertionError(error)
     }
   }
 
