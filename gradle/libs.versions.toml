@@ -13,8 +13,8 @@ moshi = "1.15.1"
 minSdk = "25"
 compileSdk = "34"
 
-layoutlibApi = "31.4.0"
-layoutlib = "14.0.7"
+layoutlibApi = "31.4.1"
+layoutlib = "14.0.8"
 
 [libraries]
 androidx-annotations = { module = "androidx.annotation:annotation", version = "1.8.0" }
