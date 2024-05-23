@@ -96,8 +96,7 @@ public class AccessibilityRenderExtension : RenderExtension {
   private fun SemanticsNode.processAccessibleChildren(
     processElement: (AccessibilityElement) -> Unit
   ) {
-    var accessibilityText: String? = null
-    accessibilityText = if (config.isMergingSemanticsOfDescendants) {
+    val accessibilityText = if (config.isMergingSemanticsOfDescendants) {
       val unmergedNode = unmergedNodes?.filter { it.id == id }
       unmergedNode?.first()?.let { node ->
         node.findAllUnmergedNodes()
@@ -130,6 +129,10 @@ public class AccessibilityRenderExtension : RenderExtension {
 }
 
 private fun SemanticsNode.findAllUnmergedNodes(): List<SemanticsNode> {
+  // Semantics information is already set on parent semantic node where `clearAndSetSemantics` is called.
+  // No need to iterate through children.
+  if (config.isClearingSemantics) return listOf(this)
+
   return buildList {
     addAll(
       children

@@ -1,10 +1,15 @@
 package app.cash.paparazzi.plugin.test
 
 import android.widget.LinearLayout
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.Text
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.unit.dp
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Paparazzi
@@ -41,5 +46,20 @@ class ComposeA11yTest {
       )
     }
     paparazzi.snapshot(mixedView)
+  }
+
+  @Test
+  fun `verify clear and set semantics`() {
+    paparazzi.snapshot {
+      Box(modifier = Modifier.clickable {}) {
+        Column(
+          modifier = Modifier.clearAndSetSemantics {
+            contentDescription = "OVERRIDDEN CONTENT DESCRIPTION"
+          }
+        ) {
+          Text(text = "Text")
+        }
+      }
+    }
   }
 }
