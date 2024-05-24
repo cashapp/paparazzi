@@ -18,16 +18,14 @@ package app.cash.paparazzi.gradle
 import app.cash.paparazzi.gradle.utils.artifactViewFor
 import app.cash.paparazzi.gradle.utils.artifactsFor
 import app.cash.paparazzi.gradle.utils.relativize
+import com.android.build.api.variant.AndroidComponentsExtension
+import com.android.build.api.variant.ApplicationAndroidComponentsExtension
+import com.android.build.api.variant.DynamicFeatureAndroidComponentsExtension
+import com.android.build.api.variant.HasUnitTest
+import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import com.android.build.gradle.BaseExtension
-import com.android.build.gradle.LibraryExtension
-import com.android.build.gradle.TestedExtension
-import com.android.build.gradle.api.BaseVariant
-import com.android.build.gradle.internal.api.TestedVariant
-import com.android.build.gradle.internal.dsl.BaseAppModuleExtension
-import com.android.build.gradle.internal.dsl.DynamicFeatureExtension
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactType
 import org.gradle.api.DefaultTask
-import org.gradle.api.DomainObjectSet
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.component.ProjectComponentIdentifier
@@ -62,19 +60,20 @@ public class PaparazziPlugin : Plugin<Project> {
 
     supportedPlugins.forEach { plugin ->
       project.plugins.withId(plugin) {
-        val variants = when (val extension = project.extensions.getByType(TestedExtension::class.java)) {
-          is LibraryExtension -> extension.libraryVariants
-          is BaseAppModuleExtension -> extension.applicationVariants
-          is DynamicFeatureExtension -> extension.applicationVariants
+        val androidComponents = project.extensions.getByType(AndroidComponentsExtension::class.java)
+        when (androidComponents) {
+          is LibraryAndroidComponentsExtension,
+          is ApplicationAndroidComponentsExtension,
+          is DynamicFeatureAndroidComponentsExtension -> Unit
           // exhaustive to avoid potential breaking changes in future AGP releases
-          else -> error("${extension.javaClass.name} from $plugin is not supported in Paparazzi")
+          else -> error("${androidComponents.javaClass.name} from $plugin is not supported in Paparazzi")
         }
-        setupPaparazzi(project, variants)
+        setupPaparazzi(project, androidComponents)
       }
     }
   }
 
-  private fun <T> setupPaparazzi(project: Project, variants: DomainObjectSet<T>) where T : BaseVariant, T : TestedVariant {
+  private fun setupPaparazzi(project: Project, extension: AndroidComponentsExtension<*, *, *>) {
     project.addTestDependency()
     val nativePlatformFileCollection = project.setupNativePlatformDependency()
     val snapshotOutputDir = project.layout.projectDirectory.dir("src/test/snapshots")
@@ -102,17 +101,16 @@ public class PaparazziPlugin : Plugin<Project> {
       it.delete(files)
     }
 
-    variants.all { variant ->
+    extension.onVariants { variant ->
       val variantSlug = variant.name.capitalize(Locale.US)
-      val testVariant = variant.unitTestVariant ?: return@all
+      val testVariant = (variant as? HasUnitTest)?.unitTest ?: return@onVariants
 
       val projectDirectory = project.layout.projectDirectory
       val buildDirectory = project.layout.buildDirectory
       val gradleUserHomeDir = project.gradle.gradleUserHomeDir
       val reportOutputDir = project.extensions.getByType(ReportingExtension::class.java).baseDirectory.dir("paparazzi/${variant.name}")
 
-      val localResourceDirs = project
-        .files(variant.sourceSets.flatMap { it.resDirectories })
+      val localResourceDirs = variant.sources.res?.all ?: project.provider { emptyList() }
 
       // https://android.googlesource.com/platform/tools/base/+/96015063acd3455a76cdf1cc71b23b0828c0907f/build-system/gradle-core/src/main/java/com/android/build/gradle/tasks/MergeResources.kt#875
 
@@ -124,8 +122,7 @@ public class PaparazziPlugin : Plugin<Project> {
         .artifactsFor(ArtifactType.ANDROID_RES.type) { it !is ProjectComponentIdentifier }
         .artifactFiles
 
-      val localAssetDirs = project
-        .files(variant.sourceSets.flatMap { it.assetsDirectories })
+      val localAssetDirs = variant.sources.assets?.all ?: project.provider { emptyList() }
 
       // https://android.googlesource.com/platform/tools/base/+/96015063acd3455a76cdf1cc71b23b0828c0907f/build-system/gradle-core/src/main/java/com/android/build/gradle/tasks/MergeResources.kt#875
 
@@ -155,24 +152,23 @@ public class PaparazziPlugin : Plugin<Project> {
         task.nonTransitiveRClassEnabled.set(nonTransitiveRClassEnabled)
         task.targetSdkVersion.set(android.targetSdkVersion())
         task.compileSdkVersion.set(android.compileSdkVersion())
-        task.projectResourceDirs.set(
-          run {
-            val resourcesComputer = variant.mergeResourcesProvider
-            val extraGeneratedResDirs =
-              resourcesComputer?.map { it.resourcesComputer.extraGeneratedResFolders }
-                ?: project.provider { project.files() }
-            val generatedResOutputDirs =
-              resourcesComputer?.map { it.resourcesComputer.generatedResOutputDir }
-                ?: project.provider { project.files() }
-            extraGeneratedResDirs
-              .zip(project.provider { localResourceDirs }, FileCollection::plus)
-              .zip(generatedResOutputDirs, FileCollection::plus)
-              .flatMap { it.relativize(projectDirectory) }
-          }
-        )
+
+        val localResourcePaths = localResourceDirs
+          .map { layers -> layers.flatten() }
+          .map { dirs -> dirs.map { projectDirectory.relativize(it.asFile) }.asReversed() }
+
+        task.projectResourceDirs.set(localResourcePaths)
         task.moduleResourceDirs.set(moduleResourceDirs.relativize(projectDirectory))
         task.aarExplodedDirs.set(aarExplodedDirs.relativize(gradleHomeDir))
-        task.projectAssetDirs.set(localAssetDirs.plus(moduleAssetDirs).relativize(projectDirectory))
+        task.projectAssetDirs.set(
+          run {
+            val localAssetPaths = localAssetDirs
+              .map { layers -> layers.flatten() }
+              .map { dirs -> dirs.map { projectDirectory.relativize(it.asFile) }.asReversed() }
+            val moduleAssetPaths = moduleAssetDirs.relativize(projectDirectory)
+            localAssetPaths.zip(moduleAssetPaths, List<String>::plus)
+          }
+        )
         task.aarAssetDirs.set(aarAssetDirs.relativize(gradleHomeDir))
         task.paparazziResources.set(buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.json"))
       }
@@ -180,8 +176,8 @@ public class PaparazziPlugin : Plugin<Project> {
       val testVariantSlug = testVariant.name.capitalize(Locale.US)
 
       project.plugins.withType(JavaBasePlugin::class.java) {
-        project.tasks.named("compile${testVariantSlug}JavaWithJavac")
-          .configure { it.dependsOn(writeResourcesTask) }
+        project.tasks.named { it == "compile${testVariantSlug}JavaWithJavac" }
+          .configureEach { it.dependsOn(writeResourcesTask) }
       }
 
       project.plugins.withType(KotlinMultiplatformPluginWrapper::class.java) {
@@ -190,13 +186,13 @@ public class PaparazziPlugin : Plugin<Project> {
         check(multiplatformExtension.targets.any { target -> target is KotlinAndroidTarget }) {
           "There must be an Android target configured when using Paparazzi with the Kotlin Multiplatform Plugin"
         }
-        project.tasks.named("compile${testVariantSlug}KotlinAndroid")
-          .configure { it.dependsOn(writeResourcesTask) }
+        project.tasks.named { it == "compile${testVariantSlug}KotlinAndroid" }
+          .configureEach { it.dependsOn(writeResourcesTask) }
       }
 
       project.plugins.withType(KotlinAndroidPluginWrapper::class.java) {
-        project.tasks.named("compile${testVariantSlug}Kotlin")
-          .configure { it.dependsOn(writeResourcesTask) }
+        project.tasks.named { it == "compile${testVariantSlug}Kotlin" }
+          .configureEach { it.dependsOn(writeResourcesTask) }
       }
 
       val recordTaskProvider = project.tasks.register("recordPaparazzi$variantSlug", PaparazziTask::class.java) {
@@ -225,7 +221,9 @@ public class PaparazziPlugin : Plugin<Project> {
         isVerifyRun.set(verifyTaskProvider.map { graph.hasTask(it) })
       }
 
-      val testTaskProvider = project.tasks.named("test$testVariantSlug", Test::class.java) { test ->
+      val testTaskProvider =
+        project.tasks.withType(Test::class.java).named { it == "test$testVariantSlug" }
+      testTaskProvider.configureEach { test ->
         test.systemProperties["paparazzi.test.resources"] =
           writeResourcesTask.flatMap { it.paparazziResources.asFile }.get().path
         test.systemProperties["paparazzi.project.dir"] = projectDirectory.toString()

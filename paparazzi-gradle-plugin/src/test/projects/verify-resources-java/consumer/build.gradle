@@ -14,7 +14,7 @@ android {
     targetCompatibility = libs.versions.javaTarget.get()
   }
   libraryVariants.configureEach {
-    it.registerGeneratedResFolders(project.files("${project.buildDir.path}/generated/res/extra"))
+    it.registerGeneratedResFolders(project.layout.buildDirectory.files("generated/res/extra"))
   }
 }
 
