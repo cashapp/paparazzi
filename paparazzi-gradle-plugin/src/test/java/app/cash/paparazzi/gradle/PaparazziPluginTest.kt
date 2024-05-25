@@ -832,7 +832,12 @@ class PaparazziPluginTest {
       "app.cash.paparazzi.plugin.test.module1",
       "app.cash.paparazzi.plugin.test.module2"
     )
-    assertThat(config.projectResourceDirs).containsExactly("build/generated/res/extra", "src/main/res", "src/debug/res", "build/generated/res/resValues/debug")
+    assertThat(config.projectResourceDirs).containsExactly(
+      "src/main/res",
+      "src/debug/res",
+      "build/generated/res/resValues/debug",
+      "build/generated/res/extra"
+    )
     assertThat(config.moduleResourceDirs).containsExactly(
       "../module1/build/intermediates/packaged_res/debug/packageDebugResources",
       "../module2/build/intermediates/packaged_res/debug/packageDebugResources"
@@ -863,7 +868,12 @@ class PaparazziPluginTest {
       "app.cash.paparazzi.plugin.test.module1",
       "app.cash.paparazzi.plugin.test.module2"
     )
-    assertThat(config.projectResourceDirs).containsExactly("build/generated/res/extra", "src/main/res", "src/debug/res", "build/generated/res/resValues/debug")
+    assertThat(config.projectResourceDirs).containsExactly(
+      "src/main/res",
+      "src/debug/res",
+      "build/generated/res/resValues/debug",
+      "build/generated/res/extra"
+    )
     assertThat(config.moduleResourceDirs).containsExactly(
       "../module1/build/intermediates/packaged_res/debug/packageDebugResources",
       "../module2/build/intermediates/packaged_res/debug/packageDebugResources"
@@ -904,7 +914,11 @@ class PaparazziPluginTest {
     val resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/debug/resources.json")
 
     var config = resourcesFile.loadConfig()
-    assertThat(config.projectResourceDirs).containsExactly("src/main/res", "src/debug/res", "build/generated/res/resValues/debug")
+    assertThat(config.projectResourceDirs).containsExactly(
+      "src/main/res",
+      "src/debug/res",
+      "build/generated/res/resValues/debug"
+    )
 
     buildDir.deleteRecursively()
 
@@ -926,7 +940,11 @@ class PaparazziPluginTest {
     }
 
     config = resourcesFile.loadConfig()
-    assertThat(config.projectResourceDirs).containsExactly("src/main/res", "src/debug/res", "build/generated/res/resValues/debug")
+    assertThat(config.projectResourceDirs).containsExactly(
+      "src/main/res",
+      "src/debug/res",
+      "build/generated/res/resValues/debug"
+    )
   }
 
   @Test
