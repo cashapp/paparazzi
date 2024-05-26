@@ -1,7 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.KotlinTopLevelExtension
 
-apply plugin: 'com.github.ben-manes.versions'
-
 buildscript {
   repositories {
     mavenCentral()
@@ -16,7 +14,6 @@ buildscript {
     classpath libs.plugin.android
     classpath libs.plugin.mavenPublish
     classpath libs.plugin.dokka
-    classpath libs.plugin.versions
     classpath libs.plugin.spotless
     classpath libs.plugin.buildConfig
     classpath libs.plugin.poko
