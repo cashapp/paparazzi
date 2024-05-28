@@ -13,6 +13,9 @@ build
 build-cache
 generated
 
+# Kotlin
+.kotlin
+
 # Mkdocs files
 docs/1.x
 docs/changelog.md

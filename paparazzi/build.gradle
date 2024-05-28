@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.plugin.AbstractKotlinPluginKt
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 
 apply plugin: 'org.jetbrains.kotlin.jvm'
+apply plugin: 'org.jetbrains.kotlin.plugin.compose'
 apply plugin: 'org.jetbrains.dokka'
 apply plugin: 'com.vanniktech.maven.publish'
 apply plugin: 'dev.drewhamilton.poko'
@@ -45,7 +46,7 @@ dependencies {
   api libs.junit
   api libs.androidx.annotations
   api libs.guava
-  api libs.kotlinx.coroutines.core
+  api libs.kotlinx.coroutines.android
   api libs.okio
   api platform(libs.kotlin.bom)
   implementation libs.moshi.core
@@ -67,8 +68,6 @@ dependencies {
   }
 
   testImplementation libs.truth
-
-  add(AbstractKotlinPluginKt.PLUGIN_CLASSPATH_CONFIGURATION_NAME, libs.compose.compiler)
 }
 
 tasks.named("dokkaGfm").configure {

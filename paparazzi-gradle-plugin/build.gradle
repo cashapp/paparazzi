@@ -20,6 +20,15 @@ gradlePlugin {
   }
 }
 
+configurations {
+  fixtureClasspath
+  testImplementation.extendsFrom(fixtureClasspath)
+}
+
+tasks.named('pluginUnderTestMetadata').configure {
+  pluginClasspath.from(configurations.fixtureClasspath)
+}
+
 dependencies {
   compileOnly gradleApi()
   implementation platform(libs.kotlin.bom)
@@ -34,6 +43,10 @@ dependencies {
 
   testImplementation libs.junit
   testImplementation libs.truth
+
+  fixtureClasspath libs.plugin.kotlin
+  fixtureClasspath libs.plugin.kotlin.compose
+  fixtureClasspath libs.plugin.android
 }
 
 buildConfig {
