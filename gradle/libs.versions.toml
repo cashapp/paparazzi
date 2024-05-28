@@ -2,11 +2,10 @@
 agp = "8.4.1"
 androidTools = "31.4.1" # == 23.0.0 + agp version
 bytebuddy = "1.14.16"
-composeCompiler = "1.5.14"
 coroutines = "1.8.1"
 javaTarget = "11"
-kotlin = "1.9.24"
-ksp = "1.9.24-1.0.20"
+kotlin = "2.0.0"
+ksp = "2.0.0-1.0.21"
 ktlint = "1.2.1"
 moshi = "1.15.1"
 
@@ -27,7 +26,6 @@ androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version
 bytebuddy-agent = { module = "net.bytebuddy:byte-buddy-agent", version.ref = "bytebuddy" }
 bytebuddy-core = { module = "net.bytebuddy:byte-buddy", version.ref = "bytebuddy" }
 
-compose-compiler = { module = "androidx.compose.compiler:compiler", version.ref = "composeCompiler" }
 composeUi-material = { module = "androidx.compose.material:material", version = "1.6.7" }
 composeUi-uiTooling = { module = "androidx.compose.ui:ui-tooling" }
 
@@ -35,7 +33,7 @@ grgit = { module = "org.ajoberstar.grgit:grgit-core", version = "5.2.2" }
 guava = { module = "com.google.guava:guava", version = "33.2.0-jre" }
 
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
-kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
 
 ksp = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }
@@ -73,8 +71,9 @@ plugin-android = { module = "com.android.tools.build:gradle", version.ref = "agp
 plugin-buildConfig = { module = "com.github.gmazzo.buildconfig:plugin", version = "5.3.5" }
 plugin-dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version = "1.9.20" }
 plugin-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+plugin-kotlin-compose = { module = "org.jetbrains.kotlin:compose-compiler-gradle-plugin", version.ref = "kotlin" }
 plugin-kotlinApiDump = { module = "org.jetbrains.kotlinx:binary-compatibility-validator", version = '0.14.0' }
 plugin-ksp = { module = "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
 plugin-mavenPublish = { module = "com.vanniktech:gradle-maven-publish-plugin", version = "0.28.0" }
-plugin-poko = { module = "dev.drewhamilton.poko:poko-gradle-plugin", version = "0.15.3" }
+plugin-poko = { module = "dev.drewhamilton.poko:poko-gradle-plugin", version = "0.16.0-beta01" }
 plugin-spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version = "6.25.0" }
