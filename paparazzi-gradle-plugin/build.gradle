@@ -20,18 +20,40 @@ gradlePlugin {
   }
 }
 
+// Fix missing implicit task dependency in Gradle's test kit
+tasks.named("processTestResources") { dependsOn("pluginUnderTestMetadata") }
+
+// Fix missing implicit task dependency in Gradle's test kit
+tasks.named("processTestResources") { it.dependsOn("pluginUnderTestMetadata") }
+
+Configuration addTestPlugin = configurations.create("addTestPlugin")
+
+configurations {
+  testImplementation.extendsFrom(addTestPlugin)
+}
+
+tasks.pluginUnderTestMetadata {
+  // make sure the test can access plugins for coordination.
+  pluginClasspath.from(addTestPlugin)
+}
+
 dependencies {
   compileOnly gradleApi()
   implementation platform(libs.kotlin.bom)
-  implementation libs.plugin.kotlin
-  implementation libs.plugin.android
-  implementation(libs.tools.sdkCommon) {
+  compileOnly libs.plugin.kotlin
+  compileOnly libs.plugin.android
+  compileOnly(libs.tools.sdkCommon) {
     because "SymbolUtils.getPackageNameFromManifest removed in AGP 7.0.  Replace?"
   }
   implementation libs.moshi.core
   implementation libs.moshi.adapters
   implementation libs.moshi.kotlinReflect
 
+  add(addTestPlugin.name, libs.plugin.kotlin)
+  add(addTestPlugin.name, libs.plugin.android)
+  add(addTestPlugin.name, libs.tools.sdkCommon) {
+    because "SymbolUtils.getPackageNameFromManifest removed in AGP 7.0.  Replace?"
+  }
   testImplementation libs.junit
   testImplementation libs.truth
 }
