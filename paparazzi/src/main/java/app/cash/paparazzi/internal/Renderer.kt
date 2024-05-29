@@ -45,12 +45,12 @@ internal class Renderer(
 
   /** Initialize the bridge and the resource maps. */
   fun prepare(): SessionParamsBuilder {
-    val resourcesDataRoot = System.getProperty("paparazzi.resources.data.root")
-      ?: throw RuntimeException("Missing system property for 'paparazzi.resources.data.root'")
-    val platformDataResDir = File("$resourcesDataRoot/res")
+    val layoutlibResourcesRoot = System.getProperty("paparazzi.layoutlib.resources.root")
+      ?: throw RuntimeException("Missing system property for 'paparazzi.layoutlib.resources.root'")
+    val layoutlibResDir = File("$layoutlibResourcesRoot/res")
 
     val frameworkResources = FrameworkResourceRepository.create(
-      resourceDirectoryOrFile = platformDataResDir.toPath(),
+      resourceDirectoryOrFile = layoutlibResDir.toPath(),
       languagesToLoad = emptySet(),
       useCompiled9Patches = false
     )
@@ -79,15 +79,15 @@ internal class Renderer(
       .plusFlag(RenderParamsFlags.FLAG_KEY_DISABLE_BITMAP_CACHING, true)
       .withTheme("AppTheme", true)
 
-    val platformDataRoot = System.getProperty("paparazzi.platform.data.root")
-      ?: throw RuntimeException("Missing system property for 'paparazzi.platform.data.root'")
-    val platformDataDir = File(platformDataRoot, "data")
+    val layoutlibRuntimeRoot = System.getProperty("paparazzi.layoutlib.runtime.root")
+      ?: throw RuntimeException("Missing system property for 'paparazzi.layoutlib.runtime.root'")
+    val buildProp = File(layoutlibRuntimeRoot, "build.prop")
+    val platformDataDir = File(layoutlibRuntimeRoot, "data")
     val fontLocation = File(platformDataDir, "fonts")
-    val nativeLibLocation = File(platformDataDir, getNativeLibDir())
     val icuLocation = File(platformDataDir, "icu" + File.separator + "icudt72l.dat")
     val keyboardLocation = File(platformDataDir, "keyboards" + File.separator + "Generic.kcm")
-    val buildProp = File(environment.platformDir, "build.prop")
-    val attrs = File(platformDataResDir, "values" + File.separator + "attrs.xml")
+    val nativeLibLocation = File(platformDataDir, getNativeLibDir())
+    val attrs = File(layoutlibResDir, "values" + File.separator + "attrs.xml")
     val systemProperties = DeviceConfig.loadProperties(buildProp) + mapOf(
       // We want Choreographer.USE_FRAME_TIME to be false so it uses System_Delegate.nanoTime()
       "debug.choreographer.frametime" to "false"

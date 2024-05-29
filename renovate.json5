@@ -14,8 +14,7 @@
       "description": "Compose compiler is tightly coupled to Kotlin version.",
       "groupName": "Kotlin and Compose",
       "matchPackagePrefixes": [
-        "androidx.compose.compiler",
-        "org.jetbrains.kotlin:kotlin",
+        "org.jetbrains.kotlin:",
         "com.google.devtools.ksp"
       ],
       "automerge": false,
@@ -31,10 +30,9 @@
       "automerge": false,
     },
     {
-      "description": "LayoutLib shouldn't auto-merge, because updating it is a complex process, see libs/README.md.",
+      "description": "LayoutLib shouldn't auto-merge",
       "matchPackagePrefixes": [
-        "app.cash.paparazzi:layoutlib-",
-        "com.android.tools.layoutlib:layoutlib-api",
+        "com.android.tools.layoutlib:",
       ],
       "automerge": false,
     },

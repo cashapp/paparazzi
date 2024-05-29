@@ -27,13 +27,13 @@ class BuildClassTest {
 
   @Test
   fun verifyFields() {
-    assertThat(Build.DISPLAY).isEqualTo("sdk_phone_armv7-userdebug UpsideDownCakePrivacySandbox URD9.231106.004.A2 11164158 test-keys")
-    assertThat(Build.ID).isEqualTo("URD9.231106.004.A2")
+    assertThat(Build.DISPLAY).isEqualTo("sdk_phone_armv7-userdebug 14 UDC 11871759 test-keys")
+    assertThat(Build.ID).isEqualTo("UDC")
     assertThat(Build.PRODUCT).isEqualTo("unknown")
-    assertThat(Build.DEVICE).isEqualTo("generic")
+    assertThat(Build.DEVICE).isEqualTo("layoutlib")
     assertThat(Build.BOARD).isEqualTo("unknown")
     assertThat(Build.MANUFACTURER).isEqualTo("generic")
-    assertThat(Build.BRAND).isEqualTo("generic")
+    assertThat(Build.BRAND).isEqualTo("studio")
     assertThat(Build.MODEL).isEqualTo("unknown")
     assertThat(Build.SOC_MANUFACTURER).isEqualTo("unknown")
     assertThat(Build.SOC_MODEL).isEqualTo("unknown")
@@ -43,7 +43,7 @@ class BuildClassTest {
     assertThat(Build.SKU).isEqualTo("unknown")
     assertThat(Build.ODM_SKU).isEqualTo("unknown")
 
-    assertThat(Build.VERSION.INCREMENTAL).isEqualTo("11164158")
+    assertThat(Build.VERSION.INCREMENTAL).isEqualTo("11871759")
     assertThat(Build.VERSION.RELEASE).isNotNull()
     assertThat(Build.VERSION.RELEASE_OR_CODENAME).isNotNull()
     assertThat(Build.VERSION.BASE_OS).isEqualTo("")
@@ -51,6 +51,6 @@ class BuildClassTest {
     assertThat(Build.VERSION.MEDIA_PERFORMANCE_CLASS).isEqualTo(0)
     assertThat(Build.VERSION.SDK).isNotNull()
     assertThat(Build.VERSION.SDK_INT).isNotEqualTo(0)
-    assertThat(Build.VERSION.CODENAME).isEqualTo("UpsideDownCakePrivacySandbox")
+    assertThat(Build.VERSION.CODENAME).isEqualTo("REL")
   }
 }

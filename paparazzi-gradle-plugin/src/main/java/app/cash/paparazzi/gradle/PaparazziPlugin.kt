@@ -75,7 +75,7 @@ public class PaparazziPlugin : Plugin<Project> {
 
   private fun setupPaparazzi(project: Project, extension: AndroidComponentsExtension<*, *, *>) {
     project.addTestDependency()
-    val nativePlatformFileCollection = project.setupNativePlatformDependency()
+    val layoutlibNativeRuntimeFileCollection = project.setupLayoutlibRuntimeDependency()
     val layoutlibResourcesFileCollection = project.setupLayoutlibResourcesDependency()
     val snapshotOutputDir = project.layout.projectDirectory.dir("src/test/snapshots")
 
@@ -249,8 +249,8 @@ public class PaparazziPlugin : Plugin<Project> {
         test.inputs.files(moduleAssetDirs)
           .withPropertyName("paparazzi.moduleAssetDirs")
           .withPathSensitivity(PathSensitivity.RELATIVE)
-        test.inputs.files(nativePlatformFileCollection)
-          .withPropertyName("paparazzi.nativePlatform")
+        test.inputs.files(layoutlibNativeRuntimeFileCollection)
+          .withPropertyName("paparazzi.nativeRuntime")
           .withPathSensitivity(PathSensitivity.NONE)
 
         test.outputs.dir(reportOutputDir)
@@ -259,9 +259,9 @@ public class PaparazziPlugin : Plugin<Project> {
         test.doFirst {
           // Note: these are lazy properties that are not resolvable in the Gradle configuration phase.
           // They need special handling, so they're added as inputs.property above, and systemProperty here.
-          test.systemProperties["paparazzi.platform.data.root"] =
-            nativePlatformFileCollection.singleFile.absolutePath
-          test.systemProperties["paparazzi.resources.data.root"] =
+          test.systemProperties["paparazzi.layoutlib.runtime.root"] =
+            layoutlibNativeRuntimeFileCollection.singleFile.absolutePath
+          test.systemProperties["paparazzi.layoutlib.resources.root"] =
             layoutlibResourcesFileCollection.singleFile.absolutePath
           test.systemProperties["paparazzi.test.record"] = isRecordRun.get()
           test.systemProperties["paparazzi.test.verify"] = isVerifyRun.get()
@@ -288,7 +288,7 @@ public class PaparazziPlugin : Plugin<Project> {
     }
   }
 
-  private fun Project.setupNativePlatformDependency(): FileCollection {
+  private fun Project.setupLayoutlibRuntimeDependency(): FileCollection {
     val operatingSystem = OperatingSystem.current()
     val nativeLibraryArtifactId = when {
       operatingSystem.isMacOsX -> {
@@ -299,8 +299,8 @@ public class PaparazziPlugin : Plugin<Project> {
       else -> "linux"
     }
 
-    val nativePlatformConfiguration = configurations.create("nativePlatform")
-    nativePlatformConfiguration.dependencies.add(
+    val nativeRuntimeConfiguration = configurations.create("layoutlibRuntime")
+    nativeRuntimeConfiguration.dependencies.add(
       dependencies.create("com.android.tools.layoutlib:layoutlib-runtime:$NATIVE_LIB_VERSION:$nativeLibraryArtifactId")
     )
     dependencies.registerTransform(UnzipTransform::class.java) { transform ->
@@ -308,7 +308,7 @@ public class PaparazziPlugin : Plugin<Project> {
       transform.to.attribute(ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.DIRECTORY_TYPE)
     }
 
-    return nativePlatformConfiguration
+    return nativeRuntimeConfiguration
       .artifactViewFor(ArtifactTypeDefinition.DIRECTORY_TYPE)
       .files
   }
