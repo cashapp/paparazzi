@@ -19,6 +19,7 @@ package app.cash.paparazzi.internal
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Environment
 import app.cash.paparazzi.Flags
+import app.cash.paparazzi.OsLabel
 import app.cash.paparazzi.Paparazzi
 import app.cash.paparazzi.getFieldReflectively
 import app.cash.paparazzi.internal.resources.AarSourceResourceRepository
@@ -31,7 +32,6 @@ import com.android.layoutlib.bridge.impl.DelegateManager
 import java.io.Closeable
 import java.io.File
 import java.nio.file.Paths
-import java.util.Locale
 import kotlin.io.path.name
 
 /** View rendering. */
@@ -158,16 +158,7 @@ internal class Renderer(
   }
 
   private fun getNativeLibDir(): String {
-    val osName = System.getProperty("os.name").toLowerCase(Locale.US)
-    val osLabel = when {
-      osName.startsWith("windows") -> "win"
-      osName.startsWith("mac") -> {
-        val osArch = System.getProperty("os.arch").lowercase(Locale.US)
-        if (osArch.startsWith("x86")) "mac" else "mac-arm"
-      }
-      else -> "linux"
-    }
-    return "$osLabel/lib64"
+    return "$OsLabel/lib64"
   }
 
   override fun close() {
