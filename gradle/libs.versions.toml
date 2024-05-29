@@ -7,13 +7,11 @@ javaTarget = "11"
 kotlin = "2.0.0"
 ksp = "2.0.0-1.0.21"
 ktlint = "1.2.1"
+layoutlib = "14.0.8"
 moshi = "1.15.1"
 
 minSdk = "25"
 compileSdk = "34"
-
-layoutlibApi = "31.4.1"
-layoutlib = "14.0.8"
 
 [libraries]
 androidx-annotations = { module = "androidx.annotation:annotation", version = "1.8.0" }
@@ -40,7 +38,6 @@ ktlint = { module = "com.pinterest.ktlint:ktlint-rule-engine", version.ref = "kt
 
 kxml2 = { module = "kxml2:kxml2", version = "2.3.0" }
 
-
 moshi-adapters = { module = "com.squareup.moshi:moshi-adapters", version.ref = "moshi" }
 moshi-core = { module = "com.squareup.moshi:moshi", version.ref = "moshi" }
 moshi-kotlinReflect = { module = "com.squareup.moshi:moshi-kotlin", version.ref = "moshi" }
@@ -48,10 +45,10 @@ moshi-kotlinReflect = { module = "com.squareup.moshi:moshi-kotlin", version.ref 
 okio = { module = "com.squareup.okio:okio", version = "3.9.0" }
 
 tools-common = { module = "com.android.tools:common", version.ref = "androidTools" }
-tools-layoutlib-api = { module = "com.android.tools.layoutlib:layoutlib-api", version.ref = "layoutlibApi" }
 tools-layoutlib = { module = "com.android.tools.layoutlib:layoutlib", version.ref = "layoutlib" }
-tools-layoutlib-runtime = { module = "com.android.tools.layoutlib:layoutlib-runtime", version.ref = "layoutlib" }
+tools-layoutlib-api = { module = "com.android.tools.layoutlib:layoutlib-api", version = "31.4.1" }
 tools-layoutlib-resources = { module = "com.android.tools.layoutlib:layoutlib-resources", version.ref = "layoutlib" }
+tools-layoutlib-runtime = { module = "com.android.tools.layoutlib:layoutlib-runtime", version.ref = "layoutlib" }
 tools-ninepatch = { module = "com.android.tools:ninepatch", version.ref = "androidTools" }
 tools-sdkCommon = { module = "com.android.tools:sdk-common", version.ref = "androidTools" }
 

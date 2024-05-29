@@ -14,10 +14,12 @@ java {
 }
 
 configurations {
-  layoutlibPlatform {
+  layoutlibRuntime {
+    canBeConsumed = false
     attributes.attribute(AndroidArtifacts.ARTIFACT_TYPE, ArtifactTypeDefinition.DIRECTORY_TYPE)
   }
   layoutlibResources {
+    canBeConsumed = false
     attributes.attribute(AndroidArtifacts.ARTIFACT_TYPE, ArtifactTypeDefinition.DIRECTORY_TYPE)
   }
 }
@@ -57,18 +59,20 @@ dependencies {
   implementation libs.moshi.kotlinReflect
 
   def osName = System.getProperty("os.name").toLowerCase(Locale.US)
+  def osLabel
   if (osName.startsWith("mac")) {
     def osArch = System.getProperty("os.arch").toLowerCase(Locale.US)
     if (osArch.startsWith("x86")) {
-      layoutlibPlatform variantOf(libs.tools.layoutlib.runtime) { classifier("mac") }
+      osLabel = 'mac'
     } else {
-      layoutlibPlatform variantOf(libs.tools.layoutlib.runtime) { classifier("mac-arm") }
+      osLabel = 'mac-arm'
     }
   } else if (osName.startsWith("windows")) {
-    layoutlibPlatform variantOf(libs.tools.layoutlib.runtime) { classifier("win") }
+    osLabel = 'win'
   } else {
-    layoutlibPlatform variantOf(libs.tools.layoutlib.runtime) { classifier("linux") }
+    osLabel = 'linux'
   }
+  layoutlibRuntime variantOf(libs.tools.layoutlib.runtime) { classifier(osLabel) }
   layoutlibResources libs.tools.layoutlib.resources
 
   testImplementation libs.truth
@@ -139,11 +143,11 @@ tasks.withType(Test).configureEach {
     project.gradle.gradleUserHomeDir.path
   )
   systemProperty(
-    "paparazzi.platform.data.root",
-    configurations.layoutlibPlatform.singleFile.absolutePath
+    "paparazzi.layoutlib.runtime.root",
+    configurations.layoutlibRuntime.singleFile.absolutePath
   )
   systemProperty(
-    "paparazzi.resources.data.root",
+    "paparazzi.layoutlib.resources.root",
     configurations.layoutlibResources.singleFile.absolutePath
   )
   // Uncomment to debug JNI issues in layoutlib
