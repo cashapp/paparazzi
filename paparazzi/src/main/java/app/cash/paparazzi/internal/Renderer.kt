@@ -45,7 +45,9 @@ internal class Renderer(
 
   /** Initialize the bridge and the resource maps. */
   fun prepare(): SessionParamsBuilder {
-    val platformDataResDir = File("${environment.platformDir}/data/res")
+    val resourcesDataRoot = System.getProperty("paparazzi.resources.data.root")
+      ?: throw RuntimeException("Missing system property for 'paparazzi.resources.data.root'")
+    val platformDataResDir = File("$resourcesDataRoot/res")
 
     val frameworkResources = FrameworkResourceRepository.create(
       resourceDirectoryOrFile = platformDataResDir.toPath(),

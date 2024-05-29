@@ -76,6 +76,7 @@ public class PaparazziPlugin : Plugin<Project> {
   private fun setupPaparazzi(project: Project, extension: AndroidComponentsExtension<*, *, *>) {
     project.addTestDependency()
     val nativePlatformFileCollection = project.setupNativePlatformDependency()
+    val layoutlibResourcesFileCollection = project.setupLayoutlibResourcesDependency()
     val snapshotOutputDir = project.layout.projectDirectory.dir("src/test/snapshots")
 
     // Create anchor tasks for all variants.
@@ -260,6 +261,8 @@ public class PaparazziPlugin : Plugin<Project> {
           // They need special handling, so they're added as inputs.property above, and systemProperty here.
           test.systemProperties["paparazzi.platform.data.root"] =
             nativePlatformFileCollection.singleFile.absolutePath
+          test.systemProperties["paparazzi.resources.data.root"] =
+            layoutlibResourcesFileCollection.singleFile.absolutePath
           test.systemProperties["paparazzi.test.record"] = isRecordRun.get()
           test.systemProperties["paparazzi.test.verify"] = isVerifyRun.get()
         }
@@ -290,7 +293,7 @@ public class PaparazziPlugin : Plugin<Project> {
     val nativeLibraryArtifactId = when {
       operatingSystem.isMacOsX -> {
         val osArch = System.getProperty("os.arch").lowercase(Locale.US)
-        if (osArch.startsWith("x86")) "macosx" else "macarm"
+        if (osArch.startsWith("x86")) "mac" else "mac-arm"
       }
       operatingSystem.isWindows -> "win"
       else -> "linux"
@@ -298,7 +301,7 @@ public class PaparazziPlugin : Plugin<Project> {
 
     val nativePlatformConfiguration = configurations.create("nativePlatform")
     nativePlatformConfiguration.dependencies.add(
-      dependencies.create("app.cash.paparazzi:layoutlib-native-$nativeLibraryArtifactId:$NATIVE_LIB_VERSION")
+      dependencies.create("com.android.tools.layoutlib:layoutlib-runtime:$NATIVE_LIB_VERSION:$nativeLibraryArtifactId")
     )
     dependencies.registerTransform(UnzipTransform::class.java) { transform ->
       transform.from.attribute(ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.JAR_TYPE)
@@ -306,6 +309,21 @@ public class PaparazziPlugin : Plugin<Project> {
     }
 
     return nativePlatformConfiguration
+      .artifactViewFor(ArtifactTypeDefinition.DIRECTORY_TYPE)
+      .files
+  }
+
+  private fun Project.setupLayoutlibResourcesDependency(): FileCollection {
+    val layoutlibResourcesConfiguration = configurations.create("layoutlibResources")
+    layoutlibResourcesConfiguration.dependencies.add(
+      dependencies.create("com.android.tools.layoutlib:layoutlib-resources:$NATIVE_LIB_VERSION")
+    )
+    dependencies.registerTransform(UnzipTransform::class.java) { transform ->
+      transform.from.attribute(ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.JAR_TYPE)
+      transform.to.attribute(ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.DIRECTORY_TYPE)
+    }
+
+    return layoutlibResourcesConfiguration
       .artifactViewFor(ArtifactTypeDefinition.DIRECTORY_TYPE)
       .files
   }
