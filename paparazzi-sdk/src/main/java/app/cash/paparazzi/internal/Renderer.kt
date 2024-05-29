@@ -19,7 +19,7 @@ package app.cash.paparazzi.internal
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Environment
 import app.cash.paparazzi.Flags
-import app.cash.paparazzi.Paparazzi
+import app.cash.paparazzi.PaparazziSdk
 import app.cash.paparazzi.getFieldReflectively
 import app.cash.paparazzi.internal.resources.AarSourceResourceRepository
 import app.cash.paparazzi.internal.resources.AppResourceRepository
@@ -119,7 +119,7 @@ internal class Renderer(
   }
 
   private fun configureBuildProperties() {
-    val classLoader = Paparazzi::class.java.classLoader
+    val classLoader = PaparazziSdk::class.java.classLoader
     val buildClass = try {
       classLoader.loadClass("android.os.Build")
     } catch (e: ClassNotFoundException) {

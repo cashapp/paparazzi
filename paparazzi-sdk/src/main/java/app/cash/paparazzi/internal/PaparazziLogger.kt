@@ -15,7 +15,7 @@
  */
 package app.cash.paparazzi.internal
 
-import app.cash.paparazzi.Paparazzi
+import app.cash.paparazzi.PaparazziSdk
 import com.android.ide.common.rendering.api.ILayoutLog
 import com.android.utils.ILogger
 import java.io.PrintStream
@@ -28,7 +28,7 @@ import java.util.logging.Logger.getLogger
  * This logger delegates to java.util.Logging.
  */
 internal class PaparazziLogger : ILayoutLog, ILogger {
-  private val logger: Logger = getLogger(Paparazzi::class.java.name)
+  private val logger: Logger = getLogger(PaparazziSdk::class.java.name)
   private val errors = mutableListOf<Throwable>()
 
   override fun error(
