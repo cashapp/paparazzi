@@ -144,13 +144,9 @@ public class PaparazziPlugin @Inject constructor(
         PrepareResourcesTask::class.java
       ) { task ->
         val android = project.extensions.getByType(BaseExtension::class.java)
-        val nonTransitiveRClassEnabled =
-          project.providers.gradleProperty("android.nonTransitiveRClass").orNull?.toBoolean() ?: true
         val gradleHomeDir = projectDirectory.dir(project.gradle.gradleUserHomeDir.path)
 
         task.packageName.set(android.packageName())
-        task.artifactFiles.from(sources.packageAwareArtifactFiles)
-        task.nonTransitiveRClassEnabled.set(nonTransitiveRClassEnabled)
         task.targetSdkVersion.set(android.targetSdkVersion())
         task.projectResourceDirs.set(sources.localResourceDirs.relativize(projectDirectory))
         task.moduleResourceDirs.set(sources.moduleResourceDirs.relativize(projectDirectory))

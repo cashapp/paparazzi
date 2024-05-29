@@ -53,13 +53,6 @@ public abstract class PrepareResourcesTask : DefaultTask() {
   @get:Input
   public abstract val aarAssetDirs: ListProperty<String>
 
-  @get:Input
-  public abstract val nonTransitiveRClassEnabled: Property<Boolean>
-
-  @get:InputFiles
-  @get:PathSensitive(PathSensitivity.NONE)
-  public abstract val artifactFiles: ConfigurableFileCollection
-
   @get:OutputFile
   public abstract val paparazziResources: RegularFileProperty
 
@@ -68,22 +61,9 @@ public abstract class PrepareResourcesTask : DefaultTask() {
     val out = paparazziResources.get().asFile
     out.delete()
 
-    val mainPackage = packageName.get()
-    val resourcePackageNames = if (nonTransitiveRClassEnabled.get()) {
-      buildList {
-        add(mainPackage)
-        artifactFiles.files.forEach { file ->
-          add(file.useLines { lines -> lines.first() })
-        }
-      }
-    } else {
-      listOf(mainPackage)
-    }
-
     val config = Config(
-      mainPackage = mainPackage,
+      mainPackage = packageName.get(),
       targetSdkVersion = targetSdkVersion.get(),
-      resourcePackageNames = resourcePackageNames,
       projectResourceDirs = projectResourceDirs.get(),
       moduleResourceDirs = moduleResourceDirs.get(),
       aarExplodedDirs = aarExplodedDirs.get(),
@@ -98,7 +78,6 @@ public abstract class PrepareResourcesTask : DefaultTask() {
   internal data class Config(
     val mainPackage: String,
     val targetSdkVersion: String,
-    val resourcePackageNames: List<String>,
     val projectResourceDirs: List<String>,
     val moduleResourceDirs: List<String>,
     val aarExplodedDirs: List<String>,
