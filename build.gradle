@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.dsl.KotlinTopLevelExtension
-
 buildscript {
   repositories {
     mavenCentral()
@@ -29,7 +27,7 @@ buildscript {
 apply plugin: 'binary-compatibility-validator'
 
 apiValidation {
-  ignoredProjects += ['libs', 'sample']
+  ignoredProjects += ['sample']
 }
 
 subprojects {
@@ -41,6 +39,8 @@ subprojects {
     //mavenLocal()
   }
 
+  // Uncomment to debug JNI issues in layoutlib
+  // jvmArgs '-Xcheck:jni'
   tasks.withType(Test).configureEach {
     testLogging {
       events "passed", "failed", "skipped", "standardOut", "standardError"
@@ -90,15 +90,6 @@ subprojects {
     }
   }
 
-  tasks.register('emptySourcesJar', Jar) {
-    // TODO: fetch sources from the corresponding AOSP repos.
-    archiveClassifier = 'sources'
-  }
-
-  tasks.register('emptyJavadocJar', Jar) {
-    archiveClassifier = 'javadoc'
-  }
-
   apply plugin: 'com.diffplug.spotless'
   spotless {
     kotlin {
@@ -111,22 +102,4 @@ subprojects {
 
 tasks.register("clean", Delete).configure {
   delete(rootProject.layout.buildDirectory)
-}
-
-allprojects { project ->
-  tasks.register("mavenLocalize").configure { task ->
-    def projectRootDir = project.projectDir
-    task.doFirst {
-      projectRootDir.eachFileRecurse(groovy.io.FileType.FILES) { file ->
-        if (file.name != 'build.gradle') {
-          return
-        }
-        def text = file.text
-        file.withWriter { w ->
-          // Intentional concatenation to prevent self-replacement
-          w << text.replace("//" + "mavenLocal()", "mavenLocal()")
-        }
-      }
-    }
-  }
 }

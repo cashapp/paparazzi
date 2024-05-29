@@ -1,10 +1,5 @@
 rootProject.name = 'paparazzi-root'
 
-include ':libs:layoutlib'
-include ':libs:native-macarm'
-include ':libs:native-macosx'
-include ':libs:native-win'
-include ':libs:native-linux'
 include ':paparazzi'
 include ':paparazzi-annotations'
 include ':paparazzi-preview-processor'
