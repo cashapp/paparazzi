@@ -5,7 +5,6 @@ $dokka.location:app.cash.paparazzi.accessibility/AccessibilityRenderExtension///
 $dokka.location:app.cash.paparazzi.accessibility/AccessibilityRenderExtension/AccessibilityRenderExtension/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.accessibility/-accessibility-render-extension/-accessibility-render-extension.md
 $dokka.location:app.cash.paparazzi.accessibility/AccessibilityRenderExtension/renderView/#android.view.View/PointingToDeclaration/paparazzi/app.cash.paparazzi.accessibility/-accessibility-render-extension/render-view.md
 $dokka.location:app.cash.paparazzi////PointingToDeclaration/paparazzi/app.cash.paparazzi/index.md
-$dokka.location:app.cash.paparazzi//androidHome/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/android-home.md
 $dokka.location:app.cash.paparazzi//detectEnvironment/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/detect-environment.md
 $dokka.location:app.cash.paparazzi/DeviceConfig.Companion///PointingToDeclaration/paparazzi/app.cash.paparazzi/-device-config/-companion/index.md
 $dokka.location:app.cash.paparazzi/DeviceConfig.Companion/GALAXY_WATCH4_CLASSIC_LARGE/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-device-config/-companion/-g-a-l-a-x-y_-w-a-t-c-h4_-c-l-a-s-s-i-c_-l-a-r-g-e.md
@@ -58,17 +57,16 @@ $dokka.location:app.cash.paparazzi/DeviceConfig/uiModeMask/#/PointingToDeclarati
 $dokka.location:app.cash.paparazzi/DeviceConfig/xdpi/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-device-config/xdpi.md
 $dokka.location:app.cash.paparazzi/DeviceConfig/ydpi/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-device-config/ydpi.md
 $dokka.location:app.cash.paparazzi/Environment///PointingToDeclaration/paparazzi/app.cash.paparazzi/-environment/index.md
-$dokka.location:app.cash.paparazzi/Environment/Environment/#kotlin.String#kotlin.String#kotlin.String#kotlin.Int#kotlin.collections.List[kotlin.String]#kotlin.collections.List[kotlin.String]#kotlin.collections.List[kotlin.String]#kotlin.collections.List[kotlin.String]#kotlin.collections.List[kotlin.String]#kotlin.collections.List[kotlin.String]/PointingToDeclaration/paparazzi/app.cash.paparazzi/-environment/-environment.md
+$dokka.location:app.cash.paparazzi/Environment/Environment/#kotlin.String#kotlin.String#kotlin.Int#kotlin.collections.List[kotlin.String]#kotlin.collections.List[kotlin.String]#kotlin.collections.List[kotlin.String]#kotlin.collections.List[kotlin.String]#kotlin.collections.List[kotlin.String]#kotlin.collections.List[kotlin.String]/PointingToDeclaration/paparazzi/app.cash.paparazzi/-environment/-environment.md
 $dokka.location:app.cash.paparazzi/Environment/allModuleAssetDirs/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-environment/all-module-asset-dirs.md
 $dokka.location:app.cash.paparazzi/Environment/appTestDir/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-environment/app-test-dir.md
 $dokka.location:app.cash.paparazzi/Environment/compileSdkVersion/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-environment/compile-sdk-version.md
-$dokka.location:app.cash.paparazzi/Environment/copy/#kotlin.String#kotlin.String#kotlin.String#kotlin.Int#kotlin.collections.List[kotlin.String]#kotlin.collections.List[kotlin.String]#kotlin.collections.List[kotlin.String]#kotlin.collections.List[kotlin.String]#kotlin.collections.List[kotlin.String]#kotlin.collections.List[kotlin.String]/PointingToDeclaration/paparazzi/app.cash.paparazzi/-environment/copy.md
+$dokka.location:app.cash.paparazzi/Environment/copy/#kotlin.String#kotlin.String#kotlin.Int#kotlin.collections.List[kotlin.String]#kotlin.collections.List[kotlin.String]#kotlin.collections.List[kotlin.String]#kotlin.collections.List[kotlin.String]#kotlin.collections.List[kotlin.String]#kotlin.collections.List[kotlin.String]/PointingToDeclaration/paparazzi/app.cash.paparazzi/-environment/copy.md
 $dokka.location:app.cash.paparazzi/Environment/libraryAssetDirs/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-environment/library-asset-dirs.md
 $dokka.location:app.cash.paparazzi/Environment/libraryResourceDirs/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-environment/library-resource-dirs.md
 $dokka.location:app.cash.paparazzi/Environment/localResourceDirs/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-environment/local-resource-dirs.md
 $dokka.location:app.cash.paparazzi/Environment/moduleResourceDirs/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-environment/module-resource-dirs.md
 $dokka.location:app.cash.paparazzi/Environment/packageName/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-environment/package-name.md
-$dokka.location:app.cash.paparazzi/Environment/platformDir/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-environment/platform-dir.md
 $dokka.location:app.cash.paparazzi/Environment/resourcePackageNames/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-environment/resource-package-names.md
 $dokka.location:app.cash.paparazzi/Flags///PointingToDeclaration/paparazzi/app.cash.paparazzi/-flags/index.md
 $dokka.location:app.cash.paparazzi/Flags/DEBUG_LINKED_OBJECTS/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-flags/-d-e-b-u-g_-l-i-n-k-e-d_-o-b-j-e-c-t-s.md
