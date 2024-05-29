@@ -39,9 +39,6 @@ public abstract class PrepareResourcesTask : DefaultTask() {
   public abstract val targetSdkVersion: Property<String>
 
   @get:Input
-  public abstract val compileSdkVersion: Property<String>
-
-  @get:Input
   public abstract val projectResourceDirs: ListProperty<String>
 
   @get:Input
@@ -86,8 +83,6 @@ public abstract class PrepareResourcesTask : DefaultTask() {
     val config = Config(
       mainPackage = mainPackage,
       targetSdkVersion = targetSdkVersion.get(),
-      // Use compileSdkVersion for system framework resources.
-      platformDir = "platforms/android-${compileSdkVersion.get()}/",
       resourcePackageNames = resourcePackageNames,
       projectResourceDirs = projectResourceDirs.get(),
       moduleResourceDirs = moduleResourceDirs.get(),
@@ -103,7 +98,6 @@ public abstract class PrepareResourcesTask : DefaultTask() {
   internal data class Config(
     val mainPackage: String,
     val targetSdkVersion: String,
-    val platformDir: String,
     val resourcePackageNames: List<String>,
     val projectResourceDirs: List<String>,
     val moduleResourceDirs: List<String>,

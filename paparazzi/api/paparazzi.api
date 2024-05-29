@@ -62,9 +62,9 @@ public final class app/cash/paparazzi/DeviceConfig$Companion {
 
 public final class app/cash/paparazzi/Environment {
 	public static final field $stable I
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;)V
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;)Lapp/cash/paparazzi/Environment;
-	public static synthetic fun copy$default (Lapp/cash/paparazzi/Environment;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;ILjava/lang/Object;)Lapp/cash/paparazzi/Environment;
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;)V
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;)Lapp/cash/paparazzi/Environment;
+	public static synthetic fun copy$default (Lapp/cash/paparazzi/Environment;Ljava/lang/String;Ljava/lang/String;ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;ILjava/lang/Object;)Lapp/cash/paparazzi/Environment;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getAllModuleAssetDirs ()Ljava/util/List;
 	public final fun getAppTestDir ()Ljava/lang/String;
@@ -74,14 +74,12 @@ public final class app/cash/paparazzi/Environment {
 	public final fun getLocalResourceDirs ()Ljava/util/List;
 	public final fun getModuleResourceDirs ()Ljava/util/List;
 	public final fun getPackageName ()Ljava/lang/String;
-	public final fun getPlatformDir ()Ljava/lang/String;
 	public final fun getResourcePackageNames ()Ljava/util/List;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
 public final class app/cash/paparazzi/EnvironmentKt {
-	public static final fun androidHome ()Ljava/lang/String;
 	public static final fun detectEnvironment ()Lapp/cash/paparazzi/Environment;
 }
 

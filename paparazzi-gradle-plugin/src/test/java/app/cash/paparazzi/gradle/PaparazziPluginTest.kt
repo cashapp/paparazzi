@@ -239,35 +239,6 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun buildClassNextSdkAccess() {
-    val fixtureRoot = File("src/test/projects/build-class-next-sdk")
-
-    // Paparazzi detects Android platform dir contents to be static. Therefore, it re-runs only on
-    // compileSdk changes.  Sandbox previews are an exception, so let's disable caching for this
-    // test task.
-    gradleRunner
-      .withArguments("testDebug", "-Dorg.gradle.caching=false", "--stacktrace")
-      .runFixture(fixtureRoot) { build() }
-
-    val snapshotsDir = File(fixtureRoot, "custom/reports/paparazzi/debug/images")
-    assertThat(snapshotsDir.exists()).isFalse()
-  }
-
-  @Test
-  fun missingPlatformDirTest() {
-    val fixtureRoot = File("src/test/projects/missing-platform-dir")
-
-    val result = gradleRunner
-      .withArguments("testDebug", "--stacktrace")
-      .forwardOutput()
-      .runFixture(fixtureRoot) { buildAndFail() }
-
-    assertThat(result.task(":testDebug")).isNull()
-    assertThat(result.output).contains("java.io.FileNotFoundException")
-    assertThat(result.output).contains("Missing platform version oops")
-  }
-
-  @Test
   fun flagDebugLinkedObjectsIsOff() {
     val fixtureRoot = File("src/test/projects/flag-debug-linked-objects-off")
 
@@ -1231,42 +1202,6 @@ class PaparazziPluginTest {
     assertThat(config.aarAssetDirs)
       .comparingElementsUsing(MATCHES_PATTERN)
       .containsExactly("^caches/transforms-4/[0-9a-f]{32}/transformed/external2/assets\$")
-  }
-
-  @Test
-  fun verifyTargetSdkIsSameAsCompileSdk() {
-    val fixtureRoot = File("src/test/projects/verify-resources-java")
-
-    val result = gradleRunner
-      .withArguments(":consumer:compileDebugUnitTestJavaWithJavac", "--stacktrace")
-      .runFixture(fixtureRoot) { build() }
-
-    assertThat(result.task(":consumer:preparePaparazziDebugResources")).isNotNull()
-
-    val resourcesFile = File(fixtureRoot, "consumer/build/intermediates/paparazzi/debug/resources.json")
-    assertThat(resourcesFile.exists()).isTrue()
-
-    val config = resourcesFile.loadConfig()
-    assertThat(config.targetSdkVersion).isEqualTo("34")
-    assertThat(config.platformDir).isEqualTo("platforms/android-34/")
-  }
-
-  @Test
-  fun verifyTargetSdkIsDifferentFromCompileSdk() {
-    val fixtureRoot = File("src/test/projects/different-target-sdk")
-
-    val result = gradleRunner
-      .withArguments("compileDebugUnitTestJavaWithJavac", "--stacktrace")
-      .runFixture(fixtureRoot) { build() }
-
-    assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
-
-    val resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/debug/resources.json")
-    assertThat(resourcesFile.exists()).isTrue()
-
-    val config = resourcesFile.loadConfig()
-    assertThat(config.targetSdkVersion).isEqualTo("29")
-    assertThat(config.platformDir).isEqualTo("platforms/android-34/")
   }
 
   @Test

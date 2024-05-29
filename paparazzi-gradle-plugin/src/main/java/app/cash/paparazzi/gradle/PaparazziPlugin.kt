@@ -152,7 +152,6 @@ public class PaparazziPlugin : Plugin<Project> {
         task.artifactFiles.from(packageAwareArtifactFiles)
         task.nonTransitiveRClassEnabled.set(nonTransitiveRClassEnabled)
         task.targetSdkVersion.set(android.targetSdkVersion())
-        task.compileSdkVersion.set(android.compileSdkVersion())
 
         val localResourcePaths = localResourceDirs
           .map { layers -> layers.flatten() }
@@ -342,10 +341,6 @@ public class PaparazziPlugin : Plugin<Project> {
   }
 
   private fun BaseExtension.packageName(): String = namespace ?: ""
-
-  private fun BaseExtension.compileSdkVersion(): String {
-    return compileSdkVersion!!.substringAfter("android-", DEFAULT_COMPILE_SDK_VERSION.toString())
-  }
 
   private fun BaseExtension.targetSdkVersion(): String {
     return defaultConfig.targetSdkVersion?.apiLevel?.toString()
