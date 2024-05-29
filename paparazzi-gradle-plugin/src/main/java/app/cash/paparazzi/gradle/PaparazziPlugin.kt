@@ -329,7 +329,7 @@ public class PaparazziPlugin : Plugin<Project> {
 
   private fun Project.addTestDependency() {
     val dependency = if (isInternal()) {
-      dependencies.project(mapOf("path" to ":paparazzi"))
+      dependencies.project(mapOf("path" to ":paparazzi-junit4"))
     } else {
       dependencies.create("app.cash.paparazzi:paparazzi:$VERSION")
     }

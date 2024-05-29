@@ -1,0 +1,145 @@
+import com.android.build.gradle.internal.publishing.AndroidArtifacts
+
+apply plugin: 'org.jetbrains.kotlin.jvm'
+apply plugin: 'org.jetbrains.kotlin.plugin.compose'
+apply plugin: 'org.jetbrains.dokka'
+apply plugin: 'com.vanniktech.maven.publish'
+apply plugin: 'dev.drewhamilton.poko'
+apply plugin: 'aar2jar'
+
+configurations {
+  layoutlibRuntime {
+    canBeConsumed = false
+    attributes.attribute(AndroidArtifacts.ARTIFACT_TYPE, ArtifactTypeDefinition.DIRECTORY_TYPE)
+  }
+  layoutlibResources {
+    canBeConsumed = false
+    attributes.attribute(AndroidArtifacts.ARTIFACT_TYPE, ArtifactTypeDefinition.DIRECTORY_TYPE)
+  }
+}
+
+aar2jar.configureForConfiguration("compileOnly")
+aar2jar.configureForConfiguration("testImplementation")
+
+dependencies {
+  registerTransform(org.gradle.api.internal.artifacts.transform.UnzipTransform) {
+    from.attribute(AndroidArtifacts.ARTIFACT_TYPE, ArtifactTypeDefinition.JAR_TYPE)
+    to.attribute(AndroidArtifacts.ARTIFACT_TYPE, ArtifactTypeDefinition.DIRECTORY_TYPE)
+  }
+}
+
+dependencies {
+  testImplementationAarAsJar libs.androidx.compose.ui.android
+  compileOnlyAarAsJar libs.androidx.compose.ui.android
+  compileOnlyAarAsJar libs.androidx.activity
+
+  implementation libs.bytebuddy.agent
+  implementation libs.bytebuddy.core
+  implementation libs.trove4j
+  api libs.tools.common
+  api libs.tools.layoutlib
+  api libs.tools.layoutlib.api
+  api libs.tools.ninepatch
+  api libs.tools.sdkCommon
+  api libs.kxml2
+  api libs.androidx.annotations
+  api libs.guava
+  api libs.kotlinx.coroutines.android
+  api libs.okio
+  api platform(libs.kotlin.bom)
+  implementation libs.moshi.core
+  implementation libs.moshi.adapters
+  implementation libs.moshi.kotlinReflect
+
+  def osName = System.getProperty("os.name").toLowerCase(Locale.US)
+  def osLabel
+  if (osName.startsWith("mac")) {
+    def osArch = System.getProperty("os.arch").toLowerCase(Locale.US)
+    if (osArch.startsWith("x86")) {
+      osLabel = 'mac'
+    } else {
+      osLabel = 'mac-arm'
+    }
+  } else if (osName.startsWith("windows")) {
+    osLabel = 'win'
+  } else {
+    osLabel = 'linux'
+  }
+  layoutlibRuntime variantOf(libs.tools.layoutlib.runtime) { classifier(osLabel) }
+  layoutlibResources libs.tools.layoutlib.resources
+
+  testImplementation libs.truth
+}
+
+tasks.named("dokkaGfm").configure {
+  outputDirectory = rootProject.file("docs/1.x")
+
+  dokkaSourceSets.named("main") {
+    configureEach {
+      reportUndocumented = false
+      skipDeprecated = true
+      jdkVersion = 8
+      perPackageOption {
+        prefix = "app.cash.paparazzi.internal"
+        suppress = true
+      }
+    }
+  }
+}
+
+def generateTestConfig = tasks.register("generateTestConfig") {
+  def resources = layout.buildDirectory.file('intermediates/paparazzi/resources.json')
+  outputs.file(resources)
+
+  doLast {
+    File configFile = resources.get().asFile
+    configFile.write("""{
+      "mainPackage": "app.cash.paparazzi",
+      "mergeResourcesOutputDir": ".",
+      "targetSdkVersion": "34",
+      "mergeAssetsOutputDir": ".",
+      "resourcePackageNames": ["app.cash.paparazzi"],
+      "projectResourceDirs": [],
+      "moduleResourceDirs": [],
+      "aarExplodedDirs": [],
+      "projectAssetDirs": [],
+      "aarAssetDirs": []
+    }""")
+  }
+}
+
+tasks.withType(Test).configureEach {
+  dependsOn(generateTestConfig)
+  systemProperty(
+    "paparazzi.test.resources",
+    generateTestConfig.map { it.outputs.files.singleFile }.get().path
+  )
+  systemProperty(
+    "paparazzi.project.dir",
+    project.layout.projectDirectory.toString()
+  )
+  systemProperty(
+    "paparazzi.build.dir",
+    project.layout.buildDirectory.get().toString()
+  )
+  systemProperty(
+    "paparazzi.report.dir",
+    project.extensions.getByType(ReportingExtension).baseDirectory.dir("paparazzi").get().toString()
+  )
+  systemProperty(
+    "paparazzi.snapshot.dir",
+    project.layout.projectDirectory.dir("src/test/snapshots").toString()
+  )
+  systemProperty(
+    "paparazzi.artifacts.cache.dir",
+    project.gradle.gradleUserHomeDir.path
+  )
+  systemProperty(
+    "paparazzi.layoutlib.runtime.root",
+    configurations.layoutlibRuntime.singleFile.absolutePath
+  )
+  systemProperty(
+    "paparazzi.layoutlib.resources.root",
+    configurations.layoutlibResources.singleFile.absolutePath
+  )
+}

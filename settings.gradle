@@ -1,6 +1,7 @@
 rootProject.name = 'paparazzi-root'
 
-include ':paparazzi'
+include ':paparazzi-sdk'
+include ':paparazzi-junit4'
 include ':paparazzi-annotations'
 include ':paparazzi-preview-processor'
 include ':paparazzi-gradle-plugin'

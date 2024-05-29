@@ -1,20 +1,16 @@
-package app.cash.paparazzi.accessibility
+@file:Suppress("invisible_reference", "invisible_member")
+
+package app.cash.paparazzi
 
 import android.content.Context
 import android.graphics.Color
-import android.graphics.drawable.GradientDrawable
-import android.graphics.drawable.GradientDrawable.OVAL
-import android.graphics.drawable.GradientDrawable.Orientation.TL_BR
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
-import app.cash.paparazzi.DeviceConfig
-import app.cash.paparazzi.Paparazzi
-import app.cash.paparazzi.Snapshot
-import app.cash.paparazzi.SnapshotHandler
 import app.cash.paparazzi.internal.ImageUtils
 import org.junit.Rule
 import org.junit.Test
@@ -23,7 +19,7 @@ import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
 
-class AccessibilityRenderExtensionTest {
+class RenderExtensionTest {
   @get:Rule
   val tempDir = TemporaryFolder()
 
@@ -33,27 +29,19 @@ class AccessibilityRenderExtensionTest {
   val paparazzi = Paparazzi(
     deviceConfig = DeviceConfig.NEXUS_5,
     snapshotHandler = snapshotHandler,
-    renderExtensions = setOf(AccessibilityRenderExtension())
+    renderExtensions = setOf(
+      WrappedRenderExtension(Color.DKGRAY),
+      WrappedRenderExtension(Color.RED),
+      WrappedRenderExtension(Color.GREEN),
+      WrappedRenderExtension(Color.BLUE)
+    )
   )
 
   @Test
-  fun `verify baseline`() {
+  fun `call multiple snapshots on view`() {
     val view = buildView(paparazzi.context)
-    paparazzi.snapshot(view, name = "accessibility")
-  }
-
-  @Test
-  fun `test without layout params set`() {
-    val view = buildView(paparazzi.context, null)
-    paparazzi.snapshot(view, name = "without-layout-params")
-  }
-
-  @Test
-  fun `verify changing view hierarchy order doesn't change accessibility colors`() {
-    val view = buildView(paparazzi.context).apply {
-      addView(View(context).apply { contentDescription = "Empty View" }, 0, LinearLayout.LayoutParams(0, 0))
-    }
-    paparazzi.snapshot(view, name = "accessibility-new-view")
+    paparazzi.snapshot(view, name = "wrapped")
+    paparazzi.snapshot(view, name = "wrapped")
   }
 
   private fun buildView(
@@ -70,37 +58,6 @@ class AccessibilityRenderExtensionTest {
         TextView(context).apply {
           id = 1
           text = "Text View Sample"
-        }
-      )
-
-      addView(
-        View(context).apply {
-          id = 2
-          layoutParams = LinearLayout.LayoutParams(100, 100)
-          contentDescription = "Content Description Sample"
-        }
-      )
-
-      addView(
-        View(context).apply {
-          id = 3
-          layoutParams = LinearLayout.LayoutParams(100, 100).apply {
-            setMarginsRelative(20, 20, 20, 20)
-          }
-          contentDescription = "Margin Sample"
-        }
-      )
-
-      addView(
-        View(context).apply {
-          id = 4
-          layoutParams = LinearLayout.LayoutParams(100, 100).apply {
-            setMarginsRelative(20, 20, 20, 20)
-          }
-          foreground = GradientDrawable(TL_BR, intArrayOf(Color.YELLOW, Color.BLUE)).apply {
-            shape = OVAL
-          }
-          contentDescription = "Foreground Drawable"
         }
       )
 
@@ -132,7 +89,9 @@ class AccessibilityRenderExtensionTest {
             image = image,
             goldenImage = ImageIO.read(expected),
             maxPercentDifferent = 0.1,
-            failureDir = tempDir.newFolder()
+            failureDir = File("src/test/resources/${snapshot.name}").apply {
+              mkdirs()
+            }
           )
         }
 
@@ -142,4 +101,18 @@ class AccessibilityRenderExtensionTest {
 
     override fun close() = Unit
   }
+}
+
+class WrappedRenderExtension(val color: Int) : RenderExtension {
+  override fun renderView(contentView: View): View =
+    FrameLayout(contentView.context).apply {
+      layoutParams = ViewGroup.LayoutParams(
+        ViewGroup.LayoutParams.MATCH_PARENT,
+        ViewGroup.LayoutParams.MATCH_PARENT
+      )
+      setPadding(20, 20, 20, 20)
+
+      setBackgroundColor(color)
+      addView(contentView)
+    }
 }
