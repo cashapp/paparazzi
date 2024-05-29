@@ -14,7 +14,6 @@ public abstract class app/cash/paparazzi/gradle/PrepareResourcesTask : org/gradl
 	public abstract fun getAarAssetDirs ()Lorg/gradle/api/provider/ListProperty;
 	public abstract fun getAarExplodedDirs ()Lorg/gradle/api/provider/ListProperty;
 	public abstract fun getArtifactFiles ()Lorg/gradle/api/file/ConfigurableFileCollection;
-	public abstract fun getCompileSdkVersion ()Lorg/gradle/api/provider/Property;
 	public abstract fun getModuleResourceDirs ()Lorg/gradle/api/provider/ListProperty;
 	public abstract fun getNonTransitiveRClassEnabled ()Lorg/gradle/api/provider/Property;
 	public abstract fun getPackageName ()Lorg/gradle/api/provider/Property;

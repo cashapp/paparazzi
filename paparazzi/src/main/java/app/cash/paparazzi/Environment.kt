@@ -21,15 +21,11 @@ import dev.drewhamilton.poko.Poko
 import okio.buffer
 import okio.source
 import java.io.File
-import java.io.FileNotFoundException
-import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.Locale
-import kotlin.io.path.exists
 
 @Poko
 public class Environment(
-  public val platformDir: String,
   public val appTestDir: String,
   public val packageName: String,
   public val compileSdkVersion: Int,
@@ -40,18 +36,7 @@ public class Environment(
   public val allModuleAssetDirs: List<String>,
   public val libraryAssetDirs: List<String>
 ) {
-  init {
-    val platformDirPath = Path.of(platformDir)
-    if (!platformDirPath.exists()) {
-      val elements = platformDirPath.nameCount
-      val platform = platformDirPath.subpath(elements - 1, elements)
-      val platformVersion = platform.toString().split("-").last()
-      throw FileNotFoundException("Missing platform version $platformVersion. Install with sdkmanager --install \"platforms;$platform\"")
-    }
-  }
-
   public fun copy(
-    platformDir: String = this.platformDir,
     appTestDir: String = this.appTestDir,
     packageName: String = this.packageName,
     compileSdkVersion: Int = this.compileSdkVersion,
@@ -63,7 +48,6 @@ public class Environment(
     libraryAssetDirs: List<String> = this.libraryAssetDirs
   ): Environment =
     Environment(
-      platformDir,
       appTestDir,
       packageName,
       compileSdkVersion,
@@ -87,7 +71,6 @@ public fun detectEnvironment(): Environment {
   val projectDir = Paths.get(System.getProperty("paparazzi.project.dir"))
   val appTestDir = Paths.get(System.getProperty("paparazzi.build.dir"))
   val artifactsCacheDir = Paths.get(System.getProperty("paparazzi.artifacts.cache.dir"))
-  val androidHome = Paths.get(androidHome())
 
   val resourcesFile = File(System.getProperty("paparazzi.test.resources"))
   val moshi = Moshi.Builder().addLast(KotlinJsonAdapterFactory()).build()!!
@@ -95,7 +78,6 @@ public fun detectEnvironment(): Environment {
     resourcesFile.source().buffer().use { moshi.adapter(Config::class.java).fromJson(it)!! }
 
   return Environment(
-    platformDir = androidHome.resolve(config.platformDir).toString(),
     appTestDir = appTestDir.toString(),
     packageName = config.mainPackage,
     compileSdkVersion = config.targetSdkVersion.toInt(),
@@ -111,7 +93,6 @@ public fun detectEnvironment(): Environment {
 internal data class Config(
   val mainPackage: String,
   val targetSdkVersion: String,
-  val platformDir: String,
   val resourcePackageNames: List<String>,
   val projectResourceDirs: List<String>,
   val moduleResourceDirs: List<String>,
