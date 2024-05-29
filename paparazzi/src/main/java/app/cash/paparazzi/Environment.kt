@@ -22,7 +22,6 @@ import okio.buffer
 import okio.source
 import java.io.File
 import java.nio.file.Paths
-import java.util.Locale
 
 @Poko
 public class Environment(
@@ -60,11 +59,6 @@ public class Environment(
     )
 }
 
-@Suppress("unused")
-public fun androidHome(): String = System.getenv("ANDROID_SDK_ROOT")
-  ?: System.getenv("ANDROID_HOME")
-  ?: androidSdkPath()
-
 public fun detectEnvironment(): Environment {
   checkInstalledJvm()
 
@@ -100,19 +94,6 @@ internal data class Config(
   val projectAssetDirs: List<String>,
   val aarAssetDirs: List<String>
 )
-
-private fun androidSdkPath(): String {
-  val osName = System.getProperty("os.name").lowercase(Locale.US)
-  val sdkPathDir = if (osName.startsWith("windows")) {
-    "\\AppData\\Local\\Android\\Sdk"
-  } else if (osName.startsWith("mac")) {
-    "/Library/Android/sdk"
-  } else {
-    "/Android/Sdk"
-  }
-  val homeDir = System.getProperty("user.home")
-  return homeDir + sdkPathDir
-}
 
 private fun checkInstalledJvm() {
   val feature = try {

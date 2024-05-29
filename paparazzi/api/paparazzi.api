@@ -80,7 +80,6 @@ public final class app/cash/paparazzi/Environment {
 }
 
 public final class app/cash/paparazzi/EnvironmentKt {
-	public static final fun androidHome ()Ljava/lang/String;
 	public static final fun detectEnvironment ()Lapp/cash/paparazzi/Environment;
 }
 
