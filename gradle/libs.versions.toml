@@ -26,7 +26,7 @@ bytebuddy-core = { module = "net.bytebuddy:byte-buddy", version.ref = "bytebuddy
 composeUi-material = { module = "androidx.compose.material:material", version = "1.6.7" }
 composeUi-uiTooling = { module = "androidx.compose.ui:ui-tooling" }
 
-guava = { module = "com.google.guava:guava", version = "33.2.0-jre" }
+guava = { module = "com.google.guava:guava", version = "33.2.1-jre" }
 
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
