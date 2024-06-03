@@ -1500,12 +1500,33 @@ class PaparazziPluginTest {
       .runFixture(fixtureRoot) { build() }
 
     val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/debug/images")
-    val snapshots = snapshotsDir.listFiles()
-    assertThat(snapshots!!).hasLength(1)
+    val snapshots = snapshotsDir.listFilesSorted()
+    assertThat(snapshots!!).hasSize(6)
+    println(snapshots.joinToString { it.name })
 
-    val snapshotImage = snapshots[0]
-    val goldenImage = File(fixtureRoot, "src/test/resources/compose_fonts.png")
-    assertThat(snapshotImage).isSimilarTo(goldenImage).withDefaultThreshold()
+    var snapshotImage = snapshots[0]
+    var goldenImage = File(fixtureRoot, "src/test/resources/compose_alias_max_diff.png")
+    assertThat(snapshotImage).isSimilarTo(goldenImage).withThreshold(0.0)
+
+    snapshotImage = snapshots[1]
+    goldenImage = File(fixtureRoot, "src/test/resources/compose_fonts.png")
+    assertThat(snapshotImage).isSimilarTo(goldenImage).withThreshold(0.0)
+
+    snapshotImage = snapshots[2]
+    goldenImage = File(fixtureRoot, "src/test/resources/dummy_painter_four_layers.png")
+    assertThat(snapshotImage).isSimilarTo(goldenImage).withThreshold(0.0)
+
+    snapshotImage = snapshots[3]
+    goldenImage = File(fixtureRoot, "src/test/resources/dummy_painter_two_layers.png")
+    assertThat(snapshotImage).isSimilarTo(goldenImage).withThreshold(0.0)
+
+    snapshotImage = snapshots[4]
+    goldenImage = File(fixtureRoot, "src/test/resources/dummy_painter_custom_options.png")
+    assertThat(snapshotImage).isSimilarTo(goldenImage).withThreshold(0.0)
+
+    snapshotImage = snapshots[5]
+    goldenImage = File(fixtureRoot, "src/test/resources/dummy_painter_default.png")
+    assertThat(snapshotImage).isSimilarTo(goldenImage).withThreshold(0.0)
   }
 
   @Test
