@@ -23,11 +23,13 @@ import com.android.build.api.variant.ApplicationAndroidComponentsExtension
 import com.android.build.api.variant.DynamicFeatureAndroidComponentsExtension
 import com.android.build.api.variant.HasUnitTest
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
+import com.android.build.api.variant.UnitTest
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactType
 import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.component.ProjectComponentIdentifier
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE
@@ -115,11 +117,16 @@ public class PaparazziPlugin : Plugin<Project> {
 
       // https://android.googlesource.com/platform/tools/base/+/96015063acd3455a76cdf1cc71b23b0828c0907f/build-system/gradle-core/src/main/java/com/android/build/gradle/tasks/MergeResources.kt#875
 
-      val moduleResourceDirs = variant.runtimeConfiguration
+      val runtimeConfiguration: Configuration = variant
+        .nestedComponents
+        .filterIsInstance<UnitTest>()
+        .firstOrNull()?.runtimeConfiguration ?: variant.runtimeConfiguration
+
+      val moduleResourceDirs = runtimeConfiguration
         .artifactsFor(ArtifactType.ANDROID_RES.type) { it is ProjectComponentIdentifier }
         .artifactFiles
 
-      val aarExplodedDirs = variant.runtimeConfiguration
+      val aarExplodedDirs = runtimeConfiguration
         .artifactsFor(ArtifactType.ANDROID_RES.type) { it !is ProjectComponentIdentifier }
         .artifactFiles
 
@@ -127,15 +134,15 @@ public class PaparazziPlugin : Plugin<Project> {
 
       // https://android.googlesource.com/platform/tools/base/+/96015063acd3455a76cdf1cc71b23b0828c0907f/build-system/gradle-core/src/main/java/com/android/build/gradle/tasks/MergeResources.kt#875
 
-      val moduleAssetDirs = variant.runtimeConfiguration
+      val moduleAssetDirs = runtimeConfiguration
         .artifactsFor(ArtifactType.ASSETS.type) { it is ProjectComponentIdentifier }
         .artifactFiles
 
-      val aarAssetDirs = variant.runtimeConfiguration
+      val aarAssetDirs = runtimeConfiguration
         .artifactsFor(ArtifactType.ASSETS.type) { it !is ProjectComponentIdentifier }
         .artifactFiles
 
-      val packageAwareArtifactFiles = variant.runtimeConfiguration
+      val packageAwareArtifactFiles = runtimeConfiguration
         .artifactsFor(ArtifactType.SYMBOL_LIST_WITH_PACKAGE_NAME.type)
         .artifactFiles
 
