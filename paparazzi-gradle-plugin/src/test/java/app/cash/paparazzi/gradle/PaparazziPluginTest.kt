@@ -857,6 +857,40 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun verifyResourcesGeneratedForTestDependencies() {
+    val fixtureRoot = File("src/test/projects/verify-test-resources")
+
+    val result = gradleRunner
+      .withArguments(":consumer:compileDebugUnitTestKotlin", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":consumer:preparePaparazziDebugResources")).isNotNull()
+
+    val resourcesFile = File(fixtureRoot, "consumer/build/intermediates/paparazzi/debug/resources.json")
+    assertThat(resourcesFile.exists()).isTrue()
+
+    val config = resourcesFile.loadConfig()
+    assertThat(config.mainPackage).isEqualTo("app.cash.paparazzi.plugin.test")
+    assertThat(config.resourcePackageNames).containsExactly(
+      "app.cash.paparazzi.plugin.test",
+      "app.cash.paparazzi.plugin.test.testmodule",
+      "app.cash.paparazzi.plugin.test.runtimetestmodule"
+    )
+    assertThat(config.projectResourceDirs).containsExactly(
+      "src/main/res",
+      "src/debug/res",
+      "build/generated/res/resValues/debug",
+      "build/generated/res/extra"
+    )
+    assertThat(config.moduleResourceDirs).containsExactly(
+      "build/intermediates/packaged_res/debug/packageDebugResources",
+      "../test-module/build/intermediates/packaged_res/debug/packageDebugResources",
+      "../runtime-test-module/build/intermediates/packaged_res/debug/packageDebugResources"
+    )
+    assertThat(config.aarExplodedDirs).isEmpty()
+  }
+
+  @Test
   fun verifyResourcesUpdatedWhenLocalResourceChanges() {
     val fixtureRoot = File("src/test/projects/verify-update-local-resources-change")
     val buildDir = fixtureRoot.resolve("build").registerForDeletionOnExit()
