@@ -141,8 +141,7 @@ public class Paparazzi @JvmOverloads constructor(
     try {
       val snapshot = Snapshot(name, testName!!, Date())
       return snapshotHandler.newFrameHandler(snapshot, frameCount, fps)
-    } catch (e: NullPointerException) {
-      throw IllegalStateException("Missing testName. Multiple instances of Paparazzi possibly being used.")
+    } catch (e: NullPointerException) {a kdearjhgkjhb   throw IllegalStateException("Missing testName. Multiple instances of Paparazzi possibly being used.")
     }
   }
 

@@ -3,7 +3,6 @@ package app.cash.paparazzi.sample
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import app.cash.paparazzi.Paparazzi
-
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TestRule
@@ -42,7 +41,7 @@ class MultiplePaparazziRule : TestRule {
 
   fun snapshot(
     name: String? = null,
-    content: @Composable () -> Unit,
+    content: @Composable () -> Unit
   ) {
     first.snapshot("first", content)
     second.snapshot("second", content)
