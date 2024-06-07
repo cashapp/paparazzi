@@ -32,6 +32,7 @@ import android.view.ViewGroup
 import androidx.activity.setViewTreeOnBackPressedDispatcherOwner
 import androidx.annotation.LayoutRes
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Recomposer
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.InternalComposeUiApi
 import androidx.compose.ui.platform.ComposeView
@@ -255,6 +256,7 @@ public class PaparazziSdk @JvmOverloads constructor(
         // Initialize the choreographer at time=0.
       }
 
+      var recomposer: Recomposer? = null
       if (hasComposeRuntime) {
         // During onAttachedToWindow, AbstractComposeView will attempt to resolve its parent's
         // CompositionContext, which requires first finding the "content view", then using that
@@ -265,7 +267,11 @@ public class PaparazziSdk @JvmOverloads constructor(
         // Since this dispatcher does not provide its own implementation of Delay, it will default to using DefaultDelay which runs
         // async to our test Handler. By initializing Recomposer with Dispatchers.Main, Delay will now be backed by our test Handler,
         // synchronizing expected behavior.
-        WindowRecomposerPolicy.setFactory { it.createLifecycleAwareWindowRecomposer(MAIN_DISPATCHER) }
+        WindowRecomposerPolicy.setFactory {
+          it.createLifecycleAwareWindowRecomposer(MAIN_DISPATCHER).apply {
+            recomposer = this
+          }
+        }
       }
 
       if (hasLifecycleOwnerRuntime) {
@@ -286,7 +292,18 @@ public class PaparazziSdk @JvmOverloads constructor(
       for (frame in 0 until frameCount) {
         val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
         withTime(nowNanos) {
-          val result = renderSession.render(true)
+          var result = renderSession.render(true)
+          if (result.status == ERROR_UNKNOWN) {
+            throw result.exception
+          }
+
+          // If there is a recomposition that needs to happen, we need to trigger it within the context of this current frame.
+          if (hasComposeRuntime && recomposer?.hasPendingWork == true) {
+            withTime(nowNanos) {
+              result = renderSession.render(true)
+            }
+          }
+
           if (result.status == ERROR_UNKNOWN) {
             throw result.exception
           }
