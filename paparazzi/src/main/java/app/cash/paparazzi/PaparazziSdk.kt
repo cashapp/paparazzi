@@ -167,11 +167,11 @@ public class PaparazziSdk @JvmOverloads constructor(
   public fun <V : View> inflate(@LayoutRes layoutId: Int): V =
     layoutInflater.inflate(layoutId, null) as V
 
-  public fun snapshot(composable: @Composable () -> Unit) {
+  public fun snapshot(composable: @Composable () -> Unit, offsetMillis: Long = 0L) {
     val hostView = ComposeView(context)
     hostView.setContent(composable)
 
-    snapshot(hostView)
+    snapshot(hostView, offsetMillis = offsetMillis)
   }
 
   @JvmOverloads
