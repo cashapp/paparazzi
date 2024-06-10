@@ -70,12 +70,12 @@ public abstract class PrepareResourcesTask : DefaultTask() {
 
     val mainPackage = packageName.get()
     val resourcePackageNames = if (nonTransitiveRClassEnabled.get()) {
-      buildSet {
+      buildList {
         add(mainPackage)
         artifactFiles.files.forEach { file ->
           add(file.useLines { lines -> lines.first() })
         }
-      }.toList()
+      }.distinct()
     } else {
       listOf(mainPackage)
     }
