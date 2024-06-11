@@ -94,7 +94,7 @@ subprojects {
   spotless {
     kotlin {
       target("src/**/*.kt")
-      ktlint(libs.versions.ktlint.get())
+      ktlint(libs.ktlint.core.get().version)
         .setEditorConfigPath(rootProject.file(".editorconfig"))
     }
   }

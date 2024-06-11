@@ -816,9 +816,9 @@ internal abstract class RepositoryLoader<T : LoadableResourceRepository>(
   ): BasicValueResourceItem {
     val namespaceResolver = parser.namespaceResolver
     var text = textExtractor.extractText(parser, false).trim()
-    if (text.isNotEmpty() && !text.startsWith(PREFIX_RESOURCE_REF) && !text.startsWith(
-        PREFIX_THEME_REF
-      )
+    if (text.isNotEmpty() &&
+      !text.startsWith(PREFIX_RESOURCE_REF) &&
+      !text.startsWith(PREFIX_THEME_REF)
     ) {
       text = text.replace('/', File.separatorChar)
     }
