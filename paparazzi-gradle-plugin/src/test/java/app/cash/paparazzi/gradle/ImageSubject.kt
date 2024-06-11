@@ -97,8 +97,7 @@ internal class ImageSubject private constructor(
       ImageSubject(metadata, actual)
     }
 
-    fun assertThat(actual: File?): ImageSubject {
-      return assertAbout(IMAGE_SUBJECT_FACTORY).that(actual)
-    }
+    fun assertThat(actual: File?): ImageSubject =
+      assertAbout(IMAGE_SUBJECT_FACTORY).that(actual)
   }
 }

@@ -336,16 +336,14 @@ public class PaparazziPlugin : Plugin<Project> {
     configurations.getByName("testImplementation").dependencies.add(dependency)
   }
 
-  private fun Project.isInternal(): Boolean {
-    return properties["app.cash.paparazzi.internal"].toString() == "true"
-  }
+  private fun Project.isInternal(): Boolean =
+    properties["app.cash.paparazzi.internal"].toString() == "true"
 
   private fun BaseExtension.packageName(): String = namespace ?: ""
 
-  private fun BaseExtension.targetSdkVersion(): String {
-    return defaultConfig.targetSdkVersion?.apiLevel?.toString()
+  private fun BaseExtension.targetSdkVersion(): String =
+    defaultConfig.targetSdkVersion?.apiLevel?.toString()
       ?: DEFAULT_COMPILE_SDK_VERSION.toString()
-  }
 }
 
 private const val DEFAULT_COMPILE_SDK_VERSION = 34
