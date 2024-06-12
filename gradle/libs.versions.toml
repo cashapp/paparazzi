@@ -22,7 +22,7 @@ androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version
 bytebuddy-agent = { module = "net.bytebuddy:byte-buddy-agent", version.ref = "bytebuddy" }
 bytebuddy-core = { module = "net.bytebuddy:byte-buddy", version.ref = "bytebuddy" }
 
-composeUi-material = { module = "androidx.compose.material:material", version = "1.6.7" }
+composeUi-material = { module = "androidx.compose.material:material", version = "1.6.8" }
 composeUi-uiTooling = { module = "androidx.compose.ui:ui-tooling" }
 
 guava = { module = "com.google.guava:guava", version = "33.2.1-jre" }
