@@ -787,7 +787,7 @@ class PaparazziPluginTest {
     val fixtureRoot = File("src/test/projects/verify-resources-java")
 
     val result = gradleRunner
-      .withArguments(":consumer:compileDebugUnitTestJavaWithJavac", "--stacktrace")
+      .withArguments(":consumer:testDebug", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
 
     assertThat(result.task(":consumer:preparePaparazziDebugResources")).isNotNull()
@@ -823,7 +823,7 @@ class PaparazziPluginTest {
     val fixtureRoot = File("src/test/projects/verify-resources-kotlin")
 
     val result = gradleRunner
-      .withArguments(":consumer:compileDebugUnitTestKotlin", "--stacktrace")
+      .withArguments(":consumer:testDebug", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
 
     assertThat(result.task(":consumer:preparePaparazziDebugResources")).isNotNull()

@@ -34,7 +34,6 @@ import org.gradle.api.artifacts.type.ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIB
 import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.artifacts.transform.UnzipTransform
 import org.gradle.api.logging.LogLevel.LIFECYCLE
-import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.api.reporting.ReportingExtension
 import org.gradle.api.tasks.Delete
 import org.gradle.api.tasks.PathSensitivity
@@ -43,8 +42,6 @@ import org.gradle.api.tasks.testing.Test
 import org.gradle.internal.os.OperatingSystem
 import org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
-import org.jetbrains.kotlin.gradle.plugin.KotlinAndroidPluginWrapper
-import org.jetbrains.kotlin.gradle.plugin.KotlinMultiplatformPluginWrapper
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
 import java.util.Locale
 
@@ -55,6 +52,12 @@ public class PaparazziPlugin : Plugin<Project> {
     project.afterEvaluate {
       check(supportedPlugins.any { project.plugins.hasPlugin(it) }) {
         "One of ${supportedPlugins.joinToString(", ")} must be applied for Paparazzi to work properly."
+      }
+      project.plugins.withId("org.jetbrains.kotlin.multiplatform") {
+        val kmpExtension = project.extensions.getByType(KotlinMultiplatformExtension::class.java)
+        check(kmpExtension.targets.any { target -> target is KotlinAndroidTarget }) {
+          "There must be an Android target configured when using Paparazzi with the Kotlin Multiplatform Plugin"
+        }
       }
     }
 
@@ -175,25 +178,8 @@ public class PaparazziPlugin : Plugin<Project> {
 
       val testVariantSlug = testVariant.name.capitalize(Locale.US)
 
-      project.plugins.withType(JavaBasePlugin::class.java) {
-        project.tasks.named { it == "compile${testVariantSlug}JavaWithJavac" }
-          .configureEach { it.dependsOn(writeResourcesTask) }
-      }
-
-      project.plugins.withType(KotlinMultiplatformPluginWrapper::class.java) {
-        val multiplatformExtension =
-          project.extensions.getByType(KotlinMultiplatformExtension::class.java)
-        check(multiplatformExtension.targets.any { target -> target is KotlinAndroidTarget }) {
-          "There must be an Android target configured when using Paparazzi with the Kotlin Multiplatform Plugin"
-        }
-        project.tasks.named { it == "compile${testVariantSlug}KotlinAndroid" }
-          .configureEach { it.dependsOn(writeResourcesTask) }
-      }
-
-      project.plugins.withType(KotlinAndroidPluginWrapper::class.java) {
-        project.tasks.named { it == "compile${testVariantSlug}Kotlin" }
-          .configureEach { it.dependsOn(writeResourcesTask) }
-      }
+      project.tasks.named { it == "test$testVariantSlug" }
+        .configureEach { it.dependsOn(writeResourcesTask) }
 
       val recordTaskProvider = project.tasks.register("recordPaparazzi$variantSlug", PaparazziTask::class.java) {
         it.group = VERIFICATION_GROUP
