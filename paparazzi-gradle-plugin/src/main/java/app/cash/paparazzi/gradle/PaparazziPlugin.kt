@@ -44,14 +44,13 @@ import org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
 import java.util.Locale
+import javax.inject.Inject
 
 @Suppress("unused")
-public class PaparazziPlugin : Plugin<Project> {
-  private lateinit var providerFactory: ProviderFactory
-
+public class PaparazziPlugin @Inject constructor(
+  private val providerFactory: ProviderFactory
+) : Plugin<Project> {
   override fun apply(project: Project) {
-    providerFactory = project.providers
-
     val supportedPlugins = listOf("com.android.application", "com.android.library", "com.android.dynamic-feature")
     project.afterEvaluate {
       check(supportedPlugins.any { project.plugins.hasPlugin(it) }) {
