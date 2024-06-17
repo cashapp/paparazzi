@@ -5,8 +5,8 @@ plugins {
 develocity {
   buildScan {
     termsOfUseUrl = 'https://gradle.com/help/legal-terms-of-use'
-    termsOfUseAgree = 'yes'
     if (System.getenv('CI') == 'true') {
+      termsOfUseAgree = 'yes'
       tag 'CI'
     } else {
       publishing.onlyIf { false }
