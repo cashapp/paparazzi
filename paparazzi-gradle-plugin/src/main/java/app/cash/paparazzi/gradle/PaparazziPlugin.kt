@@ -133,13 +133,11 @@ public class PaparazziPlugin : Plugin<Project> {
         task.artifactFiles.from(sources.packageAwareArtifactFiles)
         task.nonTransitiveRClassEnabled.set(nonTransitiveRClassEnabled)
         task.targetSdkVersion.set(android.targetSdkVersion())
-        task.projectResourceDirs.set(
-          sources.localResourceDirs.relativize(projectDirectory).reversed()
-        )
+        task.projectResourceDirs.set(sources.localResourceDirs.relativize(projectDirectory))
         task.moduleResourceDirs.set(sources.moduleResourceDirs.relativize(projectDirectory))
         task.aarExplodedDirs.set(sources.aarExplodedDirs.relativize(gradleHomeDir))
         task.projectAssetDirs.set(
-          sources.localAssetDirs.relativize(projectDirectory).reversed()
+          sources.localAssetDirs.relativize(projectDirectory)
             .zip(sources.moduleAssetDirs.relativize(projectDirectory), List<String>::plus)
         )
         task.aarAssetDirs.set(sources.aarAssetDirs.relativize(gradleHomeDir))
@@ -304,8 +302,6 @@ public class PaparazziPlugin : Plugin<Project> {
   private fun Provider<List<Directory>>?.relativize(directory: Directory): Provider<List<String>> =
     this?.map { dirs -> dirs.map { directory.relativize(it.asFile) } }
       ?: providerFactory.provider { emptyList() }
-
-  private fun <T> Provider<List<T>>.reversed(): Provider<List<T>> = this.map { it.asReversed() }
 }
 
 private const val DEFAULT_COMPILE_SDK_VERSION = 34
