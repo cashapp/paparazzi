@@ -1,3 +1,19 @@
+plugins {
+  id 'com.gradle.develocity' version '3.17.5'
+}
+
+develocity {
+  buildScan {
+    termsOfUseUrl = 'https://gradle.com/help/legal-terms-of-use'
+    if (System.getenv('CI') == 'true') {
+      termsOfUseAgree = 'yes'
+      tag 'CI'
+    } else {
+      publishing.onlyIf { false }
+    }
+  }
+}
+
 rootProject.name = 'paparazzi-root'
 
 include ':paparazzi'
