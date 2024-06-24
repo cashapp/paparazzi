@@ -23,6 +23,5 @@ import java.io.File
 internal fun FileCollection.relativize(directory: Directory): Provider<List<String>> =
   elements.map { files -> files.map { file -> directory.relativize(file.asFile) } }
 
-internal fun Directory.relativize(child: File): String {
-  return asFile.toPath().relativize(child.toPath()).toFile().invariantSeparatorsPath
-}
+internal fun Directory.relativize(child: File): String =
+  asFile.toPath().relativize(child.toPath()).toFile().invariantSeparatorsPath

@@ -52,8 +52,8 @@ class RenderingModeTest(
     FULL_SCREEN(renderingMode = NORMAL, showSystemUi = true)
   }
 
-  private fun buildView(context: Context): View {
-    return LinearLayout(context).apply {
+  private fun buildView(context: Context): View =
+    LinearLayout(context).apply {
       orientation = LinearLayout.VERTICAL
       layoutParams = ViewGroup.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
       addView(
@@ -110,5 +110,4 @@ class RenderingModeTest(
         }
       )
     }
-  }
 }
