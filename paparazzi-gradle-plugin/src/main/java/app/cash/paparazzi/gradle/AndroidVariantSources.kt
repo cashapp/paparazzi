@@ -14,7 +14,7 @@ import org.gradle.api.provider.Provider
  */
 internal class AndroidVariantSources(
   private val variant: Variant,
-  private val testVariant: Component,
+  private val testVariant: Component
 ) {
   val localResourceDirs: Provider<List<Directory>>? by lazy {
     variant.sources.res?.all?.map { layers -> layers.flatten() }?.map { it.asReversed() }
