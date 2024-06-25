@@ -137,6 +137,7 @@ public class HtmlReportWriter @JvmOverloads constructor(
   private fun writeImage(image: BufferedImage): String {
     val hash = hash(image)
     val file = File(imagesDirectory, "$hash.png")
+    printImage(image)
     if (!file.exists()) {
       file.writeAtomically(image)
     }
@@ -262,6 +263,22 @@ public class HtmlReportWriter @JvmOverloads constructor(
     ImageIO.write(bufferedImage, "PNG", tmpFile)
     delete()
     tmpFile.renameTo(this)
+  }
+
+  private fun printImage(image: BufferedImage) {
+    println("type: ${image.type}")
+    val colorModel = image.colorModel
+    println("color model: $colorModel")
+    println("  pixelBits = " + colorModel.pixelSize)
+    println("  transparency = " + colorModel.transparency)
+    println("  has alpha = " + colorModel.hasAlpha())
+    println("  isAlphaPre = " + colorModel.isAlphaPremultiplied)
+
+    for (y in 0 until image.height) {
+      for (x in 0 until image.width) {
+        val rgb = image.getRGB(x, y)
+      }
+    }
   }
 
   private fun File.writeAtomically(writerAction: BufferedSink.() -> Unit) {

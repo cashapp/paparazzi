@@ -31,6 +31,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 5
 
       - name: Configure JDK
         uses: actions/setup-java@v4
@@ -41,18 +43,15 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v3
 
-      - name: Run All Tests
-        run: ./gradlew check
+      - name: Record Sample Snapshots
+        run: ./gradlew sample:recordPaparazziDebug --tests=RenderingIssuesTest
 
-      - name: Upload Test Failures
-        if: failure()
+      - name: Upload Sample Snapshots
         uses: actions/upload-artifact@v4
         with:
-          name: test-failures-${{ matrix.os }}-${{ matrix.java-version }}
+          name: sample-snapshots-${{ matrix.os }}-${{ matrix.java-version }}
           path: |
-            **/build/reports/tests/*/
-            **/build/paparazzi/failures/
-            paparazzi-gradle-plugin/src/test/projects/**/build/reports/paparazzi/**/images/
+            sample/src/test/snapshots/**
 
   publish:
     runs-on: ubuntu-latest
