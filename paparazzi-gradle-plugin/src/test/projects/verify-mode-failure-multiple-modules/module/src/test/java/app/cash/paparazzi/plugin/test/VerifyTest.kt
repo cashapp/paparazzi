@@ -22,7 +22,10 @@ import org.junit.Test
 
 class VerifyTest {
   @get:Rule
-  val paparazzi = Paparazzi()
+  val paparazzi = Paparazzi(
+    showSystemUi = true,
+    maxPercentDifference = 0.0
+  )
 
   @Test
   fun verify() {
