@@ -187,7 +187,7 @@ internal object ImageUtils {
 
     var error: String? = null
     val imageName = getName(relativePath)
-    if (percentDifference > maxPercentDifferent) {
+    if (percentDifference > 0.0) {
       error = String.format("Images differ (by %f%%)", percentDifference)
     } else if (Math.abs(goldenImageWidth - imageWidth) >= 2) {
       error = "Widths differ too much for " + imageName + ": " +
