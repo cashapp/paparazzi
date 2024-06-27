@@ -143,17 +143,22 @@ private fun SemanticsNode.findAllUnmergedNodes(): List<SemanticsNode> {
   }
 }
 
-private fun SemanticsNode.accessibilityText() =
-  (
+private fun SemanticsNode.accessibilityText(): String? {
+  val stateDescription = config.getOrNull(SemanticsProperties.StateDescription)
+  val mainAccessibilityText =
     config.getOrNull(SemanticsProperties.ContentDescription)?.joinToString(", ")
       ?: config.getOrNull(SemanticsProperties.Text)?.joinToString(", ")
-      ?: config.getOrNull(SemanticsProperties.StateDescription)
-      ?: config.getOrNull(SemanticsActions.OnClick)?.label
-      ?: config.getOrNull(SemanticsProperties.Role)?.toString()
-    ).let {
+  val role = config.getOrNull(SemanticsProperties.Role)?.toString()
+  val disabled = if (config.getOrNull(SemanticsProperties.Disabled) != null) "Disabled" else null
+  val onClickLabel =
+    if (disabled != null) null else config.getOrNull(SemanticsActions.OnClick)?.label?.let { "Double tap to $it" }
+
+  return listOfNotNull(stateDescription, mainAccessibilityText, role, disabled, onClickLabel)
+    .joinToString(", ")
     // Escape newline characters to simplify accessibility text.
-    it?.replaceLineBreaks()
-  }
+    .replaceLineBreaks()
+    .takeUnless { it.isBlank() }
+}
 
 private fun String.replaceLineBreaks() =
   replace("\n", "\\n")
