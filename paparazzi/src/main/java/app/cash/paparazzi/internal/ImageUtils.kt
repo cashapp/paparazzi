@@ -23,10 +23,14 @@ import java.awt.AlphaComposite
 import java.awt.Color
 import java.awt.Graphics2D
 import java.awt.Rectangle
+import java.awt.RenderingHints.KEY_ALPHA_INTERPOLATION
 import java.awt.RenderingHints.KEY_ANTIALIASING
+import java.awt.RenderingHints.KEY_COLOR_RENDERING
 import java.awt.RenderingHints.KEY_INTERPOLATION
 import java.awt.RenderingHints.KEY_RENDERING
+import java.awt.RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY
 import java.awt.RenderingHints.VALUE_ANTIALIAS_ON
+import java.awt.RenderingHints.VALUE_COLOR_RENDER_QUALITY
 import java.awt.RenderingHints.VALUE_INTERPOLATION_BILINEAR
 import java.awt.RenderingHints.VALUE_RENDER_QUALITY
 import java.awt.image.BufferedImage
@@ -383,6 +387,8 @@ internal object ImageUtils {
   private fun setRenderingHints(g2: Graphics2D) {
     g2.setRenderingHint(KEY_INTERPOLATION, VALUE_INTERPOLATION_BILINEAR)
     g2.setRenderingHint(KEY_RENDERING, VALUE_RENDER_QUALITY)
+    g2.setRenderingHint(KEY_COLOR_RENDERING, VALUE_COLOR_RENDER_QUALITY)
+    g2.setRenderingHint(KEY_ALPHA_INTERPOLATION, VALUE_ALPHA_INTERPOLATION_QUALITY)
     g2.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_ON)
   }
 
