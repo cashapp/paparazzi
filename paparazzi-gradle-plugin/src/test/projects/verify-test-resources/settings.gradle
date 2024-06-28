@@ -1,0 +1,5 @@
+apply from: '../test.settings.gradle'
+
+include ':consumer'
+include ':test-module'
+include ':runtime-test-module'
