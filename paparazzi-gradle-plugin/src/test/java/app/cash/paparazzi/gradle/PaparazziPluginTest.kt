@@ -1597,7 +1597,7 @@ class PaparazziPluginTest {
     val fixtureRoot = File("src/test/projects/locale-qualifier")
 
     gradleRunner
-      .withArguments("testDebug", "--stacktrace")
+      .withArguments("vPD", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
 
     val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/debug/images")
@@ -1617,7 +1617,7 @@ class PaparazziPluginTest {
     val fixtureRoot = File("src/test/projects/layout-direction")
 
     gradleRunner
-      .withArguments("testDebug", "--stacktrace")
+      .withArguments("vPD", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
 
     val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/debug/images")
