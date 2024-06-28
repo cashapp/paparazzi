@@ -240,6 +240,7 @@ internal object ImageUtils {
     xScale: Double,
     yScale: Double
   ): BufferedImage {
+    println("scaling image to $xScale x $yScale")
     var source = source
 
     var sourceWidth = source.width
@@ -251,6 +252,8 @@ internal object ImageUtils {
       imageType = BufferedImage.TYPE_INT_ARGB
     }
     if (xScale > 0.5 && yScale > 0.5) {
+      println("> 50% scaling, using Graphics2D")
+
       val scaled = BufferedImage(destWidth, destHeight, imageType)
       val g2 = scaled.createGraphics()
       g2.composite = AlphaComposite.Src
@@ -265,6 +268,8 @@ internal object ImageUtils {
       g2.dispose()
       return scaled
     } else {
+      println("<= 50% scaling, using Graphics2D")
+
       // When creating a thumbnail, using the above code doesn't work very well;
       // you get some visible artifacts, especially for text. Instead use the
       // technique of repeatedly scaling the image into half; this will cause
@@ -298,7 +303,8 @@ internal object ImageUtils {
         nearestHeight *= 2
         iterations++
       }
-
+      println("iterations: $iterations)")
+      println("nearestWidth: $nearestWidth, nearestHeight: $nearestHeight")
       var scaled = BufferedImage(nearestWidth, nearestHeight, imageType)
 
       var g2 = scaled.createGraphics()
@@ -313,6 +319,7 @@ internal object ImageUtils {
       for (iteration in iterations - 1 downTo 0) {
         val halfWidth = sourceWidth / 2
         val halfHeight = sourceHeight / 2
+        println("halfWidth: $halfWidth, halfHeight: $halfHeight")
         scaled = BufferedImage(halfWidth, halfHeight, imageType)
         g2 = scaled.createGraphics()
         setRenderingHints(g2)
