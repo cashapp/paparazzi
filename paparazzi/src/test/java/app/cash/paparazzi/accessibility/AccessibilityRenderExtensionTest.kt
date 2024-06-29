@@ -16,6 +16,8 @@ import app.cash.paparazzi.Paparazzi
 import app.cash.paparazzi.Snapshot
 import app.cash.paparazzi.SnapshotHandler
 import app.cash.paparazzi.internal.ImageUtils
+import org.junit.After
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import java.awt.image.BufferedImage
@@ -32,20 +34,34 @@ class AccessibilityRenderExtensionTest {
     renderExtensions = setOf(AccessibilityRenderExtension())
   )
 
+  @Before
+  fun setup() {
+    System.setProperty("isARET", "true")
+  }
+
+  @After
+  fun teardown() {
+    System.clearProperty("isARET")
+    System.clearProperty("testname")
+  }
+
   @Test
   fun `verify baseline`() {
+    System.setProperty("testname", "accessibility")
     val view = buildView(paparazzi.context)
     paparazzi.snapshot(view, name = "accessibility")
   }
 
   @Test
   fun `test without layout params set`() {
+    System.setProperty("testname", "without-layout-params")
     val view = buildView(paparazzi.context, null)
     paparazzi.snapshot(view, name = "without-layout-params")
   }
 
   @Test
   fun `verify changing view hierarchy order doesn't change accessibility colors`() {
+    System.setProperty("testname", "accessibility-new-view")
     val view = buildView(paparazzi.context).apply {
       addView(View(context).apply { contentDescription = "Empty View" }, 0, LinearLayout.LayoutParams(0, 0))
     }

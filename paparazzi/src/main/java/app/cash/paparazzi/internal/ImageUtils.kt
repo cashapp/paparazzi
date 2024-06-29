@@ -26,13 +26,21 @@ import java.awt.Rectangle
 import java.awt.RenderingHints.KEY_ALPHA_INTERPOLATION
 import java.awt.RenderingHints.KEY_ANTIALIASING
 import java.awt.RenderingHints.KEY_COLOR_RENDERING
+import java.awt.RenderingHints.KEY_DITHERING
+import java.awt.RenderingHints.KEY_FRACTIONALMETRICS
 import java.awt.RenderingHints.KEY_INTERPOLATION
 import java.awt.RenderingHints.KEY_RENDERING
+import java.awt.RenderingHints.KEY_STROKE_CONTROL
+import java.awt.RenderingHints.KEY_TEXT_ANTIALIASING
 import java.awt.RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY
 import java.awt.RenderingHints.VALUE_ANTIALIAS_ON
 import java.awt.RenderingHints.VALUE_COLOR_RENDER_QUALITY
+import java.awt.RenderingHints.VALUE_DITHER_ENABLE
+import java.awt.RenderingHints.VALUE_FRACTIONALMETRICS_ON
 import java.awt.RenderingHints.VALUE_INTERPOLATION_BILINEAR
 import java.awt.RenderingHints.VALUE_RENDER_QUALITY
+import java.awt.RenderingHints.VALUE_STROKE_PURE
+import java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_ON
 import java.awt.image.BufferedImage
 import java.awt.image.BufferedImage.TYPE_INT_ARGB
 import java.io.File
@@ -307,7 +315,7 @@ internal object ImageUtils {
         nearestHeight *= 2
         iterations++
       }
-      println("iterations: $iterations)")
+      println("iterations: $iterations")
       println("nearestWidth: $nearestWidth, nearestHeight: $nearestHeight")
       var scaled = BufferedImage(nearestWidth, nearestHeight, imageType)
 
@@ -315,6 +323,13 @@ internal object ImageUtils {
       setRenderingHints(g2)
       g2.drawImage(source, 0, 0, nearestWidth, nearestHeight, 0, 0, sourceWidth, sourceHeight, null)
       g2.dispose()
+
+      val isAccessibilityRenderExtensionTest = System.getProperty("isARET").toBoolean()
+      if (isAccessibilityRenderExtensionTest) {
+        val testname = System.getProperty("testname")
+        val file = File("less.than.50%.scaling.original+$testname.pixel.txt")
+        file.writePixelData(source)
+      }
 
       sourceWidth = nearestWidth
       sourceHeight = nearestHeight
@@ -335,9 +350,38 @@ internal object ImageUtils {
         source = scaled
         iterations--
       }
+      if (isAccessibilityRenderExtensionTest) {
+        val testname = System.getProperty("testname")
+        val file = File("less.than.50%.scaling.scaled+$testname.pixel.txt")
+        file.writePixelData(source)
+      }
+      // Different pixel at (33, 150): (149, 189, 65) => (149, 189, 66)
+      // Different pixel at (41, 161): (106, 146, 110) => (105, 145, 110)
+      println("pixel @ (33, 150): " + scaled.getRGB(33, 150).toRGB())
+      println("pixel @ (41, 161): " + scaled.getRGB(41, 161).toRGB())
+
       return scaled
     }
   }
+
+  fun File.writePixelData(source: BufferedImage) {
+    bufferedWriter().use { out ->
+      println("start writing file")
+      for (y in 0 until source.height) {
+        for (x in 0 until source.width) {
+          out.appendLine("$x,$y: ${source.getRGB(x, y).toRGB()}")
+        }
+      }
+      println("end writing file")
+      out.flush()
+    }
+  }
+
+  fun Int.toRGB(): List<Int> = listOf(
+    (this and 0xFF0000).ushr(16),
+    (this and 0x00FF00).ushr(8),
+    (this and 0x0000FF)
+  )
 
   fun smallestDiffRect(firstImage: BufferedImage, secondImage: BufferedImage): Rectangle? {
     val firstImageWidth = firstImage.width
@@ -390,6 +434,11 @@ internal object ImageUtils {
     g2.setRenderingHint(KEY_COLOR_RENDERING, VALUE_COLOR_RENDER_QUALITY)
     g2.setRenderingHint(KEY_ALPHA_INTERPOLATION, VALUE_ALPHA_INTERPOLATION_QUALITY)
     g2.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_ON)
+
+    g2.setRenderingHint(KEY_DITHERING, VALUE_DITHER_ENABLE)
+    g2.setRenderingHint(KEY_FRACTIONALMETRICS, VALUE_FRACTIONALMETRICS_ON)
+    g2.setRenderingHint(KEY_STROKE_CONTROL, VALUE_STROKE_PURE)
+    g2.setRenderingHint(KEY_TEXT_ANTIALIASING, VALUE_TEXT_ANTIALIAS_ON)
   }
 
   /**
