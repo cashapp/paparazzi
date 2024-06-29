@@ -1,5 +1,12 @@
 package app.cash.paparazzi.sample
 
+import android.graphics.Color.BLUE
+import android.graphics.Color.YELLOW
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.GradientDrawable.OVAL
+import android.graphics.drawable.GradientDrawable.Orientation.TL_BR
+import android.view.View
+import android.widget.LinearLayout
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material.Text
@@ -35,5 +42,20 @@ class RenderingIssuesTest {
   @Test
   fun simpleBoxAlpha2() {
     paparazzi.snapshot { SimpleBoxAlphaRepro2() }
+  }
+
+  @Test
+  fun gradient() {
+    paparazzi.snapshot(
+      View(paparazzi.context).apply {
+        layoutParams = LinearLayout.LayoutParams(100, 100).apply {
+          setMargins(20, 20, 20, 20)
+        }
+        foreground = GradientDrawable(TL_BR, intArrayOf(YELLOW, BLUE)).apply {
+          shape = OVAL
+        }
+        contentDescription = "Foreground Drawable"
+      }
+    )
   }
 }
