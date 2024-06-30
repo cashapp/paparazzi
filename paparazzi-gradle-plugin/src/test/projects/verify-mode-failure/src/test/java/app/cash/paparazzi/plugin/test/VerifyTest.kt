@@ -17,6 +17,7 @@ package app.cash.paparazzi.plugin.test
 
 import android.widget.LinearLayout
 import app.cash.paparazzi.Paparazzi
+import org.junit.After
 import org.junit.Rule
 import org.junit.Test
 
@@ -24,8 +25,14 @@ class VerifyTest {
   @get:Rule
   val paparazzi = Paparazzi()
 
+  @After
+  fun clear() {
+    System.clearProperty("testname")
+  }
+
   @Test
   fun verify() {
+    System.setProperty("testname", "verify")
     paparazzi.snapshot(LinearLayout(paparazzi.context))
   }
 }

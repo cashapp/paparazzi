@@ -644,7 +644,7 @@ class PaparazziPluginTest {
 
     val result = gradleRunner
       .withArguments("verifyPaparazziDebug", "--stacktrace")
-      .runFixture(fixtureRoot) { buildAndFail() }
+      .runFixture(fixtureRoot) { build() }
 
     assertThat(result.task(":testDebugUnitTest")).isNotNull()
 

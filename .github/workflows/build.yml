@@ -42,7 +42,7 @@ jobs:
         uses: gradle/gradle-build-action@v3
 
       - name: Run All Tests
-        run: ./gradlew paparazzi-gradle-plugin:test --tests=*.widgets
+        run: ./gradlew paparazzi-gradle-plugin:test --tests=*.verifyFailure
 
       - name: Upload Pixel Data (successes)
         uses: actions/upload-artifact@v4
