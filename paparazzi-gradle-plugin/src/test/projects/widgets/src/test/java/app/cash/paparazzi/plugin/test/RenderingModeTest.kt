@@ -19,6 +19,7 @@ import com.android.ide.common.rendering.api.SessionParams.RenderingMode.NORMAL
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode.SHRINK
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
+import org.junit.After
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -34,7 +35,13 @@ class RenderingModeTest(
     showSystemUi = mode.showSystemUi
   )
 
+  @After
+  fun clear() {
+    System.clearProperty("testname")
+  }
+
   @Test fun default() {
+    System.setProperty("testname", "renderingMode+${mode.name}")
     paparazzi.snapshot {
       Box {
         AndroidView(
