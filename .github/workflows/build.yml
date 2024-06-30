@@ -41,26 +41,8 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v3
 
-      - name: Run Sample Tests
-        run: ./gradlew sample:recordPaparazziDebug --tests=RenderingIssuesTest
-
-      - name: Upload Sample Snapshots (successes)
-        uses: actions/upload-artifact@v4
-        with:
-          name: sample-snapshots-${{ matrix.os }}-${{ matrix.java-version }}
-          path: |
-            sample/src/test/snapshots/**
-
-      - name: Upload Sample Snapshots (failures)
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: sample-snapshots-${{ matrix.os }}-${{ matrix.java-version }}
-          path: |
-            sample/src/test/snapshots/**
-
       - name: Run All Tests
-        run: ./gradlew paparazzi:test --tests=*.AccessibilityRenderExtensionTest
+        run: ./gradlew paparazzi-gradle-plugin:test --tests=*.configIsUpdatable
 
       - name: Upload Pixel Data (successes)
         uses: actions/upload-artifact@v4

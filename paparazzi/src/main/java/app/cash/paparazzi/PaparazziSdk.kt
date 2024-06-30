@@ -309,10 +309,9 @@ public class PaparazziSdk @JvmOverloads constructor(
             }
 
             val image = bridgeRenderSession.image
-            val isAccessibilityRenderExtensionTest = System.getProperty("isARET").toBoolean()
-            if (isAccessibilityRenderExtensionTest) {
-              val testname = System.getProperty("testname")
-              val file = File("bridgeRenderSession+$testname.pixel.txt")
+            val testName = System.getProperty("testname")
+            if (testName != null) {
+              val file = File("original+$testName.pixel.txt")
               file.writePixelData(image)
             }
 
