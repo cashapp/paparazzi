@@ -88,7 +88,7 @@ internal class ImageSubject private constructor(
     }
 
     companion object {
-      const val DEFAULT_PERCENT_DIFFERENCE_THRESHOLD = 0.01
+      const val DEFAULT_PERCENT_DIFFERENCE_THRESHOLD = 0.00
     }
   }
 
