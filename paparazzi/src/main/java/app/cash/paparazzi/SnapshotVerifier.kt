@@ -25,6 +25,7 @@ public class SnapshotVerifier @JvmOverloads constructor(
   private val maxPercentDifference: Double,
   rootDirectory: File = File(System.getProperty("paparazzi.snapshot.dir"))
 ) : SnapshotHandler {
+  private val differ: ImageDiffer = ImageDiffer.OffByOne
   private val imagesDirectory: File = File(rootDirectory, "images")
   private val videosDirectory: File = File(rootDirectory, "videos")
 
@@ -57,6 +58,7 @@ public class SnapshotVerifier @JvmOverloads constructor(
           """.trimIndent()
         )
         ImageUtils.assertImageSimilar(
+          differ = differ,
           relativePath = expected.path,
           image = image,
           goldenImage = goldenImage,
