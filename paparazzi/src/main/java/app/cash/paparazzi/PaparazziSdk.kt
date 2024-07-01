@@ -44,7 +44,7 @@ import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import app.cash.paparazzi.SnapshotHandler.FrameHandler
 import app.cash.paparazzi.accessibility.AccessibilityRenderExtension
 import app.cash.paparazzi.agent.InterceptorRegistrar
-import app.cash.paparazzi.internal.ImageUtils
+import app.cash.paparazzi.internal.ImageUtils.writePixelData
 import app.cash.paparazzi.internal.PaparazziCallback
 import app.cash.paparazzi.internal.PaparazziLifecycleOwner
 import app.cash.paparazzi.internal.PaparazziLogger
@@ -81,6 +81,7 @@ import com.android.tools.idea.validator.ValidatorData.Type
 import net.bytebuddy.agent.ByteBuddyAgent
 import java.awt.geom.Ellipse2D
 import java.awt.image.BufferedImage
+import java.io.File
 import java.util.EnumSet
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.android.asCoroutineDispatcher
@@ -307,6 +308,12 @@ public class PaparazziSdk @JvmOverloads constructor(
             }
 
             val image = bridgeRenderSession.image
+            val testName = System.getProperty("testname")
+            if (testName != null) {
+              val file = File("original+$testName.pixel.txt")
+              file.writePixelData(image)
+            }
+
             if (validateAccessibility) {
               require(renderExtensions.isEmpty()) {
                 "Running accessibility validation and render extensions simultaneously is not supported."

@@ -306,6 +306,12 @@ internal object ImageUtils {
       g2.drawImage(source, 0, 0, nearestWidth, nearestHeight, 0, 0, sourceWidth, sourceHeight, null)
       g2.dispose()
 
+      val testname = System.getProperty("testname")
+      if (testname != null) {
+        val file = File("less.than.50%.scaling.original+$testname.pixel.txt")
+        file.writePixelData(source)
+      }
+
       sourceWidth = nearestWidth
       sourceHeight = nearestHeight
       source = scaled
@@ -324,9 +330,32 @@ internal object ImageUtils {
         source = scaled
         iterations--
       }
+      if (testname != null) {
+        val file = File("less.than.50%.scaling.scaled+$testname.pixel.txt")
+        file.writePixelData(source)
+      }
       return scaled
     }
   }
+
+  fun File.writePixelData(source: BufferedImage) {
+    bufferedWriter().use { out ->
+      println("start writing file")
+      for (y in 0 until source.height) {
+        for (x in 0 until source.width) {
+          out.appendLine("$x,$y: ${source.getRGB(x, y).toRGB()}")
+        }
+      }
+      println("end writing file")
+      out.flush()
+    }
+  }
+
+  private fun Int.toRGB(): List<Int> = listOf(
+    (this and 0xFF0000).ushr(16),
+    (this and 0x00FF00).ushr(8),
+    (this and 0x0000FF)
+  )
 
   fun smallestDiffRect(firstImage: BufferedImage, secondImage: BufferedImage): Rectangle? {
     val firstImageWidth = firstImage.width

@@ -47,6 +47,21 @@ jobs:
       - name: Verify Sample Rendering Examples
         run: ./gradlew sample:verifyPaparazziDebug --tests=RenderingIssuesTest
 
+      - name: Upload Pixel Data (successes)
+        uses: actions/upload-artifact@v4
+        with:
+          name: pixel-data-${{ matrix.os }}-${{ matrix.java-version }}
+          path: |
+            **/*.pixel.txt
+
+      - name: Upload Pixel Data (failures)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pixel-data-${{ matrix.os }}-${{ matrix.java-version }}
+          path: |
+            **/*.pixel.txt
+
       - name: Upload Test Failures
         if: failure()
         uses: actions/upload-artifact@v4
@@ -56,13 +71,6 @@ jobs:
             **/build/reports/tests/*/
             **/build/paparazzi/failures/
             paparazzi-gradle-plugin/src/test/projects/**/build/reports/paparazzi/**/images/
-
-      - name: Upload Sample Snapshots
-        uses: actions/upload-artifact@v4
-        with:
-          name: sample-snapshots-${{ matrix.os }}-${{ matrix.java-version }}
-          path: |
-            sample/src/test/snapshots/**
 
   publish:
     runs-on: ubuntu-latest
