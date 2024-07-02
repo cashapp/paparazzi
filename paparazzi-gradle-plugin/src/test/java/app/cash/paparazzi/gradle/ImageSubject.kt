@@ -80,32 +80,33 @@ internal class ImageSubject private constructor(
           val deltaR = (aPixel and 0xFF0000).ushr(16) - (bPixel and 0xFF0000).ushr(16)
           val deltaG = (aPixel and 0x00FF00).ushr(8) - (bPixel and 0x00FF00).ushr(8)
           val deltaB = (aPixel and 0x0000FF) - (bPixel and 0x0000FF)
+          if (deltaR != 0 || deltaG != 0 || deltaB != 0) {
+            println("JROD: $x, $y = $deltaR, $deltaG, $deltaB")
+          }
 
           // Compare full ARGB pixels
           if (aPixel == bPixel) {
             highlights.setRGB(x, y, 0)
           } else if (abs(deltaR) < 2 && abs(deltaG) < 2 && abs(deltaB) < 2) {
             numSimilarPixels++
-            highlights.setRGB(x, y, -16776961)
+            highlights.setRGB(x, y, -65281)
           } else {
             numDifferentPixels++
-            highlights.setRGB(x, y, -65281)
+            highlights.setRGB(x, y, -65536)
           }
           diff += pixelDiff(img1.getRGB(x, y), img2.getRGB(x, y))
         }
       }
 
       if (numDifferentPixels > 0) {
-        throw Exception("JROD: different?, numDiff: $numDifferentPixels, numSimilar: $numSimilarPixels")
+        println("JROD: different?, numDiff: $numDifferentPixels, numSimilar: $numSimilarPixels")
       } else if (numSimilarPixels > 0) {
-        val highlightsFile = File("highlights-${UUID.randomUUID()}")
-        throw Exception("JROD: similar? ${highlightsFile.absolutePath}, numDiff: $numDifferentPixels, numSimilar: $numSimilarPixels")
+        val highlightsFile = File("highlights-${UUID.randomUUID()}.png")
+        println("JROD: similar? ${highlightsFile.absolutePath}, numDiff: $numDifferentPixels, numSimilar: $numSimilarPixels")
         if (highlightsFile.exists()) {
           highlightsFile.delete()
         }
         ImageIO.write(highlights, "PNG", highlightsFile)
-      } else {
-        throw Exception("JROD: identical?")
       }
 
       val maxDiff = 3L * 255 * width * height

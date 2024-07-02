@@ -1,7 +1,7 @@
 package app.cash.paparazzi
 
-import android.graphics.Color.BLUE
 import android.graphics.Color.MAGENTA
+import android.graphics.Color.RED
 import android.graphics.Color.TRANSPARENT
 import java.awt.image.BufferedImage
 import kotlin.math.abs
@@ -63,10 +63,10 @@ internal interface ImageDiffer {
             highlights.setRGB(x, y, TRANSPARENT)
           } else if (abs(deltaR) < 2 && abs(deltaG) < 2 && abs(deltaB) < 2) {
             numSimilarPixels++
-            highlights.setRGB(x, y, BLUE)
+            highlights.setRGB(x, y, MAGENTA)
           } else {
             numDifferentPixels++
-            highlights.setRGB(x, y, MAGENTA)
+            highlights.setRGB(x, y, RED)
           }
         }
       }

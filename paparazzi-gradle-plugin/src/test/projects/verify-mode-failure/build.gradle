@@ -20,3 +20,23 @@ android {
 }
 
 apply from: '../guava-fix.gradle'
+
+tasks.withType(Test).configureEach {
+  setJvmArgs(
+    getJvmArgs() +
+      ["--add-exports=java.desktop/sun.java2d=ALL-UNNAMED"] +
+      ["--add-exports=java.desktop/sun.java2d.pipe=ALL-UNNAMED"] +
+      ["--add-exports=java.desktop/sun.java2d.loops=ALL-UNNAMED"] +
+      ["--add-exports=java.desktop/sun.font=ALL-UNNAMED"]
+  )
+}
+
+//tasks.withType(Test).configureEach {
+//  debugOptions {
+//    enabled = true
+//    host = 'localhost'
+//    port = 5005
+//    server = true
+//    suspend = true
+//  }
+//}

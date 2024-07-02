@@ -156,3 +156,13 @@ tasks.withType(Test).configureEach {
     showStackTraces true
   }
 }
+
+tasks.withType(Test).configureEach {
+  setJvmArgs(
+    getJvmArgs() +
+      ["--add-exports=java.desktop/sun.java2d=ALL-UNNAMED"] +
+      ["--add-exports=java.desktop/sun.java2d.pipe=ALL-UNNAMED"] +
+      ["--add-exports=java.desktop/sun.java2d.loops=ALL-UNNAMED"] +
+      ["--add-exports=java.desktop/sun.font=ALL-UNNAMED"]
+  )
+}

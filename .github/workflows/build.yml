@@ -62,6 +62,16 @@ jobs:
           path: |
             **/*.pixel.txt
 
+      - name: Upload Test Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-artifacts-${{ matrix.os }}-${{ matrix.java-version }}
+          path: |
+            **/build/reports/tests/*/
+            **/build/paparazzi/failures/
+            paparazzi-gradle-plugin/src/test/projects/**/build/reports/paparazzi/**/images/
+            paparazzi-gradle-plugin/highlights-*.png
+
       - name: Upload Test Failures
         if: failure()
         uses: actions/upload-artifact@v4
@@ -71,6 +81,7 @@ jobs:
             **/build/reports/tests/*/
             **/build/paparazzi/failures/
             paparazzi-gradle-plugin/src/test/projects/**/build/reports/paparazzi/**/images/
+            paparazzi-gradle-plugin/highlights-*.png
 
   publish:
     runs-on: ubuntu-latest

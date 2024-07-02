@@ -1,3 +1,4 @@
+@file:Suppress("JAVA_MODULE_DOES_NOT_EXPORT_PACKAGE")
 /*
  * Copyright (C) 2016 The Android Open Source Project
  *
@@ -21,6 +22,7 @@ import app.cash.paparazzi.ImageDiffer.DiffResult
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
+import sun.java2d.SunGraphics2D
 import java.awt.AlphaComposite
 import java.awt.Color
 import java.awt.Graphics2D
@@ -28,9 +30,11 @@ import java.awt.Rectangle
 import java.awt.RenderingHints.KEY_ANTIALIASING
 import java.awt.RenderingHints.KEY_INTERPOLATION
 import java.awt.RenderingHints.KEY_RENDERING
+import java.awt.RenderingHints.KEY_TEXT_ANTIALIASING
 import java.awt.RenderingHints.VALUE_ANTIALIAS_ON
 import java.awt.RenderingHints.VALUE_INTERPOLATION_BILINEAR
 import java.awt.RenderingHints.VALUE_RENDER_QUALITY
+import java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_ON
 import java.awt.image.BufferedImage
 import java.awt.image.BufferedImage.TYPE_INT_ARGB
 import java.io.File
@@ -64,11 +68,11 @@ internal object ImageUtils {
 
   @Throws(IOException::class)
   fun assertImageSimilar(
-    differ: ImageDiffer? = null,
     relativePath: String,
     goldenImage: BufferedImage,
     image: BufferedImage,
-    maxPercentDifferent: Double
+    maxPercentDifferent: Double,
+    differ: ImageDiffer? = null
   ) {
     var goldenImage = goldenImage
     if (goldenImage.type != TYPE_INT_ARGB) {
@@ -98,7 +102,8 @@ internal object ImageUtils {
     // image = blur(image, 6);
     val width = goldenImageWidth + deltaWidth + imageWidth
     val deltaImage = BufferedImage(width, deltaHeight, TYPE_INT_ARGB)
-    val g = deltaImage.graphics
+    val g = deltaImage.createGraphics()
+    setRenderingHints(g)
 
     val result = differ?.compare(goldenImage, image) ?: DiffResult.Identical
 
@@ -169,6 +174,22 @@ internal object ImageUtils {
         "vs" + imageWidth + "x" + imageHeight
     }
 
+    println("JROD: font = ${g.font}")
+    println("JROD: font.hasLayoutAttributes = ${g.font.hasLayoutAttributes()}")
+    val sunGraphics2D = g as SunGraphics2D
+    println("JROD: fontInfo = ${sunGraphics2D.fontInfo}")
+    println("JROD: fontStrike = ${sunGraphics2D.fontInfo.fontStrike}")
+    println("JROD: textpipe = ${sunGraphics2D.textpipe}")
+    println("JROD: imagepipe = ${sunGraphics2D.imagepipe}")
+    println("JROD: compositeState = ${sunGraphics2D.compositeState}")
+    println("JROD: paintState = ${sunGraphics2D.paintState}")
+    println("JROD: clipState = ${sunGraphics2D.clipState}")
+    println("JROD: transformState = ${sunGraphics2D.transformState}")
+    println("JROD: strokeState = ${sunGraphics2D.strokeState}")
+    println("JROD: renderHint = ${sunGraphics2D.renderHint}")
+    println("JROD: antialiasHint = ${sunGraphics2D.antialiasHint}")
+    println("JROD: textAntialiasHint = ${sunGraphics2D.textAntialiasHint}")
+
     if (error != null) {
       // Expected on the left
       // Golden on the right
@@ -210,7 +231,7 @@ internal object ImageUtils {
         }
         is DiffResult.Similar -> {
           println("results are similar: ${result.numSimilarPixels} of ${result.numTotalPixels}")
-          val highlights = File(failureDir, "highlights-$imageName")
+          val highlights = File(failureDir, "highlights-$imageName.png")
           if (highlights.exists()) {
             highlights.delete()
           }
@@ -404,6 +425,7 @@ internal object ImageUtils {
     g2.setRenderingHint(KEY_INTERPOLATION, VALUE_INTERPOLATION_BILINEAR)
     g2.setRenderingHint(KEY_RENDERING, VALUE_RENDER_QUALITY)
     g2.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_ON)
+    g2.setRenderingHint(KEY_TEXT_ANTIALIASING, VALUE_TEXT_ANTIALIAS_ON)
   }
 
   private fun getName(relativePath: String): String {
