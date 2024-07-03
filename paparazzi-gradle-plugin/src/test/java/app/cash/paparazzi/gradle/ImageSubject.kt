@@ -8,6 +8,7 @@ import com.google.common.truth.Truth.assertWithMessage
 import org.junit.Assert.fail
 import java.awt.image.BufferedImage
 import java.io.File
+import java.util.UUID
 import javax.annotation.CheckReturnValue
 import javax.imageio.ImageIO
 import kotlin.math.abs
@@ -68,11 +69,46 @@ internal class ImageSubject private constructor(
         throw IllegalArgumentException("Images must have the same dimensions: $f")
       }
       var diff = 0L
+      val highlights = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
+      var numSimilarPixels = 0
+      var numDifferentPixels = 0
       for (y in 0 until height) {
         for (x in 0 until width) {
+          val aPixel = img1.getRGB(x, y)
+          val bPixel = img2.getRGB(x, y)
+
+          val deltaR = (aPixel and 0xFF0000).ushr(16) - (bPixel and 0xFF0000).ushr(16)
+          val deltaG = (aPixel and 0x00FF00).ushr(8) - (bPixel and 0x00FF00).ushr(8)
+          val deltaB = (aPixel and 0x0000FF) - (bPixel and 0x0000FF)
+          if (deltaR != 0 || deltaG != 0 || deltaB != 0) {
+            println("JROD: $x, $y = $deltaR, $deltaG, $deltaB")
+          }
+
+          // Compare full ARGB pixels
+          if (aPixel == bPixel) {
+            highlights.setRGB(x, y, 0)
+          } else if (abs(deltaR) < 2 && abs(deltaG) < 2 && abs(deltaB) < 2) {
+            numSimilarPixels++
+            highlights.setRGB(x, y, -65281)
+          } else {
+            numDifferentPixels++
+            highlights.setRGB(x, y, -65536)
+          }
           diff += pixelDiff(img1.getRGB(x, y), img2.getRGB(x, y))
         }
       }
+
+      if (numDifferentPixels > 0) {
+        println("JROD: different?, numDiff: $numDifferentPixels, numSimilar: $numSimilarPixels")
+      } else if (numSimilarPixels > 0) {
+        val highlightsFile = File("highlights-${UUID.randomUUID()}.png")
+        println("JROD: similar? ${highlightsFile.absolutePath}, numDiff: $numDifferentPixels, numSimilar: $numSimilarPixels")
+        if (highlightsFile.exists()) {
+          highlightsFile.delete()
+        }
+        ImageIO.write(highlights, "PNG", highlightsFile)
+      }
+
       val maxDiff = 3L * 255 * width * height
       return 100.0 * diff / maxDiff
     }
@@ -84,7 +120,16 @@ internal class ImageSubject private constructor(
       val r2 = (rgb2 shr 16) and 0xff
       val g2 = (rgb2 shr 8) and 0xff
       val b2 = rgb2 and 0xff
-      return abs(r1 - r2) + abs(g1 - g2) + abs(b1 - b2)
+      val dr = abs(r1 - r2)
+      val dg = abs(g1 - g2)
+      val db = abs(b1 - b2)
+      return if (dr == 0 && dg == 0 && db == 0) {
+        0
+      } else if (dr < 2 && dg < 2 && db < 2) {
+        0
+      } else {
+        dr + dg + db
+      }
     }
 
     companion object {

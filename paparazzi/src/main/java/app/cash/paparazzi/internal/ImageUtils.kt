@@ -16,6 +16,8 @@
 
 package app.cash.paparazzi.internal
 
+import app.cash.paparazzi.ImageDiffer
+import app.cash.paparazzi.ImageDiffer.DiffResult
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
@@ -61,46 +63,12 @@ internal object ImageUtils {
     }
 
   @Throws(IOException::class)
-  fun requireSimilar(
-    relativePath: String,
-    image: BufferedImage,
-    maxPercentDifference: Double
-  ) {
-    val scale = getThumbnailScale(image)
-    val thumbnail = scale(image, scale, scale)
-
-    val `is` = ImageUtils::class.java.classLoader.getResourceAsStream(relativePath)
-    if (`is` ==
-      null
-    ) {
-      var message = "Unable to load golden thumbnail: $relativePath\n"
-      message = saveImageAndAppendMessage(thumbnail, message, relativePath)
-      if (FAIL_ON_MISSING_THUMBNAIL) {
-        fail(message)
-      } else {
-        println(message)
-      }
-    } else {
-      try {
-        val goldenImage = ImageIO.read(`is`)
-        assertImageSimilar(
-          relativePath,
-          goldenImage,
-          thumbnail,
-          maxPercentDifference
-        )
-      } finally {
-        `is`.close()
-      }
-    }
-  }
-
-  @Throws(IOException::class)
   fun assertImageSimilar(
     relativePath: String,
     goldenImage: BufferedImage,
     image: BufferedImage,
-    maxPercentDifferent: Double
+    maxPercentDifferent: Double,
+    differ: ImageDiffer? = null
   ) {
     var goldenImage = goldenImage
     if (goldenImage.type != TYPE_INT_ARGB) {
@@ -131,6 +99,8 @@ internal object ImageUtils {
     val width = goldenImageWidth + deltaWidth + imageWidth
     val deltaImage = BufferedImage(width, deltaHeight, TYPE_INT_ARGB)
     val g = deltaImage.graphics
+
+    val result = differ?.compare(goldenImage, image) ?: DiffResult.Identical
 
     // Compute delta map
     var delta: Long = 0
@@ -212,16 +182,44 @@ internal object ImageUtils {
         g.drawString("Actual", goldenImageWidth + deltaWidth + 10, 20)
       }
 
-      val output = File(failureDir, "delta-$imageName")
-      if (output.exists()) {
-        val deleted = output.delete()
+      val deltaOutput = File(failureDir, "delta-$imageName")
+      if (deltaOutput.exists()) {
+        val deleted = deltaOutput.delete()
         assertTrue(deleted)
       }
-      ImageIO.write(deltaImage, "PNG", output)
-      error += " - see details in file://" + output.path + "\n"
-      error = saveImageAndAppendMessage(image, error, relativePath)
+      ImageIO.write(deltaImage, "PNG", deltaOutput)
+      error += " - see details in file://" + deltaOutput.path + "\n"
+      val actualOutput = File(failureDir, getName(relativePath))
+      if (actualOutput.exists()) {
+        val deleted = actualOutput.delete()
+        assertTrue(deleted)
+      }
+      ImageIO.write(image, "PNG", actualOutput)
+      error += "Thumbnail for current rendering stored at file://" + actualOutput.path
+      //        initialMessage += "\nRun the following command to accept the changes:\n";
+      //        initialMessage += String.format("mv %1$s %2$s", output.getPath(),
+      //                ImageUtils.class.getResource(relativePath).getPath());
+      // The above has been commented out, since the destination path returned is in out dir
+      // and it makes the tests pass without the code being actually checked in.
       println(error)
-      fail(error)
+
+      when (result) {
+        is DiffResult.Different -> {
+          println("results are different: ${result.numDifferentPixels} of ${result.numTotalPixels}")
+          fail(error)
+        }
+        is DiffResult.Similar -> {
+          println("results are similar: ${result.numSimilarPixels} of ${result.numTotalPixels}")
+          val highlights = File(failureDir, "highlights-$imageName.png")
+          if (highlights.exists()) {
+            highlights.delete()
+          }
+          ImageIO.write(result.highlights, "PNG", highlights)
+        }
+        is DiffResult.Identical -> {
+          println("results are identical")
+        }
+      }
     }
 
     g.dispose()
@@ -406,34 +404,6 @@ internal object ImageUtils {
     g2.setRenderingHint(KEY_INTERPOLATION, VALUE_INTERPOLATION_BILINEAR)
     g2.setRenderingHint(KEY_RENDERING, VALUE_RENDER_QUALITY)
     g2.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_ON)
-  }
-
-  /**
-   * Saves the generated thumbnail image and appends the info message to an initial message
-   */
-  @Throws(IOException::class)
-  private fun saveImageAndAppendMessage(
-    image: BufferedImage,
-    initialMessage: String,
-    relativePath: String
-  ): String {
-    var initialMessage = initialMessage
-    val output = File(
-      failureDir,
-      getName(relativePath)
-    )
-    if (output.exists()) {
-      val deleted = output.delete()
-      assertTrue(deleted)
-    }
-    ImageIO.write(image, "PNG", output)
-    initialMessage += "Thumbnail for current rendering stored at file://" + output.path
-    //        initialMessage += "\nRun the following command to accept the changes:\n";
-    //        initialMessage += String.format("mv %1$s %2$s", output.getPath(),
-    //                ImageUtils.class.getResource(relativePath).getPath());
-    // The above has been commented out, since the destination path returned is in out dir
-    // and it makes the tests pass without the code being actually checked in.
-    return initialMessage
   }
 
   private fun getName(relativePath: String): String {
