@@ -1,7 +1,6 @@
 package app.cash.paparazzi.gradle
 
 import app.cash.paparazzi.gradle.ImageSubject.Companion.assertThat
-import app.cash.paparazzi.gradle.ImageSubject.ImageAssert.Companion.DEFAULT_PERCENT_DIFFERENCE_THRESHOLD
 import app.cash.paparazzi.gradle.PrepareResourcesTask.Config
 import com.google.common.truth.Correspondence
 import com.google.common.truth.Truth.assertThat
@@ -707,9 +706,7 @@ class PaparazziPluginTest {
     assertThat(snapshots[0]).isSimilarTo(normal).withDefaultThreshold()
     assertThat(snapshots[1]).isSimilarTo(horizontalScroll).withDefaultThreshold()
     assertThat(snapshots[2]).isSimilarTo(verticalScroll).withDefaultThreshold()
-    // TODO: is this an issue with layoutlib or related to https://github.com/cashapp/paparazzi/issues/482?
-    assertThat(snapshots[3]).isSimilarTo(shrink)
-      .withThreshold(DEFAULT_PERCENT_DIFFERENCE_THRESHOLD + 0.007)
+    assertThat(snapshots[3]).isSimilarTo(shrink).withDefaultThreshold()
   }
 
   @Test
