@@ -61,7 +61,7 @@ internal interface ImageDiffer {
           // Compare full ARGB pixels, but allow other channels to differ if alpha is 0
           if (aPixel == bPixel || aPixel ushr 24 == 0 && bPixel ushr 24 == 0) {
             highlights.setRGB(x, y, WHITE)
-          } else if (abs(deltaR) < 2 && abs(deltaG) < 2 && abs(deltaB) < 2) {
+          } else if (abs(deltaR) <= 2 && abs(deltaG) <= 2 && abs(deltaB) <= 2) {
             numSimilarPixels++
             highlights.setRGB(x, y, BLUE)
           } else {

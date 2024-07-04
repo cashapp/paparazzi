@@ -87,7 +87,7 @@ internal class ImageSubject private constructor(
           // Compare full ARGB pixels
           if (aPixel == bPixel) {
             highlights.setRGB(x, y, -1)
-          } else if (abs(deltaR) < 2 && abs(deltaG) < 2 && abs(deltaB) < 2) {
+          } else if (abs(deltaR) <= 2 && abs(deltaG) <= 2 && abs(deltaB) <= 2) {
             numSimilarPixels++
             highlights.setRGB(x, y, -16776961)
           } else {
@@ -125,7 +125,7 @@ internal class ImageSubject private constructor(
       val db = abs(b1 - b2)
       return if (dr == 0 && dg == 0 && db == 0) {
         0
-      } else if (dr < 2 && dg < 2 && db < 2) {
+      } else if (dr <= 2 && dg <= 2 && db <= 2) {
         0
       } else {
         dr + dg + db
