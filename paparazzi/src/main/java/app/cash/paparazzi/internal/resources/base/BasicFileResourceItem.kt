@@ -86,7 +86,7 @@ internal open class BasicFileResourceItem(
       if (encodedDensity == 0) {
         return BasicFileResourceItem(resourceType, name, configuration, visibility, relativePath)
       }
-      val density = Density.values()[encodedDensity - 1]
+      val density = Density.create(encodedDensity)
       return BasicDensityBasedFileResourceItem(
         resourceType, name, configuration, visibility, relativePath, density
       )

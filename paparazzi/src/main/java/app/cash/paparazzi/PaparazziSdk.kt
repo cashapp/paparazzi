@@ -21,7 +21,6 @@ import android.content.res.Resources
 import android.graphics.Bitmap
 import android.os.Handler
 import android.os.Handler_Delegate
-import android.os.SystemClock_Delegate
 import android.util.AttributeSet
 import android.util.DisplayMetrics
 import android.view.BridgeInflater
@@ -52,7 +51,6 @@ import app.cash.paparazzi.internal.PaparazziOnBackPressedDispatcherOwner
 import app.cash.paparazzi.internal.PaparazziSavedStateRegistryOwner
 import app.cash.paparazzi.internal.Renderer
 import app.cash.paparazzi.internal.SessionParamsBuilder
-import app.cash.paparazzi.internal.interceptors.ChoreographerDelegateInterceptor
 import app.cash.paparazzi.internal.interceptors.EditModeInterceptor
 import app.cash.paparazzi.internal.interceptors.IInputMethodManagerInterceptor
 import app.cash.paparazzi.internal.interceptors.MatrixMatrixMultiplicationInterceptor
@@ -117,7 +115,6 @@ public class PaparazziSdk @JvmOverloads constructor(
       registerFontLookupInterceptionIfResourceCompatDetected()
       registerViewEditModeInterception()
       registerMatrixMultiplyInterception()
-      registerChoreographerDelegateInterception()
       registerServiceManagerInterception()
       registerIInputMethodManagerInterception()
 
@@ -265,6 +262,7 @@ public class PaparazziSdk @JvmOverloads constructor(
         renderExtension.renderView(view)
       }
 
+      System_Delegate.setNanosTime(0L)
       System_Delegate.setBootTimeNanos(0L)
       try {
         withTime(0L) {
@@ -337,9 +335,10 @@ public class PaparazziSdk @JvmOverloads constructor(
     timeNanos: Long,
     block: () -> Unit
   ) {
-    val frameNanos = TIME_OFFSET_NANOS + timeNanos
+    val frameNanos = timeNanos
 
     // Execute the block at the requested time.
+    System_Delegate.setNanosTime(0L)
     System_Delegate.setNanosTime(frameNanos)
 
     val choreographer = Choreographer.getInstance()
@@ -350,10 +349,10 @@ public class PaparazziSdk @JvmOverloads constructor(
       areCallbacksRunningField.setBoolean(choreographer, true)
 
       executeHandlerCallbacks()
-      val currentTimeMs = SystemClock_Delegate.uptimeMillis()
+      val currentTimeNanos = uptimeNanos()
       val choreographerCallbacks =
         RenderAction.getCurrentContext().sessionInteractiveData.choreographerCallbacks
-      choreographerCallbacks.execute(currentTimeMs, Bridge.getLog())
+      choreographerCallbacks.execute(currentTimeNanos, Bridge.getLog())
 
       block()
     } catch (e: Throwable) {
@@ -571,14 +570,6 @@ public class PaparazziSdk @JvmOverloads constructor(
     )
   }
 
-  private fun registerChoreographerDelegateInterception() {
-    InterceptorRegistrar.addMethodInterceptor(
-      "android.view.Choreographer_Delegate",
-      "getFrameTimeNanos",
-      ChoreographerDelegateInterceptor::class.java
-    )
-  }
-
   private fun forceReleaseComposeReferenceLeaks() {
     // AndroidUiDispatcher is backed by a Handler, by executing one last time
     // we give the dispatcher the ability to clean-up / release its callbacks.
@@ -590,11 +581,18 @@ public class PaparazziSdk @JvmOverloads constructor(
     // RenderAction.currentContext.sessionInteractiveData.handlerMessageQueue.runnablesMap which is a WeakHashMap
     // https://android.googlesource.com/platform/tools/adt/idea/+/c331c9b2f4334748c55c29adec3ad1cd67e45df2/designer/src/com/android/tools/idea/uibuilder/scene/LayoutlibSceneManager.java#1558
     synchronized(this) {
+      // https://android.googlesource.com/platform/frameworks/layoutlib/+/ebdd83e4be7e8d89a38e3f316b2e15112f61ca30%5E%21/#F1
+      val uptimeNanos = uptimeNanos()
+
       // https://android.googlesource.com/platform/frameworks/layoutlib/+/d58aa4703369e109b24419548f38b422d5a44738/bridge/src/com/android/layoutlib/bridge/BridgeRenderSession.java#171
       // BridgeRenderSession.executeCallbacks aggressively tears down the main Looper and BridgeContext, so we call the static delegates ourselves.
-      Handler_Delegate.executeCallbacks()
+      Handler_Delegate.executeCallbacks(uptimeNanos)
     }
   }
+
+  // This is necessary, because SystemClock_Delegate#uptimeNanos() is package-private.
+  // https://android.googlesource.com/platform/frameworks/layoutlib/+/refs/tags/studio-2023.2.1-rc1/bridge/src/android/os/SystemClock_Delegate.java#56
+  private fun uptimeNanos() = System_Delegate.nanoTime() - System_Delegate.bootTime()
 
   private fun DeviceConfig.updateIfAccessibilityTest(): DeviceConfig =
     if (renderExtensions.any { it is AccessibilityRenderExtension }) {
@@ -610,9 +608,6 @@ public class PaparazziSdk @JvmOverloads constructor(
     }
 
   internal companion object {
-    /** The choreographer doesn't like 0 as a frame time, so start an hour later. */
-    internal val TIME_OFFSET_NANOS = TimeUnit.HOURS.toNanos(1L)
-
     internal lateinit var renderer: Renderer
     internal val isInitialized get() = ::renderer.isInitialized
 
