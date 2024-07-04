@@ -86,10 +86,10 @@ internal class ImageSubject private constructor(
 
           // Compare full ARGB pixels
           if (aPixel == bPixel) {
-            highlights.setRGB(x, y, 0)
+            highlights.setRGB(x, y, -1)
           } else if (abs(deltaR) < 2 && abs(deltaG) < 2 && abs(deltaB) < 2) {
             numSimilarPixels++
-            highlights.setRGB(x, y, -65281)
+            highlights.setRGB(x, y, -16776961)
           } else {
             numDifferentPixels++
             highlights.setRGB(x, y, -65536)
