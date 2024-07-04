@@ -148,17 +148,17 @@ public final class app/cash/paparazzi/Paparazzi : org/junit/rules/TestRule {
 
 public final class app/cash/paparazzi/PaparazziSdk {
 	public static final field $stable I
-	public fun <init> ()V
-	public fun <init> (Lapp/cash/paparazzi/Environment;)V
-	public fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;)V
-	public fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;)V
-	public fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;)V
-	public fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;Z)V
-	public fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZLjava/util/Set;)V
-	public fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZLjava/util/Set;Z)V
-	public fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZLjava/util/Set;ZZ)V
-	public fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZLjava/util/Set;ZZZ)V
-	public synthetic fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZLjava/util/Set;ZZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;Lkotlin/jvm/functions/Function1;)V
+	public fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZLjava/util/Set;Lkotlin/jvm/functions/Function1;)V
+	public fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZLjava/util/Set;ZLkotlin/jvm/functions/Function1;)V
+	public fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZLjava/util/Set;ZZLkotlin/jvm/functions/Function1;)V
+	public fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZLjava/util/Set;ZZZLkotlin/jvm/functions/Function1;)V
+	public synthetic fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZLjava/util/Set;ZZZLkotlin/jvm/functions/Function1;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZLkotlin/jvm/functions/Function1;)V
+	public fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Lkotlin/jvm/functions/Function1;)V
+	public fun <init> (Lapp/cash/paparazzi/Environment;Lkotlin/jvm/functions/Function1;)V
+	public fun <init> (Lkotlin/jvm/functions/Function1;)V
 	public final fun getContext ()Landroid/content/Context;
 	public final fun getLayoutInflater ()Landroid/view/LayoutInflater;
 	public final fun getResources ()Landroid/content/res/Resources;
@@ -169,7 +169,6 @@ public final class app/cash/paparazzi/PaparazziSdk {
 	public static synthetic fun gif$default (Lapp/cash/paparazzi/PaparazziSdk;Landroid/view/View;JJIILjava/lang/Object;)V
 	public final fun inflate (I)Landroid/view/View;
 	public final fun prepare ()V
-	public final fun setFrameHandler (Lapp/cash/paparazzi/SnapshotHandler$FrameHandler;)V
 	public final fun setup ()V
 	public final fun snapshot (Landroid/view/View;)V
 	public final fun snapshot (Landroid/view/View;J)V

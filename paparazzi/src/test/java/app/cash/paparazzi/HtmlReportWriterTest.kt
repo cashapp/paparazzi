@@ -39,18 +39,18 @@ class HtmlReportWriterTest {
   private val anyImageHash = "9069ca78e7450a285173431b3e52c5c25299e473"
 
   @Test
-  fun happyPath() {
+  fun happyPathImages() {
     val htmlReportWriter = HtmlReportWriter("run_one", reportRoot.root)
     htmlReportWriter.use {
       val frameHandler = htmlReportWriter.newFrameHandler(
-        Snapshot(
+        snapshot = Snapshot(
           name = "loading",
           testName = TestName("app.cash.paparazzi", "CelebrityTest", "testSettings"),
           timestamp = Instant.parse("2019-03-20T10:27:43Z").toDate(),
           tags = listOf("redesign")
         ),
-        1,
-        -1
+        frameCount = 1,
+        fps = -1
       )
       frameHandler.use {
         frameHandler.handle(anyImage)
@@ -112,49 +112,53 @@ class HtmlReportWriterTest {
   }
 
   @Test
-  fun alwaysOverwriteOnRecord() {
-    // set record mode
-    System.setProperty("paparazzi.test.record", "true")
+  fun imagesAlwaysOverwriteOnRecord() {
+    try {
+      // set record mode
+      System.setProperty("paparazzi.test.record", "true")
 
-    val htmlReportWriter = HtmlReportWriter("record_run", reportRoot.root, snapshotRoot.root)
-    htmlReportWriter.use {
-      val now = Instant.parse("2021-02-23T10:27:43Z")
-      val snapshot = Snapshot(
-        name = "test",
-        testName = TestName("app.cash.paparazzi", "HomeView", "testSettings"),
-        timestamp = now.toDate()
-      )
-      val golden =
-        File("${snapshotRoot.root}/images/app.cash.paparazzi_HomeView_testSettings_test.png")
+      val htmlReportWriter = HtmlReportWriter("record_run", reportRoot.root, snapshotRoot.root)
+      htmlReportWriter.use {
+        val now = Instant.parse("2021-02-23T10:27:43Z")
+        val snapshot = Snapshot(
+          name = "test",
+          testName = TestName("app.cash.paparazzi", "HomeView", "testSettings"),
+          timestamp = now.toDate()
+        )
+        val golden =
+          File("${snapshotRoot.root}/images/app.cash.paparazzi_HomeView_testSettings_test.png")
 
-      // precondition
-      assertThat(golden).doesNotExist()
+        // precondition
+        assertThat(golden).doesNotExist()
 
-      // take 1
-      val frameHandler1 = htmlReportWriter.newFrameHandler(
-        snapshot = snapshot,
-        frameCount = 1,
-        fps = -1
-      )
-      frameHandler1.use { frameHandler1.handle(anyImage) }
-      assertThat(golden).exists()
-      val timeFirstWrite = golden.lastModifiedTime()
+        // take 1
+        val frameHandler1 = htmlReportWriter.newFrameHandler(
+          snapshot = snapshot,
+          frameCount = 1,
+          fps = -1
+        )
+        frameHandler1.use { frameHandler1.handle(anyImage) }
+        assertThat(golden).exists()
+        val timeFirstWrite = golden.lastModifiedTime()
 
-      // I know....but guarantees writes won't happen in same tick
-      Thread.sleep(100)
+        // I know....but guarantees writes won't happen in same tick
+        Thread.sleep(100)
 
-      // take 2
-      val frameHandler2 = htmlReportWriter.newFrameHandler(
-        snapshot = snapshot.copy(timestamp = now.plusSeconds(1).toDate()),
-        frameCount = 1,
-        fps = -1
-      )
-      frameHandler2.use { frameHandler2.handle(anyImage) }
-      assertThat(golden).exists()
-      val timeOverwrite = golden.lastModifiedTime()
+        // take 2
+        val frameHandler2 = htmlReportWriter.newFrameHandler(
+          snapshot = snapshot.copy(timestamp = now.plusSeconds(1).toDate()),
+          frameCount = 1,
+          fps = -1
+        )
+        frameHandler2.use { frameHandler2.handle(anyImage) }
+        assertThat(golden).exists()
+        val timeOverwrite = golden.lastModifiedTime()
 
-      // should always overwrite
-      assertThat(timeOverwrite).isGreaterThan(timeFirstWrite)
+        // should always overwrite
+        assertThat(timeOverwrite).isGreaterThan(timeFirstWrite)
+      }
+    } finally {
+      System.clearProperty("paparazzi.test.record")
     }
   }
 

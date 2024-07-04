@@ -53,21 +53,13 @@ internal object ImageUtils {
 
   private const val THUMBNAIL_SIZE = 1000
 
-  /** Directory where to write the thumbnails and deltas. */
-  private val failureDir: File
-    get() {
-      val buildDirString = System.getProperty("paparazzi.build.dir")
-      val failureDir = File(buildDirString, "paparazzi/failures")
-      failureDir.mkdirs()
-      return failureDir
-    }
-
   @Throws(IOException::class)
   fun assertImageSimilar(
     relativePath: String,
     goldenImage: BufferedImage,
     image: BufferedImage,
     maxPercentDifferent: Double,
+    failureDir: File,
     differ: ImageDiffer? = null
   ) {
     var goldenImage = goldenImage

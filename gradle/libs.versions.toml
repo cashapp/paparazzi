@@ -1,13 +1,13 @@
 [versions]
-agp = "8.3.1"
-androidTools = "31.3.1" # == 23.0.0 + agp version
+agp = "8.3.2"
+androidTools = "31.3.2" # == 23.0.0 + agp version
 bytebuddy = "1.14.13"
 composeCompiler = "1.5.11"
 coroutines = "1.8.0"
 javaTarget = "11"
 jcodec = "0.2.5"
 kotlin = "1.9.23"
-ksp = "1.9.23-1.0.19"
+ksp = "1.9.23-1.0.20"
 ktlint = "0.50.0"
 moshi = "1.15.1"
 
@@ -60,7 +60,7 @@ moshi-kotlinReflect = { module = "com.squareup.moshi:moshi-kotlin", version.ref 
 okio = { module = "com.squareup.okio:okio", version = "3.9.0" }
 
 tools-common = { module = "com.android.tools:common", version.ref = "androidTools" }
-tools-layoutlib = { module = "com.android.tools.layoutlib:layoutlib-api", version = "31.3.1" }
+tools-layoutlib = { module = "com.android.tools.layoutlib:layoutlib-api", version = "31.3.2" }
 tools-ninepatch = { module = "com.android.tools:ninepatch", version.ref = "androidTools" }
 tools-sdkCommon = { module = "com.android.tools:sdk-common", version.ref = "androidTools" }
 
