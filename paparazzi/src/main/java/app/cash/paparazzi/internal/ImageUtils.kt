@@ -215,9 +215,8 @@ internal object ImageUtils {
       }
       ImageIO.write(image, "PNG", actualOutput)
       error += "Thumbnail for current rendering stored at file://" + actualOutput.path
-      //        initialMessage += "\nRun the following command to accept the changes:\n";
-      //        initialMessage += String.format("mv %1$s %2$s", output.getPath(),
-      //                ImageUtils.class.getResource(relativePath).getPath());
+      error += "\nRun the following command to accept the changes:\n"
+      error += "mv ${actualOutput.path} $relativePath"
       // The above has been commented out, since the destination path returned is in out dir
       // and it makes the tests pass without the code being actually checked in.
       println(error)
