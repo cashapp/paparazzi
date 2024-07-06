@@ -42,6 +42,7 @@ import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import app.cash.paparazzi.accessibility.AccessibilityRenderExtension
 import app.cash.paparazzi.agent.InterceptorRegistrar
+import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.ImageUtils.writePixelData
 import app.cash.paparazzi.internal.PaparazziCallback
 import app.cash.paparazzi.internal.PaparazziLifecycleOwner
@@ -386,7 +387,11 @@ public class PaparazziSdk @JvmOverloads constructor(
     return image
   }
 
-  private fun scaleImage(image: BufferedImage): BufferedImage = image
+  private fun scaleImage(image: BufferedImage): BufferedImage {
+    val scale = ImageUtils.getThumbnailScale(image)
+    // Only scale images down so we don't waste storage space enlarging smaller layouts.
+    return if (scale < 1f) ImageUtils.scale(image, scale, scale) else image
+  }
 
   private fun validateLayoutAccessibility(view: View, image: BufferedImage? = null) {
     LayoutValidator.updatePolicy(

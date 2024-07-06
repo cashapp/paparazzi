@@ -12,6 +12,7 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import app.cash.paparazzi.DeviceConfig
+import app.cash.paparazzi.ImageDiffer
 import app.cash.paparazzi.Paparazzi
 import app.cash.paparazzi.Snapshot
 import app.cash.paparazzi.SnapshotHandler
@@ -131,8 +132,9 @@ class AccessibilityRenderExtensionTest {
             relativePath = expected.path,
             image = image,
             goldenImage = ImageIO.read(expected),
-            maxPercentDifferent = 0.1,
-            failureDir = tempDir.newFolder()
+            maxPercentDifferent = 0.0,
+            failureDir = tempDir.newFolder(),
+            differ = ImageDiffer.OffByOne
           )
         }
 

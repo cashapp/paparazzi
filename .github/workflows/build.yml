@@ -70,7 +70,7 @@ jobs:
             **/build/reports/tests/*/
             **/build/paparazzi/failures/
             paparazzi-gradle-plugin/src/test/projects/**/build/reports/paparazzi/**/images/
-            paparazzi-gradle-plugin/highlights-*.png
+            **/highlights-*.png
 
       - name: Upload Test Failures
         if: failure()
@@ -81,7 +81,7 @@ jobs:
             **/build/reports/tests/*/
             **/build/paparazzi/failures/
             paparazzi-gradle-plugin/src/test/projects/**/build/reports/paparazzi/**/images/
-            paparazzi-gradle-plugin/highlights-*.png
+            **/highlights-*.png
 
   publish:
     runs-on: ubuntu-latest

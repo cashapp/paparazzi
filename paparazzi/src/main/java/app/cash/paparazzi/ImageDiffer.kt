@@ -57,6 +57,9 @@ internal interface ImageDiffer {
           val deltaR = (aPixel and 0xFF0000).ushr(16) - (bPixel and 0xFF0000).ushr(16)
           val deltaG = (aPixel and 0x00FF00).ushr(8) - (bPixel and 0x00FF00).ushr(8)
           val deltaB = (aPixel and 0x0000FF) - (bPixel and 0x0000FF)
+          if (deltaR != 0 || deltaG != 0 || deltaB != 0) {
+            println("JROD: $x, $y = $deltaR, $deltaG, $deltaB")
+          }
 
           // Compare full ARGB pixels, but allow other channels to differ if alpha is 0
           if (aPixel == bPixel || aPixel ushr 24 == 0 && bPixel ushr 24 == 0) {
