@@ -38,46 +38,7 @@ import kotlin.math.max
  * Utilities related to image processing.
  */
 internal object ImageUtils {
-  /**
-   * Normally, this test will fail when there is a missing thumbnail. However, when
-   * you create creating a new test, it's useful to be able to turn this off such that
-   * you can generate all the missing thumbnails in one go, rather than having to run
-   * the test repeatedly to get to each new render assertion generating its thumbnail.
-   */
-  private val FAIL_ON_MISSING_THUMBNAIL = true
-
   private const val THUMBNAIL_SIZE = 1000
-
-  @Throws(IOException::class)
-  fun requireSimilar(
-    relativePath: String,
-    image: BufferedImage,
-    maxPercentDifference: Double,
-    failureDir: File
-  ) {
-    val scale = getThumbnailScale(image)
-    val thumbnail = scale(image, scale, scale)
-
-    val `is` = ImageUtils::class.java.classLoader.getResourceAsStream(relativePath)
-    if (`is` ==
-      null
-    ) {
-      var message = "Unable to load golden thumbnail: $relativePath\n"
-      message = saveImageAndAppendMessage(thumbnail, message, relativePath, failureDir)
-      if (FAIL_ON_MISSING_THUMBNAIL) {
-        throw IllegalStateException(message)
-      } else {
-        println(message)
-      }
-    } else {
-      try {
-        val goldenImage = ImageIO.read(`is`)
-        assertImageSimilar(relativePath, goldenImage, thumbnail, maxPercentDifference, failureDir)
-      } finally {
-        `is`.close()
-      }
-    }
-  }
 
   @Throws(IOException::class)
   fun assertImageSimilar(
