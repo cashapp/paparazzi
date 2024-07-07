@@ -32,6 +32,7 @@ import java.io.File
 import java.io.File.separatorChar
 import java.io.IOException
 import javax.imageio.ImageIO
+import kotlin.math.abs
 import kotlin.math.max
 
 /**
@@ -56,18 +57,16 @@ internal object ImageUtils {
     val imageWidth = image.width
     val imageHeight = image.height
 
-    var error: String? = null
     val imageName = getName(relativePath)
-    if (percentDifference > maxPercentDifferent) {
-      error = String.format("Images differ (by %f%%)", percentDifference)
-    } else if (Math.abs(goldenImageWidth - imageWidth) >= 2) {
-      error = "Widths differ too much for " + imageName + ": " +
-        goldenImageWidth + "x" + goldenImageHeight +
-        "vs" + imageWidth + "x" + imageHeight
-    } else if (Math.abs(goldenImageHeight - imageHeight) >= 2) {
-      error = "Heights differ too much for " + imageName + ": " +
-        goldenImageWidth + "x" + goldenImageHeight +
-        "vs" + imageWidth + "x" + imageHeight
+    var error = when {
+      percentDifference > maxPercentDifferent -> "Images differ (by %f%%)".format(percentDifference)
+      abs(goldenImageWidth - imageWidth) >= 2 ->
+        "Widths differ too much for $imageName: ${goldenImageWidth}x$goldenImageHeight vs ${imageWidth}x$imageHeight"
+
+      abs(goldenImageHeight - imageHeight) >= 2 ->
+        "Heights differ too much for $imageName: ${goldenImageWidth}x$goldenImageHeight vs ${imageWidth}x$imageHeight"
+
+      else -> null
     }
 
     if (error != null) {
