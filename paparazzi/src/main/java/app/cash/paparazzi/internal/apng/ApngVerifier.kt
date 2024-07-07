@@ -55,7 +55,7 @@ internal class ApngVerifier(
 
   fun verifyFrame(image: BufferedImage) {
     val (expectedFrame, actualFrame) = resizeMaxBounds(currentGoldenFrame ?: blankFrame, image)
-    val (deltaImage, percentDifferent) = ImageUtils.compareImages(expectedFrame, actualFrame, withErrorText)
+    val (deltaImage, percentDifferent) = ImageUtils.compareImages(expectedFrame, actualFrame)
     if (percentDifferent > maxPercentDifference) {
       if (deltaWriter == null) {
         deltaWriter = pngReader.initializeWriter()
@@ -79,7 +79,7 @@ internal class ApngVerifier(
       if (writer.frameCount % expectedDeltasPerFrame == 0) {
         currentGoldenFrame = pngReader.readNextFrame()
         val (expectedFrame, actualFrame) = resizeMaxBounds(currentGoldenFrame ?: blankFrame, image)
-        currentDelta = ImageUtils.compareImages(expectedFrame, actualFrame, withErrorText).first
+        currentDelta = ImageUtils.compareImages(expectedFrame, actualFrame).first
       }
     }
   }
@@ -88,7 +88,7 @@ internal class ApngVerifier(
     val deltaWriter = deltaWriter ?: return
     currentGoldenFrame?.let { lastFrame ->
       val (expectedFrame, actualFrame) = resizeMaxBounds(lastFrame, blankFrame)
-      val (currentDelta) = ImageUtils.compareImages(expectedFrame, actualFrame, withErrorText)
+      val (currentDelta) = ImageUtils.compareImages(expectedFrame, actualFrame)
 
       val times = expectedDeltasPerFrame - (deltaWriter.frameCount % expectedDeltasPerFrame)
       repeat(times) { deltaWriter.writeImage(currentDelta) }
@@ -98,8 +98,7 @@ internal class ApngVerifier(
     while (!pngReader.isFinished()) {
       val (deltaImage) = ImageUtils.compareImages(
         goldenImage = pngReader.readNextFrame()!!,
-        image = blankFrame,
-        withText = withErrorText
+        image = blankFrame
       )
       repeat(expectedDeltasPerFrame) { deltaWriter.writeImage(deltaImage) }
       invalidFrames++
@@ -143,8 +142,7 @@ internal class ApngVerifier(
         val nextFrame = readNextFrame() ?: blankFrame
         val (deltaImage) = ImageUtils.compareImages(
           goldenImage = nextFrame,
-          image = nextFrame,
-          withText = withErrorText
+          image = nextFrame
         )
 
         writeImage(deltaImage)
