@@ -3,7 +3,7 @@ package app.cash.paparazzi.internal
 import java.awt.image.BufferedImage
 
 internal interface Differ {
-  fun compare(a: BufferedImage, b: BufferedImage): DiffResult
+  fun compare(expected: BufferedImage, actual: BufferedImage): DiffResult
 
   sealed interface DiffResult {
     data class Identical(

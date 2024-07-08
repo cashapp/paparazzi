@@ -7,62 +7,61 @@ import kotlin.math.abs
 import kotlin.math.max
 
 internal object PixelPerfect : Differ {
-  override fun compare(a: BufferedImage, b: BufferedImage): DiffResult {
-    val goldenImageWidth = a.width
-    val goldenImageHeight = a.height
+  override fun compare(expected: BufferedImage, actual: BufferedImage): DiffResult {
+    val expectedWidth = expected.width
+    val expectedHeight = expected.height
 
-    val imageWidth = b.width
-    val imageHeight = b.height
+    val actualWidth = actual.width
+    val actualHeight = actual.height
 
-    val deltaWidth = max(goldenImageWidth, imageWidth)
-    val deltaHeight = max(goldenImageHeight, imageHeight)
+    val maxWidth = max(expectedWidth, actualWidth)
+    val maxHeight = max(expectedHeight, actualHeight)
 
-    val width = goldenImageWidth + deltaWidth + imageWidth
-    val deltaImage = BufferedImage(width, deltaHeight, TYPE_INT_ARGB)
+    val deltaImage = BufferedImage(expectedWidth + maxWidth + actualWidth, maxHeight, TYPE_INT_ARGB)
     val g = deltaImage.graphics
 
     // Compute delta map
     var delta: Long = 0
     var differentPixels: Long = 0
-    for (y in 0 until deltaHeight) {
-      for (x in 0 until deltaWidth) {
-        val goldenRgb = if (x >= goldenImageWidth || y >= goldenImageHeight) {
+    for (y in 0 until maxHeight) {
+      for (x in 0 until maxWidth) {
+        val expectedRgb = if (x >= expectedWidth || y >= expectedHeight) {
           0x00808080
         } else {
-          a.getRGB(x, y)
+          expected.getRGB(x, y)
         }
 
-        val rgb = if (x >= imageWidth || y >= imageHeight) {
+        val actualRgb = if (x >= actualWidth || y >= actualHeight) {
           0x00808080
         } else {
-          b.getRGB(x, y)
+          actual.getRGB(x, y)
         }
 
-        if (goldenRgb == rgb) {
-          deltaImage.setRGB(goldenImageWidth + x, y, 0x00808080)
+        if (expectedRgb == actualRgb) {
+          deltaImage.setRGB(expectedWidth + x, y, 0x00808080)
           continue
         }
 
         // If the pixels have no opacity, don't delta colors at all
-        if (goldenRgb and -0x1000000 == 0 && rgb and -0x1000000 == 0) {
-          deltaImage.setRGB(goldenImageWidth + x, y, 0x00808080)
+        if (expectedRgb and -0x1000000 == 0 && actualRgb and -0x1000000 == 0) {
+          deltaImage.setRGB(expectedWidth + x, y, 0x00808080)
           continue
         }
 
         differentPixels++
 
-        val deltaR = (rgb and 0xFF0000).ushr(16) - (goldenRgb and 0xFF0000).ushr(16)
+        val deltaR = (actualRgb and 0xFF0000).ushr(16) - (expectedRgb and 0xFF0000).ushr(16)
         val newR = 128 + deltaR and 0xFF
-        val deltaG = (rgb and 0x00FF00).ushr(8) - (goldenRgb and 0x00FF00).ushr(8)
+        val deltaG = (actualRgb and 0x00FF00).ushr(8) - (expectedRgb and 0x00FF00).ushr(8)
         val newG = 128 + deltaG and 0xFF
-        val deltaB = (rgb and 0x0000FF) - (goldenRgb and 0x0000FF)
+        val deltaB = (actualRgb and 0x0000FF) - (expectedRgb and 0x0000FF)
         val newB = 128 + deltaB and 0xFF
 
         val avgAlpha =
-          ((goldenRgb and -0x1000000).ushr(24) + (rgb and -0x1000000).ushr(24)) / 2 shl 24
+          ((expectedRgb and -0x1000000).ushr(24) + (actualRgb and -0x1000000).ushr(24)) / 2 shl 24
 
         val newRGB = avgAlpha or (newR shl 16) or (newG shl 8) or newB
-        deltaImage.setRGB(goldenImageWidth + x, y, newRGB)
+        deltaImage.setRGB(expectedWidth + x, y, newRGB)
 
         delta += abs(deltaR).toLong()
         delta += abs(deltaG).toLong()
@@ -72,13 +71,13 @@ internal object PixelPerfect : Differ {
 
     // Expected on the left
     // Actual on the right
-    g.drawImage(a, 0, 0, null)
-    g.drawImage(b, goldenImageWidth + deltaWidth, 0, null)
+    g.drawImage(expected, 0, 0, null)
+    g.drawImage(actual, expectedWidth + maxWidth, 0, null)
 
     g.dispose()
 
     // 3 different colors, 256 color levels
-    val total = imageHeight.toLong() * imageWidth.toLong() * 3L * 256L
+    val total = actualHeight.toLong() * actualWidth.toLong() * 3L * 256L
     val percentDifference = (delta * 100 / total.toDouble()).toFloat()
 
     return if (percentDifference == 0f) {
