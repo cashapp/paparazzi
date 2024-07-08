@@ -93,11 +93,7 @@ internal object ImageUtils {
   ): Pair<BufferedImage, Float> {
     var goldenImage = goldenImage
     if (goldenImage.type != TYPE_INT_ARGB) {
-      val temp = BufferedImage(
-        goldenImage.width,
-        goldenImage.height,
-        TYPE_INT_ARGB
-      )
+      val temp = BufferedImage(goldenImage.width, goldenImage.height, TYPE_INT_ARGB)
       temp.graphics.drawImage(goldenImage, 0, 0, null)
       goldenImage = temp
     }
@@ -110,8 +106,8 @@ internal object ImageUtils {
     val imageWidth = image.width
     val imageHeight = image.height
 
-    val deltaWidth = Math.max(goldenImageWidth, imageWidth)
-    val deltaHeight = Math.max(goldenImageHeight, imageHeight)
+    val deltaWidth = max(goldenImageWidth, imageWidth)
+    val deltaHeight = max(goldenImageHeight, imageHeight)
 
     val width = goldenImageWidth + deltaWidth + imageWidth
     val deltaImage = BufferedImage(width, deltaHeight, TYPE_INT_ARGB)
@@ -157,12 +153,9 @@ internal object ImageUtils {
         val newRGB = avgAlpha or (newR shl 16) or (newG shl 8) or newB
         deltaImage.setRGB(goldenImageWidth + x, y, newRGB)
 
-        delta += Math.abs(deltaR)
-          .toLong()
-        delta += Math.abs(deltaG)
-          .toLong()
-        delta += Math.abs(deltaB)
-          .toLong()
+        delta += abs(deltaR).toLong()
+        delta += abs(deltaG).toLong()
+        delta += abs(deltaB).toLong()
       }
     }
 
