@@ -16,6 +16,7 @@
 
 package app.cash.paparazzi.internal
 
+import app.cash.paparazzi.internal.Differ.DiffResult
 import java.awt.AlphaComposite
 import java.awt.Color
 import java.awt.Graphics2D
@@ -136,77 +137,14 @@ internal object ImageUtils {
     if (TYPE_INT_ARGB != goldenImage.type) {
       throw IllegalStateException("expected:<$TYPE_INT_ARGB> but was:<${goldenImage.type}>")
     }
-    val goldenImageWidth = goldenImage.width
-    val goldenImageHeight = goldenImage.height
 
-    val imageWidth = image.width
-    val imageHeight = image.height
-
-    val deltaWidth = max(goldenImageWidth, imageWidth)
-    val deltaHeight = max(goldenImageHeight, imageHeight)
-
-    val width = goldenImageWidth + deltaWidth + imageWidth
-    val deltaImage = BufferedImage(width, deltaHeight, TYPE_INT_ARGB)
-    val g = deltaImage.graphics
-
-    // Compute delta map
-    var delta: Long = 0
-    for (y in 0 until deltaHeight) {
-      for (x in 0 until deltaWidth) {
-        val goldenRgb = if (x >= goldenImageWidth || y >= goldenImageHeight) {
-          0x00808080
-        } else {
-          goldenImage.getRGB(x, y)
-        }
-
-        val rgb = if (x >= imageWidth || y >= imageHeight) {
-          0x00808080
-        } else {
-          image.getRGB(x, y)
-        }
-
-        if (goldenRgb == rgb) {
-          deltaImage.setRGB(goldenImageWidth + x, y, 0x00808080)
-          continue
-        }
-
-        // If the pixels have no opacity, don't delta colors at all
-        if (goldenRgb and -0x1000000 == 0 && rgb and -0x1000000 == 0) {
-          deltaImage.setRGB(goldenImageWidth + x, y, 0x00808080)
-          continue
-        }
-
-        val deltaR = (rgb and 0xFF0000).ushr(16) - (goldenRgb and 0xFF0000).ushr(16)
-        val newR = 128 + deltaR and 0xFF
-        val deltaG = (rgb and 0x00FF00).ushr(8) - (goldenRgb and 0x00FF00).ushr(8)
-        val newG = 128 + deltaG and 0xFF
-        val deltaB = (rgb and 0x0000FF) - (goldenRgb and 0x0000FF)
-        val newB = 128 + deltaB and 0xFF
-
-        val avgAlpha =
-          ((goldenRgb and -0x1000000).ushr(24) + (rgb and -0x1000000).ushr(24)) / 2 shl 24
-
-        val newRGB = avgAlpha or (newR shl 16) or (newG shl 8) or newB
-        deltaImage.setRGB(goldenImageWidth + x, y, newRGB)
-
-        delta += abs(deltaR).toLong()
-        delta += abs(deltaG).toLong()
-        delta += abs(deltaB).toLong()
+    val differ: Differ = PixelPerfect
+    differ.compare(goldenImage, image).let { result ->
+      return when (result) {
+        is DiffResult.Identical -> result.delta to 0f
+        is DiffResult.Different -> result.delta to result.percentDifference
       }
     }
-
-    // Expected on the left
-    // Golden on the right
-    g.drawImage(goldenImage, 0, 0, null)
-    g.drawImage(image, goldenImageWidth + deltaWidth, 0, null)
-
-    g.dispose()
-
-    // 3 different colors, 256 color levels
-    val total = imageHeight.toLong() * imageWidth.toLong() * 3L * 256L
-    val percentDifference = (delta * 100 / total.toDouble()).toFloat()
-
-    return deltaImage to percentDifference
   }
 
   /**
