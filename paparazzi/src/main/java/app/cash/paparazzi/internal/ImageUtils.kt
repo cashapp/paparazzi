@@ -70,16 +70,26 @@ internal object ImageUtils {
     }
 
     if (error != null) {
-      val output = File(failureDir, "delta-$imageName")
-      if (output.exists()) {
-        val deleted = output.delete()
+      val deltaOutput = File(failureDir, "delta-$imageName")
+      if (deltaOutput.exists()) {
+        val deleted = deltaOutput.delete()
         if (!deleted) {
-          throw IllegalStateException("Unable to delete $output")
+          throw IllegalStateException("Unable to delete $deltaOutput")
         }
       }
-      ImageIO.write(deltaImage, "PNG", output)
-      error += " - see details in file://" + output.path + "\n"
-      error = saveImageAndAppendMessage(image, error, relativePath, failureDir)
+      ImageIO.write(deltaImage, "PNG", deltaOutput)
+      error += " - see details in file://" + deltaOutput.path + "\n"
+      val actualOutput = File(failureDir, getName(relativePath))
+      if (actualOutput.exists()) {
+        val deleted = actualOutput.delete()
+        if (!deleted) {
+          throw IllegalStateException("Unable to delete $actualOutput")
+        }
+      }
+      ImageIO.write(image, "PNG", actualOutput)
+      error += "Thumbnail for current rendering stored at file://" + actualOutput.path
+      error += "\nRun the following command to accept the changes:\n"
+      error += "mv ${actualOutput.absolutePath} ${File(relativePath).absolutePath}"
       println(error)
       throw AssertionError(error)
     }
@@ -330,34 +340,6 @@ internal object ImageUtils {
     g2.setRenderingHint(KEY_INTERPOLATION, VALUE_INTERPOLATION_BILINEAR)
     g2.setRenderingHint(KEY_RENDERING, VALUE_RENDER_QUALITY)
     g2.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_ON)
-  }
-
-  /**
-   * Saves the generated thumbnail image and appends the info message to an initial message
-   */
-  @Throws(IOException::class)
-  private fun saveImageAndAppendMessage(
-    image: BufferedImage,
-    initialMessage: String,
-    relativePath: String,
-    outputDir: File
-  ): String {
-    var initialMessage = initialMessage
-    val output = File(outputDir, getName(relativePath))
-    if (output.exists()) {
-      val deleted = output.delete()
-      if (!deleted) {
-        throw IllegalStateException("Unable to delete $output")
-      }
-    }
-    ImageIO.write(image, "PNG", output)
-    initialMessage += "Thumbnail for current rendering stored at file://" + output.path
-    //        initialMessage += "\nRun the following command to accept the changes:\n";
-    //        initialMessage += String.format("mv %1$s %2$s", output.getPath(),
-    //                ImageUtils.class.getResource(relativePath).getPath());
-    // The above has been commented out, since the destination path returned is in out dir
-    // and it makes the tests pass without the code being actually checked in.
-    return initialMessage
   }
 
   private fun getName(relativePath: String): String {
