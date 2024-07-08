@@ -114,11 +114,6 @@ internal object ImageUtils {
     val deltaWidth = Math.max(goldenImageWidth, imageWidth)
     val deltaHeight = Math.max(goldenImageHeight, imageHeight)
 
-    // Blur the images to account for the scenarios where there are pixel
-    // differences
-    // in where a sharp edge occurs
-    // goldenImage = blur(goldenImage, 6);
-    // image = blur(image, 6);
     val width = goldenImageWidth + deltaWidth + imageWidth
     val deltaImage = BufferedImage(width, deltaHeight, TYPE_INT_ARGB)
     val g = deltaImage.graphics
