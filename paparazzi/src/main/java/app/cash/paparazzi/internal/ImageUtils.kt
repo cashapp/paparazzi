@@ -32,52 +32,14 @@ import java.io.File
 import java.io.File.separatorChar
 import java.io.IOException
 import javax.imageio.ImageIO
+import kotlin.math.abs
 import kotlin.math.max
 
 /**
  * Utilities related to image processing.
  */
 internal object ImageUtils {
-  /**
-   * Normally, this test will fail when there is a missing thumbnail. However, when
-   * you create creating a new test, it's useful to be able to turn this off such that
-   * you can generate all the missing thumbnails in one go, rather than having to run
-   * the test repeatedly to get to each new render assertion generating its thumbnail.
-   */
-  private val FAIL_ON_MISSING_THUMBNAIL = true
-
   private const val THUMBNAIL_SIZE = 1000
-
-  @Throws(IOException::class)
-  fun requireSimilar(
-    relativePath: String,
-    image: BufferedImage,
-    maxPercentDifference: Double,
-    failureDir: File
-  ) {
-    val scale = getThumbnailScale(image)
-    val thumbnail = scale(image, scale, scale)
-
-    val `is` = ImageUtils::class.java.classLoader.getResourceAsStream(relativePath)
-    if (`is` ==
-      null
-    ) {
-      var message = "Unable to load golden thumbnail: $relativePath\n"
-      message = saveImageAndAppendMessage(thumbnail, message, relativePath, failureDir)
-      if (FAIL_ON_MISSING_THUMBNAIL) {
-        throw IllegalStateException(message)
-      } else {
-        println(message)
-      }
-    } else {
-      try {
-        val goldenImage = ImageIO.read(`is`)
-        assertImageSimilar(relativePath, goldenImage, thumbnail, maxPercentDifference, failureDir)
-      } finally {
-        `is`.close()
-      }
-    }
-  }
 
   @Throws(IOException::class)
   fun assertImageSimilar(
@@ -95,31 +57,39 @@ internal object ImageUtils {
     val imageWidth = image.width
     val imageHeight = image.height
 
-    var error: String? = null
     val imageName = getName(relativePath)
-    if (percentDifference > maxPercentDifferent) {
-      error = String.format("Images differ (by %f%%)", percentDifference)
-    } else if (Math.abs(goldenImageWidth - imageWidth) >= 2) {
-      error = "Widths differ too much for " + imageName + ": " +
-        goldenImageWidth + "x" + goldenImageHeight +
-        "vs" + imageWidth + "x" + imageHeight
-    } else if (Math.abs(goldenImageHeight - imageHeight) >= 2) {
-      error = "Heights differ too much for " + imageName + ": " +
-        goldenImageWidth + "x" + goldenImageHeight +
-        "vs" + imageWidth + "x" + imageHeight
+    var error = when {
+      percentDifference > maxPercentDifferent -> "Images differ (by %f%%)".format(percentDifference)
+      abs(goldenImageWidth - imageWidth) >= 2 ->
+        "Widths differ too much for $imageName: ${goldenImageWidth}x$goldenImageHeight vs ${imageWidth}x$imageHeight"
+
+      abs(goldenImageHeight - imageHeight) >= 2 ->
+        "Heights differ too much for $imageName: ${goldenImageWidth}x$goldenImageHeight vs ${imageWidth}x$imageHeight"
+
+      else -> null
     }
 
     if (error != null) {
-      val output = File(failureDir, "delta-$imageName")
-      if (output.exists()) {
-        val deleted = output.delete()
+      val deltaOutput = File(failureDir, "delta-$imageName")
+      if (deltaOutput.exists()) {
+        val deleted = deltaOutput.delete()
         if (!deleted) {
-          throw IllegalStateException("Unable to delete $output")
+          throw IllegalStateException("Unable to delete $deltaOutput")
         }
       }
-      ImageIO.write(deltaImage, "PNG", output)
-      error += " - see details in file://" + output.path + "\n"
-      error = saveImageAndAppendMessage(image, error, relativePath, failureDir)
+      ImageIO.write(deltaImage, "PNG", deltaOutput)
+      error += " - see details in file://" + deltaOutput.path + "\n"
+      val actualOutput = File(failureDir, getName(relativePath))
+      if (actualOutput.exists()) {
+        val deleted = actualOutput.delete()
+        if (!deleted) {
+          throw IllegalStateException("Unable to delete $actualOutput")
+        }
+      }
+      ImageIO.write(image, "PNG", actualOutput)
+      error += "Thumbnail for current rendering stored at file://" + actualOutput.path
+      error += "\nRun the following command to accept the changes:\n"
+      error += "mv ${actualOutput.absolutePath} ${File(relativePath).absolutePath}"
       println(error)
       throw AssertionError(error)
     }
@@ -133,11 +103,7 @@ internal object ImageUtils {
   ): Pair<BufferedImage, Float> {
     var goldenImage = goldenImage
     if (goldenImage.type != TYPE_INT_ARGB) {
-      val temp = BufferedImage(
-        goldenImage.width,
-        goldenImage.height,
-        TYPE_INT_ARGB
-      )
+      val temp = BufferedImage(goldenImage.width, goldenImage.height, TYPE_INT_ARGB)
       temp.graphics.drawImage(goldenImage, 0, 0, null)
       goldenImage = temp
     }
@@ -150,14 +116,9 @@ internal object ImageUtils {
     val imageWidth = image.width
     val imageHeight = image.height
 
-    val deltaWidth = Math.max(goldenImageWidth, imageWidth)
-    val deltaHeight = Math.max(goldenImageHeight, imageHeight)
+    val deltaWidth = max(goldenImageWidth, imageWidth)
+    val deltaHeight = max(goldenImageHeight, imageHeight)
 
-    // Blur the images to account for the scenarios where there are pixel
-    // differences
-    // in where a sharp edge occurs
-    // goldenImage = blur(goldenImage, 6);
-    // image = blur(image, 6);
     val width = goldenImageWidth + deltaWidth + imageWidth
     val deltaImage = BufferedImage(width, deltaHeight, TYPE_INT_ARGB)
     val g = deltaImage.graphics
@@ -202,12 +163,9 @@ internal object ImageUtils {
         val newRGB = avgAlpha or (newR shl 16) or (newG shl 8) or newB
         deltaImage.setRGB(goldenImageWidth + x, y, newRGB)
 
-        delta += Math.abs(deltaR)
-          .toLong()
-        delta += Math.abs(deltaG)
-          .toLong()
-        delta += Math.abs(deltaB)
-          .toLong()
+        delta += abs(deltaR).toLong()
+        delta += abs(deltaG).toLong()
+        delta += abs(deltaB).toLong()
       }
     }
 
@@ -382,34 +340,6 @@ internal object ImageUtils {
     g2.setRenderingHint(KEY_INTERPOLATION, VALUE_INTERPOLATION_BILINEAR)
     g2.setRenderingHint(KEY_RENDERING, VALUE_RENDER_QUALITY)
     g2.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_ON)
-  }
-
-  /**
-   * Saves the generated thumbnail image and appends the info message to an initial message
-   */
-  @Throws(IOException::class)
-  private fun saveImageAndAppendMessage(
-    image: BufferedImage,
-    initialMessage: String,
-    relativePath: String,
-    outputDir: File
-  ): String {
-    var initialMessage = initialMessage
-    val output = File(outputDir, getName(relativePath))
-    if (output.exists()) {
-      val deleted = output.delete()
-      if (!deleted) {
-        throw IllegalStateException("Unable to delete $output")
-      }
-    }
-    ImageIO.write(image, "PNG", output)
-    initialMessage += "Thumbnail for current rendering stored at file://" + output.path
-    //        initialMessage += "\nRun the following command to accept the changes:\n";
-    //        initialMessage += String.format("mv %1$s %2$s", output.getPath(),
-    //                ImageUtils.class.getResource(relativePath).getPath());
-    // The above has been commented out, since the destination path returned is in out dir
-    // and it makes the tests pass without the code being actually checked in.
-    return initialMessage
   }
 
   private fun getName(relativePath: String): String {
