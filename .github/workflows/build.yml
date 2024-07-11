@@ -42,6 +42,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
         with:
           validate-wrappers: true
+          develocity-access-key: ${{ secrets.DV_SOLUTIONS_ACCESS_KEY }}
 
       - name: Run All Tests
         run: ./gradlew check
