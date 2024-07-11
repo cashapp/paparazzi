@@ -8,12 +8,14 @@ import okio.Path
 import okio.Path.Companion.toOkioPath
 import okio.Path.Companion.toPath
 import org.junit.Assert.fail
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.awt.Point
 import java.io.File
 import java.lang.AssertionError
+import java.util.Locale
 
 class ApngVerifierTest {
   @get:Rule
@@ -22,6 +24,12 @@ class ApngVerifierTest {
   private val firstFrame = createImage(squareOffset = Point(5, 5))
   private val secondFrame = createImage(squareOffset = Point(25, 25))
   private val thirdFrame = createImage(squareOffset = Point(45, 45))
+
+  @Before
+  fun setup () {
+    // set locale to US to avoid issues with different locales
+    Locale.setDefault(Locale.US)
+  }
 
   @Test
   fun validatesSuccessfully() {
