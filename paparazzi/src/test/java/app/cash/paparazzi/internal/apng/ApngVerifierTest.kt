@@ -26,7 +26,7 @@ class ApngVerifierTest {
   private val thirdFrame = createImage(squareOffset = Point(45, 45))
 
   @Before
-  fun setup () {
+  fun setup() {
     // set locale to US to avoid issues with different locales
     Locale.setDefault(Locale.US)
   }
