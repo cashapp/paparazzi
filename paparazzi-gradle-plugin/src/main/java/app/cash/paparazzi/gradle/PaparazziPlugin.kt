@@ -206,7 +206,15 @@ public class PaparazziPlugin @Inject constructor(
           .withPathSensitivity(PathSensitivity.NONE)
 
         test.outputs.dir(reportOutputDir)
-        test.outputs.dir(snapshotOutputDir)
+
+        if (isVerifyRun.getOrElse(false)) {
+          test.inputs.dir(snapshotOutputDir)
+            .withPropertyName("paparazzi.snapshot.output.dir")
+            .withPathSensitivity(PathSensitivity.RELATIVE)
+        }
+        if (isRecordRun.getOrElse(false)) {
+          test.outputs.dir(snapshotOutputDir)
+        }
 
         test.doFirst {
           // Note: these are lazy properties that are not resolvable in the Gradle configuration phase.
