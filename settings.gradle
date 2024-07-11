@@ -1,18 +1,29 @@
 plugins {
   id 'com.gradle.develocity' version '3.17.5'
+  id 'com.gradle.common-custom-user-data-gradle-plugin' version '2.0.1'
 }
 
 develocity {
+  def isCI = System.getenv('CI') != null // adjust to your CI provider
+  server = 'https://ge.solutions-team.gradle.com/' // adjust to your Develocity server
+  allowUntrustedServer = false // ensure a trusted certificate is configured
+
   buildScan {
-    termsOfUseUrl = 'https://gradle.com/help/legal-terms-of-use'
-    if (System.getenv('CI') == 'true') {
-      termsOfUseAgree = 'yes'
-      tag 'CI'
-    } else {
-      publishing.onlyIf { false }
-    }
+    uploadInBackground = !isCI
   }
 }
+
+//develocity {
+//  buildScan {
+//    termsOfUseUrl = 'https://gradle.com/help/legal-terms-of-use'
+//    if (System.getenv('CI') == 'true') {
+//      termsOfUseAgree = 'yes'
+//      tag 'CI'
+//    } else {
+//      publishing.onlyIf { false }
+//    }
+//  }
+//}
 
 rootProject.name = 'paparazzi-root'
 
