@@ -16,7 +16,9 @@
 
 package app.cash.paparazzi.internal
 
-import app.cash.paparazzi.internal.Differ.DiffResult
+import app.cash.paparazzi.internal.Differ.DiffResult.Different
+import app.cash.paparazzi.internal.Differ.DiffResult.Identical
+import app.cash.paparazzi.internal.Differ.DiffResult.Similar
 import java.awt.AlphaComposite
 import java.awt.Color
 import java.awt.Graphics2D
@@ -138,11 +140,12 @@ internal object ImageUtils {
       throw IllegalStateException("expected:<$TYPE_INT_ARGB> but was:<${goldenImage.type}>")
     }
 
-    val differ: Differ = PixelPerfect
+    val differ: Differ = OffByTwo
     differ.compare(goldenImage, image).let { result ->
       return when (result) {
-        is DiffResult.Identical -> result.delta to 0f
-        is DiffResult.Different -> result.delta to result.percentDifference
+        is Identical -> result.delta to 0f
+        is Similar -> result.delta to 0f
+        is Different -> result.delta to result.percentDifference
       }
     }
   }

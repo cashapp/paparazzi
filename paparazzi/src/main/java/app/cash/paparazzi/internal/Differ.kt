@@ -10,9 +10,15 @@ internal interface Differ {
       val delta: BufferedImage
     ) : DiffResult
 
+    data class Similar(
+      val delta: BufferedImage,
+      val numSimilarPixels: Long
+    ) : DiffResult
+
     data class Different(
       val delta: BufferedImage,
-      val percentDifference: Float
+      val percentDifference: Float,
+      val numDifferentPixels: Long
     ) : DiffResult
   }
 }
