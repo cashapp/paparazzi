@@ -32,13 +32,13 @@ class RenderingModesTest {
       )
     }
 
-    paparazzi.snapshot(view = linearLayout) // defaults to NORMAL
+    paparazzi.snapshot(view = linearLayout, name = "normal") // defaults to NORMAL
     paparazzi.unsafeUpdateConfig(renderingMode = RenderingMode.H_SCROLL)
-    paparazzi.snapshot(view = linearLayout)
+    paparazzi.snapshot(view = linearLayout, name = "horizontal_scroll")
 
     paparazzi.unsafeUpdateConfig(renderingMode = RenderingMode.V_SCROLL)
     linearLayout.orientation = LinearLayout.VERTICAL
-    paparazzi.snapshot(view = linearLayout)
+    paparazzi.snapshot(view = linearLayout, name = "vertical_scroll")
 
     paparazzi.unsafeUpdateConfig(renderingMode = RenderingMode.SHRINK)
     paparazzi.snapshot(
@@ -46,7 +46,8 @@ class RenderingModesTest {
         text = "0"
         textSize = 20f
         layoutParams = LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
-      }
+      },
+      name = "shrink"
     )
   }
 }

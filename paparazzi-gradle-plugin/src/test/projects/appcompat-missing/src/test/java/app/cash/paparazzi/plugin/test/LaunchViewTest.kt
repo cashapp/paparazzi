@@ -25,8 +25,8 @@ class LaunchViewTest {
   val paparazzi = Paparazzi()
 
   @Test
-  fun testViews() {
+  fun test() {
     val launch = paparazzi.inflate<LinearLayout>(R.layout.launch)
-    paparazzi.snapshot(launch, "launch")
+    paparazzi.snapshot(launch, "arrow_missing")
   }
 }
