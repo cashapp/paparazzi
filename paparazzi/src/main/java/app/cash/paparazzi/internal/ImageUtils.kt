@@ -70,6 +70,33 @@ internal object ImageUtils {
     }
 
     if (error != null) {
+      val deltaWidth = max(goldenImageWidth, imageWidth)
+      if (deltaWidth > 80) {
+        /**
+         * AWT uses native text rendering under the hood, making it extremely difficult to get
+         * consistent cross-platform label text rendering, due to antialiasing, etc. This can
+         * result in false negatives when comparing delta images.
+         *
+         * As a workaround, we instead use text images pre-rendered on MacOSX 14 with the default
+         * font=Dialog, size=12 and composite them into the delta image here.
+         *
+         * We use that original font's ascent to offset the labels, which is determined by running
+         * the following on MacOSX 14:
+         *
+         * ```
+         * val z = BufferedImage(1, 1, TYPE_INT_ARGB)
+         * val MAC_OSX_FONT_DIALOG_SIZE_12_ASCENT = z.graphics.fontMetrics.ascent
+         * ```
+         */
+        val g = deltaImage.graphics
+        val yOffset = 20 - MAC_OSX_FONT_DIALOG_SIZE_12_ASCENT
+        val myClassLoader = ImageUtils::class.java.classLoader!!
+        val expectedLabel = ImageIO.read(myClassLoader.getResourceAsStream("expected_label.png"))
+        g.drawImage(expectedLabel, 10, yOffset, null)
+        val actualLabel = ImageIO.read(myClassLoader.getResourceAsStream("actual_label.png"))
+        g.drawImage(actualLabel, goldenImageWidth + deltaWidth + 10, yOffset, null)
+      }
+
       val deltaOutput = File(failureDir, "delta-$imageName")
       if (deltaOutput.exists()) {
         val deleted = deltaOutput.delete()
@@ -98,8 +125,7 @@ internal object ImageUtils {
   @Throws(IOException::class)
   fun compareImages(
     goldenImage: BufferedImage,
-    image: BufferedImage,
-    withText: Boolean = true
+    image: BufferedImage
   ): Pair<BufferedImage, Float> {
     var goldenImage = goldenImage
     if (goldenImage.type != TYPE_INT_ARGB) {
@@ -173,13 +199,6 @@ internal object ImageUtils {
     // Golden on the right
     g.drawImage(goldenImage, 0, 0, null)
     g.drawImage(image, goldenImageWidth + deltaWidth, 0, null)
-
-    // Labels
-    if (withText && deltaWidth > 80) {
-      g.color = Color.RED
-      g.drawString("Expected", 10, 20)
-      g.drawString("Actual", goldenImageWidth + deltaWidth + 10, 20)
-    }
 
     g.dispose()
 
@@ -346,3 +365,5 @@ internal object ImageUtils {
     return relativePath.substring(relativePath.lastIndexOf(separatorChar) + 1)
   }
 }
+
+private const val MAC_OSX_FONT_DIALOG_SIZE_12_ASCENT: Int = 12
