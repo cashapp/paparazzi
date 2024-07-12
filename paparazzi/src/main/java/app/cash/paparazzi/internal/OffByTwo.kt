@@ -6,8 +6,10 @@ import java.awt.image.BufferedImage.TYPE_INT_ARGB
 import kotlin.math.abs
 import kotlin.math.max
 
-internal object PixelPerfect : Differ {
+internal object OffByTwo : Differ {
   override fun compare(expected: BufferedImage, actual: BufferedImage): DiffResult {
+    check(expected.width == actual.width && expected.height == actual.height) { "Images are different sizes" }
+
     val expectedWidth = expected.width
     val expectedHeight = expected.height
 
@@ -22,6 +24,7 @@ internal object PixelPerfect : Differ {
 
     // Compute delta map
     var delta: Long = 0
+    var similarPixels: Long = 0
     var differentPixels: Long = 0
     for (y in 0 until maxHeight) {
       for (x in 0 until maxWidth) {
@@ -48,19 +51,24 @@ internal object PixelPerfect : Differ {
           continue
         }
 
-        differentPixels++
-
         val deltaR = (actualRgb and 0xFF0000).ushr(16) - (expectedRgb and 0xFF0000).ushr(16)
-        val newR = 128 + deltaR and 0xFF
         val deltaG = (actualRgb and 0x00FF00).ushr(8) - (expectedRgb and 0x00FF00).ushr(8)
-        val newG = 128 + deltaG and 0xFF
         val deltaB = (actualRgb and 0x0000FF) - (expectedRgb and 0x0000FF)
-        val newB = 128 + deltaB and 0xFF
 
+        val newR = 128 + deltaR and 0xFF
+        val newG = 128 + deltaG and 0xFF
+        val newB = 128 + deltaB and 0xFF
         val avgAlpha =
           ((expectedRgb and -0x1000000).ushr(24) + (actualRgb and -0x1000000).ushr(24)) / 2 shl 24
-
         val newRGB = avgAlpha or (newR shl 16) or (newG shl 8) or newB
+
+        if (abs(deltaR) <= 2 && abs(deltaG) <= 2 && abs(deltaB) <= 2) {
+          similarPixels++
+          deltaImage.setRGB(expectedWidth + x, y, newRGB)
+          continue
+        }
+
+        differentPixels++
         deltaImage.setRGB(expectedWidth + x, y, newRGB)
 
         delta += abs(deltaR).toLong()
@@ -80,14 +88,19 @@ internal object PixelPerfect : Differ {
     val total = actualHeight.toLong() * actualWidth.toLong() * 3L * 256L
     val percentDifference = (delta * 100 / total.toDouble()).toFloat()
 
-    return if (percentDifference == 0f) {
-      DiffResult.Identical(delta = deltaImage)
-    } else {
+    return if (differentPixels > 0) {
       DiffResult.Different(
         delta = deltaImage,
         percentDifference = percentDifference,
         numDifferentPixels = differentPixels
       )
+    } else if (similarPixels > 0) {
+      DiffResult.Similar(
+        delta = deltaImage,
+        numSimilarPixels = similarPixels
+      )
+    } else {
+      DiffResult.Identical(delta = deltaImage)
     }
   }
 }
