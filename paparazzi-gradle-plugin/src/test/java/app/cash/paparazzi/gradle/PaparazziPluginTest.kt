@@ -1,7 +1,6 @@
 package app.cash.paparazzi.gradle
 
 import app.cash.paparazzi.gradle.ImageSubject.Companion.assertThat
-import app.cash.paparazzi.gradle.ImageSubject.ImageAssert.Companion.DEFAULT_PERCENT_DIFFERENCE_THRESHOLD
 import app.cash.paparazzi.gradle.PrepareResourcesTask.Config
 import com.google.common.truth.Correspondence
 import com.google.common.truth.Truth.assertThat
@@ -1239,8 +1238,8 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun customFontsInXml() {
-    val fixtureRoot = File("src/test/projects/custom-fonts-xml")
+  fun customFonts() {
+    val fixtureRoot = File("src/test/projects/custom-fonts")
 
     gradleRunner
       .withArguments("verifyPaparazziDebug", "--stacktrace")
@@ -1248,8 +1247,8 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun customFontsInCode() {
-    val fixtureRoot = File("src/test/projects/custom-fonts-code")
+  fun textAppearances() {
+    val fixtureRoot = File("src/test/projects/text-appearances")
 
     gradleRunner
       .withArguments("verifyPaparazziDebug", "--stacktrace")
@@ -1257,44 +1256,8 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun textAppearancesInCode() {
-    val fixtureRoot = File("src/test/projects/text-appearances-code")
-
-    gradleRunner
-      .withArguments("verifyPaparazziDebug", "--stacktrace")
-      .runFixture(fixtureRoot) { build() }
-  }
-
-  @Test
-  fun textAppearancesInXml() {
-    val fixtureRoot = File("src/test/projects/text-appearances-xml")
-
-    gradleRunner
-      .withArguments("verifyPaparazziDebug", "--stacktrace")
-      .runFixture(fixtureRoot) { build() }
-  }
-
-  @Test
-  fun verifyAaptAttrResourceParsingInCode() {
-    val fixtureRoot = File("src/test/projects/verify-aapt-code")
-
-    gradleRunner
-      .withArguments("verifyPaparazziDebug", "--stacktrace")
-      .runFixture(fixtureRoot) { build() }
-  }
-
-  @Test
-  fun verifyAaptAttrResourceParsingInXml() {
-    val fixtureRoot = File("src/test/projects/verify-aapt-xml")
-
-    gradleRunner
-      .withArguments("verifyPaparazziDebug", "--stacktrace")
-      .runFixture(fixtureRoot) { build() }
-  }
-
-  @Test
-  fun verifyAaptAttrResourceParsingInCompose() {
-    val fixtureRoot = File("src/test/projects/verify-aapt-compose")
+  fun verifyAaptAttrResourceParsing() {
+    val fixtureRoot = File("src/test/projects/verify-aapt")
 
     gradleRunner
       .withArguments("verifyPaparazziDebug", "--stacktrace")
@@ -1324,6 +1287,15 @@ class PaparazziPluginTest {
     val fixtureRoot = File("src/test/projects/compose")
     gradleRunner
       .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+  }
+
+  @Test
+  fun composeLeaks() {
+    val fixtureRoot = File("src/test/projects/compose-leaks")
+
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
   }
 
@@ -1409,17 +1381,8 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun nightModeCompose() {
-    val fixtureRoot = File("src/test/projects/night-mode-compose")
-
-    gradleRunner
-      .withArguments("verifyPaparazziDebug", "--stacktrace")
-      .runFixture(fixtureRoot) { build() }
-  }
-
-  @Test
-  fun nightModeXml() {
-    val fixtureRoot = File("src/test/projects/night-mode-xml")
+  fun nightMode() {
+    val fixtureRoot = File("src/test/projects/night-mode")
 
     gradleRunner
       .withArguments("verifyPaparazziDebug", "--stacktrace")

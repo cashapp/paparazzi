@@ -24,8 +24,8 @@ class AmountViewTest {
   val paparazzi = Paparazzi()
 
   @Test
-  fun testViews() {
+  fun amount() {
     val amount = AmountView(paparazzi.context)
-    paparazzi.snapshot(amount, "amount")
+    paparazzi.snapshot(amount, "five_bucks")
   }
 }
