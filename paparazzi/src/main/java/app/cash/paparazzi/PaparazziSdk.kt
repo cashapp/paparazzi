@@ -302,7 +302,8 @@ public class PaparazziSdk @JvmOverloads constructor(
         }
       }
     } finally {
-      viewGroup.removeView(modifiedView)
+      viewGroup.removeAllViews()
+
       // Remove any applied render extensions
       if (modifiedView !== view) {
         (view.parent as ViewGroup).removeView(view)
