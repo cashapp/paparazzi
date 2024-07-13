@@ -33,8 +33,7 @@ public class Paparazzi @JvmOverloads constructor(
   private val theme: String = "android:Theme.Material.NoActionBar.Fullscreen",
   private val renderingMode: RenderingMode = RenderingMode.NORMAL,
   private val appCompatEnabled: Boolean = true,
-  private val maxPercentDifference: Double = 0.1,
-  private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference),
+  private val snapshotHandler: SnapshotHandler = determineHandler(),
   private val renderExtensions: Set<RenderExtension> = setOf(),
   private val supportsRtl: Boolean = false,
   private val showSystemUi: Boolean = false,
@@ -153,9 +152,9 @@ public class Paparazzi @JvmOverloads constructor(
     private val isVerifying: Boolean =
       System.getProperty("paparazzi.test.verify")?.toBoolean() == true
 
-    private fun determineHandler(maxPercentDifference: Double): SnapshotHandler =
+    private fun determineHandler(): SnapshotHandler =
       if (isVerifying) {
-        SnapshotVerifier(maxPercentDifference)
+        SnapshotVerifier()
       } else {
         HtmlReportWriter()
       }

@@ -24,7 +24,6 @@ import java.io.File
 import javax.imageio.ImageIO
 
 public class SnapshotVerifier @JvmOverloads constructor(
-  private val maxPercentDifference: Double,
   rootDirectory: File = File(System.getProperty("paparazzi.snapshot.dir"))
 ) : SnapshotHandler {
   private val imagesDirectory: File = File(rootDirectory, "images")
@@ -45,7 +44,7 @@ public class SnapshotVerifier @JvmOverloads constructor(
       val expected = File(snapshotDir, snapshot.toFileName(extension = "png"))
       val failurePath = File(failureDir, "delta-${expected.name}").toOkioPath()
       val pngVerifier: ApngVerifier? = if (fps != -1) {
-        ApngVerifier(expected.toOkioPath(), failurePath, fps, frameCount, maxPercentDifference)
+        ApngVerifier(expected.toOkioPath(), failurePath, fps, frameCount)
       } else {
         null
       }
@@ -74,7 +73,6 @@ public class SnapshotVerifier @JvmOverloads constructor(
           relativePath = expected.path,
           image = image,
           goldenImage = goldenImage,
-          maxPercentDifferent = maxPercentDifference,
           failureDir = failureDir
         )
       }

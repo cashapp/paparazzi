@@ -29,7 +29,6 @@ internal class ApngVerifier(
   private val deltaFilePath: Path,
   private val fps: Int,
   private val frameCount: Int,
-  private val maxPercentDifference: Double,
   private val fileSystem: FileSystem = FileSystem.SYSTEM,
   private val withErrorText: Boolean = true
 ) : Closeable {
@@ -56,7 +55,7 @@ internal class ApngVerifier(
   fun verifyFrame(image: BufferedImage) {
     val (expectedFrame, actualFrame) = resizeMaxBounds(currentGoldenFrame ?: blankFrame, image)
     val (deltaImage, percentDifferent) = ImageUtils.compareImages(expectedFrame, actualFrame)
-    if (percentDifferent > maxPercentDifference) {
+    if (percentDifferent > 0f) {
       if (deltaWriter == null) {
         deltaWriter = pngReader.initializeWriter()
       }
@@ -106,9 +105,7 @@ internal class ApngVerifier(
 
     val error = buildString {
       if (invalidFrames >= 1) {
-        appendLine(
-          "$invalidFrames frames differed by more than %.1f%%".format(maxPercentDifference)
-        )
+        appendLine("$invalidFrames frames differ")
       }
       if (pngReader.getFps() != fps) {
         appendLine("Mismatched video fps expected: ${pngReader.getFps()} actual: $fps")

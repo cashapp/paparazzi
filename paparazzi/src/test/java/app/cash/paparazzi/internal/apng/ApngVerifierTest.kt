@@ -35,7 +35,6 @@ class ApngVerifierTest {
       deltaFilePath = deltaFile.toOkioPath(),
       fps = 1,
       frameCount = 3,
-      maxPercentDifference = 0.0,
       withErrorText = false
     ).use {
       it.verifyFrame(firstFrame)
@@ -59,7 +58,6 @@ class ApngVerifierTest {
       deltaFilePath = deltaFile.toOkioPath(),
       fps = 3,
       frameCount = 3,
-      maxPercentDifference = 0.0,
       withErrorText = false
     ).use {
       it.verifyFrame(firstFrame)
@@ -71,7 +69,7 @@ class ApngVerifierTest {
         fail("Should have already failed")
       } catch (e: AssertionError) {
         assertThat(e.message).isEqualTo(
-          "4 frames differed by more than 0.0%\n" +
+          "4 frames differ\n" +
             "Mismatched video fps expected: 1 actual: 3\n" +
             " - see details in file://${deltaFile.path}\n\n"
         )
@@ -94,7 +92,6 @@ class ApngVerifierTest {
       deltaFilePath = deltaFile.toOkioPath(),
       fps = 3,
       frameCount = 3,
-      maxPercentDifference = 0.0,
       withErrorText = false
     ).use {
       it.verifyFrame(firstFrame)
@@ -105,7 +102,7 @@ class ApngVerifierTest {
         fail("Should have already failed")
       } catch (e: AssertionError) {
         assertThat(e.message).isEqualTo(
-          "4 frames differed by more than 0.0%\n" +
+          "4 frames differ\n" +
             "Mismatched video fps expected: 1 actual: 3\n" +
             " - see details in file://${deltaFile.path}\n\n"
         )
@@ -128,7 +125,6 @@ class ApngVerifierTest {
       deltaFilePath = deltaFile.toOkioPath(),
       fps = 3,
       frameCount = 3,
-      maxPercentDifference = 0.0,
       withErrorText = false
     ).use {
       it.verifyFrame(firstFrame)
@@ -143,7 +139,7 @@ class ApngVerifierTest {
         fail("Should have already failed")
       } catch (e: AssertionError) {
         assertThat(e.message).isEqualTo(
-          "1 frames differed by more than 0.0%\n" +
+          "1 frames differ\n" +
             "Mismatched video fps expected: 1 actual: 3\n" +
             " - see details in file://${deltaFile.path}\n\n"
         )
@@ -166,7 +162,6 @@ class ApngVerifierTest {
       deltaFilePath = deltaFile.toOkioPath(),
       fps = 1,
       frameCount = 3,
-      maxPercentDifference = 0.0,
       withErrorText = false
     ).use {
       it.verifyFrame(thirdFrame)
@@ -178,7 +173,7 @@ class ApngVerifierTest {
         fail("Should have already failed")
       } catch (e: AssertionError) {
         assertThat(e.message).isEqualTo(
-          "2 frames differed by more than 0.0%\n" +
+          "2 frames differ\n" +
             " - see details in file://${deltaFile.path}\n\n"
         )
       }
@@ -200,7 +195,6 @@ class ApngVerifierTest {
       deltaFilePath = deltaFile.toOkioPath(),
       fps = 1,
       frameCount = 5,
-      maxPercentDifference = 0.0,
       withErrorText = false
     ).use {
       it.verifyFrame(firstFrame)
@@ -214,7 +208,7 @@ class ApngVerifierTest {
         fail("Should have already failed")
       } catch (e: AssertionError) {
         assertThat(e.message).isEqualTo(
-          "2 frames differed by more than 0.0%\n" +
+          "2 frames differ\n" +
             "Mismatched frame count expected: 3 actual: 5\n" +
             " - see details in file://${deltaFile.path}\n\n"
         )
@@ -237,7 +231,6 @@ class ApngVerifierTest {
       deltaFilePath = deltaFile.toOkioPath(),
       fps = 1,
       frameCount = 2,
-      maxPercentDifference = 0.0,
       withErrorText = false
     ).use {
       it.verifyFrame(firstFrame)
@@ -248,7 +241,7 @@ class ApngVerifierTest {
         fail("Should have already failed")
       } catch (e: AssertionError) {
         assertThat(e.message).isEqualTo(
-          "1 frames differed by more than 0.0%\n" +
+          "1 frames differ\n" +
             "Mismatched frame count expected: 3 actual: 2\n" +
             " - see details in file://${deltaFile.path}\n\n"
         )
