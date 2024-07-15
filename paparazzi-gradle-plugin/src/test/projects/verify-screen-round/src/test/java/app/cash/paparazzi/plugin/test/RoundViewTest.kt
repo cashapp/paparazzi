@@ -22,22 +22,12 @@ class RoundViewTest(
   @Test
   fun test() {
     paparazzi.snapshot(
-      view = paparazzi.inflate(R.layout.custom_view),
-      name = configuration.testName
+      view = paparazzi.inflate(R.layout.custom_view)
     )
   }
 }
 
-enum class ScreenRoundTestConfiguration(
-  val round: ScreenRound,
-  val testName: String
-) {
-  ROUND(
-    round = ScreenRound.ROUND,
-    testName = "round"
-  ),
-  NOT_ROUND(
-    round = ScreenRound.NOTROUND,
-    testName = "not_round"
-  )
+enum class ScreenRoundTestConfiguration(val round: ScreenRound) {
+  ROUND(round = ScreenRound.ROUND),
+  NOT_ROUND(round = ScreenRound.NOTROUND)
 }
