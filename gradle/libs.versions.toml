@@ -5,7 +5,7 @@ bytebuddy = "1.14.18"
 coroutines = "1.8.1"
 javaTarget = "11"
 kotlin = "2.0.0"
-ksp = "2.0.0-1.0.22"
+ksp = "2.0.0-1.0.23"
 layoutlib = "14.0.9"
 moshi = "1.15.1"
 
