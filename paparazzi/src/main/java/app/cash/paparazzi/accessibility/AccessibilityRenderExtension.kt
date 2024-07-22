@@ -146,7 +146,7 @@ private fun SemanticsNode.findAllUnmergedNodes(): List<SemanticsNode> {
 private fun SemanticsNode.accessibilityText(): String? {
   val stateDescription = config.getOrNull(SemanticsProperties.StateDescription)
   val selected = if (stateDescription != null) {
-    // The selected state is only read out by TalkBack if the state description is not set
+    // The selected state is only read by TalkBack if the state description is not set
     null
   } else {
     config.getOrNull(SemanticsProperties.Selected)?.let { if (it) "<selected>" else "<unselected>" }
