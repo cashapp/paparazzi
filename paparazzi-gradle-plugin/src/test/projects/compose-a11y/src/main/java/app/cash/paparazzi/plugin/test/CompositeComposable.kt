@@ -18,6 +18,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.viewinterop.AndroidView
 
@@ -31,6 +33,7 @@ fun CompositeComposable() {
           role = Role.Checkbox,
           onValueChange = { }
         )
+        .semantics { selected = true }
         .fillMaxWidth()
     ) {
       Text(
@@ -75,7 +78,7 @@ fun CompositeComposable() {
       }
     }
 
-    Text("multi\nline\ntext")
+    Text("multi\nline\ntext", modifier = Modifier.semantics { heading() })
 
     AndroidView(
       modifier = Modifier.wrapContentSize(),

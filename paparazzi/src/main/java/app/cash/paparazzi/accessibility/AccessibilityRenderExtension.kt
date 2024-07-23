@@ -145,6 +145,12 @@ private fun SemanticsNode.findAllUnmergedNodes(): List<SemanticsNode> {
 
 private fun SemanticsNode.accessibilityText(): String? {
   val stateDescription = config.getOrNull(SemanticsProperties.StateDescription)
+  val selected = if (stateDescription != null) {
+    // The selected state is only read by TalkBack if the state description is not set
+    null
+  } else {
+    config.getOrNull(SemanticsProperties.Selected)?.let { if (it) "<selected>" else "<unselected>" }
+  }
   val mainAccessibilityText =
     config.getOrNull(SemanticsProperties.ContentDescription)?.joinToString(", ")
       ?: config.getOrNull(SemanticsProperties.Text)?.joinToString(", ")
@@ -152,8 +158,17 @@ private fun SemanticsNode.accessibilityText(): String? {
   val disabled = if (config.getOrNull(SemanticsProperties.Disabled) != null) "<disabled>" else null
   val onClickLabel =
     if (disabled != null) null else config.getOrNull(SemanticsActions.OnClick)?.label?.let { "<on-click>: $it" }
+  val heading = if (config.getOrNull(SemanticsProperties.Heading) != null) "<heading>" else null
 
-  val textList = listOfNotNull(stateDescription, mainAccessibilityText, role, disabled, onClickLabel)
+  val textList = listOfNotNull(
+    stateDescription,
+    selected,
+    mainAccessibilityText,
+    role,
+    disabled,
+    onClickLabel,
+    heading
+  )
   return if (textList.isNotEmpty()) {
     // Escape newline characters to simplify accessibility text.
     textList.joinToString(", ").replaceLineBreaks()
