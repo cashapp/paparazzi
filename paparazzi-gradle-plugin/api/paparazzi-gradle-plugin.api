@@ -24,3 +24,10 @@ public abstract class app/cash/paparazzi/gradle/PrepareResourcesTask : org/gradl
 	public final fun writeResourcesFile ()V
 }
 
+public abstract class app/cash/paparazzi/gradle/ReportPaparazziTask : org/gradle/api/tasks/SourceTask {
+	public fun <init> ()V
+	public final fun createReport ()V
+	public abstract fun getPaparazziReportDirectory ()Lorg/gradle/api/file/DirectoryProperty;
+	public abstract fun getPaparazziReportTempDirectory ()Lorg/gradle/api/file/DirectoryProperty;
+}
+

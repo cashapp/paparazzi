@@ -31,7 +31,6 @@ import org.gradle.api.artifacts.type.ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIB
 import org.gradle.api.file.Directory
 import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.artifacts.transform.UnzipTransform
-import org.gradle.api.logging.LogLevel.LIFECYCLE
 import org.gradle.api.provider.Provider
 import org.gradle.api.provider.ProviderFactory
 import org.gradle.api.reporting.ReportingExtension
@@ -115,6 +114,7 @@ public class PaparazziPlugin @Inject constructor(
       val projectDirectory = project.layout.projectDirectory
       val buildDirectory = project.layout.buildDirectory
       val gradleUserHomeDir = project.gradle.gradleUserHomeDir
+      val reportTempDir = buildDirectory.dir("paparazzi/tmp/${variant.name}")
       val reportOutputDir = project.extensions.getByType(ReportingExtension::class.java).baseDirectory.dir("paparazzi/${variant.name}")
 
       val sources = AndroidVariantSources(variant)
@@ -165,23 +165,39 @@ public class PaparazziPlugin @Inject constructor(
         it.description = "Run screenshot tests for variant '${variant.name}'"
       }
       verifyVariants.configure { it.dependsOn(verifyTaskProvider) }
+      val testTaskProvider =
+        project.tasks.withType(Test::class.java).named { it == "test$testVariantSlug" }
+      val reportTaskProvider =
+        project.tasks.register("reportPaparazzi$variantSlug", ReportPaparazziTask::class.java) {
+          it.group = VERIFICATION_GROUP
+          it.description = "Create report from running tests for variant '${variant.name}'"
+
+          it.paparazziReportTempDirectory.set(reportTempDir)
+          it.paparazziReportDirectory.set(reportOutputDir)
+        }
 
       val isRecordRun = project.objects.property(Boolean::class.java)
       val isVerifyRun = project.objects.property(Boolean::class.java)
+      val testSourceFiles = project.objects.fileCollection()
 
       project.gradle.taskGraph.whenReady { graph ->
-        isRecordRun.set(recordTaskProvider.map { graph.hasTask(it) })
-        isVerifyRun.set(verifyTaskProvider.map { graph.hasTask(it) })
+        val isRecordTaskOnGraph = recordTaskProvider.map { graph.hasTask(it) }
+        val isVerifyTaskOnGraph = verifyTaskProvider.map { graph.hasTask(it) }
+        isRecordRun.set(isRecordTaskOnGraph)
+        isVerifyRun.set(isVerifyTaskOnGraph)
+
+        reportTaskProvider.configure { reportTask ->
+          reportTask.onlyIf { !isVerifyRun.get() }
+        }
       }
 
-      val testTaskProvider =
-        project.tasks.withType(Test::class.java).named { it == "test$testVariantSlug" }
       testTaskProvider.configureEach { test ->
         test.systemProperties["paparazzi.test.resources"] =
           writeResourcesTask.flatMap { it.paparazziResources.asFile }.get().path
         test.systemProperties["paparazzi.project.dir"] = projectDirectory.toString()
         test.systemProperties["paparazzi.build.dir"] = buildDirectory.get().toString()
         test.systemProperties["paparazzi.report.dir"] = reportOutputDir.get().toString()
+        test.systemProperties["paparazzi.report.temp.dir"] = reportTempDir.get().toString()
         test.systemProperties["paparazzi.snapshot.dir"] = snapshotOutputDir.toString()
         test.systemProperties["paparazzi.artifacts.cache.dir"] = gradleUserHomeDir.path
         test.systemProperties.putAll(project.properties.filterKeys { it.startsWith("app.cash.paparazzi") })
@@ -205,8 +221,28 @@ public class PaparazziPlugin @Inject constructor(
           .withPropertyName("paparazzi.nativeRuntime")
           .withPathSensitivity(PathSensitivity.NONE)
 
-        test.outputs.dir(reportOutputDir)
-        test.outputs.dir(snapshotOutputDir)
+        // Optional params for record and verify task dependencies
+        test.outputs.dir(isRecordRun.flatMap {
+          project.objects.directoryProperty().apply {
+            set(if (it) snapshotOutputDir else null)
+          }
+        }).withPropertyName("paparazzi.snapshots.output")
+          .optional()
+
+        test.outputs.dir(reportTempDir).withPropertyName("paparazzi.report.temp.output")
+
+        test.inputs.dir(
+          isVerifyRun.flatMap {
+            project.objects.directoryProperty().apply {
+              set(if (it) snapshotOutputDir else null)
+            }
+          }
+        ).withPropertyName("paparazzi.snapshots.input")
+          .optional()
+
+        // Paparazzi reports are generated after the test task is executed (Skip if no tests were executed)
+        testSourceFiles.setFrom(test.inputs.sourceFiles)
+        test.finalizedBy(reportTaskProvider)
 
         test.doFirst {
           // Note: these are lazy properties that are not resolvable in the Gradle configuration phase.
@@ -218,15 +254,17 @@ public class PaparazziPlugin @Inject constructor(
           test.systemProperties["paparazzi.test.record"] = isRecordRun.get()
           test.systemProperties["paparazzi.test.verify"] = isVerifyRun.get()
         }
-
-        test.doLast {
-          val uri = reportOutputDir.get().asFile.toPath().resolve("index.html").toUri()
-          test.logger.log(LIFECYCLE, "See the Paparazzi report at: $uri")
-        }
       }
 
-      recordTaskProvider.configure { it.dependsOn(testTaskProvider) }
+      recordTaskProvider.configure {
+        it.dependsOn(testTaskProvider)
+        it.dependsOn(reportTaskProvider)
+      }
       verifyTaskProvider.configure { it.dependsOn(testTaskProvider) }
+      reportTaskProvider.configure {
+        it.source(testSourceFiles)
+        it.mustRunAfter(testTaskProvider)
+      }
     }
   }
 

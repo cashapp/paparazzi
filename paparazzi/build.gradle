@@ -111,6 +111,8 @@ def generateTestConfig = tasks.register("generateTestConfig") {
 
 tasks.withType(Test).configureEach {
   dependsOn(generateTestConfig)
+  def tmp = project.layout.buildDirectory.dir("paparazzi/tmp").get()
+
   systemProperty(
     "paparazzi.test.resources",
     generateTestConfig.map { it.outputs.files.singleFile }.get().path
@@ -126,6 +128,10 @@ tasks.withType(Test).configureEach {
   systemProperty(
     "paparazzi.report.dir",
     project.extensions.getByType(ReportingExtension).baseDirectory.dir("paparazzi").get().toString()
+  )
+  systemProperty(
+    "paparazzi.report.temp.dir",
+    tmp.toString()
   )
   systemProperty(
     "paparazzi.snapshot.dir",
