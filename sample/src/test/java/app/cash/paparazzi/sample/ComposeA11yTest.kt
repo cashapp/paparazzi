@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.Button
 import androidx.compose.material.Checkbox
+import androidx.compose.material.IconToggleButton
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -162,6 +163,11 @@ class ComposeA11yTest {
             onClick = {}
           ) {
             Text("07")
+          }
+        }
+        item {
+          IconToggleButton(checked = true, onCheckedChange = { }) {
+            Text("Toggle")
           }
         }
       }

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.Checkbox
+import androidx.compose.material.IconToggleButton
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -38,8 +39,12 @@ fun CompositeComposable() {
     ) {
       Text(
         "Option",
-        Modifier.weight(1f)
-          .semantics { contentDescription = "Custom content description for Text. This is a really long description, bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla. " }
+        Modifier
+          .weight(1f)
+          .semantics {
+            contentDescription =
+              "Custom content description for Text. This is a really long description, bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla. "
+          }
       )
       Checkbox(checked = true, onCheckedChange = null)
     }
@@ -76,6 +81,10 @@ fun CompositeComposable() {
         Text("Unmerged Text")
         Text("More Text")
       }
+    }
+
+    IconToggleButton(checked = true, onCheckedChange = { }) {
+      Text("Toggle Button")
     }
 
     Text("multi\nline\ntext", modifier = Modifier.semantics { heading() })

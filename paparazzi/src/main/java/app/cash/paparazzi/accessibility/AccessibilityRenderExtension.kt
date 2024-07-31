@@ -29,6 +29,7 @@ import androidx.compose.ui.semantics.SemanticsNode
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getAllSemanticsNodes
 import androidx.compose.ui.semantics.getOrNull
+import androidx.compose.ui.state.ToggleableState
 import app.cash.paparazzi.RenderExtension
 import com.android.internal.view.OneShotPreDrawListener
 
@@ -156,13 +157,29 @@ private fun SemanticsNode.accessibilityText(): String? {
       ?: config.getOrNull(SemanticsProperties.Text)?.joinToString(", ")
   val role = config.getOrNull(SemanticsProperties.Role)?.toString()
   val disabled = if (config.getOrNull(SemanticsProperties.Disabled) != null) "<disabled>" else null
-  val onClickLabel =
-    if (disabled != null) null else config.getOrNull(SemanticsActions.OnClick)?.label?.let { "<on-click>: $it" }
+  val onClickLabel = if (disabled != null) {
+    null
+  } else {
+    config.getOrNull(SemanticsActions.OnClick)?.label?.let { "<on-click>: $it" }
+  }
   val heading = if (config.getOrNull(SemanticsProperties.Heading) != null) "<heading>" else null
+  val toggleableState = config.getOrNull(SemanticsProperties.ToggleableState)?.let {
+    buildString {
+      append("<toggleable>: ")
+      append(
+        when (it) {
+          ToggleableState.On -> "checked"
+          ToggleableState.Off -> "not checked"
+          ToggleableState.Indeterminate -> "indeterminate"
+        }
+      )
+    }
+  }
 
   val textList = listOfNotNull(
     stateDescription,
     selected,
+    toggleableState,
     mainAccessibilityText,
     role,
     disabled,
