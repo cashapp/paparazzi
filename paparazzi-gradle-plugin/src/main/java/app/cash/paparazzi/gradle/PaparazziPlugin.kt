@@ -43,6 +43,8 @@ import org.gradle.internal.os.OperatingSystem
 import org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
+import java.io.File
+import java.io.File.separator
 import java.util.Locale
 import javax.inject.Inject
 
@@ -169,9 +171,19 @@ public class PaparazziPlugin @Inject constructor(
       val isRecordRun = project.objects.property(Boolean::class.java)
       val isVerifyRun = project.objects.property(Boolean::class.java)
 
+      val testReportOutputLocation = project.objects.directoryProperty()
+      val addFailedSnapshotsTaskProvider = project.tasks.register("addPaparazziSnapshotsToReport$variantSlug", PaparazziTask::class.java) {
+        it.group = VERIFICATION_GROUP
+        it.description = "Run screenshot tests for variant '${variant.name}'"
+      }
+
       project.gradle.taskGraph.whenReady { graph ->
         isRecordRun.set(recordTaskProvider.map { graph.hasTask(it) })
         isVerifyRun.set(verifyTaskProvider.map { graph.hasTask(it) })
+
+        addFailedSnapshotsTaskProvider.configure {
+          it.onlyIf { isVerifyRun.get() }
+        }
       }
 
       val testTaskProvider =
@@ -208,6 +220,10 @@ public class PaparazziPlugin @Inject constructor(
         test.outputs.dir(reportOutputDir)
         test.outputs.dir(snapshotOutputDir)
 
+        testReportOutputLocation.set(test.reports.html.outputLocation.get())
+
+        test.finalizedBy(addFailedSnapshotsTaskProvider)
+
         test.doFirst {
           // Note: these are lazy properties that are not resolvable in the Gradle configuration phase.
           // They need special handling, so they're added as inputs.property above, and systemProperty here.
@@ -227,6 +243,42 @@ public class PaparazziPlugin @Inject constructor(
 
       recordTaskProvider.configure { it.dependsOn(testTaskProvider) }
       verifyTaskProvider.configure { it.dependsOn(testTaskProvider) }
+      addFailedSnapshotsTaskProvider.configure {
+        it.inputs.dir(buildDirectory.dir("paparazzi/failures"))
+          .withPropertyName("paparazzi.snapshot.failures")
+          .withPathSensitivity(PathSensitivity.RELATIVE)
+        it.inputs.dir(testReportOutputLocation)
+          .withPropertyName("paparazzi.html.report.dir")
+          .withPathSensitivity(PathSensitivity.RELATIVE)
+
+        it.mustRunAfter(testTaskProvider)
+
+        it.doLast {
+          val reportRootDir = testReportOutputLocation.get().asFile
+          val failureSnapshots = File(buildDirectory.asFile.get(), "paparazzi${separator}failures")
+          val generatedSnapshots = failureSnapshots.listFiles() ?: return@doLast
+
+          generatedSnapshots.asSequence().filter { snapshot ->
+            snapshot.name.startsWith("delta")
+          }.forEach { snapshot ->
+            val nameSegments = snapshot.name.split("_")
+            if (nameSegments.size >= 3) {
+              val testClassPackage = nameSegments[0].replace("delta-", "")
+              val testClass = "$testClassPackage.${nameSegments[1]}"
+              val testMethod = nameSegments[2].split(".")[0]
+
+              val testHtmlFile = File(reportRootDir, "classes${separator}$testClass.html")
+              var content = testHtmlFile.readText()
+              val relativeSnapshotPath = snapshot.relativeToOrSelf(buildDirectory.asFile.get()).invariantSeparatorsPath
+              content = content.replace(
+                htmlTestMethodHeader(testMethod),
+                htmlTestMethodHeaderWithSnapshot(testMethod, relativeSnapshotPath)
+              )
+              testHtmlFile.writeText(content)
+            }
+          }
+        }
+      }
     }
   }
 
@@ -301,6 +353,11 @@ public class PaparazziPlugin @Inject constructor(
   private fun Provider<List<Directory>>?.relativize(directory: Directory): Provider<List<String>> =
     this?.map { dirs -> dirs.map { directory.relativize(it.asFile) } }
       ?: providerFactory.provider { emptyList() }
+
+  private fun htmlTestMethodHeader(testMethod: String) = "$testMethod</h3>"
+
+  private fun htmlTestMethodHeaderWithSnapshot(testMethod: String, relativeSnapshotPath: String) =
+    "${htmlTestMethodHeader(testMethod)}\n<img width=\"100%\" src=\"..$separator..$separator..$separator..${separator}$relativeSnapshotPath\"/>"
 }
 
 private const val DEFAULT_COMPILE_SDK_VERSION = 34
