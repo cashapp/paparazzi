@@ -17,6 +17,7 @@ import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
 import java.io.File
+import java.util.Base64
 
 class PaparazziPluginTest {
   private val filesToDelete = mutableListOf<File>()
@@ -221,9 +222,10 @@ class PaparazziPluginTest {
       "build/reports/tests/testDebugUnitTest/classes/app.cash.paparazzi.plugin.test.LaunchViewTest.html"
     )
     val reportText = testReportFile.readText()
-    assertThat(reportText).contains("<img")
+    val deltaSnapshot = File(fixtureRoot, "build/paparazzi/failures/delta-app.cash.paparazzi.plugin.test_LaunchViewTest_testViews.png")
+    val encodedImage = Base64.getEncoder().encode(deltaSnapshot.readBytes()).toString(Charsets.UTF_8)
     assertThat(reportText).contains(
-      "paparazzi/failures/delta-app.cash.paparazzi.plugin.test_LaunchViewTest_testViews.png\"/>"
+      "<img width=\"100%\" src=\"data:image/png;base64,$encodedImage\"/>"
     )
   }
 
