@@ -7,6 +7,7 @@ import okio.FileSystem
 import okio.Path
 import okio.Path.Companion.toOkioPath
 import okio.Path.Companion.toPath
+import org.junit.After
 import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Rule
@@ -24,11 +25,17 @@ class ApngVerifierTest {
   private val firstFrame = createImage(squareOffset = Point(5, 5))
   private val secondFrame = createImage(squareOffset = Point(25, 25))
   private val thirdFrame = createImage(squareOffset = Point(45, 45))
+  private val defaultLocale = Locale.getDefault()
 
   @Before
   fun setup() {
     // set locale to US to avoid issues with different locales
     Locale.setDefault(Locale.US)
+  }
+
+  @After
+  fun tearDown() {
+    Locale.setDefault(defaultLocale)
   }
 
   @Test
