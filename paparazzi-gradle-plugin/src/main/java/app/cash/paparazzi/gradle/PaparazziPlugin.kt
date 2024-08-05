@@ -45,6 +45,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
 import java.io.File
 import java.io.File.separator
+import java.util.Base64
 import java.util.Locale
 import javax.inject.Inject
 
@@ -269,10 +270,9 @@ public class PaparazziPlugin @Inject constructor(
 
               val testHtmlFile = File(reportRootDir, "classes${separator}$testClass.html")
               var content = testHtmlFile.readText()
-              val relativeSnapshotPath = snapshot.relativeToOrSelf(buildDirectory.asFile.get()).invariantSeparatorsPath
               content = content.replace(
                 htmlTestMethodHeader(testMethod),
-                htmlTestMethodHeaderWithSnapshot(testMethod, relativeSnapshotPath)
+                snapshot.htmlTestMethodHeaderWithSnapshot(testMethod)
               )
               testHtmlFile.writeText(content)
             }
@@ -356,8 +356,10 @@ public class PaparazziPlugin @Inject constructor(
 
   private fun htmlTestMethodHeader(testMethod: String) = "$testMethod</h3>"
 
-  private fun htmlTestMethodHeaderWithSnapshot(testMethod: String, relativeSnapshotPath: String) =
-    "${htmlTestMethodHeader(testMethod)}\n<img width=\"100%\" src=\"..$separator..$separator..$separator..${separator}$relativeSnapshotPath\"/>"
+  private fun File.htmlTestMethodHeaderWithSnapshot(testMethod: String): String {
+    val encodedImage = Base64.getEncoder().encode(readBytes()).toString(Charsets.UTF_8)
+    return "${htmlTestMethodHeader(testMethod)}\n<img width=\"100%\" src=\"data:image/png;base64,${encodedImage}\"/>"
+  }
 }
 
 private const val DEFAULT_COMPILE_SDK_VERSION = 34
