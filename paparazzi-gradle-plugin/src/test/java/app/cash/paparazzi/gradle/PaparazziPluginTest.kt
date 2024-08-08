@@ -1461,6 +1461,10 @@ class PaparazziPluginTest {
     val fixtureRoot = File("src/test/projects/image-hash")
 
     gradleRunner
+      .withArguments("recordPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    gradleRunner
       .withArguments("verifyPaparazziDebug", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
   }
