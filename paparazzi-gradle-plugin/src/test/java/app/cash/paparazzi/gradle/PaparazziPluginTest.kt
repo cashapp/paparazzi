@@ -17,6 +17,7 @@ import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
 import java.io.File
+import java.util.Base64
 
 class PaparazziPluginTest {
   private val filesToDelete = mutableListOf<File>()
@@ -206,6 +207,29 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun junitReportSnapshot() {
+    val fixtureRoot = File("src/test/projects/junit-report-snapshots")
+
+    val result = gradleRunner
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .forwardOutput()
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    assertThat(result.task(":addPaparazziSnapshotsToReportDebug")).isNotNull()
+
+    val testReportFile = File(
+      fixtureRoot,
+      "build/reports/tests/testDebugUnitTest/classes/app.cash.paparazzi.plugin.test.LaunchViewTest.html"
+    )
+    val reportText = testReportFile.readText()
+    val deltaSnapshot = File(fixtureRoot, "build/paparazzi/failures/delta-app.cash.paparazzi.plugin.test_LaunchViewTest_testViews.png")
+    val encodedImage = Base64.getEncoder().encode(deltaSnapshot.readBytes()).toString(Charsets.UTF_8)
+    assertThat(reportText).contains(
+      "<img width=\"100%\" src=\"data:image/png;base64,$encodedImage\"/>"
+    )
+  }
+
+  @Test
   fun buildClassAccess() {
     val fixtureRoot = File("src/test/projects/build-class")
 
@@ -314,7 +338,8 @@ class PaparazziPluginTest {
     val snapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_RecordTest_record.png")
     assertThat(snapshot.exists()).isTrue()
 
-    val snapshotWithLabel = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_RecordTest_record_label.png")
+    val snapshotWithLabel =
+      File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_RecordTest_record_label.png")
     assertThat(snapshotWithLabel.exists()).isTrue()
   }
 
@@ -347,7 +372,8 @@ class PaparazziPluginTest {
     val snapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_RecordTest_record.png")
     assertThat(snapshot.exists()).isTrue()
 
-    val snapshotWithLabel = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_RecordTest_record_label.png")
+    val snapshotWithLabel =
+      File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_RecordTest_record_label.png")
     assertThat(snapshotWithLabel.exists()).isTrue()
   }
 
@@ -364,10 +390,12 @@ class PaparazziPluginTest {
 
     val snapshotsDir = File(moduleRoot, "src/test/snapshots").registerForDeletionOnExit()
 
-    val firstSnapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_RecordTest_recordFirst.png")
+    val firstSnapshot =
+      File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_RecordTest_recordFirst.png")
     assertThat(firstSnapshot.exists()).isFalse()
 
-    val secondSnapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_RecordTest_recordSecond_label.png")
+    val secondSnapshot =
+      File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_RecordTest_recordSecond_label.png")
     assertThat(secondSnapshot.exists()).isTrue()
   }
 
@@ -746,7 +774,8 @@ class PaparazziPluginTest {
 
     assertThat(result.task(":consumer:preparePaparazziDebugResources")).isNotNull()
 
-    val resourcesFile = File(fixtureRoot, "consumer/build/intermediates/paparazzi/debug/resources.json")
+    val resourcesFile =
+      File(fixtureRoot, "consumer/build/intermediates/paparazzi/debug/resources.json")
     assertThat(resourcesFile.exists()).isTrue()
 
     val config = resourcesFile.loadConfig()
@@ -769,7 +798,9 @@ class PaparazziPluginTest {
     )
     assertThat(config.aarExplodedDirs)
       .comparingElementsUsing(MATCHES_PATTERN)
-      .containsExactly("^caches/[0-9]{1,2}.[0-9](.[0-9])?/transforms/[0-9a-f]{32}/transformed/external/res\$")
+      .containsExactly(
+        "^caches/[0-9]{1,2}.[0-9](.[0-9])?/transforms/[0-9a-f]{32}/transformed/external/res\$"
+      )
   }
 
   @Test
@@ -782,7 +813,8 @@ class PaparazziPluginTest {
 
     assertThat(result.task(":consumer:preparePaparazziDebugResources")).isNotNull()
 
-    val resourcesFile = File(fixtureRoot, "consumer/build/intermediates/paparazzi/debug/resources.json")
+    val resourcesFile =
+      File(fixtureRoot, "consumer/build/intermediates/paparazzi/debug/resources.json")
     assertThat(resourcesFile.exists()).isTrue()
 
     val config = resourcesFile.loadConfig()
@@ -805,7 +837,9 @@ class PaparazziPluginTest {
     )
     assertThat(config.aarExplodedDirs)
       .comparingElementsUsing(MATCHES_PATTERN)
-      .containsExactly("^caches/[0-9]{1,2}.[0-9](.[0-9])?/transforms/[0-9a-f]{32}/transformed/external/res\$")
+      .containsExactly(
+        "^caches/[0-9]{1,2}.[0-9](.[0-9])?/transforms/[0-9a-f]{32}/transformed/external/res\$"
+      )
   }
 
   @Test
@@ -903,10 +937,13 @@ class PaparazziPluginTest {
       assertThat(this!!.outcome).isEqualTo(SUCCESS)
     }
 
-    val resourcesFile = File(consumerModuleRoot, "build/intermediates/paparazzi/debug/resources.json")
+    val resourcesFile =
+      File(consumerModuleRoot, "build/intermediates/paparazzi/debug/resources.json")
 
     var config = resourcesFile.loadConfig()
-    assertThat(config.moduleResourceDirs).containsExactly("../producer/build/intermediates/packaged_res/debug/packageDebugResources")
+    assertThat(config.moduleResourceDirs).containsExactly(
+      "../producer/build/intermediates/packaged_res/debug/packageDebugResources"
+    )
 
     buildDir.deleteRecursively()
 
@@ -928,7 +965,9 @@ class PaparazziPluginTest {
     }
 
     config = resourcesFile.loadConfig()
-    assertThat(config.moduleResourceDirs).containsExactly("../producer/build/intermediates/packaged_res/debug/packageDebugResources")
+    assertThat(config.moduleResourceDirs).containsExactly(
+      "../producer/build/intermediates/packaged_res/debug/packageDebugResources"
+    )
   }
 
   @Test
@@ -1076,7 +1115,8 @@ class PaparazziPluginTest {
       assertThat(this!!.outcome).isEqualTo(SUCCESS)
     }
 
-    val resourcesFile = File(consumerModuleRoot, "build/intermediates/paparazzi/debug/resources.json")
+    val resourcesFile =
+      File(consumerModuleRoot, "build/intermediates/paparazzi/debug/resources.json")
 
     var config = resourcesFile.loadConfig()
     assertThat(config.projectAssetDirs).containsExactly(
@@ -1136,7 +1176,9 @@ class PaparazziPluginTest {
     var config = resourcesFile.loadConfig()
     assertThat(config.aarAssetDirs)
       .comparingElementsUsing(MATCHES_PATTERN)
-      .containsExactly("^caches/[0-9]{1,2}.[0-9](.[0-9])?/transforms/[0-9a-f]{32}/transformed/external1/assets\$")
+      .containsExactly(
+        "^caches/[0-9]{1,2}.[0-9](.[0-9])?/transforms/[0-9a-f]{32}/transformed/external1/assets\$"
+      )
 
     buildDir.deleteRecursively()
 
@@ -1155,7 +1197,9 @@ class PaparazziPluginTest {
     config = resourcesFile.loadConfig()
     assertThat(config.aarAssetDirs)
       .comparingElementsUsing(MATCHES_PATTERN)
-      .containsExactly("^caches/[0-9]{1,2}.[0-9](.[0-9])?/transforms/[0-9a-f]{32}/transformed/external2/assets\$")
+      .containsExactly(
+        "^caches/[0-9]{1,2}.[0-9](.[0-9])?/transforms/[0-9a-f]{32}/transformed/external2/assets\$"
+      )
   }
 
   @Test
