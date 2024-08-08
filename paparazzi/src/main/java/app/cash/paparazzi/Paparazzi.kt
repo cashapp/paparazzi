@@ -138,8 +138,12 @@ public class Paparazzi @JvmOverloads constructor(
   ): Unit = sdk.unsafeUpdateConfig(deviceConfig, theme, renderingMode)
 
   private fun createFrameHandler(name: String? = null, frameCount: Int = 1, fps: Int = -1): SnapshotHandler.FrameHandler {
-    val snapshot = Snapshot(name, testName!!, Date())
-    return snapshotHandler.newFrameHandler(snapshot, frameCount, fps)
+    try {
+      val snapshot = Snapshot(name, testName!!, Date())
+      return snapshotHandler.newFrameHandler(snapshot, frameCount, fps)
+    } catch (e: NullPointerException) {
+      throw IllegalStateException("Missing testName. Multiple instances of Paparazzi possibly being used.")
+    }
   }
 
   private fun Description.toTestName(): TestName {
