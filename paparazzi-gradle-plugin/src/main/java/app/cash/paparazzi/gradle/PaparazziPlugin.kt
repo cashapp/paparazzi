@@ -117,7 +117,7 @@ public class PaparazziPlugin @Inject constructor(
       val gradleUserHomeDir = project.gradle.gradleUserHomeDir
       val reportOutputDir = project.extensions.getByType(ReportingExtension::class.java).baseDirectory.dir("paparazzi/${variant.name}")
 
-      val sources = AndroidVariantSources(variant)
+      val sources = AndroidVariantSources(variant, testVariant)
 
       val writeResourcesTask = project.tasks.register(
         "preparePaparazzi${variantSlug}Resources",
