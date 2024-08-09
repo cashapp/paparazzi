@@ -58,14 +58,6 @@ class HtmlReportWriterTest {
       }
     }
 
-    assertThat(File("${reportRoot.root}/index.js")).hasContent(
-      """
-        |window.all_runs = [
-        |  "run_one"
-        |];
-      """.trimMargin()
-    )
-
     assertThat(File("${reportRoot.root}/runs/run_one.js")).hasContent(
       """
         |window.runs["run_one"] = [
@@ -182,14 +174,6 @@ class HtmlReportWriterTest {
         frameHandler.handle(anyImage)
       }
     }
-
-    assertThat(File("${reportRoot.root}/index.js")).hasContent(
-      """
-        |window.all_runs = [
-        |  "run_one"
-        |];
-      """.trimMargin()
-    )
 
     assertThat(File("${reportRoot.root}/runs/run_one.js")).hasContent(
       """

@@ -471,6 +471,7 @@ class PaparazziPluginTest {
   fun rerunOnReportDeletion() {
     val fixtureRoot = File("src/test/projects/rerun-report")
     val reportDir = File(fixtureRoot, "build/reports/paparazzi/debug").registerForDeletionOnExit()
+    val reportTempDir = File(fixtureRoot, "build/paparazzi/tmp/debug").registerForDeletionOnExit()
     val reportHtml = File(reportDir, "index.html")
     assertThat(reportHtml.exists()).isFalse()
 
@@ -480,9 +481,14 @@ class PaparazziPluginTest {
     val firstRunResult = gradleRunner
       .withArguments("recordPaparazziDebug", "--stacktrace")
       .forwardOutput()
+      .withDebug(true)
       .runFixture(fixtureRoot) { build() }
 
     with(firstRunResult.task(":testDebugUnitTest")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(SUCCESS)
+    }
+    with(firstRunResult.task(":reportPaparazziDebug")) {
       assertThat(this).isNotNull()
       assertThat(this!!.outcome).isEqualTo(SUCCESS)
     }
@@ -490,6 +496,7 @@ class PaparazziPluginTest {
 
     // Remove report
     reportDir.deleteRecursively()
+    reportTempDir.deleteRecursively()
 
     // Take 2
     val secondRunResult = gradleRunner
@@ -497,6 +504,10 @@ class PaparazziPluginTest {
       .runFixture(fixtureRoot) { build() }
 
     with(secondRunResult.task(":testDebugUnitTest")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(SUCCESS) // not UP-TO-DATE
+    }
+    with(secondRunResult.task(":reportPaparazziDebug")) {
       assertThat(this).isNotNull()
       assertThat(this!!.outcome).isEqualTo(SUCCESS) // not UP-TO-DATE
     }

@@ -25,7 +25,6 @@ import okio.Path.Companion.toPath
 import okio.blackholeSink
 import okio.buffer
 import okio.sink
-import okio.source
 import java.awt.image.BufferedImage
 import java.io.File
 import java.text.SimpleDateFormat
@@ -59,7 +58,7 @@ import java.util.UUID
  */
 public class HtmlReportWriter @JvmOverloads constructor(
   private val runName: String = defaultRunName(),
-  private val rootDirectory: File = File(System.getProperty("paparazzi.report.dir")),
+  private val rootDirectory: File = File(System.getProperty("paparazzi.report.temp.dir")),
   snapshotRootDirectory: File = File(System.getProperty("paparazzi.snapshot.dir"))
 ) : SnapshotHandler {
   private val runsDirectory: File = File(rootDirectory, "runs")
@@ -78,9 +77,7 @@ public class HtmlReportWriter @JvmOverloads constructor(
     runsDirectory.mkdirs()
     imagesDirectory.mkdirs()
     videosDirectory.mkdirs()
-    writeStaticFiles()
     writeRunJs()
-    writeIndexJs()
   }
 
   override fun newFrameHandler(
@@ -201,14 +198,6 @@ public class HtmlReportWriter @JvmOverloads constructor(
       writeUtf8("window.runs[\"$runName\"] = ")
       PaparazziJson.listOfShotsAdapter.toJson(this, shots)
       writeUtf8(";")
-    }
-  }
-
-  private fun writeStaticFiles() {
-    for (staticFile in listOf("index.html", "paparazzi.js")) {
-      File(rootDirectory, staticFile).writeAtomically {
-        writeAll(HtmlReportWriter::class.java.classLoader.getResourceAsStream(staticFile).source())
-      }
     }
   }
 
