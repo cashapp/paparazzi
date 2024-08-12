@@ -19,6 +19,7 @@ import app.cash.paparazzi.SnapshotHandler.FrameHandler
 import app.cash.paparazzi.internal.PaparazziJson
 import app.cash.paparazzi.internal.apng.ApngWriter
 import com.google.common.base.CharMatcher
+import com.google.common.io.Files
 import okio.BufferedSink
 import okio.HashingSink
 import okio.Path.Companion.toPath
@@ -104,7 +105,7 @@ public class HtmlReportWriter @JvmOverloads constructor(
         if (hashes.isEmpty()) return
         writer.close()
         val snapshotFile = File(snapshotDir, "${hash(hashes)}.png")
-        snapshotTmpFile.renameTo(snapshotFile)
+        Files.move(snapshotTmpFile, snapshotFile)
         snapshotTmpFile.delete()
 
         if (isRecording) {
