@@ -84,10 +84,56 @@ class HtmlReportWriterTest {
   }
 
   @Test
+  fun invalidCharSnapshot() {
+    val htmlReportWriter = HtmlReportWriter("run_one", reportRoot.root)
+    htmlReportWriter.use {
+      val frameHandler = htmlReportWriter.newFrameHandler(
+        snapshot = Snapshot(
+          name = "bad input ?<>|",
+          testName = TestName("app.cash.paparazzi", "CelebrityTest", "testSettings"),
+          timestamp = Instant.parse("2019-03-20T10:27:43Z").toDate(),
+          tags = listOf("error")
+        ),
+        frameCount = 1,
+        fps = -1
+      )
+      frameHandler.use {
+        frameHandler.handle(anyImage)
+      }
+    }
+
+    assertThat(File("${reportRoot.root}/index.js")).hasContent(
+      """
+        |window.all_runs = [
+        |  "run_one"
+        |];
+      """.trimMargin()
+    )
+
+    assertThat(File("${reportRoot.root}/runs/run_one.js")).hasContent(
+      """
+        |window.runs["run_one"] = [
+        |  {
+        |    "name": "bad input ?<>|",
+        |    "testName": "app.cash.paparazzi.CelebrityTest#testSettings",
+        |    "timestamp": "2019-03-20T10:27:43.000Z",
+        |    "tags": [
+        |      "error"
+        |    ],
+        |    "file": "images/$anyImageHash.png"
+        |  }
+        |];
+      """.trimMargin()
+    )
+  }
+
+  @Test
   fun sanitizeForFilename() {
     assertThat("0 Dollars".sanitizeForFilename()).isEqualTo("0_dollars")
     assertThat("`!#$%&*+=|\\'\"<>?/".sanitizeForFilename()).isEqualTo("_________________")
     assertThat("~@^()[]{}:;,.".sanitizeForFilename()).isEqualTo("~@^()[]{}:;,.")
+    assertThat("app.cash.paparazzi.SampleTest.sampleMethod_snapshot_\\'\"<>?/".sanitizeForFilename(false))
+      .isEqualTo("app.cash.paparazzi.SampleTest.sampleMethod_snapshot________")
   }
 
   @Test
