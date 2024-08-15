@@ -32,12 +32,9 @@ import android.view.ViewGroup
 import androidx.activity.setViewTreeOnBackPressedDispatcherOwner
 import androidx.annotation.LayoutRes
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Recomposer
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.InternalComposeUiApi
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.WindowRecomposerPolicy
-import androidx.compose.ui.platform.createLifecycleAwareWindowRecomposer
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
@@ -51,6 +48,7 @@ import app.cash.paparazzi.internal.PaparazziOnBackPressedDispatcherOwner
 import app.cash.paparazzi.internal.PaparazziSavedStateRegistryOwner
 import app.cash.paparazzi.internal.Renderer
 import app.cash.paparazzi.internal.SessionParamsBuilder
+import app.cash.paparazzi.internal.compose.RecomposerWatcher
 import app.cash.paparazzi.internal.interceptors.EditModeInterceptor
 import app.cash.paparazzi.internal.interceptors.IInputMethodManagerInterceptor
 import app.cash.paparazzi.internal.interceptors.ResourcesInterceptor
@@ -96,6 +94,9 @@ public class PaparazziSdk @JvmOverloads constructor(
   private val onNewFrame: (BufferedImage) -> Unit
 ) {
   private val logger = PaparazziLogger()
+  private val recomposerWatcher by lazy {
+    RecomposerWatcher(MAIN_DISPATCHER, logger)
+  }
   private lateinit var renderSession: RenderSessionImpl
   private lateinit var bridgeRenderSession: RenderSession
 
@@ -263,17 +264,9 @@ public class PaparazziSdk @JvmOverloads constructor(
         // CompositionContext, which requires first finding the "content view", then using that
         // to find a root view with a ViewTreeLifecycleOwner
         viewGroup.id = android.R.id.content
-
-        // By default, Compose UI uses its own implementation of CoroutineDispatcher, `AndroidUiDispatcher`.
-        // Since this dispatcher does not provide its own implementation of Delay, it will default to using DefaultDelay which runs
-        // async to our test Handler. By initializing Recomposer with Dispatchers.Main, Delay will now be backed by our test Handler,
-        // synchronizing expected behavior.
-        WindowRecomposerPolicy.setFactory {
-          val windowRecomposer = it.createLifecycleAwareWindowRecomposer(MAIN_DISPATCHER)
-          recomposer = windowRecomposer
-          return@setFactory windowRecomposer
-        }
       }
+
+      recomposerWatcher.register()
 
       if (hasLifecycleOwnerRuntime) {
         val lifecycleOwner = PaparazziLifecycleOwner()
@@ -292,31 +285,29 @@ public class PaparazziSdk @JvmOverloads constructor(
       viewGroup.addView(modifiedView)
       for (frame in 0 until frameCount) {
         val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
-        withTime(nowNanos) {
-          var result = renderSession.render(true)
-
-          if (result.status != Result.Status.ERROR_UNKNOWN) {
-            // If there is a recomposition that needs to happen, we need to trigger it within the context of the first frame.
-            if (frame == 0 && hasComposeRuntime && (recomposer as? Recomposer)?.hasPendingWork == true) {
-              withTime(nowNanos) {
-                result = renderSession.render(true)
-              }
-            }
-          }
-
-          if (result.status == ERROR_UNKNOWN) {
-            throw result.exception
-          }
-
-          val image = bridgeRenderSession.image
-          if (validateAccessibility) {
-            require(renderExtensions.isEmpty()) {
-              "Running accessibility validation and render extensions simultaneously is not supported."
-            }
-            validateLayoutAccessibility(modifiedView, image)
-          }
-          onNewFrame(scaleImage(frameImage(image)))
+        var result = withTime(nowNanos) {
+          renderSession.render(true)
         }
+
+        // If we have pendingTasks run recomposer to ensure we get the correct frame.
+        result = recomposerWatcher.onRenderResult(frame, result) {
+          withTime(nowNanos) {
+            renderSession.render(true)
+          }
+        }
+
+        if (result.status == ERROR_UNKNOWN) {
+          throw result.exception
+        }
+
+        val image = bridgeRenderSession.image
+        if (validateAccessibility) {
+          require(renderExtensions.isEmpty()) {
+            "Running accessibility validation and render extensions simultaneously is not supported."
+          }
+          validateLayoutAccessibility(modifiedView, image)
+        }
+        onNewFrame(scaleImage(frameImage(image)))
       }
     } finally {
       viewGroup.removeAllViews()
@@ -326,16 +317,17 @@ public class PaparazziSdk @JvmOverloads constructor(
         (view.parent as ViewGroup).removeView(view)
       }
       AnimationHandler.sAnimatorHandler.set(null)
+      recomposerWatcher.unregister()
       if (hasComposeRuntime) {
         forceReleaseComposeReferenceLeaks()
       }
     }
   }
 
-  private fun withTime(
+  private fun <T> withTime(
     timeNanos: Long,
-    block: () -> Unit
-  ) {
+    block: () -> T
+  ): T {
     val frameNanos = timeNanos
 
     // Execute the block at the requested time.
@@ -355,7 +347,7 @@ public class PaparazziSdk @JvmOverloads constructor(
         RenderAction.getCurrentContext().sessionInteractiveData.choreographerCallbacks
       choreographerCallbacks.execute(currentTimeNanos, Bridge.getLog())
 
-      block()
+      return block()
     } catch (e: Throwable) {
       Bridge.getLog().error("broken", "Failed executing Choreographer#doFrame", e, null, null)
       throw e
@@ -628,7 +620,7 @@ public class PaparazziSdk @JvmOverloads constructor(
         |              android:layout_height="${if (renderingMode.vertAction == RenderingMode.SizeAction.SHRINK) "wrap_content" else "match_parent"}"/>
     """.trimMargin()
 
-    private fun isPresentInClasspath(vararg classNames: String): Boolean {
+    internal fun isPresentInClasspath(vararg classNames: String): Boolean {
       return try {
         for (className in classNames) {
           Class.forName(className)
