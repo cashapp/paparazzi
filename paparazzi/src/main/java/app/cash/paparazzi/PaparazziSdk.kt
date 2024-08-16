@@ -32,9 +32,12 @@ import android.view.ViewGroup
 import androidx.activity.setViewTreeOnBackPressedDispatcherOwner
 import androidx.annotation.LayoutRes
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Recomposer
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.InternalComposeUiApi
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.WindowRecomposerPolicy
+import androidx.compose.ui.platform.createLifecycleAwareWindowRecomposer
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
@@ -48,7 +51,6 @@ import app.cash.paparazzi.internal.PaparazziOnBackPressedDispatcherOwner
 import app.cash.paparazzi.internal.PaparazziSavedStateRegistryOwner
 import app.cash.paparazzi.internal.Renderer
 import app.cash.paparazzi.internal.SessionParamsBuilder
-import app.cash.paparazzi.internal.compose.RecomposerWatcher
 import app.cash.paparazzi.internal.interceptors.EditModeInterceptor
 import app.cash.paparazzi.internal.interceptors.IInputMethodManagerInterceptor
 import app.cash.paparazzi.internal.interceptors.ResourcesInterceptor
@@ -94,9 +96,6 @@ public class PaparazziSdk @JvmOverloads constructor(
   private val onNewFrame: (BufferedImage) -> Unit
 ) {
   private val logger = PaparazziLogger()
-  private val recomposerWatcher by lazy {
-    RecomposerWatcher(MAIN_DISPATCHER, logger)
-  }
   private lateinit var renderSession: RenderSessionImpl
   private lateinit var bridgeRenderSession: RenderSession
 
@@ -257,16 +256,25 @@ public class PaparazziSdk @JvmOverloads constructor(
         // Initialize the choreographer at time=0.
       }
 
-      // Consumer may not have compose runtime, so we need to ensure we don't attempt to reference the type.
+      // The consumer may not have compose runtime on the classpath, so we don't reference the type.
       var recomposer: Any? = null
+
       if (hasComposeRuntime) {
         // During onAttachedToWindow, AbstractComposeView will attempt to resolve its parent's
         // CompositionContext, which requires first finding the "content view", then using that
         // to find a root view with a ViewTreeLifecycleOwner
         viewGroup.id = android.R.id.content
-      }
 
-      recomposerWatcher.register()
+        // By default, Compose UI uses its own implementation of CoroutineDispatcher, `AndroidUiDispatcher`.
+        // Since this dispatcher does not provide its own implementation of Delay, it will default to using DefaultDelay which runs
+        // async to our test Handler. By initializing Recomposer with Dispatchers.Main, Delay will now be backed by our test Handler,
+        // synchronizing expected behavior.
+        WindowRecomposerPolicy.setFactory {
+          val windowRecomposer = it.createLifecycleAwareWindowRecomposer(MAIN_DISPATCHER)
+          recomposer = windowRecomposer
+          return@setFactory windowRecomposer
+        }
+      }
 
       if (hasLifecycleOwnerRuntime) {
         val lifecycleOwner = PaparazziLifecycleOwner()
@@ -285,19 +293,36 @@ public class PaparazziSdk @JvmOverloads constructor(
       viewGroup.addView(modifiedView)
       for (frame in 0 until frameCount) {
         val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
-        var result = withTime(nowNanos) {
-          renderSession.render(true)
-        }
 
         // If we have pendingTasks run recomposer to ensure we get the correct frame.
-        result = recomposerWatcher.onRenderResult(frame, result) {
-          withTime(nowNanos) {
-            renderSession.render(true)
+        var hasPendingWork = false
+        withTime(nowNanos) {
+          val result = renderSession.render(true)
+          if (result.status == ERROR_UNKNOWN) {
+            throw result.exception
+          }
+          if (hasComposeRuntime && recomposer != null) {
+            // If we have pending tasks, we need to trigger it within the context of the first frame.
+            if (frame == 0 && (recomposer as Recomposer).hasPendingWork) {
+              hasPendingWork = true
+            }
           }
         }
 
-        if (result.status == ERROR_UNKNOWN) {
-          throw result.exception
+        if (hasPendingWork) {
+          withTime(nowNanos) {
+            val result = renderSession.render(true)
+            if (result.status == ERROR_UNKNOWN) {
+              throw result.exception
+            }
+          }
+
+          val recomposerInstance = recomposer as Recomposer
+          if (recomposerInstance.hasPendingWork) {
+            logger.warning(
+              "Pending work detected. This may cause unexpected results in your generated snapshots. ${recomposerInstance.changeCount}"
+            )
+          }
         }
 
         val image = bridgeRenderSession.image
@@ -317,17 +342,16 @@ public class PaparazziSdk @JvmOverloads constructor(
         (view.parent as ViewGroup).removeView(view)
       }
       AnimationHandler.sAnimatorHandler.set(null)
-      recomposerWatcher.unregister()
       if (hasComposeRuntime) {
         forceReleaseComposeReferenceLeaks()
       }
     }
   }
 
-  private fun <T> withTime(
+  private fun withTime(
     timeNanos: Long,
-    block: () -> T
-  ): T {
+    block: () -> Unit
+  ) {
     val frameNanos = timeNanos
 
     // Execute the block at the requested time.
@@ -620,7 +644,7 @@ public class PaparazziSdk @JvmOverloads constructor(
         |              android:layout_height="${if (renderingMode.vertAction == RenderingMode.SizeAction.SHRINK) "wrap_content" else "match_parent"}"/>
     """.trimMargin()
 
-    internal fun isPresentInClasspath(vararg classNames: String): Boolean {
+    private fun isPresentInClasspath(vararg classNames: String): Boolean {
       return try {
         for (className in classNames) {
           Class.forName(className)

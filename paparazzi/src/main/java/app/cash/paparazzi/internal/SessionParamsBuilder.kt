@@ -106,7 +106,7 @@ internal data class SessionParamsBuilder(
 
     val localeQualifier = folderConfiguration.localeQualifier
     val layoutDirectionQualifier = folderConfiguration.layoutDirectionQualifier
-    // https://cs.android.com/android-studio/platform/tools/adt/idea/+/mirror-goog-studio-main:rendering/src/com/android/tools/rendering/RenderTask.java;l=698
+    // https://cs.android.com/android-studio/platform/tools/adt/idea/+/mirror-goog-studio-main:rendering/src/com/android/tools/rendering/RenderTask.java;l=705;drc=1c797047cbbecd4c6dba47ea5c3c93703d4d79d0
     if (LayoutDirection.RTL == layoutDirectionQualifier.value && !Bridge.isLocaleRtl(localeQualifier.tag)) {
       result.locale = "ur"
     } else {
