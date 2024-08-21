@@ -159,8 +159,10 @@ class PaparazziPlugin : Plugin<Project> {
       val isVerifyRun = project.objects.property(Boolean::class.java)
 
       project.gradle.taskGraph.whenReady { graph ->
+        println("start task graph when ready callback")
         isRecordRun.set(recordTaskProvider.map { graph.hasTask(it) })
         isVerifyRun.set(verifyTaskProvider.map { graph.hasTask(it) })
+        println("end task graph when ready callback")
       }
 
       val testTaskProvider = project.tasks.named("test$testVariantSlug", Test::class.java) { test ->
@@ -179,14 +181,18 @@ class PaparazziPlugin : Plugin<Project> {
         test.inputs.files(nativePlatformFileCollection)
           .withPropertyName("paparazzi.nativePlatform")
           .withPathSensitivity(PathSensitivity.NONE)
+        println("start configuring test task")
         if (isVerifyRun.getOrElse(false)) {
+          println("checking if verify run")
           test.inputs.files(snapshotOutputDir)
             .withPropertyName("paparazzi.snapshot.output.dir")
             .withPathSensitivity(PathSensitivity.RELATIVE)
         }
         if (isRecordRun.getOrElse(false)) {
+          println("checking if record run")
           test.outputs.files(snapshotOutputDir)
         }
+        println("end configuring test task")
         test.outputs.dir(reportOutputDir)
 
         @Suppress("ObjectLiteralToLambda")
