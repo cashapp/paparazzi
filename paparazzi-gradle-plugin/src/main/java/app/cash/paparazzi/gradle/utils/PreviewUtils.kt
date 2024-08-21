@@ -21,10 +21,8 @@ internal fun Project.registerGeneratePreviewTask(extension: AndroidComponentsExt
     val buildType = testVariant.buildType
     val buildTypeCap = testVariant.buildType?.capitalize()
 
-    val taskName = "paparazziGeneratePreview${testVariantSlug}Kotlin"
-    val taskProvider = tasks.register(taskName) { task ->
-      task.group = VERIFICATION_GROUP
-      task.description = "Generates the preview test class to the test source set for $testVariantSlug"
+    val testSourceDir = "$projectDir/$TEST_SOURCE_DIR/${typeName}UnitTest"
+    val previewTestDir = "$testSourceDir/$namespaceDir"
 
       task.dependsOn("ksp${buildTypeCap}Kotlin")
     }
