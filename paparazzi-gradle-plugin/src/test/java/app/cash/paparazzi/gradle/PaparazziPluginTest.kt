@@ -13,7 +13,6 @@ import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.gradle.testkit.runner.TaskOutcome.FROM_CACHE
 import org.gradle.testkit.runner.TaskOutcome.SUCCESS
-import org.jetbrains.kotlin.gradle.report.TaskExecutionState
 import org.junit.After
 import org.junit.Before
 import org.junit.Ignore
@@ -1413,7 +1412,7 @@ class PaparazziPluginTest {
     val fixtureRoot = File("src/test/projects/preview-annotation-empty-test-suite")
 
     val result = gradleRunner
-      .withArguments("testDebug", "--stacktrace")
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
 
     val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/debug/images")
@@ -1421,19 +1420,23 @@ class PaparazziPluginTest {
     assertThat(snapshots!!).hasSize(1)
 
     val goldenImage = File(fixtureRoot, "src/test/resources/hello_paparazzi.png")
-    assertThat(snapshots.get(0)).isSimilarTo(goldenImage).withDefaultThreshold()
+    assertThat(snapshots[0]).isSimilarTo(goldenImage).withDefaultThreshold()
 
     assertThat(result.task(":paparazziGeneratePreviewDebugUnitTestKotlin")).isNotNull()
 
     val generatedPreviewsDir = File(fixtureRoot, "build/generated/ksp/debug/kotlin/app/cash/paparazzi/plugin/test/")
-    assertThat(generatedPreviewsDir.listFiles()?.any {
-      it.name == "paparazziPreviews.kt"
-    }).isTrue()
+    assertThat(
+      generatedPreviewsDir.listFiles()?.any {
+        it.name == "paparazziPreviews.kt"
+      }
+    ).isTrue()
 
     val generatedPreviewTestDir = File(fixtureRoot, "build/generated/source/paparazzi/debugUnitTest/app/cash/paparazzi/plugin/test/")
-    assertThat(generatedPreviewTestDir.listFiles()?.any {
-      it.name == "PreviewTests.kt"
-    }).isTrue()
+    assertThat(
+      generatedPreviewTestDir.listFiles()?.any {
+        it.name == "PreviewTests.kt"
+      }
+    ).isTrue()
   }
 
   @Test
@@ -1441,7 +1444,7 @@ class PaparazziPluginTest {
     val fixtureRoot = File("src/test/projects/preview-annotation-private-preview")
 
     val result = gradleRunner
-      .withArguments("testDebug", "--stacktrace")
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
       .forwardOutput()
       .runFixture(fixtureRoot) { buildAndFail() }
 
@@ -1454,7 +1457,7 @@ class PaparazziPluginTest {
     val fixtureRoot = File("src/test/projects/preview-annotation-preview-parameters")
 
     val result = gradleRunner
-      .withArguments("testDebug", "--stacktrace")
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
       .forwardOutput()
       .runFixture(fixtureRoot) { buildAndFail() }
 
@@ -1468,7 +1471,7 @@ class PaparazziPluginTest {
 
     val result = gradleRunner
       .forwardOutput()
-      .withArguments("testDebug", "--stacktrace")
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
 
     assertThat(result.task(":paparazziGeneratePreviewDebugUnitTestKotlin")).isNull()
