@@ -91,28 +91,12 @@ internal object PaparazziPoet {
     snapshotName: String,
     buildErrorMessage: (String?) -> String
   ) {
-    val qualifiedName = if (visibilityCheck.isFunctionPrivate) {
-      function.qualifiedName?.asString()
-    } else {
-      null
-    }
+    val qualifiedName = function.qualifiedName?.asString()
 
     addStatement("%L.PaparazziPreviewData.Error(", PACKAGE_NAME)
     indent()
     addStatement("snapshotName = %S,", snapshotName)
     addStatement("message = %S,", buildErrorMessage(qualifiedName))
-    unindent()
-    addStatement("),")
-  }
-
-  private fun CodeBlock.Builder.addProvider(
-    function: KSFunctionDeclaration,
-    snapshotName: String
-  ) {
-    addStatement("%L.PaparazziPreviewData.Provider(", PACKAGE_NAME)
-    indent()
-    addStatement("snapshotName = %S,", snapshotName)
-    addStatement("composable = { %L(it) },", function.qualifiedName?.asString())
     unindent()
     addStatement("),")
   }

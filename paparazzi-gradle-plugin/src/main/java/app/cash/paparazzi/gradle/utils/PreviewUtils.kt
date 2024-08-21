@@ -18,11 +18,13 @@ internal fun Project.registerGeneratePreviewTask(extension: AndroidComponentsExt
     val testVariant = (variant as? HasUnitTest)?.unitTest ?: return@onVariants
     val testVariantSlug = testVariant.name.capitalize()
 
-    val buildType = testVariant.buildType
-    val buildTypeCap = testVariant.buildType?.capitalize()
+      val buildType = testVariant.buildType
+      val buildTypeCap = testVariant.buildType?.capitalize()
 
-    val testSourceDir = "$projectDir/$TEST_SOURCE_DIR/${typeName}UnitTest"
-    val previewTestDir = "$testSourceDir/$namespaceDir"
+      val taskName = "paparazziGeneratePreview${testVariantSlug}Kotlin"
+      val taskProvider = tasks.register(taskName) { task ->
+      task.group = VERIFICATION_GROUP
+      task.description = "Generates the preview test class to the test source set for $testVariantSlug"
 
       task.dependsOn("ksp${buildTypeCap}Kotlin")
     }
@@ -40,7 +42,7 @@ internal fun Project.registerGeneratePreviewTask(extension: AndroidComponentsExt
     project.tasks.named { it == "ksp${testVariantSlug}Kotlin" }
       .configureEach { it.mustRunAfter(taskProvider) }
 
-    gradle.taskGraph.whenReady {
+         gradle.taskGraph.whenReady {
       taskProvider.configure { task ->
         // Test variant appends .test to the namespace
         val namespace = testVariant.namespace.get().replace(".test$".toRegex(), "")
@@ -48,8 +50,8 @@ internal fun Project.registerGeneratePreviewTask(extension: AndroidComponentsExt
         val previewTestDir = "$testSourceDir${File.separator}$namespaceDir"
 
         // Optional input if KSP doesn't output preview annotation file
-        task.inputs
-          .file(
+          task.inputs
+            .file(
             "$projectDir${File.separator}$KSP_SOURCE_DIR${File.separator}${buildType}${File.separator}kotlin${File.separator}$namespaceDir${File.separator}$PREVIEW_DATA_FILE"
           )
           .optional()
@@ -89,23 +91,29 @@ internal fun Project.registerGeneratePreviewTask(extension: AndroidComponentsExt
               .optional()
               .skipWhenEmpty()
 
-            task.outputs.dir(previewTestDir)
-            task.outputs.file("$previewTestDir${File.separator}$PREVIEW_TEST_FILE")
-            task.outputs.cacheIf { true }
+          task.outputs.dir(previewTestDir)
+          task.outputs.file("$previewTestDir${File.separator}$PREVIEW_TEST_FILE")
+          task.outputs.cacheIf { true }
 
-            task.doLast {
-              File(previewTestDir).mkdirs()
-              File(previewTestDir, PREVIEW_TEST_FILE).writeText(
-                buildString {
-                  appendLine("package $namespace")
-                  append(PREVIEW_TEST_SOURCE)
-                }
-              )
-            }
+          // test compilation depends on the task
+          tasks.findByName("compile${buildTypeCap}UnitTestKotlin")?.dependsOn(taskName)
+          // run task before processing symbols
+          tasks.findByName("ksp${buildTypeCap}UnitTestKotlin")?.mustRunAfter(taskName)
+
+          task.doLast {
+            File(previewTestDir).mkdirs()
+            File(previewTestDir, PREVIEW_TEST_FILE).writeText(
+              buildString {
+                appendLine("package $namespace")
+                append(PREVIEW_TEST_SOURCE)
+              }
+            )
           }
         }
       }
     }
+  }
+}
 
     private fun String.capitalize() =
       replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
