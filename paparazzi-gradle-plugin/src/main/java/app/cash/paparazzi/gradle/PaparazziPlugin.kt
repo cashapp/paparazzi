@@ -49,6 +49,7 @@ import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.artifacts.transform.UnzipTransform
 import org.gradle.api.internal.tasks.testing.report.TestReporter
 import org.gradle.api.logging.LogLevel.LIFECYCLE
+import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.provider.ProviderFactory
 import org.gradle.api.reporting.ReportingExtension
@@ -441,5 +442,4 @@ public class PaparazziPlugin @Inject constructor(
 }
 
 private const val DEFAULT_COMPILE_SDK_VERSION = 34
-private const val KSP_ARG_NAMESPACE = "app.cash.paparazzi.preview.namespace"
 private const val KSP_ARG_NAMESPACE = "app.cash.paparazzi.preview.namespace"
