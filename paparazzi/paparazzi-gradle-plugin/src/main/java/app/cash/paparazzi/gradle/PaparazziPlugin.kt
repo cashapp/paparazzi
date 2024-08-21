@@ -179,10 +179,14 @@ class PaparazziPlugin : Plugin<Project> {
         test.inputs.files(nativePlatformFileCollection)
           .withPropertyName("paparazzi.nativePlatform")
           .withPathSensitivity(PathSensitivity.NONE)
-        test.inputs.files(snapshotOutputDir)
-          .withPropertyName("paparazzi.snapshot.output.dir")
-          .withPathSensitivity(PathSensitivity.RELATIVE)
-
+        if (isVerifyRun.getOrElse(false)) {
+          test.inputs.files(snapshotOutputDir)
+            .withPropertyName("paparazzi.snapshot.output.dir")
+            .withPathSensitivity(PathSensitivity.RELATIVE)
+        }
+        if (isRecordRun.getOrElse(false)) {
+          test.outputs.files(snapshotOutputDir)
+        }
         test.outputs.dir(reportOutputDir)
 
         @Suppress("ObjectLiteralToLambda")
