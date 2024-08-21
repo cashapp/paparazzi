@@ -11,12 +11,12 @@ import app.cash.paparazzi.annotations.Paparazzi
 @Preview
 @Composable
 fun HelloPaparazzi(
-  @PreviewParameter(NameProvider::class) name: String,
+  @PreviewParameter(NameProvider::class) name: String
 ) {
   Text(text = name)
 }
 
-class NameProvider: PreviewParameterProvider<String> {
+class NameProvider : PreviewParameterProvider<String> {
   override val values: Sequence<String>
     get() = sequenceOf("Papa", "Razzi")
 }
