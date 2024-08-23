@@ -92,7 +92,7 @@ public class HtmlReportWriter @JvmOverloads constructor(
       val snapshotDir = if (fps == -1) imagesDirectory else videosDirectory
       val goldenDir = if (fps == -1) goldenImagesDirectory else goldenVideosDirectory
       val hashes = mutableListOf<String>()
-      val snapshotTmpFile = File(snapshotDir, snapshot.toFileName(extension = "temp.png").sanitizeForFilename(lowercase = false)!!)
+      val snapshotTmpFile = File(snapshotDir, snapshot.toFileName(extension = "temp.png"))
       val writer = ApngWriter(snapshotTmpFile.path.toPath(), fps)
 
       override fun handle(image: BufferedImage) {
@@ -108,7 +108,7 @@ public class HtmlReportWriter @JvmOverloads constructor(
         snapshotTmpFile.delete()
 
         if (isRecording) {
-          val goldenFile = File(goldenDir, snapshot.toFileName("_", "png").sanitizeForFilename(lowercase = false)!!)
+          val goldenFile = File(goldenDir, snapshot.toFileName("_", "png"))
           snapshotFile.copyTo(target = goldenFile, overwrite = true)
         }
 
@@ -233,16 +233,3 @@ internal fun defaultRunName(): String {
   return "${timestamp}_$token"
 }
 
-internal val filenameSafeChars = CharMatcher.inRange('a', 'z')
-  .or(CharMatcher.inRange('A', 'Z'))
-  .or(CharMatcher.inRange('0', '9'))
-  .or(CharMatcher.anyOf("_-.~@^()[]{}:;,"))
-
-internal val filenameLowerCaseSafeChars = CharMatcher.inRange('a', 'z')
-  .or(CharMatcher.inRange('0', '9'))
-  .or(CharMatcher.anyOf("_-.~@^()[]{}:;,"))
-
-internal fun String.sanitizeForFilename(lowercase: Boolean = true): String? {
-  val safeChars = if (lowercase) filenameLowerCaseSafeChars else filenameSafeChars
-  return safeChars.negate().replaceFrom(if (lowercase) toLowerCase(Locale.US) else this, '_')
-}
