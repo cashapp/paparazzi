@@ -20,7 +20,7 @@ fun HelloPaparazzi() {
 @Preview
 @Composable
 fun HelloPaparazziParameterized(
-  @PreviewParameter(provider = PreviewData::class) text: String,
+  @PreviewParameter(provider = PreviewData::class) text: String
 ) {
   Text(text)
 }
@@ -45,6 +45,6 @@ fun HelloPaparazziPreviewConfig() {
 object PreviewData : PreviewParameterProvider<String> {
   override val values: Sequence<String> = sequenceOf(
     "Hello, Paparazzi One!",
-    "Hello, Paparazzi Two!",
+    "Hello, Paparazzi Two!"
   )
 }

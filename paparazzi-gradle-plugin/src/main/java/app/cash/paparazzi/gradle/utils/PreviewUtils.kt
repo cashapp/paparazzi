@@ -1,73 +1,77 @@
 package app.cash.paparazzi.gradle.utils
 
+import app.cash.paparazzi.gradle.PREVIEW_TEST_SOURCE
 import app.cash.paparazzi.gradle.PaparazziExtension
 import com.android.build.api.variant.AndroidComponentsExtension
-import com.android.build.gradle.LibraryExtension
-import com.android.build.gradle.TestedExtension
+import com.android.build.api.variant.HasUnitTest
 import org.gradle.api.Project
+import org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
 import java.io.File
 import java.util.Locale
 
 private const val TEST_SOURCE_DIR = "build/generated/source/paparazzi"
 private const val KSP_SOURCE_DIR = "build/generated/ksp"
-private const val PREVIEW_DATA_FILE = "paparazziPreviews.kt"
+private const val PREVIEW_DATA_FILE = "PaparazziPreviews.kt"
 private const val PREVIEW_TEST_FILE = "PreviewTests.kt"
 
-private val Project.libraryExtension: LibraryExtension?
-  get() = extensionByTypeOrNull(LibraryExtension::class.java)
-
-private fun <T> Project.extensionByTypeOrNull(cls: Class<T>): T? =
-  try {
-    extensions.getByType(cls)
-  } catch (e: Exception) {
-    null
-  }
-
 internal fun Project.registerGeneratePreviewTask(
-  config: PaparazziExtension
+  config: PaparazziExtension,
+  extension: AndroidComponentsExtension<*, *, *>
 ) {
-  libraryExtension?.let { library ->
-    library.libraryVariants.all { variant ->
-      val namespace = library.namespace
-      val namespaceDir = namespace?.replace(".", "/")
+  extension.onVariants { variant ->
+    val testVariant = (variant as? HasUnitTest)?.unitTest ?: return@onVariants
+    val testVariantSlug = testVariant.name.capitalize()
 
-      val typeName = variant.buildType.name
-      val typeNameCap = typeName.capitalize()
+    val buildType = testVariant.buildType
+    val buildTypeCap = testVariant.buildType?.capitalize()
 
-      val testSourceDir = "$projectDir/$TEST_SOURCE_DIR/${typeName}UnitTest"
-      val previewTestDir = "$testSourceDir/$namespaceDir"
+    val taskName = "paparazziGeneratePreview${testVariantSlug}Kotlin"
+    val taskProvider = tasks.register(taskName) { task ->
+      task.group = VERIFICATION_GROUP
+      task.description = "Generates the preview test class to the test source set for $testVariantSlug"
 
-      library.sourceSets.getByName("test$typeNameCap").java {
-        srcDir(testSourceDir)
-      }
-      println("typeName: ${variant.buildType.name} ${library.namespace} $namespaceDir $typeNameCap")
-      if (config.generatePreviewTestClass.get()) {
-        val taskName = "paparazziGeneratePreview${typeNameCap}UnitTestKotlin"
-        tasks.register(taskName) { task ->
-          task.description = "Generates the preview test class to the test source set for $typeName"
+      task.dependsOn("ksp${buildTypeCap}Kotlin")
+    }
 
-          task.dependsOn("ksp${typeNameCap}Kotlin")
-          task.inputs.file(
-            "$projectDir/$KSP_SOURCE_DIR/$typeName/kotlin/$namespaceDir/$PREVIEW_DATA_FILE"
+    val testSourceDir = "$projectDir${File.separator}$TEST_SOURCE_DIR${File.separator}${buildType}UnitTest"
+    testVariant.sources.java?.addStaticSourceDirectory(testSourceDir)
+
+    // test compilation depends on the task
+    project.tasks.named {
+      it == "compile${testVariantSlug}Kotlin" ||
+        it == "generate${testVariantSlug}LintModel" ||
+        it == "lintAnalyze$testVariantSlug"
+    }.configureEach { it.dependsOn(taskProvider) }
+    // run task before processing symbols
+    project.tasks.named { it == "ksp${testVariantSlug}Kotlin" }
+      .configureEach { it.mustRunAfter(taskProvider) }
+
+    gradle.taskGraph.whenReady {
+      taskProvider.configure { task ->
+        // Test variant appends .test to the namespace
+        val namespace = testVariant.namespace.get().replace(".test$".toRegex(), "")
+        val namespaceDir = namespace.replace(".", File.separator)
+        val previewTestDir = "$testSourceDir${File.separator}$namespaceDir"
+
+        // Optional input if KSP doesn't output preview annotation file
+        task.inputs
+          .file("$projectDir${File.separator}$KSP_SOURCE_DIR${File.separator}${buildType}${File.separator}kotlin${File.separator}$namespaceDir${File.separator}$PREVIEW_DATA_FILE")
+          .optional()
+          .skipWhenEmpty()
+        task.enabled = config.generatePreviewTestClass.get()
+
+        task.outputs.dir(previewTestDir)
+        task.outputs.file("$previewTestDir${File.separator}$PREVIEW_TEST_FILE")
+        task.outputs.cacheIf { true }
+
+        task.doLast {
+          File(previewTestDir).mkdirs()
+          File(previewTestDir, PREVIEW_TEST_FILE).writeText(
+            buildString {
+              appendLine("package $namespace")
+              append(PREVIEW_TEST_SOURCE)
+            }
           )
-          task.outputs.dir(previewTestDir)
-          task.outputs.file("$previewTestDir/$PREVIEW_TEST_FILE")
-          task.outputs.cacheIf { true }
-
-          // test compilation depends on the task
-          tasks.findByName("compile${typeNameCap}UnitTestKotlin")?.dependsOn(taskName)
-          // run task before processing symbols
-          tasks.findByName("ksp${typeNameCap}UnitTestKotlin")?.mustRunAfter(taskName)
-
-          task.doLast {
-            File(previewTestDir).mkdirs()
-            File(previewTestDir, PREVIEW_TEST_FILE).writeText(
-              buildString {
-                appendLine("package $namespace")
-                append(PREVIEW_TEST_SOURCE)
-              }
-            )
-          }
         }
       }
     }
@@ -76,36 +80,3 @@ internal fun Project.registerGeneratePreviewTask(
 
 private fun String.capitalize() =
   replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
-
-private const val PREVIEW_TEST_SOURCE = """
-import app.cash.paparazzi.Paparazzi
-import app.cash.paparazzi.annotations.PaparazziPreviewData
-import app.cash.paparazzi.preview.PaparazziValuesProvider
-import app.cash.paparazzi.preview.snapshot
-import com.android.ide.common.rendering.api.SessionParams.RenderingMode.SHRINK
-import com.google.testing.junit.testparameterinjector.TestParameter
-import com.google.testing.junit.testparameterinjector.TestParameterInjector
-import org.junit.Assume.assumeTrue
-import org.junit.Rule
-import org.junit.Test
-import org.junit.runner.RunWith
-
-@RunWith(TestParameterInjector::class)
-class PreviewTests(
-  @TestParameter(valuesProvider = PreviewConfigValuesProvider::class)
-  private val preview: PaparazziPreviewData,
-) {
-  private class PreviewConfigValuesProvider : PaparazziValuesProvider(paparazziPreviews)
-
-  @get:Rule
-  val paparazzi = Paparazzi(
-    renderingMode = SHRINK,
-  )
-
-  @Test
-  fun preview() {
-    assumeTrue(preview !is PaparazziPreviewData.Empty)
-    paparazzi.snapshot(preview)
-  }
-}
-"""
