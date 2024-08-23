@@ -1,11 +1,11 @@
 package app.cash.paparazzi.gradle.utils
 
 import app.cash.paparazzi.gradle.PREVIEW_TEST_SOURCE
+import app.cash.paparazzi.gradle.PREVIEW_TEST_SOURCE
 import com.android.build.api.variant.AndroidComponentsExtension
 import com.android.build.api.variant.HasUnitTest
 import app.cash.paparazzi.gradle.PaparazziExtension
-import com.android.build.gradle.LibraryExtension
-import com.android.build.gradle.TestedExtension
+import com.android.build.api.variant.HasUnitTest
 import org.gradle.api.Project
 import org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
 import java.io.File
@@ -24,8 +24,8 @@ internal fun Project.registerGeneratePreviewTask(extension: AndroidComponentsExt
     val buildType = testVariant.buildType
     val buildTypeCap = testVariant.buildType?.capitalize()
 
-      val taskName = "paparazziGeneratePreview${testVariantSlug}Kotlin"
-      val taskProvider = tasks.register(taskName) { task ->
+    val taskName = "paparazziGeneratePreview${testVariantSlug}Kotlin"
+    val taskProvider = tasks.register(taskName) { task ->
       task.group = VERIFICATION_GROUP
       task.description = "Generates the preview test class to the test source set for $testVariantSlug"
 
@@ -60,34 +60,57 @@ internal fun Project.registerGeneratePreviewTask(extension: AndroidComponentsExt
           .optional()
           .skipWhenEmpty()
 
-          // Defaulted to true unless specified in properties
-          task.enabled = project.providers.gradleProperty(
+        // Defaulted to true unless specified in properties
+        task.enabled = project.providers.gradleProperty(
           "app.cash.paparazzi.annotation.generateTestClass"
         ).orNull?.toBoolean() != false
 
-          task.outputs.dir(previewTestDir)
-          task.outputs.file("$previewTestDir${File.separator}$PREVIEW_TEST_FILE")
-          task.outputs.cacheIf { true }
+        task.outputs.dir(previewTestDir)
+        task.outputs.file("$previewTestDir${File.separator}$PREVIEW_TEST_FILE")
+        task.outputs.cacheIf { true }
 
-          // test compilation depends on the task
-          tasks.findByName("compile${typeNameCap}UnitTestKotlin")?.dependsOn(taskName)
-          // run task before processing symbols
-          tasks.findByName("ksp${typeNameCap}UnitTestKotlin")?.mustRunAfter(taskName)
+        // test compilation depends on the task
+        project.tasks.named {
+          it == "compile${testVariantSlug}Kotlin" ||
+            it == "generate${testVariantSlug}LintModel" ||
+            it == "lintAnalyze$testVariantSlug"
+        }.configureEach { it.dependsOn(taskProvider) }
+        // run task before processing symbols
+        project.tasks.named { it == "ksp${testVariantSlug}Kotlin" }
+          .configureEach { it.mustRunAfter(taskProvider) }
 
-          task.doLast {
-            File(previewTestDir).mkdirs()
-            File(previewTestDir, PREVIEW_TEST_FILE).writeText(
-              buildString {
-                appendLine("package $namespace")
-                append(PREVIEW_TEST_SOURCE)
-              }
-            )
+        gradle.taskGraph.whenReady {
+          taskProvider.configure { task ->
+            // Test variant appends .test to the namespace
+            val namespace = testVariant.namespace.get().replace(".test$".toRegex(), "")
+            val namespaceDir = namespace.replace(".", File.separator)
+            val previewTestDir = "$testSourceDir${File.separator}$namespaceDir"
+
+            // Optional input if KSP doesn't output preview annotation file
+            task.inputs
+              .file(
+                "$projectDir${File.separator}$KSP_SOURCE_DIR${File.separator}${buildType}${File.separator}kotlin${File.separator}$namespaceDir${File.separator}$PREVIEW_DATA_FILE"
+              )
+              .optional()
+              .skipWhenEmpty()
+
+            task.outputs.dir(previewTestDir)
+            task.outputs.file("$previewTestDir${File.separator}$PREVIEW_TEST_FILE")
+            task.outputs.cacheIf { true }
+
+            task.doLast {
+              File(previewTestDir).mkdirs()
+              File(previewTestDir, PREVIEW_TEST_FILE).writeText(
+                buildString {
+                  appendLine("package $namespace")
+                  append(PREVIEW_TEST_SOURCE)
+                }
+              )
+            }
           }
         }
       }
     }
-  }
-}
 
-private fun String.capitalize() =
-  replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
+    private fun String.capitalize() =
+      replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
