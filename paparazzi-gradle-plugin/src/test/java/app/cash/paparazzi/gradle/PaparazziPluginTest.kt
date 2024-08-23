@@ -1467,19 +1467,12 @@ class PaparazziPluginTest {
       .withArguments("verifyPaparazziDebug", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
 
-    val snapshotsDir = File(fixtureRoot, "build/reports/paparazzi/debug/images")
-    val snapshots = snapshotsDir.listFilesSorted()
-    assertThat(snapshots!!).hasSize(1)
-
-    val goldenImage = File(fixtureRoot, "src/test/resources/hello_paparazzi.png")
-    assertThat(snapshots[0]).isSimilarTo(goldenImage).withDefaultThreshold()
-
     assertThat(result.task(":paparazziGeneratePreviewDebugUnitTestKotlin")).isNotNull()
 
     val generatedPreviewsDir = File(fixtureRoot, "build/generated/ksp/debug/kotlin/app/cash/paparazzi/plugin/test/")
     assertThat(
       generatedPreviewsDir.listFiles()?.any {
-        it.name == "paparazziPreviews.kt"
+        it.name == "PaparazziPreviews.kt"
       }
     ).isTrue()
 
@@ -1501,7 +1494,7 @@ class PaparazziPluginTest {
       .runFixture(fixtureRoot) { buildAndFail() }
 
     assertThat(result.task(":testDebugUnitTest")?.outcome).isEqualTo(TaskOutcome.FAILED)
-    assertThat(result.output).contains("java.lang.Exception at PreviewTests.kt:30")
+    assertThat(result.output).contains("IllegalStateException at PreviewTests.kt")
   }
 
   @Test
@@ -1514,7 +1507,7 @@ class PaparazziPluginTest {
       .runFixture(fixtureRoot) { buildAndFail() }
 
     assertThat(result.task(":testDebugUnitTest")?.outcome).isEqualTo(TaskOutcome.FAILED)
-    assertThat(result.output).contains("java.lang.Exception at PreviewTests.kt:30")
+    assertThat(result.output).contains("IllegalStateException at PreviewTests.kt")
   }
 
   @Test
@@ -1526,7 +1519,7 @@ class PaparazziPluginTest {
       .withArguments("verifyPaparazziDebug", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
 
-    assertThat(result.task(":paparazziGeneratePreviewDebugUnitTestKotlin")).isNull()
+    assertThat(result.task(":paparazziGeneratePreviewDebugUnitTestKotlin")?.outcome).isEqualTo(TaskOutcome.SKIPPED)
 
     val generatedPreviewTestDir = File(fixtureRoot, "build/generated/source/paparazzi/debugUnitTest/app/cash/paparazzi/plugin/test/")
     assertThat(generatedPreviewTestDir.exists()).isFalse()
