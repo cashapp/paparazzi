@@ -9,3 +9,7 @@ public final class app/cash/paparazzi/preview/processor/PreviewProcessorProvider
 	public synthetic fun create (Lcom/google/devtools/ksp/processing/SymbolProcessorEnvironment;)Lcom/google/devtools/ksp/processing/SymbolProcessor;
 }
 
+public final class app/cash/paparazzi/preview/processor/UtilsKt {
+	public static final fun previewArg (Lcom/google/devtools/ksp/symbol/KSAnnotation;Ljava/lang/String;)Ljava/lang/Object;
+}
+

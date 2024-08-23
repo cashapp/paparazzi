@@ -54,7 +54,8 @@ internal class PaparazziPoet(
 
               else -> addDefault(
                 function = func,
-                snapshotName = snapshotName
+                snapshotName = snapshotName,
+                  preview = preview
               )
             }
           }
@@ -70,17 +71,65 @@ internal class PaparazziPoet(
       val previewParam = func.parameters.firstOrNull { param ->
         param.annotations.any { it.isPreviewParameter() }
       }
-      func.annotations.findPreviews().distinct()
-        .map { Pair(func, previewParam) }
-    }.forEach { (func, previewParam) ->
-      block(func, previewParam)
+      func.annotations.findDistinctPreviews()
+        .map { AcceptableAnnotationsProcessData(func, previewParam) }
+    }.forEach { (func, preview, previewParam) ->
+      block(func, preview, previewParam)
     }
+
+  private data class AcceptableAnnotationsProcessData(
+    val func: KSFunctionDeclaration,
+    val model: PreviewModel,
+    val previewParam: KSValueParameter?
+  )
 
   private fun CodeBlock.Builder.addDefault(function: KSFunctionDeclaration, snapshotName: String) {
     addStatement("%L.PaparazziPreviewData(", PREVIEW_RUNTIME_PACKAGE_NAME)
     indent()
     addStatement("snapshotName = %S,", snapshotName)
     addStatement("composable = { %L() },", function.qualifiedName?.asString())
+    addPreviewData(preview)
+    unindent()
+    addStatement("),")
+  }
+
+  private fun CodeBlock.Builder.addPreviewData(preview: PreviewModel) {
+    addStatement("preview = %L.PreviewData(", PACKAGE_NAME)
+    indent()
+
+    preview.fontScale.takeIf { it != 1f }
+      ?.let { addStatement("fontScale = %Lf,", it) }
+
+    preview.device.takeIf { it.isNotEmpty() }
+      ?.let { addStatement("device = %S,", it) }
+
+    preview.widthDp.takeIf { it > -1 }
+      ?.let { addStatement("widthDp = %L,", it) }
+
+    preview.heightDp.takeIf { it > -1 }
+      ?.let { addStatement("heightDp = %L,", it) }
+
+    preview.uiMode.takeIf { it != 0 }
+      ?.let { addStatement("uiMode = %L,", it) }
+
+    preview.locale.takeIf { it.isNotEmpty() }
+      ?.let { addStatement("locale = %S,", it) }
+
+    preview.backgroundColor.takeIf { it != 0L && preview.showBackground }
+      ?.let { addStatement("backgroundColor = %S", it.toString(16)) }
+
+    unindent()
+    addStatement("),")
+  }
+
+  private fun CodeBlock.Builder.addPreviewParameterData(previewParam: KSValueParameter) {
+    addStatement("previewParameter = %L.PreviewParameterData(", PACKAGE_NAME)
+    indent()
+    addStatement("name = %S,", previewParam.name?.asString())
+    val previewParamProvider = previewParam.previewParamProvider()
+    val isClassObject = previewParamProvider.closestClassDeclaration()?.classKind == ClassKind.OBJECT
+    val previewParamProviderInstantiation = "${previewParamProvider.qualifiedName?.asString()}${if (isClassObject) "" else "()"}"
+    addStatement("values = %L.values,", previewParamProviderInstantiation)
     unindent()
     addStatement("),")
   }
