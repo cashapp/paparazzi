@@ -18,7 +18,6 @@ package app.cash.paparazzi
 import app.cash.paparazzi.SnapshotHandler.FrameHandler
 import app.cash.paparazzi.internal.PaparazziJson
 import app.cash.paparazzi.internal.apng.ApngWriter
-import com.google.common.base.CharMatcher
 import okio.BufferedSink
 import okio.HashingSink
 import okio.Path.Companion.toPath
@@ -232,4 +231,3 @@ internal fun defaultRunName(): String {
   val token = UUID.randomUUID().toString().substring(0, 6)
   return "${timestamp}_$token"
 }
-

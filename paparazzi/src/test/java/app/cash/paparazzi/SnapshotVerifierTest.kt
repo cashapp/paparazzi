@@ -51,7 +51,7 @@ class SnapshotVerifierTest {
         val verifyFrameHandler = snapshotVerifier.newFrameHandler(
           snapshot = imageSnapshot,
           frameCount = 1,
-          fps = -1,
+          fps = -1
         )
         verifyFrameHandler.use { verifyFrameHandler.handle(anyImage) }
       }
@@ -62,6 +62,5 @@ class SnapshotVerifierTest {
 
   @Test
   fun verifyVideoFilename() {
-
   }
 }
