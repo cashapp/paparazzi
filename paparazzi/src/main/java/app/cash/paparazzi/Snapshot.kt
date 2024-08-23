@@ -46,7 +46,7 @@ internal fun Snapshot.toFileName(
   } else {
     ""
   }
-  return "${testName.packageName}${delimiter}${testName.className}${delimiter}${testName.methodName}$formattedLabel.$extension".sanitizeForFilename(lowercase = true)!!
+  return "${testName.packageName}${delimiter}${testName.className}${delimiter}${testName.methodName}$formattedLabel.$extension".sanitizeForFilename(lowercase = false)!!
 }
 
 internal val filenameSafeChars = CharMatcher.inRange('a', 'z')
