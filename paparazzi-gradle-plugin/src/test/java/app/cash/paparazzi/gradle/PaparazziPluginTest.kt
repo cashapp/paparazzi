@@ -1574,7 +1574,7 @@ class PaparazziPluginTest {
     val result = gradleRunner
       .forwardOutput()
       .withArguments("verifyPaparazziDebug", "--stacktrace")
-      .runFixture(fixtureRoot) { buildAndFail() } // Currently fails because of preview parameter usage
+      .runFixture(fixtureRoot) { build() } // Currently fails because of preview parameter usage
 
     assertThat(result.task(":paparazziGeneratePreviewDebugUnitTestKotlin")).isNotNull()
 
