@@ -312,9 +312,9 @@ class HtmlReportWriterTest {
     }
   }
 
-  private fun Instant.toDate() = Date(toEpochMilli())
-
   private fun File.lastModifiedTime(): FileTime {
     return Files.readAttributes(this.toPath(), BasicFileAttributes::class.java).lastModifiedTime()
   }
 }
+
+internal fun Instant.toDate() = Date(toEpochMilli())
