@@ -62,5 +62,49 @@ class SnapshotVerifierTest {
 
   @Test
   fun verifyVideoFilename() {
+    try {
+      // set record mode
+      System.setProperty("paparazzi.test.record", "true")
+      val imageSnapshot = Snapshot(
+        name = "video name with spaces",
+        testName = TestName("app.cash.paparazzi", "CelebrityTest", "test name with spaces"),
+        timestamp = Instant.parse("2019-03-20T10:27:43Z").toDate(),
+        tags = listOf("redesign")
+      )
+      val htmlReportWriter = HtmlReportWriter("record_one", reportRoot.root, snapshotRoot.root)
+      htmlReportWriter.use {
+        val golden =
+          File("${snapshotRoot.root}/videos/app.cash.paparazzi_CelebrityTest_test_name_with_spaces_video_name_with_spaces.png")
+
+        // precondition
+        assertThat(golden).doesNotExist()
+
+        val recordFrameHandler = htmlReportWriter.newFrameHandler(
+          snapshot = imageSnapshot,
+          frameCount = 2,
+          fps = 1
+        )
+        recordFrameHandler.use {
+          recordFrameHandler.handle(anyImage)
+          recordFrameHandler.handle(anyImage)
+        }
+        assertThat(golden).exists()
+      }
+
+      val snapshotVerifier = SnapshotVerifier(0.0, snapshotRoot.root)
+      snapshotVerifier.use {
+        val verifyFrameHandler = snapshotVerifier.newFrameHandler(
+          snapshot = imageSnapshot,
+          frameCount = 2,
+          fps = 1
+        )
+        verifyFrameHandler.use {
+          verifyFrameHandler.handle(anyImage)
+          verifyFrameHandler.handle(anyImage)
+        }
+      }
+    } finally {
+      System.clearProperty("paparazzi.test.record")
+    }
   }
 }
