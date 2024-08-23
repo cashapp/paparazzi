@@ -91,7 +91,7 @@ public class PaparazziPlugin @Inject constructor(
           else -> error("${androidComponents.javaClass.name} from $plugin is not supported in Paparazzi")
         }
         setupPaparazzi(project, androidComponents)
-        setupPreviewProcessor(project)
+        setupPreviewProcessor(project, androidComponents)
       }
     }
   }
@@ -286,19 +286,20 @@ public class PaparazziPlugin @Inject constructor(
 
   private fun setupPreviewProcessor(
     project: Project,
+    extension: AndroidComponentsExtension<*, *, *>
   ) {
     project.pluginManager.apply(KspGradleSubplugin::class.java)
 
     project.addAnnotationsDependency()
     project.addProcessorDependency()
+    project.addPreviewTestDependency()
+    project.registerGeneratePreviewTask(config, extension)
 
     project.afterEvaluate {
       // pass the namespace to the processor
       val kspExtension = project.extensions.getByType(KspExtension::class.java)
       val android = project.extensions.getByType(BaseExtension::class.java)
       kspExtension.arg(KSP_ARG_NAMESPACE, android.packageName())
-
-      project.registerGeneratePreviewTask(config)
     }
   }
 
@@ -384,7 +385,20 @@ public class PaparazziPlugin @Inject constructor(
     } else {
       dependencies.create("app.cash.paparazzi:paparazzi-preview-processor:$VERSION")
     }
-    configurations.getByName("ksp").dependencies.add(dependency)
+    if (project.plugins.hasPlugin("org.jetbrains.kotlin.multiplatform")) {
+      configurations.getByName("kspCommonMainMetadata").dependencies.add(dependency)
+    } else {
+      configurations.getByName("ksp").dependencies.add(dependency)
+    }
+  }
+
+  private fun Project.addPreviewTestDependency() {
+    val dependency = if (isInternal()) {
+      dependencies.project(mapOf("path" to ":paparazzi-preview-test-junit"))
+    } else {
+      dependencies.create("app.cash.paparazzi:paparazzi-preview-test-junit:$VERSION")
+    }
+    configurations.getByName("testImplementation").dependencies.add(dependency)
   }
 
   private fun Project.isInternal(): Boolean = providers.gradleProperty("app.cash.paparazzi.internal").orNull == "true"

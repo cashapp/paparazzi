@@ -1,12 +1,9 @@
 package app.cash.paparazzi.gradle
 
-private const val PREVIEW_TEST_SOURCE = """
+internal const val PREVIEW_TEST_SOURCE = """
 import app.cash.paparazzi.Paparazzi
-import app.cash.paparazzi.preview.DefaultLocaleRule
-import app.cash.paparazzi.preview.PaparazziPreviewData
+import app.cash.paparazzi.annotations.PaparazziPreviewData
 import app.cash.paparazzi.preview.PaparazziValuesProvider
-import app.cash.paparazzi.preview.deviceConfig
-import app.cash.paparazzi.preview.locale
 import app.cash.paparazzi.preview.snapshot
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode.SHRINK
 import com.google.testing.junit.testparameterinjector.TestParameter
@@ -25,13 +22,9 @@ class PreviewTests(
 
   @get:Rule
   val paparazzi = Paparazzi(
-    deviceConfig = preview.deviceConfig(),
     renderingMode = SHRINK,
     maxPercentDifference = 0.11,
   )
-
-  @get:Rule
-  val localeRule = DefaultLocaleRule(preview.locale())
 
   @Test
   fun preview() {
