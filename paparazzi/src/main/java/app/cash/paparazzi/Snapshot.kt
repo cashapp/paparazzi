@@ -49,12 +49,12 @@ internal fun Snapshot.toFileName(
   return "${testName.packageName}${delimiter}${testName.className}${delimiter}${testName.methodName}$formattedLabel.$extension".sanitizeForFilename(lowercase = false)!!
 }
 
-internal val filenameSafeChars = CharMatcher.inRange('a', 'z')
+private val filenameSafeChars = CharMatcher.inRange('a', 'z')
   .or(CharMatcher.inRange('A', 'Z'))
   .or(CharMatcher.inRange('0', '9'))
   .or(CharMatcher.anyOf("_-.~@^()[]{}:;,"))
 
-internal val filenameLowerCaseSafeChars = CharMatcher.inRange('a', 'z')
+private val filenameLowerCaseSafeChars = CharMatcher.inRange('a', 'z')
   .or(CharMatcher.inRange('0', '9'))
   .or(CharMatcher.anyOf("_-.~@^()[]{}:;,"))
 
