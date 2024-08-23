@@ -18,30 +18,33 @@ internal fun Project.registerGeneratePreviewTask(extension: AndroidComponentsExt
     val testVariant = (variant as? HasUnitTest)?.unitTest ?: return@onVariants
     val testVariantSlug = testVariant.name.capitalize()
 
-      val buildType = testVariant.buildType
-      val buildTypeCap = testVariant.buildType?.capitalize()
+    val buildType = testVariant.buildType
+    val buildTypeCap = testVariant.buildType?.capitalize()
 
-      val taskName = "paparazziGeneratePreview${testVariantSlug}Kotlin"
-      val taskProvider = tasks.register(taskName) { task ->
+    val taskName = "paparazziGeneratePreview${testVariantSlug}Kotlin"
+    val taskProvider = tasks.register(taskName) { task ->
       task.group = VERIFICATION_GROUP
-      task.description = "Generates the preview test class to the test source set for $testVariantSlug"
+      task.description =
+        "Generates the preview test class to the test source set for $testVariantSlug"
 
       task.dependsOn("ksp${buildTypeCap}Kotlin")
     }
 
-    val testSourceDir = "$projectDir${File.separator}$TEST_SOURCE_DIR${File.separator}${buildType}UnitTest"
+    val testSourceDir =
+      "$projectDir${File.separator}$TEST_SOURCE_DIR${File.separator}${buildType}UnitTest"
     testVariant.sources.java?.addStaticSourceDirectory(testSourceDir)
 
     // test compilation depends on the task
-    project.tasks.named { it == "compile${testVariantSlug}Kotlin" }
-      .configureEach { it.dependsOn(taskProvider) }
-    project.tasks.named { it == "generate${testVariantSlug}LintModel" }
-      .configureEach { it.dependsOn(taskProvider) }
+    project.tasks.named {
+      it == "compile${testVariantSlug}Kotlin" ||
+        it == "generate${testVariantSlug}LintModel" ||
+        it == "lintAnalyze$testVariantSlug"
+    }.configureEach { it.dependsOn(taskProvider) }
     // run task before processing symbols
     project.tasks.named { it == "ksp${testVariantSlug}Kotlin" }
       .configureEach { it.mustRunAfter(taskProvider) }
 
-         gradle.taskGraph.whenReady {
+    gradle.taskGraph.whenReady {
       taskProvider.configure { task ->
         // Test variant appends .test to the namespace
         val namespace = testVariant.namespace.get().replace(".test$".toRegex(), "")
@@ -49,8 +52,8 @@ internal fun Project.registerGeneratePreviewTask(extension: AndroidComponentsExt
         val previewTestDir = "$testSourceDir${File.separator}$namespaceDir"
 
         // Optional input if KSP doesn't output preview annotation file
-          task.inputs
-            .file(
+        task.inputs
+          .file(
             "$projectDir${File.separator}$KSP_SOURCE_DIR${File.separator}${buildType}${File.separator}kotlin${File.separator}$namespaceDir${File.separator}$PREVIEW_DATA_FILE"
           )
           .optional()
@@ -90,24 +93,23 @@ internal fun Project.registerGeneratePreviewTask(extension: AndroidComponentsExt
               .optional()
               .skipWhenEmpty()
 
-          task.outputs.dir(previewTestDir)
-          task.outputs.file("$previewTestDir${File.separator}$PREVIEW_TEST_FILE")
-          task.outputs.cacheIf { true }
+        task.outputs.dir(previewTestDir)
+        task.outputs.file("$previewTestDir${File.separator}$PREVIEW_TEST_FILE")
+        task.outputs.cacheIf { true }
 
-          // test compilation depends on the task
-          tasks.findByName("compile${buildTypeCap}UnitTestKotlin")?.dependsOn(taskName)
-          // run task before processing symbols
-          tasks.findByName("ksp${buildTypeCap}UnitTestKotlin")?.mustRunAfter(taskName)
+        // test compilation depends on the task
+        tasks.findByName("compile${buildTypeCap}UnitTestKotlin")?.dependsOn(taskName)
+        // run task before processing symbols
+        tasks.findByName("ksp${buildTypeCap}UnitTestKotlin")?.mustRunAfter(taskName)
 
-          task.doLast {
-            File(previewTestDir).mkdirs()
-            File(previewTestDir, PREVIEW_TEST_FILE).writeText(
-              buildString {
-                appendLine("package $namespace")
-                append(PREVIEW_TEST_SOURCE)
-              }
-            )
-          }
+        task.doLast {
+          File(previewTestDir).mkdirs()
+          File(previewTestDir, PREVIEW_TEST_FILE).writeText(
+            buildString {
+              appendLine("package $namespace")
+              append(PREVIEW_TEST_SOURCE)
+            }
+          )
         }
       }
     }

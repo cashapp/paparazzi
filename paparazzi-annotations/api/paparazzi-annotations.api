@@ -5,19 +5,23 @@ public abstract interface class app/cash/paparazzi/annotations/PaparazziPreviewD
 }
 
 public final class app/cash/paparazzi/annotations/PaparazziPreviewData$Default : app/cash/paparazzi/annotations/PaparazziPreviewData {
-	public fun <init> (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)V
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;Lapp/cash/paparazzi/annotations/PreviewData;Lkotlin/jvm/functions/Function2;)V
 	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Lkotlin/jvm/functions/Function0;
-	public final fun copy (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)Lapp/cash/paparazzi/annotations/PaparazziPreviewData$Default;
-	public static synthetic fun copy$default (Lapp/cash/paparazzi/annotations/PaparazziPreviewData$Default;Ljava/lang/String;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Lapp/cash/paparazzi/annotations/PaparazziPreviewData$Default;
+	public final fun component2 ()Lapp/cash/paparazzi/annotations/PreviewData;
+	public final fun component3 ()Lkotlin/jvm/functions/Function2;
+	public final fun copy (Ljava/lang/String;Lapp/cash/paparazzi/annotations/PreviewData;Lkotlin/jvm/functions/Function2;)Lapp/cash/paparazzi/annotations/PaparazziPreviewData$Default;
+	public static synthetic fun copy$default (Lapp/cash/paparazzi/annotations/PaparazziPreviewData$Default;Ljava/lang/String;Lapp/cash/paparazzi/annotations/PreviewData;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lapp/cash/paparazzi/annotations/PaparazziPreviewData$Default;
 	public fun equals (Ljava/lang/Object;)Z
-	public final fun getComposable ()Lkotlin/jvm/functions/Function0;
+	public final fun getComposable ()Lkotlin/jvm/functions/Function2;
+	public final fun getPreview ()Lapp/cash/paparazzi/annotations/PreviewData;
 	public final fun getSnapshotName ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
 public final class app/cash/paparazzi/annotations/PaparazziPreviewData$Empty : app/cash/paparazzi/annotations/PaparazziPreviewData {
+	public static final field $stable I
 	public static final field INSTANCE Lapp/cash/paparazzi/annotations/PaparazziPreviewData$Empty;
 	public fun equals (Ljava/lang/Object;)Z
 	public fun hashCode ()I
@@ -25,14 +29,85 @@ public final class app/cash/paparazzi/annotations/PaparazziPreviewData$Empty : a
 }
 
 public final class app/cash/paparazzi/annotations/PaparazziPreviewData$Error : app/cash/paparazzi/annotations/PaparazziPreviewData {
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;Lapp/cash/paparazzi/annotations/PreviewData;Ljava/lang/String;)V
 	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Lapp/cash/paparazzi/annotations/PaparazziPreviewData$Error;
-	public static synthetic fun copy$default (Lapp/cash/paparazzi/annotations/PaparazziPreviewData$Error;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lapp/cash/paparazzi/annotations/PaparazziPreviewData$Error;
+	public final fun component2 ()Lapp/cash/paparazzi/annotations/PreviewData;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Lapp/cash/paparazzi/annotations/PreviewData;Ljava/lang/String;)Lapp/cash/paparazzi/annotations/PaparazziPreviewData$Error;
+	public static synthetic fun copy$default (Lapp/cash/paparazzi/annotations/PaparazziPreviewData$Error;Ljava/lang/String;Lapp/cash/paparazzi/annotations/PreviewData;Ljava/lang/String;ILjava/lang/Object;)Lapp/cash/paparazzi/annotations/PaparazziPreviewData$Error;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getMessage ()Ljava/lang/String;
+	public final fun getPreview ()Lapp/cash/paparazzi/annotations/PreviewData;
 	public final fun getSnapshotName ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class app/cash/paparazzi/annotations/PaparazziPreviewData$Provider : app/cash/paparazzi/annotations/PaparazziPreviewData {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;Lapp/cash/paparazzi/annotations/PreviewData;Lkotlin/jvm/functions/Function3;Lapp/cash/paparazzi/annotations/PreviewParameterData;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Lapp/cash/paparazzi/annotations/PreviewData;
+	public final fun component3 ()Lkotlin/jvm/functions/Function3;
+	public final fun component4 ()Lapp/cash/paparazzi/annotations/PreviewParameterData;
+	public final fun copy (Ljava/lang/String;Lapp/cash/paparazzi/annotations/PreviewData;Lkotlin/jvm/functions/Function3;Lapp/cash/paparazzi/annotations/PreviewParameterData;)Lapp/cash/paparazzi/annotations/PaparazziPreviewData$Provider;
+	public static synthetic fun copy$default (Lapp/cash/paparazzi/annotations/PaparazziPreviewData$Provider;Ljava/lang/String;Lapp/cash/paparazzi/annotations/PreviewData;Lkotlin/jvm/functions/Function3;Lapp/cash/paparazzi/annotations/PreviewParameterData;ILjava/lang/Object;)Lapp/cash/paparazzi/annotations/PaparazziPreviewData$Provider;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getComposable ()Lkotlin/jvm/functions/Function3;
+	public final fun getPreview ()Lapp/cash/paparazzi/annotations/PreviewData;
+	public final fun getPreviewParameter ()Lapp/cash/paparazzi/annotations/PreviewParameterData;
+	public final fun getSnapshotName ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+	public final fun withPreviewParameterIndex (I)Lapp/cash/paparazzi/annotations/PaparazziPreviewData$Provider;
+}
+
+public final class app/cash/paparazzi/annotations/PaparazziPreviewDefaults {
+	public static final field $stable I
+	public static final field DEVICE_ID Ljava/lang/String;
+	public static final field INSTANCE Lapp/cash/paparazzi/annotations/PaparazziPreviewDefaults;
+}
+
+public final class app/cash/paparazzi/annotations/PreviewData {
+	public static final field $stable I
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/Float;Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/Integer;Ljava/lang/Integer;Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/Float;Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/Integer;Ljava/lang/Integer;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/Float;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/Integer;
+	public final fun component4 ()Ljava/lang/Integer;
+	public final fun component5 ()Ljava/lang/Integer;
+	public final fun component6 ()Ljava/lang/String;
+	public final fun component7 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/Float;Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/Integer;Ljava/lang/Integer;Ljava/lang/String;Ljava/lang/String;)Lapp/cash/paparazzi/annotations/PreviewData;
+	public static synthetic fun copy$default (Lapp/cash/paparazzi/annotations/PreviewData;Ljava/lang/Float;Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/Integer;Ljava/lang/Integer;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lapp/cash/paparazzi/annotations/PreviewData;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getBackgroundColor ()Ljava/lang/String;
+	public final fun getDevice ()Ljava/lang/String;
+	public final fun getFontScale ()Ljava/lang/Float;
+	public final fun getHeightDp ()Ljava/lang/Integer;
+	public final fun getLocale ()Ljava/lang/String;
+	public final fun getUiMode ()Ljava/lang/Integer;
+	public final fun getWidthDp ()Ljava/lang/Integer;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class app/cash/paparazzi/annotations/PreviewParameterData {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;Lkotlin/sequences/Sequence;I)V
+	public synthetic fun <init> (Ljava/lang/String;Lkotlin/sequences/Sequence;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Lkotlin/sequences/Sequence;
+	public final fun component3 ()I
+	public final fun copy (Ljava/lang/String;Lkotlin/sequences/Sequence;I)Lapp/cash/paparazzi/annotations/PreviewParameterData;
+	public static synthetic fun copy$default (Lapp/cash/paparazzi/annotations/PreviewParameterData;Ljava/lang/String;Lkotlin/sequences/Sequence;IILjava/lang/Object;)Lapp/cash/paparazzi/annotations/PreviewParameterData;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getIndex ()I
+	public final fun getName ()Ljava/lang/String;
+	public final fun getValues ()Lkotlin/sequences/Sequence;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
