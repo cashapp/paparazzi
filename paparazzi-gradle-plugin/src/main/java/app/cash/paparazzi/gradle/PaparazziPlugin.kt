@@ -394,7 +394,20 @@ public class PaparazziPlugin @Inject constructor(
     } else {
       dependencies.create("app.cash.paparazzi:paparazzi-preview-processor:$VERSION")
     }
-    configurations.getByName("ksp").dependencies.add(dependency)
+    if (project.plugins.hasPlugin("org.jetbrains.kotlin.multiplatform")) {
+      configurations.getByName("kspCommonMainMetadata").dependencies.add(dependency)
+    } else {
+      configurations.getByName("ksp").dependencies.add(dependency)
+    }
+  }
+
+  private fun Project.addPreviewTestDependency() {
+    val dependency = if (isInternal()) {
+      dependencies.project(mapOf("path" to ":paparazzi-preview-test-junit"))
+    } else {
+      dependencies.create("app.cash.paparazzi:paparazzi-preview-test-junit:$VERSION")
+    }
+    configurations.getByName("testImplementation").dependencies.add(dependency)
   }
 
   private fun Project.addAnnotationsDependency() {
