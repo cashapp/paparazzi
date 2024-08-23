@@ -33,11 +33,10 @@ internal fun Project.registerGeneratePreviewTask(extension: AndroidComponentsExt
     testVariant.sources.java?.addStaticSourceDirectory(testSourceDir)
 
     // test compilation depends on the task
-    project.tasks.named {
-      it == "compile${testVariantSlug}Kotlin" ||
-        it == "generate${testVariantSlug}LintModel" ||
-        it == "lintAnalyze$testVariantSlug"
-    }.configureEach { it.dependsOn(taskProvider) }
+    project.tasks.named { it == "compile${testVariantSlug}Kotlin" }
+      .configureEach { it.dependsOn(taskProvider) }
+    project.tasks.named { it == "generate${testVariantSlug}LintModel" }
+      .configureEach { it.dependsOn(taskProvider) }
     // run task before processing symbols
     project.tasks.named { it == "ksp${testVariantSlug}Kotlin" }
       .configureEach { it.mustRunAfter(taskProvider) }
