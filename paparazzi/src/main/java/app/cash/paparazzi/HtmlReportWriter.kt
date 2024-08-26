@@ -123,6 +123,8 @@ public class HtmlReportWriter @JvmOverloads constructor(
     hashingSink.buffer().use { sink ->
       for (y in 0 until image.height) {
         for (x in 0 until image.width) {
+          sink.writeInt(x)
+          sink.writeInt(y)
           sink.writeInt(image.getRGB(x, y))
         }
       }
