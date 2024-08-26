@@ -157,8 +157,12 @@ class PaparazziPlugin : Plugin<Project> {
 
       val isRecordRun = project.objects.property(Boolean::class.java)
       val isVerifyRun = project.objects.property(Boolean::class.java)
+      println("variant: $variantSlug, $testVariantSlug")
+      println("  @isRecordRun = ${isRecordRun.hashCode()}")
+      println("  @isVerifyRun = ${isVerifyRun.hashCode()}")
 
       project.gradle.taskGraph.whenReady { graph ->
+        println("in when ready: $variantSlug, $testVariantSlug")
         println("start task graph when ready callback")
         isRecordRun.set(recordTaskProvider.map { graph.hasTask(it) })
         isVerifyRun.set(verifyTaskProvider.map { graph.hasTask(it) })
@@ -166,6 +170,7 @@ class PaparazziPlugin : Plugin<Project> {
       }
 
       val testTaskProvider = project.tasks.named("test$testVariantSlug", Test::class.java) { test ->
+        println("in test task configuration: $variantSlug, $testVariantSlug")
         test.systemProperties["paparazzi.test.resources"] =
           writeResourcesTask.flatMap { it.paparazziResources.asFile }.get().path
         test.systemProperties["paparazzi.build.dir"] = buildDirectory.get().toString()
@@ -182,6 +187,8 @@ class PaparazziPlugin : Plugin<Project> {
           .withPropertyName("paparazzi.nativePlatform")
           .withPathSensitivity(PathSensitivity.NONE)
         println("start configuring test task")
+        println("  @isRecordRun = ${isRecordRun.hashCode()}")
+        println("  @isVerifyRun = ${isVerifyRun.hashCode()}")
         if (isVerifyRun.getOrElse(false)) {
           println("checking if verify run")
           test.inputs.files(snapshotOutputDir)
