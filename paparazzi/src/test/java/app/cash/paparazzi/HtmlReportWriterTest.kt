@@ -37,8 +37,8 @@ class HtmlReportWriterTest {
   val snapshotRoot: TemporaryFolder = TemporaryFolder()
 
   private val anyImage = BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB)
-  private val anyImageHash = "2ef6a6e795a2b8cffabefb6d9a2066a183c8e3b6"
-  private val anyVideoHash = "7325996fabd92c7411c0d03ed62641323ffdf0d1"
+  private val anyImageHash = "a7414bdf48bdd2e58117371848242e4116826e32"
+  private val anyVideoHash = "dfeb78098217ee4f9a307645c83a7804a6a7f7d7"
 
   @Test
   fun happyPathImages() {
@@ -368,8 +368,8 @@ class HtmlReportWriterTest {
           squareFrameHandler.handle(convertedSquare)
         }
       }
-      // Verify that there are 3 files in the reports/paparazzi/images file
-      // This should confirm that the snapshot images used in the test report are correct
+      // Verify that there are 3 files in the snapshots/images file
+      // This should confirm that the snapshot images used as golden images are correct
       val snapshotDir = File(snapshotRoot.root, "images").listFiles()!!
       assertThat(snapshotDir.size).isEqualTo(3)
 
@@ -379,6 +379,11 @@ class HtmlReportWriterTest {
       assertThat(firstSnapshot.pixelEqual(secondSnapshot)).isFalse()
       assertThat(firstSnapshot.pixelEqual(thirdSnapshot)).isFalse()
       assertThat(secondSnapshot.pixelEqual(thirdSnapshot)).isFalse()
+
+      // Verify that there are 3 files in the reports/paparazzi/images file
+      // This should confirm that the images used in the test report are correct
+      val reportDir = File(reportRoot.root, "images").listFiles()!!
+      assertThat(reportDir.size).isEqualTo(3)
     } finally {
       // reset record mode
       System.setProperty("paparazzi.test.record", "false")
