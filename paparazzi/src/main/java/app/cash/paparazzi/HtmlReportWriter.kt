@@ -18,7 +18,7 @@ package app.cash.paparazzi
 import app.cash.paparazzi.SnapshotHandler.FrameHandler
 import app.cash.paparazzi.internal.PaparazziJson
 import app.cash.paparazzi.internal.apng.ApngWriter
-import com.google.common.base.CharMatcher
+import com.google.common.io.Files
 import okio.BufferedSink
 import okio.HashingSink
 import okio.Path.Companion.toPath
@@ -104,7 +104,7 @@ public class HtmlReportWriter @JvmOverloads constructor(
         if (hashes.isEmpty()) return
         writer.close()
         val snapshotFile = File(snapshotDir, "${hash(hashes)}.png")
-        snapshotTmpFile.renameTo(snapshotFile)
+        Files.move(snapshotTmpFile, snapshotFile)
         snapshotTmpFile.delete()
 
         if (isRecording) {
@@ -123,6 +123,8 @@ public class HtmlReportWriter @JvmOverloads constructor(
     hashingSink.buffer().use { sink ->
       for (y in 0 until image.height) {
         for (x in 0 until image.width) {
+          sink.writeInt(x)
+          sink.writeInt(y)
           sink.writeInt(image.getRGB(x, y))
         }
       }
@@ -231,12 +233,4 @@ internal fun defaultRunName(): String {
   val timestamp = SimpleDateFormat("yyyyMMddHHmmss", Locale.US).format(now)
   val token = UUID.randomUUID().toString().substring(0, 6)
   return "${timestamp}_$token"
-}
-
-internal val filenameSafeChars = CharMatcher.inRange('a', 'z')
-  .or(CharMatcher.inRange('0', '9'))
-  .or(CharMatcher.anyOf("_-.~@^()[]{}:;,"))
-
-internal fun String.sanitizeForFilename(): String? {
-  return filenameSafeChars.negate().replaceFrom(toLowerCase(Locale.US), '_')
 }

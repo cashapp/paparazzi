@@ -15,6 +15,7 @@
  */
 package app.cash.paparazzi
 
+import com.google.common.base.CharMatcher
 import dev.drewhamilton.poko.Poko
 import java.util.Date
 import java.util.Locale
@@ -45,5 +46,19 @@ internal fun Snapshot.toFileName(
   } else {
     ""
   }
-  return "${testName.packageName}${delimiter}${testName.className}${delimiter}${testName.methodName}$formattedLabel.$extension"
+  return "${testName.packageName}${delimiter}${testName.className}${delimiter}${testName.methodName}$formattedLabel.$extension".sanitizeForFilename(lowercase = false)!!
+}
+
+private val filenameSafeChars = CharMatcher.inRange('a', 'z')
+  .or(CharMatcher.inRange('A', 'Z'))
+  .or(CharMatcher.inRange('0', '9'))
+  .or(CharMatcher.anyOf("_-.~@^()[]{}:;,"))
+
+private val filenameLowerCaseSafeChars = CharMatcher.inRange('a', 'z')
+  .or(CharMatcher.inRange('0', '9'))
+  .or(CharMatcher.anyOf("_-.~@^()[]{}:;,"))
+
+internal fun String.sanitizeForFilename(lowercase: Boolean = true): String? {
+  val safeChars = if (lowercase) filenameLowerCaseSafeChars else filenameSafeChars
+  return safeChars.negate().replaceFrom(if (lowercase) toLowerCase(Locale.US) else this, '_')
 }

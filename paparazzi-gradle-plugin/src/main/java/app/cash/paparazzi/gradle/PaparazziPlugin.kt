@@ -125,7 +125,7 @@ public class PaparazziPlugin @Inject constructor(
       ) { task ->
         val android = project.extensions.getByType(BaseExtension::class.java)
         val nonTransitiveRClassEnabled =
-          (project.findProperty("android.nonTransitiveRClass") as? String)?.toBoolean() ?: true
+          project.providers.gradleProperty("android.nonTransitiveRClass").orNull?.toBoolean() ?: true
         val gradleHomeDir = projectDirectory.dir(project.gradle.gradleUserHomeDir.path)
 
         task.packageName.set(android.packageName())
@@ -295,7 +295,7 @@ public class PaparazziPlugin @Inject constructor(
   }
 
   private fun Project.isInternal(): Boolean =
-    properties["app.cash.paparazzi.internal"].toString() == "true"
+    providers.gradleProperty("app.cash.paparazzi.internal").orNull == "true"
 
   private fun BaseExtension.packageName(): String = namespace ?: ""
 
