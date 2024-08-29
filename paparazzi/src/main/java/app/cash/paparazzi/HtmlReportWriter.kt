@@ -92,7 +92,7 @@ public class HtmlReportWriter @JvmOverloads constructor(
       val snapshotDir = if (fps == -1) imagesDirectory else videosDirectory
       val goldenDir = if (fps == -1) goldenImagesDirectory else goldenVideosDirectory
       val hashes = mutableListOf<String>()
-      val snapshotTmpFile = File(snapshotDir, snapshot.toFileName(extension = "temp.png"))
+      val snapshotTmpFile = File(snapshotDir, snapshot.toFileName(nameDelimiter = "-", extension = "temp.png"))
       val writer = ApngWriter(snapshotTmpFile.path.toPath(), fps)
 
       override fun handle(image: BufferedImage) {
@@ -108,7 +108,7 @@ public class HtmlReportWriter @JvmOverloads constructor(
         snapshotTmpFile.delete()
 
         if (isRecording) {
-          val goldenFile = File(goldenDir, snapshot.toFileName("_", "png"))
+          val goldenFile = File(goldenDir, snapshot.toFileName("_", extension = "png"))
           snapshotFile.copyTo(target = goldenFile, overwrite = true)
         }
 

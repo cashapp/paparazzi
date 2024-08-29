@@ -39,10 +39,11 @@ public class Snapshot(
 
 internal fun Snapshot.toFileName(
   delimiter: String = "_",
+  nameDelimiter: String = delimiter,
   extension: String
 ): String {
   val formattedLabel = if (name != null) {
-    "$delimiter${name.toLowerCase(Locale.US).replace("\\s".toRegex(), delimiter)}"
+    "$nameDelimiter${name.toLowerCase(Locale.US).replace("\\s".toRegex(), nameDelimiter)}"
   } else {
     ""
   }
