@@ -205,20 +205,24 @@ public class PaparazziPlugin @Inject constructor(
           .withPropertyName("paparazzi.nativeRuntime")
           .withPathSensitivity(PathSensitivity.NONE)
 
-        test.inputs.dir(isVerifyRun.flatMap {
+        test.inputs.dir(
+          isVerifyRun.flatMap {
             project.objects.directoryProperty().apply {
               set(if (it) snapshotOutputDir else null)
             }
-        }).withPropertyName("paparazzi.snapshot.input.dir")
+          }
+        ).withPropertyName("paparazzi.snapshot.input.dir")
           .withPathSensitivity(PathSensitivity.RELATIVE)
           .optional()
 
-        test.outputs.dir(isRecordRun.flatMap {
-          project.objects.directoryProperty().apply {
-            set(if (it) snapshotOutputDir else null)
+        test.outputs.dir(
+          isRecordRun.flatMap {
+            project.objects.directoryProperty().apply {
+              set(if (it) snapshotOutputDir else null)
+            }
           }
-        }).withPropertyName("paparazzi.snapshots.output.dir")
-            .optional()
+        ).withPropertyName("paparazzi.snapshots.output.dir")
+          .optional()
 
         test.outputs.dir(reportOutputDir).withPropertyName("paparazzi.report.dir")
 
