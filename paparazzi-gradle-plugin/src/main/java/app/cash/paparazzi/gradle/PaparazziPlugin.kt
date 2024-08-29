@@ -205,8 +205,26 @@ public class PaparazziPlugin @Inject constructor(
           .withPropertyName("paparazzi.nativeRuntime")
           .withPathSensitivity(PathSensitivity.NONE)
 
-        test.outputs.dir(reportOutputDir)
-        test.outputs.dir(snapshotOutputDir)
+        test.inputs.dir(
+          isVerifyRun.flatMap {
+            project.objects.directoryProperty().apply {
+              set(if (it) snapshotOutputDir else null)
+            }
+          }
+        ).withPropertyName("paparazzi.snapshot.input.dir")
+          .withPathSensitivity(PathSensitivity.RELATIVE)
+          .optional()
+
+        test.outputs.dir(
+          isRecordRun.flatMap {
+            project.objects.directoryProperty().apply {
+              set(if (it) snapshotOutputDir else null)
+            }
+          }
+        ).withPropertyName("paparazzi.snapshots.output.dir")
+          .optional()
+
+        test.outputs.dir(reportOutputDir).withPropertyName("paparazzi.report.dir")
 
         test.doFirst {
           // Note: these are lazy properties that are not resolvable in the Gradle configuration phase.
