@@ -56,7 +56,7 @@ trove4j = { module = "org.jetbrains.intellij.deps:trove4j", version = "1.0.20200
 
 # Test libraries
 junit = { module = "junit:junit", version = "4.13.2" }
-testParameterInjector = { module = "com.google.testparameterinjector:test-parameter-injector", version = "1.16" }
+testParameterInjector = { module = "com.google.testparameterinjector:test-parameter-injector", version = "1.17" }
 truth = { module = "com.google.truth:truth", version = "1.4.4" }
 
 # Plugins
