@@ -19,7 +19,7 @@ jobs:
       matrix:
         os: [
           # Check https://github.com/actions/runner-images?tab=readme-ov-file#available-images for actual versions for latest
-          macOS-latest
+          macOS-latest,
           windows-latest,
           ubuntu-latest
         ]
