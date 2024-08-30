@@ -5,10 +5,6 @@ plugins {
   id 'org.jetbrains.kotlin.plugin.compose'
 }
 
-paparazzi {
-  generatePreviewTestClass = true
-}
-
 android {
   namespace 'app.cash.paparazzi.plugin.test'
   compileSdk libs.versions.compileSdk.get() as int
