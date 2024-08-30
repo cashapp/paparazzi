@@ -49,7 +49,6 @@ import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.artifacts.transform.UnzipTransform
 import org.gradle.api.internal.tasks.testing.report.TestReporter
 import org.gradle.api.logging.LogLevel.LIFECYCLE
-import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.provider.ProviderFactory
 import org.gradle.api.reporting.ReportingExtension
@@ -66,10 +65,6 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
 import java.util.Locale
 import javax.inject.Inject
-
-public interface PaparazziExtension {
-  public val generatePreviewTestClass: Property<Boolean>
-}
 
 @Suppress("unused")
 public class PaparazziPlugin @Inject constructor(

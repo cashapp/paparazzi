@@ -1,10 +1,7 @@
 package app.cash.paparazzi.gradle.utils
 
 import app.cash.paparazzi.gradle.PREVIEW_TEST_SOURCE
-import app.cash.paparazzi.gradle.PREVIEW_TEST_SOURCE
 import com.android.build.api.variant.AndroidComponentsExtension
-import com.android.build.api.variant.HasUnitTest
-import app.cash.paparazzi.gradle.PaparazziExtension
 import com.android.build.api.variant.HasUnitTest
 import org.gradle.api.Project
 import org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
