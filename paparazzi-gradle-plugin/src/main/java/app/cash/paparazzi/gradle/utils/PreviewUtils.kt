@@ -1,7 +1,6 @@
 package app.cash.paparazzi.gradle.utils
 
 import app.cash.paparazzi.gradle.PREVIEW_TEST_SOURCE
-import app.cash.paparazzi.gradle.PaparazziExtension
 import com.android.build.api.variant.AndroidComponentsExtension
 import com.android.build.api.variant.HasUnitTest
 import org.gradle.api.Project
@@ -15,7 +14,6 @@ private const val PREVIEW_DATA_FILE = "PaparazziPreviews.kt"
 private const val PREVIEW_TEST_FILE = "PreviewTests.kt"
 
 internal fun Project.registerGeneratePreviewTask(
-  config: PaparazziExtension,
   extension: AndroidComponentsExtension<*, *, *>
 ) {
   extension.onVariants { variant ->
@@ -58,7 +56,9 @@ internal fun Project.registerGeneratePreviewTask(
           .file("$projectDir${File.separator}$KSP_SOURCE_DIR${File.separator}${buildType}${File.separator}kotlin${File.separator}$namespaceDir${File.separator}$PREVIEW_DATA_FILE")
           .optional()
           .skipWhenEmpty()
-        task.enabled = config.generatePreviewTestClass.get()
+
+        // Defaulted to true unless specified in properties
+        task.enabled = project.providers.gradleProperty("app.cash.paparazzi.annotation.generateTestClass").orNull?.toBoolean() != false
 
         task.outputs.dir(previewTestDir)
         task.outputs.file("$previewTestDir${File.separator}$PREVIEW_TEST_FILE")
