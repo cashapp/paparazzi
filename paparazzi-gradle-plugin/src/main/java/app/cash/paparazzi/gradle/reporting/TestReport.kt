@@ -21,7 +21,7 @@ import javax.xml.parsers.DocumentBuilderFactory
 internal class TestReport(
   private val resultDir: File,
   private val reportDir: File,
-  private val failureSnapshotDir: File,
+  private val failureSnapshotDir: File?,
   private val applicationId: String,
   private val variantKey: String
 ) {
@@ -43,11 +43,13 @@ internal class TestReport(
   }
 
   private fun processFailedImageDiffs() {
-    failureSnapshotDir.listFiles()
+    failureSnapshotDir
+      ?.listFiles()
       ?.filter {
         val nameSegments = it.name.split("_", limit = 3)
         it.name.startsWith("delta-") && nameSegments.size == 3
-      }?.forEach { diff ->
+      }
+      ?.forEach { diff ->
         val nameSegments = diff.name.split("_", limit = 3)
         val testClassPackage = nameSegments[0].replace("delta-", "")
         val testClass = "$testClassPackage.${nameSegments[1]}"

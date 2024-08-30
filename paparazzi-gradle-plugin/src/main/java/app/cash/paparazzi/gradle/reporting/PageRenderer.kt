@@ -50,7 +50,7 @@ internal abstract class PageRenderer<T : CompositeTestResults> : TabbedPageRende
   }
 
   protected fun addStandardOutputTab() {
-    if (results.standardOutput.isNotEmpty()) {
+    if (results.standardOutput.any { it.isNotEmpty() }) {
       addTab(
         "Standard output",
         object : ErroringAction<SimpleHtmlWriter>() {
@@ -64,7 +64,7 @@ internal abstract class PageRenderer<T : CompositeTestResults> : TabbedPageRende
   }
 
   protected fun addStandardErrorTab() {
-    if (results.standardError.isNotEmpty()) {
+    if (results.standardError.any { it.isNotEmpty() }) {
       addTab(
         "Standard error",
         object : ErroringAction<SimpleHtmlWriter>() {
@@ -76,6 +76,7 @@ internal abstract class PageRenderer<T : CompositeTestResults> : TabbedPageRende
       )
     }
   }
+
   protected fun addErrorTab() {
     if (results.errors.isNotEmpty()) {
       addTab(
@@ -364,6 +365,7 @@ internal abstract class PageRenderer<T : CompositeTestResults> : TabbedPageRende
         htmlWriter.endElement()
       }
     }
+
   override val contentRenderer: ReportRenderer<T, SimpleHtmlWriter>
     get() {
       return object : ReportRenderer<T, SimpleHtmlWriter>() {

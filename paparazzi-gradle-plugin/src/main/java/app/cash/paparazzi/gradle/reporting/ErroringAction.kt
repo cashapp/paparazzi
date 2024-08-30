@@ -10,11 +10,11 @@ internal abstract class ErroringAction<T : Any> : Action<T> {
   override fun execute(thing: T) {
     try {
       doExecute(thing)
-    } catch (var3: Exception) {
-      throw UncheckedException.throwAsUncheckedException(var3)
+    } catch (e: Exception) {
+      throw UncheckedException.throwAsUncheckedException(e)
     }
   }
 
   @Throws(Exception::class)
-  protected abstract fun doExecute(var1: T)
+  protected abstract fun doExecute(objectToExecute: T)
 }

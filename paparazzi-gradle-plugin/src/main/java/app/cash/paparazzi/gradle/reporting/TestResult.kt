@@ -9,7 +9,7 @@ internal class TestResult(
   val name: String,
   private val duration: Long,
   val project: String,
-  val flavor: String,
+  private val flavor: String,
   var screenshotDiffImages: List<ScreenshotDiffImage>?,
   val classResults: ClassTestResults
 ) : TestResultModel(), Comparable<TestResult> {

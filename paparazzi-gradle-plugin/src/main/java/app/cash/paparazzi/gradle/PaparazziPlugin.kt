@@ -44,7 +44,6 @@ import org.gradle.internal.os.OperatingSystem
 import org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
-import java.io.File.separator
 import java.util.Locale
 import javax.inject.Inject
 
@@ -120,6 +119,7 @@ public class PaparazziPlugin @Inject constructor(
 
       val reportingBaseDirectory = project.extensions.getByType(ReportingExtension::class.java).baseDirectory
       val reportOutputDir = reportingBaseDirectory.dir("paparazzi/${variant.name}")
+      val verificationFailuresDir = reportOutputDir.map { it.dir("failures") }
       val snapshotReportOutputDir = reportingBaseDirectory.dir("paparazzi/snapshots/${variant.name}")
 
       val sources = AndroidVariantSources(variant)
@@ -179,49 +179,61 @@ public class PaparazziPlugin @Inject constructor(
       project.gradle.taskGraph.whenReady { graph ->
         isRecordRun.set(recordTaskProvider.map { graph.hasTask(it) })
         isVerifyRun.set(verifyTaskProvider.map { graph.hasTask(it) })
+
+        // Unfortunately, we have to wait till the task graph is ready. When using a custom reporting base directory
+        // the actual report directory gets overwritten after task configuration. Seems like AGP is not respecting this extensions config.
+        // So we wait to set the testReportOutputDir until the task graph is ready.
+        htmlTestReportOutputDir.set(testTaskProvider.firstOrNull()?.reports?.html?.outputLocation?.get())
       }
 
-      val reportPaparazziProvider = project.tasks.register("reportPaparazzi$testVariantSlug") {
-        it.group = VERIFICATION_GROUP
-        it.description = "Generate report with snapshot diffs for failures"
+      val reportPaparazziProvider = project.tasks.register("reportPaparazzi$testVariantSlug") { task ->
+        task.group = VERIFICATION_GROUP
+        task.description = "Generate report with snapshot diffs for failures"
 
-        it.mustRunAfter(testTaskProvider)
+        task.mustRunAfter(testTaskProvider)
 
-        val snapshotFailures = buildDirectory.dir("paparazzi${separator}failures")
+        val snapshotFailures = verificationFailuresDir.flatMap {
+          project.objects.directoryProperty().apply {
+            set(if (it.asFile.exists()) it else null)
+          }
+        }
 
-        it.inputs.dir(snapshotFailures)
+        task.inputs.dir(snapshotFailures)
           .withPropertyName("paparazzi.snapshot.failures")
-          .withPathSensitivity(PathSensitivity.NONE)
+          .withPathSensitivity(PathSensitivity.RELATIVE)
           .optional()
 
-        it.inputs.dir(htmlTestReportOutputDir)
+        task.inputs.dir(htmlTestReportOutputDir)
           .withPropertyName("test.html.report.dir")
           .withPathSensitivity(PathSensitivity.RELATIVE)
-
-        it.inputs.dir(xmlTestOutputDir)
           .skipWhenEmpty()
+
+        task.inputs.dir(xmlTestOutputDir)
           .withPropertyName("test.result.xml.dir")
           .withPathSensitivity(PathSensitivity.RELATIVE)
+          .skipWhenEmpty()
 
-        it.outputs.dir(snapshotReportOutputDir)
+        task.outputs.dir(snapshotReportOutputDir)
           .withPropertyName("paparazzi.snapshot.report.output.dir")
 
-        it.doLast {
-          val failureSnapshotsDir = snapshotFailures.get().asFile
-          val reportDir = snapshotReportOutputDir.get().asFile
-          val resultsDir = xmlTestOutputDir.get().asFile
+        val reportDir = snapshotReportOutputDir.get().asFile
+        val resultsDir = xmlTestOutputDir.get().asFile
+        val snapshotFailuresDir = snapshotFailures.orNull?.asFile
+        val variantNamespace = variant.namespace.get()
+        val variantName = variant.name
 
+        task.doLast {
           val report = TestReport(
             resultDir = resultsDir,
             reportDir = reportDir,
-            failureSnapshotDir = failureSnapshotsDir,
-            applicationId = variant.namespace.get(),
-            variantKey = variant.name
+            failureSnapshotDir = snapshotFailuresDir,
+            applicationId = variantNamespace,
+            variantKey = variantName
           )
           report.generateScreenshotTestReport()
 
           val uri = reportDir.toPath().resolve("index.html").toUri()
-          it.logger.log(LIFECYCLE, "See the Paparazzi snapshot report at: $uri")
+          it.logger.log(LIFECYCLE, "See the merged Paparazzi snapshot report at: $uri")
         }
       }
 
@@ -294,7 +306,7 @@ public class PaparazziPlugin @Inject constructor(
 
         test.doLast {
           val uri = reportOutputDir.get().asFile.toPath().resolve("index.html").toUri()
-          test.logger.log(LIFECYCLE, "See the Paparazzi report at: $uri")
+          test.logger.log(LIFECYCLE, "See the Paparazzi runs report at: $uri")
         }
       }
 
