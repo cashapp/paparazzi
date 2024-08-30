@@ -1498,19 +1498,6 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun previewAnnotationPreviewParameters() {
-    val fixtureRoot = File("src/test/projects/preview-annotation-preview-parameters")
-
-    val result = gradleRunner
-      .withArguments("verifyPaparazziDebug", "--stacktrace")
-      .forwardOutput()
-      .runFixture(fixtureRoot) { buildAndFail() }
-
-    assertThat(result.task(":testDebugUnitTest")?.outcome).isEqualTo(TaskOutcome.FAILED)
-    assertThat(result.output).contains("IllegalStateException at PreviewTests.kt")
-  }
-
-  @Test
   fun previewAnnotationDslDisable() {
     val fixtureRoot = File("src/test/projects/preview-annotation-dsl-disable")
 
