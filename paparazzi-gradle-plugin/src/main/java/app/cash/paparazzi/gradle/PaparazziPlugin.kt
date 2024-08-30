@@ -235,11 +235,14 @@ public class PaparazziPlugin @Inject constructor(
             layoutlibResourcesFileCollection.singleFile.absolutePath
           test.systemProperties["paparazzi.test.record"] = isRecordRun.get()
           test.systemProperties["paparazzi.test.verify"] = isVerifyRun.get()
+          reportOutputDir.get().asFile.deleteRecursively()
         }
 
         test.doLast {
-          val uri = reportOutputDir.get().asFile.toPath().resolve("index.html").toUri()
-          test.logger.log(LIFECYCLE, "See the Paparazzi report at: $uri")
+          val report = reportOutputDir.get().asFile.resolve("index.html")
+          if (report.exists()) {
+            test.logger.log(LIFECYCLE, "See the Paparazzi report at: ${report.toPath().toUri()}")
+          }
         }
       }
 
