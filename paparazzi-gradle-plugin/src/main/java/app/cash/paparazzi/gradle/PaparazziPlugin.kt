@@ -17,7 +17,6 @@ package app.cash.paparazzi.gradle
 
 import app.cash.paparazzi.gradle.instrumentation.ResourcesCompatVisitorFactory
 import app.cash.paparazzi.gradle.reporting.TestReport
-import app.cash.paparazzi.gradle.utils.registerGeneratePreviewTask
 import app.cash.paparazzi.gradle.utils.artifactViewFor
 import app.cash.paparazzi.gradle.utils.registerGeneratePreviewTask
 import app.cash.paparazzi.gradle.utils.relativize
@@ -41,7 +40,6 @@ import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.artifacts.transform.UnzipTransform
 import org.gradle.api.internal.tasks.testing.report.TestReporter
 import org.gradle.api.logging.LogLevel.LIFECYCLE
-import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.provider.ProviderFactory
 import org.gradle.api.reporting.ReportingExtension
@@ -244,7 +242,7 @@ public class PaparazziPlugin @Inject constructor(
         test.inputs.dir(
           isVerifyRun.flatMap {
             project.objects.directoryProperty().apply {
-              set(if (it) snapshotOutputDir else null)
+              set(if (it && snapshotOutputDir.asFile.exists()) snapshotOutputDir else null)
             }
           }
         ).withPropertyName("paparazzi.snapshot.input.dir")
@@ -293,7 +291,7 @@ public class PaparazziPlugin @Inject constructor(
     project.addAnnotationsDependency()
     project.addProcessorDependency()
     project.addPreviewTestDependency()
-    project.registerGeneratePreviewTask(config, extension)
+    project.registerGeneratePreviewTask(extension)
 
     project.afterEvaluate {
       // pass the namespace to the processor
