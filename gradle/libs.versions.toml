@@ -26,6 +26,7 @@ bytebuddy-agent = { module = "net.bytebuddy:byte-buddy-agent", version.ref = "by
 bytebuddy-core = { module = "net.bytebuddy:byte-buddy", version.ref = "bytebuddy" }
 
 compose-runtime = { module = "androidx.compose.runtime:runtime", version.ref = "compose" }
+composeUi-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "compose" }
 composeUi-material = { module = "androidx.compose.material:material", version.ref = "compose" }
 composeUi-uiTooling = { module = "androidx.compose.ui:ui-tooling" }
 

@@ -26,12 +26,14 @@ internal fun Project.registerGeneratePreviewTask(
     val taskName = "paparazziGeneratePreview${testVariantSlug}Kotlin"
     val taskProvider = tasks.register(taskName) { task ->
       task.group = VERIFICATION_GROUP
-      task.description = "Generates the preview test class to the test source set for $testVariantSlug"
+      task.description =
+        "Generates the preview test class to the test source set for $testVariantSlug"
 
       task.dependsOn("ksp${buildTypeCap}Kotlin")
     }
 
-    val testSourceDir = "$projectDir${File.separator}$TEST_SOURCE_DIR${File.separator}${buildType}UnitTest"
+    val testSourceDir =
+      "$projectDir${File.separator}$TEST_SOURCE_DIR${File.separator}${buildType}UnitTest"
     testVariant.sources.java?.addStaticSourceDirectory(testSourceDir)
 
     // test compilation depends on the task
@@ -53,7 +55,9 @@ internal fun Project.registerGeneratePreviewTask(
 
         // Optional input if KSP doesn't output preview annotation file
         task.inputs
-          .file("$projectDir${File.separator}$KSP_SOURCE_DIR${File.separator}${buildType}${File.separator}kotlin${File.separator}$namespaceDir${File.separator}$PREVIEW_DATA_FILE")
+          .file(
+            "$projectDir${File.separator}$KSP_SOURCE_DIR${File.separator}${buildType}${File.separator}kotlin${File.separator}$namespaceDir${File.separator}$PREVIEW_DATA_FILE"
+          )
           .optional()
           .skipWhenEmpty()
 
@@ -63,6 +67,11 @@ internal fun Project.registerGeneratePreviewTask(
         task.outputs.dir(previewTestDir)
         task.outputs.file("$previewTestDir${File.separator}$PREVIEW_TEST_FILE")
         task.outputs.cacheIf { true }
+
+        // test compilation depends on the task
+        tasks.findByName("compile${buildTypeCap}UnitTestKotlin")?.dependsOn(taskName)
+        // run task before processing symbols
+        tasks.findByName("ksp${buildTypeCap}UnitTestKotlin")?.mustRunAfter(taskName)
 
         task.doLast {
           File(previewTestDir).mkdirs()

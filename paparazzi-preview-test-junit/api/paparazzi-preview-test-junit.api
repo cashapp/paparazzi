@@ -8,8 +8,17 @@ public final class app/cash/paparazzi/preview/ComposableSingletons$SnapshotKt {
 public final class app/cash/paparazzi/preview/ComposableSingletons$UtilsKt {
 	public static final field INSTANCE Lapp/cash/paparazzi/preview/ComposableSingletons$UtilsKt;
 	public static field lambda-1 Lkotlin/jvm/functions/Function3;
+	public static field lambda-2 Lkotlin/jvm/functions/Function3;
 	public fun <init> ()V
 	public final fun getLambda-1$paparazzi_preview_test_junit ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda-2$paparazzi_preview_test_junit ()Lkotlin/jvm/functions/Function3;
+}
+
+public final class app/cash/paparazzi/preview/DefaultLocaleRule : org/junit/rules/TestRule {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;)V
+	public fun apply (Lorg/junit/runners/model/Statement;Lorg/junit/runner/Description;)Lorg/junit/runners/model/Statement;
+	public final fun getLocale ()Ljava/lang/String;
 }
 
 public class app/cash/paparazzi/preview/PaparazziValuesProvider : com/google/testing/junit/testparameterinjector/TestParameter$TestParameterValuesProvider {
@@ -19,7 +28,11 @@ public class app/cash/paparazzi/preview/PaparazziValuesProvider : com/google/tes
 }
 
 public final class app/cash/paparazzi/preview/SnapshotKt {
-	public static final fun snapshot (Lapp/cash/paparazzi/Paparazzi;Lapp/cash/paparazzi/annotations/PaparazziPreviewData;Ljava/lang/String;Lkotlin/jvm/functions/Function3;)V
-	public static synthetic fun snapshot$default (Lapp/cash/paparazzi/Paparazzi;Lapp/cash/paparazzi/annotations/PaparazziPreviewData;Ljava/lang/String;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)V
+	public static final fun deviceConfig (Lapp/cash/paparazzi/annotations/PaparazziPreviewData;Lapp/cash/paparazzi/DeviceConfig;)Lapp/cash/paparazzi/DeviceConfig;
+	public static synthetic fun deviceConfig$default (Lapp/cash/paparazzi/annotations/PaparazziPreviewData;Lapp/cash/paparazzi/DeviceConfig;ILjava/lang/Object;)Lapp/cash/paparazzi/DeviceConfig;
+	public static final fun flatten (Ljava/util/List;)Ljava/util/List;
+	public static final fun locale (Lapp/cash/paparazzi/annotations/PaparazziPreviewData;)Ljava/lang/String;
+	public static final fun snapshot (Lapp/cash/paparazzi/Paparazzi;Lapp/cash/paparazzi/annotations/PaparazziPreviewData;Ljava/lang/String;ZLkotlin/jvm/functions/Function3;)V
+	public static synthetic fun snapshot$default (Lapp/cash/paparazzi/Paparazzi;Lapp/cash/paparazzi/annotations/PaparazziPreviewData;Ljava/lang/String;ZLkotlin/jvm/functions/Function3;ILjava/lang/Object;)V
 }
 
