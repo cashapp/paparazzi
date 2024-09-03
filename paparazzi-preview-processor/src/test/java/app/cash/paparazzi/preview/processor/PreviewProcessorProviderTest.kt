@@ -82,10 +82,12 @@ class PreviewProcessorProviderTest {
 
         internal val paparazziPreviews = listOf<app.cash.paparazzi.annotations.PaparazziPreviewData>(
           app.cash.paparazzi.annotations.PaparazziPreviewData(
-            snapshotName = "SamplePreview_SamplePreview",
-            composable = { test.SamplePreview() },
-          ),
-        )
+              snapshotName = "SamplePreview_SamplePreview",
+              composable = { test.SamplePreview() },
+              preview = app.cash.paparazzi.annotations.PreviewData(
+              ),
+            ),
+          )
         """.trimIndent()
       )
   }
@@ -184,12 +186,18 @@ class PreviewProcessorProviderTest {
 
         internal val paparazziPreviews = listOf<app.cash.paparazzi.annotations.PaparazziPreviewData>(
           app.cash.paparazzi.annotations.PaparazziPreviewData(
-            snapshotName = "SamplePreview_SamplePreview",
-            composable = { test.SamplePreview() },
-          ),
-          app.cash.paparazzi.annotations.PaparazziPreviewData(
-            snapshotName = "SamplePreview_SamplePreview",
-            composable = { test.SamplePreview() },
+              snapshotName = "SamplePreview_SamplePreview",
+              composable = { test.SamplePreview() },
+              preview = app.cash.paparazzi.annotations.PreviewData(
+              ),
+            ),
+            app.cash.paparazzi.annotations.PaparazziPreviewData(
+              snapshotName = "SamplePreview_SamplePreview",
+              composable = { test.SamplePreview() },
+              preview = app.cash.paparazzi.annotations.PreviewData(
+                device = "id:pixel_4",
+                uiMode = 32,
+              ),
           ),
         )
         """.trimIndent()
