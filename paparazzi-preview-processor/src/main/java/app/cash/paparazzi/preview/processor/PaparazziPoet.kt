@@ -42,9 +42,8 @@ internal object PaparazziPoet {
             val visibilityCheck = checkVisibility(func)
             val snapshotName = func.snapshotName(env)
 
-            when {
-              visibilityCheck.isPrivate -> addError(
-                visibilityCheck = visibilityCheck,
+              when {
+                visibilityCheck.isPrivate -> addError(
                   function = func,
                   snapshotName = snapshotName,
                   buildErrorMessage = {
@@ -52,7 +51,6 @@ internal object PaparazziPoet {
                   }
               )
               previewParam != null -> addError(
-                  visibilityCheck = visibilityCheck,
                   function = func,
                   snapshotName = snapshotName,
                   buildErrorMessage = {
@@ -79,41 +77,26 @@ internal object PaparazziPoet {
 
   private fun Sequence<KSFunctionDeclaration>.process(block: (KSFunctionDeclaration, KSValueParameter?) -> Unit) =
     flatMap { func ->
-      val previewParam = func.previewParam()
-      func.findDistinctPreviews()
+      val previewParam = func.parameters.firstOrNull { param ->
+        param.annotations.any { it.isPreviewParameter() }
+      }
+      func.annotations.findPreviews().distinct()
         .map { Pair(func, previewParam) }
     }.forEach { (func, previewParam) ->
       block(func, previewParam)
     }
 
   private fun CodeBlock.Builder.addError(
-    visibilityCheck: VisibilityCheck,
     function: KSFunctionDeclaration,
     snapshotName: String,
     buildErrorMessage: (String?) -> String
   ) {
-    val qualifiedName = if (visibilityCheck.isFunctionPrivate) {
-      function.qualifiedName?.asString()
-    } else {
-      null
-    }
+    val qualifiedName = function.qualifiedName?.asString()
 
     addStatement("%L.PaparazziPreviewData.Error(", PACKAGE_NAME)
     indent()
     addStatement("snapshotName = %S,", snapshotName)
     addStatement("message = %S,", buildErrorMessage(qualifiedName))
-    unindent()
-    addStatement("),")
-  }
-
-  private fun CodeBlock.Builder.addProvider(
-    function: KSFunctionDeclaration,
-    snapshotName: String
-  ) {
-    addStatement("%L.PaparazziPreviewData.Provider(", PACKAGE_NAME)
-    indent()
-    addStatement("snapshotName = %S,", snapshotName)
-    addStatement("composable = { %L(it) },", function.qualifiedName?.asString())
     unindent()
     addStatement("),")
   }
