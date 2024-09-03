@@ -35,12 +35,6 @@ internal fun Sequence<KSAnnotation>.findPreviews(stack: Set<KSAnnotation> = setO
   return direct.plus(indirect)
 }
 
-internal fun KSFunctionDeclaration.findDistinctPreviews() = annotations.findPreviews().distinct()
-
-internal fun KSFunctionDeclaration.previewParam() = parameters.firstOrNull { param ->
-  param.annotations.any { it.isPreviewParameter() }
-}
-
 internal data class EnvironmentOptions(
   val namespace: String
 )
