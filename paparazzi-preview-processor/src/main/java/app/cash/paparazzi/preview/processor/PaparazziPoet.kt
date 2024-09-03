@@ -1,6 +1,8 @@
 package app.cash.paparazzi.preview.processor
 
+import com.google.devtools.ksp.closestClassDeclaration
 import com.google.devtools.ksp.getVisibility
+import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSValueParameter
 import com.google.devtools.ksp.symbol.Visibility
@@ -16,7 +18,7 @@ internal object PaparazziPoet {
       listOf(
         buildAnnotationsFile(
           fileName = "PaparazziPreviews",
-          propertyName = "PaparazziPreviews", "paparazziPreviews",
+          propertyName = "paparazziPreviews",
           functions = functions,
           env = env
         )
@@ -32,7 +34,9 @@ internal object PaparazziPoet {
   ) = FileSpec.scriptBuilder(fileName, env.namespace)
     .addCode(
       buildCodeBlock {
-        addStatement("internal val %L = listOf<%L.PaparazziPreviewData>(", propertyName, PACKAGE_NAME)
+        addStatement(
+            "internal val %L = listOf<%L.PaparazziPreviewData>(", propertyName, PACKAGE_NAME
+          )
         indent()
 
         if (functions.count() == 0) {
@@ -50,15 +54,17 @@ internal object PaparazziPoet {
                   preview = preview,
                   previewParam = previewParam
                 )
+
                 previewParam != null -> addProvider(
                   function = func,
                   snapshotName = snapshotName,
                   preview = preview,
-                previewParam = previewParam
-              )
-              else -> addDefault(
-                function = func,
-                snapshotName = snapshotName,
+                  previewParam = previewParam
+                )
+
+                else -> addDefault(
+                  function = func,
+                  snapshotName = snapshotName,
                   preview = preview
               )
             }
@@ -80,8 +86,8 @@ internal object PaparazziPoet {
       val previewParam = func.parameters.firstOrNull { param ->
         param.annotations.any { it.isPreviewParameter() }
       }
-      func.annotations.findDistinctPreviews()
-        .map { AcceptableAnnotationsProcessData(func, previewParam) }
+      func.findDistinctPreviews()
+        .map { AcceptableAnnotationsProcessData(func, it, previewParam) }
     }.forEach { (func, preview, previewParam) ->
       block(func, preview, previewParam)
     }
@@ -108,7 +114,10 @@ internal object PaparazziPoet {
     addStatement("%L.PaparazziPreviewData.Error(", PACKAGE_NAME)
     indent()
     addStatement("snapshotName = %S,", snapshotName)
-    addStatement("message = %S,", "$qualifiedName is private. Make it internal or public to generate a snapshot.")
+    addStatement(
+      "message = %S,",
+      "$qualifiedName is private. Make it internal or public to generate a snapshot."
+    )
     addPreviewData(preview)
     unindent()
     addStatement("),")
@@ -199,7 +208,8 @@ internal object PaparazziPoet {
     addStatement("name = %S,", previewParam.name?.asString())
     val previewParamProvider = previewParam.previewParamProvider()
     val isClassObject = previewParamProvider.closestClassDeclaration()?.classKind == ClassKind.OBJECT
-    val previewParamProviderInstantiation = "${previewParamProvider.qualifiedName?.asString()}${if (isClassObject) "" else "()"}"
+    val previewParamProviderInstantiation =
+      "${previewParamProvider.qualifiedName?.asString()}${if (isClassObject) "" else "()"}"
     addStatement("values = %L.values,", previewParamProviderInstantiation)
     unindent()
     addStatement("),")
@@ -220,7 +230,8 @@ internal object PaparazziPoet {
     previewParam: KSValueParameter?
   ) = VisibilityCheck(
     isFunctionPrivate = function.getVisibility() == Visibility.PRIVATE,
-    isPreviewParamProviderPrivate = previewParam?.previewParamProvider()?.getVisibility() == Visibility.PRIVATE
+    isPreviewParamProviderPrivate = previewParam?.previewParamProvider()
+      ?.getVisibility() == Visibility.PRIVATE
   )
 }
 

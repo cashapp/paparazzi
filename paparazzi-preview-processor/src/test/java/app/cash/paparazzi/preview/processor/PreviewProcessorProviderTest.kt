@@ -118,6 +118,8 @@ class PreviewProcessorProviderTest {
             app.cash.paparazzi.annotations.PaparazziPreviewData.Default(
               snapshotName = "SamplePreview_SamplePreview",
               composable = { test.SamplePreview() },
+              preview = app.cash.paparazzi.annotations.PreviewData(
+              ),
             ),
           )
         """.trimIndent()
@@ -159,6 +161,8 @@ class PreviewProcessorProviderTest {
             app.cash.paparazzi.annotations.PaparazziPreviewData.Error(
               snapshotName = "SamplePreview_SamplePreview",
               message = "test.SamplePreview is private. Make it internal or public to generate a snapshot.",
+              preview = app.cash.paparazzi.annotations.PreviewData(
+              ),
             ),
           )
         """.trimIndent()
@@ -207,9 +211,15 @@ class PreviewProcessorProviderTest {
           package test
 
           internal val paparazziPreviews = listOf<app.cash.paparazzi.annotations.PaparazziPreviewData>(
-            app.cash.paparazzi.annotations.PaparazziPreviewData.Error(
+            app.cash.paparazzi.annotations.PaparazziPreviewData.Provider(
               snapshotName = "SamplePreview_SamplePreview",
-              message = "test.SamplePreview preview uses PreviewParameters which aren't currently supported.",
+              composable = { test.SamplePreview(it) },
+              previewParameter = app.cash.paparazzi.annotations.PreviewParameterData(
+                name = "text",
+                values = test.SamplePreviewParameter.values,
+              ),
+              preview = app.cash.paparazzi.annotations.PreviewData(
+              ),
             ),
           )
         """.trimIndent()
@@ -253,10 +263,16 @@ class PreviewProcessorProviderTest {
             app.cash.paparazzi.annotations.PaparazziPreviewData.Default(
               snapshotName = "SamplePreview_SamplePreview",
               composable = { test.SamplePreview() },
+              preview = app.cash.paparazzi.annotations.PreviewData(
+              ),
             ),
             app.cash.paparazzi.annotations.PaparazziPreviewData.Default(
               snapshotName = "SamplePreview_SamplePreview",
               composable = { test.SamplePreview() },
+              preview = app.cash.paparazzi.annotations.PreviewData(
+                device = "id:pixel_4",
+                uiMode = 32,
+              ),
             ),
           )
         """.trimIndent()
