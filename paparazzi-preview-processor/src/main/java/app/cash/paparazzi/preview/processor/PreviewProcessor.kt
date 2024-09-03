@@ -18,11 +18,13 @@ public class PreviewProcessor(
   private val environment: SymbolProcessorEnvironment
 ) : SymbolProcessor {
 
-  private var invoked = false
-
   override fun process(resolver: Resolver): List<KSAnnotated> {
-    if (invoked) return emptyList()
-    invoked = true
+    // Due to codgen and multi-round processing of ksp
+    // https://kotlinlang.org/docs/ksp-multi-round.html
+    if (resolver.getAllFiles().any { it.fileName.contains("PaparazziPreviews") }) {
+      "Skipping subsequent run due to PaparazziPreviews.kt already created and caused ksp re-run".log()
+      return emptyList()
+    }
 
     val allFiles = resolver.getAllFiles().toList()
     if (allFiles.isEmpty()) return emptyList()
@@ -39,7 +41,7 @@ public class PreviewProcessor(
       .also { functions ->
         "found ${functions.count()} function(s)".log()
         PaparazziPoet.buildFiles(functions, isTestSourceSet, env).forEach { file ->
-          "writing file: ${file.packageName}.${file.name}".log()
+          "writing file: ${file.packageName}.${file.name}.kt".log()
           file.writeTo(environment.codeGenerator, dependencies)
         }
       }

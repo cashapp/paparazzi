@@ -9,7 +9,6 @@ import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.buildCodeBlock
 
 internal object PaparazziPoet {
-
   fun buildFiles(functions: Sequence<KSFunctionDeclaration>, isTest: Boolean, env: EnvironmentOptions) =
     if (isTest) {
       emptyList()
@@ -43,17 +42,15 @@ internal object PaparazziPoet {
             val visibilityCheck = checkVisibility(func)
             val snapshotName = func.snapshotName(env)
 
-            when {
-              visibilityCheck.isPrivate -> addError(
-                visibilityCheck = visibilityCheck,
-                function = func,
-                snapshotName = snapshotName,
-                buildErrorMessage = {
-                  "$it is private. Make it internal or public to generate a snapshot."
-                }
-              )
-              previewParam != null -> addError(
-                visibilityCheck = visibilityCheck,
+              when {
+                visibilityCheck.isPrivate -> addError(
+                  function = func,
+                  snapshotName = snapshotName,
+                  buildErrorMessage = {
+                    "$it is private. Make it internal or public to generate a snapshot."
+                  }
+                )
+                previewParam != null -> addError(
                 function = func,
                 snapshotName = snapshotName,
                 buildErrorMessage = {
@@ -80,24 +77,21 @@ internal object PaparazziPoet {
 
   private fun Sequence<KSFunctionDeclaration>.process(block: (KSFunctionDeclaration, KSValueParameter?) -> Unit) =
     flatMap { func ->
-      val previewParam = func.previewParam()
-      func.findDistinctPreviews()
+      val previewParam = func.parameters.firstOrNull { param ->
+        param.annotations.any { it.isPreviewParameter() }
+      }
+      func.annotations.findPreviews().distinct()
         .map { Pair(func, previewParam) }
     }.forEach { (func, previewParam) ->
       block(func, previewParam)
     }
 
   private fun CodeBlock.Builder.addError(
-    visibilityCheck: VisibilityCheck,
     function: KSFunctionDeclaration,
     snapshotName: String,
     buildErrorMessage: (String?) -> String
   ) {
-    val qualifiedName = if (visibilityCheck.isFunctionPrivate) {
-      function.qualifiedName?.asString()
-    } else {
-      null
-    }
+    val qualifiedName = function.qualifiedName?.asString()
 
     addStatement("%L.PaparazziPreviewData.Error(", PACKAGE_NAME)
     indent()
