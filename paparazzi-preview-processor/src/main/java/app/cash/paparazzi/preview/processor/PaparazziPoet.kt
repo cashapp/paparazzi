@@ -1,5 +1,6 @@
 package app.cash.paparazzi.preview.processor
 
+import com.google.devtools.ksp.closestClassDeclaration
 import com.google.devtools.ksp.getVisibility
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSAnnotation
@@ -128,7 +129,8 @@ internal class PaparazziPoet(
     addStatement("name = %S,", previewParam.name?.asString())
     val previewParamProvider = previewParam.previewParamProvider()
     val isClassObject = previewParamProvider.closestClassDeclaration()?.classKind == ClassKind.OBJECT
-    val previewParamProviderInstantiation = "${previewParamProvider.qualifiedName?.asString()}${if (isClassObject) "" else "()"}"
+    val previewParamProviderInstantiation =
+      "${previewParamProvider.qualifiedName?.asString()}${if (isClassObject) "" else "()"}"
     addStatement("values = %L.values,", previewParamProviderInstantiation)
     unindent()
     addStatement("),")
