@@ -5,4 +5,9 @@ dependencies {
   implementation libs.kotlinpoet
   implementation libs.kotlinpoet.ksp
   implementation libs.ksp
+
+  testImplementation libs.junit
+  testImplementation libs.truth
+  testImplementation libs.kotlin.compile.testing
+  testImplementation libs.kotlin.compile.testing.ksp
 }

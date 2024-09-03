@@ -6,6 +6,7 @@ compose = "1.7.2"
 coroutines = "1.9.0"
 javaTarget = "11"
 kotlin = "2.0.20"
+kotlinCompileTesting = "1.5.0"
 kotlinPoet = "1.18.1"
 ksp = "2.0.20-1.0.25"
 layoutlib = "14.0.9"
@@ -35,6 +36,8 @@ guava = { module = "com.google.guava:guava", version = "33.3.1-jre" }
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
 kotlinpoet = { module = "com.squareup:kotlinpoet", version.ref = "kotlinPoet" }
 kotlinpoet-ksp = { module = "com.squareup:kotlinpoet-ksp", version.ref = "kotlinPoet" }
+kotlin-compile-testing = { module = "com.github.tschuchortdev:kotlin-compile-testing", version.ref = "kotlinCompileTesting" }
+kotlin-compile-testing-ksp = { module = "com.github.tschuchortdev:kotlin-compile-testing-ksp", version.ref = "kotlinCompileTesting" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
 
