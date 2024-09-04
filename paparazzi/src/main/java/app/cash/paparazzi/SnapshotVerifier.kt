@@ -43,8 +43,7 @@ public class SnapshotVerifier @JvmOverloads constructor(
     return object : FrameHandler {
       val snapshotDir = if (fps == -1) imagesDirectory else videosDirectory
       val expected = File(snapshotDir, snapshot.toFileName(extension = "png"))
-      val expectedFailure = File(snapshotDir, snapshot.toFileName(nameDelimiter = "-", extension = "png"))
-      val failurePath = File(failureDir, "delta-${expectedFailure.name}").toOkioPath()
+      val failurePath = File(failureDir, "delta-${expected.name}").toOkioPath()
       val pngVerifier: ApngVerifier? = if (fps != -1) {
         ApngVerifier(expected.toOkioPath(), failurePath, fps, frameCount, maxPercentDifference)
       } else {
@@ -72,7 +71,6 @@ public class SnapshotVerifier @JvmOverloads constructor(
           """.trimIndent()
         )
         ImageUtils.assertImageSimilar(
-          relativePathFailure = expectedFailure.path,
           relativePath = expected.path,
           image = image,
           goldenImage = goldenImage,

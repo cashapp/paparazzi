@@ -32,6 +32,7 @@ import org.gradle.api.artifacts.type.ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIB
 import org.gradle.api.file.Directory
 import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.artifacts.transform.UnzipTransform
+import org.gradle.api.internal.tasks.testing.report.TestReporter
 import org.gradle.api.logging.LogLevel.LIFECYCLE
 import org.gradle.api.provider.Provider
 import org.gradle.api.provider.ProviderFactory
@@ -39,6 +40,7 @@ import org.gradle.api.reporting.ReportingExtension
 import org.gradle.api.tasks.Delete
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.options.Option
+import org.gradle.api.tasks.testing.AbstractTestTask
 import org.gradle.api.tasks.testing.Test
 import org.gradle.internal.os.OperatingSystem
 import org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
@@ -119,8 +121,7 @@ public class PaparazziPlugin @Inject constructor(
 
       val reportingBaseDirectory = project.extensions.getByType(ReportingExtension::class.java).baseDirectory
       val reportOutputDir = reportingBaseDirectory.dir("paparazzi/${variant.name}")
-      val verificationFailuresDir = reportOutputDir.map { it.dir("failures") }
-      val snapshotReportOutputDir = reportingBaseDirectory.dir("paparazzi/snapshots/${variant.name}")
+      val failedSnapshotOutputDir = buildDirectory.dir("paparazzi/failures")
 
       val sources = AndroidVariantSources(variant)
 
@@ -173,67 +174,27 @@ public class PaparazziPlugin @Inject constructor(
       val isRecordRun = project.objects.property(Boolean::class.java)
       val isVerifyRun = project.objects.property(Boolean::class.java)
 
-      val xmlTestOutputDir = project.objects.directoryProperty()
-      val htmlTestReportOutputDir = project.objects.directoryProperty()
+      val snapshotFailures = failedSnapshotOutputDir.flatMap {
+        project.objects.directoryProperty().apply {
+          set(if (it.asFile.exists()) it else null)
+        }
+      }
 
       project.gradle.taskGraph.whenReady { graph ->
         isRecordRun.set(recordTaskProvider.map { graph.hasTask(it) })
         isVerifyRun.set(verifyTaskProvider.map { graph.hasTask(it) })
 
-        // Unfortunately, we have to wait till the task graph is ready. When using a custom reporting base directory
-        // the actual report directory gets overwritten after task configuration. Seems like AGP is not respecting this extensions config.
-        // So we wait to set the testReportOutputDir until the task graph is ready.
-        htmlTestReportOutputDir.set(testTaskProvider.firstOrNull()?.reports?.html?.outputLocation?.get())
-      }
-
-      val reportPaparazziProvider = project.tasks.register("reportPaparazzi$testVariantSlug") { task ->
-        task.group = VERIFICATION_GROUP
-        task.description = "Generate report with snapshot diffs for failures"
-
-        task.mustRunAfter(testTaskProvider)
-
-        val snapshotFailures = verificationFailuresDir.flatMap {
-          project.objects.directoryProperty().apply {
-            set(if (it.asFile.exists()) it else null)
+        // Override test reporter with custom one to include diff screenshots in the report.
+        if (isVerifyRun.get()) {
+          testTaskProvider.configureEach {
+            it.setTestReporter { provider, reportDir ->
+              TestReport(
+                failureSnapshotDir = snapshotFailures.orNull?.asFile,
+                applicationId = variant.namespace.get(),
+                variantKey = variant.name
+              ).generateReport(provider, reportDir)
+            }
           }
-        }
-
-        task.inputs.dir(snapshotFailures)
-          .withPropertyName("paparazzi.snapshot.failures")
-          .withPathSensitivity(PathSensitivity.RELATIVE)
-          .optional()
-
-        task.inputs.dir(htmlTestReportOutputDir)
-          .withPropertyName("test.html.report.dir")
-          .withPathSensitivity(PathSensitivity.RELATIVE)
-          .skipWhenEmpty()
-
-        task.inputs.dir(xmlTestOutputDir)
-          .withPropertyName("test.result.xml.dir")
-          .withPathSensitivity(PathSensitivity.RELATIVE)
-          .skipWhenEmpty()
-
-        task.outputs.dir(snapshotReportOutputDir)
-          .withPropertyName("paparazzi.snapshot.report.output.dir")
-
-        val reportDir = snapshotReportOutputDir.get().asFile
-        val resultsDir = xmlTestOutputDir.get().asFile
-        val snapshotFailuresDir = snapshotFailures.orNull?.asFile
-        val variantNamespace = variant.namespace.get()
-        val variantName = variant.name
-
-        task.doLast {
-          val report = TestReport(
-            resultDir = resultsDir,
-            reportDir = reportDir,
-            failureSnapshotDir = snapshotFailuresDir,
-            applicationId = variantNamespace,
-            variantKey = variantName
-          )
-          report.generateScreenshotTestReport()
-
-          val uri = reportDir.toPath().resolve("index.html").toUri()
-          it.logger.log(LIFECYCLE, "See the merged Paparazzi snapshot report at: $uri")
         }
       }
 
@@ -287,11 +248,7 @@ public class PaparazziPlugin @Inject constructor(
 
         test.outputs.dir(reportOutputDir).withPropertyName("paparazzi.report.dir")
 
-        xmlTestOutputDir.set(test.reports.junitXml.outputLocation.get())
-        htmlTestReportOutputDir.set(test.reports.html.outputLocation.get())
-
         test.dependsOn(writeResourcesTask)
-        test.finalizedBy(reportPaparazziProvider)
 
         test.doFirst {
           // Note: these are lazy properties that are not resolvable in the Gradle configuration phase.
@@ -323,6 +280,14 @@ public class PaparazziPlugin @Inject constructor(
       }
       return this
     }
+  }
+
+  private fun <T : AbstractTestTask> T.setTestReporter(testReporter: TestReporter) {
+    AbstractTestTask::class.java
+      .getDeclaredMethod("setTestReporter", TestReporter::class.java).apply {
+        isAccessible = true
+        invoke(this@setTestReporter, testReporter)
+      }
   }
 
   private fun Project.setupLayoutlibRuntimeDependency(): FileCollection {

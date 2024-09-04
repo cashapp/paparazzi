@@ -46,7 +46,6 @@ internal object ImageUtils {
 
   @Throws(IOException::class)
   fun assertImageSimilar(
-    relativePathFailure: String,
     relativePath: String,
     goldenImage: BufferedImage,
     image: BufferedImage,
@@ -62,7 +61,6 @@ internal object ImageUtils {
     val imageHeight = image.height
 
     val imageName = getName(relativePath)
-    val imageNameDelta = getName(relativePathFailure)
     var error = when {
       percentDifference > maxPercentDifferent -> "Images differ (by %f%%)".format(percentDifference)
       abs(goldenImageWidth - imageWidth) >= 2 ->
@@ -102,7 +100,7 @@ internal object ImageUtils {
         g.drawImage(actualLabel, goldenImageWidth + deltaWidth + 10, yOffset, null)
       }
 
-      val deltaOutput = File(failureDir, "delta-$imageNameDelta")
+      val deltaOutput = File(failureDir, "delta-$imageName")
       if (deltaOutput.exists()) {
         val deleted = deltaOutput.delete()
         if (!deleted) {

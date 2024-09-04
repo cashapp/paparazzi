@@ -1,33 +1,22 @@
 package app.cash.paparazzi.gradle.reporting
 
-import com.github.javaparser.ParseException
 import org.gradle.api.GradleException
+import org.gradle.api.internal.tasks.testing.junit.result.TestResultsProvider
+import org.gradle.api.internal.tasks.testing.report.TestReporter
 import org.gradle.reporting.HtmlReportBuilder
-import org.w3c.dom.Document
-import org.w3c.dom.Element
-import org.xml.sax.InputSource
 import java.io.File
-import java.io.FileInputStream
-import java.io.IOException
-import java.io.InputStream
-import java.math.BigDecimal
-import java.text.DecimalFormat
-import java.text.DecimalFormatSymbols
-import javax.xml.parsers.DocumentBuilderFactory
 
 /**
  * Custom test reporter based on Gradle's DefaultTestReport
  */
 internal class TestReport(
-  private val resultDir: File,
-  private val reportDir: File,
   private val failureSnapshotDir: File?,
   private val applicationId: String,
   private val variantKey: String
-) {
+) : TestReporter {
 
   private val htmlRenderer: HtmlReportRenderer = HtmlReportRenderer()
-  private val diffImages = mutableMapOf<String, List<ScreenshotDiffImage>>()
+  private lateinit var diffImages: List<File>
 
   init {
     // TODO: Maybe include these in repo?
@@ -37,139 +26,79 @@ internal class TestReport(
     htmlRenderer.requireResource(javaClass.getResource("style.css")!!)
   }
 
-  fun generateScreenshotTestReport(): CompositeTestResults {
+  override fun generateReport(testResultsProvider: TestResultsProvider, reportDir: File) {
     processFailedImageDiffs()
-    return loadModel().also(::generateFilesForScreenshotTest)
-  }
 
-  private fun processFailedImageDiffs() {
-    failureSnapshotDir
-      ?.listFiles()
-      ?.filter {
-        val nameSegments = it.name.split("_", limit = 3)
-        it.name.startsWith("delta-") && nameSegments.size == 3
-      }
-      ?.forEach { diff ->
-        val nameSegments = diff.name.split("_", limit = 3)
-        val testClassPackage = nameSegments[0].replace("delta-", "")
-        val testClass = "$testClassPackage.${nameSegments[1]}"
-        val testMethodWithLabel = nameSegments[2].split(".")[0].split("-")
-        val testMethod = testMethodWithLabel[0]
-        val label = testMethodWithLabel.getOrNull(1)
-
-        val diffImage = ScreenshotDiffImage(
-          diff.path,
-          testClassPackage,
-          testClass,
-          testMethod,
-          label
-        )
-
-        val key = "${testClass}_$testMethod"
-        val images = diffImages.getOrDefault(key, listOf())
-        diffImages[key] = images + diffImage
-      }
-  }
-
-  private fun loadModel(): AllTestResults {
     val model = AllTestResults()
-    if (resultDir.exists()) {
-      resultDir.listFiles()?.forEach { file: File ->
-        if (file.name.startsWith("TEST-") && file.getName().endsWith(".xml")) {
-          mergeFromFile(file, model)
-        }
-      }
-    }
-    return model
-  }
+    testResultsProvider.visitClasses {
+      val testClass = it.className
+      model.duration = it.duration
 
-  private fun mergeFromFile(
-    file: File,
-    model: AllTestResults
-  ) {
-    var inputStream: InputStream? = null
-    try {
-      inputStream = FileInputStream(file)
-      val document: Document = try {
-        DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
-          InputSource(inputStream)
-        )
-      } finally {
-        inputStream.close()
-      }
+      it.results.forEach { testResult ->
+        val diffImage: List<ScreenshotDiffImage> = getScreenshotDiffs(testClass, testResult.name)
 
-      val testCases = document.getElementsByTagName("testcase")
-      val systemOut = document.getElementsByTagName("system-out").item(0).textContent
-      val systemErr = document.getElementsByTagName("system-err").item(0).textContent
-
-      model.addStandardOutput(systemOut)
-      model.addStandardError(systemErr)
-
-      for (i in 0 until testCases.length) {
-        val testCase = testCases.item(i) as Element
-        val className = testCase.getAttribute("classname")
-        val testName = testCase.getAttribute("name")
-        val timeString = testCase.getAttribute("time")
-        var duration =
-          if (timeString.isNotBlank()) parse(timeString) else BigDecimal.valueOf(0)
-        duration = duration.multiply(BigDecimal.valueOf(1000))
-        val failures = testCase.getElementsByTagName("failure")
-        val errors = testCase.getElementsByTagName("error")
-
-        val diffImage: List<ScreenshotDiffImage>? = diffImages["${className}_$testName"]
-
-        val testResult: TestResult = model.addTest(
-          className = className,
-          testName = testName,
-          duration = duration.toLong(),
+        model.addTest(
+          className = testClass,
+          testName = testResult.name,
+          duration = testResult.duration,
           project = applicationId,
           flavor = variantKey,
           diffImages = diffImage
-        )
+        ).apply {
+          testResult.failures.forEach { failure ->
+            addFailure(
+              message = failure.message,
+              stackTrace = failure.stackTrace,
+              projectName = applicationId,
+              exceptionType = failure.exceptionType,
+              flavorName = variantKey
+            )
+          }
 
-        for (j in 0 until failures.length) {
-          val failure = failures.item(j) as Element
-          testResult.addFailure(
-            message = failure.getAttribute("message"),
-            stackTrace = failure.textContent,
-            projectName = applicationId,
-            exceptionType = failure.getAttribute("type"),
-            flavorName = variantKey
-          )
+          if (testResult.resultType == org.gradle.api.tasks.testing.TestResult.ResultType.SKIPPED) {
+            ignored(applicationId, variantKey)
+          }
         }
-        for (j in 0 until errors.length) {
-          val error = errors.item(j) as Element
-          testResult.addError(error.textContent, applicationId, variantKey)
-        }
-        if (testCase.getElementsByTagName("skipped").length > 0) {
-          testResult.ignored(applicationId, variantKey)
-        }
-      }
-      val ignoredTestCases = document.getElementsByTagName("ignored-testcase")
-      for (i in 0 until ignoredTestCases.length) {
-        val testCase = ignoredTestCases.item(i) as Element
-        val className = testCase.getAttribute("classname")
-        val testName = testCase.getAttribute("name")
-        model.addTest(className, testName, 0, applicationId, variantKey, null)
-          .ignored(applicationId, variantKey)
-      }
-      val suiteClassName = document.documentElement.getAttribute("name")
-      if (suiteClassName.isNotBlank()) {
-        model.addTestClass(suiteClassName)
-      }
-    } catch (e: Exception) {
-      throw GradleException(String.format("Could not load test results from '%s'.", file), e)
-    } finally {
-      try {
-        inputStream?.close()
-      } catch (e: IOException) {
-        // cannot happen
       }
     }
+
+    generateFilesForScreenshotTest(model, reportDir)
+  }
+
+  private fun getScreenshotDiffs(className: String, methodName: String) =
+    diffImages.mapNotNull { diff ->
+      val nameSegments = diff.name.split("_", limit = 3)
+      val testClassPackage = nameSegments[0].replace("delta-", "")
+      val testClass = "$testClassPackage.${nameSegments[1]}"
+
+      if (testClass != className) return@mapNotNull null
+
+      val testMethodWithLabel = nameSegments[2].split(".")[0]
+      var testMethod: String? = null
+      "($methodName)_?(.*)".toRegex().find(testMethodWithLabel)?.let {
+        testMethod = it.groupValues.getOrNull(1)?.toString()
+      }
+
+      if (testMethod != methodName) return@mapNotNull null
+      requireNotNull(testMethod) {
+        "Test method should be defined in snapshot filename ${diff.name}"
+      }
+
+      return@mapNotNull ScreenshotDiffImage(diff.path)
+    }
+
+  private fun processFailedImageDiffs() {
+    diffImages = failureSnapshotDir
+      ?.listFiles()
+      ?.filter {
+        it.name.startsWith("delta-")
+      }
+      ?: emptyList()
   }
 
   private fun generateFilesForScreenshotTest(
-    model: AllTestResults
+    model: AllTestResults,
+    reportDir: File
   ) {
     try {
       generatePage(
@@ -209,21 +138,5 @@ internal class TestReport(
     outputFile: File
   ) {
     htmlRenderer.renderer(renderer).writeTo(model, outputFile)
-  }
-
-  /**
-   * Regardless of the default locale, comma ('.') is used as decimal separator
-   *
-   * @param source
-   * @return
-   * @throws java.text.ParseException
-   */
-  @Throws(ParseException::class)
-  fun parse(source: String?): BigDecimal {
-    val symbols = DecimalFormatSymbols()
-    symbols.setDecimalSeparator('.')
-    val format = DecimalFormat("#.#", symbols)
-    format.isParseBigDecimal = true
-    return format.parse(source) as BigDecimal
   }
 }

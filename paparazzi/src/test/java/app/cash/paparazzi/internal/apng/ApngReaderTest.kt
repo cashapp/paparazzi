@@ -46,7 +46,6 @@ class ApngReaderTest {
         goldenImage = expectedImage,
         image = actualImage,
         maxPercentDifferent = 0.0,
-        relativePathFailure = expectedFile.path,
         failureDir = tempDir.newFolder()
       )
     }

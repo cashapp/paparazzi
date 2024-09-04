@@ -18,7 +18,9 @@ class RenderExtensionTest {
   @get:Rule
   val tempDir = TemporaryFolder()
 
-  private val snapshotHandler = TestSnapshotVerifier(tempDir)
+  private val snapshotHandler = TestSnapshotVerifier {
+    tempDir.newFolder()
+  }
 
   @get:Rule
   val paparazzi = Paparazzi(
