@@ -5,6 +5,7 @@ import org.gradle.api.internal.tasks.testing.junit.result.TestResultsProvider
 import org.gradle.api.internal.tasks.testing.report.TestReporter
 import org.gradle.reporting.HtmlReportBuilder
 import java.io.File
+import java.util.Base64
 
 /**
  * Custom test reporter based on Gradle's DefaultTestReport
@@ -17,6 +18,7 @@ internal class TestReport(
 
   private val htmlRenderer: HtmlReportRenderer = HtmlReportRenderer()
   private lateinit var diffImages: List<File>
+  private val base64Encoder = Base64.getEncoder()
 
   init {
     // TODO: Maybe include these in repo?
@@ -84,7 +86,11 @@ internal class TestReport(
         "Test method should be defined in snapshot filename ${diff.name}"
       }
 
-      return@mapNotNull ScreenshotDiffImage(diff.path)
+      return@mapNotNull ScreenshotDiffImage(
+        path = diff.path,
+        snapshotName = diff.name.replace("delta-", ""),
+        base64EncodedImage = base64Encoder.encodeToString(diff.readBytes())
+      )
     }
 
   private fun processFailedImageDiffs() {

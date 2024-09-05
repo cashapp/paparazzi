@@ -1,15 +1,8 @@
 package app.cash.paparazzi.gradle.reporting
 
 import org.gradle.reporting.ReportRenderer
-import java.io.File
-import java.util.Base64
 
 internal class ImagePanelRenderer : ReportRenderer<List<ScreenshotDiffImage>, SimpleHtmlWriter>() {
-
-  companion object {
-    private val ALT_TEXT_PREFIX: String = "Error displaying image at "
-  }
-
   override fun render(image: List<ScreenshotDiffImage>, htmlWriter: SimpleHtmlWriter) {
     // Wrap in a <span>, to work around CSS problem in IE
     htmlWriter.startElement("span")
@@ -20,39 +13,49 @@ internal class ImagePanelRenderer : ReportRenderer<List<ScreenshotDiffImage>, Si
       .attribute(
         "style", "width: 100%"
       ) // this class will render a grid like background to better show the diff between png images with and without background
-      .startElement("tr")
     renderImages(htmlWriter, image)
-    htmlWriter.endElement().endElement().endElement().endElement()
+    htmlWriter.endElement().endElement().endElement()
   }
 
   private fun renderImages(htmlWriter: SimpleHtmlWriter, images: List<ScreenshotDiffImage>?) {
     if (images == null) {
-      htmlWriter.startElement("td")
+      htmlWriter
+        .startElement("tr")
+        .startElement("td")
         .attribute("style", "width: 100%")
         .characters("")
+        .endElement()
         .endElement()
       return
     }
 
     images.forEach { image ->
-      if (File(image.path).exists()) {
-        val base64String = Base64.getEncoder().encodeToString(File(image.path).readBytes())
-        htmlWriter.startElement("td")
+      if (image.base64EncodedImage.isNotEmpty()) {
+        htmlWriter
+          .startElement("tr")
+          .startElement("td")
           .attribute("style", "width: 100%; padding: 1em")
+          .startElement("h4")
+          .characters(image.snapshotName)
+          .endElement()
           .startElement("img")
-          .attribute("src", "data:image/png;base64, $base64String")
+          .attribute("src", "data:image/png;base64, ${image.base64EncodedImage}")
           .attribute("style", "max-width: 100%; height: auto;")
           .attribute("alt", image.text())
           .endElement()
           .endElement()
+          .endElement()
       } else {
-        htmlWriter.startElement("td")
+        htmlWriter
+          .startElement("tr")
+          .startElement("td")
           .attribute("style", "width: 100%")
           .characters(image.text())
+          .endElement()
           .endElement()
       }
     }
   }
 
-  private fun ScreenshotDiffImage.text(): String = "$ALT_TEXT_PREFIX$path"
+  private fun ScreenshotDiffImage.text(): String = String.format("Error displaying image at %s", path)
 }

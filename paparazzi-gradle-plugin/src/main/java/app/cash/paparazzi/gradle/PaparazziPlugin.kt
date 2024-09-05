@@ -118,9 +118,7 @@ public class PaparazziPlugin @Inject constructor(
       val projectDirectory = project.layout.projectDirectory
       val buildDirectory = project.layout.buildDirectory
       val gradleUserHomeDir = project.gradle.gradleUserHomeDir
-
-      val reportingBaseDirectory = project.extensions.getByType(ReportingExtension::class.java).baseDirectory
-      val reportOutputDir = reportingBaseDirectory.dir("paparazzi/${variant.name}")
+      val reportOutputDir = project.extensions.getByType(ReportingExtension::class.java).baseDirectory.dir("paparazzi/${variant.name}")
       val failedSnapshotOutputDir = buildDirectory.dir("paparazzi/failures")
 
       val sources = AndroidVariantSources(variant)
@@ -151,7 +149,8 @@ public class PaparazziPlugin @Inject constructor(
 
       val testVariantSlug = testVariant.name.capitalize(Locale.US)
 
-      val testTaskProvider = project.tasks.withType(Test::class.java).named { it == "test$testVariantSlug" }
+      project.tasks.named { it == "test$testVariantSlug" }
+        .configureEach { it.dependsOn(writeResourcesTask) }
 
       val recordTaskProvider = project.tasks.register("recordPaparazzi$variantSlug", PaparazziTask::class.java) {
         it.group = VERIFICATION_GROUP
@@ -183,21 +182,10 @@ public class PaparazziPlugin @Inject constructor(
       project.gradle.taskGraph.whenReady { graph ->
         isRecordRun.set(recordTaskProvider.map { graph.hasTask(it) })
         isVerifyRun.set(verifyTaskProvider.map { graph.hasTask(it) })
-
-        // Override test reporter with custom one to include diff screenshots in the report.
-        if (isVerifyRun.get()) {
-          testTaskProvider.configureEach {
-            it.setTestReporter { provider, reportDir ->
-              TestReport(
-                failureSnapshotDir = snapshotFailures.orNull?.asFile,
-                applicationId = variant.namespace.get(),
-                variantKey = variant.name
-              ).generateReport(provider, reportDir)
-            }
-          }
-        }
       }
 
+      val testTaskProvider =
+        project.tasks.withType(Test::class.java).named { it == "test$testVariantSlug" }
       testTaskProvider.configureEach { test ->
         test.systemProperties["paparazzi.test.resources"] =
           writeResourcesTask.flatMap { it.paparazziResources.asFile }.get().path
@@ -248,7 +236,20 @@ public class PaparazziPlugin @Inject constructor(
 
         test.outputs.dir(reportOutputDir).withPropertyName("paparazzi.report.dir")
 
-        test.dependsOn(writeResourcesTask)
+        val isVerifying = isVerifyRun.map {
+          // We only want to run the our custom test reporter when verify task runs.
+          if (it) {
+            test.setTestReporter(
+              TestReport(
+                failureSnapshotDir = snapshotFailures.orNull?.asFile,
+                applicationId = variant.namespace.get(),
+                variantKey = variant.name
+              )
+            )
+          }
+
+          it
+        }
 
         test.doFirst {
           // Note: these are lazy properties that are not resolvable in the Gradle configuration phase.
@@ -258,12 +259,12 @@ public class PaparazziPlugin @Inject constructor(
           test.systemProperties["paparazzi.layoutlib.resources.root"] =
             layoutlibResourcesFileCollection.singleFile.absolutePath
           test.systemProperties["paparazzi.test.record"] = isRecordRun.get()
-          test.systemProperties["paparazzi.test.verify"] = isVerifyRun.get()
+          test.systemProperties["paparazzi.test.verify"] = isVerifying.get()
         }
 
         test.doLast {
           val uri = reportOutputDir.get().asFile.toPath().resolve("index.html").toUri()
-          test.logger.log(LIFECYCLE, "See the Paparazzi runs report at: $uri")
+          test.logger.log(LIFECYCLE, "See the Paparazzi report at: $uri")
         }
       }
 

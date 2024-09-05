@@ -108,7 +108,7 @@ public class HtmlReportWriter @JvmOverloads constructor(
         snapshotTmpFile.delete()
 
         if (isRecording) {
-          val goldenFile = File(goldenDir, snapshot.toFileName("_", extension = "png"))
+          val goldenFile = File(goldenDir, snapshot.toFileName("_", "png"))
           snapshotFile.copyTo(target = goldenFile, overwrite = true)
         }
 

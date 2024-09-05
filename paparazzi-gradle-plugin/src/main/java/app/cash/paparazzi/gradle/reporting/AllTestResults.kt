@@ -34,14 +34,9 @@ internal class AllTestResults : CompositeTestResults(null) {
     return testResult
   }
 
-  fun addTestClass(className: String): ClassTestResults {
-    return addPackageForClass(className).addClass(className)
-  }
-
   private fun addPackageForClass(className: String): PackageTestResults {
-    val packageName: String
     val pos = className.lastIndexOf(".")
-    packageName = if (pos != -1) {
+    val packageName = if (pos != -1) {
       className.substring(0, pos)
     } else {
       ""
