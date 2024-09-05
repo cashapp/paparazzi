@@ -32,6 +32,7 @@ dependencies {
   testImplementationAarAsJar libs.androidx.compose.ui.android
   compileOnlyAarAsJar libs.androidx.compose.ui.android
   compileOnlyAarAsJar libs.androidx.activity
+  compileOnlyAarAsJar libs.androidx.lifecycle.runtime // Needed for setViewTreeLifecycleOwner
 
   implementation libs.bytebuddy.agent
   implementation libs.bytebuddy.core
