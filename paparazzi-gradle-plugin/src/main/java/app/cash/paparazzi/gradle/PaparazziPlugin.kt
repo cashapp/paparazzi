@@ -239,13 +239,13 @@ public class PaparazziPlugin @Inject constructor(
         val isVerifying = isVerifyRun.map {
           // We only want to run the our custom test reporter when verify task runs.
           if (it) {
-            test.setTestReporter(
+            test.setTestReporter { testResultsProvider, reportDir ->
               TestReport(
                 failureSnapshotDir = snapshotFailures.orNull?.asFile,
                 applicationId = variant.namespace.get(),
                 variantKey = variant.name
-              )
-            )
+              ).generateReport(testResultsProvider = testResultsProvider, reportDir = reportDir)
+            }
           }
 
           it
