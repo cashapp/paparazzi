@@ -5,9 +5,16 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.Text
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SheetState
+import androidx.compose.material3.SheetValue
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.unit.dp
@@ -29,6 +36,24 @@ class ComposeA11yTest {
   fun `mixed compose usage`() {
     val mixedView = MixedView(paparazzi.context)
     paparazzi.snapshot(mixedView)
+  }
+
+  @Test
+  @OptIn(ExperimentalMaterial3Api::class)
+  fun modalBottomSheetMaterial3() {
+    paparazzi.snapshot {
+      ModalBottomSheet(
+        onDismissRequest = {},
+        sheetState = SheetState(
+          skipPartiallyExpanded = true,
+          density = LocalDensity.current,
+          initialValue = SheetValue.Expanded
+        )
+      ) {
+        Text(text = "Text 2")
+      }
+      Text(text = "Text 1")
+    }
   }
 
   @Test
