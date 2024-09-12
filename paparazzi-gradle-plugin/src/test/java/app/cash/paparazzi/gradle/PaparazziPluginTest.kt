@@ -10,6 +10,7 @@ import okio.buffer
 import okio.source
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
+import org.gradle.testkit.runner.TaskOutcome
 import org.gradle.testkit.runner.TaskOutcome.FROM_CACHE
 import org.gradle.testkit.runner.TaskOutcome.SUCCESS
 import org.junit.After
@@ -1334,6 +1335,23 @@ class PaparazziPluginTest {
     gradleRunner
       .withArguments("verifyPaparazziDebug", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
+  }
+
+  @Test
+  fun snapshotReport() {
+    val fixtureRoot = File("src/test/projects/report-snapshots")
+    val testReportDir = File(fixtureRoot, "build/reports/tests/testDebugUnitTest")
+
+    val result = gradleRunner
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    assertThat(result.task(":testDebugUnitTest")?.outcome).isEqualTo(TaskOutcome.FAILED)
+
+    val simpleTestHtmlFile = File(testReportDir, "app.cash.paparazzi.plugin.test.SimpleTest.html")
+    val htmlText = simpleTestHtmlFile.readText()
+    assertThat(htmlText).contains("<img")
+    assertThat(htmlText).contains("delta-app.cash.paparazzi.plugin.test_SimpleTest_compose.png")
   }
 
   @Test
