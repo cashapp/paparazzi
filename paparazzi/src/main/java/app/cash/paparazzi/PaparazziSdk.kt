@@ -32,6 +32,7 @@ import android.view.ViewGroup
 import androidx.activity.setViewTreeOnBackPressedDispatcherOwner
 import androidx.annotation.LayoutRes
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Recomposer
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.InternalComposeUiApi
 import androidx.compose.ui.platform.ComposeView
@@ -255,6 +256,9 @@ public class PaparazziSdk @JvmOverloads constructor(
         // Initialize the choreographer at time=0.
       }
 
+      // The consumer may not have compose runtime on the classpath, so we don't reference the type.
+      var recomposer: Any? = null
+
       if (hasComposeRuntime) {
         // During onAttachedToWindow, AbstractComposeView will attempt to resolve its parent's
         // CompositionContext, which requires first finding the "content view", then using that
@@ -265,7 +269,11 @@ public class PaparazziSdk @JvmOverloads constructor(
         // Since this dispatcher does not provide its own implementation of Delay, it will default to using DefaultDelay which runs
         // async to our test Handler. By initializing Recomposer with Dispatchers.Main, Delay will now be backed by our test Handler,
         // synchronizing expected behavior.
-        WindowRecomposerPolicy.setFactory { it.createLifecycleAwareWindowRecomposer(MAIN_DISPATCHER) }
+        WindowRecomposerPolicy.setFactory {
+          val windowRecomposer = it.createLifecycleAwareWindowRecomposer(MAIN_DISPATCHER)
+          recomposer = windowRecomposer
+          return@setFactory windowRecomposer
+        }
       }
 
       if (hasLifecycleOwnerRuntime) {
@@ -285,21 +293,46 @@ public class PaparazziSdk @JvmOverloads constructor(
       viewGroup.addView(modifiedView)
       for (frame in 0 until frameCount) {
         val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
+
+        // If we have pendingTasks run recomposer to ensure we get the correct frame.
+        var hasPendingWork = false
         withTime(nowNanos) {
           val result = renderSession.render(true)
           if (result.status == ERROR_UNKNOWN) {
             throw result.exception
           }
-
-          val image = bridgeRenderSession.image
-          if (validateAccessibility) {
-            require(renderExtensions.isEmpty()) {
-              "Running accessibility validation and render extensions simultaneously is not supported."
+          if (hasComposeRuntime && recomposer != null) {
+            // If we have pending tasks, we need to trigger it within the context of the first frame.
+            if (frame == 0 && (recomposer as Recomposer).hasPendingWork) {
+              hasPendingWork = true
             }
-            validateLayoutAccessibility(modifiedView, image)
           }
-          onNewFrame(scaleImage(frameImage(image)))
         }
+
+        if (hasPendingWork) {
+          withTime(nowNanos) {
+            val result = renderSession.render(true)
+            if (result.status == ERROR_UNKNOWN) {
+              throw result.exception
+            }
+          }
+
+          val recomposerInstance = recomposer as Recomposer
+          if (recomposerInstance.hasPendingWork) {
+            logger.warning(
+              "Pending work detected. This may cause unexpected results in your generated snapshots. ${recomposerInstance.changeCount}"
+            )
+          }
+        }
+
+        val image = bridgeRenderSession.image
+        if (validateAccessibility) {
+          require(renderExtensions.isEmpty()) {
+            "Running accessibility validation and render extensions simultaneously is not supported."
+          }
+          validateLayoutAccessibility(modifiedView, image)
+        }
+        onNewFrame(scaleImage(frameImage(image)))
       }
     } finally {
       viewGroup.removeAllViews()
@@ -338,7 +371,7 @@ public class PaparazziSdk @JvmOverloads constructor(
         RenderAction.getCurrentContext().sessionInteractiveData.choreographerCallbacks
       choreographerCallbacks.execute(currentTimeNanos, Bridge.getLog())
 
-      block()
+      return block()
     } catch (e: Throwable) {
       Bridge.getLog().error("broken", "Failed executing Choreographer#doFrame", e, null, null)
       throw e
