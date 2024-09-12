@@ -25,6 +25,7 @@ bytebuddy-agent = { module = "net.bytebuddy:byte-buddy-agent", version.ref = "by
 bytebuddy-core = { module = "net.bytebuddy:byte-buddy", version.ref = "bytebuddy" }
 
 composeUi-material = { module = "androidx.compose.material:material", version.ref = "compose" }
+composeUi-material3-android = { module = "androidx.compose.material3:material3-android", version = "1.3.0" }
 composeUi-uiTooling = { module = "androidx.compose.ui:ui-tooling" }
 
 guava = { module = "com.google.guava:guava", version = "33.3.0-jre" }
