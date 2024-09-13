@@ -5,6 +5,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
@@ -18,6 +20,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Paparazzi
 import app.cash.paparazzi.accessibility.AccessibilityRenderExtension
@@ -53,6 +57,48 @@ class ComposeA11yTest {
         Text(text = "Text 2")
       }
       Text(text = "Text 1")
+    }
+  }
+
+  @Test
+  fun dialog() {
+    paparazzi.snapshot {
+      Dialog(onDismissRequest = { }, properties = DialogProperties()) {
+        Text("Dialog content")
+      }
+    }
+  }
+
+  @Test
+  fun alertDialog() {
+    paparazzi.snapshot {
+      AlertDialog(
+        onDismissRequest = {},
+        title = { Text("Title") },
+        text = { Text("Text") },
+        confirmButton = {
+          Text("Confirm")
+        },
+        dismissButton = {
+          Text("Dismiss")
+        }
+      )
+    }
+  }
+
+  @Test
+  @OptIn(ExperimentalMaterial3Api::class)
+  fun datePickerDialog() {
+    paparazzi.snapshot {
+      DatePickerDialog(
+        onDismissRequest = {},
+        confirmButton = {
+          Text("Confirm")
+        },
+        dismissButton = {
+          Text("Dismiss")
+        },
+      ) { }
     }
   }
 
