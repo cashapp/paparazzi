@@ -15,7 +15,6 @@
  */
 package app.cash.paparazzi.accessibility
 
-import android.annotation.SuppressLint
 import android.graphics.Rect
 import android.view.View
 import android.view.View.VISIBLE
