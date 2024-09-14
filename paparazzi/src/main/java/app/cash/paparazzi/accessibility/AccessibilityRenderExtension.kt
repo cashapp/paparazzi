@@ -32,7 +32,6 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getAllSemanticsNodes
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.state.ToggleableState
-import androidx.core.content.getSystemService
 import app.cash.paparazzi.RenderExtension
 import com.android.internal.view.OneShotPreDrawListener
 
@@ -57,7 +56,7 @@ public class AccessibilityRenderExtension : RenderExtension {
 
       OneShotPreDrawListener.add(this) {
         // Window Manager needed to access accessibility elements for views that draw to other windows
-        val windowManager = context.getSystemService<WindowManager>()
+        val windowManager = context.getSystemService(WindowManager::class.java)
         val windowManagerRootView = (windowManager as WindowManagerImpl).currentRootView
 
         val elements = buildList {
