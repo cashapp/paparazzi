@@ -24,9 +24,6 @@ android {
 }
 
 dependencies {
-  implementation libs.composeUi.material3.android
   implementation libs.composeUi.material
-  implementation libs.composeUi.material.icons
-  implementation libs.androidx.appcompat
 }
 
