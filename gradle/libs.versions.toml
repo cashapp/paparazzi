@@ -2,7 +2,7 @@
 agp = "8.4.2"
 androidTools = "31.4.2" # == 23.0.0 + agp version
 bytebuddy = "1.15.1"
-compose = "1.7.0"
+compose = "1.7.1"
 coroutines = "1.9.0"
 javaTarget = "11"
 kotlin = "2.0.20"
@@ -25,6 +25,7 @@ bytebuddy-agent = { module = "net.bytebuddy:byte-buddy-agent", version.ref = "by
 bytebuddy-core = { module = "net.bytebuddy:byte-buddy", version.ref = "bytebuddy" }
 
 composeUi-material = { module = "androidx.compose.material:material", version.ref = "compose" }
+composeUi-material-icons = { module = "androidx.compose.material:material-icons-core", version.ref = "compose" }
 composeUi-uiTooling = { module = "androidx.compose.ui:ui-tooling" }
 
 guava = { module = "com.google.guava:guava", version = "33.3.0-jre" }
