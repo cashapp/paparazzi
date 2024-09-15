@@ -23,7 +23,7 @@ jobs:
           java-version: 17
 
       - name: Publish Artifacts
-        run: ./gradlew publishMavenPublicationToMavenCentralRepository paparazzi-gradle-plugin:publishAllPublicationsToMavenCentralRepository --no-parallel
+        run: ./gradlew publishMavenPublicationToMavenCentralRepository paparazzi-gradle-plugin:publishAllPublicationsToMavenCentralRepository --no-parallel --no-daemon # no daemon needed to fix bug in 8.10.1. Wait for 8.10.2 for fix: https://github.com/gradle/gradle/issues/30472#issuecomment-2345620858
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
