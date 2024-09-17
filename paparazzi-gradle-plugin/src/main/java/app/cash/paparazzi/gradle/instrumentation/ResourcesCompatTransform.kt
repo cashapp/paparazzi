@@ -1,15 +1,18 @@
-package app.cash.paparazzi.gradle
+package app.cash.paparazzi.gradle.instrumentation
 
+import org.jetbrains.kotlin.konan.file.File
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.MethodVisitor
-import org.objectweb.asm.Opcodes
 
 /**
  * [ClassVisitor] that fixes a hardcoded path in ResourcesCompat.loadFont.
  * In this method, there is a check that font files have a path that starts with res/.
  * This is not the case in Studio. This replaces the check with one that verifies that the path contains res/.
+ *
+ * Inspired by ASM fix:
+ * https://cs.android.com/android-studio/platform/tools/adt/idea/+/mirror-goog-studio-main:rendering/src/com/android/tools/rendering/classloading/ResourcesCompatTransform.kt;drc=5bb41b6d5e519c891a4cd6149234138faa28e1af
  */
-class ResourcesCompatTransform(delegate: ClassVisitor) : ClassVisitor(Opcodes.ASM7, delegate) {
+internal class ResourcesCompatTransform(api: Int, delegate: ClassVisitor) : ClassVisitor(api, delegate) {
   private var isResourcesCompatClass: Boolean = false
 
   override fun visit(
@@ -33,22 +36,33 @@ class ResourcesCompatTransform(delegate: ClassVisitor) : ClassVisitor(Opcodes.AS
   ): MethodVisitor {
     val methodVisitor = super.visitMethod(access, name, descriptor, signature, exceptions)
     if (isResourcesCompatClass && name == LOAD_FONT_METHOD_NAME && descriptor == LOAD_FONT_METHOD_DESCRIPTOR) {
-      return LoadFontVisitor(methodVisitor)
+      return LoadFontVisitor(api, methodVisitor)
     }
     return methodVisitor
   }
 
-  private class LoadFontVisitor(delegate: MethodVisitor) : MethodVisitor(Opcodes.ASM7, delegate) {
+  private class LoadFontVisitor(api: Int, delegate: MethodVisitor) : MethodVisitor(api, delegate) {
+
     override fun visitMethodInsn(
       opcode: Int,
       owner: String,
       name: String,
       descriptor: String,
       isInterface: Boolean
-    ) = if ("startsWith" == name) {
-      super.visitMethodInsn(opcode, owner, "contains", "(Ljava/lang/CharSequence;)Z", isInterface)
-    } else {
-      super.visitMethodInsn(opcode, owner, name, descriptor, isInterface)
+    ) {
+      return if ("startsWith" == name) {
+        super.visitMethodInsn(opcode, owner, "contains", "(Ljava/lang/CharSequence;)Z", isInterface)
+      } else {
+        super.visitMethodInsn(opcode, owner, name, descriptor, isInterface)
+      }
+    }
+
+    override fun visitLdcInsn(value: Any?) {
+      if (value == "res/" && File.separator == "\\") {
+        super.visitLdcInsn("res\\")
+      } else {
+        super.visitLdcInsn(value)
+      }
     }
   }
 
