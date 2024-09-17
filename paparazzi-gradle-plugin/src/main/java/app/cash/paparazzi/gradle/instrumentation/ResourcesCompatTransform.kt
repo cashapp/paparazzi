@@ -1,6 +1,5 @@
 package app.cash.paparazzi.gradle.instrumentation
 
-import org.jetbrains.kotlin.konan.file.File
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.MethodVisitor
 
@@ -54,14 +53,6 @@ internal class ResourcesCompatTransform(api: Int, delegate: ClassVisitor) : Clas
         super.visitMethodInsn(opcode, owner, "contains", "(Ljava/lang/CharSequence;)Z", isInterface)
       } else {
         super.visitMethodInsn(opcode, owner, name, descriptor, isInterface)
-      }
-    }
-
-    override fun visitLdcInsn(value: Any?) {
-      if (value == "res/" && File.separator == "\\") {
-        super.visitLdcInsn("res\\")
-      } else {
-        super.visitLdcInsn(value)
       }
     }
   }

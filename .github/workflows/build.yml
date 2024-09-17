@@ -19,9 +19,9 @@ jobs:
       matrix:
         os: [
           # Check https://github.com/actions/runner-images?tab=readme-ov-file#available-images for actual versions for latest
-#          macOS-latest,
-          windows-latest #,
-#          ubuntu-latest
+          macOS-latest,
+          windows-latest,
+          ubuntu-latest
         ]
         java-version: [17, 18]
 
@@ -43,7 +43,7 @@ jobs:
           validate-wrappers: true
 
       - name: Run All Tests
-        run: ./gradlew sample:tDUT --tests="*ResourceCompat*"
+        run: ./gradlew check
 
       - name: Upload Test Failures
         if: failure()

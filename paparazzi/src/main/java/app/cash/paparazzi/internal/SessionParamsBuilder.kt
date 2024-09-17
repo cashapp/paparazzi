@@ -96,12 +96,6 @@ internal data class SessionParamsBuilder(
         themeName
       )
     )
-    val value = resourceResolver.getUnresolvedResource(
-      ResourceReference(ResourceNamespace.RES_AUTO, ResourceType.FONT, "cashmarket_medium")
-    )
-    if (value != null) {
-      println(value.value)
-    }
 
     val result = SessionParams(
       layoutPullParser, renderingMode, projectKey,

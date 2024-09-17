@@ -23,7 +23,6 @@ internal fun Table<ResourceNamespace, ResourceType, ResourceValueMap>.pseudoloca
     for (type in columnKeySet()) {
       val resourceValues = this[namespace, type]!!
       resourceValues.forEach { (key, value) ->
-        println("key: $key, value: $value")
         if (value !is BasicValueResourceItemBase || !value.isPseudolocalizable()) {
           return@forEach
         }

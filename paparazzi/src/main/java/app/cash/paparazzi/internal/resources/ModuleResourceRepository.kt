@@ -42,7 +42,6 @@ internal class ModuleResourceRepository private constructor(
       namespace: ResourceNamespace,
       resourceDirectories: List<File>
     ): LocalResourceRepository {
-      println("ModuleResourceRepository.forMainResources ${namespace} ${resourceDirectories}")
       return ModuleResourceRepository(
         displayName = "", // TODO
         namespace = namespace,
