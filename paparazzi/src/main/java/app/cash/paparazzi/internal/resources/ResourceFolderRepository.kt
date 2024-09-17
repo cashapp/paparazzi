@@ -40,7 +40,7 @@ internal class ResourceFolderRepository(
    * Common prefix of paths of all file resources.  Used to compose resource paths returned by
    * the [BasicFileResourceItem.getSource] method.
    */
-  private val resourcePathPrefix: String = "${resourceDir.path}/"
+  private val resourcePathPrefix: String = "${resourceDir.path}${File.separator}"
 
   /**
    * Same as [resourcePathPrefix] but in a form of [PathString].  Used to produce
@@ -62,12 +62,16 @@ internal class ResourceFolderRepository(
     get() = Paths.get(resourceDir.path)
 
   override fun getResourceUrl(relativeResourcePath: String): String =
-    "$resourcePathPrefix$relativeResourcePath"
+    "$resourcePathPrefix$relativeResourcePath".apply {
+      println("getResourceUrl $this")
+    }
 
   override fun getSourceFile(
     relativeResourcePath: String,
     forFileResource: Boolean
-  ): PathString = resourcePathBase.resolve(relativeResourcePath)
+  ): PathString = resourcePathBase.resolve(relativeResourcePath).apply {
+    println("getSourceFile $relativeResourcePath")
+  }
 
   override fun getPackageName(): String? = namespace.packageName
 
@@ -192,6 +196,7 @@ internal class ResourceFolderRepository(
       folderInfo: FolderInfo,
       configuration: RepositoryConfiguration
     ) {
+      println("loadResourceFile $file $folderInfo")
       if (folderInfo.resourceType == null) {
         if (isXmlFile(file)) {
           parseValueResourceFile(file, configuration)
