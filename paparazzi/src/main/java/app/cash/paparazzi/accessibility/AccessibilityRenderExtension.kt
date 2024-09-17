@@ -20,6 +20,8 @@ import android.view.View
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.view.WindowManager
+import android.view.WindowManagerImpl
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import androidx.compose.ui.platform.AbstractComposeView
@@ -53,7 +55,12 @@ public class AccessibilityRenderExtension : RenderExtension {
       addView(overlayDetailsView, LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, 1f))
 
       OneShotPreDrawListener.add(this) {
+        // Window Manager needed to access accessibility elements for views that draw to other windows
+        val windowManager = context.getSystemService(WindowManager::class.java)
+        val windowManagerRootView = (windowManager as WindowManagerImpl).currentRootView
+
         val elements = buildList {
+          windowManagerRootView?.processAccessibleChildren { add(it) }
           processAccessibleChildren { add(it) }
         }
 
@@ -62,8 +69,6 @@ public class AccessibilityRenderExtension : RenderExtension {
       }
     }
   }
-
-  private var unmergedNodes: List<SemanticsNode>? = null
 
   private fun View.processAccessibleChildren(
     processElement: (AccessibilityElement) -> Unit
@@ -82,9 +87,9 @@ public class AccessibilityRenderExtension : RenderExtension {
 
     if (this is AbstractComposeView) {
       // ComposeView creates a child view `AndroidComposeView` for view root for test.
-      val viewRoot = getChildAt(0) as? ViewRootForTest
-      unmergedNodes = viewRoot?.semanticsOwner?.getAllSemanticsNodes(false)
-      viewRoot?.semanticsOwner?.rootSemanticsNode?.processAccessibleChildren(processElement)
+      val viewRoot = getChildAt(0) as ViewRootForTest
+      val unmergedNodes = viewRoot.semanticsOwner.getAllSemanticsNodes(false)
+      viewRoot.semanticsOwner.rootSemanticsNode.processAccessibleChildren(processElement, unmergedNodes)
     }
 
     if (this is ViewGroup) {
@@ -95,7 +100,8 @@ public class AccessibilityRenderExtension : RenderExtension {
   }
 
   private fun SemanticsNode.processAccessibleChildren(
-    processElement: (AccessibilityElement) -> Unit
+    processElement: (AccessibilityElement) -> Unit,
+    unmergedNodes: List<SemanticsNode>?
   ) {
     val accessibilityText = if (config.isMergingSemanticsOfDescendants) {
       val unmergedNode = unmergedNodes?.filter { it.id == id }
@@ -124,7 +130,7 @@ public class AccessibilityRenderExtension : RenderExtension {
     }
 
     children.forEach {
-      it.processAccessibleChildren(processElement)
+      it.processAccessibleChildren(processElement, unmergedNodes)
     }
   }
 }
