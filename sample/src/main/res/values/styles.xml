@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <style name="LineHeightStyledText">
+    <item name="android:textColor">#f00</item>
+    <item name="lineHeight">48sp</item>
+  </style>
+</resources>

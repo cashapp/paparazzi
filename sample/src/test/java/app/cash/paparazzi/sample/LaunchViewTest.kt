@@ -28,6 +28,12 @@ class LaunchViewTest {
   val paparazzi = Paparazzi(deviceConfig = PIXEL_3)
 
   @Test
+  fun text() {
+    val launch = paparazzi.inflate<LinearLayout>(R.layout.text)
+    paparazzi.snapshot(launch)
+  }
+
+  @Test
   fun pixel3() {
     val launch = paparazzi.inflate<LinearLayout>(R.layout.launch)
     paparazzi.snapshot(launch)
