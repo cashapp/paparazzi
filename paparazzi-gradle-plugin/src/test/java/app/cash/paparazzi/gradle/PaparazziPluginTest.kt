@@ -1355,6 +1355,14 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun instantAnimationCompose() {
+    val fixtureRoot = File("src/test/projects/instant-animation-rule-compose")
+    gradleRunner
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+  }
+
+  @Test
   fun immSoftInputInteraction() {
     val fixtureRoot = File("src/test/projects/imm-soft-input")
     gradleRunner

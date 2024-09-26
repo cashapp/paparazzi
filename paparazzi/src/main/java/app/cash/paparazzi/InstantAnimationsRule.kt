@@ -17,6 +17,7 @@ package app.cash.paparazzi
 
 import android.animation.Animator.AnimatorListener
 import android.animation.ValueAnimator
+import app.cash.paparazzi.internal.PaparazziMotionDurationScale
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
@@ -45,6 +46,7 @@ public class InstantAnimationsRule : TestRule {
     }
     set(value) {
       setDurationScale.invoke(null, value)
+      PaparazziMotionDurationScale.animationScaleFactor = value
     }
 
   override fun apply(base: Statement, description: Description): Statement {

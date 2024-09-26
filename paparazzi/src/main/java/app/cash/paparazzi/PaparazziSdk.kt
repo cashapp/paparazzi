@@ -47,6 +47,7 @@ import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.PaparazziCallback
 import app.cash.paparazzi.internal.PaparazziLifecycleOwner
 import app.cash.paparazzi.internal.PaparazziLogger
+import app.cash.paparazzi.internal.PaparazziMotionDurationScale
 import app.cash.paparazzi.internal.PaparazziOnBackPressedDispatcherOwner
 import app.cash.paparazzi.internal.PaparazziSavedStateRegistryOwner
 import app.cash.paparazzi.internal.Renderer
@@ -270,7 +271,9 @@ public class PaparazziSdk @JvmOverloads constructor(
         // async to our test Handler. By initializing Recomposer with Dispatchers.Main, Delay will now be backed by our test Handler,
         // synchronizing expected behavior.
         WindowRecomposerPolicy.setFactory {
-          val windowRecomposer = it.createLifecycleAwareWindowRecomposer(MAIN_DISPATCHER)
+          val windowRecomposer = it.createLifecycleAwareWindowRecomposer(
+            MAIN_DISPATCHER + PaparazziMotionDurationScale
+          )
           recomposer = windowRecomposer
           return@setFactory windowRecomposer
         }
