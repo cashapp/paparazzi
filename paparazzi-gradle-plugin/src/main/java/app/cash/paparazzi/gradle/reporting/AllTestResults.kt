@@ -35,12 +35,7 @@ internal class AllTestResults : CompositeTestResults(null) {
   }
 
   private fun addPackageForClass(className: String): PackageTestResults {
-    val pos = className.lastIndexOf(".")
-    val packageName = if (pos != -1) {
-      className.substring(0, pos)
-    } else {
-      ""
-    }
+    val packageName = className.substringBeforeLast(".", "")
     return addPackage(packageName)
   }
 
