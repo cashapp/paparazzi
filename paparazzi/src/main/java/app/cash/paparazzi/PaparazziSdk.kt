@@ -53,7 +53,6 @@ import app.cash.paparazzi.internal.Renderer
 import app.cash.paparazzi.internal.SessionParamsBuilder
 import app.cash.paparazzi.internal.interceptors.EditModeInterceptor
 import app.cash.paparazzi.internal.interceptors.IInputMethodManagerInterceptor
-import app.cash.paparazzi.internal.interceptors.ResourcesInterceptor
 import app.cash.paparazzi.internal.interceptors.ServiceManagerInterceptor
 import app.cash.paparazzi.internal.parsers.LayoutPullParser
 import com.android.ide.common.rendering.api.RenderSession
@@ -110,7 +109,6 @@ public class PaparazziSdk @JvmOverloads constructor(
 
   public fun setup() {
     if (!isInitialized) {
-      registerFontLookupInterceptionIfResourceCompatDetected()
       registerViewEditModeInterception()
       registerServiceManagerInterception()
       registerIInputMethodManagerInterception()
@@ -527,27 +525,6 @@ public class PaparazziSdk @JvmOverloads constructor(
           "The LayoutInflater already has a Factory installed so we can not install AppCompat's"
         )
       }
-    }
-  }
-
-  /**
-   * Current workaround for supporting custom fonts when constructing views in code. This check
-   * may be used or expanded to support other cases requiring similar method interception
-   * techniques.
-   *
-   * See:
-   * https://github.com/cashapp/paparazzi/issues/119
-   * https://issuetracker.google.com/issues/156065472
-   */
-  private fun registerFontLookupInterceptionIfResourceCompatDetected() {
-    try {
-      InterceptorRegistrar.addMethodInterceptor(
-        "androidx.core.content.res.ResourcesCompat",
-        "getFont",
-        ResourcesInterceptor::class.java
-      )
-    } catch (e: ClassNotFoundException) {
-      logger.verbose("ResourceCompat not found on classpath")
     }
   }
 
