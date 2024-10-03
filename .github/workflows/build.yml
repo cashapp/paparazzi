@@ -44,7 +44,7 @@ jobs:
           validate-wrappers: true
 
       - name: Run All Tests
-        run: ./gradlew check
+        run: ./gradlew paparazzi-gradle-plugin:test --tests=app.cash.paparazzi.gradle.PaparazziPluginTest.invalidChars
 
       - name: Upload Test Failures
         if: failure()

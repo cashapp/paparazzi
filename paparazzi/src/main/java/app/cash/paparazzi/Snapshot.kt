@@ -15,6 +15,7 @@
  */
 package app.cash.paparazzi
 
+import com.google.common.base.CharMatcher
 import dev.drewhamilton.poko.Poko
 import java.util.Date
 import java.util.Locale
@@ -36,14 +37,22 @@ public class Snapshot(
   ): Snapshot = Snapshot(name, testName, timestamp, tags, file)
 }
 
+internal val invalidPrintableChars = CharMatcher.anyOf("<>:\"/\\|?*")
+
 internal fun Snapshot.toFileName(
   delimiter: String = "_",
   extension: String
 ): String {
   val formattedLabel = if (name != null) {
+    if (invalidPrintableChars.matchesAnyOf(name)) {
+      throw IllegalArgumentException("Supplied snapshot name contains invalid characters ('$name')")
+    }
     "$delimiter${name.toLowerCase(Locale.US).replace("\\s".toRegex(), delimiter)}"
   } else {
     ""
+  }
+  if (invalidPrintableChars.matchesAnyOf(testName.methodName)) {
+    throw IllegalArgumentException("Generated method name contains invalid characters ('${testName.methodName}')")
   }
   return "${testName.packageName}${delimiter}${testName.className}${delimiter}${testName.methodName}$formattedLabel.$extension"
 }
