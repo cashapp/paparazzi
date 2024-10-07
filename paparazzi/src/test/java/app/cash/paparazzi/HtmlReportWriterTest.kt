@@ -27,7 +27,6 @@ import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.attribute.FileTime
 import java.time.Instant
 import java.util.Date
-import javax.imageio.ImageIO
 
 class HtmlReportWriterTest {
   @get:Rule
@@ -37,8 +36,8 @@ class HtmlReportWriterTest {
   val snapshotRoot: TemporaryFolder = TemporaryFolder()
 
   private val anyImage = BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB)
-  private val anyImageHash = "a7414bdf48bdd2e58117371848242e4116826e32"
-  private val anyVideoHash = "dfeb78098217ee4f9a307645c83a7804a6a7f7d7"
+  private val anyImageHash = "5007e8fef3bc5eeffa89d2797c63768390460f90"
+  private val anyVideoHash = "80ff0587a0fbd0ede0247a021edfb1a3aaf9ccb5"
 
   @Test
   fun happyPathImages() {
@@ -313,112 +312,8 @@ class HtmlReportWriterTest {
     }
   }
 
-  @Test
-  fun similarImagesProduceDifferentSnapshotFiles() {
-    try {
-      // set record mode
-      System.setProperty("paparazzi.test.record", "true")
-
-      val horizontal = ImageIO.read(File("src/test/resources/horizontal.png"))
-      val convertedHorizontal = horizontal.convertImage()
-      val vertical = ImageIO.read(File("src/test/resources/vertical.png"))
-      val convertedVertical = vertical.convertImage()
-      val square = ImageIO.read(File("src/test/resources/square.png"))
-      val convertedSquare = square.convertImage()
-      val htmlReportWriter = HtmlReportWriter("record_run", reportRoot.root, snapshotRoot.root)
-
-      htmlReportWriter.use {
-        val horizontalFrameHandler = htmlReportWriter.newFrameHandler(
-          Snapshot(
-            name = "horizontal",
-            testName = TestName("app.cash.paparazzi", "SimilarViews", "horizontal"),
-            timestamp = Instant.parse("2019-03-20T10:27:43Z").toDate(),
-            tags = listOf("redesign")
-          ),
-          frameCount = 1,
-          fps = -1
-        )
-        horizontalFrameHandler.use {
-          horizontalFrameHandler.handle(convertedHorizontal)
-        }
-        val verticalFrameHandler = htmlReportWriter.newFrameHandler(
-          Snapshot(
-            name = "loading",
-            testName = TestName("app.cash.paparazzi", "SimilarViews", "vertical"),
-            timestamp = Instant.parse("2019-03-20T10:27:43Z").toDate(),
-            tags = listOf("redesign")
-          ),
-          frameCount = 1,
-          fps = -1
-        )
-        verticalFrameHandler.use {
-          verticalFrameHandler.handle(convertedVertical)
-        }
-        val squareFrameHandler = htmlReportWriter.newFrameHandler(
-          Snapshot(
-            name = "loading",
-            testName = TestName("app.cash.paparazzi", "SimilarViews", "square"),
-            timestamp = Instant.parse("2019-03-20T10:27:43Z").toDate(),
-            tags = listOf("redesign")
-          ),
-          frameCount = 1,
-          fps = -1
-        )
-        squareFrameHandler.use {
-          squareFrameHandler.handle(convertedSquare)
-        }
-      }
-      // Verify that there are 3 files in the snapshots/images file
-      // This should confirm that the snapshot images used as golden images are correct
-      val snapshotDir = File(snapshotRoot.root, "images").listFiles()!!
-      assertThat(snapshotDir.size).isEqualTo(3)
-
-      val firstSnapshot = ImageIO.read(snapshotDir[0])
-      val secondSnapshot = ImageIO.read(snapshotDir[1])
-      val thirdSnapshot = ImageIO.read(snapshotDir[2])
-      assertThat(firstSnapshot.pixelEqual(secondSnapshot)).isFalse()
-      assertThat(firstSnapshot.pixelEqual(thirdSnapshot)).isFalse()
-      assertThat(secondSnapshot.pixelEqual(thirdSnapshot)).isFalse()
-
-      // Verify that there are 3 files in the reports/paparazzi/images file
-      // This should confirm that the images used in the test report are correct
-      val reportDir = File(reportRoot.root, "images").listFiles()!!
-      assertThat(reportDir.size).isEqualTo(3)
-    } finally {
-      // reset record mode
-      System.setProperty("paparazzi.test.record", "false")
-    }
-  }
-
-  private fun Instant.toDate() = Date(toEpochMilli())
-
   private fun File.lastModifiedTime(): FileTime {
     return Files.readAttributes(this.toPath(), BasicFileAttributes::class.java).lastModifiedTime()
-  }
-
-  // Function that takes in an existing Buffered image and converts its type to one
-  // that ApngWriter can consume
-  private fun BufferedImage.convertImage() = BufferedImage(
-    width,
-    height,
-    BufferedImage.TYPE_INT_ARGB_PRE // Something ApngWriter can process
-  ).apply {
-    graphics.drawImage(this, 0, 0, null)
-  }
-
-  private fun BufferedImage.pixelEqual(other: BufferedImage): Boolean {
-    if (width == other.width && height == other.height) {
-      (0 until width).forEach { x ->
-        (0 until height).forEach { y ->
-          if (getRGB(x, y) != other.getRGB(x, y)) {
-            return false
-          }
-        }
-      }
-    } else {
-      return false
-    }
-    return true
   }
 }
 

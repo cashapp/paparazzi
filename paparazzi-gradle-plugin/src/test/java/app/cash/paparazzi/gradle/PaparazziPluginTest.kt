@@ -1310,6 +1310,18 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun similarImagesProduceUniqueSnapshots() {
+    val fixtureRoot = File("src/test/projects/similar-images")
+
+    gradleRunner
+      .withArguments("recordPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val reportsDir = File(fixtureRoot, "build/reports/paparazzi/debug/images")
+    assertThat(reportsDir.listFiles()!!).hasLength(3)
+  }
+
+  @Test
   fun composeViewTreeLifecycle() {
     val fixtureRoot = File("src/test/projects/compose-lifecycle-owner")
     gradleRunner

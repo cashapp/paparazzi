@@ -121,10 +121,10 @@ public class HtmlReportWriter @JvmOverloads constructor(
   private fun hash(image: BufferedImage): String {
     val hashingSink = HashingSink.sha1(blackholeSink())
     hashingSink.buffer().use { sink ->
+      sink.writeInt(image.width)
+      sink.writeInt(image.height)
       for (y in 0 until image.height) {
         for (x in 0 until image.width) {
-          sink.writeInt(x)
-          sink.writeInt(y)
           sink.writeInt(image.getRGB(x, y))
         }
       }
