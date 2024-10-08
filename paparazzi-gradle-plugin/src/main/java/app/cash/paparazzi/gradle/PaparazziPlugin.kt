@@ -16,7 +16,7 @@
 package app.cash.paparazzi.gradle
 
 import app.cash.paparazzi.gradle.instrumentation.ResourcesCompatVisitorFactory
-import app.cash.paparazzi.gradle.reporting.TestReport
+import app.cash.paparazzi.gradle.reporting.PaparazziTestReporter
 import app.cash.paparazzi.gradle.utils.artifactViewFor
 import app.cash.paparazzi.gradle.utils.registerGeneratePreviewTask
 import app.cash.paparazzi.gradle.utils.relativize
@@ -282,10 +282,7 @@ public class PaparazziPlugin @Inject constructor(
     }
   }
 
-  private fun setupPreviewProcessor(
-    project: Project,
-    extension: AndroidComponentsExtension<*, *, *>
-  ) {
+  private fun setupPreviewProcessor(project: Project, extension: AndroidComponentsExtension<*, *, *>) {
     project.pluginManager.apply(KspGradleSubplugin::class.java)
 
     project.addAnnotationsDependency()
