@@ -18,6 +18,7 @@ package app.cash.paparazzi
 import app.cash.paparazzi.SnapshotHandler.FrameHandler
 import app.cash.paparazzi.internal.PaparazziJson
 import app.cash.paparazzi.internal.apng.ApngWriter
+import com.google.common.base.CharMatcher
 import com.google.common.io.Files
 import okio.BufferedSink
 import okio.HashingSink
@@ -233,4 +234,12 @@ internal fun defaultRunName(): String {
   val timestamp = SimpleDateFormat("yyyyMMddHHmmss", Locale.US).format(now)
   val token = UUID.randomUUID().toString().substring(0, 6)
   return "${timestamp}_$token"
+}
+
+internal val filenameSafeChars = CharMatcher.inRange('a', 'z')
+  .or(CharMatcher.inRange('0', '9'))
+  .or(CharMatcher.anyOf("_-.~@^()[]{}:;,"))
+
+internal fun String.sanitizeForFilename(): String? {
+  return filenameSafeChars.negate().replaceFrom(toLowerCase(Locale.US), '_')
 }

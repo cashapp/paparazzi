@@ -207,6 +207,25 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun invalidChars() {
+    val fixtureRoot = File("src/test/projects/invalid-chars")
+
+    val result = gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    assertThat(result.output).doesNotContain("InvalidCharsTest > goodValues[ADDITION] FAILED")
+    assertThat(result.output).doesNotContain("InvalidCharsTest > goodValues[SUBTRACTION] FAILED")
+    assertThat(result.output).doesNotContain("InvalidCharsTest > goodValues[MULTIPLICATION] FAILED")
+    assertThat(result.output).doesNotContain("InvalidCharsTest > goodValues[DIVISION] FAILED")
+    assertThat(result.output).contains("InvalidCharsTest > badSnapshotName FAILED")
+    assertThat(result.output).doesNotContain("InvalidCharsTest > badValues[+] FAILED")
+    assertThat(result.output).doesNotContain("InvalidCharsTest > badValues[-] FAILED")
+    assertThat(result.output).contains("InvalidCharsTest > badValues[*] FAILED")
+    assertThat(result.output).contains("InvalidCharsTest > badValues[/] FAILED")
+  }
+
+  @Test
   fun buildClassAccess() {
     val fixtureRoot = File("src/test/projects/build-class")
 
