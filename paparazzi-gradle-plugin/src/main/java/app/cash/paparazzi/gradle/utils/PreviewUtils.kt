@@ -13,9 +13,7 @@ private const val KSP_SOURCE_DIR = "build/generated/ksp"
 private const val PREVIEW_DATA_FILE = "PaparazziPreviews.kt"
 private const val PREVIEW_TEST_FILE = "PreviewTests.kt"
 
-internal fun Project.registerGeneratePreviewTask(
-  extension: AndroidComponentsExtension<*, *, *>
-) {
+internal fun Project.registerGeneratePreviewTask(extension: AndroidComponentsExtension<*, *, *>) {
   extension.onVariants { variant ->
     val testVariant = (variant as? HasUnitTest)?.unitTest ?: return@onVariants
     val testVariantSlug = testVariant.name.capitalize()
@@ -53,12 +51,16 @@ internal fun Project.registerGeneratePreviewTask(
 
         // Optional input if KSP doesn't output preview annotation file
         task.inputs
-          .file("$projectDir${File.separator}$KSP_SOURCE_DIR${File.separator}${buildType}${File.separator}kotlin${File.separator}$namespaceDir${File.separator}$PREVIEW_DATA_FILE")
+          .file(
+            "$projectDir${File.separator}$KSP_SOURCE_DIR${File.separator}${buildType}${File.separator}kotlin${File.separator}$namespaceDir${File.separator}$PREVIEW_DATA_FILE"
+          )
           .optional()
           .skipWhenEmpty()
 
         // Defaulted to true unless specified in properties
-        task.enabled = project.providers.gradleProperty("app.cash.paparazzi.annotation.generateTestClass").orNull?.toBoolean() != false
+        task.enabled = project.providers.gradleProperty(
+          "app.cash.paparazzi.annotation.generateTestClass"
+        ).orNull?.toBoolean() != false
 
         task.outputs.dir(previewTestDir)
         task.outputs.file("$previewTestDir${File.separator}$PREVIEW_TEST_FILE")

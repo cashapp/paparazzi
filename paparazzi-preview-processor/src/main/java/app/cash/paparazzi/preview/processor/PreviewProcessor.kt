@@ -19,18 +19,27 @@ public class PreviewProcessor(
 ) : SymbolProcessor {
 
   override fun process(resolver: Resolver): List<KSAnnotated> {
-    // Due to codgen and multi-round processing of ksp
-    // https://kotlinlang.org/docs/ksp-multi-round.html
-    if (resolver.getAllFiles().any {
-        it.fileName.contains("PaparazziPreviews") && it.filePath.contains("ksp")
-      }
-    ) {
-      "Skipping subsequent run due to PaparazziPreviews.kt already created and caused ksp re-run".log()
-      return emptyList()
-    }
-
     val allFiles = resolver.getAllFiles().toList()
-    if (allFiles.isEmpty()) return emptyList()
+    val newFiles = resolver.getNewFiles().toList()
+
+    when {
+      allFiles.isEmpty() -> {
+        "Skipping due to 0 files to process".log()
+        return emptyList()
+      }
+      newFiles.isEmpty() -> {
+        "Skipping due to no new files to process since last processing run".log()
+        return emptyList()
+      }
+      // Due to codgen and multi-round processing of ksp
+      // https://kotlinlang.org/docs/ksp-multi-round.html
+      newFiles.any {
+        (it.filePath.contains("ksp") && it.fileName.contains("PaparazziPreviews"))
+      } -> {
+        "Skipping subsequent run due to PaparazziPreviews.kt already created and caused ksp re-run".log()
+        return emptyList()
+      }
+    }
 
     val env = EnvironmentOptions(
       namespace = environment.options["app.cash.paparazzi.preview.namespace"]!!

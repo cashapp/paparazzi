@@ -3,7 +3,7 @@ package app.cash.paparazzi.preview
 
 import app.cash.paparazzi.Paparazzi
 import app.cash.paparazzi.annotations.PaparazziPreviewData
-import com.google.testing.junit.testparameterinjector.TestParameter.TestParameterValuesProvider
+import com.google.testing.junit.testparameterinjector.TestParameterValuesProvider
 
 /**
  * Take a snapshot of the given [previewData].
@@ -26,6 +26,8 @@ public fun Paparazzi.snapshot(previewData: PaparazziPreviewData, name: String? =
  */
 public open class PaparazziValuesProvider(
   private val annotations: List<PaparazziPreviewData>
-) : TestParameterValuesProvider {
-  override fun provideValues(): List<PaparazziPreviewData> = annotations
+) : TestParameterValuesProvider() {
+  override fun provideValues(context: Context?): MutableList<PaparazziPreviewData> {
+    return annotations.toMutableList()
+  }
 }
