@@ -19,9 +19,7 @@ fun HelloPaparazzi() {
 @Paparazzi
 @Preview
 @Composable
-fun HelloPaparazziParameterized(
-  @PreviewParameter(provider = PreviewData::class) text: String
-) {
+fun HelloPaparazziParameterized(@PreviewParameter(provider = PreviewData::class) text: String) {
   Text(text)
 }
 
