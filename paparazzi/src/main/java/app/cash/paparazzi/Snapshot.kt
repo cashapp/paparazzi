@@ -37,28 +37,22 @@ public class Snapshot(
   ): Snapshot = Snapshot(name, testName, timestamp, tags, file)
 }
 
+internal val invalidPrintableChars = CharMatcher.anyOf("<>:\"/\\|?*")
+
 internal fun Snapshot.toFileName(
   delimiter: String = "_",
   extension: String
 ): String {
   val formattedLabel = if (name != null) {
+    if (invalidPrintableChars.matchesAnyOf(name)) {
+      throw IllegalArgumentException("Supplied snapshot name contains invalid characters ('$name')")
+    }
     "$delimiter${name.toLowerCase(Locale.US).replace("\\s".toRegex(), delimiter)}"
   } else {
     ""
   }
-  return "${testName.packageName}${delimiter}${testName.className}${delimiter}${testName.methodName}$formattedLabel.$extension".sanitizeForFilename(lowercase = false)!!
-}
-
-private val filenameSafeChars = CharMatcher.inRange('a', 'z')
-  .or(CharMatcher.inRange('A', 'Z'))
-  .or(CharMatcher.inRange('0', '9'))
-  .or(CharMatcher.anyOf("_-.~@^()[]{}:;,"))
-
-private val filenameLowerCaseSafeChars = CharMatcher.inRange('a', 'z')
-  .or(CharMatcher.inRange('0', '9'))
-  .or(CharMatcher.anyOf("_-.~@^()[]{}:;,"))
-
-internal fun String.sanitizeForFilename(lowercase: Boolean = true): String? {
-  val safeChars = if (lowercase) filenameLowerCaseSafeChars else filenameSafeChars
-  return safeChars.negate().replaceFrom(if (lowercase) toLowerCase(Locale.US) else this, '_')
+  if (invalidPrintableChars.matchesAnyOf(testName.methodName)) {
+    throw IllegalArgumentException("Generated method name contains invalid characters ('${testName.methodName}')")
+  }
+  return "${testName.packageName}${delimiter}${testName.className}${delimiter}${testName.methodName.replace("\\s".toRegex(), delimiter)}$formattedLabel.$extension"
 }
