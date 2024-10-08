@@ -1408,6 +1408,103 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun previewAnnotationEmptyTestSuite() {
+    val fixtureRoot = File("src/test/projects/preview-annotation-empty-test-suite")
+
+    val result = gradleRunner
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":paparazziGeneratePreviewDebugUnitTestKotlin")).isNotNull()
+
+    val generatedPreviewsDir = File(fixtureRoot, "build/generated/ksp/debug/kotlin/app/cash/paparazzi/plugin/test/")
+    assertThat(
+      generatedPreviewsDir.listFiles()?.any {
+        it.name == "PaparazziPreviews.kt"
+      }
+    ).isTrue()
+
+    val generatedPreviewTestDir = File(fixtureRoot, "build/generated/source/paparazzi/debugUnitTest/app/cash/paparazzi/plugin/test/")
+    assertThat(
+      generatedPreviewTestDir.listFiles()?.any {
+        it.name == "PreviewTests.kt"
+      }
+    ).isTrue()
+  }
+
+  @Test
+  fun previewAnnotationErrorPrivatePreview() {
+    val fixtureRoot = File("src/test/projects/preview-annotation-private-preview")
+
+    val result = gradleRunner
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .forwardOutput()
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    assertThat(result.task(":testDebugUnitTest")?.outcome).isEqualTo(TaskOutcome.FAILED)
+    assertThat(result.output).contains("IllegalStateException at PreviewTests.kt")
+  }
+
+  @Test
+  fun previewAnnotationDslDisable() {
+    val fixtureRoot = File("src/test/projects/preview-annotation-dsl-disable")
+
+    val result = gradleRunner
+      .forwardOutput()
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":paparazziGeneratePreviewDebugUnitTestKotlin")?.outcome).isEqualTo(TaskOutcome.SKIPPED)
+
+    val generatedPreviewTestDir = File(fixtureRoot, "build/generated/source/paparazzi/debugUnitTest/app/cash/paparazzi/plugin/test/")
+    assertThat(generatedPreviewTestDir.exists()).isFalse()
+  }
+
+  @Test
+  fun previewAnnotationSample() {
+    val fixtureRoot = File("src/test/projects/preview-annotation-sample")
+
+    val result = gradleRunner
+      .forwardOutput()
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { buildAndFail() } // Currently fails because of preview parameter usage
+
+    assertThat(result.task(":paparazziGeneratePreviewDebugUnitTestKotlin")).isNotNull()
+
+    val generatedPreviewTestDir = File(fixtureRoot, "build/generated/source/paparazzi/debugUnitTest/app/cash/paparazzi/plugin/test/")
+    assertThat(generatedPreviewTestDir.exists()).isTrue()
+  }
+
+  @Test
+  fun previewAnnotationSampleConfigCache() {
+    val fixtureRoot = File("src/test/projects/preview-annotation-sample-configuration-cache")
+    fixtureRoot.resolve("build").apply {
+      deleteRecursively()
+      registerForDeletionOnExit()
+    }
+    fixtureRoot.resolve("build-cache").registerForDeletionOnExit()
+
+    val result = gradleRunner
+      .forwardOutput()
+      .withArguments(
+        "testDebugUnitTest", "--stacktrace", "--build-cache", "--configuration-cache"
+      )
+      .runFixture(fixtureRoot) { build() }
+    assertThat(result.task(":paparazziGeneratePreviewDebugUnitTestKotlin")?.outcome).isEqualTo(SUCCESS)
+    assertThat(result.task(":testDebugUnitTest")?.outcome).isEqualTo(SUCCESS)
+
+    fixtureRoot.resolve("build").deleteRecursively()
+
+    val result2 = gradleRunner
+      .forwardOutput()
+      .withArguments("testDebugUnitTest", "--stacktrace", "--build-cache", "--configuration-cache")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result2.task(":paparazziGeneratePreviewDebugUnitTestKotlin")?.outcome).isEqualTo(FROM_CACHE)
+    assertThat(result2.task(":testDebugUnitTest")?.outcome).isEqualTo(FROM_CACHE)
+  }
+
+  @Test
   fun disabledUnitTestVariant() {
     val fixtureRoot = File("src/test/projects/disabled-unit-test-variant")
     gradleRunner
