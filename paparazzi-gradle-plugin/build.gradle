@@ -63,6 +63,7 @@ buildConfig {
 tasks.withType(Test).configureEach {
   dependsOn(':paparazzi:publishMavenPublicationToProjectLocalMavenRepository')
   dependsOn(':paparazzi-annotations:publishMavenPublicationToProjectLocalMavenRepository')
+  dependsOn(':paparazzi-preview-test-junit:publishMavenPublicationToProjectLocalMavenRepository')
 }
 
 // When cleaning this project, we also want to clean the test projects.
