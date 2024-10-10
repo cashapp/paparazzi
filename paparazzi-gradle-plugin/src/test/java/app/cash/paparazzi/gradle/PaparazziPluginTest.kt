@@ -1505,6 +1505,15 @@ class PaparazziPluginTest {
       .runFixture(fixtureRoot) { build() }
   }
 
+  @Test
+  fun robolectric() {
+    val fixtureRoot = File("src/test/projects/robolectric")
+
+    gradleRunner
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+  }
+
   private fun File.loadConfig() = source().buffer().use { CONFIG_ADAPTER.fromJson(it)!! }
 
   private fun GradleRunner.runFixture(
