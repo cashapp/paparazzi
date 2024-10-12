@@ -20,8 +20,6 @@ android {
 }
 
 dependencies {
-  implementation libs.androidx.appcompat
-
   testImplementation "org.robolectric:robolectric:4.13"
 }
 

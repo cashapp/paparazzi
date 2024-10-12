@@ -1510,7 +1510,7 @@ class PaparazziPluginTest {
     val fixtureRoot = File("src/test/projects/robolectric")
 
     gradleRunner
-      .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .withArguments("testDebug", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
   }
 

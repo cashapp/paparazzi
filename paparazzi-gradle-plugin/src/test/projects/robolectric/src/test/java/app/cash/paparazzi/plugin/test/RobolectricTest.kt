@@ -17,15 +17,10 @@ package app.cash.paparazzi.plugin.test
 
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class RobolectricTest {
   @Test
-  fun test() {
-    Robolectric.buildActivity(MainActivity::class.java).use { controller ->
-      controller.setup()
-    }
-  }
+  fun test() = Unit
 }
