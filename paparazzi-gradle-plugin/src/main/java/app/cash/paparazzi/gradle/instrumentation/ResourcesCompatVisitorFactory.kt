@@ -16,7 +16,8 @@ internal abstract class ResourcesCompatVisitorFactory : AsmClassVisitorFactory<I
     return ResourcesCompatTransform(nextClassVisitor)
   }
 
-  override fun isInstrumentable(classData: ClassData): Boolean = true
+  override fun isInstrumentable(classData: ClassData): Boolean =
+    classData.className == RESOURCES_COMPAT_CLASS_NAME
 
   /**
    * [ClassVisitor] that fixes a hardcoded path in ResourcesCompat.loadFont.
@@ -27,20 +28,6 @@ internal abstract class ResourcesCompatVisitorFactory : AsmClassVisitorFactory<I
    * https://cs.android.com/android-studio/platform/tools/adt/idea/+/mirror-goog-studio-main:rendering/src/com/android/tools/rendering/classloading/ResourcesCompatTransform.kt;drc=5bb41b6d5e519c891a4cd6149234138faa28e1af
    */
   internal class ResourcesCompatTransform(delegate: ClassVisitor) : ClassVisitor(Opcodes.ASM9, delegate) {
-    private var isResourcesCompatClass: Boolean = false
-
-    override fun visit(
-      version: Int,
-      access: Int,
-      name: String,
-      signature: String?,
-      superName: String?,
-      interfaces: Array<String>?
-    ) {
-      isResourcesCompatClass = name == RESOURCES_COMPAT_CLASS_NAME
-      super.visit(version, access, name, signature, superName, interfaces)
-    }
-
     override fun visitMethod(
       access: Int,
       name: String,
@@ -49,14 +36,13 @@ internal abstract class ResourcesCompatVisitorFactory : AsmClassVisitorFactory<I
       exceptions: Array<String>?
     ): MethodVisitor {
       val methodVisitor = super.visitMethod(access, name, descriptor, signature, exceptions)
-      if (isResourcesCompatClass && name == LOAD_FONT_METHOD_NAME && descriptor == LOAD_FONT_METHOD_DESCRIPTOR) {
+      if (name == LOAD_FONT_METHOD_NAME && descriptor == LOAD_FONT_METHOD_DESCRIPTOR) {
         return LoadFontVisitor(api, methodVisitor)
       }
       return methodVisitor
     }
 
     private class LoadFontVisitor(api: Int, delegate: MethodVisitor) : MethodVisitor(api, delegate) {
-
       override fun visitMethodInsn(
         opcode: Int,
         owner: String,
@@ -71,12 +57,12 @@ internal abstract class ResourcesCompatVisitorFactory : AsmClassVisitorFactory<I
         }
       }
     }
+  }
 
-    private companion object {
-      const val RESOURCES_COMPAT_CLASS_NAME = "androidx/core/content/res/ResourcesCompat"
-      const val LOAD_FONT_METHOD_NAME = "loadFont"
-      const val LOAD_FONT_METHOD_DESCRIPTOR =
-        "(Landroid/content/Context;Landroid/content/res/Resources;Landroid/util/TypedValue;IILandroidx/core/content/res/ResourcesCompat\$FontCallback;Landroid/os/Handler;ZZ)Landroid/graphics/Typeface;"
-    }
+  internal companion object {
+    const val RESOURCES_COMPAT_CLASS_NAME = "androidx.core.content.res.ResourcesCompat"
+    const val LOAD_FONT_METHOD_NAME = "loadFont"
+    const val LOAD_FONT_METHOD_DESCRIPTOR =
+      "(Landroid/content/Context;Landroid/content/res/Resources;Landroid/util/TypedValue;IILandroidx/core/content/res/ResourcesCompat\$FontCallback;Landroid/os/Handler;ZZ)Landroid/graphics/Typeface;"
   }
 }
