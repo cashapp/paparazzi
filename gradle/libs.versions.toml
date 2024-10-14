@@ -9,7 +9,7 @@ kotlin = "2.0.20"
 kotlinCompileTesting = "1.6.0"
 kotlinPoet = "1.18.1"
 ksp = "2.0.20-1.0.25"
-layoutlib = "14.0.9"
+layoutlib = "14.0.11"
 moshi = "1.15.1"
 
 minSdk = "25"
