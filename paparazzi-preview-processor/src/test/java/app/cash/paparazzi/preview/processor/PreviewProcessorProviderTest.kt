@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalCompilerApi::class)
+
 package app.cash.paparazzi.preview.processor
 
 import app.cash.paparazzi.preview.processor.utils.DefaultComposeSource
@@ -9,6 +11,7 @@ import com.tschuchort.compiletesting.kspArgs
 import com.tschuchort.compiletesting.kspIncremental
 import com.tschuchort.compiletesting.kspSourcesDir
 import com.tschuchort.compiletesting.symbolProcessorProviders
+import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -284,8 +287,8 @@ class PreviewProcessorProviderTest {
     val compilation = prepareCompilation(*sourceFiles)
     val result = compilation.compile()
     return KspCompileResult(
-      result,
-      findGeneratedFiles(compilation)
+      result = result,
+      generatedFiles = findGeneratedFiles(compilation)
     )
   }
 
