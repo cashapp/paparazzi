@@ -1,0 +1,25 @@
+plugins {
+  id 'com.android.library'
+  id 'kotlin-android'
+  id 'app.cash.paparazzi'
+}
+
+android {
+  namespace 'app.cash.paparazzi.plugin.test'
+  compileSdk libs.versions.compileSdk.get() as int
+  defaultConfig {
+    minSdk libs.versions.minSdk.get() as int
+  }
+  compileOptions {
+    sourceCompatibility = libs.versions.javaTarget.get()
+    targetCompatibility = libs.versions.javaTarget.get()
+  }
+  libraryVariants.configureEach {
+    it.registerGeneratedResFolders(project.layout.buildDirectory.files("generated/res/extra"))
+  }
+}
+
+dependencies {
+  testImplementation projects.testModule
+  testRuntimeOnly projects.runtimeTestModule
+}
