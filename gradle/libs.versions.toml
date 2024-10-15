@@ -1,6 +1,6 @@
 [versions]
-agp = "8.4.2"
-androidTools = "31.4.2" # == 23.0.0 + agp version
+agp = "8.7.1"
+androidTools = "31.7.1" # == 23.0.0 + agp version
 bytebuddy = "1.15.4"
 compose = "1.7.3"
 coroutines = "1.9.0"
@@ -55,7 +55,7 @@ okio = { module = "com.squareup.okio:okio", version = "3.9.1" }
 
 tools-common = { module = "com.android.tools:common", version.ref = "androidTools" }
 tools-layoutlib = { module = "com.android.tools.layoutlib:layoutlib", version.ref = "layoutlib" }
-tools-layoutlib-api = { module = "com.android.tools.layoutlib:layoutlib-api", version = "31.4.2" }
+tools-layoutlib-api = { module = "com.android.tools.layoutlib:layoutlib-api", version.ref = "androidTools" }
 tools-layoutlib-resources = { module = "com.android.tools.layoutlib:layoutlib-resources", version.ref = "layoutlib" }
 tools-layoutlib-runtime = { module = "com.android.tools.layoutlib:layoutlib-runtime", version.ref = "layoutlib" }
 tools-ninepatch = { module = "com.android.tools:ninepatch", version.ref = "androidTools" }
