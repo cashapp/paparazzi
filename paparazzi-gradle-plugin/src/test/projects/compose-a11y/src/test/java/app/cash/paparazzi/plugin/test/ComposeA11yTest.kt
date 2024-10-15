@@ -19,7 +19,6 @@ import androidx.compose.ui.unit.dp
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Paparazzi
 import app.cash.paparazzi.accessibility.AccessibilityRenderExtension
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 
@@ -37,7 +36,6 @@ class ComposeA11yTest {
     paparazzi.snapshot(mixedView)
   }
 
-  @Ignore("LayoutLib changed order of window manager views render. Needs investigation https://github.com/cashapp/paparazzi/issues/1634")
   @Test
   @OptIn(ExperimentalMaterial3Api::class)
   fun modalBottomSheetMaterial3() {
