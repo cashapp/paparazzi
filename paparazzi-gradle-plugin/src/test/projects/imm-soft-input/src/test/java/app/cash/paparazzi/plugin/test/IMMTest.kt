@@ -36,7 +36,7 @@ class DummyLayout(context: Context) : FrameLayout(context) {
   override fun onAttachedToWindow() {
     super.onAttachedToWindow()
     // Fake environments such as snapshot tests may return null here, which we can safely ignore.
-    val inputMethodManager = context.getSystemService(InputMethodManager::class.java)
+    val inputMethodManager = context.getSystemService(InputMethodManager::class.java)!!
     inputMethodManager.hideSoftInputFromWindow(this.windowToken, 0)
   }
 }

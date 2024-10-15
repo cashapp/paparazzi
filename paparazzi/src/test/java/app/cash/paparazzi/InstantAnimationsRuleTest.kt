@@ -54,11 +54,11 @@ class InstantAnimationsRuleTest {
       view.text = it.animatedFraction.toString()
     }
     animator.addListener(object : AnimatorListenerAdapter() {
-      override fun onAnimationStart(animation: Animator?, isReverse: Boolean) {
+      override fun onAnimationStart(animation: Animator, isReverse: Boolean) {
         log += "onAnimationStart"
       }
 
-      override fun onAnimationEnd(animation: Animator?) {
+      override fun onAnimationEnd(animation: Animator) {
         log += "onAnimationEnd"
       }
     })
