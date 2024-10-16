@@ -15,7 +15,9 @@
  */
 package app.cash.paparazzi.accessibility
 
+import android.annotation.SuppressLint
 import android.graphics.Rect
+import android.view.Gravity
 import android.view.View
 import android.view.View.VISIBLE
 import android.view.ViewGroup
@@ -39,10 +41,21 @@ public class AccessibilityRenderExtension : RenderExtension {
   override fun renderView(
     contentView: View
   ): View {
+    // Window Manager needed to access accessibility elements for views that draw to other windows.
+    val windowManager = contentView.context.getSystemService(WindowManager::class.java)
+
     return LinearLayout(contentView.context).apply {
       orientation = LinearLayout.HORIZONTAL
       weightSum = 2f
       layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+
+      viewTreeObserver.addOnGlobalLayoutListener {
+        // Window manager is rendered at the root of the view hierarchy, rendering it full width.
+        // We need to restrict it when taking accessibility snapshots.
+        (windowManager as WindowManagerImpl).currentRootView?.let {
+          layoutParams = FrameLayout.LayoutParams(contentView.measuredWidth, MATCH_PARENT, Gravity.START)
+        }
+      }
 
       val overlay = AccessibilityOverlayView(context).apply {
         addView(contentView, FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT))
@@ -55,8 +68,6 @@ public class AccessibilityRenderExtension : RenderExtension {
       addView(overlayDetailsView, LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, 1f))
 
       OneShotPreDrawListener.add(this) {
-        // Window Manager needed to access accessibility elements for views that draw to other windows
-        val windowManager = context.getSystemService(WindowManager::class.java)
         val windowManagerRootView = (windowManager as WindowManagerImpl).currentRootView
 
         val elements = buildList {
@@ -70,6 +81,7 @@ public class AccessibilityRenderExtension : RenderExtension {
     }
   }
 
+  @SuppressLint("VisibleForTests")
   private fun View.processAccessibleChildren(
     processElement: (AccessibilityElement) -> Unit
   ) {
