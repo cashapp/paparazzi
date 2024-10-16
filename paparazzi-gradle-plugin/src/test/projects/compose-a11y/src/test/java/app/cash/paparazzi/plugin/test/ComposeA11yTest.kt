@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
@@ -50,7 +51,7 @@ class ComposeA11yTest {
       ) {
         Text(text = "Text 2")
       }
-      Text(text = "Text 1")
+      Text(modifier = Modifier.wrapContentSize(), text = "Text 1")
     }
   }
 
