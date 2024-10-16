@@ -27,6 +27,11 @@ class ResourcesTest(
     paparazzi.snapshot { ResourcesDemo() }
   }
 
+  @Test
+  fun alert() {
+    paparazzi.snapshot { Alert() }
+  }
+
   enum class Locale(val tag: String?) {
     Default(null),
     Arabic("ar"),
