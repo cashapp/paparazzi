@@ -15,7 +15,6 @@
  */
 package app.cash.paparazzi.accessibility
 
-import android.annotation.SuppressLint
 import android.graphics.Rect
 import android.view.Gravity
 import android.view.View
@@ -41,7 +40,7 @@ public class AccessibilityRenderExtension : RenderExtension {
   override fun renderView(
     contentView: View
   ): View {
-    // Window Manager needed to access accessibility elements for views that draw to other windows.
+    // WindowManager needed to access accessibility elements for views that draw to other windows.
     val windowManager = contentView.context.getSystemService(WindowManager::class.java)
 
     return LinearLayout(contentView.context).apply {
@@ -50,7 +49,7 @@ public class AccessibilityRenderExtension : RenderExtension {
       layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
 
       viewTreeObserver.addOnGlobalLayoutListener {
-        // Window manager is rendered at the root of the view hierarchy, rendering it full width.
+        // The root of the view hierarchy is rendered at full width.
         // We need to restrict it when taking accessibility snapshots.
         (windowManager as WindowManagerImpl).currentRootView?.let {
           layoutParams = FrameLayout.LayoutParams(contentView.measuredWidth, MATCH_PARENT, Gravity.START)
@@ -81,7 +80,6 @@ public class AccessibilityRenderExtension : RenderExtension {
     }
   }
 
-  @SuppressLint("VisibleForTests")
   private fun View.processAccessibleChildren(
     processElement: (AccessibilityElement) -> Unit
   ) {
