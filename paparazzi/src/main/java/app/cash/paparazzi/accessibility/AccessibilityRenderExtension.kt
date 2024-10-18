@@ -43,16 +43,17 @@ public class AccessibilityRenderExtension : RenderExtension {
       orientation = LinearLayout.HORIZONTAL
       weightSum = 2f
       layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+      isMeasureWithLargestChildEnabled = true // Allows for snapshot with SHRINK render mode
 
       val overlay = AccessibilityOverlayView(context).apply {
         addView(contentView, FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT))
       }
 
       val contentLayoutParams = contentView.layoutParams ?: generateLayoutParams(null)
-      addView(overlay, LinearLayout.LayoutParams(contentLayoutParams.width, contentLayoutParams.height, 1f))
+      addView(overlay, LinearLayout.LayoutParams(0, contentLayoutParams.height, 1f))
 
       val overlayDetailsView = AccessibilityOverlayDetailsView(context)
-      addView(overlayDetailsView, LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, 1f))
+      addView(overlayDetailsView, LinearLayout.LayoutParams(0, MATCH_PARENT, 1f))
 
       OneShotPreDrawListener.add(this) {
         // Window Manager needed to access accessibility elements for views that draw to other windows
