@@ -5,7 +5,23 @@ plugins {
 }
 
 kotlin {
-  androidTarget()
+  androidTarget {
+    publishLibraryVariants('release')
+  }
+
+  sourceSets {
+    commonTest.dependencies {
+
+    }
+    commonMain.dependencies {
+
+    }
+    androidMain {
+      dependencies {
+        implementation 'androidx.appcompat:appcompat:1.7.0'
+      }
+    }
+  }
 }
 
 android {
@@ -18,4 +34,14 @@ android {
     sourceCompatibility = libs.versions.javaTarget.get()
     targetCompatibility = libs.versions.javaTarget.get()
   }
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile).configureEach {
+  kotlinOptions {
+    jvmTarget = libs.versions.javaTarget.get()
+  }
+}
+
+dependencies {
+  testImplementation libs.junit
 }
