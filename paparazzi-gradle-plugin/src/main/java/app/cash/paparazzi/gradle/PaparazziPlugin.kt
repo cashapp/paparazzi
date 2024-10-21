@@ -53,6 +53,7 @@ import org.gradle.internal.os.OperatingSystem
 import org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
+import java.io.File
 import java.util.Locale
 import javax.inject.Inject
 import kotlin.io.encoding.Base64
@@ -97,7 +98,30 @@ public class PaparazziPlugin @Inject constructor(
     project.addTestDependency()
     val layoutlibNativeRuntimeFileCollection = project.setupLayoutlibRuntimeDependency()
     val layoutlibResourcesFileCollection = project.setupLayoutlibResourcesDependency()
-    val snapshotOutputDir = project.layout.projectDirectory.dir("src/test/snapshots")
+    val testSourceSetProvider = project.objects.directoryProperty()
+    testSourceSetProvider.set(project.layout.projectDirectory.dir("src/test"))
+
+    project.plugins.withId("org.jetbrains.kotlin.multiplatform") {
+      val kmpExtension = project.extensions.getByType(KotlinMultiplatformExtension::class.java)
+      kmpExtension.sourceSets.all { sourceSet ->
+        if (sourceSet.name == "androidUnitTest" || sourceSet.name == "androidTest") {
+          testSourceSetProvider.set(
+            sourceSet.kotlin.srcDirs.map {
+              File(it.parent)
+            }.firstOrNull()
+          )
+        }
+      }
+    }
+
+    val defaultUnitTestDir = project.layout.projectDirectory.dir("src/test")
+    val snapshotOutputDir = testSourceSetProvider.map {
+      if (it.asFile.exists() && !defaultUnitTestDir.asFile.exists()) {
+        it.dir("snapshots")
+      } else {
+        defaultUnitTestDir.dir("snapshots")
+      }
+    }
 
     // Create anchor tasks for all variants.
     val verifyVariants = project.tasks.register("verifyPaparazzi") {
@@ -216,7 +240,7 @@ public class PaparazziPlugin @Inject constructor(
         test.systemProperties["paparazzi.project.dir"] = projectDirectory.toString()
         test.systemProperties["paparazzi.build.dir"] = buildDirectory.get().toString()
         test.systemProperties["paparazzi.report.dir"] = reportOutputDir.get().toString()
-        test.systemProperties["paparazzi.snapshot.dir"] = snapshotOutputDir.toString()
+        test.systemProperties["paparazzi.snapshot.dir"] = snapshotOutputDir.get().toString()
         test.systemProperties["paparazzi.artifacts.cache.dir"] = gradleUserHomeDir.path
         test.systemProperties.putAll(project.properties.filterKeys { it.startsWith("app.cash.paparazzi") })
 
@@ -241,9 +265,7 @@ public class PaparazziPlugin @Inject constructor(
 
         test.inputs.dir(
           isVerifyRun.flatMap {
-            project.objects.directoryProperty().apply {
-              set(if (it) snapshotOutputDir else null)
-            }
+            if (it) snapshotOutputDir else project.objects.directoryProperty()
           }
         ).withPropertyName("paparazzi.snapshot.input.dir")
           .withPathSensitivity(PathSensitivity.RELATIVE)
@@ -251,9 +273,7 @@ public class PaparazziPlugin @Inject constructor(
 
         test.outputs.dir(
           isRecordRun.flatMap {
-            project.objects.directoryProperty().apply {
-              set(if (it) snapshotOutputDir else null)
-            }
+            if (it) snapshotOutputDir else project.objects.directoryProperty()
           }
         ).withPropertyName("paparazzi.snapshots.output.dir")
           .optional()
