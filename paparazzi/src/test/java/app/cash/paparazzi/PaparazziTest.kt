@@ -136,7 +136,7 @@ class PaparazziTest {
       view.text = it.animatedFraction.toString()
     }
     animator.addListener(object : AnimatorListenerAdapter() {
-      override fun onAnimationStart(animation: Animator?, isReverse: Boolean) {
+      override fun onAnimationStart(animation: Animator, isReverse: Boolean) {
         log += "onAnimationStart uptimeMillis=$uptime"
       }
 
@@ -233,7 +233,7 @@ class PaparazziTest {
         }
       }
 
-      override fun onDraw(canvas: Canvas?) {
+      override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         log += "draw"
       }
