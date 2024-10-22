@@ -22,6 +22,7 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.WindowManager
 import android.view.WindowManagerImpl
+import android.widget.Checkable
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import androidx.compose.ui.platform.AbstractComposeView
@@ -73,14 +74,15 @@ public class AccessibilityRenderExtension : RenderExtension {
   private fun View.processAccessibleChildren(
     processElement: (AccessibilityElement) -> Unit
   ) {
-    if (isImportantForAccessibility && !iterableTextForAccessibility.isNullOrBlank() && visibility == VISIBLE) {
+    val accessibilityText = this.accessibilityText()
+    if (isImportantForAccessibility && !accessibilityText.isNullOrBlank() && visibility == VISIBLE) {
       val bounds = Rect().also(::getBoundsOnScreen)
 
       processElement(
         AccessibilityElement(
-          id = "${this::class.simpleName}($iterableTextForAccessibility)",
+          id = "${this::class.simpleName}($accessibilityText)",
           displayBounds = bounds,
-          contentDescription = iterableTextForAccessibility!!.toString()
+          contentDescription = accessibilityText
         )
       )
     }
@@ -133,74 +135,113 @@ public class AccessibilityRenderExtension : RenderExtension {
       it.processAccessibleChildren(processElement, unmergedNodes)
     }
   }
-}
 
-private fun SemanticsNode.findAllUnmergedNodes(): List<SemanticsNode> {
-  // Semantics information is already set on parent semantic node where `clearAndSetSemantics` is called.
-  // No need to iterate through children.
-  if (config.isClearingSemantics) return listOf(this)
+  private fun SemanticsNode.findAllUnmergedNodes(): List<SemanticsNode> {
+    // Semantics information is already set on parent semantic node where `clearAndSetSemantics` is called.
+    // No need to iterate through children.
+    if (config.isClearingSemantics) return listOf(this)
 
-  return buildList {
-    addAll(
-      children
-        .filter { !it.config.isMergingSemanticsOfDescendants }
-        .flatMap { it.findAllUnmergedNodes() }
-    )
-    add(this@findAllUnmergedNodes)
-  }
-}
-
-private fun SemanticsNode.accessibilityText(): String? {
-  val stateDescription = config.getOrNull(SemanticsProperties.StateDescription)
-  val selected = if (stateDescription != null) {
-    // The selected state is only read by TalkBack if the state description is not set
-    null
-  } else {
-    config.getOrNull(SemanticsProperties.Selected)?.let { if (it) "<selected>" else "<unselected>" }
-  }
-  val mainAccessibilityText =
-    config.getOrNull(SemanticsProperties.ContentDescription)?.joinToString(", ")
-      ?: config.getOrNull(SemanticsProperties.Text)?.joinToString(", ")
-  val role = config.getOrNull(SemanticsProperties.Role)?.toString()
-  val disabled = if (config.getOrNull(SemanticsProperties.Disabled) != null) "<disabled>" else null
-  val onClickLabel = if (disabled != null) {
-    null
-  } else {
-    config.getOrNull(SemanticsActions.OnClick)?.label?.let { "<on-click>: $it" }
-  }
-  val heading = if (config.getOrNull(SemanticsProperties.Heading) != null) "<heading>" else null
-  val toggleableState = config.getOrNull(SemanticsProperties.ToggleableState)?.let {
-    buildString {
-      append("<toggleable>: ")
-      append(
-        when (it) {
-          ToggleableState.On -> "checked"
-          ToggleableState.Off -> "not checked"
-          ToggleableState.Indeterminate -> "indeterminate"
-        }
+    return buildList {
+      addAll(
+        children
+          .filter { !it.config.isMergingSemanticsOfDescendants }
+          .flatMap { it.findAllUnmergedNodes() }
       )
+      add(this@findAllUnmergedNodes)
     }
   }
 
-  val textList = listOfNotNull(
-    stateDescription,
-    selected,
-    toggleableState,
-    mainAccessibilityText,
-    role,
-    disabled,
-    onClickLabel,
-    heading
-  )
-  return if (textList.isNotEmpty()) {
-    // Escape newline characters to simplify accessibility text.
-    textList.joinToString(", ").replaceLineBreaks()
-  } else {
-    null
+  private fun SemanticsNode.accessibilityText(): String? {
+    val stateDescription = config.getOrNull(SemanticsProperties.StateDescription)
+    val selected = if (stateDescription != null) {
+      // The selected state is only read by TalkBack if the state description is not set
+      null
+    } else {
+      config.getOrNull(SemanticsProperties.Selected)
+        ?.let { if (it) SELECTED_LABEL else UNSELECTED_LABEL }
+    }
+    val mainAccessibilityText =
+      config.getOrNull(SemanticsProperties.ContentDescription)?.joinToString(", ")
+        ?: config.getOrNull(SemanticsProperties.Text)?.joinToString(", ")
+    val role = config.getOrNull(SemanticsProperties.Role)?.toString()
+    val disabled =
+      if (config.getOrNull(SemanticsProperties.Disabled) != null) DISABLED_LABEL else null
+    val onClickLabel = if (disabled != null) {
+      null
+    } else {
+      config.getOrNull(SemanticsActions.OnClick)?.label?.let { "$ON_CLICK_LABEL: $it" }
+    }
+    val heading = if (config.getOrNull(SemanticsProperties.Heading) != null) HEADING_LABEL else null
+    val toggleableState = config.getOrNull(SemanticsProperties.ToggleableState)?.let {
+      buildString {
+        append("$TOGGLEABLE_LABEL: ")
+        append(
+          when (it) {
+            ToggleableState.On -> CHECKED_LABEL
+            ToggleableState.Off -> UNCHECKED_LABEL
+            ToggleableState.Indeterminate -> INDETERMINATE_LABEL
+          }
+        )
+      }
+    }
+
+    return constructTextList(
+      stateDescription,
+      selected,
+      toggleableState,
+      mainAccessibilityText,
+      role,
+      disabled,
+      onClickLabel,
+      heading
+    )
+  }
+
+  private fun View.accessibilityText(): String? {
+    val selected = if (isSelected) SELECTED_LABEL else null
+    val toggleableState = if (this is Checkable) {
+      buildString {
+        append("$TOGGLEABLE_LABEL: ")
+        append(if (isChecked) CHECKED_LABEL else UNCHECKED_LABEL)
+      }
+    } else {
+      null
+    }
+    val mainAccessibilityText = iterableTextForAccessibility?.toString()
+    val disabled = if (!isEnabled) DISABLED_LABEL else null
+
+    return constructTextList(
+      selected,
+      toggleableState,
+      mainAccessibilityText,
+      disabled
+    )
+  }
+
+  private fun constructTextList(vararg text: String?): String? {
+    val textList = listOfNotNull(*text)
+    return if (textList.isNotEmpty()) {
+      // Escape newline characters to simplify accessibility text.
+      textList.joinToString(", ").replaceLineBreaks()
+    } else {
+      null
+    }
+  }
+
+  private fun String.replaceLineBreaks() =
+    replace("\n", "\\n")
+      .replace("\r", "\\r")
+      .replace("\t", "\\t")
+
+  internal companion object {
+    private const val ON_CLICK_LABEL = "<on-click>"
+    private const val DISABLED_LABEL = "<disabled>"
+    private const val TOGGLEABLE_LABEL = "<toggleable>"
+    private const val SELECTED_LABEL = "<selected>"
+    private const val UNSELECTED_LABEL = "<unselected>"
+    private const val HEADING_LABEL = "<heading>"
+    private const val CHECKED_LABEL = "checked"
+    private const val UNCHECKED_LABEL = "not checked"
+    private const val INDETERMINATE_LABEL = "indeterminate"
   }
 }
-
-private fun String.replaceLineBreaks() =
-  replace("\n", "\\n")
-    .replace("\r", "\\r")
-    .replace("\t", "\\t")
