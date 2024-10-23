@@ -5,6 +5,7 @@ import android.view.View.GONE
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.Switch
 import android.widget.TextView
 import androidx.compose.ui.platform.ComposeView
 
@@ -31,6 +32,14 @@ class MixedView(context: Context) : LinearLayout(context) {
       Button(context).apply {
         id = 2
         text = "Legacy Button"
+      }
+    )
+
+    addView(
+      Switch(context).apply {
+        id = 6
+        isChecked = true
+        text = "Legacy Switch"
       }
     )
 
