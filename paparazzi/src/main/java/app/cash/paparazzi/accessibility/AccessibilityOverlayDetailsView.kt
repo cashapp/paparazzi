@@ -29,7 +29,7 @@ import app.cash.paparazzi.accessibility.RenderSettings.toColorInt
 import java.lang.Float.max
 
 internal class AccessibilityOverlayDetailsView(context: Context) : FrameLayout(context) {
-  private val accessibilityElements = mutableListOf<AccessibilityElement>()
+  private val accessibilityElements = mutableSetOf<AccessibilityElement>()
   private val paint = Paint().apply {
     isAntiAlias = true
     style = Paint.Style.FILL
@@ -51,8 +51,9 @@ internal class AccessibilityOverlayDetailsView(context: Context) : FrameLayout(c
     setBackgroundColor(RenderSettings.DEFAULT_DESCRIPTION_BACKGROUND_COLOR.toColorInt())
   }
 
-  fun addElements(elements: Collection<AccessibilityElement>) {
-    accessibilityElements.addAll(elements)
+  fun updateElements(elements: Collection<AccessibilityElement>) {
+    accessibilityElements.clear()
+    accessibilityElements += elements
     invalidate()
   }
 

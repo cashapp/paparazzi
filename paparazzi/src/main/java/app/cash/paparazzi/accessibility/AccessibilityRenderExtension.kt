@@ -16,6 +16,7 @@
 package app.cash.paparazzi.accessibility
 
 import android.graphics.Rect
+import android.view.Gravity
 import android.view.View
 import android.view.View.VISIBLE
 import android.view.ViewGroup
@@ -39,33 +40,41 @@ public class AccessibilityRenderExtension : RenderExtension {
   override fun renderView(
     contentView: View
   ): View {
+    // WindowManager needed to access accessibility elements for views that draw to other windows.
+    val windowManager = contentView.context.getSystemService(WindowManager::class.java)
+
     return LinearLayout(contentView.context).apply {
       orientation = LinearLayout.HORIZONTAL
       weightSum = 2f
       layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
 
-      val overlay = AccessibilityOverlayView(context).apply {
-        addView(contentView, FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT))
-      }
-
-      val contentLayoutParams = contentView.layoutParams ?: generateLayoutParams(null)
-      addView(overlay, LinearLayout.LayoutParams(contentLayoutParams.width, contentLayoutParams.height, 1f))
+      addView(contentView, LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, 1f))
 
       val overlayDetailsView = AccessibilityOverlayDetailsView(context)
       addView(overlayDetailsView, LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, 1f))
 
-      OneShotPreDrawListener.add(this) {
-        // Window Manager needed to access accessibility elements for views that draw to other windows
-        val windowManager = context.getSystemService(WindowManager::class.java)
+      val overlayDrawable = AccessibilityOverlayDrawable()
+      viewTreeObserver.addOnGlobalLayoutListener {
+        // The root of the view hierarchy is rendered at full width.
+        // We need to restrict it when taking accessibility snapshots.
         val windowManagerRootView = (windowManager as WindowManagerImpl).currentRootView
-
-        val elements = buildList {
-          windowManagerRootView?.processAccessibleChildren { add(it) }
-          processAccessibleChildren { add(it) }
+        if (windowManagerRootView != null) {
+          windowManagerRootView.foreground = overlayDrawable
+          windowManagerRootView.layoutParams =
+            FrameLayout.LayoutParams(contentView.measuredWidth, MATCH_PARENT, Gravity.START)
+        } else {
+          this@apply.foreground = overlayDrawable
         }
 
-        overlayDetailsView.addElements(elements)
-        overlay.addElements(elements)
+        OneShotPreDrawListener.add(this@apply) {
+          val elements = buildSet {
+            windowManagerRootView?.processAccessibleChildren { add(it) }
+            processAccessibleChildren { add(it) }
+          }
+
+          overlayDrawable.updateElements(elements)
+          overlayDetailsView.updateElements(elements)
+        }
       }
     }
   }
