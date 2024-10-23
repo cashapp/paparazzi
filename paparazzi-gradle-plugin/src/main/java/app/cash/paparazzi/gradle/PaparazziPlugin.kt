@@ -56,6 +56,7 @@ import javax.inject.Inject
 public class PaparazziPlugin @Inject constructor(
   private val providerFactory: ProviderFactory
 ) : Plugin<Project> {
+
   override fun apply(project: Project) {
     val supportedPlugins = listOf("com.android.application", "com.android.library", "com.android.dynamic-feature")
     project.afterEvaluate {
