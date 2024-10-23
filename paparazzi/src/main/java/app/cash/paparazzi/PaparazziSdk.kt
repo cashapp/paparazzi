@@ -289,16 +289,30 @@ public class PaparazziSdk @JvmOverloads constructor(
       }
 
       viewGroup.addView(modifiedView)
+
+      /**
+       * Compose animation tracks a startTime to ensure animations run correctly.
+       * We need to ensure the startTime is 0 so when we using the startNanos for animation position works correctly.
+       *
+       * Multiple render calls needed for [androidx.compose.animation.core.Transition] like the one used by [androidx.compose.animation.AnimatedVisibility] to work properly.
+       */
+      if (recomposer != null && startNanos > 0) {
+        withTime(0) {
+          renderSession.render(false)
+        }
+        withTime(0) {
+          renderSession.render(false)
+        }
+      }
+
       for (frame in 0 until frameCount) {
         val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
 
         // If we have pendingTasks run recomposer to ensure we get the correct frame.
         var hasPendingWork = false
         withTime(nowNanos) {
-          val result = renderSession.render(true)
-          if (result.status == ERROR_UNKNOWN) {
-            throw result.exception
-          }
+          renderForResult()
+
           if (hasComposeRuntime && recomposer != null) {
             // If we have pending tasks, we need to trigger it within the context of the first frame.
             if (frame == 0 && (recomposer as Recomposer).hasPendingWork) {
@@ -309,10 +323,7 @@ public class PaparazziSdk @JvmOverloads constructor(
 
         if (hasPendingWork) {
           withTime(nowNanos) {
-            val result = renderSession.render(true)
-            if (result.status == ERROR_UNKNOWN) {
-              throw result.exception
-            }
+            renderForResult()
           }
 
           val recomposerInstance = recomposer as Recomposer
@@ -343,6 +354,13 @@ public class PaparazziSdk @JvmOverloads constructor(
       if (hasComposeRuntime) {
         forceReleaseComposeReferenceLeaks()
       }
+    }
+  }
+
+  private fun renderForResult() {
+    val result = renderSession.render(true)
+    if (result.status == ERROR_UNKNOWN) {
+      throw result.exception
     }
   }
 
