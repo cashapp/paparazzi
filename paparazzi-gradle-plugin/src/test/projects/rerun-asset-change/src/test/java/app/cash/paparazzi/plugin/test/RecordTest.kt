@@ -15,7 +15,7 @@ class RecordTest {
     val contents =
       paparazzi.context.assets.open("secret.txt").bufferedReader().use { it.readText() }
     val root = paparazzi.inflate<FrameLayout>(R.layout.root)
-    val label = root.findViewById<TextView>(R.id.secret)
+    val label = root.findViewById<TextView>(R.id.secret)!!
     label.text = contents
     paparazzi.snapshot(root)
   }
