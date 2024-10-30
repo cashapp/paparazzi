@@ -1380,9 +1380,14 @@ class PaparazziPluginTest {
     assertThat(result.task(":testDebugUnitTest")?.outcome).isEqualTo(TaskOutcome.FAILED)
 
     val simpleTestHtmlFile = File(testReportDir, "app.cash.paparazzi.plugin.test.SimpleTest.html")
-    val htmlText = simpleTestHtmlFile.readText()
+    var htmlText = simpleTestHtmlFile.readText()
     assertThat(htmlText).contains("<img")
     assertThat(htmlText).contains("delta-app.cash.paparazzi.plugin.test_SimpleTest_compose.png")
+
+    val testParamInjectorTestHtmlFile = File(testReportDir, "app.cash.paparazzi.plugin.test.TestParameterInjectorTest.html")
+    htmlText = testParamInjectorTestHtmlFile.readText()
+    assertThat(htmlText).contains("<img")
+    assertThat(htmlText).contains("delta-app.cash.paparazzi.plugin.test_TestParameterInjectorTest_compose[NEXUS_4].png")
   }
 
   @Test
