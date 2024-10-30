@@ -77,7 +77,7 @@ internal class TestReport(
 
       val testMethodWithLabel = nameSegments[2].split(".")[0]
       var testMethod: String? = null
-      "($methodName)_?(.*)".toRegex().find(testMethodWithLabel)?.let {
+      "(${Regex.escape(methodName)})_?(.*)".toRegex().find(testMethodWithLabel)?.let {
         testMethod = it.groupValues.getOrNull(1)?.toString()
       }
 
