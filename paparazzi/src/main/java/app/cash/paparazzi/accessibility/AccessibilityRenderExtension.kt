@@ -96,7 +96,7 @@ public class AccessibilityRenderExtension : RenderExtension {
       )
     }
 
-    if (this is AbstractComposeView) {
+    if (this is AbstractComposeView && visibility == VISIBLE) {
       // ComposeView creates a child view `AndroidComposeView` for view root for test.
       val viewRoot = getChildAt(0) as ViewRootForTest
       val unmergedNodes = viewRoot.semanticsOwner.getAllSemanticsNodes(false)

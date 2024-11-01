@@ -1,5 +1,6 @@
 package app.cash.paparazzi.plugin.test
 
+import android.view.View.GONE
 import android.widget.LinearLayout
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -85,5 +86,20 @@ class ComposeA11yTest {
         }
       }
     }
+  }
+
+  @Test
+  fun `verify hidden ComposeView content is not in legend`() {
+    val view = ComposeView(paparazzi.context).apply {
+      visibility = GONE
+      setContent {
+        Column {
+          Text(text = "Text 1")
+          Text(text = "Text 2")
+        }
+      }
+    }
+
+    paparazzi.snapshot(view)
   }
 }
