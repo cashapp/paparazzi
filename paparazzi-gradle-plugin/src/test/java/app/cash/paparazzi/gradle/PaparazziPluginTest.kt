@@ -1389,13 +1389,15 @@ class PaparazziPluginTest {
   @Test
   fun snapshotReport() {
     val fixtureRoot = File("src/test/projects/report-snapshots")
-    val testReportDir = File(fixtureRoot, "build/reports/tests/testDebugUnitTest")
+    val testReportDir = File(fixtureRoot, "build/reports/tests/testDebugUnitTest/classes")
 
     val result = gradleRunner
       .withArguments("verifyPaparazziDebug", "--stacktrace")
       .runFixture(fixtureRoot) { buildAndFail() }
 
-    assertThat(result.task(":testDebugUnitTest")?.outcome).isEqualTo(TaskOutcome.FAILED)
+    val testTask = result.task(":testDebugUnitTest")
+    assertThat(testTask).isNotNull()
+    assertThat(testTask!!.outcome).isEqualTo(TaskOutcome.FAILED)
 
     val simpleTestHtmlFile = File(testReportDir, "app.cash.paparazzi.plugin.test.SimpleTest.html")
     var htmlText = simpleTestHtmlFile.readText()

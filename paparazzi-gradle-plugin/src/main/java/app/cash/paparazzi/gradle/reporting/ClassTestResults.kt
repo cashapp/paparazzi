@@ -1,48 +1,47 @@
 package app.cash.paparazzi.gradle.reporting
 
+import org.gradle.internal.FileUtils
 import java.util.TreeSet
 
 /**
- * Custom ClassTestResults based on Gradle's ClassTestResults
+ * Test results for a given class.
  */
 internal class ClassTestResults(
-  override val name: String,
-  private val packageResults: PackageTestResults
-) : CompositeTestResults(packageResults) {
-  val results: MutableSet<TestResult> = TreeSet()
+  val id: Long,
+  val name: String,
+  private val displayName: String? = name,
+  val packageResults: PackageTestResults
+) : CompositeTestResults(
+  packageResults
+) {
+  private val results: MutableSet<TestResult> = TreeSet()
+  override val baseUrl: String = "classes/" + FileUtils.toSafeFileName(name) + ".html"
+  override val title: String
+    get() = if (name == displayName) "Class $name" else displayName!!
 
-  override val title: String = String.format("Class %s", name)
+  val reportName: String
+    get() =
+      if (displayName != null && displayName != name) {
+        displayName
+      } else {
+        simpleName
+      }
+
   val simpleName: String
     get() {
-      val pos = name.lastIndexOf(".")
-      return if (pos != -1) {
-        name.substring(pos + 1)
-      } else {
-        name
+      val simpleName = name.substringAfterLast(".")
+      if (simpleName == "") {
+        return name
       }
+      return simpleName
     }
 
-  fun getPackageResults(): PackageTestResults {
-    return packageResults
-  }
+  val testResults: Collection<TestResult>
+    get() = results
 
-  fun addTest(
-    testName: String,
-    duration: Long,
-    project: String,
-    flavor: String,
-    diffImages: List<ScreenshotDiffImage>?
-  ): TestResult {
-    val test = TestResult(
-      testName,
-      duration,
-      project,
-      flavor,
-      diffImages,
-      this
-    )
-    results.add(test)
-    addVariant(project, flavor, test)
+  fun addTest(testName: String, testDisplayName: String, duration: Long): TestResult? {
+    val test = TestResult(testName, testDisplayName, duration, this)
+    results += test
     return addTest(test)
   }
 }
