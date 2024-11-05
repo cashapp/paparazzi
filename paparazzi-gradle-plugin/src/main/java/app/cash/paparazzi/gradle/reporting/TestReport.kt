@@ -74,8 +74,8 @@ internal class TestReport(
       val testClass = "$testClassPackage.${nameSegments[1]}"
 
       if (testClass != className) return@mapNotNull null
+      val testMethodWithLabel = nameSegments[2].removeSuffix(".png")
 
-      val testMethodWithLabel = nameSegments[2].split(".")[0]
       var testMethod: String? = null
       "(${Regex.escape(methodName)})_?(.*)".toRegex().find(testMethodWithLabel)?.let {
         testMethod = it.groupValues.getOrNull(1)?.toString()
