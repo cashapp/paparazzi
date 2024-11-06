@@ -28,7 +28,7 @@ internal class ClassPageRenderer(
           val nameSegments = diff.name.split("_", limit = 3)
           val testClassPackage = nameSegments[0].replace("delta-", "")
           val testClass = "$testClassPackage.${nameSegments[1]}"
-          val testMethodWithLabel = nameSegments[2].split(".")[0]
+          val testMethodWithLabel = nameSegments[2].removeSuffix(".png")
 
           return@map DiffImage(
             testClass = testClass,

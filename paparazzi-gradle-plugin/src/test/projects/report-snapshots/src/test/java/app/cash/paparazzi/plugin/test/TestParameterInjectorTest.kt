@@ -14,21 +14,24 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(TestParameterInjector::class)
-class TestParameterInjectorTest {
-
-  @TestParameter
-  val darkMode: Boolean = true
-
-  @TestParameter("1", "2")
-  val fontScale: Float = 1f
-
+class TestParameterInjectorTest(
+  @TestParameter val darkMode: Boolean,
+  @TestParameter("1", "2") val fontScale: Float
+) {
   @get:Rule
-  val paparazzi = Paparazzi(maxPercentDifference = 0.0, deviceConfig = DeviceConfig.PIXEL.copy(fontScale = fontScale))
+  val paparazzi = Paparazzi(
+    maxPercentDifference = 0.0,
+    deviceConfig = DeviceConfig.PIXEL.copy(fontScale = fontScale)
+  )
 
   @Test
   fun compose() {
     paparazzi.snapshot {
-      Box(Modifier.background(if (darkMode) Color(0xFF66ffc7) else Color(0xFF1EB980))) {
+      Box(
+        Modifier.background(
+          if (darkMode) Color(0xFF66ffc7) else Color(0xFF1EB980)
+        )
+      ) {
         Text("Hello, Paparazzi")
       }
     }
