@@ -16,7 +16,7 @@
 package app.cash.paparazzi.gradle
 
 import app.cash.paparazzi.gradle.instrumentation.ResourcesCompatVisitorFactory
-import app.cash.paparazzi.gradle.reporting.TestReport
+import app.cash.paparazzi.gradle.reporting.PaparazziTestReporter
 import app.cash.paparazzi.gradle.utils.artifactViewFor
 import app.cash.paparazzi.gradle.utils.relativize
 import com.android.build.api.instrumentation.FramesComputationMode
@@ -45,6 +45,8 @@ import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.options.Option
 import org.gradle.api.tasks.testing.AbstractTestTask
 import org.gradle.api.tasks.testing.Test
+import org.gradle.internal.operations.BuildOperationExecutor
+import org.gradle.internal.operations.BuildOperationRunner
 import org.gradle.internal.os.OperatingSystem
 import org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
@@ -54,7 +56,9 @@ import javax.inject.Inject
 
 @Suppress("unused")
 public class PaparazziPlugin @Inject constructor(
-  private val providerFactory: ProviderFactory
+  private val providerFactory: ProviderFactory,
+  private val buildOperationRunner: BuildOperationRunner,
+  private val buildOperationExecutor: BuildOperationExecutor
 ) : Plugin<Project> {
   override fun apply(project: Project) {
     val supportedPlugins = listOf("com.android.application", "com.android.library", "com.android.dynamic-feature")
@@ -122,7 +126,6 @@ public class PaparazziPlugin @Inject constructor(
       val buildDirectory = project.layout.buildDirectory
       val gradleUserHomeDir = project.gradle.gradleUserHomeDir
       val reportOutputDir = project.extensions.getByType(ReportingExtension::class.java).baseDirectory.dir("paparazzi/${variant.name}")
-      val failedSnapshotOutputDir = buildDirectory.dir("paparazzi/failures")
 
       val testInstrumentation = testVariant.instrumentation
       testInstrumentation.transformClassesWith(
@@ -185,12 +188,6 @@ public class PaparazziPlugin @Inject constructor(
       val isRecordRun = project.objects.property(Boolean::class.java)
       val isVerifyRun = project.objects.property(Boolean::class.java)
 
-      val snapshotFailures = failedSnapshotOutputDir.flatMap {
-        project.objects.directoryProperty().apply {
-          set(if (it.asFile.exists()) it else null)
-        }
-      }
-
       project.gradle.taskGraph.whenReady { graph ->
         isRecordRun.set(recordTaskProvider.map { graph.hasTask(it) })
         isVerifyRun.set(verifyTaskProvider.map { graph.hasTask(it) })
@@ -199,6 +196,15 @@ public class PaparazziPlugin @Inject constructor(
       val testTaskProvider =
         project.tasks.withType(Test::class.java).named { it == "test$testVariantSlug" }
       testTaskProvider.configureEach { test ->
+        test.setTestReporter(
+          PaparazziTestReporter(
+            buildOperationRunner = buildOperationRunner,
+            buildOperationExecutor = buildOperationExecutor,
+            isVerifyRun = isVerifyRun,
+            failureSnapshotDir = buildDirectory.dir("paparazzi/failures")
+          )
+        )
+
         test.systemProperties["paparazzi.test.resources"] =
           writeResourcesTask.flatMap { it.paparazziResources.asFile }.get().path
         test.systemProperties["paparazzi.project.dir"] = projectDirectory.toString()
@@ -248,21 +254,6 @@ public class PaparazziPlugin @Inject constructor(
 
         test.outputs.dir(reportOutputDir).withPropertyName("paparazzi.report.dir")
 
-        val isVerifying = isVerifyRun.map {
-          // We only want to run the our custom test reporter when verify task runs.
-          if (it) {
-            test.setTestReporter { testResultsProvider, reportDir ->
-              TestReport(
-                failureSnapshotDir = snapshotFailures.orNull?.asFile,
-                applicationId = variant.namespace.get(),
-                variantKey = variant.name
-              ).generateReport(testResultsProvider = testResultsProvider, reportDir = reportDir)
-            }
-          }
-
-          it
-        }
-
         test.doFirst {
           // Note: these are lazy properties that are not resolvable in the Gradle configuration phase.
           // They need special handling, so they're added as inputs.property above, and systemProperty here.
@@ -271,7 +262,7 @@ public class PaparazziPlugin @Inject constructor(
           test.systemProperties["paparazzi.layoutlib.resources.root"] =
             layoutlibResourcesFileCollection.singleFile.absolutePath
           test.systemProperties["paparazzi.test.record"] = isRecordRun.get()
-          test.systemProperties["paparazzi.test.verify"] = isVerifying.get()
+          test.systemProperties["paparazzi.test.verify"] = isVerifyRun.get()
         }
 
         test.doLast {

@@ -1,42 +1,32 @@
 package app.cash.paparazzi.gradle.reporting
 
-import com.android.build.gradle.internal.test.report.DurationFormatter
+import org.gradle.api.tasks.testing.TestResult
 
 internal abstract class TestResultModel {
+  abstract val resultType: TestResult.ResultType
   abstract val duration: Long
   abstract val title: String
 
+  open val formattedDuration: String
+    get() = DURATION_FORMATTER.format(duration)
+
   val statusClass: String
-    get() = when (getResultType()) {
-      ResultType.SUCCESS -> "success"
-      ResultType.FAILURE -> "failures"
-      ResultType.ERROR -> "errors"
-      ResultType.SKIPPED -> "skipped"
+    get() = when (resultType) {
+      TestResult.ResultType.SUCCESS -> "success"
+      TestResult.ResultType.FAILURE -> "failures"
+      TestResult.ResultType.SKIPPED -> "skipped"
+      else -> throw IllegalStateException()
     }
 
-  abstract fun getResultType(): ResultType
-
-  open fun getFormattedDuration(): String {
-    return DURATION_FORMATTER.format(duration)
-  }
-
-  fun getFormattedResultType(): String {
-    return when (getResultType()) {
-      ResultType.SUCCESS -> "passed"
-      ResultType.FAILURE -> "failed"
-      ResultType.ERROR -> "error"
-      ResultType.SKIPPED -> "ignored"
+  val formattedResultType: String
+    get() = when (resultType) {
+      TestResult.ResultType.SUCCESS -> "passed"
+      TestResult.ResultType.FAILURE -> "failed"
+      TestResult.ResultType.SKIPPED -> "ignored"
+      else -> throw IllegalStateException()
     }
-  }
 
   companion object {
     val DURATION_FORMATTER: DurationFormatter = DurationFormatter()
-  }
-
-  enum class ResultType {
-    SUCCESS,
-    FAILURE,
-    ERROR,
-    SKIPPED
   }
 }

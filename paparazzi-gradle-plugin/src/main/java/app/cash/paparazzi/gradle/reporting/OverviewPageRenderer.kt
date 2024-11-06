@@ -1,21 +1,19 @@
 package app.cash.paparazzi.gradle.reporting
 
+import org.gradle.internal.html.SimpleHtmlWriter
 import java.io.IOException
 
-/**
- * Custom OverviewPageRenderer based on Gradle's OverviewPageRenderer
- */
 internal class OverviewPageRenderer : PageRenderer<AllTestResults>() {
   override fun registerTabs() {
-    addErrorTab()
     addFailuresTab()
+    addIgnoredTab()
     if (!results.getPackages().isEmpty()) {
       addTab(
         "Packages",
         object : ErroringAction<SimpleHtmlWriter>() {
           @Throws(IOException::class)
-          override fun doExecute(objectToExecute: SimpleHtmlWriter) {
-            renderPackages(objectToExecute)
+          override fun doExecute(writer: SimpleHtmlWriter) {
+            renderPackages(writer)
           }
         }
       )
@@ -24,14 +22,14 @@ internal class OverviewPageRenderer : PageRenderer<AllTestResults>() {
       "Classes",
       object : ErroringAction<SimpleHtmlWriter>() {
         @Throws(IOException::class)
-        public override fun doExecute(objectToExecute: SimpleHtmlWriter) {
-          renderClasses(objectToExecute)
+        public override fun doExecute(writer: SimpleHtmlWriter) {
+          renderClasses(writer)
         }
       }
     )
   }
 
-  override fun renderBreadcrumbs(htmlWriter: SimpleHtmlWriter) {}
+  override fun renderBreadcrumbs(htmlWriter: SimpleHtmlWriter) = Unit
 
   @Throws(IOException::class)
   private fun renderPackages(htmlWriter: SimpleHtmlWriter) {
@@ -40,9 +38,8 @@ internal class OverviewPageRenderer : PageRenderer<AllTestResults>() {
     htmlWriter.startElement("tr")
     htmlWriter.startElement("th").characters("Package").endElement()
     htmlWriter.startElement("th").characters("Tests").endElement()
-    htmlWriter.startElement("th").characters("Errors").endElement()
     htmlWriter.startElement("th").characters("Failures").endElement()
-    htmlWriter.startElement("th").characters("Skipped").endElement()
+    htmlWriter.startElement("th").characters("Ignored").endElement()
     htmlWriter.startElement("th").characters("Duration").endElement()
     htmlWriter.startElement("th").characters("Success rate").endElement()
     htmlWriter.endElement()
@@ -51,85 +48,73 @@ internal class OverviewPageRenderer : PageRenderer<AllTestResults>() {
     for (testPackage in results.getPackages()) {
       htmlWriter.startElement("tr")
       htmlWriter.startElement("td").attribute("class", testPackage.statusClass)
-      htmlWriter.startElement("a")
-        .attribute("href", String.format("%s.html", testPackage.getFilename()))
-        .characters(testPackage.name)
-        .endElement()
+      htmlWriter.startElement("a").attribute("href", testPackage.baseUrl)
+        .characters(testPackage.name).endElement()
       htmlWriter.endElement()
       htmlWriter.startElement("td").characters(testPackage.testCount.toString()).endElement()
-      htmlWriter.startElement("td")
-        .characters(testPackage.errorCount.toString())
+      htmlWriter.startElement("td").characters(testPackage.failureCount.toString())
         .endElement()
-      htmlWriter.startElement("td")
-        .characters(testPackage.failureCount.toString())
+      htmlWriter.startElement("td").characters(testPackage.ignoredCount.toString())
         .endElement()
-      htmlWriter
-        .startElement("td")
-        .characters(testPackage.skipCount.toString())
-        .endElement()
-      htmlWriter.startElement("td")
-        .characters(testPackage.getFormattedDuration())
-        .endElement()
-      htmlWriter.startElement("td")
-        .attribute("class", testPackage.statusClass)
-        .characters(testPackage.formattedSuccessRate)
-        .endElement()
+      htmlWriter.startElement("td").characters(testPackage.formattedDuration).endElement()
+      htmlWriter.startElement("td").attribute("class", testPackage.statusClass)
+        .characters(testPackage.formattedSuccessRate).endElement()
       htmlWriter.endElement()
     }
     htmlWriter.endElement()
     htmlWriter.endElement()
   }
 
-  @Throws(IOException::class)
   private fun renderClasses(htmlWriter: SimpleHtmlWriter) {
     htmlWriter.startElement("table")
     htmlWriter.startElement("thead")
     htmlWriter.startElement("tr")
     htmlWriter.startElement("th").characters("Class").endElement()
     htmlWriter.startElement("th").characters("Tests").endElement()
-    htmlWriter.startElement("th").characters("Errors").endElement()
     htmlWriter.startElement("th").characters("Failures").endElement()
-    htmlWriter.startElement("th").characters("Skipped").endElement()
+    htmlWriter.startElement("th").characters("Ignored").endElement()
     htmlWriter.startElement("th").characters("Duration").endElement()
     htmlWriter.startElement("th").characters("Success rate").endElement()
     htmlWriter.endElement()
     htmlWriter.endElement()
     htmlWriter.startElement("tbody")
+
     for (testPackage in results.getPackages()) {
       for (testClass in testPackage.getClasses()) {
-        htmlWriter.startElement("tr")
-        htmlWriter.startElement("td")
-          .attribute("class", testClass!!.statusClass)
-          .endElement()
+        htmlWriter
+          .startElement("tr")
+          .startElement("td")
+          .attribute("class", testClass.statusClass)
         htmlWriter
           .startElement("a")
-          .attribute(
-            "href", String.format("%s.html", testClass.getFilename())
-          )
-          .characters(testClass.name)
-          .endElement()
-        htmlWriter.startElement("td")
+          .attribute("href", testClass.baseUrl.asHtmlLinkEncoded())
+          .characters(testClass.name).endElement()
+        htmlWriter.endElement()
+        htmlWriter
+          .startElement("td")
           .characters(testClass.testCount.toString())
           .endElement()
-        htmlWriter.startElement("td")
-          .characters(testClass.errorCount.toString())
-          .endElement()
-        htmlWriter.startElement("td")
+        htmlWriter
+          .startElement("td")
           .characters(testClass.failureCount.toString())
           .endElement()
         htmlWriter
           .startElement("td")
-          .characters(testClass.skipCount.toString())
+          .characters(testClass.ignoredCount.toString())
           .endElement()
-        htmlWriter.startElement("td")
-          .characters(testClass.getFormattedDuration())
+        htmlWriter
+          .startElement("td")
+          .characters(testClass.formattedDuration)
           .endElement()
-        htmlWriter.startElement("td").attribute("class", testClass.statusClass).characters(
-          testClass.formattedSuccessRate
-        ).endElement()
+        htmlWriter
+          .startElement("td")
+          .attribute("class", testClass.statusClass)
+          .characters(testClass.formattedSuccessRate)
+          .endElement()
         htmlWriter.endElement()
       }
     }
+
     htmlWriter.endElement()
     htmlWriter.endElement()
   }

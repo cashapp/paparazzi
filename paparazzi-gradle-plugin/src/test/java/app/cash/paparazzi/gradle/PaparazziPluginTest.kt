@@ -1389,13 +1389,15 @@ class PaparazziPluginTest {
   @Test
   fun snapshotReport() {
     val fixtureRoot = File("src/test/projects/report-snapshots")
-    val testReportDir = File(fixtureRoot, "build/reports/tests/testDebugUnitTest")
+    val testReportDir = File(fixtureRoot, "build/reports/tests/testDebugUnitTest/classes")
 
     val result = gradleRunner
       .withArguments("verifyPaparazziDebug", "--stacktrace")
       .runFixture(fixtureRoot) { buildAndFail() }
 
-    assertThat(result.task(":testDebugUnitTest")?.outcome).isEqualTo(TaskOutcome.FAILED)
+    val testTask = result.task(":testDebugUnitTest")
+    assertThat(testTask).isNotNull()
+    assertThat(testTask!!.outcome).isEqualTo(TaskOutcome.FAILED)
 
     val simpleTestHtmlFile = File(testReportDir, "app.cash.paparazzi.plugin.test.SimpleTest.html")
     var htmlText = simpleTestHtmlFile.readText()
@@ -1405,7 +1407,7 @@ class PaparazziPluginTest {
     val testParamInjectorTestHtmlFile = File(testReportDir, "app.cash.paparazzi.plugin.test.TestParameterInjectorTest.html")
     htmlText = testParamInjectorTestHtmlFile.readText()
     assertThat(htmlText).contains("<img")
-    assertThat(htmlText).contains("delta-app.cash.paparazzi.plugin.test_TestParameterInjectorTest_compose[NEXUS_4].png")
+    assertThat(htmlText).contains("delta-app.cash.paparazzi.plugin.test_TestParameterInjectorTest_compose[darkMode=false,fontScale=1.0].png")
   }
 
   @Test
