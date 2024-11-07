@@ -18,10 +18,7 @@ internal class ProjectResourceRepository private constructor(
   }
 
   companion object {
-    fun create(
-      resourceDirectories: List<File>,
-      moduleResourceDirectories: List<File>
-    ): ProjectResourceRepository {
+    fun create(resourceDirectories: List<File>, moduleResourceDirectories: List<File>): ProjectResourceRepository {
       return ProjectResourceRepository(
         displayName = "main",
         localResources = computeRepositories(resourceDirectories, moduleResourceDirectories)
@@ -43,9 +40,7 @@ internal class ProjectResourceRepository private constructor(
       return resources
     }
 
-    private fun getModuleResources(
-      resourceDirectories: List<File>
-    ): LocalResourceRepository =
+    private fun getModuleResources(resourceDirectories: List<File>): LocalResourceRepository =
       // TODO: need mapOf(package to listOf(resourceDirectory)) for each transitive project module
       ModuleResourceRepository.forMainResources(
         namespace = getNamespace(namespacing = ResourceNamespacing.DISABLED, packageName = "TODO"),

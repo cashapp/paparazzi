@@ -103,10 +103,7 @@ internal abstract class AbstractAarResourceRepository internal constructor(
     resourceType: ResourceType
   ): ListMultimap<String, ResourceItem> = getResourcesInternal(namespace, resourceType)
 
-  override fun getPublicResources(
-    namespace: ResourceNamespace,
-    type: ResourceType
-  ): Collection<ResourceItem> {
+  override fun getPublicResources(namespace: ResourceNamespace, type: ResourceType): Collection<ResourceItem> {
     if (namespace != this.namespace) return emptySet()
     return publicResources[type] ?: emptySet()
   }

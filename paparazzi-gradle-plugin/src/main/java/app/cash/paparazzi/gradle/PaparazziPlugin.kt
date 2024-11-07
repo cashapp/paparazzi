@@ -125,7 +125,8 @@ public class PaparazziPlugin @Inject constructor(
       val projectDirectory = project.layout.projectDirectory
       val buildDirectory = project.layout.buildDirectory
       val gradleUserHomeDir = project.gradle.gradleUserHomeDir
-      val reportOutputDir = project.extensions.getByType(ReportingExtension::class.java).baseDirectory.dir("paparazzi/${variant.name}")
+      val reportOutputDir =
+        project.extensions.getByType(ReportingExtension::class.java).baseDirectory.dir("paparazzi/${variant.name}")
 
       val testInstrumentation = testVariant.instrumentation
       testInstrumentation.transformClassesWith(
@@ -343,8 +344,7 @@ public class PaparazziPlugin @Inject constructor(
     configurations.getByName("testImplementation").dependencies.add(dependency)
   }
 
-  private fun Project.isInternal(): Boolean =
-    providers.gradleProperty("app.cash.paparazzi.internal").orNull == "true"
+  private fun Project.isInternal(): Boolean = providers.gradleProperty("app.cash.paparazzi.internal").orNull == "true"
 
   private fun BaseExtension.packageName(): String = namespace ?: ""
 

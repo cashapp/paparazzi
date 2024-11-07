@@ -9,15 +9,11 @@ import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes
 
 internal abstract class ResourcesCompatVisitorFactory : AsmClassVisitorFactory<InstrumentationParameters.None> {
-  override fun createClassVisitor(
-    classContext: ClassContext,
-    nextClassVisitor: ClassVisitor
-  ): ClassVisitor {
+  override fun createClassVisitor(classContext: ClassContext, nextClassVisitor: ClassVisitor): ClassVisitor {
     return ResourcesCompatTransform(nextClassVisitor)
   }
 
-  override fun isInstrumentable(classData: ClassData): Boolean =
-    classData.className == RESOURCES_COMPAT_CLASS_NAME
+  override fun isInstrumentable(classData: ClassData): Boolean = classData.className == RESOURCES_COMPAT_CLASS_NAME
 
   /**
    * [ClassVisitor] that fixes a hardcoded path in ResourcesCompat.loadFont.
@@ -43,13 +39,7 @@ internal abstract class ResourcesCompatVisitorFactory : AsmClassVisitorFactory<I
     }
 
     private class LoadFontVisitor(api: Int, delegate: MethodVisitor) : MethodVisitor(api, delegate) {
-      override fun visitMethodInsn(
-        opcode: Int,
-        owner: String,
-        name: String,
-        descriptor: String,
-        isInterface: Boolean
-      ) {
+      override fun visitMethodInsn(opcode: Int, owner: String, name: String, descriptor: String, isInterface: Boolean) {
         if ("startsWith" == name) {
           super.visitMethodInsn(opcode, owner, "contains", "(Ljava/lang/CharSequence;)Z", isInterface)
         } else {

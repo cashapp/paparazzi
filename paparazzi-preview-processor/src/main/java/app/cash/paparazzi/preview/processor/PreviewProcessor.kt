@@ -11,9 +11,7 @@ import com.squareup.kotlinpoet.ksp.writeTo
 import java.io.File
 
 public class PreviewProcessorProvider : SymbolProcessorProvider {
-  override fun create(
-    environment: SymbolProcessorEnvironment
-  ): PreviewProcessor = PreviewProcessor(environment)
+  override fun create(environment: SymbolProcessorEnvironment): PreviewProcessor = PreviewProcessor(environment)
 }
 
 public class PreviewProcessor(

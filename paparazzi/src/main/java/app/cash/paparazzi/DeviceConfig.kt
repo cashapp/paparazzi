@@ -137,28 +137,29 @@ public class DeviceConfig(
     softButtons: Boolean = this.softButtons,
     navigation: Navigation = this.navigation,
     screenRound: ScreenRound? = this.screenRound
-  ): DeviceConfig = DeviceConfig(
-    screenHeight,
-    screenWidth,
-    xdpi,
-    ydpi,
-    orientation,
-    uiMode,
-    nightMode,
-    density,
-    fontScale,
-    layoutDirection,
-    locale,
-    ratio,
-    size,
-    keyboard,
-    touchScreen,
-    keyboardState,
-    softButtons,
-    navigation,
-    screenRound,
-    this.released
-  )
+  ): DeviceConfig =
+    DeviceConfig(
+      screenHeight,
+      screenWidth,
+      xdpi,
+      ydpi,
+      orientation,
+      uiMode,
+      nightMode,
+      density,
+      fontScale,
+      layoutDirection,
+      locale,
+      ratio,
+      size,
+      keyboard,
+      touchScreen,
+      keyboardState,
+      softButtons,
+      navigation,
+      screenRound,
+      this.released
+    )
 
   public val hardwareConfig: HardwareConfig
     get() = HardwareConfig(

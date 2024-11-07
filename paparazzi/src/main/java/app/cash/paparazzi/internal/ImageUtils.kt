@@ -126,10 +126,7 @@ internal object ImageUtils {
   }
 
   @Throws(IOException::class)
-  fun compareImages(
-    goldenImage: BufferedImage,
-    image: BufferedImage
-  ): Pair<BufferedImage, Float> {
+  fun compareImages(goldenImage: BufferedImage, image: BufferedImage): Pair<BufferedImage, Float> {
     var goldenImage = goldenImage
     if (goldenImage.type != TYPE_INT_ARGB) {
       val temp = BufferedImage(goldenImage.width, goldenImage.height, TYPE_INT_ARGB)
@@ -158,11 +155,7 @@ internal object ImageUtils {
    * @param yScale y scale
    * @return the scaled image
    */
-  fun scale(
-    source: BufferedImage,
-    xScale: Double,
-    yScale: Double
-  ): BufferedImage {
+  fun scale(source: BufferedImage, xScale: Double, yScale: Double): BufferedImage {
     var source = source
 
     var sourceWidth = source.width

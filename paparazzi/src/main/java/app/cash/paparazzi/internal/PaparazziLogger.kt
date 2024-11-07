@@ -31,76 +31,41 @@ internal class PaparazziLogger : ILayoutLog, ILogger {
   private val logger: Logger = getLogger(Paparazzi::class.java.name)
   private val errors = mutableListOf<Throwable>()
 
-  override fun error(
-    throwable: Throwable?,
-    format: String?,
-    vararg args: Any
-  ) {
+  override fun error(throwable: Throwable?, format: String?, vararg args: Any) {
     logger.log(Level.SEVERE, format?.format(args), throwable)
     if (throwable != null) {
       errors += throwable
     }
   }
 
-  override fun warning(
-    format: String,
-    vararg args: Any
-  ) {
+  override fun warning(format: String, vararg args: Any) {
     logger.log(Level.WARNING, format, args)
   }
 
-  override fun info(
-    format: String,
-    vararg args: Any
-  ) {
+  override fun info(format: String, vararg args: Any) {
     logger.log(Level.INFO, format, args)
   }
 
-  override fun verbose(
-    format: String,
-    vararg args: Any
-  ) {
+  override fun verbose(format: String, vararg args: Any) {
     logger.log(Level.FINE, format, args)
   }
 
-  override fun fidelityWarning(
-    tag: String?,
-    message: String?,
-    throwable: Throwable?,
-    cookie: Any?,
-    data: Any?
-  ) {
+  override fun fidelityWarning(tag: String?, message: String?, throwable: Throwable?, cookie: Any?, data: Any?) {
     logger.log(Level.WARNING, "$tag: $message", throwable)
   }
 
-  override fun error(
-    tag: String?,
-    message: String?,
-    viewCookie: Any?,
-    data: Any?
-  ) {
+  override fun error(tag: String?, message: String?, viewCookie: Any?, data: Any?) {
     logger.log(Level.SEVERE, "$tag: $message")
   }
 
-  override fun error(
-    tag: String?,
-    message: String?,
-    throwable: Throwable?,
-    viewCookie: Any?,
-    data: Any?
-  ) {
+  override fun error(tag: String?, message: String?, throwable: Throwable?, viewCookie: Any?, data: Any?) {
     logger.log(Level.SEVERE, "$tag: $message", throwable)
     if (throwable != null) {
       errors += throwable
     }
   }
 
-  override fun warning(
-    tag: String?,
-    message: String?,
-    viewCookie: Any?,
-    data: Any?
-  ) {
+  override fun warning(tag: String?, message: String?, viewCookie: Any?, data: Any?) {
     logger.log(Level.WARNING, "$tag: $message")
   }
 

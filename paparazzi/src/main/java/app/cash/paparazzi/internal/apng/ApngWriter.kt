@@ -146,10 +146,7 @@ internal class ApngWriter(
     }
   }
 
-  private fun BufferedSink.writeFCTL(
-    sequenceNumber: Int,
-    rectangle: Rectangle
-  ) {
+  private fun BufferedSink.writeFCTL(sequenceNumber: Int, rectangle: Rectangle) {
     writeChunk(FCTL) {
       writeInt(sequenceNumber)
       writeInt(rectangle.width)
@@ -163,9 +160,7 @@ internal class ApngWriter(
     }
   }
 
-  private fun BufferedSink.writeIDAT(
-    image: BufferedImage
-  ) {
+  private fun BufferedSink.writeIDAT(image: BufferedImage) {
     writeChunk(IDAT) {
       val encodedImageBytes = Buffer()
       image.encodeBytes(encodedImageBytes, Rectangle(image.width, image.height))
@@ -173,11 +168,7 @@ internal class ApngWriter(
     }
   }
 
-  private fun BufferedSink.writeFDAT(
-    sequenceNumber: Int,
-    subRect: Rectangle,
-    image: BufferedImage
-  ) {
+  private fun BufferedSink.writeFDAT(sequenceNumber: Int, subRect: Rectangle, image: BufferedImage) {
     writeChunk(FDAT) {
       writeInt(sequenceNumber)
       val encodedImageBytes = Buffer()

@@ -24,9 +24,7 @@ internal const val TEST_DATA_DIR = "src/test/resources/aar"
  * Representative of loading an unzipped AAR from the Gradle transforms cache, e.g.,
  * $GRADLE_USER_HOME/caches/$VERSION/transforms/93260cec846aa69823e5e1c7eb771238/transformed/appcompat-1.6.1/res
  */
-internal fun makeAarRepositoryFromExplodedAar(
-  libraryDirName: String
-): AarSourceResourceRepository {
+internal fun makeAarRepositoryFromExplodedAar(libraryDirName: String): AarSourceResourceRepository {
   return AarSourceResourceRepository.create(
     resourceDirectoryOrFile = resolveProjectPath("$TEST_DATA_DIR/$libraryDirName/res"),
     libraryName = AAR_LIBRARY_NAME
@@ -54,10 +52,7 @@ internal fun makeAarRepositoryFromExplodedAarFiltered(
  *
  * Given a [libraryDirName] pointing to an exploded aar root, create an aar "on-the-fly" with parent [tempDir].
  */
-internal fun makeAarRepositoryFromAarArtifact(
-  tempDir: Path,
-  libraryDirName: String
-): AarSourceResourceRepository {
+internal fun makeAarRepositoryFromAarArtifact(tempDir: Path, libraryDirName: String): AarSourceResourceRepository {
   val sourceDirectory = resolveProjectPath("$TEST_DATA_DIR/$libraryDirName")
   return AarSourceResourceRepository.create(
     resourceDirectoryOrFile = createAar(tempDir, sourceDirectory),

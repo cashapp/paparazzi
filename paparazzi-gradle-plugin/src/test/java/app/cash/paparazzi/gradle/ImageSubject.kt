@@ -55,10 +55,7 @@ internal class ImageSubject private constructor(
       }
     }
 
-    private fun getDifferencePercent(
-      img1: BufferedImage,
-      img2: BufferedImage
-    ): Double {
+    private fun getDifferencePercent(img1: BufferedImage, img2: BufferedImage): Double {
       val width = img1.width
       val height = img1.height
       val width2 = img2.width
@@ -97,7 +94,6 @@ internal class ImageSubject private constructor(
       ImageSubject(metadata, actual)
     }
 
-    fun assertThat(actual: File?): ImageSubject =
-      assertAbout(IMAGE_SUBJECT_FACTORY).that(actual)
+    fun assertThat(actual: File?): ImageSubject = assertAbout(IMAGE_SUBJECT_FACTORY).that(actual)
   }
 }

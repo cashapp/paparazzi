@@ -944,7 +944,8 @@ class PaparazziPluginTest {
     val resourcesFile = File(consumerModuleRoot, "build/intermediates/paparazzi/debug/resources.json")
 
     var config = resourcesFile.loadConfig()
-    assertThat(config.moduleResourceDirs).containsExactly("../producer/build/intermediates/packaged_res/debug/packageDebugResources")
+    assertThat(config.moduleResourceDirs)
+      .containsExactly("../producer/build/intermediates/packaged_res/debug/packageDebugResources")
 
     buildDir.deleteRecursively()
 
@@ -966,7 +967,8 @@ class PaparazziPluginTest {
     }
 
     config = resourcesFile.loadConfig()
-    assertThat(config.moduleResourceDirs).containsExactly("../producer/build/intermediates/packaged_res/debug/packageDebugResources")
+    assertThat(config.moduleResourceDirs)
+      .containsExactly("../producer/build/intermediates/packaged_res/debug/packageDebugResources")
   }
 
   @Test
@@ -1387,6 +1389,7 @@ class PaparazziPluginTest {
   }
 
   @Test
+  @Suppress("ktlint:standard:max-line-length")
   fun snapshotReport() {
     val fixtureRoot = File("src/test/projects/report-snapshots")
     val testReportDir = File(fixtureRoot, "build/reports/tests/testDebugUnitTest/classes")
@@ -1404,7 +1407,8 @@ class PaparazziPluginTest {
     assertThat(htmlText).contains("<img")
     assertThat(htmlText).contains("delta-app.cash.paparazzi.plugin.test_SimpleTest_compose.png")
 
-    val testParamInjectorTestHtmlFile = File(testReportDir, "app.cash.paparazzi.plugin.test.TestParameterInjectorTest.html")
+    val testParamInjectorTestHtmlFile =
+      File(testReportDir, "app.cash.paparazzi.plugin.test.TestParameterInjectorTest.html")
     htmlText = testParamInjectorTestHtmlFile.readText()
     assertThat(htmlText).contains("<img")
     assertThat(htmlText).contains("delta-app.cash.paparazzi.plugin.test_TestParameterInjectorTest_compose[darkMode=false,fontScale=1.0].png")
@@ -1541,10 +1545,7 @@ class PaparazziPluginTest {
 
   private fun File.loadConfig() = source().buffer().use { CONFIG_ADAPTER.fromJson(it)!! }
 
-  private fun GradleRunner.runFixture(
-    projectRoot: File,
-    action: GradleRunner.() -> BuildResult
-  ): BuildResult {
+  private fun GradleRunner.runFixture(projectRoot: File, action: GradleRunner.() -> BuildResult): BuildResult {
     val settings = File(projectRoot, "settings.gradle")
     val gradleProperties = File(projectRoot, "gradle.properties")
     var generatedSettings = false

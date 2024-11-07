@@ -53,8 +53,7 @@ internal object RenderSettings {
     return if (i < 0) i + size else i
   }
 
-  internal fun Color.toColorInt(): Int =
-    android.graphics.Color.argb(alpha, red, green, blue)
+  internal fun Color.toColorInt(): Int = android.graphics.Color.argb(alpha, red, green, blue)
 
   private fun Color.withAlpha(alpha: Int): Color {
     return Color(red, green, blue, alpha)

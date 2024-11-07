@@ -54,10 +54,7 @@ public class Paparazzi @JvmOverloads constructor(
   public val context: Context
     get() = sdk.context
 
-  override fun apply(
-    base: Statement,
-    description: Description
-  ): Statement {
+  override fun apply(base: Statement, description: Description): Statement {
     return object : Statement() {
       override fun evaluate() {
         sdk = PaparazziSdk(
@@ -113,13 +110,7 @@ public class Paparazzi @JvmOverloads constructor(
   }
 
   @JvmOverloads
-  public fun gif(
-    view: View,
-    name: String? = null,
-    start: Long = 0L,
-    end: Long = 500L,
-    fps: Int = 30
-  ) {
+  public fun gif(view: View, name: String? = null, start: Long = 0L, end: Long = 500L, fps: Int = 30) {
     // Add one to the frame count so we get the last frame. Otherwise a 1 second, 60 FPS animation
     // our 60th frame will be at time 983 ms, and we want our last frame to be 1,000 ms. This gets
     // us 61 frames for a 1 second animation, 121 frames for a 2 second animation, etc.
@@ -137,7 +128,11 @@ public class Paparazzi @JvmOverloads constructor(
     renderingMode: RenderingMode? = null
   ): Unit = sdk.unsafeUpdateConfig(deviceConfig, theme, renderingMode)
 
-  private fun createFrameHandler(name: String? = null, frameCount: Int = 1, fps: Int = -1): SnapshotHandler.FrameHandler {
+  private fun createFrameHandler(
+    name: String? = null,
+    frameCount: Int = 1,
+    fps: Int = -1
+  ): SnapshotHandler.FrameHandler {
     val snapshot = Snapshot(name, testName!!, Date())
     return snapshotHandler.newFrameHandler(snapshot, frameCount, fps)
   }

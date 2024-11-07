@@ -120,10 +120,7 @@ internal abstract class MultiResourceRepository internal constructor(displayName
     return CONTINUE
   }
 
-  override fun getMap(
-    namespace: ResourceNamespace,
-    resourceType: ResourceType
-  ): ListMultimap<String, ResourceItem>? {
+  override fun getMap(namespace: ResourceNamespace, resourceType: ResourceType): ListMultimap<String, ResourceItem>? {
     val repositoriesForNamespace = leafsByNamespace[namespace]
     if (repositoriesForNamespace.size == 1) {
       val repository = repositoriesForNamespace[0]
@@ -161,15 +158,13 @@ internal abstract class MultiResourceRepository internal constructor(displayName
     return map
   }
 
-  override fun getLeafResourceRepositories(): Collection<SingleNamespaceResourceRepository> =
-    leafsByNamespace.values()
+  override fun getLeafResourceRepositories(): Collection<SingleNamespaceResourceRepository> = leafsByNamespace.values()
 
   private class ResourcePriorityComparator(repositories: Collection<SingleNamespaceResourceRepository>) :
     Comparator<ResourceItem> {
-    private val repositoryOrdering: MutableMap<SingleNamespaceResourceRepository, Int>
+    private val repositoryOrdering: MutableMap<SingleNamespaceResourceRepository, Int> = HashMap(repositories.size)
 
     init {
-      repositoryOrdering = HashMap(repositories.size)
       var i = 0
       for (repository in repositories) {
         repositoryOrdering[repository] = i++
@@ -222,8 +217,7 @@ internal abstract class MultiResourceRepository internal constructor(displayName
       return values
     }
 
-    override fun entries(): Collection<Entry<String, ResourceItem>> =
-      throw UnsupportedOperationException()
+    override fun entries(): Collection<Entry<String, ResourceItem>> = throw UnsupportedOperationException()
 
     override fun removeAll(key: Any?): List<ResourceItem> {
       val removed: List<ResourceItem>? = key?.let { map.remove(it) }
@@ -257,8 +251,7 @@ internal abstract class MultiResourceRepository internal constructor(displayName
 
     override fun containsValue(value: Any?): Boolean = throw UnsupportedOperationException()
 
-    override fun containsEntry(key: Any?, value: Any?): Boolean =
-      throw UnsupportedOperationException()
+    override fun containsEntry(key: Any?, value: Any?): Boolean = throw UnsupportedOperationException()
 
     override fun put(key: String, item: ResourceItem): Boolean {
       val list = map.computeIfAbsent(key) { _ -> PerConfigResourceList() }
@@ -309,10 +302,8 @@ internal abstract class MultiResourceRepository internal constructor(displayName
       return !multimap.isEmpty
     }
 
-    override fun replaceValues(
-      key: String?,
-      values: Iterable<ResourceItem>
-    ): List<ResourceItem> = throw UnsupportedOperationException()
+    override fun replaceValues(key: String?, values: Iterable<ResourceItem>): List<ResourceItem> =
+      throw UnsupportedOperationException()
 
     override fun asMap(): Map<String, Collection<ResourceItem>> = map
 
@@ -371,8 +362,7 @@ internal abstract class MultiResourceRepository internal constructor(displayName
         return index
       }
 
-      private fun sortedItems(items: Collection<ResourceItem>): List<ResourceItem> =
-        items.sortedWith(comparator)
+      private fun sortedItems(items: Collection<ResourceItem>): List<ResourceItem> = items.sortedWith(comparator)
 
       /**
        * Returns index in [.resourceItems] of the existing resource item with the same

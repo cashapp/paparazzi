@@ -39,10 +39,7 @@ public class Snapshot(
 
 internal val invalidPrintableChars = CharMatcher.anyOf("<>:\"/\\|?*")
 
-internal fun Snapshot.toFileName(
-  delimiter: String = "_",
-  extension: String
-): String {
+internal fun Snapshot.toFileName(delimiter: String = "_", extension: String): String {
   val formattedLabel = if (name != null) {
     if (invalidPrintableChars.matchesAnyOf(name)) {
       throw IllegalArgumentException("Supplied snapshot name contains invalid characters ('$name')")
@@ -54,5 +51,14 @@ internal fun Snapshot.toFileName(
   if (invalidPrintableChars.matchesAnyOf(testName.methodName)) {
     throw IllegalArgumentException("Generated method name contains invalid characters ('${testName.methodName}')")
   }
-  return "${testName.packageName}${delimiter}${testName.className}${delimiter}${testName.methodName.replace("\\s".toRegex(), delimiter)}$formattedLabel.$extension"
+  return buildString {
+    append(testName.packageName)
+    append(delimiter)
+    append(testName.className)
+    append(delimiter)
+    append(testName.methodName.replace("\\s".toRegex(), delimiter))
+    append(formattedLabel)
+    append(".")
+    append(extension)
+  }
 }

@@ -24,8 +24,7 @@ internal class ModuleResourceRepository private constructor(
   override fun getNamespace(): ResourceNamespace = namespace
 
   override fun getPackageName(): String? = namespace.packageName
-  override fun getNamespaces(): Set<ResourceNamespace> =
-    super<MultiResourceRepository>.getNamespaces()
+  override fun getNamespaces(): Set<ResourceNamespace> = super<MultiResourceRepository>.getNamespaces()
 
   override fun getLeafResourceRepositories(): Collection<SingleNamespaceResourceRepository> =
     super<MultiResourceRepository>.getLeafResourceRepositories()
@@ -38,10 +37,7 @@ internal class ModuleResourceRepository private constructor(
      * @param namespace the namespace for the repository
      * @return the resource repository
      */
-    fun forMainResources(
-      namespace: ResourceNamespace,
-      resourceDirectories: List<File>
-    ): LocalResourceRepository {
+    fun forMainResources(namespace: ResourceNamespace, resourceDirectories: List<File>): LocalResourceRepository {
       return ModuleResourceRepository(
         displayName = "", // TODO
         namespace = namespace,

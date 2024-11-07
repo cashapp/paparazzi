@@ -9,11 +9,7 @@ import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.buildCodeBlock
 
 internal object PaparazziPoet {
-  fun buildFiles(
-    functions: Sequence<KSFunctionDeclaration>,
-    isTest: Boolean,
-    env: EnvironmentOptions
-  ) =
+  fun buildFiles(functions: Sequence<KSFunctionDeclaration>, isTest: Boolean, env: EnvironmentOptions) =
     if (isTest) {
       emptyList()
     } else {
@@ -33,56 +29,53 @@ internal object PaparazziPoet {
     propertyName: String,
     functions: Sequence<KSFunctionDeclaration>,
     env: EnvironmentOptions
-  ) =
-    FileSpec.scriptBuilder(fileName, env.namespace)
-      .addCode(
-        buildCodeBlock {
-          addStatement("internal val %L = listOf<%L.PaparazziPreviewData>(", propertyName, PACKAGE_NAME)
-          indent()
+  ) = FileSpec.scriptBuilder(fileName, env.namespace)
+    .addCode(
+      buildCodeBlock {
+        addStatement("internal val %L = listOf<%L.PaparazziPreviewData>(", propertyName, PACKAGE_NAME)
+        indent()
 
-          if (functions.count() == 0) {
-            addEmpty()
-          } else {
-            functions.process { func, previewParam ->
-              val visibilityCheck = checkVisibility(func)
-              val snapshotName = func.snapshotName(env)
+        if (functions.count() == 0) {
+          addEmpty()
+        } else {
+          functions.process { func, previewParam ->
+            val visibilityCheck = checkVisibility(func)
+            val snapshotName = func.snapshotName(env)
 
-              when {
-                visibilityCheck.isPrivate -> addError(
-                  function = func,
-                  snapshotName = snapshotName,
-                  buildErrorMessage = {
-                    "$it is private. Make it internal or public to generate a snapshot."
-                  }
-                )
-                previewParam != null -> addError(
-                  function = func,
-                  snapshotName = snapshotName,
-                  buildErrorMessage = {
-                    "$it preview uses PreviewParameters which aren't currently supported."
-                  }
-                )
-                else -> addDefault(
-                  function = func,
-                  snapshotName = snapshotName
-                )
-              }
+            when {
+              visibilityCheck.isPrivate -> addError(
+                function = func,
+                snapshotName = snapshotName,
+                buildErrorMessage = {
+                  "$it is private. Make it internal or public to generate a snapshot."
+                }
+              )
+              previewParam != null -> addError(
+                function = func,
+                snapshotName = snapshotName,
+                buildErrorMessage = {
+                  "$it preview uses PreviewParameters which aren't currently supported."
+                }
+              )
+              else -> addDefault(
+                function = func,
+                snapshotName = snapshotName
+              )
             }
           }
-
-          unindent()
-          addStatement(")")
         }
-      )
-      .build()
+
+        unindent()
+        addStatement(")")
+      }
+    )
+    .build()
 
   private fun CodeBlock.Builder.addEmpty() {
     addStatement("%L.PaparazziPreviewData.Empty,", PACKAGE_NAME)
   }
 
-  private fun Sequence<KSFunctionDeclaration>.process(
-    block: (KSFunctionDeclaration, KSValueParameter?) -> Unit
-  ) =
+  private fun Sequence<KSFunctionDeclaration>.process(block: (KSFunctionDeclaration, KSValueParameter?) -> Unit) =
     flatMap { func ->
       val previewParam = func.parameters.firstOrNull { param ->
         param.annotations.any { it.isPreviewParameter() }
@@ -108,10 +101,7 @@ internal object PaparazziPoet {
     addStatement("),")
   }
 
-  private fun CodeBlock.Builder.addDefault(
-    function: KSFunctionDeclaration,
-    snapshotName: String
-  ) {
+  private fun CodeBlock.Builder.addDefault(function: KSFunctionDeclaration, snapshotName: String) {
     addStatement("%L.PaparazziPreviewData.Default(", PACKAGE_NAME)
     indent()
     addStatement("snapshotName = %S,", snapshotName)
@@ -130,11 +120,10 @@ internal object PaparazziPoet {
       add(simpleName.asString())
     }.joinToString("_")
 
-  private fun checkVisibility(
-    function: KSFunctionDeclaration
-  ) = VisibilityCheck(
-    isFunctionPrivate = function.getVisibility() == Visibility.PRIVATE
-  )
+  private fun checkVisibility(function: KSFunctionDeclaration) =
+    VisibilityCheck(
+      isFunctionPrivate = function.getVisibility() == Visibility.PRIVATE
+    )
 }
 
 internal data class VisibilityCheck(

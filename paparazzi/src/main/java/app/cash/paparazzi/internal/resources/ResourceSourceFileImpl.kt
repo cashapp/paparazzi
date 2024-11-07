@@ -35,10 +35,7 @@ internal data class ResourceSourceFileImpl(
      * Creates a [ResourceSourceFileImpl] by reading its contents from the given stream.
      */
     @Throws(IOException::class)
-    fun deserialize(
-      stream: Base128InputStream,
-      configurations: List<RepositoryConfiguration>
-    ): ResourceSourceFileImpl {
+    fun deserialize(stream: Base128InputStream, configurations: List<RepositoryConfiguration>): ResourceSourceFileImpl {
       val relativePath = stream.readString()
       val configIndex = stream.readInt()
       return ResourceSourceFileImpl(relativePath, configurations[configIndex])

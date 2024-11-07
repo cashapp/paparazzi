@@ -85,26 +85,25 @@ internal class PaparazziCallback(
   }
 
   @Throws(Exception::class)
-  override fun loadView(
-    name: String,
-    constructorSignature: Array<Class<*>>,
-    constructorArgs: Array<Any>
-  ): Any? = createNewInstance(name, constructorSignature, constructorArgs)
+  override fun loadView(name: String, constructorSignature: Array<Class<*>>, constructorArgs: Array<Any>): Any? =
+    createNewInstance(name, constructorSignature, constructorArgs)
 
-  override fun loadClass(
-    name: String,
-    constructorSignature: Array<Class<*>>,
-    constructorArgs: Array<Any>
-  ): Any? {
+  override fun loadClass(name: String, constructorSignature: Array<Class<*>>, constructorArgs: Array<Any>): Any? {
     // RecyclerView.Adapter is an abstract class, but its instance is needed for RecyclerView to work correctly.
     // So, when LayoutLib asks for its instance, we define a new class which extends the Adapter class.
     // We check whether the class being loaded is the support or the androidx one and use the appropriate adapter that references to the
     // right namespace.
     return try {
       when (name) {
-        CLASS_RECYCLER_VIEW_ADAPTER.newName() -> createNewInstance(CN_ANDROIDX_CUSTOM_ADAPTER, EMPTY_CLASS_ARRAY, EMPTY_OBJECT_ARRAY)
-        CLASS_RECYCLER_VIEW_ADAPTER.oldName() -> createNewInstance(CN_SUPPORT_CUSTOM_ADAPTER, EMPTY_CLASS_ARRAY, EMPTY_OBJECT_ARRAY)
-        else -> createNewInstance(name, constructorSignature, constructorArgs)
+        CLASS_RECYCLER_VIEW_ADAPTER.newName() -> {
+          createNewInstance(CN_ANDROIDX_CUSTOM_ADAPTER, EMPTY_CLASS_ARRAY, EMPTY_OBJECT_ARRAY)
+        }
+        CLASS_RECYCLER_VIEW_ADAPTER.oldName() -> {
+          createNewInstance(CN_SUPPORT_CUSTOM_ADAPTER, EMPTY_CLASS_ARRAY, EMPTY_OBJECT_ARRAY)
+        }
+        else -> {
+          createNewInstance(name, constructorSignature, constructorArgs)
+        }
       }
     } catch (e: ClassNotFoundException) {
       null
@@ -155,15 +154,11 @@ internal class PaparazziCallback(
     defaultValue: Any
   ): Any? = null
 
-  override fun getAdapterBinding(
-    viewObject: Any?,
-    attributes: MutableMap<String, String>?
-  ): AdapterBinding? = null
+  override fun getAdapterBinding(viewObject: Any?, attributes: MutableMap<String, String>?): AdapterBinding? = null
 
   override fun getActionBarCallback(): ActionBarCallback = actionBarCallback
 
-  override fun createXmlParserForPsiFile(fileName: String): XmlPullParser? =
-    createXmlParserForFile(fileName)
+  override fun createXmlParserForPsiFile(fileName: String): XmlPullParser? = createXmlParserForFile(fileName)
 
   override fun createXmlParserForFile(fileName: String): XmlPullParser? {
     try {
@@ -210,8 +205,7 @@ internal class PaparazziCallback(
     }
   }
 
-  private fun ResourceReference.transformStyleResource() =
-    ResourceReference.style(namespace, name.replace('.', '_'))
+  private fun ResourceReference.transformStyleResource() = ResourceReference.style(namespace, name.replace('.', '_'))
 
   private fun createNewInstance(
     name: String,

@@ -62,68 +62,63 @@ class AccessibilityRenderExtensionTest {
       ViewGroup.LayoutParams.MATCH_PARENT,
       ViewGroup.LayoutParams.MATCH_PARENT
     )
-  ) =
-    LinearLayout(context).apply {
-      orientation = LinearLayout.VERTICAL
-      rootLayoutParams?.let { layoutParams = it }
-      addView(
-        TextView(context).apply {
-          id = 1
-          text = "Text View Sample"
-        }
-      )
+  ) = LinearLayout(context).apply {
+    orientation = LinearLayout.VERTICAL
+    rootLayoutParams?.let { layoutParams = it }
+    addView(
+      TextView(context).apply {
+        id = 1
+        text = "Text View Sample"
+      }
+    )
 
-      addView(
-        View(context).apply {
-          id = 2
-          layoutParams = LinearLayout.LayoutParams(100, 100)
-          contentDescription = "Content Description Sample"
-        }
-      )
+    addView(
+      View(context).apply {
+        id = 2
+        layoutParams = LinearLayout.LayoutParams(100, 100)
+        contentDescription = "Content Description Sample"
+      }
+    )
 
-      addView(
-        View(context).apply {
-          id = 3
-          layoutParams = LinearLayout.LayoutParams(100, 100).apply {
-            setMarginsRelative(20, 20, 20, 20)
-          }
-          contentDescription = "Margin Sample"
+    addView(
+      View(context).apply {
+        id = 3
+        layoutParams = LinearLayout.LayoutParams(100, 100).apply {
+          setMarginsRelative(20, 20, 20, 20)
         }
-      )
+        contentDescription = "Margin Sample"
+      }
+    )
 
-      addView(
-        View(context).apply {
-          id = 4
-          layoutParams = LinearLayout.LayoutParams(100, 100).apply {
-            setMarginsRelative(20, 20, 20, 20)
-          }
-          foreground = GradientDrawable(TL_BR, intArrayOf(Color.YELLOW, Color.BLUE)).apply {
-            shape = OVAL
-          }
-          contentDescription = "Foreground Drawable"
+    addView(
+      View(context).apply {
+        id = 4
+        layoutParams = LinearLayout.LayoutParams(100, 100).apply {
+          setMarginsRelative(20, 20, 20, 20)
         }
-      )
+        foreground = GradientDrawable(TL_BR, intArrayOf(Color.YELLOW, Color.BLUE)).apply {
+          shape = OVAL
+        }
+        contentDescription = "Foreground Drawable"
+      }
+    )
 
-      addView(
-        Button(context).apply {
-          id = 5
-          layoutParams = LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.WRAP_CONTENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-          ).apply {
-            gravity = Gravity.CENTER
-          }
-          text = "Button Sample"
+    addView(
+      Button(context).apply {
+        id = 5
+        layoutParams = LinearLayout.LayoutParams(
+          ViewGroup.LayoutParams.WRAP_CONTENT,
+          ViewGroup.LayoutParams.WRAP_CONTENT
+        ).apply {
+          gravity = Gravity.CENTER
         }
-      )
-    }
+        text = "Button Sample"
+      }
+    )
+  }
 
   private inner class TestSnapshotVerifier : SnapshotHandler {
-    override fun newFrameHandler(
-      snapshot: Snapshot,
-      frameCount: Int,
-      fps: Int
-    ): SnapshotHandler.FrameHandler {
+    override fun newFrameHandler(snapshot: Snapshot, frameCount: Int, fps: Int): SnapshotHandler.FrameHandler {
       return object : SnapshotHandler.FrameHandler {
         override fun handle(image: BufferedImage) {
           val expected = File("src/test/resources/${snapshot.name}.png")

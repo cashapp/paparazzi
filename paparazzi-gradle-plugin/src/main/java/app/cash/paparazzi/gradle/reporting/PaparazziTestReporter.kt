@@ -70,11 +70,7 @@ internal class PaparazziTestReporter(
     return model
   }
 
-  private fun generateFiles(
-    model: AllTestResults,
-    resultsProvider: TestResultsProvider,
-    reportDir: File
-  ) {
+  private fun generateFiles(model: AllTestResults, resultsProvider: TestResultsProvider, reportDir: File) {
     try {
       val htmlRenderer = HtmlReportRenderer()
       buildOperationRunner.run(object : RunnableBuildOperation {
