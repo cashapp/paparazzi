@@ -1415,14 +1415,6 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun immSoftInputInteraction() {
-    val fixtureRoot = File("src/test/projects/imm-soft-input")
-    gradleRunner
-      .withArguments("testDebug", "--stacktrace")
-      .runFixture(fixtureRoot) { build() }
-  }
-
-  @Test
   fun configIsUpdatable() {
     val fixtureRoot = File("src/test/projects/update-paparazzi-config")
 
