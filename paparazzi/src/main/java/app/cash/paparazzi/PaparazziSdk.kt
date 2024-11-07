@@ -29,6 +29,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.View.NO_ID
 import android.view.ViewGroup
+import android.view.ViewGroup.LayoutParams
 import androidx.activity.setViewTreeOnBackPressedDispatcherOwner
 import androidx.annotation.LayoutRes
 import androidx.compose.runtime.Composable
@@ -162,7 +163,9 @@ public class PaparazziSdk @JvmOverloads constructor(
   public fun <V : View> inflate(@LayoutRes layoutId: Int): V = layoutInflater.inflate(layoutId, null) as V
 
   public fun snapshot(composable: @Composable () -> Unit) {
-    val hostView = ComposeView(context)
+    val hostView = ComposeView(context).apply {
+      layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
+    }
     hostView.setContent(composable)
 
     snapshot(hostView)
