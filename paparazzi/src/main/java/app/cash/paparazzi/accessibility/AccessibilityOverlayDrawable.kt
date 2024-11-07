@@ -37,7 +37,7 @@ internal class AccessibilityOverlayDrawable : Drawable() {
   }
 
   override fun setAlpha(alpha: Int) = Unit
-  override fun setColorFilter(p0: ColorFilter) = Unit
+  override fun setColorFilter(colorFilter: ColorFilter?) = Unit
 
   @Deprecated("Not used", ReplaceWith("255"))
   override fun getOpacity(): Int = PixelFormat.OPAQUE
