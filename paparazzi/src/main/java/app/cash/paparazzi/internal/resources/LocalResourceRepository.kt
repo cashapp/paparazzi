@@ -28,10 +28,8 @@ internal abstract class LocalResourceRepository protected constructor(
   }
 
   // TODO(namespaces): Implement.
-  override fun getPublicResources(
-    namespace: ResourceNamespace,
-    type: ResourceType
-  ): Collection<ResourceItem> = throw UnsupportedOperationException("Not implemented yet")
+  override fun getPublicResources(namespace: ResourceNamespace, type: ResourceType): Collection<ResourceItem> =
+    throw UnsupportedOperationException("Not implemented yet")
 
   /**
    * Package accessible version of [getMap].

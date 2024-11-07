@@ -93,7 +93,8 @@ class ApngReaderTest {
       ApngReader(FileSystem.SYSTEM.openReadOnly(file.path.toPath()))
       fail("Invalid png file")
     } catch (e: IOException) {
-      assertThat(e).hasMessageThat().isEqualTo("Missing valid PNG header expected: [89504e470d0a1a0a] actual: [0001020304050607]")
+      assertThat(e).hasMessageThat()
+        .isEqualTo("Missing valid PNG header expected: [89504e470d0a1a0a] actual: [0001020304050607]")
     }
   }
 }

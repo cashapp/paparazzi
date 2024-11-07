@@ -72,10 +72,7 @@ internal class ClassPageRenderer(
     htmlWriter.endElement()
   }
 
-  private fun determineTableRow(
-    test: TestResult,
-    methodNameColumnExists: Boolean
-  ): List<String> =
+  private fun determineTableRow(test: TestResult, methodNameColumnExists: Boolean): List<String> =
     if (methodNameColumnExists) {
       listOf(
         test.displayName,
@@ -108,11 +105,7 @@ internal class ClassPageRenderer(
   }
 
   @Throws(IOException::class)
-  private fun renderTableRow(
-    writer: SimpleMarkupWriter,
-    test: TestResult,
-    rowCells: List<String>
-  ) {
+  private fun renderTableRow(writer: SimpleMarkupWriter, test: TestResult, rowCells: List<String>) {
     writer.startElement("tr")
     for (cell in rowCells) {
       writer
@@ -124,8 +117,7 @@ internal class ClassPageRenderer(
     writer.endElement()
   }
 
-  private fun methodNameColumnExists(): Boolean =
-    results.testResults.any { it.name != it.displayName }
+  private fun methodNameColumnExists(): Boolean = results.testResults.any { it.name != it.displayName }
 
   @Throws(IOException::class)
   override fun renderFailures(htmlWriter: SimpleHtmlWriter) {

@@ -32,11 +32,7 @@ internal class PackageTestResults(
     return addTest(classResults.addTest(testName, testDisplayName, duration)!!)
   }
 
-  fun addClass(
-    classId: Long,
-    className: String,
-    classDisplayName: String = className
-  ): ClassTestResults {
+  fun addClass(classId: Long, className: String, classDisplayName: String = className): ClassTestResults {
     var classResults = classes[className]
     if (classResults == null) {
       classResults = ClassTestResults(classId, className, classDisplayName, this)

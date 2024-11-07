@@ -54,10 +54,7 @@ internal abstract class InMemoryParser : KXmlParser() {
     return attribute.value
   }
 
-  override fun getAttributeValue(
-    namespace: String?,
-    name: String?
-  ): String? {
+  override fun getAttributeValue(namespace: String?, name: String?): String? {
     val tag = getCurrentNode() ?: return null
     return tag.attributes.find { it.name == name }?.value
   }

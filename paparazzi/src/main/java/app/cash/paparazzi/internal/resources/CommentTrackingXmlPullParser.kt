@@ -94,7 +94,10 @@ internal open class CommentTrackingXmlPullParser : KXmlParser() {
           // These section headers are always immediately followed by an <eat-comment>. Not all <eat-comment/> sections are
           // actually attribute headers, some are comments. We identify these by looking at the line length; category comments
           // are short, and descriptive comments are longer.
-          if (lastComment != null && lastComment!!.length <= ATTR_GROUP_MAX_CHARACTERS && !lastComment!!.startsWith("TODO:")) {
+          if (lastComment != null &&
+            lastComment!!.length <= ATTR_GROUP_MAX_CHARACTERS &&
+            !lastComment!!.startsWith("TODO:")
+          ) {
             var attrGroupComment = lastComment!!
             if (attrGroupComment.endsWith(".")) {
               // Strip the trailing period.

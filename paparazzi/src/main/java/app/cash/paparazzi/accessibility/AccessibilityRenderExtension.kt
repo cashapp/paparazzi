@@ -38,9 +38,7 @@ import app.cash.paparazzi.RenderExtension
 import com.android.internal.view.OneShotPreDrawListener
 
 public class AccessibilityRenderExtension : RenderExtension {
-  override fun renderView(
-    contentView: View
-  ): View {
+  override fun renderView(contentView: View): View {
     // WindowManager needed to access accessibility elements for views that draw to other windows.
     val windowManager = contentView.context.getSystemService(WindowManager::class.java)
 
@@ -80,9 +78,7 @@ public class AccessibilityRenderExtension : RenderExtension {
     }
   }
 
-  private fun View.processAccessibleChildren(
-    processElement: (AccessibilityElement) -> Unit
-  ) {
+  private fun View.processAccessibleChildren(processElement: (AccessibilityElement) -> Unit) {
     val accessibilityText = this.accessibilityText()
     if (isImportantForAccessibility && !accessibilityText.isNullOrBlank() && visibility == VISIBLE) {
       val bounds = Rect().also(::getBoundsOnScreen)

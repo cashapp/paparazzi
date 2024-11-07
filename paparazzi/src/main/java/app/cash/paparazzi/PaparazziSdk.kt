@@ -163,8 +163,7 @@ public class PaparazziSdk @JvmOverloads constructor(
     logger.assertNoErrors()
   }
 
-  public fun <V : View> inflate(@LayoutRes layoutId: Int): V =
-    layoutInflater.inflate(layoutId, null) as V
+  public fun <V : View> inflate(@LayoutRes layoutId: Int): V = layoutInflater.inflate(layoutId, null) as V
 
   public fun snapshot(composable: @Composable () -> Unit) {
     val hostView = ComposeView(context)
@@ -179,12 +178,7 @@ public class PaparazziSdk @JvmOverloads constructor(
   }
 
   @JvmOverloads
-  public fun gif(
-    view: View,
-    start: Long = 0L,
-    end: Long = 500L,
-    fps: Int = 30
-  ) {
+  public fun gif(view: View, start: Long = 0L, end: Long = 500L, fps: Int = 30) {
     // Add one to the frame count so we get the last frame. Otherwise a 1 second, 60 FPS animation
     // our 60th frame will be at time 983 ms, and we want our last frame to be 1,000 ms. This gets
     // us 61 frames for a 1 second animation, 121 frames for a 2 second animation, etc.
@@ -236,12 +230,7 @@ public class PaparazziSdk @JvmOverloads constructor(
     bridgeRenderSession = createBridgeSession(renderSession, renderSession.inflate())
   }
 
-  private fun takeSnapshots(
-    view: View,
-    startNanos: Long,
-    fps: Int,
-    frameCount: Int
-  ) {
+  private fun takeSnapshots(view: View, startNanos: Long, fps: Int, frameCount: Int) {
     val viewGroup = bridgeRenderSession.rootViews[0].viewObject as ViewGroup
     val modifiedView = renderExtensions.fold(view) { currentView, renderExtension ->
       renderExtension.renderView(currentView)
@@ -346,10 +335,7 @@ public class PaparazziSdk @JvmOverloads constructor(
     }
   }
 
-  private fun withTime(
-    timeNanos: Long,
-    block: () -> Unit
-  ) {
+  private fun withTime(timeNanos: Long, block: () -> Unit) {
     val frameNanos = timeNanos
 
     // Execute the block at the requested time.
@@ -384,10 +370,7 @@ public class PaparazziSdk @JvmOverloads constructor(
     return renderSession
   }
 
-  private fun createBridgeSession(
-    renderSession: RenderSessionImpl,
-    result: Result
-  ): BridgeRenderSession {
+  private fun createBridgeSession(renderSession: RenderSessionImpl, result: Result): BridgeRenderSession {
     try {
       val bridgeSessionClass = Class.forName("com.android.layoutlib.bridge.BridgeRenderSession")
       val constructor =
@@ -475,12 +458,7 @@ public class PaparazziSdk @JvmOverloads constructor(
     // See androidx.appcompat.app.AppCompatDelegateImpl#installViewFactory()
     if (layoutInflater.factory == null) {
       layoutInflater.factory2 = object : LayoutInflater.Factory2 {
-        override fun onCreateView(
-          parent: View?,
-          name: String,
-          context: Context,
-          attrs: AttributeSet
-        ): View? {
+        override fun onCreateView(parent: View?, name: String, context: Context, attrs: AttributeSet): View? {
           val appCompatViewInflaterClass =
             Class.forName("androidx.appcompat.app.AppCompatViewInflater")
 
@@ -513,11 +491,8 @@ public class PaparazziSdk @JvmOverloads constructor(
           ) as View?
         }
 
-        override fun onCreateView(
-          name: String,
-          context: Context,
-          attrs: AttributeSet
-        ): View? = onCreateView(null, name, context, attrs)
+        override fun onCreateView(name: String, context: Context, attrs: AttributeSet): View? =
+          onCreateView(null, name, context, attrs)
       }
     } else {
       if (!appCompatDelegateClass.isAssignableFrom(layoutInflater.factory2::class.java)) {
@@ -613,13 +588,14 @@ public class PaparazziSdk @JvmOverloads constructor(
       "androidx.activity.ViewTreeOnBackPressedDispatcherOwner"
     )
 
-    private fun contentRoot(renderingMode: RenderingMode) = """
+    private fun contentRoot(renderingMode: RenderingMode) =
+      """
         |<?xml version="1.0" encoding="utf-8"?>
         |<${if (hasComposeRuntime) "app.cash.paparazzi.internal.ComposeViewAdapter" else "FrameLayout"}
         |     xmlns:android="http://schemas.android.com/apk/res/android"
         |              android:layout_width="${if (renderingMode.horizAction == RenderingMode.SizeAction.SHRINK) "wrap_content" else "match_parent"}"
         |              android:layout_height="${if (renderingMode.vertAction == RenderingMode.SizeAction.SHRINK) "wrap_content" else "match_parent"}"/>
-    """.trimMargin()
+      """.trimMargin()
 
     private fun isPresentInClasspath(vararg classNames: String): Boolean {
       return try {

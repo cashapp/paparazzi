@@ -61,13 +61,10 @@ internal class ResourceFolderRepository(
   override val origin: Path
     get() = Paths.get(resourceDir.path)
 
-  override fun getResourceUrl(relativeResourcePath: String): String =
-    "$resourcePathPrefix$relativeResourcePath"
+  override fun getResourceUrl(relativeResourcePath: String): String = "$resourcePathPrefix$relativeResourcePath"
 
-  override fun getSourceFile(
-    relativeResourcePath: String,
-    forFileResource: Boolean
-  ): PathString = resourcePathBase.resolve(relativeResourcePath)
+  override fun getSourceFile(relativeResourcePath: String, forFileResource: Boolean): PathString =
+    resourcePathBase.resolve(relativeResourcePath)
 
   override fun getPackageName(): String? = namespace.packageName
 
@@ -91,10 +88,7 @@ internal class ResourceFolderRepository(
     return CONTINUE
   }
 
-  override fun getMap(
-    namespace: ResourceNamespace,
-    resourceType: ResourceType
-  ): ListMultimap<String, ResourceItem>? =
+  override fun getMap(namespace: ResourceNamespace, resourceType: ResourceType): ListMultimap<String, ResourceItem>? =
     if (namespace != this.namespace) null else resourceTable[resourceType]
 
   private fun getOrCreateMap(type: ResourceType): ListMultimap<String, ResourceItem> =
@@ -187,11 +181,7 @@ internal class ResourceFolderRepository(
       }
     }
 
-    private fun loadResourceFile(
-      file: PathString,
-      folderInfo: FolderInfo,
-      configuration: RepositoryConfiguration
-    ) {
+    private fun loadResourceFile(file: PathString, folderInfo: FolderInfo, configuration: RepositoryConfiguration) {
       if (folderInfo.resourceType == null) {
         if (isXmlFile(file)) {
           parseValueResourceFile(file, configuration)
@@ -212,8 +202,7 @@ internal class ResourceFolderRepository(
     private fun getOrCreateMap(resourceType: ResourceType): ListMultimap<String, ResourceItem> =
       resources.computeIfAbsent(resourceType) { LinkedListMultimap.create<String, ResourceItem>() }
 
-    private fun getFile(file: PathString): File? =
-      if (file == lastPathString) lastFile else file.toFile()
+    private fun getFile(file: PathString): File? = if (file == lastPathString) lastFile else file.toFile()
 
     override fun addResourceItem(item: BasicResourceItem, repository: ResourceFolderRepository) {
       if (item is BasicValueResourceItemBase) {

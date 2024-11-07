@@ -54,8 +54,7 @@ internal open class BasicFileResourceItem(
    */
   override fun getSource(): PathString = repository.getSourceFile(relativePath, true)
 
-  override fun getOriginalSource(): PathString? =
-    repository.getOriginalSourceFile(relativePath, true)
+  override fun getOriginalSource(): PathString? = repository.getOriginalSourceFile(relativePath, true)
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true

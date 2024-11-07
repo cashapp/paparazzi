@@ -48,6 +48,7 @@ class FrameworkResourceRepositoryTest {
   }
 
   @Test
+  @Suppress("ktlint:standard:max-line-length")
   fun useCompiled9Patches() {
     val repository = FrameworkResourceRepository.create(
       resourceDirectoryOrFile = getFrameworkResJar(),
@@ -60,6 +61,7 @@ class FrameworkResourceRepositoryTest {
   }
 
   @Test
+  @Suppress("ktlint:standard:max-line-length")
   fun notUseCompiled9Patches() {
     val repository = FrameworkResourceRepository.create(
       resourceDirectoryOrFile = getFrameworkResJar(),
@@ -71,14 +73,10 @@ class FrameworkResourceRepositoryTest {
     assertThat(resourceUrl).isEqualTo("jar://src/test/resources/framework/framework_res.jar!/res/drawable-hdpi/textfield_search_activated_mtrl_alpha.9.png")
   }
 
-  private fun getFrameworkResJar(): Path =
-    Paths.get("src/test/resources/framework/framework_res.jar")
+  private fun getFrameworkResJar(): Path = Paths.get("src/test/resources/framework/framework_res.jar")
 
   companion object {
-    private fun checkLanguages(
-      repository: FrameworkResourceRepository,
-      languages: Set<String>?
-    ) {
+    private fun checkLanguages(repository: FrameworkResourceRepository, languages: Set<String>?) {
       if (languages == null) {
         assertThat(repository.languageGroups.size).isAtLeast(75)
       } else {
@@ -164,10 +162,7 @@ class FrameworkResourceRepositoryTest {
     assertThat(attrValue.getValueDescription("maps")).contains("navigation")
   }
 
-  private fun getAttrValue(
-    repository: ResourceRepository,
-    attrName: String
-  ): AttrResourceValue {
+  private fun getAttrValue(repository: ResourceRepository, attrName: String): AttrResourceValue {
     val attrItem = repository.getResources(ResourceNamespace.ANDROID, ATTR, attrName)[0]
     return attrItem.resourceValue as AttrResourceValue
   }

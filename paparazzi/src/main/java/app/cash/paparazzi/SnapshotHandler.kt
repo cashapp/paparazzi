@@ -19,11 +19,7 @@ import java.awt.image.BufferedImage
 import java.io.Closeable
 
 public interface SnapshotHandler : Closeable {
-  public fun newFrameHandler(
-    snapshot: Snapshot,
-    frameCount: Int,
-    fps: Int
-  ): FrameHandler
+  public fun newFrameHandler(snapshot: Snapshot, frameCount: Int, fps: Int): FrameHandler
 
   public interface FrameHandler : Closeable {
     public fun handle(image: BufferedImage)

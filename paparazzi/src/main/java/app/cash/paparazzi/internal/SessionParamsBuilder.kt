@@ -53,10 +53,7 @@ internal data class SessionParamsBuilder(
   private val decor: Boolean = true,
   private val supportsRtl: Boolean = false
 ) {
-  fun withTheme(
-    themeName: String,
-    isProjectTheme: Boolean
-  ): SessionParamsBuilder {
+  fun withTheme(themeName: String, isProjectTheme: Boolean): SessionParamsBuilder {
     return copy(themeName = themeName, isProjectTheme = isProjectTheme)
   }
 
@@ -69,10 +66,7 @@ internal data class SessionParamsBuilder(
     }
   }
 
-  fun plusFlag(
-    flag: SessionParams.Key<*>,
-    value: Any
-  ) = copy(flags = flags + (flag to value))
+  fun plusFlag(flag: SessionParams.Key<*>, value: Any) = copy(flags = flags + (flag to value))
 
   fun build(): SessionParams {
     require(themeName != null)

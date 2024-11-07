@@ -38,10 +38,7 @@ internal class PaparazziAssetRepository(
   override fun isSupported(): Boolean = true
 
   @Throws(IOException::class)
-  override fun openAsset(
-    path: String,
-    mode: Int
-  ): InputStream? {
+  override fun openAsset(path: String, mode: Int): InputStream? {
     for (assetDir in assetDirs) {
       val assetFile = open("$assetDir/$path")
       if (assetFile != null) {
@@ -52,9 +49,5 @@ internal class PaparazziAssetRepository(
   }
 
   @Throws(IOException::class)
-  override fun openNonAsset(
-    cookie: Int,
-    path: String,
-    mode: Int
-  ): InputStream? = open(path)
+  override fun openNonAsset(cookie: Int, path: String, mode: Int): InputStream? = open(path)
 }

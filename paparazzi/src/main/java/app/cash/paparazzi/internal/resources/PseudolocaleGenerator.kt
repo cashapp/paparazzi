@@ -35,10 +35,18 @@ internal fun Table<ResourceNamespace, ResourceType, ResourceValueMap>.pseudoloca
 
         val pseudoLocaleSourceFile = value.sourceFile.forLocale(localeQualifier)
         resourceValues[key] = when (value.resourceType) {
-          ResourceType.STRING -> pseudolocalizeString(value as BasicValueResourceItem, pseudoLocaleSourceFile, method)
-          ResourceType.PLURALS -> pseudolocalizePlural(value as BasicPluralsResourceItem, pseudoLocaleSourceFile, method)
-          ResourceType.ARRAY -> pseudolocalizeArray(value as BasicArrayResourceItem, pseudoLocaleSourceFile, method)
-          else -> return@forEach
+          ResourceType.STRING -> {
+            pseudolocalizeString(value as BasicValueResourceItem, pseudoLocaleSourceFile, method)
+          }
+          ResourceType.PLURALS -> {
+            pseudolocalizePlural(value as BasicPluralsResourceItem, pseudoLocaleSourceFile, method)
+          }
+          ResourceType.ARRAY -> {
+            pseudolocalizeArray(value as BasicArrayResourceItem, pseudoLocaleSourceFile, method)
+          }
+          else -> {
+            return@forEach
+          }
         }
       }
     }
@@ -53,7 +61,8 @@ internal fun Table<ResourceNamespace, ResourceType, ResourceValueMap>.pseudoloca
  * TODO: fix this
  */
 private fun BasicValueResourceItemBase.isPseudolocalizable(): Boolean =
-  sourceFile.configuration.folderConfiguration.localeQualifier == null && sourceFile.relativePath?.contains(DO_NOT_TRANSLATE) != true
+  sourceFile.configuration.folderConfiguration.localeQualifier == null &&
+    sourceFile.relativePath?.contains(DO_NOT_TRANSLATE) != true
 
 private fun ResourceSourceFile.forLocale(localeQualifier: LocaleQualifier): ResourceSourceFile {
   val repositoryConfiguration = configCache.getOrPut(this to localeQualifier) {

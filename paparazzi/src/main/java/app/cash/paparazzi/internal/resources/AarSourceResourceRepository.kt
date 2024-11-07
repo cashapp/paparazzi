@@ -82,15 +82,11 @@ internal open class AarSourceResourceRepository(
 
   override fun getPackageName(): String? = namespace.packageName ?: manifestPackageName.value
 
-  override fun getSourceFile(
-    relativeResourcePath: String,
-    forFileResource: Boolean
-  ): PathString {
+  override fun getSourceFile(relativeResourcePath: String, forFileResource: Boolean): PathString {
     return PathString(sourceFileProtocol, resourcePathPrefix + relativeResourcePath)
   }
 
-  override fun getResourceUrl(relativeResourcePath: String): String =
-    "$resourceUrlPrefix$relativeResourcePath"
+  override fun getResourceUrl(relativeResourcePath: String): String = "$resourceUrlPrefix$relativeResourcePath"
 
   /**
    * Loads contents of the repository from the given input stream.
@@ -215,10 +211,8 @@ internal open class AarSourceResourceRepository(
       }
     }
 
-    override fun addResourceItem(
-      item: BasicResourceItem,
-      repository: AarSourceResourceRepository
-    ) = repository.addResourceItem(item)
+    override fun addResourceItem(item: BasicResourceItem, repository: AarSourceResourceRepository) =
+      repository.addResourceItem(item)
 
     @Throws(IOException::class)
     private fun readPublicResourceNames(reader: BufferedReader) {

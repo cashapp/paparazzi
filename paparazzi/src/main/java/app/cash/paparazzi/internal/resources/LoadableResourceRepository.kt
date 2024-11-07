@@ -58,10 +58,7 @@ internal interface LoadableResourceRepository : SingleNamespaceResourceRepositor
    * @param forFileResource true is the resource is a file resource, false if it is a value resource
    * @return the PathString to be returned by the [BasicResourceItem.getOriginalSource] method
    */
-  fun getOriginalSourceFile(
-    relativeResourcePath: String,
-    forFileResource: Boolean
-  ): PathString? {
+  fun getOriginalSourceFile(relativeResourcePath: String, forFileResource: Boolean): PathString? {
     return getSourceFile(relativeResourcePath, forFileResource)
   }
 

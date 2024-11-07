@@ -74,6 +74,7 @@ class PseudolocaleGeneratorTest {
   }
 
   @Test
+  @Suppress("ktlint:standard:max-line-length")
   fun bidi() {
     val table = createResourceTable()
     table.pseudolocalizeIfNeeded(LocaleQualifier.getQualifier("ar-rXB"))
@@ -176,7 +177,9 @@ class PseudolocaleGeneratorTest {
   }
 
   private fun createResourceTable(): Table<ResourceNamespace, ResourceType, ResourceValueMap> {
-    val table = Tables.newCustomTable(KnownNamespacesMap<Map<ResourceType, ResourceValueMap>>()) { EnumMap(ResourceType::class.java) }
+    val table = Tables.newCustomTable(KnownNamespacesMap<Map<ResourceType, ResourceValueMap>>()) {
+      EnumMap(ResourceType::class.java)
+    }
     repository.allResources.groupBy { it.type }.forEach { (type, items) ->
       table.put(
         ResourceNamespace.TODO(),

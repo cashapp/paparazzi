@@ -39,9 +39,7 @@ class InvalidCharsTest {
   }
 
   @Test
-  fun badValues(
-    @TestParameter(valuesProvider = MathOperatorProvider::class) char: Char
-  ) {
+  fun badValues(@TestParameter(valuesProvider = MathOperatorProvider::class) char: Char) {
     paparazzi.snapshot {
       Text(
         text = char.toString(),
@@ -51,9 +49,7 @@ class InvalidCharsTest {
   }
 
   @Test
-  fun goodValues(
-    @TestParameter operation: MathOperation
-  ) {
+  fun goodValues(@TestParameter operation: MathOperation) {
     paparazzi.snapshot {
       Text(
         text = operation.operator.toString(),
@@ -63,8 +59,7 @@ class InvalidCharsTest {
   }
 
   object MathOperatorProvider : TestParameterValuesProvider() {
-    override fun provideValues(context: Context): List<Char> =
-      listOf('+', '-', '*', '/')
+    override fun provideValues(context: Context): List<Char> = listOf('+', '-', '*', '/')
   }
 
   enum class MathOperation(val operator: Char) {

@@ -35,11 +35,7 @@ public class SnapshotVerifier @JvmOverloads constructor(
     videosDirectory.mkdirs()
   }
 
-  override fun newFrameHandler(
-    snapshot: Snapshot,
-    frameCount: Int,
-    fps: Int
-  ): FrameHandler {
+  override fun newFrameHandler(snapshot: Snapshot, frameCount: Int, fps: Int): FrameHandler {
     return object : FrameHandler {
       val snapshotDir = if (fps == -1) imagesDirectory else videosDirectory
       val expected = File(snapshotDir, snapshot.toFileName(extension = "png"))

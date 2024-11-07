@@ -24,8 +24,7 @@ import org.gradle.api.artifacts.type.ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIB
 internal fun Configuration.artifactsFor(
   attrValue: String,
   componentFilter: (ComponentIdentifier) -> Boolean = { true }
-): ArtifactCollection =
-  artifactViewFor(attrValue, componentFilter).artifacts
+): ArtifactCollection = artifactViewFor(attrValue, componentFilter).artifacts
 
 internal fun Configuration.artifactViewFor(
   attrValue: String,

@@ -15,16 +15,10 @@ internal object InterceptorRegistrar {
 
   private val methodInterceptors = mutableListOf<() -> Unit>()
 
-  fun addMethodInterceptor(
-    receiverClass: String,
-    methodName: String,
-    interceptor: Class<*>
-  ) = addMethodInterceptors(receiverClass, setOf(methodName to interceptor))
+  fun addMethodInterceptor(receiverClass: String, methodName: String, interceptor: Class<*>) =
+    addMethodInterceptors(receiverClass, setOf(methodName to interceptor))
 
-  fun addMethodInterceptors(
-    receiverClass: String,
-    methodNamesToInterceptors: Set<Pair<String, Class<*>>>
-  ) {
+  fun addMethodInterceptors(receiverClass: String, methodNamesToInterceptors: Set<Pair<String, Class<*>>>) {
     val typeResolution = systemTypePool.describe(receiverClass)
     if (!typeResolution.isResolved) return
 

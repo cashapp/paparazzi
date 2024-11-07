@@ -61,9 +61,7 @@ internal class FrameworkResourceRepository private constructor(
    * @return the new resource repository with additional resources, or this resource repository if it already contained
    * all requested languages
    */
-  fun loadMissingLanguages(
-    languagesToLoad: Set<String>?
-  ): FrameworkResourceRepository {
+  fun loadMissingLanguages(languagesToLoad: Set<String>?): FrameworkResourceRepository {
     val languageGroups = if (languagesToLoad == null) null else getLanguageGroups(languagesToLoad)
     if (languageGroups != null && this.languageGroups.containsAll(languageGroups)) {
       // The repository already contains all requested languages.
@@ -280,10 +278,8 @@ internal class FrameworkResourceRepository private constructor(
       return false
     }
 
-    override fun addResourceItem(
-      item: BasicResourceItem,
-      repository: FrameworkResourceRepository
-    ) = repository.addResourceItem(item)
+    override fun addResourceItem(item: BasicResourceItem, repository: FrameworkResourceRepository) =
+      repository.addResourceItem(item)
 
     override fun getKeyForVisibilityLookup(resourceName: String): String {
       // This class obtains names of public resources from public.xml where all resource names are preserved
@@ -385,8 +381,7 @@ internal class FrameworkResourceRepository private constructor(
      * @param language the original language
      * @return the language representing the corresponding group of languages
      */
-    private fun getLanguageGroup(language: String): String =
-      LANGUAGE_TO_GROUP.getOrDefault(language, language)
+    private fun getLanguageGroup(language: String): String = LANGUAGE_TO_GROUP.getOrDefault(language, language)
 
     private fun getLanguageGroups(languages: Set<String>): Set<String> {
       val result = TreeSet<String>()

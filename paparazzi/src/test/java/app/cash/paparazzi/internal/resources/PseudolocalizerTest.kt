@@ -50,11 +50,7 @@ class PseudolocalizerTest() {
     Truth.assertThat(result).isEqualTo(expected)
   }
 
-  private fun compoundTest(
-    expected: String,
-    method: Pseudolocalizer.Method,
-    vararg inputs: String
-  ) {
+  private fun compoundTest(expected: String, method: Pseudolocalizer.Method, vararg inputs: String) {
     val localizer = Pseudolocalizer(method)
     val result = StringBuilder().append(localizer.start())
     for (input in inputs) {

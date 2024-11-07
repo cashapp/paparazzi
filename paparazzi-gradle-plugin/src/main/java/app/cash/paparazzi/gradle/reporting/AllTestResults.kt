@@ -32,11 +32,7 @@ internal class AllTestResults : CompositeTestResults(null) {
     )
   }
 
-  fun addTestClass(
-    classId: Long,
-    className: String,
-    classDisplayName: String = className
-  ): ClassTestResults {
+  fun addTestClass(classId: Long, className: String, classDisplayName: String = className): ClassTestResults {
     return addPackageForClass(className).addClass(classId, className, classDisplayName)
   }
 

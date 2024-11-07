@@ -89,10 +89,7 @@ internal class BasicStyleableResourceItem(
      * If such attr definition belongs to this resource repository and has the same description and group name as
      * the attr reference, returns the attr definition. Otherwise returns the attr reference passed as the parameter.
      */
-    fun getCanonicalAttr(
-      attr: AttrResourceValue,
-      repository: ResourceRepository
-    ): AttrResourceValue {
+    fun getCanonicalAttr(attr: AttrResourceValue, repository: ResourceRepository): AttrResourceValue {
       if (attr.formats.isEmpty()) {
         val items = repository.getResources(attr.namespace, ResourceType.ATTR, attr.name)
         val item = items.filterIsInstance<AttrResourceValue>()

@@ -9,7 +9,8 @@ internal const val PACKAGE_NAME = "app.cash.paparazzi.annotations"
 
 internal fun KSAnnotation.isPaparazzi() = qualifiedName() == "app.cash.paparazzi.annotations.Paparazzi"
 internal fun KSAnnotation.isPreview() = qualifiedName() == "androidx.compose.ui.tooling.preview.Preview"
-internal fun KSAnnotation.isPreviewParameter() = qualifiedName() == "androidx.compose.ui.tooling.preview.PreviewParameter"
+internal fun KSAnnotation.isPreviewParameter() =
+  qualifiedName() == "androidx.compose.ui.tooling.preview.PreviewParameter"
 
 internal fun KSAnnotation.qualifiedName() = declaration().qualifiedName?.asString() ?: ""
 internal fun KSAnnotation.declaration() = annotationType.resolve().declaration

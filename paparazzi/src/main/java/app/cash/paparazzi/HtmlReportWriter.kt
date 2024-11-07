@@ -84,11 +84,7 @@ public class HtmlReportWriter @JvmOverloads constructor(
     writeIndexJs()
   }
 
-  override fun newFrameHandler(
-    snapshot: Snapshot,
-    frameCount: Int,
-    fps: Int
-  ): FrameHandler {
+  override fun newFrameHandler(snapshot: Snapshot, frameCount: Int, fps: Int): FrameHandler {
     return object : FrameHandler {
       val snapshotDir = if (fps == -1) imagesDirectory else videosDirectory
       val goldenDir = if (fps == -1) goldenImagesDirectory else goldenVideosDirectory

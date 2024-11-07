@@ -236,7 +236,8 @@ class ApngWriterTest {
         val (idat, idatData) = buffer.assertNextChunk()
         assertThat(idat).isEqualTo(IDAT)
         val decompress = idatData.decompress()
-        assertThat(decompress.size).isEqualTo((MAX_SIZE * MAX_SIZE * 4L) + MAX_SIZE) // 4 Bytes Per Pixel + 1 Byte Per Row
+        assertThat(decompress.size)
+          .isEqualTo((MAX_SIZE * MAX_SIZE * 4L) + MAX_SIZE) // 4 Bytes Per Pixel + 1 Byte Per Row
       }
     }
   }

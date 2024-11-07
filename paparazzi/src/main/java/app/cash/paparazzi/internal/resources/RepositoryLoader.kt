@@ -137,9 +137,12 @@ internal abstract class RepositoryLoader<T : LoadableResourceRepository>(
 
   private val publicResources: MutableMap<ResourceType, MutableSet<String>> =
     EnumMap(ResourceType::class.java)
-  private val attrs: ListMultimap<String, BasicAttrResourceItem> = ArrayListMultimap.create<String, BasicAttrResourceItem>()
-  private val attrCandidates: ListMultimap<String, BasicAttrResourceItem> = ArrayListMultimap.create<String, BasicAttrResourceItem>()
-  private val styleables: ListMultimap<String, BasicStyleableResourceItem> = ArrayListMultimap.create<String, BasicStyleableResourceItem>()
+  private val attrs: ListMultimap<String, BasicAttrResourceItem> =
+    ArrayListMultimap.create<String, BasicAttrResourceItem>()
+  private val attrCandidates: ListMultimap<String, BasicAttrResourceItem> =
+    ArrayListMultimap.create<String, BasicAttrResourceItem>()
+  private val styleables: ListMultimap<String, BasicStyleableResourceItem> =
+    ArrayListMultimap.create<String, BasicStyleableResourceItem>()
   protected var defaultVisibility = ResourceVisibility.PRIVATE
 
   /** Cache of FolderConfiguration instances, keyed by qualifier strings (see [FolderConfiguration.getQualifierString]).  */
@@ -209,11 +212,7 @@ internal abstract class RepositoryLoader<T : LoadableResourceRepository>(
     finishLoading(repository)
   }
 
-  protected fun loadResourceFile(
-    file: PathString,
-    repository: T,
-    shouldParseResourceIds: Boolean
-  ) {
+  protected fun loadResourceFile(file: PathString, repository: T, shouldParseResourceIds: Boolean) {
     val folderName = file.parentFileName
     if (folderName != null) {
       val folderInfo = FolderInfo.create(folderName, folderConfigCache)
@@ -250,14 +249,12 @@ internal abstract class RepositoryLoader<T : LoadableResourceRepository>(
    */
   protected open fun loadIdsFromRTxt() = false
 
-  override fun isIgnored(
-    fileOrDirectory: Path,
-    attrs: BasicFileAttributes
-  ) = if (fileOrDirectory == resourceDirectoryOrFile) {
-    false
-  } else {
-    fileFilter.isIgnored(fileOrDirectory.toString(), attrs.isDirectory)
-  }
+  override fun isIgnored(fileOrDirectory: Path, attrs: BasicFileAttributes) =
+    if (fileOrDirectory == resourceDirectoryOrFile) {
+      false
+    } else {
+      fileFilter.isIgnored(fileOrDirectory.toString(), attrs.isDirectory)
+    }
 
   protected open fun loadPublicResourceNames() {
     // todo load public resources
@@ -284,10 +281,7 @@ internal abstract class RepositoryLoader<T : LoadableResourceRepository>(
     return fileCollector.resourceFiles
   }
 
-  protected fun getConfiguration(
-    repository: T,
-    folderConfiguration: FolderConfiguration
-  ): RepositoryConfiguration {
+  protected fun getConfiguration(repository: T, folderConfiguration: FolderConfiguration): RepositoryConfiguration {
     var repositoryConfiguration = configCache[folderConfiguration]
     if (repositoryConfiguration != null) {
       return repositoryConfiguration
@@ -325,10 +319,7 @@ internal abstract class RepositoryLoader<T : LoadableResourceRepository>(
 
   protected abstract fun addResourceItem(item: BasicResourceItem, repository: T)
 
-  protected fun parseValueResourceFile(
-    file: PathString,
-    configuration: RepositoryConfiguration
-  ) {
+  protected fun parseValueResourceFile(file: PathString, configuration: RepositoryConfiguration) {
     try {
       getInputStream(file).use { stream ->
         val sourceFile = createResourceSourceFile(file, configuration)
@@ -410,10 +401,7 @@ internal abstract class RepositoryLoader<T : LoadableResourceRepository>(
     valueFileResources.clear()
   }
 
-  protected fun parseIdGeneratingResourceFile(
-    file: PathString,
-    configuration: RepositoryConfiguration
-  ) {
+  protected fun parseIdGeneratingResourceFile(file: PathString, configuration: RepositoryConfiguration) {
     try {
       getInputStream(file).use { stream ->
         val sourceFile = createResourceSourceFile(file, configuration)
@@ -463,10 +451,7 @@ internal abstract class RepositoryLoader<T : LoadableResourceRepository>(
     }
   }
 
-  protected fun addIdResourceItem(
-    resourceName: String,
-    sourceFile: ResourceSourceFile
-  ) {
+  protected fun addIdResourceItem(resourceName: String, sourceFile: ResourceSourceFile) {
     val visibility = getVisibility(ID, resourceName)
     val item = BasicValueResourceItem(ID, resourceName, sourceFile, visibility, null)
     // Don't create duplicate ID resources.
@@ -540,10 +525,7 @@ internal abstract class RepositoryLoader<T : LoadableResourceRepository>(
     XmlPullParserException::class,
     XmlSyntaxException::class
   )
-  private fun createArrayItem(
-    name: String,
-    sourceFile: ResourceSourceFile
-  ): BasicArrayResourceItem {
+  private fun createArrayItem(name: String, sourceFile: ResourceSourceFile): BasicArrayResourceItem {
     val indexValue = parser.getAttributeValue(TOOLS_URI, ATTR_INDEX)
     val namespaceResolver = parser.namespaceResolver
     val values = mutableListOf<String>()
@@ -556,14 +538,16 @@ internal abstract class RepositoryLoader<T : LoadableResourceRepository>(
         Integer.parseUnsignedInt(indexValue)
       } catch (e: NumberFormatException) {
         throw XmlSyntaxException(
-          "The value of the " + namespaceResolver.prefixToUri(TOOLS_URI) + ':' + ATTR_INDEX + " attribute is not a valid number.",
+          "The value of the " + namespaceResolver.prefixToUri(TOOLS_URI) + ':' + ATTR_INDEX +
+            " attribute is not a valid number.",
           parser,
           getDisplayName(sourceFile)
         )
       }
       if (index >= values.size) {
         throw XmlSyntaxException(
-          "The value of the " + namespaceResolver.prefixToUri(TOOLS_URI) + ':' + ATTR_INDEX + " attribute is out of bounds.",
+          "The value of the " + namespaceResolver.prefixToUri(TOOLS_URI) + ':' + ATTR_INDEX +
+            " attribute is out of bounds.",
           parser,
           getDisplayName(sourceFile)
         )
@@ -580,10 +564,7 @@ internal abstract class RepositoryLoader<T : LoadableResourceRepository>(
     XmlPullParserException::class,
     XmlSyntaxException::class
   )
-  private fun createAttrItem(
-    name: String,
-    sourceFile: ResourceSourceFile
-  ): BasicAttrResourceItem {
+  private fun createAttrItem(name: String, sourceFile: ResourceSourceFile): BasicAttrResourceItem {
     val namespaceResolver = parser.namespaceResolver
     val attrNamespace: ResourceNamespace?
     urlParser.parseResourceUrl(name)
@@ -650,7 +631,9 @@ internal abstract class RepositoryLoader<T : LoadableResourceRepository>(
       val visibility = getVisibility(ATTR, name)
       BasicAttrResourceItem(name, sourceFile, visibility, description, groupName, formats, valueMap, descriptionMap)
     } else {
-      BasicForeignAttrResourceItem(attrNamespace, name, sourceFile, description, groupName, formats, valueMap, descriptionMap)
+      BasicForeignAttrResourceItem(
+        attrNamespace, name, sourceFile, description, groupName, formats, valueMap, descriptionMap
+      )
     }
 
     item.namespaceResolver = namespaceResolver
@@ -662,10 +645,7 @@ internal abstract class RepositoryLoader<T : LoadableResourceRepository>(
     XmlPullParserException::class,
     XmlSyntaxException::class
   )
-  private fun createPluralsItem(
-    name: String,
-    sourceFile: ResourceSourceFile
-  ): BasicPluralsResourceItem {
+  private fun createPluralsItem(name: String, sourceFile: ResourceSourceFile): BasicPluralsResourceItem {
     val defaultQuantity = parser.getAttributeValue(TOOLS_URI, ATTR_QUANTITY)
     val namespaceResolver = parser.namespaceResolver
     val values = EnumMap<Arity, String>(Arity::class.java)
@@ -718,10 +698,7 @@ internal abstract class RepositoryLoader<T : LoadableResourceRepository>(
   }
 
   @Throws(IOException::class, XmlPullParserException::class)
-  private fun createStyleItem(
-    name: String,
-    sourceFile: ResourceSourceFile
-  ): BasicStyleResourceItem {
+  private fun createStyleItem(name: String, sourceFile: ResourceSourceFile): BasicStyleResourceItem {
     val namespaceResolver = parser.namespaceResolver
     var parentStyle = parser.getAttributeValue(null, ATTR_PARENT)
     if (parentStyle != null && parentStyle.isNotEmpty()) {
@@ -746,10 +723,7 @@ internal abstract class RepositoryLoader<T : LoadableResourceRepository>(
   }
 
   @Throws(IOException::class, XmlPullParserException::class)
-  private fun createStyleableItem(
-    name: String,
-    sourceFile: ResourceSourceFile
-  ): BasicStyleableResourceItem {
+  private fun createStyleableItem(name: String, sourceFile: ResourceSourceFile): BasicStyleableResourceItem {
     val namespaceResolver = parser.namespaceResolver
     val attrs = mutableListOf<AttrResourceValue>()
     forSubTags(TAG_ATTR) {
@@ -803,7 +777,16 @@ internal abstract class RepositoryLoader<T : LoadableResourceRepository>(
   private fun addAttrWithAdjustedFormats(attr: BasicAttrResourceItem) {
     var attr = attr
     if (attr.formats.isEmpty()) {
-      attr = BasicAttrResourceItem(attr.name, attr.sourceFile, attr.visibility, attr.description, attr.groupName, DEFAULT_ATTR_FORMATS, emptyMap(), emptyMap())
+      attr = BasicAttrResourceItem(
+        name = attr.name,
+        sourceFile = attr.sourceFile,
+        visibility = attr.visibility,
+        description = attr.description,
+        groupName = attr.groupName,
+        formats = DEFAULT_ATTR_FORMATS,
+        valueMap = emptyMap(),
+        valueDescriptionMap = emptyMap()
+      )
     }
     addResourceItem(attr)
   }
@@ -829,10 +812,7 @@ internal abstract class RepositoryLoader<T : LoadableResourceRepository>(
   }
 
   @Throws(XmlSyntaxException::class)
-  private fun getResourceType(
-    tagName: String,
-    file: PathString
-  ): ResourceType? {
+  private fun getResourceType(tagName: String, file: PathString): ResourceType? {
     var type = ResourceType.fromXmlTagName(tagName)
 
     if (type == null) {
@@ -902,11 +882,7 @@ internal abstract class RepositoryLoader<T : LoadableResourceRepository>(
   }
 
   @Throws(XmlSyntaxException::class)
-  private fun validateResourceName(
-    resourceName: String,
-    resourceType: ResourceType,
-    file: PathString
-  ) {
+  private fun validateResourceName(resourceName: String, resourceType: ResourceType, file: PathString) {
     val error = ValueResourceNameValidator.getErrorText(resourceName, resourceType)
     if (error != null) {
       throw XmlSyntaxException(error, parser, file.nativePath)
@@ -921,10 +897,7 @@ internal abstract class RepositoryLoader<T : LoadableResourceRepository>(
     return getDisplayName(PathString(relativePath))
   }
 
-  protected fun getVisibility(
-    resourceType: ResourceType,
-    resourceName: String
-  ): ResourceVisibility {
+  protected fun getVisibility(resourceType: ResourceType, resourceName: String): ResourceVisibility {
     val names = publicResources[resourceType]
     return if (names?.contains(getKeyForVisibilityLookup(resourceName)) == true) {
       ResourceVisibility.PUBLIC
@@ -975,10 +948,7 @@ internal abstract class RepositoryLoader<T : LoadableResourceRepository>(
        * @param folderConfigCache the cache of FolderConfiguration objects keyed by qualifier strings
        * @return the FolderInfo object, or null if folderName is not a valid name of a resource folder
        */
-      fun create(
-        folderName: String,
-        folderConfigCache: MutableMap<String, FolderConfiguration>
-      ): FolderInfo? {
+      fun create(folderName: String, folderConfigCache: MutableMap<String, FolderConfiguration>): FolderInfo? {
         val folderType =
           ResourceFolderType.getFolderType(folderName) ?: return null
         val qualifier = FolderConfiguration.getQualifier(folderName)
@@ -1008,19 +978,14 @@ internal abstract class RepositoryLoader<T : LoadableResourceRepository>(
     val resourceFiles = mutableListOf<PathString>()
     val ioErrors = mutableListOf<IOException>()
 
-    override fun preVisitDirectory(
-      dir: Path,
-      attrs: BasicFileAttributes
-    ) = if (fileFilter.isIgnored(dir, attrs)) {
-      FileVisitResult.SKIP_SUBTREE
-    } else {
-      FileVisitResult.CONTINUE
-    }
+    override fun preVisitDirectory(dir: Path, attrs: BasicFileAttributes) =
+      if (fileFilter.isIgnored(dir, attrs)) {
+        FileVisitResult.SKIP_SUBTREE
+      } else {
+        FileVisitResult.CONTINUE
+      }
 
-    override fun visitFile(
-      file: Path,
-      attrs: BasicFileAttributes
-    ): FileVisitResult {
+    override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
       if (fileFilter.isIgnored(file, attrs)) {
         return FileVisitResult.SKIP_SUBTREE
       }
@@ -1033,10 +998,7 @@ internal abstract class RepositoryLoader<T : LoadableResourceRepository>(
       return FileVisitResult.CONTINUE
     }
 
-    override fun postVisitDirectory(
-      dir: Path,
-      exc: IOException?
-    ) = FileVisitResult.CONTINUE
+    override fun postVisitDirectory(dir: Path, exc: IOException?) = FileVisitResult.CONTINUE
   }
 
   private class XmlTextExtractor {
@@ -1139,10 +1101,7 @@ internal abstract class RepositoryLoader<T : LoadableResourceRepository>(
 
     private fun isXmlFile(filename: String) = SdkUtils.endsWithIgnoreCase(filename, DOT_XML)
 
-    private fun addAttr(
-      attr: BasicAttrResourceItem,
-      map: ListMultimap<String, BasicAttrResourceItem>
-    ) {
+    private fun addAttr(attr: BasicAttrResourceItem, map: ListMultimap<String, BasicAttrResourceItem>) {
       val attrs = map[attr.name]
       val i = findResourceWithSameNameAndConfiguration(attr, attrs)
       if (i >= 0) {
@@ -1159,7 +1118,9 @@ internal abstract class RepositoryLoader<T : LoadableResourceRepository>(
             } else if (existing.formats.containsAll(attr.formats)) {
               attr.formats = existing.formats
             } else {
-              val formats: Set<AttributeFormat> = EnumSet.copyOf(attr.formats).apply { addAll(existing.formats) }.toSet()
+              val formats: Set<AttributeFormat> = EnumSet.copyOf(attr.formats).apply {
+                addAll(existing.formats)
+              }.toSet()
               attr.formats = formats
               existing.formats = formats
             }
@@ -1222,10 +1183,8 @@ internal abstract class RepositoryLoader<T : LoadableResourceRepository>(
       return findResourceWithSameNameAndConfiguration(resource, items) >= 0
     }
 
-    private fun findResourceWithSameNameAndConfiguration(
-      resource: ResourceItem,
-      items: List<ResourceItem>
-    ): Int = items.indexOfFirst { it.configuration == resource.configuration }
+    private fun findResourceWithSameNameAndConfiguration(resource: ResourceItem, items: List<ResourceItem>): Int =
+      items.indexOfFirst { it.configuration == resource.configuration }
 
     private fun isZipArchive(resourceDirectoryOrFile: Path): Boolean {
       val filename = resourceDirectoryOrFile.fileName.toString()
