@@ -52,8 +52,6 @@ import app.cash.paparazzi.internal.PaparazziSavedStateRegistryOwner
 import app.cash.paparazzi.internal.Renderer
 import app.cash.paparazzi.internal.SessionParamsBuilder
 import app.cash.paparazzi.internal.interceptors.EditModeInterceptor
-import app.cash.paparazzi.internal.interceptors.IInputMethodManagerInterceptor
-import app.cash.paparazzi.internal.interceptors.ServiceManagerInterceptor
 import app.cash.paparazzi.internal.parsers.LayoutPullParser
 import com.android.ide.common.rendering.api.RenderSession
 import com.android.ide.common.rendering.api.Result
@@ -110,8 +108,6 @@ public class PaparazziSdk @JvmOverloads constructor(
   public fun setup() {
     if (!isInitialized) {
       registerViewEditModeInterception()
-      registerServiceManagerInterception()
-      registerIInputMethodManagerInterception()
 
       ByteBuddyAgent.install()
       InterceptorRegistrar.registerMethodInterceptors()
@@ -501,22 +497,6 @@ public class PaparazziSdk @JvmOverloads constructor(
         )
       }
     }
-  }
-
-  private fun registerServiceManagerInterception() {
-    InterceptorRegistrar.addMethodInterceptor(
-      "android.os.ServiceManager",
-      "getServiceOrThrow",
-      ServiceManagerInterceptor::class.java
-    )
-  }
-
-  private fun registerIInputMethodManagerInterception() {
-    InterceptorRegistrar.addMethodInterceptor(
-      "com.android.internal.view.IInputMethodManager\$Stub",
-      "asInterface",
-      IInputMethodManagerInterceptor::class.java
-    )
   }
 
   private fun registerViewEditModeInterception() {
