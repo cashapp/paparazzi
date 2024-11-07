@@ -1,10 +1,12 @@
 package app.cash.paparazzi.plugin.test
 
+import android.view.View.GONE
 import android.widget.LinearLayout
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
@@ -19,7 +21,6 @@ import androidx.compose.ui.unit.dp
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Paparazzi
 import app.cash.paparazzi.accessibility.AccessibilityRenderExtension
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 
@@ -37,7 +38,6 @@ class ComposeA11yTest {
     paparazzi.snapshot(mixedView)
   }
 
-  @Ignore("LayoutLib changed order of window manager views render. Needs investigation https://github.com/cashapp/paparazzi/issues/1634")
   @Test
   @OptIn(ExperimentalMaterial3Api::class)
   fun modalBottomSheetMaterial3() {
@@ -52,7 +52,7 @@ class ComposeA11yTest {
       ) {
         Text(text = "Text 2")
       }
-      Text(text = "Text 1")
+      Text(modifier = Modifier.wrapContentSize(), text = "Text 1")
     }
   }
 
@@ -86,5 +86,20 @@ class ComposeA11yTest {
         }
       }
     }
+  }
+
+  @Test
+  fun `verify hidden ComposeView content is not in legend`() {
+    val view = ComposeView(paparazzi.context).apply {
+      visibility = GONE
+      setContent {
+        Column {
+          Text(text = "Text 1")
+          Text(text = "Text 2")
+        }
+      }
+    }
+
+    paparazzi.snapshot(view)
   }
 }

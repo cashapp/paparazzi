@@ -639,6 +639,24 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun verifySimilar() {
+    val fixtureRoot = File("src/test/projects/verify-similar")
+
+    val result = gradleRunner
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    assertThat(result.task(":testDebugUnitTest")).isNotNull()
+
+    val failureDir = File(fixtureRoot, "build/paparazzi/failures").registerForDeletionOnExit()
+    val delta = File(failureDir, "delta-app.cash.paparazzi.plugin.test_VerifyTest_verify.png")
+    assertThat(delta.exists()).isTrue()
+
+    val goldenImage = File(fixtureRoot, "src/test/resources/expected_delta.png")
+    assertThat(delta).isSimilarTo(goldenImage).withDefaultThreshold()
+  }
+
+  @Test
   fun verifySuccessMultiModule() {
     val fixtureRoot = File("src/test/projects/verify-mode-success-multiple-modules")
 
@@ -1371,18 +1389,25 @@ class PaparazziPluginTest {
   @Test
   fun snapshotReport() {
     val fixtureRoot = File("src/test/projects/report-snapshots")
-    val testReportDir = File(fixtureRoot, "build/reports/tests/testDebugUnitTest")
+    val testReportDir = File(fixtureRoot, "build/reports/tests/testDebugUnitTest/classes")
 
     val result = gradleRunner
       .withArguments("verifyPaparazziDebug", "--stacktrace")
       .runFixture(fixtureRoot) { buildAndFail() }
 
-    assertThat(result.task(":testDebugUnitTest")?.outcome).isEqualTo(TaskOutcome.FAILED)
+    val testTask = result.task(":testDebugUnitTest")
+    assertThat(testTask).isNotNull()
+    assertThat(testTask!!.outcome).isEqualTo(TaskOutcome.FAILED)
 
     val simpleTestHtmlFile = File(testReportDir, "app.cash.paparazzi.plugin.test.SimpleTest.html")
-    val htmlText = simpleTestHtmlFile.readText()
+    var htmlText = simpleTestHtmlFile.readText()
     assertThat(htmlText).contains("<img")
     assertThat(htmlText).contains("delta-app.cash.paparazzi.plugin.test_SimpleTest_compose.png")
+
+    val testParamInjectorTestHtmlFile = File(testReportDir, "app.cash.paparazzi.plugin.test.TestParameterInjectorTest.html")
+    htmlText = testParamInjectorTestHtmlFile.readText()
+    assertThat(htmlText).contains("<img")
+    assertThat(htmlText).contains("delta-app.cash.paparazzi.plugin.test_TestParameterInjectorTest_compose[darkMode=false,fontScale=1.0].png")
   }
 
   @Test

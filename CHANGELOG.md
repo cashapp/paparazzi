@@ -2,6 +2,36 @@
 
 ## [Unreleased]
 
+## [1.3.5] - 2024-11-06
+
+### New
+* Render pending recompositions for `@Composable`s that require a second layout pass
+* Support for overlays in accessibility snapshots
+* Support for Compose UI heading and selected states in accessibility snapshots
+* Support for toggleable state in accessibility snapshots
+* Support for displaying multiple accessibility descriptions, similar to Talkback
+* Include failure delta image in JUnit test reporting
+* Migrate Paparazzi to layoutlib Jellyfish 2023.3.1
+* Compose 1.7.5
+* Kotlin 2.0.21
+* [Gradle Plugin] Gradle 8.10.2
+* [Gradle Plugin] Android Gradle Plugin 8.4.2
+
+### Fixed
+* Improve Gradle test task caching by preventing overlapping outputs with snapshotOutputDir
+* Migrate plugin to use modern AGP variant APIs
+* Fix support for AndroidX ResourcesCompat.getFont()
+* Fix inconsistent cross-platform text renderings in failure delta image
+* Relax image comparisons with OffByTwo differ to work around cross-platform rendering issues
+* Fix when clearAndSetSemantics is used to render content descriptions in accessibility snapshots
+* Avoid invalid chars in Windows filenames
+* Fix file move failures on Windows
+* Avoid hash collisions when images have similar RGB content
+* Cleanup unnecessary "loadPublicResourceNames" warning from log output
+* Additional bug fixes with accessibility snapshot tests
+
+Kudos to @geoff-powell, @colinmarsch, @BrianGardnerAtl, @ribafish, @gabrielittner and others for contributions this release!
+
 ## [1.3.4] - 2024-05-23
 
 ### New
@@ -379,7 +409,8 @@ As of this release, consumers must build on Java 11 environments.
 
 
 
-[Unreleased]: https://github.com/cashapp/paparazzi/compare/1.3.4...HEAD
+[Unreleased]: https://github.com/cashapp/paparazzi/compare/1.3.5...HEAD
+[1.3.5]: https://github.com/cashapp/paparazzi/releases/tag/1.3.5
 [1.3.4]: https://github.com/cashapp/paparazzi/releases/tag/1.3.4
 [1.3.3]: https://github.com/cashapp/paparazzi/releases/tag/1.3.3
 [1.3.2]: https://github.com/cashapp/paparazzi/releases/tag/1.3.2

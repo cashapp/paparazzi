@@ -1,5 +1,5 @@
 public final class app/cash/paparazzi/gradle/PaparazziPlugin : org/gradle/api/Plugin {
-	public fun <init> (Lorg/gradle/api/provider/ProviderFactory;)V
+	public fun <init> (Lorg/gradle/api/provider/ProviderFactory;Lorg/gradle/internal/operations/BuildOperationRunner;Lorg/gradle/internal/operations/BuildOperationExecutor;)V
 	public synthetic fun apply (Ljava/lang/Object;)V
 	public fun apply (Lorg/gradle/api/Project;)V
 }

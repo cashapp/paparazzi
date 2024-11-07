@@ -3,67 +3,49 @@ package app.cash.paparazzi.gradle.reporting
 import java.util.TreeMap
 
 /**
- * Custom PackageTestResults based on Gradle's PackageTestResults
+ * The test results for a given package.
  */
 internal class PackageTestResults(
-  override var name: String = DEFAULT_PACKAGE,
-  model: AllTestResults?
+  name: String,
+  model: AllTestResults
 ) : CompositeTestResults(model) {
+  val name: String = name.ifEmpty { DEFAULT_PACKAGE }
+  private val classes: MutableMap<String, ClassTestResults> = TreeMap()
 
-  private val classes: MutableMap<String, ClassTestResults?> =
-    TreeMap<String, ClassTestResults?>()
   override val title: String
-    get() = if (name == DEFAULT_PACKAGE) {
-      "Default package"
-    } else {
-      String.format(
-        "Package %s",
-        name
-      )
-    }
+    get() = if (name == DEFAULT_PACKAGE) "Default package" else ("Package $name")
 
-  fun getClasses(): Collection<ClassTestResults?> = classes.values
+  override val baseUrl: String
+    get() = "packages/$name.html"
+
+  fun getClasses(): Collection<ClassTestResults> = classes.values
 
   fun addTest(
+    classId: Long,
     className: String,
+    classDisplayName: String = className,
     testName: String,
-    duration: Long,
-    project: String,
-    flavor: String,
-    diffImages: List<ScreenshotDiffImage>?
+    testDisplayName: String = testName,
+    duration: Long
   ): TestResult {
-    val classResults: ClassTestResults = addClass(className)
-    val testResult: TestResult = addTest(
-      classResults.addTest(testName, duration, project, flavor, diffImages)
-    )
-    standardError.forEach {
-      classResults.addStandardError(it)
-    }
-    standardOutput.forEach {
-      classResults.addStandardOutput(it)
-    }
-    addVariant(project, flavor, testResult)
-    return testResult
+    val classResults = addClass(classId, className, classDisplayName)
+    return addTest(classResults.addTest(testName, testDisplayName, duration)!!)
   }
 
-  fun addClass(className: String): ClassTestResults {
-    var classResults: ClassTestResults? =
-      classes[className]
+  fun addClass(
+    classId: Long,
+    className: String,
+    classDisplayName: String = className
+  ): ClassTestResults {
+    var classResults = classes[className]
     if (classResults == null) {
-      classResults =
-        ClassTestResults(className, this)
-      standardError.forEach {
-        classResults.addStandardError(it)
-      }
-      standardOutput.forEach {
-        classResults.addStandardOutput(it)
-      }
+      classResults = ClassTestResults(classId, className, classDisplayName, this)
       classes[className] = classResults
     }
     return classResults
   }
 
-  public companion object {
+  companion object {
     private const val DEFAULT_PACKAGE = "default-package"
   }
 }

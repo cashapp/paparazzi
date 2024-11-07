@@ -64,7 +64,7 @@ internal object OffByTwo : Differ {
 
         if (abs(deltaR) <= 2 && abs(deltaG) <= 2 && abs(deltaB) <= 2) {
           similarPixels++
-          deltaImage.setRGB(expectedWidth + x, y, newRGB)
+          deltaImage.setRGB(expectedWidth + x, y, 0xFF0000FF.toInt())
           continue
         }
 

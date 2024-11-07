@@ -17,7 +17,6 @@ android {
   }
   kotlinOptions {
     jvmTarget = libs.versions.javaTarget.get()
-    javaParameters = true
   }
   buildFeatures {
     compose true
@@ -26,7 +25,4 @@ android {
 
 dependencies {
   implementation libs.composeUi.material
-
-  testImplementation libs.testParameterInjector
 }
-
