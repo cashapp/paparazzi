@@ -19,7 +19,7 @@ class AaptDrawableTest {
   @Test
   fun inXml() {
     val view = paparazzi.inflate<View>(R.layout.aapt_drawable)
-    val imageView = view.findViewById<ImageView>(R.id.image)
+    val imageView = view.findViewById<ImageView>(R.id.image)!!
     imageView.setImageResource(R.drawable.card_chip)
     paparazzi.snapshot(view)
   }
