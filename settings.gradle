@@ -22,6 +22,7 @@ include ':paparazzi-preview-processor'
 include ':paparazzi-gradle-plugin'
 
 include ':sample'
+include ':sample-tests'
 
 enableFeaturePreview('TYPESAFE_PROJECT_ACCESSORS')
 
