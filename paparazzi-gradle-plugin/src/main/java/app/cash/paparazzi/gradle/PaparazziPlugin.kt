@@ -30,15 +30,6 @@ import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import com.android.build.gradle.BaseExtension
 import com.google.devtools.ksp.gradle.KspExtension
 import com.google.devtools.ksp.gradle.KspGradleSubplugin
-import com.android.build.gradle.LibraryExtension
-import com.android.build.gradle.TestedExtension
-import com.android.build.gradle.api.BaseVariant
-import com.android.build.gradle.internal.api.TestedVariant
-import com.android.build.gradle.internal.dsl.BaseAppModuleExtension
-import com.android.build.gradle.internal.dsl.DynamicFeatureExtension
-import com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactType
-import com.google.devtools.ksp.gradle.KspExtension
-import com.google.devtools.ksp.gradle.KspGradleSubplugin
 import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -370,37 +361,6 @@ public class PaparazziPlugin @Inject constructor(
       dependencies.project(mapOf("path" to ":paparazzi"))
     } else {
       dependencies.create("app.cash.paparazzi:paparazzi:$VERSION")
-    }
-    configurations.getByName("testImplementation").dependencies.add(dependency)
-  }
-
-  private fun Project.addAnnotationsDependency() {
-    val dependency = if (isInternal()) {
-      dependencies.project(mapOf("path" to ":paparazzi-annotations"))
-    } else {
-      dependencies.create("app.cash.paparazzi:paparazzi-annotations:$VERSION")
-    }
-    configurations.getByName("implementation").dependencies.add(dependency)
-  }
-
-  private fun Project.addProcessorDependency() {
-    val dependency = if (isInternal()) {
-      dependencies.project(mapOf("path" to ":paparazzi-preview-processor"))
-    } else {
-      dependencies.create("app.cash.paparazzi:paparazzi-preview-processor:$VERSION")
-    }
-    if (project.plugins.hasPlugin("org.jetbrains.kotlin.multiplatform")) {
-      configurations.getByName("kspCommonMainMetadata").dependencies.add(dependency)
-    } else {
-      configurations.getByName("ksp").dependencies.add(dependency)
-    }
-  }
-
-  private fun Project.addPreviewTestDependency() {
-    val dependency = if (isInternal()) {
-      dependencies.project(mapOf("path" to ":paparazzi-preview-test-junit"))
-    } else {
-      dependencies.create("app.cash.paparazzi:paparazzi-preview-test-junit:$VERSION")
     }
     configurations.getByName("testImplementation").dependencies.add(dependency)
   }
