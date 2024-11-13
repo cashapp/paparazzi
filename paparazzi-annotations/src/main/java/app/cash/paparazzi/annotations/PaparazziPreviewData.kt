@@ -22,10 +22,11 @@ public sealed interface PaparazziPreviewData {
     val preview: PreviewData,
     val composable: @Composable () -> Unit
   ) : PaparazziPreviewData {
-    override fun toString(): String = buildList {
-      add(snapshotName)
-      preview.toString().takeIf { it.isNotEmpty() }?.let(::add)
-    }.joinToString(",")
+    override fun toString(): String =
+      buildList {
+        add(snapshotName)
+        preview.toString().takeIf { it.isNotEmpty() }?.let(::add)
+      }.joinToString(",")
   }
 
   public data class Provider<T>(
@@ -34,13 +35,15 @@ public sealed interface PaparazziPreviewData {
     val composable: @Composable (T) -> Unit,
     val previewParameter: PreviewParameterData<T>
   ) : PaparazziPreviewData {
-    override fun toString(): String = buildList {
-      add(snapshotName)
-      preview.toString().takeIf { it.isNotEmpty() }?.let(::add)
-      add(previewParameter.toString())
-    }.joinToString(",")
+    override fun toString(): String =
+      buildList {
+        add(snapshotName)
+        preview.toString().takeIf { it.isNotEmpty() }?.let(::add)
+        add(previewParameter.toString())
+      }.joinToString(",")
 
-    public fun withPreviewParameterIndex(index: Int): Provider<T> = copy(previewParameter = previewParameter.copy(index = index))
+    public fun withPreviewParameterIndex(index: Int): Provider<T> =
+      copy(previewParameter = previewParameter.copy(index = index))
   }
 
   public data object Empty : PaparazziPreviewData
@@ -50,10 +53,11 @@ public sealed interface PaparazziPreviewData {
     val preview: PreviewData,
     val message: String
   ) : PaparazziPreviewData {
-    override fun toString(): String = buildList {
-      add(snapshotName)
-      preview.toString().takeIf { it.isNotEmpty() }?.let(::add)
-    }.joinToString(",")
+    override fun toString(): String =
+      buildList {
+        add(snapshotName)
+        preview.toString().takeIf { it.isNotEmpty() }?.let(::add)
+      }.joinToString(",")
   }
 }
 
@@ -66,22 +70,23 @@ public data class PreviewData(
   val locale: String? = null,
   val backgroundColor: String? = null
 ) {
-  override fun toString(): String = buildList {
-    fontScale?.fontScale()?.displayName()?.let(::add)
-    uiMode?.lightDarkName()?.let(::add)
-    uiMode?.uiModeName()?.let(::add)
-    device?.let {
-      if (it != PaparazziPreviewDefaults.DEVICE_ID) {
-        add(it.substringAfterLast(":"))
+  override fun toString(): String =
+    buildList {
+      fontScale?.fontScale()?.displayName()?.let(::add)
+      uiMode?.lightDarkName()?.let(::add)
+      uiMode?.uiModeName()?.let(::add)
+      device?.let {
+        if (it != PaparazziPreviewDefaults.DEVICE_ID) {
+          add(it.substringAfterLast(":"))
+        }
       }
-    }
-    widthDp?.let { add("w_$it") }
-    heightDp?.let { add("h_$it") }
-    locale?.let(::add)
-    backgroundColor?.let { add("bg_$it") }
-  }.takeIf { it.isNotEmpty() }
-    ?.joinToString(",")
-    ?: ""
+      widthDp?.let { add("w_$it") }
+      heightDp?.let { add("h_$it") }
+      locale?.let(::add)
+      backgroundColor?.let { add("bg_$it") }
+    }.takeIf { it.isNotEmpty() }
+      ?.joinToString(",")
+      ?: ""
 }
 
 public data class PreviewParameterData<T>(
@@ -107,24 +112,27 @@ internal enum class FontScale(var value: Float?) {
   LARGEST(1.30f),
   CUSTOM(null);
 
-  fun displayName() = when (this) {
-    CUSTOM -> "fs_$value"
-    else -> name
+  fun displayName() =
+    when (this) {
+      CUSTOM -> "fs_$value"
+      else -> name
+    }
+}
+
+internal fun Int.lightDarkName() =
+  when (this and Configuration.UI_MODE_NIGHT_MASK) {
+    Configuration.UI_MODE_NIGHT_NO -> "Light"
+    Configuration.UI_MODE_NIGHT_YES -> "Dark"
+    else -> null
   }
-}
 
-internal fun Int.lightDarkName() = when (this and Configuration.UI_MODE_NIGHT_MASK) {
-  Configuration.UI_MODE_NIGHT_NO -> "Light"
-  Configuration.UI_MODE_NIGHT_YES -> "Dark"
-  else -> null
-}
-
-internal fun Int.uiModeName() = when (this and Configuration.UI_MODE_TYPE_MASK) {
-  Configuration.UI_MODE_TYPE_NORMAL -> "Normal"
-  Configuration.UI_MODE_TYPE_CAR -> "Car"
-  Configuration.UI_MODE_TYPE_DESK -> "Desk"
-  Configuration.UI_MODE_TYPE_APPLIANCE -> "Appliance"
-  Configuration.UI_MODE_TYPE_WATCH -> "Watch"
-  Configuration.UI_MODE_TYPE_VR_HEADSET -> "VR_Headset"
-  else -> null
-}
+internal fun Int.uiModeName() =
+  when (this and Configuration.UI_MODE_TYPE_MASK) {
+    Configuration.UI_MODE_TYPE_NORMAL -> "Normal"
+    Configuration.UI_MODE_TYPE_CAR -> "Car"
+    Configuration.UI_MODE_TYPE_DESK -> "Desk"
+    Configuration.UI_MODE_TYPE_APPLIANCE -> "Appliance"
+    Configuration.UI_MODE_TYPE_WATCH -> "Watch"
+    Configuration.UI_MODE_TYPE_VR_HEADSET -> "VR_Headset"
+    else -> null
+  }

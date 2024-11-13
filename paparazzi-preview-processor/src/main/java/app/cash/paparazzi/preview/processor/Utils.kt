@@ -18,9 +18,10 @@ internal fun KSAnnotation.qualifiedName() = declaration().qualifiedName?.asStrin
 internal fun KSAnnotation.declaration() = annotationType.resolve().declaration
 
 @Suppress("UNCHECKED_CAST")
-public fun <T> KSAnnotation.previewArg(name: String): T = arguments
-  .first { it.name?.asString() == name }
-  .let { it.value as T }
+public fun <T> KSAnnotation.previewArg(name: String): T =
+  arguments
+    .first { it.name?.asString() == name }
+    .let { it.value as T }
 
 internal fun Sequence<KSAnnotated>.findPaparazzi() =
   filterIsInstance<KSFunctionDeclaration>()
@@ -43,31 +44,34 @@ internal fun Sequence<KSAnnotation>.findPreviews(stack: Set<KSAnnotation> = setO
   return direct.plus(indirect)
 }
 
-internal fun KSFunctionDeclaration.findDistinctPreviews() = annotations.findPreviews().toList()
-  .map { preview ->
-    PreviewModel(
-      fontScale = preview.previewArg("fontScale"),
-      device = preview.previewArg("device"),
-      widthDp = preview.previewArg("widthDp"),
-      heightDp = preview.previewArg("heightDp"),
-      uiMode = preview.previewArg("uiMode"),
-      locale = preview.previewArg("locale"),
-      backgroundColor = preview.previewArg("backgroundColor"),
-      showBackground = preview.previewArg("showBackground")
-    )
+internal fun KSFunctionDeclaration.findDistinctPreviews() =
+  annotations.findPreviews().toList()
+    .map { preview ->
+      PreviewModel(
+        fontScale = preview.previewArg("fontScale"),
+        device = preview.previewArg("device"),
+        widthDp = preview.previewArg("widthDp"),
+        heightDp = preview.previewArg("heightDp"),
+        uiMode = preview.previewArg("uiMode"),
+        locale = preview.previewArg("locale"),
+        backgroundColor = preview.previewArg("backgroundColor"),
+        showBackground = preview.previewArg("showBackground")
+      )
+    }
+    .distinct()
+
+internal fun KSFunctionDeclaration.previewParam() =
+  parameters.firstOrNull { param ->
+    param.annotations.any { it.isPreviewParameter() }
   }
-  .distinct()
 
-internal fun KSFunctionDeclaration.previewParam() = parameters.firstOrNull { param ->
-  param.annotations.any { it.isPreviewParameter() }
-}
-
-internal fun KSValueParameter.previewParamProvider() = annotations
-  .first { it.isPreviewParameter() }
-  .arguments
-  .first { arg -> arg.name?.asString() == "provider" }
-  .let { it.value as KSType }
-  .declaration
+internal fun KSValueParameter.previewParamProvider() =
+  annotations
+    .first { it.isPreviewParameter() }
+    .arguments
+    .first { arg -> arg.name?.asString() == "provider" }
+    .let { it.value as KSType }
+    .declaration
 
 internal data class PreviewModel(
   val fontScale: Float,

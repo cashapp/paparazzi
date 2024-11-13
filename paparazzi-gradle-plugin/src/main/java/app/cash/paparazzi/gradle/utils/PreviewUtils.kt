@@ -1,6 +1,5 @@
 package app.cash.paparazzi.gradle.utils
 
-import app.cash.paparazzi.gradle.PREVIEW_TEST_SOURCE
 import com.android.build.api.variant.AndroidComponentsExtension
 import com.android.build.api.variant.HasUnitTest
 import org.gradle.api.Project
@@ -67,54 +66,10 @@ internal fun Project.registerGeneratePreviewTask(extension: AndroidComponentsExt
         task.outputs.dir(previewTestDir)
         task.outputs.file("$previewTestDir${File.separator}$PREVIEW_TEST_FILE")
         task.outputs.cacheIf { true }
-
-        // test compilation depends on the task
-        project.tasks.named {
-          it == "compile${testVariantSlug}Kotlin" ||
-            it == "generate${testVariantSlug}LintModel" ||
-            it == "lintAnalyze$testVariantSlug"
-        }.configureEach { it.dependsOn(taskProvider) }
-        // run task before processing symbols
-        project.tasks.named { it == "ksp${testVariantSlug}Kotlin" }
-          .configureEach { it.mustRunAfter(taskProvider) }
-
-        gradle.taskGraph.whenReady {
-          taskProvider.configure { task ->
-            // Test variant appends .test to the namespace
-            val namespace = testVariant.namespace.get().replace(".test$".toRegex(), "")
-            val namespaceDir = namespace.replace(".", File.separator)
-            val previewTestDir = "$testSourceDir${File.separator}$namespaceDir"
-
-            // Optional input if KSP doesn't output preview annotation file
-            task.inputs
-              .file(
-                "$projectDir${File.separator}$KSP_SOURCE_DIR${File.separator}${buildType}${File.separator}kotlin${File.separator}$namespaceDir${File.separator}$PREVIEW_DATA_FILE"
-              )
-              .optional()
-              .skipWhenEmpty()
-
-        task.outputs.dir(previewTestDir)
-        task.outputs.file("$previewTestDir${File.separator}$PREVIEW_TEST_FILE")
-        task.outputs.cacheIf { true }
-
-        // test compilation depends on the task
-        tasks.findByName("compile${buildTypeCap}UnitTestKotlin")?.dependsOn(taskName)
-        // run task before processing symbols
-        tasks.findByName("ksp${buildTypeCap}UnitTestKotlin")?.mustRunAfter(taskName)
-
-        task.doLast {
-          File(previewTestDir).mkdirs()
-          File(previewTestDir, PREVIEW_TEST_FILE).writeText(
-            buildString {
-              appendLine("package $namespace")
-              append(PREVIEW_TEST_SOURCE)
-            }
-          )
-        }
       }
     }
   }
 }
 
-    private fun String.capitalize() =
-      replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
+private fun String.capitalize() =
+  replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }

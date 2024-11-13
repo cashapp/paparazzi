@@ -20,49 +20,52 @@ import com.android.resources.UiMode
 import java.util.Locale
 import kotlin.math.roundToInt
 
-internal fun String.deviceConfig() = when (this) {
-  "id:Nexus 7" -> DeviceConfig.NEXUS_7
-  "id:Nexus 7 2013" -> DeviceConfig.NEXUS_7_2012
-  "id:Nexus 5" -> DeviceConfig.NEXUS_5
-  "id:Nexus 6" -> DeviceConfig.NEXUS_7
-  "id:Nexus 9" -> DeviceConfig.NEXUS_10
-  "name:Nexus 10" -> DeviceConfig.NEXUS_10
-  "id:Nexus 5X" -> DeviceConfig.NEXUS_5
-  "id:Nexus 6P" -> DeviceConfig.NEXUS_7
-  "id:pixel_c" -> DeviceConfig.PIXEL_C
-  "id:pixel" -> DeviceConfig.PIXEL
-  "id:pixel_xl" -> DeviceConfig.PIXEL_XL
-  "id:pixel_2" -> DeviceConfig.PIXEL_2
-  "id:pixel_2_xl" -> DeviceConfig.PIXEL_2_XL
-  "id:pixel_3" -> DeviceConfig.PIXEL_3
-  "id:pixel_3_xl" -> DeviceConfig.PIXEL_3_XL
-  "id:pixel_3a" -> DeviceConfig.PIXEL_3A
-  "id:pixel_3a_xl" -> DeviceConfig.PIXEL_3A_XL
-  "id:pixel_4" -> DeviceConfig.PIXEL_4
-  "id:pixel_4_xl" -> DeviceConfig.PIXEL_4_XL
-  "id:pixel_5" -> DeviceConfig.PIXEL_5
-  "id:pixel_6" -> DeviceConfig.PIXEL_6
-  "id:pixel_6_pro" -> DeviceConfig.PIXEL_6_PRO
-  "id:wearos_small_round" -> DeviceConfig.WEAR_OS_SMALL_ROUND
-  "id:wearos_square" -> DeviceConfig.WEAR_OS_SQUARE
-  else -> null
-}
+internal fun String.deviceConfig() =
+  when (this) {
+    "id:Nexus 7" -> DeviceConfig.NEXUS_7
+    "id:Nexus 7 2013" -> DeviceConfig.NEXUS_7_2012
+    "id:Nexus 5" -> DeviceConfig.NEXUS_5
+    "id:Nexus 6" -> DeviceConfig.NEXUS_7
+    "id:Nexus 9" -> DeviceConfig.NEXUS_10
+    "name:Nexus 10" -> DeviceConfig.NEXUS_10
+    "id:Nexus 5X" -> DeviceConfig.NEXUS_5
+    "id:Nexus 6P" -> DeviceConfig.NEXUS_7
+    "id:pixel_c" -> DeviceConfig.PIXEL_C
+    "id:pixel" -> DeviceConfig.PIXEL
+    "id:pixel_xl" -> DeviceConfig.PIXEL_XL
+    "id:pixel_2" -> DeviceConfig.PIXEL_2
+    "id:pixel_2_xl" -> DeviceConfig.PIXEL_2_XL
+    "id:pixel_3" -> DeviceConfig.PIXEL_3
+    "id:pixel_3_xl" -> DeviceConfig.PIXEL_3_XL
+    "id:pixel_3a" -> DeviceConfig.PIXEL_3A
+    "id:pixel_3a_xl" -> DeviceConfig.PIXEL_3A_XL
+    "id:pixel_4" -> DeviceConfig.PIXEL_4
+    "id:pixel_4_xl" -> DeviceConfig.PIXEL_4_XL
+    "id:pixel_5" -> DeviceConfig.PIXEL_5
+    "id:pixel_6" -> DeviceConfig.PIXEL_6
+    "id:pixel_6_pro" -> DeviceConfig.PIXEL_6_PRO
+    "id:wearos_small_round" -> DeviceConfig.WEAR_OS_SMALL_ROUND
+    "id:wearos_square" -> DeviceConfig.WEAR_OS_SQUARE
+    else -> null
+  }
 
-internal fun Int.uiMode() = when (this and Configuration.UI_MODE_TYPE_MASK) {
-  Configuration.UI_MODE_TYPE_NORMAL -> UiMode.NORMAL
-  Configuration.UI_MODE_TYPE_CAR -> UiMode.CAR
-  Configuration.UI_MODE_TYPE_DESK -> UiMode.DESK
-  Configuration.UI_MODE_TYPE_APPLIANCE -> UiMode.APPLIANCE
-  Configuration.UI_MODE_TYPE_WATCH -> UiMode.WATCH
-  Configuration.UI_MODE_TYPE_VR_HEADSET -> UiMode.VR_HEADSET
-  else -> null
-}
+internal fun Int.uiMode() =
+  when (this and Configuration.UI_MODE_TYPE_MASK) {
+    Configuration.UI_MODE_TYPE_NORMAL -> UiMode.NORMAL
+    Configuration.UI_MODE_TYPE_CAR -> UiMode.CAR
+    Configuration.UI_MODE_TYPE_DESK -> UiMode.DESK
+    Configuration.UI_MODE_TYPE_APPLIANCE -> UiMode.APPLIANCE
+    Configuration.UI_MODE_TYPE_WATCH -> UiMode.WATCH
+    Configuration.UI_MODE_TYPE_VR_HEADSET -> UiMode.VR_HEADSET
+    else -> null
+  }
 
-internal fun Int.nightMode() = when (this and Configuration.UI_MODE_NIGHT_MASK) {
-  Configuration.UI_MODE_NIGHT_NO -> NightMode.NOTNIGHT
-  Configuration.UI_MODE_NIGHT_YES -> NightMode.NIGHT
-  else -> null
-}
+internal fun Int.nightMode() =
+  when (this and Configuration.UI_MODE_NIGHT_MASK) {
+    Configuration.UI_MODE_NIGHT_NO -> NightMode.NOTNIGHT
+    Configuration.UI_MODE_NIGHT_YES -> NightMode.NIGHT
+    else -> null
+  }
 
 internal fun String.localeQualifierString() =
   Locale.forLanguageTag(this).run {
@@ -81,8 +84,7 @@ internal fun PreviewData?.deviceConfig(defaultDeviceConfig: DeviceConfig) =
     )
   }
 
-private fun Int.toPx(dpi: Int) =
-  (this * (dpi.toFloat() / DisplayMetrics.DENSITY_DEFAULT)).roundToInt()
+private fun Int.toPx(dpi: Int) = (this * (dpi.toFloat() / DisplayMetrics.DENSITY_DEFAULT)).roundToInt()
 
 internal fun Paparazzi.snapshotDefault(
   previewData: PaparazziPreviewData.Default,

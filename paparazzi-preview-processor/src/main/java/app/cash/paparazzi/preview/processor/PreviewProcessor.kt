@@ -21,7 +21,9 @@ public class PreviewProcessor(
   override fun process(resolver: Resolver): List<KSAnnotated> {
     // Due to codgen and multi-round processing of ksp
     // https://kotlinlang.org/docs/ksp-multi-round.html
-    if (resolver.getAllFiles().any { it.fileName.contains("PaparazziPreviews") } || resolver.getNewFiles().toList().isEmpty()) {
+    if (resolver.getAllFiles().any { it.fileName.contains("PaparazziPreviews") } ||
+      resolver.getNewFiles().toList().isEmpty()
+    ) {
       "Skipping subsequent run due to PaparazziPreviews.kt already created and caused ksp re-run".log()
       return emptyList()
     }
