@@ -58,9 +58,7 @@ fun HelloPaparazzi() {
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Preview
 @Composable
-fun HelloPaparazzi(
-  @PreviewParameter(TextProvider::class) text: String
-) {
+fun HelloPaparazzi(@PreviewParameter(TextProvider::class) text: String) {
   Column(
     Modifier
       .background(Color.White)

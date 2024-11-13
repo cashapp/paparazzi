@@ -1476,7 +1476,8 @@ class PaparazziPluginTest {
       }
     ).isTrue()
 
-    val generatedPreviewTestDir = File(fixtureRoot, "build/generated/source/paparazzi/debugUnitTest/app/cash/paparazzi/plugin/test/")
+    val generatedPreviewTestDir =
+      File(fixtureRoot, "build/generated/source/paparazzi/debugUnitTest/app/cash/paparazzi/plugin/test/")
     assertThat(
       generatedPreviewTestDir.listFiles()?.any {
         it.name == "PreviewTests.kt"
@@ -1508,7 +1509,8 @@ class PaparazziPluginTest {
 
     assertThat(result.task(":paparazziGeneratePreviewDebugUnitTestKotlin")?.outcome).isEqualTo(TaskOutcome.SKIPPED)
 
-    val generatedPreviewTestDir = File(fixtureRoot, "build/generated/source/paparazzi/debugUnitTest/app/cash/paparazzi/plugin/test/")
+    val generatedPreviewTestDir =
+      File(fixtureRoot, "build/generated/source/paparazzi/debugUnitTest/app/cash/paparazzi/plugin/test/")
     assertThat(generatedPreviewTestDir.exists()).isFalse()
   }
 

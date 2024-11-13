@@ -35,8 +35,8 @@ internal object PaparazziPoet {
     .addCode(
       buildCodeBlock {
         addStatement(
-            "internal val %L = listOf<%L.PaparazziPreviewData>(", propertyName, PACKAGE_NAME
-          )
+          "internal val %L = listOf<%L.PaparazziPreviewData>(", propertyName, PACKAGE_NAME
+        )
         indent()
 
         if (functions.count() == 0) {
@@ -46,26 +46,26 @@ internal object PaparazziPoet {
             val visibilityCheck = checkVisibility(func, previewParam)
             val snapshotName = func.snapshotName(env)
 
-              when {
-                visibilityCheck.isPrivate -> addError(
-                  visibilityCheck = visibilityCheck,
-                  function = func,
-                  snapshotName = snapshotName,
-                  preview = preview,
-                  previewParam = previewParam
-                )
+            when {
+              visibilityCheck.isPrivate -> addError(
+                visibilityCheck = visibilityCheck,
+                function = func,
+                snapshotName = snapshotName,
+                preview = preview,
+                previewParam = previewParam
+              )
 
-                previewParam != null -> addProvider(
-                  function = func,
-                  snapshotName = snapshotName,
-                  preview = preview,
-                  previewParam = previewParam
-                )
+              previewParam != null -> addProvider(
+                function = func,
+                snapshotName = snapshotName,
+                preview = preview,
+                previewParam = previewParam
+              )
 
-                else -> addDefault(
-                  function = func,
-                  snapshotName = snapshotName,
-                  preview = preview
+              else -> addDefault(
+                function = func,
+                snapshotName = snapshotName,
+                preview = preview
               )
             }
           }
@@ -81,16 +81,17 @@ internal object PaparazziPoet {
     addStatement("%L.PaparazziPreviewData.Empty,", PACKAGE_NAME)
   }
 
-  private fun Sequence<KSFunctionDeclaration>.process(block: (KSFunctionDeclaration, PreviewModel, KSValueParameter?) -> Unit) =
-    flatMap { func ->
-      val previewParam = func.parameters.firstOrNull { param ->
-        param.annotations.any { it.isPreviewParameter() }
-      }
-      func.findDistinctPreviews()
-        .map { AcceptableAnnotationsProcessData(func, it, previewParam) }
-    }.forEach { (func, preview, previewParam) ->
-      block(func, preview, previewParam)
+  private fun Sequence<KSFunctionDeclaration>.process(
+    block: (KSFunctionDeclaration, PreviewModel, KSValueParameter?) -> Unit
+  ) = flatMap { func ->
+    val previewParam = func.parameters.firstOrNull { param ->
+      param.annotations.any { it.isPreviewParameter() }
     }
+    func.findDistinctPreviews()
+      .map { AcceptableAnnotationsProcessData(func, it, previewParam) }
+  }.forEach { (func, preview, previewParam) ->
+    block(func, preview, previewParam)
+  }
 
   private data class AcceptableAnnotationsProcessData(
     val func: KSFunctionDeclaration,
@@ -139,28 +140,8 @@ internal object PaparazziPoet {
     addStatement("),")
   }
 
-  private fun CodeBlock.Builder.addProvider(
+  private fun CodeBlock.Builder.addDefault(
     function: KSFunctionDeclaration,
-    snapshotName: String
-  ) {
-    addStatement("%L.PaparazziPreviewData.Provider(", PACKAGE_NAME)
-    indent()
-    addStatement("snapshotName = %S,", snapshotName)
-    addStatement("composable = { %L(it) },", function.qualifiedName?.asString())
-    unindent()
-    addStatement("),")
-  }
-
-  private fun CodeBlock.Builder.addProvider(function: KSFunctionDeclaration, snapshotName: String) {
-    addStatement("%L.PaparazziPreviewData.Provider(", PACKAGE_NAME)
-    indent()
-    addStatement("snapshotName = %S,", snapshotName)
-    addStatement("composable = { %L(it) },", function.qualifiedName?.asString())
-    unindent()
-    addStatement("),")
-  }
-
-  private fun CodeBlock.Builder.addDefault(function: KSFunctionDeclaration,
     snapshotName: String,
     preview: PreviewModel
   ) {
@@ -225,14 +206,12 @@ internal object PaparazziPoet {
       add(simpleName.asString())
     }.joinToString("_")
 
-  private fun checkVisibility(
-    function: KSFunctionDeclaration,
-    previewParam: KSValueParameter?
-  ) = VisibilityCheck(
-    isFunctionPrivate = function.getVisibility() == Visibility.PRIVATE,
-    isPreviewParamProviderPrivate = previewParam?.previewParamProvider()
-      ?.getVisibility() == Visibility.PRIVATE
-  )
+  private fun checkVisibility(function: KSFunctionDeclaration, previewParam: KSValueParameter?) =
+    VisibilityCheck(
+      isFunctionPrivate = function.getVisibility() == Visibility.PRIVATE,
+      isPreviewParamProviderPrivate = previewParam?.previewParamProvider()
+        ?.getVisibility() == Visibility.PRIVATE
+    )
 }
 
 internal data class VisibilityCheck(

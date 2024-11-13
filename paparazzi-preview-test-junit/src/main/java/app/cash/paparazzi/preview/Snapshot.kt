@@ -36,35 +36,36 @@ public fun Paparazzi.snapshot(
  * the default device set by Paparazzi (which is currently Nexus 5). Defaulting to
  * a larger device brings the previews and snapshots closer in parity.
  */
-public fun PaparazziPreviewData.deviceConfig(
-  default: DeviceConfig = DeviceConfig.PIXEL_5
-): DeviceConfig = when (this) {
-  is PaparazziPreviewData.Default -> preview.deviceConfig(default)
-  is PaparazziPreviewData.Provider<*> -> preview.deviceConfig(default)
-  else -> default
-}
+public fun PaparazziPreviewData.deviceConfig(default: DeviceConfig = DeviceConfig.PIXEL_5): DeviceConfig =
+  when (this) {
+    is PaparazziPreviewData.Default -> preview.deviceConfig(default)
+    is PaparazziPreviewData.Provider<*> -> preview.deviceConfig(default)
+    else -> default
+  }
 
 /**
  * Returns a locale for the given preview, or null if error or empty.
  */
-public fun PaparazziPreviewData.locale(): String? = when (this) {
-  is PaparazziPreviewData.Default -> preview.locale
-  is PaparazziPreviewData.Provider<*> -> preview.locale
-  else -> null
-}
+public fun PaparazziPreviewData.locale(): String? =
+  when (this) {
+    is PaparazziPreviewData.Default -> preview.locale
+    is PaparazziPreviewData.Provider<*> -> preview.locale
+    else -> null
+  }
 
 /**
  * Convert a list of generated [PaparazziPreviewData]
  * to a flat list of [PaparazziPreviewData]s.
  */
-public fun List<PaparazziPreviewData>.flatten(): List<PaparazziPreviewData> = flatMap {
-  when (it) {
-    is PaparazziPreviewData.Provider<*> -> List(it.previewParameter.values.count()) { i ->
-      it.withPreviewParameterIndex(i)
+public fun List<PaparazziPreviewData>.flatten(): List<PaparazziPreviewData> =
+  flatMap {
+    when (it) {
+      is PaparazziPreviewData.Provider<*> -> List(it.previewParameter.values.count()) { i ->
+        it.withPreviewParameterIndex(i)
+      }
+      else -> listOf(it)
     }
-    else -> listOf(it)
   }
-}
 
 /**
  * A `@TestParameter` values provider for the given [annotations].
@@ -84,10 +85,7 @@ public open class PaparazziValuesProvider(
  * Enforce a particular default locale for a test. Resets back to default on completion.
  */
 public class DefaultLocaleRule(public val locale: String?) : TestRule {
-  override fun apply(
-    base: Statement,
-    description: Description
-  ): Statement {
+  override fun apply(base: Statement, description: Description): Statement {
     return object : Statement() {
       override fun evaluate() {
         val default = Locale.getDefault()
