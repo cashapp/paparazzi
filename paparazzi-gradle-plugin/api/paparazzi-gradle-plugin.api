@@ -1,3 +1,12 @@
+public abstract class app/cash/paparazzi/gradle/GeneratePreviewTestFileTask : org/gradle/api/DefaultTask {
+	public fun <init> ()V
+	public final fun createFile ()V
+	public abstract fun getNamespace ()Lorg/gradle/api/provider/Property;
+	public abstract fun getPaparazziPreviewsFile ()Lorg/gradle/api/file/RegularFileProperty;
+	public abstract fun getPreviewTestOutputDir ()Lorg/gradle/api/file/DirectoryProperty;
+	public abstract fun getPreviewTestOutputFile ()Lorg/gradle/api/file/RegularFileProperty;
+}
+
 public final class app/cash/paparazzi/gradle/PaparazziPlugin : org/gradle/api/Plugin {
 	public fun <init> (Lorg/gradle/api/provider/ProviderFactory;Lorg/gradle/internal/operations/BuildOperationRunner;Lorg/gradle/internal/operations/BuildOperationExecutor;)V
 	public synthetic fun apply (Ljava/lang/Object;)V
