@@ -216,6 +216,8 @@ class PaparazziPluginTest {
       .runFixture(fixtureRoot) { build() }
 
     assertThat(result.task(":verifyPaparazziDebug")?.outcome).isEqualTo(SUCCESS)
+    assertThat(result.output).contains("Snapshot directory not found: ")
+    assertThat(result.output).contains("Please run the `recordPaparazziDebug` task to generate snapshots.")
   }
 
   @Test

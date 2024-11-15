@@ -37,6 +37,7 @@ import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.artifacts.transform.UnzipTransform
 import org.gradle.api.internal.tasks.testing.report.TestReporter
 import org.gradle.api.logging.LogLevel.LIFECYCLE
+import org.gradle.api.logging.LogLevel.WARN
 import org.gradle.api.provider.Provider
 import org.gradle.api.provider.ProviderFactory
 import org.gradle.api.reporting.ReportingExtension
@@ -45,6 +46,7 @@ import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.options.Option
 import org.gradle.api.tasks.testing.AbstractTestTask
 import org.gradle.api.tasks.testing.Test
+import org.gradle.internal.cc.base.logger
 import org.gradle.internal.operations.BuildOperationExecutor
 import org.gradle.internal.operations.BuildOperationRunner
 import org.gradle.internal.os.OperatingSystem
@@ -258,12 +260,24 @@ public class PaparazziPlugin @Inject constructor(
         test.doFirst {
           // Note: these are lazy properties that are not resolvable in the Gradle configuration phase.
           // They need special handling, so they're added as inputs.property above, and systemProperty here.
+          val isVerificationTask = isVerifyRun.get()
+
           test.systemProperties["paparazzi.layoutlib.runtime.root"] =
             layoutlibNativeRuntimeFileCollection.singleFile.absolutePath
           test.systemProperties["paparazzi.layoutlib.resources.root"] =
             layoutlibResourcesFileCollection.singleFile.absolutePath
           test.systemProperties["paparazzi.test.record"] = isRecordRun.get()
-          test.systemProperties["paparazzi.test.verify"] = isVerifyRun.get()
+          test.systemProperties["paparazzi.test.verify"] = isVerificationTask
+
+          if (isVerificationTask && snapshotOutputDir.asFile.exists().not()) {
+            test.logger.log(
+              WARN,
+              """
+                Snapshot directory not found: ${snapshotOutputDir.asFile.path}
+                Please run the `recordPaparazzi$variantSlug` task to generate snapshots.
+              """.trimIndent()
+            )
+          }
         }
 
         test.doLast {
@@ -302,6 +316,7 @@ public class PaparazziPlugin @Inject constructor(
         val osArch = System.getProperty("os.arch").lowercase(Locale.US)
         if (osArch.startsWith("x86")) "mac" else "mac-arm"
       }
+
       operatingSystem.isWindows -> "win"
       else -> "linux"
     }
