@@ -35,6 +35,7 @@ import androidx.compose.ui.semantics.getAllSemanticsNodes
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.state.ToggleableState
 import app.cash.paparazzi.RenderExtension
+import app.cash.paparazzi.internal.ComposeViewAdapter
 import com.android.internal.view.OneShotPreDrawListener
 
 public class AccessibilityRenderExtension : RenderExtension {
@@ -54,15 +55,15 @@ public class AccessibilityRenderExtension : RenderExtension {
 
       val overlayDrawable = AccessibilityOverlayDrawable()
       viewTreeObserver.addOnGlobalLayoutListener {
+        val rootView = contentView.findRootView()
+        rootView.foreground = overlayDrawable
+
         // The root of the view hierarchy is rendered at full width.
         // We need to restrict it when taking accessibility snapshots.
         val windowManagerRootView = (windowManager as WindowManagerImpl).currentRootView
         if (windowManagerRootView != null) {
-          windowManagerRootView.foreground = overlayDrawable
           windowManagerRootView.layoutParams =
             FrameLayout.LayoutParams(contentView.measuredWidth, MATCH_PARENT, Gravity.START)
-        } else {
-          this@apply.foreground = overlayDrawable
         }
 
         OneShotPreDrawListener.add(this@apply) {
@@ -249,4 +250,15 @@ public class AccessibilityRenderExtension : RenderExtension {
     private const val UNCHECKED_LABEL = "not checked"
     private const val INDETERMINATE_LABEL = "indeterminate"
   }
+}
+
+private fun View.findRootView(): View {
+  var parent = parent
+  while (parent != null) {
+    if (parent is ComposeViewAdapter) {
+      return parent
+    }
+    parent = parent.parent
+  }
+  throw IllegalArgumentException("View hierarchy does not contain a ComposeViewAdapter")
 }

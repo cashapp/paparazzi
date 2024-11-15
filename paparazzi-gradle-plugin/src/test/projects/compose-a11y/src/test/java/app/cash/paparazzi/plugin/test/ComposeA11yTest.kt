@@ -5,8 +5,11 @@ import android.widget.LinearLayout
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
@@ -36,6 +39,43 @@ class ComposeA11yTest {
   fun `mixed compose usage`() {
     val mixedView = MixedView(paparazzi.context)
     paparazzi.snapshot(mixedView)
+  }
+
+  @Test
+  fun dropDownMaterial3() {
+    paparazzi.snapshot {
+      Box(Modifier.fillMaxSize()) {
+        DropdownMenu(
+          expanded = true,
+          onDismissRequest = { }
+        ) {
+          DropdownMenuItem(
+            text = {
+              Text(
+                text = "Label 1"
+              )
+            },
+            onClick = {}
+          )
+          DropdownMenuItem(
+            text = {
+              Text(
+                text = "Label 2"
+              )
+            },
+            onClick = {}
+          )
+          DropdownMenuItem(
+            text = {
+              Text(
+                text = "Label 3"
+              )
+            },
+            onClick = {}
+          )
+        }
+      }
+    }
   }
 
   @Test
