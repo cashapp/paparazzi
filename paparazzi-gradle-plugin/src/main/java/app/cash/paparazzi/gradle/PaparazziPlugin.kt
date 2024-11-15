@@ -237,7 +237,7 @@ public class PaparazziPlugin @Inject constructor(
         test.inputs.dir(
           isVerifyRun.flatMap {
             project.objects.directoryProperty().apply {
-              set(if (it) snapshotOutputDir else null)
+              set(if (it && snapshotOutputDir.asFile.exists()) snapshotOutputDir else null)
             }
           }
         ).withPropertyName("paparazzi.snapshot.input.dir")

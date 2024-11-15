@@ -207,6 +207,18 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun onlyJunitTest() {
+    val fixtureRoot = File("src/test/projects/only-junit-test")
+
+    val result = gradleRunner
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .forwardOutput()
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":verifyPaparazziDebug")?.outcome).isEqualTo(SUCCESS)
+  }
+
+  @Test
   fun invalidChars() {
     val fixtureRoot = File("src/test/projects/invalid-chars")
 
