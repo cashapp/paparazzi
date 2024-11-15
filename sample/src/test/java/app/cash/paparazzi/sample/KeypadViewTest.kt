@@ -17,14 +17,28 @@ package app.cash.paparazzi.sample
 
 import android.animation.ObjectAnimator
 import android.view.View
+import androidx.compose.ui.platform.ComposeView
 import app.cash.paparazzi.Paparazzi
+import app.cash.paparazzi.accessibility.AccessibilityRenderExtension
 import app.cash.paparazzi.sample.databinding.KeypadBinding
 import org.junit.Rule
 import org.junit.Test
 
 class KeypadViewTest {
   @get:Rule
-  val paparazzi = Paparazzi()
+  val paparazzi = Paparazzi(
+    renderExtensions = setOf(AccessibilityRenderExtension())
+  )
+
+  @Test
+  fun test() {
+    val view = ComposeView(paparazzi.context).apply {
+      setContent {
+        DropDown()
+      }
+    }
+    paparazzi.gif(view, fps = 120, end = 100)
+  }
 
   @Test
   fun testViews() {
