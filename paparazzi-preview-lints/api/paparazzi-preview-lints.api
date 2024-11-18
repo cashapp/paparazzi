@@ -1,0 +1,15 @@
+public final class app/cash/paparazzi/preview/lints/PaparazziPreviewDetector : com/android/tools/lint/detector/api/Detector, com/android/tools/lint/detector/api/SourceCodeScanner {
+	public fun <init> ()V
+	public fun applicableAnnotations ()Ljava/util/List;
+	public fun inheritAnnotation (Ljava/lang/String;)Z
+	public fun isApplicableAnnotationUsage (Lcom/android/tools/lint/detector/api/AnnotationUsageType;)Z
+	public fun visitAnnotationUsage (Lcom/android/tools/lint/detector/api/JavaContext;Lorg/jetbrains/uast/UElement;Lcom/android/tools/lint/detector/api/AnnotationInfo;Lcom/android/tools/lint/detector/api/AnnotationUsageInfo;)V
+}
+
+public final class app/cash/paparazzi/preview/lints/PaparazziPreviewIssueRegistry : com/android/tools/lint/client/api/IssueRegistry {
+	public fun <init> ()V
+	public fun getApi ()I
+	public fun getIssues ()Ljava/util/List;
+	public fun getVendor ()Lcom/android/tools/lint/client/api/Vendor;
+}
+

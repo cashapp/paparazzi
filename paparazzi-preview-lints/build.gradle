@@ -1,0 +1,16 @@
+apply plugin: 'org.jetbrains.kotlin.jvm'
+apply plugin: 'com.vanniktech.maven.publish'
+apply plugin: 'com.android.lint'
+apply plugin: 'com.google.devtools.ksp'
+
+dependencies {
+  compileOnly libs.lint.api
+  compileOnly libs.autoService.annotations
+
+  ksp libs.autoService.kspCompiler
+
+  testCompileOnly libs.lint.api
+  testImplementation libs.lint.tests
+  testImplementation libs.junit
+  testImplementation libs.truth
+}
