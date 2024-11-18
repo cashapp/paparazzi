@@ -1,6 +1,8 @@
 package app.cash.paparazzi.preview.processor
 
 import com.google.devtools.ksp.getVisibility
+import com.google.devtools.ksp.processing.KSPLogger
+import com.google.devtools.ksp.symbol.KSAnnotation
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSValueParameter
 import com.google.devtools.ksp.symbol.Visibility
@@ -8,8 +10,11 @@ import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.buildCodeBlock
 
-internal object PaparazziPoet {
-  fun buildFiles(functions: Sequence<KSFunctionDeclaration>, isTest: Boolean, env: EnvironmentOptions) =
+internal class PaparazziPoet(
+  private val logger: KSPLogger,
+  private val namespace: String
+) {
+  fun buildFiles(functions: Sequence<KSFunctionDeclaration>, isTest: Boolean) =
     if (isTest) {
       emptyList()
     } else {
@@ -17,59 +22,55 @@ internal object PaparazziPoet {
         buildAnnotationsFile(
           fileName = "PaparazziPreviews",
           propertyName = "paparazziPreviews",
-          functions = functions,
-          env = env
+          functions = functions
         )
       )
     }
 
   @Suppress("SameParameterValue")
-  private fun buildAnnotationsFile(
-    fileName: String,
-    propertyName: String,
-    functions: Sequence<KSFunctionDeclaration>,
-    env: EnvironmentOptions
-  ) = FileSpec.scriptBuilder(fileName, env.namespace)
-    .addCode(
-      buildCodeBlock {
-        addStatement("internal val %L = listOf<%L.PaparazziPreviewData>(", propertyName, PACKAGE_NAME)
-        indent()
+  private fun buildAnnotationsFile(fileName: String, propertyName: String, functions: Sequence<KSFunctionDeclaration>) =
+    FileSpec.scriptBuilder(fileName, namespace)
+      .addCode(
+        buildCodeBlock {
+          addStatement("internal val %L = listOf<%L.PaparazziPreviewData>(", propertyName, PACKAGE_NAME)
+          indent()
 
-        if (functions.count() == 0) {
-          addEmpty()
-        } else {
-          functions.process { func, previewParam ->
-            val visibilityCheck = checkVisibility(func)
-            val snapshotName = func.snapshotName(env)
+          if (functions.count() == 0) {
+            addEmpty()
+          } else {
+            functions.process { func, previewParam ->
+              val snapshotName = func.snapshotName(namespace)
 
-            when {
-              visibilityCheck.isPrivate -> addError(
-                function = func,
-                snapshotName = snapshotName,
-                buildErrorMessage = {
-                  "$it is private. Make it internal or public to generate a snapshot."
-                }
-              )
-              previewParam != null -> addError(
-                function = func,
-                snapshotName = snapshotName,
-                buildErrorMessage = {
-                  "$it preview uses PreviewParameters which aren't currently supported."
-                }
-              )
-              else -> addDefault(
-                function = func,
-                snapshotName = snapshotName
-              )
+              when {
+                func.getVisibility() == Visibility.PRIVATE -> addError(
+                  function = func,
+                  snapshotName = snapshotName,
+                  buildErrorMessage = {
+                    "$it is private. Make it internal or public to generate a snapshot."
+                  }
+                )
+
+                previewParam != null -> addError(
+                  function = func,
+                  snapshotName = snapshotName,
+                  buildErrorMessage = {
+                    "$it preview uses PreviewParameters which aren't currently supported."
+                  }
+                )
+
+                else -> addDefault(
+                  function = func,
+                  snapshotName = snapshotName
+                )
+              }
             }
           }
-        }
 
-        unindent()
-        addStatement(")")
-      }
-    )
-    .build()
+          unindent()
+          add(")")
+        }
+      )
+      .build()
 
   private fun CodeBlock.Builder.addEmpty() {
     addStatement("%L.PaparazziPreviewData.Empty,", PACKAGE_NAME)
@@ -110,24 +111,36 @@ internal object PaparazziPoet {
     addStatement("),")
   }
 
-  private fun KSFunctionDeclaration.snapshotName(env: EnvironmentOptions) =
+  private fun KSFunctionDeclaration.snapshotName(namespace: String) =
     buildList {
-      containingFile
-        ?.let { "${it.packageName.asString()}.${it.fileName.removeSuffix(".kt")}" }
-        ?.removePrefix("${env.namespace}.")
-        ?.replace(".", "_")
-        ?.let { add(it) }
+      with(containingFile!!) {
+        add(
+          "${packageName.asString()}.${fileName.removeSuffix(".kt")}"
+            .removePrefix("$namespace.")
+            .replace(".", "_")
+        )
+      }
       add(simpleName.asString())
     }.joinToString("_")
-
-  private fun checkVisibility(function: KSFunctionDeclaration) =
-    VisibilityCheck(
-      isFunctionPrivate = function.getVisibility() == Visibility.PRIVATE
-    )
 }
 
-internal data class VisibilityCheck(
-  val isFunctionPrivate: Boolean
-) {
-  val isPrivate = isFunctionPrivate
+private const val PACKAGE_NAME = "app.cash.paparazzi.annotations"
+
+internal fun KSAnnotation.isPreview() = qualifiedName() == "androidx.compose.ui.tooling.preview.Preview"
+internal fun KSAnnotation.isPreviewParameter() =
+  qualifiedName() == "androidx.compose.ui.tooling.preview.PreviewParameter"
+
+internal fun KSAnnotation.qualifiedName() = declaration().qualifiedName?.asString() ?: ""
+internal fun KSAnnotation.declaration() = annotationType.resolve().declaration
+
+/**
+ * when the same annotations are applied higher in the tree, an endless recursive lookup can occur.
+ * using a stack to keep to a record of each symbol lets us break when we hit one we've already encountered
+ */
+internal fun Sequence<KSAnnotation>.findPreviews(stack: Set<KSAnnotation> = setOf()): Sequence<KSAnnotation> {
+  val direct = filter { it.isPreview() }
+  val indirect = filterNot { it.isPreview() || stack.contains(it) }
+    .map { it.declaration().annotations.findPreviews(stack.plus(it)) }
+    .flatten()
+  return direct.plus(indirect)
 }

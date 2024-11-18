@@ -2,14 +2,12 @@
 
 package app.cash.paparazzi.preview.processor
 
-import app.cash.paparazzi.preview.processor.utils.DefaultComposeSource
 import com.google.common.truth.Truth.assertThat
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.SourceFile
 import com.tschuchort.compiletesting.kspAllWarningsAsErrors
 import com.tschuchort.compiletesting.kspArgs
 import com.tschuchort.compiletesting.kspIncremental
-import com.tschuchort.compiletesting.kspSourcesDir
 import com.tschuchort.compiletesting.symbolProcessorProviders
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.junit.Rule
@@ -20,254 +18,214 @@ import java.io.File
 class PreviewProcessorProviderTest {
   @get:Rule val temporaryFolder = TemporaryFolder()
 
-  private val previewProcessor = PreviewProcessorProvider()
+  private val kspRoot: File
+    get() = temporaryFolder.root.resolve("debug/ksp/sources")
+  private val variantFile: File
+    get() = kspRoot.resolve("resources/$TEST_NAMESPACE/paparazziVariant.txt")
+  private val previewsFile: File
+    get() = kspRoot.resolve("kotlin/$TEST_NAMESPACE/PaparazziPreviews.kt")
 
   @Test
   fun empty() {
-    val kspCompileResult = compile(
+    val compilation = prepareCompilation(
       SourceFile.kotlin(
         "SamplePreview.kt",
         """
-                package test
+        package test
 
-                import androidx.compose.runtime.Composable
-                import androidx.compose.ui.tooling.preview.Preview
-                import app.cash.paparazzi.annotations.Paparazzi
+        import androidx.compose.runtime.Composable
+        import androidx.compose.ui.tooling.preview.Preview
+        import app.cash.paparazzi.annotations.Paparazzi
 
-                @Preview
-                @Composable
-                fun SamplePreview() = Unit
-                """
+        @Preview
+        @Composable
+        fun SamplePreview() = Unit
+        """.trimIndent()
       )
     )
+    val result = compilation.compile()
 
-    assertThat(kspCompileResult.result.exitCode).isEqualTo(KotlinCompilation.ExitCode.OK)
-
-    val generatedFiles = kspCompileResult.generatedFiles.sorted()
-    assertThat(generatedFiles.size).isEqualTo(2)
-    val file = generatedFiles[1]
-    assertThat(file.name).isEqualTo("paparazziVariant.txt")
-    file.withText {
-      // Assertion for variant has "sources" as we can't specify the variant name in testing KSP
-      assertThat(it).isEqualTo(
+    assertThat(result.exitCode).isEqualTo(KotlinCompilation.ExitCode.OK)
+    // Assertion for variant has "sources" as we can't specify the variant name in testing KSP
+    assertThat(variantFile.readText()).isEqualTo("sources")
+    assertThat(previewsFile.readText())
+      .isEqualTo(
         """
-          sources
+        package test
+
+        internal val paparazziPreviews = listOf<app.cash.paparazzi.annotations.PaparazziPreviewData>(
+          app.cash.paparazzi.annotations.PaparazziPreviewData.Empty,
+        )
         """.trimIndent()
       )
-    }
-
-    val file2 = generatedFiles[0]
-    assertThat(file2.name).isEqualTo("PaparazziPreviews.kt")
-    file2.withText {
-      assertThat(it).isEqualTo(
-        """
-          package test
-
-          internal val paparazziPreviews = listOf<app.cash.paparazzi.annotations.PaparazziPreviewData>(
-            app.cash.paparazzi.annotations.PaparazziPreviewData.Empty,
-          )
-        """.trimIndent()
-      )
-    }
   }
 
   @Test
   fun default() {
-    val kspCompileResult = compile(
+    val compilation = prepareCompilation(
       SourceFile.kotlin(
         "SamplePreview.kt",
         """
-                package test
+        package test
 
-                import androidx.compose.runtime.Composable
-                import androidx.compose.ui.tooling.preview.Preview
-                import app.cash.paparazzi.annotations.Paparazzi
+        import androidx.compose.runtime.Composable
+        import androidx.compose.ui.tooling.preview.Preview
+        import app.cash.paparazzi.annotations.Paparazzi
 
-
-                @Paparazzi
-                @Preview
-                @Composable
-                fun SamplePreview() = Unit
-                """
+        @Paparazzi
+        @Preview
+        @Composable
+        fun SamplePreview() = Unit
+        """.trimIndent()
       )
     )
+    val result = compilation.compile()
 
-    assertThat(kspCompileResult.result.exitCode).isEqualTo(KotlinCompilation.ExitCode.OK)
-
-    val generatedFiles = kspCompileResult.generatedFiles.sorted()
-    assertThat(generatedFiles.size).isEqualTo(2)
-    val file = generatedFiles[1]
-    assertThat(file.name).isEqualTo("paparazziVariant.txt")
-    file.withText {
-      // Assertion for variant has "sources" as we can't specify the variant name in testing KSP
-      assertThat(it).isEqualTo(
+    assertThat(result.exitCode).isEqualTo(KotlinCompilation.ExitCode.OK)
+    // Assertion for variant has "sources" as we can't specify the variant name in testing KSP
+    assertThat(variantFile.readText()).isEqualTo("sources")
+    assertThat(previewsFile.readText())
+      .isEqualTo(
         """
-          sources
+        package test
+
+        internal val paparazziPreviews = listOf<app.cash.paparazzi.annotations.PaparazziPreviewData>(
+          app.cash.paparazzi.annotations.PaparazziPreviewData.Default(
+            snapshotName = "SamplePreview_SamplePreview",
+            composable = { test.SamplePreview() },
+          ),
+        )
         """.trimIndent()
       )
-    }
-
-    val file2 = generatedFiles.sorted()[0]
-    assertThat(file2.name).isEqualTo("PaparazziPreviews.kt")
-    file2.withText {
-      assertThat(it).isEqualTo(
-        """
-          package test
-
-          internal val paparazziPreviews = listOf<app.cash.paparazzi.annotations.PaparazziPreviewData>(
-            app.cash.paparazzi.annotations.PaparazziPreviewData.Default(
-              snapshotName = "SamplePreview_SamplePreview",
-              composable = { test.SamplePreview() },
-            ),
-          )
-        """.trimIndent()
-      )
-    }
   }
 
   @Test
   fun privatePreview() {
-    val kspCompileResult = compile(
+    val compilation = prepareCompilation(
       SourceFile.kotlin(
         "SamplePreview.kt",
         """
-                package test
+        package test
 
-                import androidx.compose.runtime.Composable
-                import androidx.compose.ui.tooling.preview.Preview
-                import app.cash.paparazzi.annotations.Paparazzi
+        import androidx.compose.runtime.Composable
+        import androidx.compose.ui.tooling.preview.Preview
+        import app.cash.paparazzi.annotations.Paparazzi
 
-
-                @Paparazzi
-                @Preview
-                @Composable
-                private fun SamplePreview() = Unit
-                """
-      )
-    )
-
-    assertThat(kspCompileResult.result.exitCode).isEqualTo(KotlinCompilation.ExitCode.OK)
-
-    val file = kspCompileResult.generatedFiles.sorted()[0]
-    assertThat(file.name).isEqualTo("PaparazziPreviews.kt")
-    file.withText {
-      assertThat(it).isEqualTo(
-        """
-          package test
-
-          internal val paparazziPreviews = listOf<app.cash.paparazzi.annotations.PaparazziPreviewData>(
-            app.cash.paparazzi.annotations.PaparazziPreviewData.Error(
-              snapshotName = "SamplePreview_SamplePreview",
-              message = "test.SamplePreview is private. Make it internal or public to generate a snapshot.",
-            ),
-          )
+        @Paparazzi
+        @Preview
+        @Composable
+        private fun SamplePreview() = Unit
         """.trimIndent()
       )
-    }
+    )
+    val result = compilation.compile()
+
+    assertThat(result.exitCode).isEqualTo(KotlinCompilation.ExitCode.OK)
+    assertThat(previewsFile.readText())
+      .isEqualTo(
+        """
+        package test
+
+        internal val paparazziPreviews = listOf<app.cash.paparazzi.annotations.PaparazziPreviewData>(
+          app.cash.paparazzi.annotations.PaparazziPreviewData.Error(
+            snapshotName = "SamplePreview_SamplePreview",
+            message = "test.SamplePreview is private. Make it internal or public to generate a snapshot.",
+          ),
+        )
+        """.trimIndent()
+      )
   }
 
   @Test
   fun previewParameters() {
-    val kspCompileResult = compile(
+    val compilation = prepareCompilation(
       SourceFile.kotlin(
         "SamplePreview.kt",
         """
-                package test
+        package test
 
-                import androidx.compose.runtime.Composable
-                import androidx.compose.ui.tooling.preview.Preview
-                import androidx.compose.ui.tooling.preview.PreviewParameter
-                import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-                import app.cash.paparazzi.annotations.Paparazzi
+        import androidx.compose.runtime.Composable
+        import androidx.compose.ui.tooling.preview.Preview
+        import androidx.compose.ui.tooling.preview.PreviewParameter
+        import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+        import app.cash.paparazzi.annotations.Paparazzi
 
+        @Paparazzi
+        @Preview
+        @Composable
+        fun SamplePreview(
+          @PreviewParameter(SamplePreviewParameter::class) text: String,
+        ) = Unit
 
-                @Paparazzi
-                @Preview
-                @Composable
-                fun SamplePreview(
-                  @PreviewParameter(SamplePreviewParameter::class) text: String,
-                ) = Unit
-
-
-                object SamplePreviewParameter: PreviewParameterProvider<String> {
-                  override val values: Sequence<String> =
-                    sequenceOf("test")
-                }
-                """
+        object SamplePreviewParameter: PreviewParameterProvider<String> {
+          override val values: Sequence<String> = sequenceOf("test")
+        }
+        """
       )
     )
+    val result = compilation.compile()
 
-    assertThat(kspCompileResult.result.exitCode).isEqualTo(KotlinCompilation.ExitCode.OK)
-
-    val file = kspCompileResult.generatedFiles.sorted()[0]
-    assertThat(file.name).isEqualTo("PaparazziPreviews.kt")
-    file.withText {
-      assertThat(it).isEqualTo(
+    assertThat(result.exitCode).isEqualTo(KotlinCompilation.ExitCode.OK)
+    assertThat(previewsFile.readText())
+      .isEqualTo(
         """
-          package test
+        package test
 
-          internal val paparazziPreviews = listOf<app.cash.paparazzi.annotations.PaparazziPreviewData>(
-            app.cash.paparazzi.annotations.PaparazziPreviewData.Error(
-              snapshotName = "SamplePreview_SamplePreview",
-              message = "test.SamplePreview preview uses PreviewParameters which aren't currently supported.",
-            ),
-          )
+        internal val paparazziPreviews = listOf<app.cash.paparazzi.annotations.PaparazziPreviewData>(
+          app.cash.paparazzi.annotations.PaparazziPreviewData.Error(
+            snapshotName = "SamplePreview_SamplePreview",
+            message = "test.SamplePreview preview uses PreviewParameters which aren't currently supported.",
+          ),
+        )
         """.trimIndent()
       )
-    }
   }
 
   @Test
   fun multiplePreviews() {
-    val kspCompileResult = compile(
+    val compilation = prepareCompilation(
       SourceFile.kotlin(
         "SamplePreview.kt",
         """
-                package test
+        package test
 
-                import androidx.compose.runtime.Composable
-                import androidx.compose.ui.tooling.preview.Preview
-                import app.cash.paparazzi.annotations.Paparazzi
+        import androidx.compose.runtime.Composable
+        import androidx.compose.ui.tooling.preview.Preview
+        import app.cash.paparazzi.annotations.Paparazzi
 
-
-                @Paparazzi
-                @Preview
-                @Preview(name = "Night Pixel 4", uiMode = 0x20, device = "id:pixel_4") // uiMode maps to android.content.res.Configuration.UI_MODE_NIGHT_YES
-                @Composable
-                fun SamplePreview() = Unit
-                """
-      )
-    )
-
-    assertThat(kspCompileResult.result.exitCode).isEqualTo(KotlinCompilation.ExitCode.OK)
-
-    val generatedFiles = kspCompileResult.generatedFiles.sorted()
-    val file2 = generatedFiles[0]
-    assertThat(file2.name).isEqualTo("PaparazziPreviews.kt")
-    file2.withText {
-      assertThat(it).isEqualTo(
-        """
-          package test
-
-          internal val paparazziPreviews = listOf<app.cash.paparazzi.annotations.PaparazziPreviewData>(
-            app.cash.paparazzi.annotations.PaparazziPreviewData.Default(
-              snapshotName = "SamplePreview_SamplePreview",
-              composable = { test.SamplePreview() },
-            ),
-            app.cash.paparazzi.annotations.PaparazziPreviewData.Default(
-              snapshotName = "SamplePreview_SamplePreview",
-              composable = { test.SamplePreview() },
-            ),
-          )
+        @Paparazzi
+        @Preview
+        @Preview(
+           name = "Night Pixel 4",
+           uiMode = 0x20, // uiMode maps to android.content.res.Configuration.UI_MODE_NIGHT_YES
+           device = "id:pixel_4"
+        )
+        @Composable
+        fun SamplePreview() = Unit
         """.trimIndent()
       )
-    }
-  }
+    )
+    val result = compilation.compile()
 
-  private fun File.withText(doWithText: (String) -> Unit) {
-    inputStream().use {
-      doWithText(String(it.readBytes()).trimIndent())
-    }
+    assertThat(result.exitCode).isEqualTo(KotlinCompilation.ExitCode.OK)
+
+    assertThat(previewsFile.readText())
+      .isEqualTo(
+        """
+        package test
+
+        internal val paparazziPreviews = listOf<app.cash.paparazzi.annotations.PaparazziPreviewData>(
+          app.cash.paparazzi.annotations.PaparazziPreviewData.Default(
+            snapshotName = "SamplePreview_SamplePreview",
+            composable = { test.SamplePreview() },
+          ),
+          app.cash.paparazzi.annotations.PaparazziPreviewData.Default(
+            snapshotName = "SamplePreview_SamplePreview",
+            composable = { test.SamplePreview() },
+          ),
+        )
+        """.trimIndent()
+      )
   }
 
   private fun prepareCompilation(vararg sourceFiles: SourceFile): KotlinCompilation =
@@ -275,27 +233,93 @@ class PreviewProcessorProviderTest {
       .apply {
         workingDir = File(temporaryFolder.root, "debug")
         inheritClassPath = true
-        symbolProcessorProviders = listOf(previewProcessor)
-        sources = sourceFiles.asList() + DefaultComposeSource
+        sources = sourceFiles.asList() + COMPOSE_SOURCES + PAPARAZZI_ANNOTATION_SOURCE
         verbose = false
-        kspIncremental = true
+
         kspAllWarningsAsErrors = true
-        kspArgs["app.cash.paparazzi.preview.namespace"] = "test"
+        kspArgs["app.cash.paparazzi.preview.namespace"] = TEST_NAMESPACE
+        kspIncremental = true
+        symbolProcessorProviders = listOf(PreviewProcessorProvider())
       }
 
-  private fun compile(vararg sourceFiles: SourceFile): KspCompileResult {
-    val compilation = prepareCompilation(*sourceFiles)
-    val result = compilation.compile()
-    return KspCompileResult(
-      result = result,
-      generatedFiles = findGeneratedFiles(compilation)
-    )
-  }
+  private companion object {
+    private const val TEST_NAMESPACE = "test"
+    private val COMPOSE_SOURCES =
+      listOf(
+        SourceFile.kotlin(
+          "Composable.kt",
+          """
+          package androidx.compose.runtime
 
-  private fun findGeneratedFiles(compilation: KotlinCompilation): List<File> {
-    return compilation.kspSourcesDir
-      .walkTopDown()
-      .filter { it.isFile }
-      .toList()
+          @Retention(AnnotationRetention.BINARY)
+          @Target(
+              AnnotationTarget.FUNCTION,
+              AnnotationTarget.TYPE,
+              AnnotationTarget.TYPE_PARAMETER,
+              AnnotationTarget.PROPERTY_GETTER
+          )
+          annotation class Composable
+          """.trimIndent()
+        ),
+        SourceFile.kotlin(
+          "PreviewAnnotation.kt",
+          """
+          package androidx.compose.ui.tooling.preview
+
+          @Retention(AnnotationRetention.BINARY)
+          @Target(
+              AnnotationTarget.ANNOTATION_CLASS,
+              AnnotationTarget.FUNCTION
+          )
+          @Repeatable
+          annotation class Preview(
+            val name: String = "",
+            val group: String = "",
+            val apiLevel: Int = -1,
+            val widthDp: Int = -1,
+            val heightDp: Int = -1,
+            val locale: String = "",
+            val fontScale: Float = 1f,
+            val showSystemUi: Boolean = false,
+            val showBackground: Boolean = false,
+            val backgroundColor: Long = 0,
+            val uiMode: Int = 0,
+            val device: String = "",
+            val wallpaper: Int = 0,
+          )
+          """.trimIndent()
+        ),
+        SourceFile.kotlin(
+          "PreviewParameter.kt",
+          """
+          package androidx.compose.ui.tooling.preview
+
+          import kotlin.jvm.JvmDefaultWithCompatibility
+          import kotlin.reflect.KClass
+
+          @JvmDefaultWithCompatibility
+          interface PreviewParameterProvider<T> {
+              val values: Sequence<T>
+              val count get() = values.count()
+          }
+
+          annotation class PreviewParameter(
+              val provider: KClass<out PreviewParameterProvider<*>>,
+              val limit: Int = Int.MAX_VALUE
+          )
+          """.trimIndent()
+        )
+      )
+
+    private val PAPARAZZI_ANNOTATION_SOURCE =
+      SourceFile.kotlin(
+        "Paparazzi.kt",
+        """
+        package app.cash.paparazzi.annotations
+        @Target(AnnotationTarget.FUNCTION)
+        @Retention(AnnotationRetention.BINARY)
+        annotation class Paparazzi
+        """.trimIndent()
+      )
   }
 }
