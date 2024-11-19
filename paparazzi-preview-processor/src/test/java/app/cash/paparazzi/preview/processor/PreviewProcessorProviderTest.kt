@@ -26,7 +26,7 @@ class PreviewProcessorProviderTest {
     get() = kspRoot.resolve("kotlin/$TEST_NAMESPACE/PaparazziPreviews.kt")
 
   @Test
-  fun empty() {
+  fun noAnnotatedPreviews() {
     val compilation = prepareCompilation(
       SourceFile.kotlin(
         "SamplePreview.kt",
@@ -46,22 +46,13 @@ class PreviewProcessorProviderTest {
     val result = compilation.compile()
 
     assertThat(result.exitCode).isEqualTo(KotlinCompilation.ExitCode.OK)
+    assertThat(result.messages).contains("i: [ksp] No functions found with @Paparazzi annotation.")
     // Assertion for variant has "sources" as we can't specify the variant name in testing KSP
     assertThat(variantFile.readText()).isEqualTo("sources")
-    assertThat(previewsFile.readText())
-      .isEqualTo(
-        """
-        package test
-
-        internal val paparazziPreviews = listOf<app.cash.paparazzi.annotations.PaparazziPreviewData>(
-          app.cash.paparazzi.annotations.PaparazziPreviewData.Empty,
-        )
-        """.trimIndent()
-      )
   }
 
   @Test
-  fun default() {
+  fun simplePreview() {
     val compilation = prepareCompilation(
       SourceFile.kotlin(
         "SamplePreview.kt",
@@ -90,7 +81,7 @@ class PreviewProcessorProviderTest {
         package test
 
         internal val paparazziPreviews = listOf<app.cash.paparazzi.annotations.PaparazziPreviewData>(
-          app.cash.paparazzi.annotations.PaparazziPreviewData.Default(
+          app.cash.paparazzi.annotations.PaparazziPreviewData(
             snapshotName = "SamplePreview_SamplePreview",
             composable = { test.SamplePreview() },
           ),
@@ -120,20 +111,9 @@ class PreviewProcessorProviderTest {
     )
     val result = compilation.compile()
 
-    assertThat(result.exitCode).isEqualTo(KotlinCompilation.ExitCode.OK)
-    assertThat(previewsFile.readText())
-      .isEqualTo(
-        """
-        package test
-
-        internal val paparazziPreviews = listOf<app.cash.paparazzi.annotations.PaparazziPreviewData>(
-          app.cash.paparazzi.annotations.PaparazziPreviewData.Error(
-            snapshotName = "SamplePreview_SamplePreview",
-            message = "test.SamplePreview is private. Make it internal or public to generate a snapshot.",
-          ),
-        )
-        """.trimIndent()
-      )
+    assertThat(result.exitCode).isEqualTo(KotlinCompilation.ExitCode.COMPILATION_ERROR)
+    assertThat(result.messages)
+      .contains("e: [ksp] test.SamplePreview is private. Make it internal or public to generate a snapshot.")
   }
 
   @Test
@@ -165,20 +145,9 @@ class PreviewProcessorProviderTest {
     )
     val result = compilation.compile()
 
-    assertThat(result.exitCode).isEqualTo(KotlinCompilation.ExitCode.OK)
-    assertThat(previewsFile.readText())
-      .isEqualTo(
-        """
-        package test
-
-        internal val paparazziPreviews = listOf<app.cash.paparazzi.annotations.PaparazziPreviewData>(
-          app.cash.paparazzi.annotations.PaparazziPreviewData.Error(
-            snapshotName = "SamplePreview_SamplePreview",
-            message = "test.SamplePreview preview uses PreviewParameters which aren't currently supported.",
-          ),
-        )
-        """.trimIndent()
-      )
+    assertThat(result.exitCode).isEqualTo(KotlinCompilation.ExitCode.COMPILATION_ERROR)
+    assertThat(result.messages)
+      .contains("e: [ksp] test.SamplePreview preview uses @PreviewParameters which aren't currently supported.")
   }
 
   @Test
@@ -208,18 +177,17 @@ class PreviewProcessorProviderTest {
     val result = compilation.compile()
 
     assertThat(result.exitCode).isEqualTo(KotlinCompilation.ExitCode.OK)
-
     assertThat(previewsFile.readText())
       .isEqualTo(
         """
         package test
 
         internal val paparazziPreviews = listOf<app.cash.paparazzi.annotations.PaparazziPreviewData>(
-          app.cash.paparazzi.annotations.PaparazziPreviewData.Default(
+          app.cash.paparazzi.annotations.PaparazziPreviewData(
             snapshotName = "SamplePreview_SamplePreview",
             composable = { test.SamplePreview() },
           ),
-          app.cash.paparazzi.annotations.PaparazziPreviewData.Default(
+          app.cash.paparazzi.annotations.PaparazziPreviewData(
             snapshotName = "SamplePreview_SamplePreview",
             composable = { test.SamplePreview() },
           ),

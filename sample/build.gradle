@@ -31,6 +31,10 @@ dependencies {
   // deliberately not in versions.toml as a one-off
   implementation 'com.airbnb.android:lottie:6.6.0'
 
+  // TODO: wire via plugin
+  implementation projects.paparazziAnnotations
+  lintChecks projects.paparazziPreviewLints
+
   testImplementation libs.testParameterInjector
 }
 

@@ -18,13 +18,18 @@ internal class PaparazziPoet(
     if (isTest) {
       emptyList()
     } else {
-      listOf(
-        buildAnnotationsFile(
-          fileName = "PaparazziPreviews",
-          propertyName = "paparazziPreviews",
-          functions = functions
+      if (functions.count() == 0) {
+        logger.info("No functions found with @Paparazzi annotation.")
+        emptyList()
+      } else {
+        listOf(
+          buildAnnotationsFile(
+            fileName = "PaparazziPreviews",
+            propertyName = "paparazziPreviews",
+            functions = functions
+          )
         )
-      )
+      }
     }
 
   @Suppress("SameParameterValue")
@@ -35,34 +40,22 @@ internal class PaparazziPoet(
           addStatement("internal val %L = listOf<%L.PaparazziPreviewData>(", propertyName, PACKAGE_NAME)
           indent()
 
-          if (functions.count() == 0) {
-            addEmpty()
-          } else {
-            functions.process { func, previewParam ->
-              val snapshotName = func.snapshotName(namespace)
-
-              when {
-                func.getVisibility() == Visibility.PRIVATE -> addError(
-                  function = func,
-                  snapshotName = snapshotName,
-                  buildErrorMessage = {
-                    "$it is private. Make it internal or public to generate a snapshot."
-                  }
-                )
-
-                previewParam != null -> addError(
-                  function = func,
-                  snapshotName = snapshotName,
-                  buildErrorMessage = {
-                    "$it preview uses PreviewParameters which aren't currently supported."
-                  }
-                )
-
-                else -> addDefault(
-                  function = func,
-                  snapshotName = snapshotName
-                )
+          functions.process { func, previewParam ->
+            val snapshotName = func.snapshotName(namespace)
+            val qualifiedName = func.qualifiedName?.asString()
+            when {
+              func.getVisibility() == Visibility.PRIVATE -> {
+                logger.error("$qualifiedName is private. Make it internal or public to generate a snapshot.")
               }
+
+              previewParam != null -> {
+                logger.error("$qualifiedName preview uses @PreviewParameters which aren't currently supported.")
+              }
+
+              else -> addDefault(
+                function = func,
+                snapshotName = snapshotName
+              )
             }
           }
 
@@ -71,10 +64,6 @@ internal class PaparazziPoet(
         }
       )
       .build()
-
-  private fun CodeBlock.Builder.addEmpty() {
-    addStatement("%L.PaparazziPreviewData.Empty,", PACKAGE_NAME)
-  }
 
   private fun Sequence<KSFunctionDeclaration>.process(block: (KSFunctionDeclaration, KSValueParameter?) -> Unit) =
     flatMap { func ->
@@ -87,23 +76,8 @@ internal class PaparazziPoet(
       block(func, previewParam)
     }
 
-  private fun CodeBlock.Builder.addError(
-    function: KSFunctionDeclaration,
-    snapshotName: String,
-    buildErrorMessage: (String?) -> String
-  ) {
-    val qualifiedName = function.qualifiedName?.asString()
-
-    addStatement("%L.PaparazziPreviewData.Error(", PACKAGE_NAME)
-    indent()
-    addStatement("snapshotName = %S,", snapshotName)
-    addStatement("message = %S,", buildErrorMessage(qualifiedName))
-    unindent()
-    addStatement("),")
-  }
-
   private fun CodeBlock.Builder.addDefault(function: KSFunctionDeclaration, snapshotName: String) {
-    addStatement("%L.PaparazziPreviewData.Default(", PACKAGE_NAME)
+    addStatement("%L.PaparazziPreviewData(", PACKAGE_NAME)
     indent()
     addStatement("snapshotName = %S,", snapshotName)
     addStatement("composable = { %L() },", function.qualifiedName?.asString())
