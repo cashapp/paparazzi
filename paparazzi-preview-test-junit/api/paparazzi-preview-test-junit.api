@@ -21,10 +21,10 @@ public final class app/cash/paparazzi/preview/DefaultLocaleRule : org/junit/rule
 	public final fun getLocale ()Ljava/lang/String;
 }
 
-public class app/cash/paparazzi/preview/PaparazziValuesProvider : com/google/testing/junit/testparameterinjector/TestParameter$TestParameterValuesProvider {
+public class app/cash/paparazzi/preview/PaparazziValuesProvider : com/google/testing/junit/testparameterinjector/TestParameterValuesProvider {
 	public static final field $stable I
 	public fun <init> (Ljava/util/List;)V
-	public fun provideValues ()Ljava/util/List;
+	protected fun provideValues (Lcom/google/testing/junit/testparameterinjector/TestParameterValuesProvider$Context;)Ljava/util/List;
 }
 
 public final class app/cash/paparazzi/preview/SnapshotKt {

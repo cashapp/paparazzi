@@ -1,6 +1,5 @@
 package app.cash.paparazzi.annotations
 
-import android.content.res.Configuration
 import androidx.compose.runtime.Composable
 
 public object PaparazziPreviewDefaults {
@@ -120,3 +119,21 @@ internal fun Int.uiModeName() =
     Configuration.UI_MODE_TYPE_VR_HEADSET -> "VR_Headset"
     else -> null
   }
+
+/***
+ * Values taken from `android.content.res.Configuration` to avoid dependency on Android SDK/LayoutLib
+ */
+private object Configuration {
+  const val UI_MODE_TYPE_MASK = 15
+  const val UI_MODE_NIGHT_MASK = 48
+
+  const val UI_MODE_TYPE_NORMAL = 1
+  const val UI_MODE_TYPE_CAR = 3
+  const val UI_MODE_TYPE_DESK = 2
+  const val UI_MODE_TYPE_APPLIANCE = 5
+  const val UI_MODE_TYPE_WATCH = 6
+  const val UI_MODE_TYPE_VR_HEADSET = 7
+
+  const val UI_MODE_NIGHT_NO = 16
+  const val UI_MODE_NIGHT_YES = 32
+}
