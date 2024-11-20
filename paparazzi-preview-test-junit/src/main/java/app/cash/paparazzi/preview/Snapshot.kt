@@ -5,7 +5,7 @@ import androidx.compose.runtime.Composable
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Paparazzi
 import app.cash.paparazzi.preview.runtime.PaparazziPreviewData
-import com.google.testing.junit.testparameterinjector.TestParameter.TestParameterValuesProvider
+import com.google.testing.junit.testparameterinjector.TestParameterValuesProvider
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
@@ -76,7 +76,7 @@ public fun List<PaparazziPreviewData>.flatten(): List<PaparazziPreviewData> =
 public open class PaparazziValuesProvider(
   private val annotations: List<PaparazziPreviewData>
 ) : TestParameterValuesProvider() {
-  override fun provideValues(context: Context?): MutableList<*> = annotations.toMutableList()
+  override fun provideValues(context: Context): List<PaparazziPreviewData> = annotations
 }
 
 /**

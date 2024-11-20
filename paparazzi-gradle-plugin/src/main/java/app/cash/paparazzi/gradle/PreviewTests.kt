@@ -38,7 +38,6 @@ class PreviewTests(
 
   @Test
   fun preview() {
-    assumeTrue(preview !is PaparazziPreviewData.Empty)
     paparazzi.snapshot(preview)
   }
 }

@@ -81,13 +81,13 @@ class PreviewProcessorProviderTest {
         package test
 
         internal val paparazziPreviews = listOf<app.cash.paparazzi.preview.runtime.PaparazziPreviewData>(
-          app.cash.paparazzi.preview.runtime.PaparazziPreviewData(
-              snapshotName = "SamplePreview_SamplePreview",
-              composable = { test.SamplePreview() },
-              preview = app.cash.paparazzi.annotations.PreviewData(
-              ),
+          app.cash.paparazzi.preview.runtime.PaparazziPreviewData.Default(
+            snapshotName = "SamplePreview_SamplePreview",
+            composable = { test.SamplePreview() },
+            preview = app.cash.paparazzi.annotations.PreviewData(
             ),
-          )
+          ),
+        )
         """.trimIndent()
       )
   }
@@ -147,9 +147,27 @@ class PreviewProcessorProviderTest {
     )
     val result = compilation.compile()
 
-    assertThat(result.exitCode).isEqualTo(KotlinCompilation.ExitCode.COMPILATION_ERROR)
-    assertThat(result.messages)
-      .contains("e: [ksp] test.SamplePreview preview uses @PreviewParameters which aren't currently supported.")
+    assertThat(result.exitCode).isEqualTo(KotlinCompilation.ExitCode.OK)
+
+    assertThat(previewsFile.readText())
+      .isEqualTo(
+        """
+        package test
+
+        internal val paparazziPreviews = listOf<app.cash.paparazzi.annotations.PaparazziPreviewData>(
+          app.cash.paparazzi.annotations.PaparazziPreviewData.Provider(
+            snapshotName = "SamplePreview_SamplePreview",
+            composable = { test.SamplePreview(it) },
+            previewParameter = app.cash.paparazzi.annotations.PreviewParameterData(
+              name = "text",
+              values = test.SamplePreviewParameter.values,
+            ),
+            preview = app.cash.paparazzi.annotations.PreviewData(
+            ),
+          ),
+        )
+        """.trimIndent()
+      )
   }
 
   @Test
@@ -185,19 +203,19 @@ class PreviewProcessorProviderTest {
         package test
 
         internal val paparazziPreviews = listOf<app.cash.paparazzi.preview.runtime.PaparazziPreviewData>(
-          app.cash.paparazzi.preview.runtime.PaparazziPreviewData(
-              snapshotName = "SamplePreview_SamplePreview",
-              composable = { test.SamplePreview() },
-              preview = app.cash.paparazzi.annotations.PreviewData(
-              ),
+          app.cash.paparazzi.preview.runtime.PaparazziPreviewData.Default(
+            snapshotName = "SamplePreview_SamplePreview",
+            composable = { test.SamplePreview() },
+            preview = app.cash.paparazzi.annotations.PreviewData(
             ),
-            app.cash.paparazzi.preview.runtime.PaparazziPreviewData(
-              snapshotName = "SamplePreview_SamplePreview",
-              composable = { test.SamplePreview() },
-              preview = app.cash.paparazzi.annotations.PreviewData(
-                device = "id:pixel_4",
-                uiMode = 32,
-              ),
+          ),
+          app.cash.paparazzi.preview.runtime.PaparazziPreviewData.Default(
+            snapshotName = "SamplePreview_SamplePreview",
+            composable = { test.SamplePreview() },
+            preview = app.cash.paparazzi.annotations.PreviewData(
+              device = "id:pixel_4",
+              uiMode = 32,
+            ),
           ),
         )
         """.trimIndent()
