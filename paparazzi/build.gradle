@@ -34,6 +34,8 @@ dependencies {
   compileOnlyAarAsJar libs.androidx.activity
   compileOnlyAarAsJar libs.androidx.lifecycle.runtime // Needed for setViewTreeLifecycleOwner
 
+//  implementation "org.sejda.imageio:webp-imageio:0.1.6"
+  implementation "com.github.gotson:webp-imageio:0.2.2"
   implementation libs.bytebuddy.agent
   implementation libs.bytebuddy.core
   implementation libs.trove4j

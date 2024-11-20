@@ -30,10 +30,16 @@ import android.widget.Button
 import android.widget.TextView
 import com.android.internal.lang.System_Delegate
 import com.google.common.truth.Truth.assertThat
+import com.luciad.imageio.webp.WebPReadParam
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
+import java.awt.image.BufferedImage
+import java.io.File
 import java.util.concurrent.TimeUnit
+import javax.imageio.ImageIO
+import javax.imageio.ImageReader
+import javax.imageio.stream.FileImageInputStream
 
 class PaparazziTest {
   @get:Rule
@@ -41,6 +47,21 @@ class PaparazziTest {
 
   val paparazzi
     get() = testRule.paparazzi
+
+  @Test
+  fun s() {
+    // Obtain a WebP ImageReader instance
+    val reader: ImageReader = ImageIO.getImageReadersByMIMEType("image/webp").next()
+
+// Configure decoding parameters
+    val readParam: WebPReadParam = WebPReadParam()
+
+// Configure the input on the ImageReader
+    reader.setInput(Boolean::class.java.getResourceAsStream("5.webp"))
+
+// Decode the image
+  val image: BufferedImage = reader.read(0, readParam)
+  }
 
   @Test
   fun drawCalls() {
