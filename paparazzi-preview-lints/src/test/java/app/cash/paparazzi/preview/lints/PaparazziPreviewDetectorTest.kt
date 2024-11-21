@@ -163,48 +163,6 @@ class PaparazziPreviewDetectorTest {
       )
   }
 
-  @Test
-  fun previewParameters() {
-    lint()
-      .files(
-        kotlin(
-          """
-          package test
-
-          import androidx.compose.runtime.Composable
-          import androidx.compose.ui.tooling.preview.Preview
-          import androidx.compose.ui.tooling.preview.PreviewParameter
-          import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-          import app.cash.paparazzi.annotations.Paparazzi
-
-          @Paparazzi
-          @Preview
-          @Composable
-          fun SamplePreview(
-            @PreviewParameter(SamplePreviewParameter::class) text: String,
-          ) {}
-
-          object SamplePreviewParameter: PreviewParameterProvider<String> {
-            override val values: Sequence<String> = sequenceOf("test")
-          }
-          """
-        ).indented(),
-        *COMPOSE_SOURCES.toTypedArray(),
-        PAPARAZZI_ANNOTATION
-      )
-      .issues(PaparazziPreviewDetector.PREVIEW_PARAMETERS_NOT_SUPPORTED)
-      .skipTestModes(TestMode.SUPPRESSIBLE)
-      .run()
-      .expect(
-        """
-        src/test/SamplePreviewParameter.kt:9: Error: @Preview of SamplePreview uses PreviewParameters which aren't currently supported. [PreviewParametersNotSupported]
-        @Paparazzi
-        ~~~~~~~~~~
-        1 errors, 0 warnings
-        """.trimIndent()
-      )
-  }
-
   private companion object {
     private val COMPOSE_SOURCES =
       listOf(

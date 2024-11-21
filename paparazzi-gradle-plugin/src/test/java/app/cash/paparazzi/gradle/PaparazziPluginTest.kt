@@ -1411,7 +1411,9 @@ class PaparazziPluginTest {
       File(testReportDir, "app.cash.paparazzi.plugin.test.TestParameterInjectorTest.html")
     htmlText = testParamInjectorTestHtmlFile.readText()
     assertThat(htmlText).contains("<img")
-    assertThat(htmlText).contains("delta-app.cash.paparazzi.plugin.test_TestParameterInjectorTest_compose[darkMode=false,fontScale=1.0].png")
+    assertThat(htmlText).contains(
+      "delta-app.cash.paparazzi.plugin.test_TestParameterInjectorTest_compose[darkMode=false,fontScale=1.0].png"
+    )
   }
 
   @Test
@@ -1494,8 +1496,10 @@ class PaparazziPluginTest {
       .forwardOutput()
       .runFixture(fixtureRoot) { buildAndFail() }
 
-    assertThat(result.task(":testDebugUnitTest")?.outcome).isEqualTo(TaskOutcome.FAILED)
-    assertThat(result.output).contains("IllegalStateException at PreviewTests.kt")
+    assertThat(result.task(":kspDebugKotlin")?.outcome).isEqualTo(TaskOutcome.FAILED)
+    assertThat(result.output).contains(
+      "app.cash.paparazzi.plugin.test.HelloPaparazzi is private. Make it internal or public to generate a snapshot."
+    )
   }
 
   @Test
