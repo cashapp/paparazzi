@@ -23,7 +23,7 @@ jobs:
           windows-latest,
           ubuntu-latest
         ]
-        java-version: [17, 18, 19, 20]
+        java-version: [17, 18, 20, 22]
 
     runs-on: ${{matrix.os}}
 
