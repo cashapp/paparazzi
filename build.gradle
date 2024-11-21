@@ -40,9 +40,20 @@ subprojects {
     //mavenLocal()
   }
 
+  def testTasks = tasks.withType(Test)
+  // Adds jvm flag after test tasks have been configured
+  project.gradle.taskGraph.whenReady { graph ->
+    testTasks.configureEach {
+      if (javaVersion.isCompatibleWith(JavaVersion.VERSION_21)) {
+        // Enabled dynamic agent loading (ByteBuddy) for JDK 21+ https://openjdk.org/jeps/451
+        jvmArgs += "-XX:+EnableDynamicAgentLoading"
+      }
+    }
+  }
+
   // Uncomment to debug JNI issues in layoutlib
   // jvmArgs '-Xcheck:jni'
-  tasks.withType(Test).configureEach {
+  testTasks.configureEach {
     testLogging {
       events "passed", "failed", "skipped", "standardOut", "standardError"
       exceptionFormat "full"
@@ -50,9 +61,6 @@ subprojects {
       showStackTraces true
       showCauses true
     }
-
-    // Enabled dynamic agent loading (ByteBuddy) for JDK 21+ https://openjdk.org/jeps/451
-    jvmArgs '-XX:+EnableDynamicAgentLoading'
   }
 
   tasks.withType(JavaCompile).configureEach {
