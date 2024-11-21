@@ -50,6 +50,9 @@ subprojects {
       showStackTraces true
       showCauses true
     }
+
+    // Enabled dynamic agent loading (ByteBuddy) for JDK 21+ https://openjdk.org/jeps/451
+    jvmArgs '-XX:+EnableDynamicAgentLoading'
   }
 
   tasks.withType(JavaCompile).configureEach {
