@@ -1,3 +1,5 @@
+import org.gradle.internal.jvm.Jvm
+
 buildscript {
   repositories {
     mavenCentral()
@@ -59,6 +61,7 @@ subprojects {
     sourceCompatibility = libs.versions.javaTarget.get()
     targetCompatibility = libs.versions.javaTarget.get()
   }
+  println Jvm.current()
 
   tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile).configureEach {
     kotlinOptions {
