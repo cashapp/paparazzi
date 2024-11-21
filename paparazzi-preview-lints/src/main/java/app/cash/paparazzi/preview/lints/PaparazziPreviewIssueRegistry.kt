@@ -11,8 +11,7 @@ public class PaparazziPreviewIssueRegistry : IssueRegistry() {
   override val issues: List<Issue> = listOf(
     PaparazziPreviewDetector.COMPOSABLE_NOT_DETECTED,
     PaparazziPreviewDetector.PREVIEW_NOT_DETECTED,
-    PaparazziPreviewDetector.PRIVATE_PREVIEW_DETECTED,
-    PaparazziPreviewDetector.PREVIEW_PARAMETERS_NOT_SUPPORTED
+    PaparazziPreviewDetector.PRIVATE_PREVIEW_DETECTED
   )
 
   override val api: Int = CURRENT_API
