@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <attr name="CustomButton" format="reference" />
+
+  <declare-styleable name="CustomButton">
+    <attr name="customColor" format="color" />
+    <attr name="customButtonTextColor" format="color" />
+    <attr name="customButtonPressedTextColor" format="color" />
+    <attr name="customButtonText" format="string" />
+  </declare-styleable>
+</resources>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<style name="CustomButton">
+  <item name="android:layout_width">wrap_content</item>
+  <item name="android:layout_height">wrap_content</item>
+  <item name="customButtonTextColor">#000FFF</item>
+  <item name="customColor">#FFF000</item>
+  <item name="customButtonPressedTextColor">#FFFFFF</item>
+</style>
+</resources>

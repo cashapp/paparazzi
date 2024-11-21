@@ -1,5 +1,6 @@
 package app.cash.paparazzi.sample
 
+import android.view.ContextThemeWrapper
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,6 +13,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.viewinterop.AndroidView
 import app.cash.paparazzi.Paparazzi
 import org.junit.Rule
 import org.junit.Test
@@ -23,6 +25,24 @@ class HelloComposeTest {
   @Test
   fun compose() {
     paparazzi.snapshot { HelloPaparazzi() }
+  }
+
+  @Test
+  fun androidView() {
+    paparazzi.snapshot {
+      AndroidView(
+        factory = { context ->
+          CustomButton(
+            ContextThemeWrapper(context, R.style.CustomTheme),
+          )
+        },
+        update = { button ->
+          with(button) {
+            text = "Hello Paparazzi"
+          }
+        }
+      )
+    }
   }
 }
 
