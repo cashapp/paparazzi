@@ -113,7 +113,7 @@ public class AccessibilityRenderExtension : RenderExtension {
   ) {
     val accessibilityText = if (config.isMergingSemanticsOfDescendants) {
       val unmergedNode = unmergedNodes?.filter { it.id == id }
-      unmergedNode?.first()?.let { node ->
+      unmergedNode?.firstOrNull()?.let { node ->
         node.findAllUnmergedNodes()
           .mapNotNull { it.accessibilityText() }
           .joinToString(", ")
