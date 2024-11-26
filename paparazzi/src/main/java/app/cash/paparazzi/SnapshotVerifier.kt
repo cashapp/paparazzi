@@ -16,6 +16,7 @@
 package app.cash.paparazzi
 
 import app.cash.paparazzi.SnapshotHandler.FrameHandler
+import app.cash.paparazzi.internal.ComboDiffer
 import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.apng.ApngVerifier
 import okio.Path.Companion.toOkioPath
@@ -71,7 +72,8 @@ public class SnapshotVerifier @JvmOverloads constructor(
           image = image,
           goldenImage = goldenImage,
           maxPercentDifferent = maxPercentDifference,
-          failureDir = failureDir
+          failureDir = failureDir,
+          differ = ComboDiffer
         )
       }
 

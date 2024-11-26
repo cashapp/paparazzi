@@ -50,9 +50,10 @@ internal object ImageUtils {
     goldenImage: BufferedImage,
     image: BufferedImage,
     maxPercentDifferent: Double,
-    failureDir: File
+    failureDir: File,
+    differ: Differ = ComboDiffer
   ) {
-    val (deltaImage, percentDifference) = compareImages(goldenImage, image)
+    val (deltaImage, percentDifference) = compareImages(goldenImage, image, differ)
 
     val goldenImageWidth = goldenImage.width
     val goldenImageHeight = goldenImage.height
@@ -126,19 +127,18 @@ internal object ImageUtils {
   }
 
   @Throws(IOException::class)
-  fun compareImages(goldenImage: BufferedImage, image: BufferedImage): Pair<BufferedImage, Float> {
-    var goldenImage = goldenImage
-    if (goldenImage.type != TYPE_INT_ARGB) {
-      val temp = BufferedImage(goldenImage.width, goldenImage.height, TYPE_INT_ARGB)
-      temp.graphics.drawImage(goldenImage, 0, 0, null)
-      goldenImage = temp
+  fun compareImages(goldenImage: BufferedImage, image: BufferedImage, differ: Differ = ComboDiffer): Pair<BufferedImage, Float> {
+    var goldenImageFinal = goldenImage
+    if (goldenImageFinal.type != TYPE_INT_ARGB) {
+      val temp = BufferedImage(goldenImageFinal.width, goldenImageFinal.height, TYPE_INT_ARGB)
+      temp.graphics.drawImage(goldenImageFinal, 0, 0, null)
+      goldenImageFinal = temp
     }
-    if (TYPE_INT_ARGB != goldenImage.type) {
-      throw IllegalStateException("expected:<$TYPE_INT_ARGB> but was:<${goldenImage.type}>")
+    if (TYPE_INT_ARGB != goldenImageFinal.type) {
+      throw IllegalStateException("expected:<$TYPE_INT_ARGB> but was:<${goldenImageFinal.type}>")
     }
 
-    val differ: Differ = OffByTwo
-    differ.compare(goldenImage, image).let { result ->
+    differ.compare(goldenImageFinal, image).let { result ->
       return when (result) {
         is Identical -> result.delta to 0f
         is Similar -> result.delta to 0f
@@ -156,15 +156,15 @@ internal object ImageUtils {
    * @return the scaled image
    */
   fun scale(source: BufferedImage, xScale: Double, yScale: Double): BufferedImage {
-    var source = source
+    var sourceImage = source
 
-    var sourceWidth = source.width
-    var sourceHeight = source.height
+    var sourceWidth = sourceImage.width
+    var sourceHeight = sourceImage.height
     val destWidth = Math.max(1, (xScale * sourceWidth).toInt())
     val destHeight = Math.max(1, (yScale * sourceHeight).toInt())
-    var imageType = source.type
+    var imageType = sourceImage.type
     if (imageType == BufferedImage.TYPE_CUSTOM) {
-      imageType = BufferedImage.TYPE_INT_ARGB
+      imageType = TYPE_INT_ARGB
     }
     if (xScale > 0.5 && yScale > 0.5) {
       val scaled = BufferedImage(destWidth, destHeight, imageType)
@@ -173,10 +173,10 @@ internal object ImageUtils {
       g2.color = Color(0, true)
       g2.fillRect(0, 0, destWidth, destHeight)
       if (xScale == 1.0 && yScale == 1.0) {
-        g2.drawImage(source, 0, 0, null)
+        g2.drawImage(sourceImage, 0, 0, null)
       } else {
         setRenderingHints(g2)
-        g2.drawImage(source, 0, 0, destWidth, destHeight, 0, 0, sourceWidth, sourceHeight, null)
+        g2.drawImage(sourceImage, 0, 0, destWidth, destHeight, 0, 0, sourceWidth, sourceHeight, null)
       }
       g2.dispose()
       return scaled
@@ -219,12 +219,12 @@ internal object ImageUtils {
 
       var g2 = scaled.createGraphics()
       setRenderingHints(g2)
-      g2.drawImage(source, 0, 0, nearestWidth, nearestHeight, 0, 0, sourceWidth, sourceHeight, null)
+      g2.drawImage(sourceImage, 0, 0, nearestWidth, nearestHeight, 0, 0, sourceWidth, sourceHeight, null)
       g2.dispose()
 
       sourceWidth = nearestWidth
       sourceHeight = nearestHeight
-      source = scaled
+      sourceImage = scaled
 
       for (iteration in iterations - 1 downTo 0) {
         val halfWidth = sourceWidth / 2
@@ -232,12 +232,12 @@ internal object ImageUtils {
         scaled = BufferedImage(halfWidth, halfHeight, imageType)
         g2 = scaled.createGraphics()
         setRenderingHints(g2)
-        g2.drawImage(source, 0, 0, halfWidth, halfHeight, 0, 0, sourceWidth, sourceHeight, null)
+        g2.drawImage(sourceImage, 0, 0, halfWidth, halfHeight, 0, 0, sourceWidth, sourceHeight, null)
         g2.dispose()
 
         sourceWidth = halfWidth
         sourceHeight = halfHeight
-        source = scaled
+        sourceImage = scaled
         iterations--
       }
       return scaled

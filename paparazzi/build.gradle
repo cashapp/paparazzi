@@ -33,6 +33,9 @@ dependencies {
   compileOnlyAarAsJar libs.androidx.compose.ui.android
   compileOnlyAarAsJar libs.androidx.activity
   compileOnlyAarAsJar libs.androidx.lifecycle.runtime // Needed for setViewTreeLifecycleOwner
+  // Version 1.5.11 has an issue in OpenCV 4.10.0 that fails to load the native library on Mac OS X
+  // TODO: Updated this dependency when OpenCV 4.11.0 is released
+  implementation("org.bytedeco:javacv-platform:1.5.10")
 
   implementation libs.bytebuddy.agent
   implementation libs.bytebuddy.core
