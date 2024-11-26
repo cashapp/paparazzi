@@ -1,6 +1,8 @@
 package app.cash.paparazzi.sample
 
+import android.graphics.ImageDecoder
 import android.icu.text.MessageFormat
+import android.os.Build
 import android.text.Html
 import android.widget.TextView
 import androidx.compose.foundation.Image
@@ -22,6 +24,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.graphics.decodeBitmap
 import app.cash.paparazzi.annotations.Paparazzi
 import app.cash.paparazzi.sample.ResourcesDemoView.Companion.plurals
 
@@ -31,6 +34,12 @@ const val IMAGE_SIZE = 120f
 @Preview
 @Composable
 fun ResourcesDemo() {
+  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+    ImageDecoder.createSource(LocalContext.current.assets, "test.png").decodeBitmap { info, source ->
+
+    }
+  }
+
   Column(
     modifier = Modifier
       .background(Color.White)

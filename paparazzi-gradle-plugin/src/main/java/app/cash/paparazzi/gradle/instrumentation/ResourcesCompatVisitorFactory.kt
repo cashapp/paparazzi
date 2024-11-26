@@ -1,14 +1,12 @@
 package app.cash.paparazzi.gradle.instrumentation
 
-import com.android.build.api.instrumentation.AsmClassVisitorFactory
 import com.android.build.api.instrumentation.ClassContext
 import com.android.build.api.instrumentation.ClassData
-import com.android.build.api.instrumentation.InstrumentationParameters
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes
 
-internal abstract class ResourcesCompatVisitorFactory : AsmClassVisitorFactory<InstrumentationParameters.None> {
+internal class ResourcesCompatVisitorFactory : Factory {
   override fun createClassVisitor(classContext: ClassContext, nextClassVisitor: ClassVisitor): ClassVisitor {
     return ResourcesCompatTransform(nextClassVisitor)
   }

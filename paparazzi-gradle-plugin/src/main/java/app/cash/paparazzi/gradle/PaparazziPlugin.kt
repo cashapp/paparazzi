@@ -15,7 +15,7 @@
  */
 package app.cash.paparazzi.gradle
 
-import app.cash.paparazzi.gradle.instrumentation.ResourcesCompatVisitorFactory
+import app.cash.paparazzi.gradle.instrumentation.CoreVisitorFactory
 import app.cash.paparazzi.gradle.reporting.PaparazziTestReporter
 import app.cash.paparazzi.gradle.utils.artifactViewFor
 import app.cash.paparazzi.gradle.utils.relativize
@@ -130,7 +130,7 @@ public class PaparazziPlugin @Inject constructor(
 
       val testInstrumentation = testVariant.instrumentation
       testInstrumentation.transformClassesWith(
-        ResourcesCompatVisitorFactory::class.java,
+        CoreVisitorFactory::class.java,
         InstrumentationScope.ALL
       ) { }
       testInstrumentation.setAsmFramesComputationMode(

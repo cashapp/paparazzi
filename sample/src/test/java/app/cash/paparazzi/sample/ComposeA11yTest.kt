@@ -1,5 +1,6 @@
 package app.cash.paparazzi.sample
 
+import android.graphics.ImageDecoder
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -26,6 +27,7 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
+import androidx.core.graphics.decodeBitmap
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Paparazzi
 import app.cash.paparazzi.accessibility.AccessibilityRenderExtension
@@ -41,6 +43,10 @@ class ComposeA11yTest {
 
   @Test
   fun compositeItems() {
+    ImageDecoder.createSource(paparazzi.context.assets, "test.png").decodeBitmap { info, source ->
+
+    }
+
     paparazzi.snapshot {
       Column {
         Row(
