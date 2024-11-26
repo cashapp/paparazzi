@@ -16,6 +16,7 @@
 
 package app.cash.paparazzi.internal
 
+import app.cash.paparazzi.internal.Differ.DiffResult
 import app.cash.paparazzi.internal.Differ.DiffResult.Different
 import app.cash.paparazzi.internal.Differ.DiffResult.Identical
 import app.cash.paparazzi.internal.Differ.DiffResult.Similar
@@ -53,7 +54,6 @@ internal object ImageUtils {
     failureDir: File
   ) {
     val (deltaImage, percentDifference) = compareImages(goldenImage, image)
-
     val goldenImageWidth = goldenImage.width
     val goldenImageHeight = goldenImage.height
 
@@ -64,17 +64,17 @@ internal object ImageUtils {
     var error = when {
       percentDifference > maxPercentDifferent -> "Images differ (by %f%%)".format(percentDifference)
       abs(goldenImageWidth - imageWidth) >= 2 ->
-        "Widths differ too much for $imageName: ${goldenImageWidth}x$goldenImageHeight vs ${imageWidth}x$imageHeight"
+        "Widths differ too much for $imageName: ${goldenImageWidth}x$goldenImageHeight vs ${imageWidth}x$imageHeight\n"
 
       abs(goldenImageHeight - imageHeight) >= 2 ->
-        "Heights differ too much for $imageName: ${goldenImageWidth}x$goldenImageHeight vs ${imageWidth}x$imageHeight"
+        "Heights differ too much for $imageName: ${goldenImageWidth}x$goldenImageHeight vs ${imageWidth}x$imageHeight\n"
 
       else -> null
     }
 
     if (error != null) {
       val deltaWidth = max(goldenImageWidth, imageWidth)
-      if (deltaWidth > 80) {
+      if (deltaWidth > 80 && deltaImage != null) {
         /**
          * AWT uses native text rendering under the hood, making it extremely difficult to get
          * consistent cross-platform label text rendering, due to antialiasing, etc. This can
@@ -107,8 +107,12 @@ internal object ImageUtils {
           throw IllegalStateException("Unable to delete $deltaOutput")
         }
       }
-      ImageIO.write(deltaImage, "PNG", deltaOutput)
-      error += " - see details in file://" + deltaOutput.path + "\n"
+
+      if (deltaImage != null) {
+        ImageIO.write(deltaImage, "PNG", deltaOutput)
+        error += " - see details in file://" + deltaOutput.path + "\n"
+      }
+
       val actualOutput = File(failureDir, getName(relativePath))
       if (actualOutput.exists()) {
         val deleted = actualOutput.delete()
@@ -126,7 +130,7 @@ internal object ImageUtils {
   }
 
   @Throws(IOException::class)
-  fun compareImages(goldenImage: BufferedImage, image: BufferedImage): Pair<BufferedImage, Float> {
+  fun compareImages(goldenImage: BufferedImage, image: BufferedImage): Pair<BufferedImage?, Float> {
     var goldenImage = goldenImage
     if (goldenImage.type != TYPE_INT_ARGB) {
       val temp = BufferedImage(goldenImage.width, goldenImage.height, TYPE_INT_ARGB)
@@ -137,12 +141,17 @@ internal object ImageUtils {
       throw IllegalStateException("expected:<$TYPE_INT_ARGB> but was:<${goldenImage.type}>")
     }
 
+    if (goldenImage.width != image.width || goldenImage.height != image.height) {
+      return null to 0f
+    }
+
     val differ: Differ = OffByTwo
     differ.compare(goldenImage, image).let { result ->
       return when (result) {
         is Identical -> result.delta to 0f
         is Similar -> result.delta to 0f
         is Different -> result.delta to result.percentDifference
+        DiffResult.MismatchedSize -> null to 0f
       }
     }
   }

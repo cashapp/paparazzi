@@ -6,6 +6,8 @@ internal interface Differ {
   fun compare(expected: BufferedImage, actual: BufferedImage): DiffResult
 
   sealed interface DiffResult {
+    data object MismatchedSize : DiffResult
+
     data class Identical(
       val delta: BufferedImage
     ) : DiffResult

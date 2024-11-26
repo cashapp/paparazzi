@@ -72,7 +72,9 @@ internal class ApngVerifier(
     // Write the delta frames for this frame
     var currentDelta = deltaImage
     repeat(actualDeltasPerFrame) {
-      writer.writeImage(currentDelta)
+      currentDelta?.let {
+        writer.writeImage(it)
+      }
       // While adding delta frames for this actual frame, compare the current output video's frame #
       // with the expected video's delta frame count to decide if we need to prepare the next
       // expected frame for the delta image diff.
@@ -91,7 +93,7 @@ internal class ApngVerifier(
       val (currentDelta) = ImageUtils.compareImages(expectedFrame, actualFrame)
 
       val times = expectedDeltasPerFrame - (deltaWriter.frameCount % expectedDeltasPerFrame)
-      repeat(times) { deltaWriter.writeImage(currentDelta) }
+      repeat(times) { currentDelta?.let { deltaWriter.writeImage(currentDelta) } }
       invalidFrames++
     }
 
@@ -100,7 +102,7 @@ internal class ApngVerifier(
         goldenImage = pngReader.readNextFrame()!!,
         image = blankFrame
       )
-      repeat(expectedDeltasPerFrame) { deltaWriter.writeImage(deltaImage) }
+      repeat(expectedDeltasPerFrame) { deltaImage?.let { deltaWriter.writeImage(it) } }
       invalidFrames++
     }
 
@@ -145,7 +147,7 @@ internal class ApngVerifier(
           image = nextFrame
         )
 
-        writeImage(deltaImage)
+        deltaImage?.let { writeImage(it) }
       }
       readNextFrame()
     }
