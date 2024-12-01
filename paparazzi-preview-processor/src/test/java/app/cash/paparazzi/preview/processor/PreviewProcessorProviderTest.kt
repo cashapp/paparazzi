@@ -5,10 +5,11 @@ package app.cash.paparazzi.preview.processor
 import com.google.common.truth.Truth.assertThat
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.SourceFile
-import com.tschuchort.compiletesting.kspAllWarningsAsErrors
-import com.tschuchort.compiletesting.kspArgs
+import com.tschuchort.compiletesting.configureKsp
 import com.tschuchort.compiletesting.kspIncremental
+import com.tschuchort.compiletesting.kspProcessorOptions
 import com.tschuchort.compiletesting.symbolProcessorProviders
+import com.tschuchort.compiletesting.useKsp2
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.junit.Rule
 import org.junit.Test
@@ -201,13 +202,17 @@ class PreviewProcessorProviderTest {
       .apply {
         workingDir = File(temporaryFolder.root, "debug")
         inheritClassPath = true
-        sources = sourceFiles.asList() + COMPOSE_SOURCES + PAPARAZZI_ANNOTATION_SOURCE
-        verbose = false
+        sources = sourceFiles.asList() + COMPOSE_SOURCES + PAPARAZZI_ANNOTATION_SOURCE + PAPARAZZI_PREVIEW_DATA_SOURCE
+        verbose = true
+        // Needed for @PreviewParameterProvider annotation that uses `@JvmDefaultWithCompatibility`
+        kotlincArguments = listOf("-Xjvm-default=all")
 
-        kspAllWarningsAsErrors = true
-        kspArgs["app.cash.paparazzi.preview.namespace"] = TEST_NAMESPACE
-        kspIncremental = true
-        symbolProcessorProviders = listOf(PreviewProcessorProvider())
+        configureKsp(useKsp2 = true) {
+          allWarningsAsErrors = true
+          kspProcessorOptions = mutableMapOf("app.cash.paparazzi.preview.namespace" to TEST_NAMESPACE)
+          kspIncremental = true
+          symbolProcessorProviders += PreviewProcessorProvider()
+        }
       }
 
   private companion object {
@@ -289,5 +294,19 @@ class PreviewProcessorProviderTest {
         annotation class Paparazzi
         """.trimIndent()
       )
+
+    private val PAPARAZZI_PREVIEW_DATA_SOURCE = SourceFile.kotlin(
+      "PaparazziPreviewData.kt",
+      """
+        package app.cash.paparazzi.annotations
+
+        import androidx.compose.runtime.Composable
+
+        data class PaparazziPreviewData(
+          val snapshotName: String,
+          val composable: @Composable () -> Unit
+        )
+      """.trimIndent()
+    )
   }
 }
