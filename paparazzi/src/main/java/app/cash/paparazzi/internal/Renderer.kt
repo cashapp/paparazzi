@@ -99,6 +99,7 @@ internal class Renderer(
           fontLocation,
           nativeLibLocation.path,
           icuLocation.path,
+          null, // TODO: Figure out `hyphenDataDir` should be mapped to. References system prop "ro.hyphen.data.dir"
           arrayOf(keyboardLocation.path),
           DeviceConfig.getEnumMap(attrs),
           logger
