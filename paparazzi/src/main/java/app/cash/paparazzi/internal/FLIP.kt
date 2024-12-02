@@ -51,7 +51,6 @@ public fun convolveWithSecondGaussianDerivative(image: Mat, sigma: Double): Mat 
   val ky = Mat()
   getDerivKernels(kx, ky, 2, 0, 5, true, CV_32F)
   val points = Mat()
-  println("kx $kx ky=$ky")
   filter2D(image, points, image.depth(), kx)
   return points
 }
