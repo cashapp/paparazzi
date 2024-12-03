@@ -10,6 +10,7 @@ import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
 import app.cash.paparazzi.internal.ImageUtils
+import app.cash.paparazzi.internal.OffByTwo
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -84,7 +85,8 @@ class RenderExtensionTest {
             maxPercentDifferent = 0.1,
             failureDir = File("src/test/resources/${snapshot.name}").apply {
               mkdirs()
-            }
+            },
+            differ = OffByTwo,
           )
         }
 

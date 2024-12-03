@@ -17,7 +17,9 @@ package app.cash.paparazzi
 
 import app.cash.paparazzi.SnapshotHandler.FrameHandler
 import app.cash.paparazzi.internal.ComboDiffer
+import app.cash.paparazzi.internal.Differ
 import app.cash.paparazzi.internal.ImageUtils
+import app.cash.paparazzi.internal.OffByTwo
 import app.cash.paparazzi.internal.apng.ApngVerifier
 import okio.Path.Companion.toOkioPath
 import java.awt.image.BufferedImage
@@ -26,6 +28,7 @@ import javax.imageio.ImageIO
 
 public class SnapshotVerifier @JvmOverloads constructor(
   private val maxPercentDifference: Double,
+  private val differ: Differ = OffByTwo,
   rootDirectory: File = File(System.getProperty("paparazzi.snapshot.dir"))
 ) : SnapshotHandler {
   private val imagesDirectory: File = File(rootDirectory, "images")
@@ -73,7 +76,7 @@ public class SnapshotVerifier @JvmOverloads constructor(
           goldenImage = goldenImage,
           maxPercentDifferent = maxPercentDifference,
           failureDir = failureDir,
-          differ = ComboDiffer
+          differ = differ
         )
       }
 

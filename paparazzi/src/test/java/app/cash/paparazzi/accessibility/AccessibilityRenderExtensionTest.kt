@@ -16,6 +16,7 @@ import app.cash.paparazzi.Paparazzi
 import app.cash.paparazzi.Snapshot
 import app.cash.paparazzi.SnapshotHandler
 import app.cash.paparazzi.internal.ImageUtils
+import app.cash.paparazzi.internal.OffByTwo
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -127,7 +128,8 @@ class AccessibilityRenderExtensionTest {
             image = image,
             goldenImage = ImageIO.read(expected),
             maxPercentDifferent = 0.1,
-            failureDir = tempDir.newFolder()
+            failureDir = tempDir.newFolder(),
+            differ = OffByTwo
           )
         }
 

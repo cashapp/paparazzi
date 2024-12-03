@@ -51,7 +51,7 @@ internal object ImageUtils {
     image: BufferedImage,
     maxPercentDifferent: Double,
     failureDir: File,
-    differ: Differ = ComboDiffer
+    differ: Differ
   ) {
     val (deltaImage, percentDifference) = compareImages(goldenImage, image, differ)
 
@@ -127,7 +127,7 @@ internal object ImageUtils {
   }
 
   @Throws(IOException::class)
-  fun compareImages(goldenImage: BufferedImage, image: BufferedImage, differ: Differ = ComboDiffer): Pair<BufferedImage, Float> {
+  fun compareImages(goldenImage: BufferedImage, image: BufferedImage, differ: Differ): Pair<BufferedImage, Float> {
     var goldenImageFinal = goldenImage
     if (goldenImageFinal.type != TYPE_INT_ARGB) {
       val temp = BufferedImage(goldenImageFinal.width, goldenImageFinal.height, TYPE_INT_ARGB)
