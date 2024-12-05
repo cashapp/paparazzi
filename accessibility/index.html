@@ -12,24 +12,28 @@
         <meta name="author" content="Square, Inc.">
       
       
-        <link rel="canonical" href="https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi.accessibility/-accessibility-render-extension/render-view/">
+        <link rel="canonical" href="https://cashapp.github.io/paparazzi/accessibility/">
       
       
+        <link rel="prev" href="../1.x/paparazzi/app.cash.paparazzi/">
       
       
-      <link rel="icon" href="../../../../../images/icon-square.png">
+        <link rel="next" href="../changelog/">
+      
+      
+      <link rel="icon" href="../images/icon-square.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.47">
     
     
       
-        <title>renderView - Paparazzi - Paparazzi</title>
+        <title>Accessibility Snapshots - Paparazzi</title>
       
     
     
-      <link rel="stylesheet" href="../../../../../assets/stylesheets/main.6f8fc17f.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.6f8fc17f.min.css">
       
         
-        <link rel="stylesheet" href="../../../../../assets/stylesheets/palette.06af60db.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
       
       
 
@@ -48,9 +52,9 @@
       
     
     
-      <link rel="stylesheet" href="../../../../../css/app.css">
+      <link rel="stylesheet" href="../css/app.css">
     
-    <script>__md_scope=new URL("../../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -74,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#renderview" class="md-skip">
+        <a href="#accessibilityrenderextension-overview" class="md-skip">
           Skip to content
         </a>
       
@@ -90,9 +94,9 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../../../../.." title="Paparazzi" class="md-header__button md-logo" aria-label="Paparazzi" data-md-component="logo">
+    <a href=".." title="Paparazzi" class="md-header__button md-logo" aria-label="Paparazzi" data-md-component="logo">
       
-  <img src="../../../../../images/icon-square.png" alt="logo">
+  <img src="../images/icon-square.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -109,7 +113,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              renderView - Paparazzi
+              Accessibility Snapshots
             
           </span>
         </div>
@@ -196,9 +200,9 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../../../.." title="Paparazzi" class="md-nav__button md-logo" aria-label="Paparazzi" data-md-component="logo">
+    <a href=".." title="Paparazzi" class="md-nav__button md-logo" aria-label="Paparazzi" data-md-component="logo">
       
-  <img src="../../../../../images/icon-square.png" alt="logo">
+  <img src="../images/icon-square.png" alt="logo">
 
     </a>
     Paparazzi
@@ -225,7 +229,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../.." class="md-nav__link">
+      <a href=".." class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -245,7 +249,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../app.cash.paparazzi/" class="md-nav__link">
+      <a href="../1.x/paparazzi/app.cash.paparazzi/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -262,10 +266,19 @@
       
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../../../../accessibility/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -274,6 +287,7 @@
   
 
       </a>
+      
     </li>
   
 
@@ -285,7 +299,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../changelog/" class="md-nav__link">
+      <a href="../changelog/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -305,7 +319,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../code_of_conduct/" class="md-nav__link">
+      <a href="../code_of_conduct/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -374,21 +388,83 @@
   
 
 
-<p>//<a href="../../../../">paparazzi</a>/<a href="../../">app.cash.paparazzi.accessibility</a>/<a href="../">AccessibilityRenderExtension</a>/<a href="./">renderView</a></p>
-<h1 id="renderview">renderView<a class="headerlink" href="#renderview" title="Permanent link">&para;</a></h1>
-<p>[jvm]\
-open override fun <a href="./">renderView</a>(contentView: View): View</p>
-<p>Allows this extension to modify the view hierarchy represented by <a href="./">contentView</a>.</p>
-<p>Returns the root view of the modified hierarchy.</p>
+<h1 id="accessibilityrenderextension-overview">AccessibilityRenderExtension Overview<a class="headerlink" href="#accessibilityrenderextension-overview" title="Permanent link">&para;</a></h1>
+<p>The <code>AccessibilityRenderExtension</code> allows accessibility properties to be visually checked alongside a snapshot of the UI under test. Like regular Paparazzi tests, tests using the <code>AccessibilityRenderExtension</code> provide a way to compare changes that update accessibility handling to “golden snapshots” that have been recorded previously. This can help catch regressions to accessibility support. The <code>AccessibilityRenderExtension</code> does <strong>not</strong> inform developers whether or not the accessibility properties and their content are appropriate for the specific use case of your UI. That is up to the developer writing the test to understand within the context of the UI under test (see below for some tips on how to verify this).</p>
+<h1 id="set-up-guide">Set Up Guide<a class="headerlink" href="#set-up-guide" title="Permanent link">&para;</a></h1>
+<p>To create an accessibility snapshot test, the only change needed compared to a regular Paparazzi test is to add the <code>AccessibilityRenderExtension</code> to the <code>renderExtensions</code> set in your Paparazzi configuration, as follows:</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@get</span><span class="p">:</span><span class="n">Rule</span>
+<span class="kd">val</span><span class="w"> </span><span class="nv">paparazzi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Paparazzi</span><span class="p">(</span>
+<span class="w">    </span><span class="c1">// ...</span>
+<span class="w">    </span><span class="n">renderExtensions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">setOf</span><span class="p">(</span><span class="n">AccessibilityRenderExtension</span><span class="p">()),</span>
+<span class="w">    </span><span class="c1">// ...</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>Recording and verifying accessibility snapshot tests works identically to regular Paparazzi tests.</p>
+<h1 id="interpreting-accessibility-snapshots">Interpreting Accessibility Snapshots<a class="headerlink" href="#interpreting-accessibility-snapshots" title="Permanent link">&para;</a></h1>
+<p><img alt="Figure A: Example accessibility snapshot" src="../images/accessibility_snapshot_example.png" /></p>
+<p>Figure A: Example accessibility snapshot</p>
+<p>The legend on the right hand side of figure A above indicates some of the properties that are available to assistive technologies (such as TalkBack). The order in which the items appear in the legend matches the order in which the screen reader will surface them to the user (in nearly all cases, they should go from start to end, top to bottom). The colors for each item in the legend match each accessibility element with its corresponding UI element. Each highlighted area is a single screen reader focusable element.</p>
+<p>To help understand whether the accessibility property values you are seeing in your snapshots are sufficient for providing your customers with an accessible experience, referencing the <a href="https://www.w3.org/TR/WCAG22/">WCAG criteria</a> is a good place to start. For example, <a href="https://www.w3.org/TR/WCAG22/#name-role-value">4.1.2 Name, Role, Value</a> is a criteria that must be met for any custom component you create (standard Android components will meet this criteria by default). To pass that criteria, the name (e.g. “Submit”), role (e.g. “Button”) and value (if applicable, e.g. “Selected”), must be available to assistive technology users. You can check whether this criteria is met by verifying whether the text for each of your UI elements in the legend of your accessibility snapshots covers the name, role and value of the elements under test.</p>
+<h1 id="things-to-look-for">Things to Look For<a class="headerlink" href="#things-to-look-for" title="Permanent link">&para;</a></h1>
+<ul>
+<li><strong>All visually available text</strong><ul>
+<li>All text you see in the UI in the left pane should also be available in the legend on the right.</li>
+</ul>
+</li>
+<li><strong>Ordering</strong><ul>
+<li>The order of the items in the legend should make logical sense within the context of your application.</li>
+</ul>
+</li>
+<li><strong>Visual cues</strong><ul>
+<li>Are there things represented by colors or position that aren’t communicated in the legend? Examples could be red used to represent an error without textual description or a label and value being next to each other visually, but displayed separately in the legend, losing that relationship.</li>
+</ul>
+</li>
+<li><strong>Image descriptions</strong><ul>
+<li>Images and icons <em>that convey meaning</em> should have descriptions for them represented in the legend. On the other hand, images and icons that <em>don’t</em> convey additional meaning (Like a ✏️ icon paired with visual “Edit” text on a button <code>[✏️ Edit]</code>) shouldn’t have representation in the legend, as that would be repetitive.</li>
+</ul>
+</li>
+<li><strong>Roles and states</strong><ul>
+<li>The correct role or state (header, button, disabled, checked, etc.) should be represented in the legend.</li>
+</ul>
+</li>
+</ul>
+<h1 id="currently-supported-properties">Currently Supported Properties<a class="headerlink" href="#currently-supported-properties" title="Permanent link">&para;</a></h1>
+<ul>
+<li><strong>Content Description</strong><ul>
+<li>This is the main text read out by Talkback to describe a UI element. For text based elements (i.e. <code>TextView</code> or Composable <code>Text</code>), this is likely the text content itself.</li>
+</ul>
+</li>
+<li><strong>Role (Compose only)</strong><ul>
+<li>The role of an element, such as &ldquo;button&rdquo;, &ldquo;checkbox&rdquo;, or &ldquo;image&rdquo;. It helps assistive technologies identify the purpose of a UI component.</li>
+</ul>
+</li>
+<li><strong>Selected state</strong><ul>
+<li>Indicates whether an item is currently selected. For example, in a list of selectable items, the selected item will announce its state as &ldquo;selected&rdquo; to TalkBack users.</li>
+</ul>
+</li>
+<li><strong>Disabled state</strong><ul>
+<li>Indicates whether an element is currently disabled and not interactive. Disabled elements are announced as &ldquo;disabled&rdquo; by TalkBack, signaling they are unavailable for interaction.</li>
+</ul>
+</li>
+<li><strong>On click label (Compose only)</strong><ul>
+<li>Provides additional context to a user about what will happen when an element is activated. This label is read by TalkBack alongside the action and is especially useful for custom buttons or interactive elements.</li>
+</ul>
+</li>
+<li><strong>Heading (Compose only)</strong><ul>
+<li>Marks an element as a heading for screen readers. This helps users navigate through content quickly, as headings can be used as landmarks or points of reference in a layout.</li>
+</ul>
+</li>
+<li><strong>Toggleable state</strong><ul>
+<li>Indicates whether an element can be toggled on or off, such as a switch or a checkbox. The state (e.g. &ldquo;checked&rdquo; or &ldquo;unchecked&rdquo;) is announced by TalkBack to convey its current value.</li>
+</ul>
+</li>
+</ul>
 
 
 
 
 
 
-
-  
-  
 
 
 
@@ -433,10 +509,10 @@ open override fun <a href="./">renderView</a>(contentView: View): View</p>
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "../../../../..", "features": [], "search": "../../../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../../../../../assets/javascripts/bundle.83f73b43.min.js"></script>
+      <script src="../assets/javascripts/bundle.83f73b43.min.js"></script>
       
     
   </body>
