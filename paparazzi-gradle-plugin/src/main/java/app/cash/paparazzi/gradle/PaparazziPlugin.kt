@@ -28,7 +28,6 @@ import com.android.build.api.variant.HasUnitTest
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import com.android.build.gradle.BaseExtension
 import org.gradle.api.DefaultTask
-import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
@@ -255,11 +254,6 @@ public class PaparazziPlugin @Inject constructor(
           .optional()
 
         test.outputs.dir(reportOutputDir).withPropertyName("paparazzi.report.dir")
-
-        if (test.javaVersion.isCompatibleWith(JavaVersion.VERSION_21)) {
-          // Enabled dynamic agent loading (ByteBuddy) for JDK 21+ https://openjdk.org/jeps/451
-          test.jvmArgs = test.jvmArgs.orEmpty() + "-XX:+EnableDynamicAgentLoading"
-        }
 
         test.doFirst {
           // Note: these are lazy properties that are not resolvable in the Gradle configuration phase.
