@@ -4,7 +4,7 @@ androidTools = "31.7.3" # == 23.0.0 + agp version
 bytebuddy = "1.15.10"
 compose = "1.7.5"
 coroutines = "1.9.0"
-javaTarget = "11"
+javaTarget = "17"
 kotlin = "2.0.21"
 ksp = "2.0.21-1.0.28"
 layoutlib = "15.0.6"
