@@ -68,6 +68,8 @@ git config core.hooksPath  # optional, confirm where your git hooks will be inst
 git lfs install --local
 git lfs track "**/snapshots/**/*.png"
 git add .gitattributes
+# Optional to improve git checkout performance
+git config lfs.setlockablereadonly false
 ```
 
 On CI, you might set up something like:
