@@ -598,6 +598,8 @@ git<span class="w"> </span>config<span class="w"> </span>core.hooksPath<span cla
 git<span class="w"> </span>lfs<span class="w"> </span>install<span class="w"> </span>--local
 git<span class="w"> </span>lfs<span class="w"> </span>track<span class="w"> </span><span class="s2">&quot;**/snapshots/**/*.png&quot;</span>
 git<span class="w"> </span>add<span class="w"> </span>.gitattributes
+<span class="c1"># Optional to improve git checkout performance</span>
+git<span class="w"> </span>config<span class="w"> </span>lfs.setlockablereadonly<span class="w"> </span><span class="nb">false</span>
 </code></pre></div>
 <p>On CI, you might set up something like:</p>
 <p><code>$HOOKS_DIR/pre-receive</code>
