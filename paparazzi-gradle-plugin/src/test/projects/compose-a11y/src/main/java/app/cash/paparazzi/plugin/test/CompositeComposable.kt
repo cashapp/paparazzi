@@ -12,6 +12,7 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.Checkbox
 import androidx.compose.material.IconToggleButton
 import androidx.compose.material.Text
+import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
@@ -88,6 +89,7 @@ fun CompositeComposable() {
     }
 
     Text("multi\nline\ntext", modifier = Modifier.semantics { heading() })
+    TextField(value = "Some text", label = { Text(text = "text field label") }, onValueChange = {})
 
     AndroidView(
       modifier = Modifier.wrapContentSize(),
