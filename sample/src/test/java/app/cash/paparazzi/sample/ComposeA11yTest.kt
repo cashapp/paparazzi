@@ -1,5 +1,6 @@
 package app.cash.paparazzi.sample
 
+import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -38,6 +39,13 @@ class ComposeA11yTest {
     deviceConfig = DeviceConfig.PIXEL,
     renderExtensions = setOf(AccessibilityRenderExtension())
   )
+
+  @Test
+  fun test() {
+    paparazzi.snapshot(
+      PreviewView(paparazzi.context)
+    )
+  }
 
   @Test
   fun compositeItems() {

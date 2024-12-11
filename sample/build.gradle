@@ -30,6 +30,7 @@ dependencies {
   implementation libs.androidx.appcompat
   // deliberately not in versions.toml as a one-off
   implementation 'com.airbnb.android:lottie:6.6.1'
+  implementation "androidx.camera:camera-view:1.4.0"
 
   // TODO: wire via plugin
   implementation projects.paparazziAnnotations
