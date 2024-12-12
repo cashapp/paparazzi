@@ -38,6 +38,12 @@ import app.cash.paparazzi.RenderExtension
 import app.cash.paparazzi.internal.ComposeViewAdapter
 import com.android.internal.view.OneShotPreDrawListener
 
+/**
+ * A [RenderExtension] that overlays accessibility property information on top of the rendered view.
+ *
+ * See [Paparazzi's accessibility documentation](https://cashapp.github.io/paparazzi/accessibility/) for usage
+ * information and interpretation tips.
+ */
 public class AccessibilityRenderExtension : RenderExtension {
   override fun renderView(contentView: View): View {
     // WindowManager needed to access accessibility elements for views that draw to other windows.
