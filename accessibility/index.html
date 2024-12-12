@@ -431,7 +431,7 @@
 <h1 id="currently-supported-properties">Currently Supported Properties<a class="headerlink" href="#currently-supported-properties" title="Permanent link">&para;</a></h1>
 <ul>
 <li><strong>Content Description</strong><ul>
-<li>This is the main text read out by Talkback to describe a UI element. For text based elements (i.e. <code>TextView</code> or Composable <code>Text</code>), this is likely the text content itself.</li>
+<li>This is the main text read out by Talkback to describe a UI element. For text based elements (i.e. <code>TextView</code> or Composable <code>Text</code>), this is likely the text content itself. For text fields this would include the content entered by users.</li>
 </ul>
 </li>
 <li><strong>Role (Compose only)</strong><ul>
@@ -458,6 +458,8 @@
 <li>Indicates whether an element can be toggled on or off, such as a switch or a checkbox. The state (e.g. &ldquo;checked&rdquo; or &ldquo;unchecked&rdquo;) is announced by TalkBack to convey its current value.</li>
 </ul>
 </li>
+<li><strong>Error Description</strong></li>
+<li>Provides additional context to a user about what went wrong when an error occurs. This is especially useful for form fields or other interactive elements that may have validation errors.</li>
 </ul>
 
 
