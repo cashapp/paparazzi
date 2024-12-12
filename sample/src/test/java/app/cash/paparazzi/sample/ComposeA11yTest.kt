@@ -14,6 +14,7 @@ import androidx.compose.material.Button
 import androidx.compose.material.Checkbox
 import androidx.compose.material.IconToggleButton
 import androidx.compose.material.Text
+import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.ui.Alignment
@@ -80,6 +81,7 @@ class ComposeA11yTest {
             }
           }
         }
+        TextField(value = "Some text", label = { Text(text = "text field label") }, onValueChange = {})
       }
     }
   }

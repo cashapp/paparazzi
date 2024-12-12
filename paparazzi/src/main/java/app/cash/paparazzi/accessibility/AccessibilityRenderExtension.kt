@@ -169,6 +169,7 @@ public class AccessibilityRenderExtension : RenderExtension {
     val mainAccessibilityText =
       config.getOrNull(SemanticsProperties.ContentDescription)?.joinToString(", ")
         ?: config.getOrNull(SemanticsProperties.Text)?.joinToString(", ")
+        ?: config.getOrNull(SemanticsProperties.EditableText)?.text
     val role = config.getOrNull(SemanticsProperties.Role)?.toString()
     val disabled =
       if (config.getOrNull(SemanticsProperties.Disabled) != null) DISABLED_LABEL else null

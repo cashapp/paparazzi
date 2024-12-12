@@ -1,6 +1,7 @@
 # Change Log
 
 ## [Unreleased]
+* Support for editable text in accessibility snapshots
 
 ## [1.3.5] - 2024-11-06
 
