@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 * Support for editable text in accessibility snapshots
+* Support for error description in accessibility snapshots
 
 ## [1.3.5] - 2024-11-06
 

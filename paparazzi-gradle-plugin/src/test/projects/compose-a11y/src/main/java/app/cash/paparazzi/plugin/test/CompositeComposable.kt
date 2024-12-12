@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.error
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
@@ -90,6 +91,17 @@ fun CompositeComposable() {
 
     Text("multi\nline\ntext", modifier = Modifier.semantics { heading() })
     TextField(value = "Some text", label = { Text(text = "text field label") }, onValueChange = {})
+    TextField(
+      value = "Some text with error", label = { Text(text = "text field label") }, onValueChange = {}, isError = true
+    )
+    TextField(
+      value = "TextField with custom error message",
+      onValueChange = {},
+      isError = true,
+      modifier = Modifier.semantics {
+        this.error("some error")
+      }
+    )
 
     AndroidView(
       modifier = Modifier.wrapContentSize(),

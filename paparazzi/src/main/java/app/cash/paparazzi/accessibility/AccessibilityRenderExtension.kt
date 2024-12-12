@@ -191,6 +191,7 @@ public class AccessibilityRenderExtension : RenderExtension {
         )
       }
     }
+    val errorLabel = config.getOrNull(SemanticsProperties.Error)
 
     return constructTextList(
       stateDescription,
@@ -200,7 +201,8 @@ public class AccessibilityRenderExtension : RenderExtension {
       role,
       disabled,
       onClickLabel,
-      heading
+      heading,
+      errorLabel
     )
   }
 
