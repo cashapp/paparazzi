@@ -87,6 +87,7 @@ internal class Renderer(
     val icuLocation = File(platformDataDir, "icu" + File.separator + "icudt75l.dat")
     val keyboardLocation = File(platformDataDir, "keyboards" + File.separator + "Generic.kcm")
     val nativeLibLocation = File(platformDataDir, getNativeLibDir())
+    val hyphenDataLocation = File(platformDataDir, "hyphen-data")
     val attrs = File(layoutlibResDir, "values" + File.separator + "attrs.xml")
     val systemProperties = DeviceConfig.loadProperties(buildProp) + mapOf(
       // We want Choreographer.USE_FRAME_TIME to be false so it uses System_Delegate.nanoTime()
@@ -99,6 +100,7 @@ internal class Renderer(
           fontLocation,
           nativeLibLocation.path,
           icuLocation.path,
+          hyphenDataLocation.path,
           arrayOf(keyboardLocation.path),
           DeviceConfig.getEnumMap(attrs),
           logger
