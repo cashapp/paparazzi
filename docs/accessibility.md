@@ -43,7 +43,7 @@ To help understand whether the accessibility property values you are seeing in y
 # Currently Supported Properties
 
 - **Content Description**
-    - This is the main text read out by Talkback to describe a UI element. For text based elements (i.e. `TextView` or Composable `Text`), this is likely the text content itself.
+    - This is the main text read out by Talkback to describe a UI element. For text based elements (i.e. `TextView` or Composable `Text`), this is likely the text content itself. For text fields this would include the content entered by users.
 - **Role (Compose only)**
     - The role of an element, such as "button", "checkbox", or "image". It helps assistive technologies identify the purpose of a UI component.
 - **Selected state**
@@ -56,3 +56,5 @@ To help understand whether the accessibility property values you are seeing in y
     - Marks an element as a heading for screen readers. This helps users navigate through content quickly, as headings can be used as landmarks or points of reference in a layout.
 - **Toggleable state**
     - Indicates whether an element can be toggled on or off, such as a switch or a checkbox. The state (e.g. "checked" or "unchecked") is announced by TalkBack to convey its current value.
+- **Error Description**
+  - Provides additional context to a user about what went wrong when an error occurs. This is especially useful for form fields or other interactive elements that may have validation errors.
