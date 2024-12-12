@@ -200,7 +200,7 @@ public class AccessibilityRenderExtension : RenderExtension {
       role,
       disabled,
       onClickLabel,
-      heading,
+      heading
     )
   }
 
