@@ -1,6 +1,7 @@
 # Change Log
 
 ## [Unreleased]
+* Support for editable text in accessibility snapshots
 
 ## [1.3.5] - 2024-11-06
 
@@ -16,7 +17,6 @@
 * Kotlin 2.0.21
 * [Gradle Plugin] Gradle 8.10.2
 * [Gradle Plugin] Android Gradle Plugin 8.4.2
-* Support for editable text in accessibility snapshots
 
 ### Fixed
 * Improve Gradle test task caching by preventing overlapping outputs with snapshotOutputDir
