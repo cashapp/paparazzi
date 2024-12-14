@@ -1,8 +1,10 @@
-# AccessibilityRenderExtension Overview
+AccessibilityRenderExtension Overview
+========
 
 The `AccessibilityRenderExtension` allows accessibility properties to be visually checked alongside a snapshot of the UI under test. Like regular Paparazzi tests, tests using the `AccessibilityRenderExtension` provide a way to compare changes that update accessibility handling to “golden snapshots” that have been recorded previously. This can help catch regressions to accessibility support. The `AccessibilityRenderExtension` does **not** inform developers whether or not the accessibility properties and their content are appropriate for the specific use case of your UI. That is up to the developer writing the test to understand within the context of the UI under test (see below for some tips on how to verify this).
 
-# Set Up Guide
+Set Up Guide
+-------
 
 To create an accessibility snapshot test, the only change needed compared to a regular Paparazzi test is to add the `AccessibilityRenderExtension` to the `renderExtensions` set in your Paparazzi configuration, as follows:
 
@@ -17,7 +19,8 @@ val paparazzi = Paparazzi(
 
 Recording and verifying accessibility snapshot tests works identically to regular Paparazzi tests.
 
-# Interpreting Accessibility Snapshots
+Interpreting Accessibility Snapshots
+-------
 
 ![Figure A: Example accessibility snapshot](images/accessibility_snapshot_example.png)
 
@@ -27,7 +30,8 @@ The legend on the right hand side of figure A above indicates some of the proper
 
 To help understand whether the accessibility property values you are seeing in your snapshots are sufficient for providing your customers with an accessible experience, referencing the [WCAG criteria](https://www.w3.org/TR/WCAG22/) is a good place to start. For example, [4.1.2 Name, Role, Value](https://www.w3.org/TR/WCAG22/#name-role-value) is a criteria that must be met for any custom component you create (standard Android components will meet this criteria by default). To pass that criteria, the name (e.g. “Submit”), role (e.g. “Button”) and value (if applicable, e.g. “Selected”), must be available to assistive technology users. You can check whether this criteria is met by verifying whether the text for each of your UI elements in the legend of your accessibility snapshots covers the name, role and value of the elements under test.
 
-# Things to Look For
+Things to Look For
+-------
 
 - **All visually available text**
     - All text you see in the UI in the left pane should also be available in the legend on the right.
@@ -40,7 +44,8 @@ To help understand whether the accessibility property values you are seeing in y
 - **Roles and states**
     - The correct role or state (header, button, disabled, checked, etc.) should be represented in the legend.
 
-# Currently Supported Properties
+Currently Supported Properties
+-------
 
 - **Content Description**
     - This is the main text read out by Talkback to describe a UI element. For text based elements (i.e. `TextView` or Composable `Text`), this is likely the text content itself. For text fields this would include the content entered by users.
@@ -57,4 +62,4 @@ To help understand whether the accessibility property values you are seeing in y
 - **Toggleable state**
     - Indicates whether an element can be toggled on or off, such as a switch or a checkbox. The state (e.g. "checked" or "unchecked") is announced by TalkBack to convey its current value.
 - **Error Description**
-  - Provides additional context to a user about what went wrong when an error occurs. This is especially useful for form fields or other interactive elements that may have validation errors.
+    - Provides additional context to a user about what went wrong when an error occurs. This is especially useful for form fields or other interactive elements that may have validation errors.
