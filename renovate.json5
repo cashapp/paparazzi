@@ -11,11 +11,12 @@
       "automerge": true,
     },
     {
-      "description": "Compose compiler is tightly coupled to Kotlin version.",
-      "groupName": "Kotlin and Compose",
+      "description": "Compiler plugins are tightly coupled to Kotlin version.",
+      "groupName": "Kotlin",
       "matchPackagePrefixes": [
         "org.jetbrains.kotlin:",
-        "com.google.devtools.ksp"
+        "com.google.devtools.ksp",
+        "dev.drewhamilton.poko",
       ],
       "automerge": false,
     },
