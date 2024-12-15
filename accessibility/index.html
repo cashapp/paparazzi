@@ -278,6 +278,17 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Accessibility Snapshots
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -287,6 +298,61 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#set-up-guide" class="md-nav__link">
+    <span class="md-ellipsis">
+      Set Up Guide
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#interpreting-accessibility-snapshots" class="md-nav__link">
+    <span class="md-ellipsis">
+      Interpreting Accessibility Snapshots
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#things-to-look-for" class="md-nav__link">
+    <span class="md-ellipsis">
+      Things to Look For
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#currently-supported-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      Currently Supported Properties
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -372,6 +438,50 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#set-up-guide" class="md-nav__link">
+    <span class="md-ellipsis">
+      Set Up Guide
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#interpreting-accessibility-snapshots" class="md-nav__link">
+    <span class="md-ellipsis">
+      Interpreting Accessibility Snapshots
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#things-to-look-for" class="md-nav__link">
+    <span class="md-ellipsis">
+      Things to Look For
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#currently-supported-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      Currently Supported Properties
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -390,7 +500,7 @@
 
 <h1 id="accessibilityrenderextension-overview">AccessibilityRenderExtension Overview<a class="headerlink" href="#accessibilityrenderextension-overview" title="Permanent link">&para;</a></h1>
 <p>The <code>AccessibilityRenderExtension</code> allows accessibility properties to be visually checked alongside a snapshot of the UI under test. Like regular Paparazzi tests, tests using the <code>AccessibilityRenderExtension</code> provide a way to compare changes that update accessibility handling to “golden snapshots” that have been recorded previously. This can help catch regressions to accessibility support. The <code>AccessibilityRenderExtension</code> does <strong>not</strong> inform developers whether or not the accessibility properties and their content are appropriate for the specific use case of your UI. That is up to the developer writing the test to understand within the context of the UI under test (see below for some tips on how to verify this).</p>
-<h1 id="set-up-guide">Set Up Guide<a class="headerlink" href="#set-up-guide" title="Permanent link">&para;</a></h1>
+<h2 id="set-up-guide">Set Up Guide<a class="headerlink" href="#set-up-guide" title="Permanent link">&para;</a></h2>
 <p>To create an accessibility snapshot test, the only change needed compared to a regular Paparazzi test is to add the <code>AccessibilityRenderExtension</code> to the <code>renderExtensions</code> set in your Paparazzi configuration, as follows:</p>
 <div class="highlight"><pre><span></span><code><span class="nd">@get</span><span class="p">:</span><span class="n">Rule</span>
 <span class="kd">val</span><span class="w"> </span><span class="nv">paparazzi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Paparazzi</span><span class="p">(</span>
@@ -400,12 +510,12 @@
 <span class="p">)</span>
 </code></pre></div>
 <p>Recording and verifying accessibility snapshot tests works identically to regular Paparazzi tests.</p>
-<h1 id="interpreting-accessibility-snapshots">Interpreting Accessibility Snapshots<a class="headerlink" href="#interpreting-accessibility-snapshots" title="Permanent link">&para;</a></h1>
+<h2 id="interpreting-accessibility-snapshots">Interpreting Accessibility Snapshots<a class="headerlink" href="#interpreting-accessibility-snapshots" title="Permanent link">&para;</a></h2>
 <p><img alt="Figure A: Example accessibility snapshot" src="../images/accessibility_snapshot_example.png" /></p>
 <p>Figure A: Example accessibility snapshot</p>
 <p>The legend on the right hand side of figure A above indicates some of the properties that are available to assistive technologies (such as TalkBack). The order in which the items appear in the legend matches the order in which the screen reader will surface them to the user (in nearly all cases, they should go from start to end, top to bottom). The colors for each item in the legend match each accessibility element with its corresponding UI element. Each highlighted area is a single screen reader focusable element.</p>
 <p>To help understand whether the accessibility property values you are seeing in your snapshots are sufficient for providing your customers with an accessible experience, referencing the <a href="https://www.w3.org/TR/WCAG22/">WCAG criteria</a> is a good place to start. For example, <a href="https://www.w3.org/TR/WCAG22/#name-role-value">4.1.2 Name, Role, Value</a> is a criteria that must be met for any custom component you create (standard Android components will meet this criteria by default). To pass that criteria, the name (e.g. “Submit”), role (e.g. “Button”) and value (if applicable, e.g. “Selected”), must be available to assistive technology users. You can check whether this criteria is met by verifying whether the text for each of your UI elements in the legend of your accessibility snapshots covers the name, role and value of the elements under test.</p>
-<h1 id="things-to-look-for">Things to Look For<a class="headerlink" href="#things-to-look-for" title="Permanent link">&para;</a></h1>
+<h2 id="things-to-look-for">Things to Look For<a class="headerlink" href="#things-to-look-for" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>All visually available text</strong><ul>
 <li>All text you see in the UI in the left pane should also be available in the legend on the right.</li>
@@ -428,7 +538,7 @@
 </ul>
 </li>
 </ul>
-<h1 id="currently-supported-properties">Currently Supported Properties<a class="headerlink" href="#currently-supported-properties" title="Permanent link">&para;</a></h1>
+<h2 id="currently-supported-properties">Currently Supported Properties<a class="headerlink" href="#currently-supported-properties" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>Content Description</strong><ul>
 <li>This is the main text read out by Talkback to describe a UI element. For text based elements (i.e. <code>TextView</code> or Composable <code>Text</code>), this is likely the text content itself. For text fields this would include the content entered by users.</li>
@@ -458,8 +568,10 @@
 <li>Indicates whether an element can be toggled on or off, such as a switch or a checkbox. The state (e.g. &ldquo;checked&rdquo; or &ldquo;unchecked&rdquo;) is announced by TalkBack to convey its current value.</li>
 </ul>
 </li>
-<li><strong>Error Description</strong></li>
+<li><strong>Error Description</strong><ul>
 <li>Provides additional context to a user about what went wrong when an error occurs. This is especially useful for form fields or other interactive elements that may have validation errors.</li>
+</ul>
+</li>
 </ul>
 
 
