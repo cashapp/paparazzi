@@ -20,6 +20,7 @@ include ':paparazzi'
 include ':paparazzi-annotations'
 include ':paparazzi-preview-processor'
 include ':paparazzi-preview-lints'
+include ':paparazzi-preview-test-junit'
 include ':paparazzi-gradle-plugin'
 
 include ':sample'
