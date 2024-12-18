@@ -129,4 +129,3 @@ $dokka.location:app.cash.paparazzi/TestName/methodName/#/PointingToDeclaration/
 $dokka.location:app.cash.paparazzi/TestName/packageName/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-test-name/package-name.md
 app.cash.paparazzi
 app.cash.paparazzi.accessibility
-
