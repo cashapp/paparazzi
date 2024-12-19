@@ -1389,6 +1389,14 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun scaledA11y() {
+    val fixtureRoot = File("src/test/projects/scaled-a11y")
+    gradleRunner
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+  }
+
+  @Test
   @Suppress("ktlint:standard:max-line-length")
   fun snapshotReport() {
     val fixtureRoot = File("src/test/projects/report-snapshots")
