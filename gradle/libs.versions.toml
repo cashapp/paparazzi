@@ -76,7 +76,7 @@ plugin-buildConfig = { module = "com.github.gmazzo.buildconfig:plugin", version 
 plugin-dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version = "2.0.0" }
 plugin-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 plugin-kotlin-compose = { module = "org.jetbrains.kotlin:compose-compiler-gradle-plugin", version.ref = "kotlin" }
-plugin-kotlinApiDump = { module = "org.jetbrains.kotlinx:binary-compatibility-validator", version = '0.16.3' }
+plugin-kotlinApiDump = { module = "org.jetbrains.kotlinx:binary-compatibility-validator", version = '0.17.0' }
 plugin-ksp = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version.ref = "ksp" }
 plugin-mavenPublish = { module = "com.vanniktech:gradle-maven-publish-plugin", version = "0.30.0" }
 plugin-poko = { module = "dev.drewhamilton.poko:poko-gradle-plugin", version = "0.18.0" }
