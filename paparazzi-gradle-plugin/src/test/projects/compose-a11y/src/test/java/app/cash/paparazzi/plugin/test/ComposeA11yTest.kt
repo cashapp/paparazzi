@@ -2,6 +2,7 @@ package app.cash.paparazzi.plugin.test
 
 import android.view.View.GONE
 import android.widget.LinearLayout
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +17,7 @@ import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -141,5 +143,15 @@ class ComposeA11yTest {
     }
 
     paparazzi.snapshot(view)
+  }
+
+  @Test
+  fun legendDoesNotScale() {
+    paparazzi.unsafeUpdateConfig(deviceConfig = DeviceConfig.PIXEL.copy(fontScale = 2.0f))
+    paparazzi.snapshot {
+      Column(Modifier.background(Color.LightGray)) {
+        androidx.compose.material.Text("Some text that will appear scaled in the UI, but not scaled in the legend")
+      }
+    }
   }
 }
