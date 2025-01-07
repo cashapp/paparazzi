@@ -31,6 +31,7 @@ public class SnapshotVerifier @JvmOverloads constructor(
   private val videosDirectory: File = File(rootDirectory, "videos")
 
   init {
+    println("Using $maxPercentDifference% as the default max percent difference")
     imagesDirectory.mkdirs()
     videosDirectory.mkdirs()
   }
