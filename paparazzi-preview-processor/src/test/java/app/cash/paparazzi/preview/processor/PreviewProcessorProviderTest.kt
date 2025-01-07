@@ -201,7 +201,8 @@ class PreviewProcessorProviderTest {
       .apply {
         workingDir = File(temporaryFolder.root, "debug")
         inheritClassPath = true
-        sources = sourceFiles.asList() + COMPOSE_SOURCES + PAPARAZZI_ANNOTATION_SOURCE + PAPARAZZI_PREVIEW_DATA_RUNTIME_SOURCE
+        sources =
+          sourceFiles.asList() + COMPOSE_SOURCES + PAPARAZZI_ANNOTATION_SOURCE + PAPARAZZI_PREVIEW_DATA_RUNTIME_SOURCE
         verbose = false
 
         kspAllWarningsAsErrors = true
@@ -293,8 +294,10 @@ class PreviewProcessorProviderTest {
     private val PAPARAZZI_PREVIEW_DATA_RUNTIME_SOURCE = SourceFile.kotlin(
       "PaparazziPreviewData.kt",
       """
-        package app.cash.paparazzi.annotations
+        package app.cash.paparazzi.preview.runtime
+
         import androidx.compose.runtime.Composable
+
         data class PaparazziPreviewData(
           val snapshotName: String,
           val composable: @Composable () -> Unit

@@ -1,8 +1,8 @@
-package app.cash.paparazzi.annotations
+package app.cash.paparazzi.preview.runtime
 
 import androidx.compose.runtime.Composable
 
-data class PaparazziPreviewData(
+public data class PaparazziPreviewData(
   val snapshotName: String,
   val composable: @Composable () -> Unit
 )
