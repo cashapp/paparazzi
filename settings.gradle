@@ -18,9 +18,10 @@ rootProject.name = 'paparazzi-root'
 
 include ':paparazzi'
 include ':paparazzi-annotations'
-include ':paparazzi-preview-processor'
-include ':paparazzi-preview-lints'
 include ':paparazzi-gradle-plugin'
+include ':paparazzi-preview-lints'
+include ':paparazzi-preview-processor'
+include ':paparazzi-preview-runtime'
 
 include ':sample'
 

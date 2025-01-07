@@ -1,0 +1,7 @@
+apply plugin: 'org.jetbrains.kotlin.jvm'
+apply plugin: 'com.vanniktech.maven.publish'
+apply plugin: 'org.jetbrains.kotlin.plugin.compose'
+
+dependencies {
+  compileOnly libs.compose.runtime
+}
