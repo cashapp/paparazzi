@@ -80,8 +80,8 @@ class PreviewProcessorProviderTest {
         """
         package test
 
-        internal val paparazziPreviews = listOf<app.cash.paparazzi.annotations.PaparazziPreviewData>(
-          app.cash.paparazzi.annotations.PaparazziPreviewData(
+        internal val paparazziPreviews = listOf<app.cash.paparazzi.preview.runtime.PaparazziPreviewData>(
+          app.cash.paparazzi.preview.runtime.PaparazziPreviewData(
             snapshotName = "SamplePreview_SamplePreview",
             composable = { test.SamplePreview() },
           ),
@@ -182,12 +182,12 @@ class PreviewProcessorProviderTest {
         """
         package test
 
-        internal val paparazziPreviews = listOf<app.cash.paparazzi.annotations.PaparazziPreviewData>(
-          app.cash.paparazzi.annotations.PaparazziPreviewData(
+        internal val paparazziPreviews = listOf<app.cash.paparazzi.preview.runtime.PaparazziPreviewData>(
+          app.cash.paparazzi.preview.runtime.PaparazziPreviewData(
             snapshotName = "SamplePreview_SamplePreview",
             composable = { test.SamplePreview() },
           ),
-          app.cash.paparazzi.annotations.PaparazziPreviewData(
+          app.cash.paparazzi.preview.runtime.PaparazziPreviewData(
             snapshotName = "SamplePreview_SamplePreview",
             composable = { test.SamplePreview() },
           ),
@@ -201,7 +201,7 @@ class PreviewProcessorProviderTest {
       .apply {
         workingDir = File(temporaryFolder.root, "debug")
         inheritClassPath = true
-        sources = sourceFiles.asList() + COMPOSE_SOURCES + PAPARAZZI_ANNOTATION_SOURCE
+        sources = sourceFiles.asList() + COMPOSE_SOURCES + PAPARAZZI_ANNOTATION_SOURCE + PAPARAZZI_PREVIEW_DATA_RUNTIME_SOURCE
         verbose = false
 
         kspAllWarningsAsErrors = true
@@ -289,5 +289,17 @@ class PreviewProcessorProviderTest {
         annotation class Paparazzi
         """.trimIndent()
       )
+
+    private val PAPARAZZI_PREVIEW_DATA_RUNTIME_SOURCE = SourceFile.kotlin(
+      "PaparazziPreviewData.kt",
+      """
+        package app.cash.paparazzi.annotations
+        import androidx.compose.runtime.Composable
+        data class PaparazziPreviewData(
+          val snapshotName: String,
+          val composable: @Composable () -> Unit
+        )
+      """.trimIndent()
+    )
   }
 }

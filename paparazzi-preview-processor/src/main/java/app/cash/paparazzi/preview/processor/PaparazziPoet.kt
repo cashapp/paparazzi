@@ -37,7 +37,7 @@ internal class PaparazziPoet(
     FileSpec.scriptBuilder(fileName, namespace)
       .addCode(
         buildCodeBlock {
-          addStatement("internal val %L = listOf<%L.PaparazziPreviewData>(", propertyName, PACKAGE_NAME)
+          addStatement("internal val %L = listOf<%L.PaparazziPreviewData>(", propertyName, PREVIEW_RUNTIME_PACKAGE_NAME)
           indent()
 
           functions.process { func, previewParam ->
@@ -77,7 +77,7 @@ internal class PaparazziPoet(
     }
 
   private fun CodeBlock.Builder.addDefault(function: KSFunctionDeclaration, snapshotName: String) {
-    addStatement("%L.PaparazziPreviewData(", PACKAGE_NAME)
+    addStatement("%L.PaparazziPreviewData(", PREVIEW_RUNTIME_PACKAGE_NAME)
     indent()
     addStatement("snapshotName = %S,", snapshotName)
     addStatement("composable = { %L() },", function.qualifiedName?.asString())
@@ -98,7 +98,7 @@ internal class PaparazziPoet(
     }.joinToString("_")
 }
 
-private const val PACKAGE_NAME = "app.cash.paparazzi.annotations"
+private const val PREVIEW_RUNTIME_PACKAGE_NAME = "app.cash.paparazzi.preview.runtime"
 
 internal fun KSAnnotation.isPreview() = qualifiedName() == "androidx.compose.ui.tooling.preview.Preview"
 internal fun KSAnnotation.isPreviewParameter() =
