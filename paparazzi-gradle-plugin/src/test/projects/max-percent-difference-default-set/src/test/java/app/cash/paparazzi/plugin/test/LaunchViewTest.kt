@@ -13,18 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package app.cash.paparazzi
+package app.cash.paparazzi.plugin.test
 
-import java.awt.image.BufferedImage
-import java.io.Closeable
+import android.widget.TextView
+import app.cash.paparazzi.Paparazzi
+import org.junit.Rule
+import org.junit.Test
 
-public interface SnapshotHandler : Closeable {
-  public fun newFrameHandler(snapshot: Snapshot, frameCount: Int, fps: Int): FrameHandler
+class LaunchViewTest {
+  @get:Rule
+  val paparazzi = Paparazzi()
 
-  public interface FrameHandler : Closeable {
-    public fun handle(image: BufferedImage)
+  @Test
+  fun testViews() {
+    paparazzi.snapshot(
+      TextView(paparazzi.context).apply {
+        text = "Hello, Paparazzi!"
+      }
+    )
   }
 }
-
-public fun detectMaxPercentDifferenceDefault(): Double =
-  System.getProperty("app.cash.paparazzi.maxPercentDifferenceDefault")?.toDoubleOrNull() ?: 0.1
