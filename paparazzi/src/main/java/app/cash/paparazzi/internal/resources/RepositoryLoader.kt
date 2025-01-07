@@ -621,7 +621,7 @@ internal abstract class RepositoryLoader<T : LoadableResourceRepository>(
               } catch (ignored: NumberFormatException) {
               }
             }
-            valueMap[valueName] = numericValue
+            valueMap[valueName] = numericValue!!
           }
         }
       }
