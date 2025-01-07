@@ -37,7 +37,7 @@ internal class AccessibilityOverlayDetailsView(context: Context) : FrameLayout(c
   private val textPaint = Paint().apply {
     style = Paint.Style.FILL
     color = DEFAULT_TEXT_COLOR.toColorInt()
-    textSize = context.sp(RenderSettings.DEFAULT_TEXT_SIZE)
+    textSize = context.dip(RenderSettings.DEFAULT_TEXT_SIZE)
   }
   private val margin = context.dip(8f)
   private val innerMargin = margin / 2f
@@ -87,13 +87,6 @@ internal class AccessibilityOverlayDetailsView(context: Context) : FrameLayout(c
       lastYCoord = max(badge.bottom + margin, textY + textLayout.height.toFloat())
     }
   }
-
-  private fun Context.sp(value: Float): Float =
-    TypedValue.applyDimension(
-      TypedValue.COMPLEX_UNIT_SP,
-      value,
-      resources.displayMetrics
-    )
 
   private fun Context.dip(value: Float): Float =
     TypedValue.applyDimension(
