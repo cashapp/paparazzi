@@ -35,6 +35,7 @@ dependencies {
   compileOnly libs.plugin.android
 
   implementation platform(libs.kotlin.bom)
+  implementation libs.plugin.ksp
   implementation(libs.tools.sdkCommon) {
     because "SymbolUtils.getPackageNameFromManifest removed in AGP 7.0.  Replace?"
   }

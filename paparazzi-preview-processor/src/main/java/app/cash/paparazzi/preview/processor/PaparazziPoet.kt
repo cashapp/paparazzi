@@ -112,7 +112,7 @@ internal class PaparazziPoet(
     preview: PreviewModel,
     previewParam: KSValueParameter
   ) {
-    addStatement("%L.PaparazziPreviewData.Provider(", PACKAGE_NAME)
+    addStatement("%L.PaparazziPreviewData.Provider(", PREVIEW_RUNTIME_PACKAGE_NAME)
     indent()
     addStatement("snapshotName = %S,", snapshotName)
     addStatement("composable = { %L(it) },", function.qualifiedName?.asString())
@@ -123,7 +123,7 @@ internal class PaparazziPoet(
   }
 
   private fun CodeBlock.Builder.addPreviewData(preview: PreviewModel) {
-    addStatement("preview = %L.PreviewData(", PACKAGE_NAME)
+    addStatement("preview = %L.PreviewData(", PREVIEW_RUNTIME_PACKAGE_NAME)
     indent()
 
     preview.fontScale.takeIf { it != 1f }
@@ -152,7 +152,7 @@ internal class PaparazziPoet(
   }
 
   private fun CodeBlock.Builder.addPreviewParameterData(previewParam: KSValueParameter) {
-    addStatement("previewParameter = %L.PreviewParameterData(", PACKAGE_NAME)
+    addStatement("previewParameter = %L.PreviewParameterData(", PREVIEW_RUNTIME_PACKAGE_NAME)
     indent()
     addStatement("name = %S,", previewParam.name?.asString())
     val previewParamProvider = previewParam.previewParamProvider()

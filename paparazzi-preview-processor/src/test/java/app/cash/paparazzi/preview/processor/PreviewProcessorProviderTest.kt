@@ -9,6 +9,7 @@ import com.tschuchort.compiletesting.kspAllWarningsAsErrors
 import com.tschuchort.compiletesting.kspArgs
 import com.tschuchort.compiletesting.kspIncremental
 import com.tschuchort.compiletesting.symbolProcessorProviders
+import org.jetbrains.kotlin.cli.common.collectSources
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.junit.Rule
 import org.junit.Test
@@ -84,7 +85,7 @@ class PreviewProcessorProviderTest {
           app.cash.paparazzi.preview.runtime.PaparazziPreviewData.Default(
             snapshotName = "SamplePreview_SamplePreview",
             composable = { test.SamplePreview() },
-            preview = app.cash.paparazzi.annotations.PreviewData(
+            preview = app.cash.paparazzi.preview.runtime.PreviewData(
             ),
           ),
         )
@@ -154,15 +155,15 @@ class PreviewProcessorProviderTest {
         """
         package test
 
-        internal val paparazziPreviews = listOf<app.cash.paparazzi.annotations.PaparazziPreviewData>(
-          app.cash.paparazzi.annotations.PaparazziPreviewData.Provider(
+        internal val paparazziPreviews = listOf<app.cash.paparazzi.preview.runtime.PaparazziPreviewData>(
+          app.cash.paparazzi.preview.runtime.PaparazziPreviewData.Provider(
             snapshotName = "SamplePreview_SamplePreview",
             composable = { test.SamplePreview(it) },
-            previewParameter = app.cash.paparazzi.annotations.PreviewParameterData(
+            previewParameter = app.cash.paparazzi.preview.runtime.PreviewParameterData(
               name = "text",
               values = test.SamplePreviewParameter.values,
             ),
-            preview = app.cash.paparazzi.annotations.PreviewData(
+            preview = app.cash.paparazzi.preview.runtime.PreviewData(
             ),
           ),
         )
@@ -206,13 +207,13 @@ class PreviewProcessorProviderTest {
           app.cash.paparazzi.preview.runtime.PaparazziPreviewData.Default(
             snapshotName = "SamplePreview_SamplePreview",
             composable = { test.SamplePreview() },
-            preview = app.cash.paparazzi.annotations.PreviewData(
+            preview = app.cash.paparazzi.preview.runtime.PreviewData(
             ),
           ),
           app.cash.paparazzi.preview.runtime.PaparazziPreviewData.Default(
             snapshotName = "SamplePreview_SamplePreview",
             composable = { test.SamplePreview() },
-            preview = app.cash.paparazzi.annotations.PreviewData(
+            preview = app.cash.paparazzi.preview.runtime.PreviewData(
               device = "id:pixel_4",
               uiMode = 32,
             ),
@@ -324,10 +325,113 @@ class PreviewProcessorProviderTest {
 
         import androidx.compose.runtime.Composable
 
-        data class PaparazziPreviewData(
-          val snapshotName: String,
-          val composable: @Composable () -> Unit
+        public object PaparazziPreviewDefaults {
+          public const val DEVICE_ID: String = "id:pixel_5"
+        }
+
+        /**
+         * Represents composables annotated with @Paparazzi annotation
+         *
+         * Default - Represents a composable with no parameters
+         * Provider - Represents a composable with parameters using @PreviewParameter
+         */
+        sealed interface PaparazziPreviewData {
+
+          data class Default(
+            val snapshotName: String,
+            val preview: PreviewData,
+            val composable: @Composable () -> Unit
+          ) : PaparazziPreviewData {
+            override fun toString(): String =
+              buildList {
+                add(snapshotName)
+                preview.toString().takeIf { it.isNotEmpty() }?.let(::add)
+              }.joinToString(",")
+          }
+
+          data class Provider<T>(
+            val snapshotName: String,
+            val preview: PreviewData,
+            val composable: @Composable (T) -> Unit,
+            val previewParameter: PreviewParameterData<T>
+          ) : PaparazziPreviewData {
+            fun withPreviewParameterIndex(index: Int): Provider<T> =
+              copy(previewParameter = previewParameter.copy(index = index))
+          }
+        }
+
+        data class PreviewData(
+          val fontScale: Float? = null,
+          val device: String? = null,
+          val widthDp: Int? = null,
+          val heightDp: Int? = null,
+          val uiMode: Int? = null,
+          val locale: String? = null,
+          val backgroundColor: String? = null
         )
+
+        data class PreviewParameterData<T>(
+          val name: String,
+          val values: Sequence<T>,
+          val index: Int = 0
+        )
+
+        /**
+         * Maps [fontScale] to enum values similar to Preview
+         * see:
+        https://android.googlesource.com/platform/tools/adt/idea/+/refs/heads/mirror-goog-studio-main/compose-designer/src/com/android/tools/idea/compose/pickers/preview/enumsupport/PsiEnumValues.kt
+         */
+        internal fun Float.fontScale() = FontScale.CUSTOM.apply { value = this@fontScale }
+
+        internal enum class FontScale(val value: Float?) {
+          DEFAULT(1f),
+          SMALL(0.85f),
+          LARGE(1.15f),
+          LARGEST(1.30f),
+          CUSTOM(null);
+
+          fun displayName() =
+            when (this) {
+              CUSTOM -> "fs_"
+              else -> name
+            }
+        }
+
+        internal fun Int.lightDarkName() =
+          when (this and Configuration.UI_MODE_NIGHT_MASK) {
+            Configuration.UI_MODE_NIGHT_NO -> "Light"
+            Configuration.UI_MODE_NIGHT_YES -> "Dark"
+            else -> null
+          }
+
+        internal fun Int.uiModeName() =
+          when (this and Configuration.UI_MODE_TYPE_MASK) {
+            Configuration.UI_MODE_TYPE_NORMAL -> "Normal"
+            Configuration.UI_MODE_TYPE_CAR -> "Car"
+            Configuration.UI_MODE_TYPE_DESK -> "Desk"
+            Configuration.UI_MODE_TYPE_APPLIANCE -> "Appliance"
+            Configuration.UI_MODE_TYPE_WATCH -> "Watch"
+            Configuration.UI_MODE_TYPE_VR_HEADSET -> "VR_Headset"
+            else -> null
+          }
+
+        /***
+         * Values taken from `android.content.res.Configuration` to avoid dependency on Android SDK/LayoutLib
+         */
+        private object Configuration {
+          const val UI_MODE_TYPE_MASK = 15
+          const val UI_MODE_NIGHT_MASK = 48
+
+          const val UI_MODE_TYPE_NORMAL = 1
+          const val UI_MODE_TYPE_CAR = 3
+          const val UI_MODE_TYPE_DESK = 2
+          const val UI_MODE_TYPE_APPLIANCE = 5
+          const val UI_MODE_TYPE_WATCH = 6
+          const val UI_MODE_TYPE_VR_HEADSET = 7
+
+          const val UI_MODE_NIGHT_NO = 16
+          const val UI_MODE_NIGHT_YES = 32
+        }
       """.trimIndent()
     )
   }
