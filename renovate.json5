@@ -1,41 +1,43 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:base"
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  extends: [
+    'config:recommended',
   ],
-  "packageRules": [
+  packageRules: [
     {
-      "description": "Auto-merge most dependency updates.",
-      "matchUpdateTypes": ["minor", "patch"],
-      "matchCurrentVersion": "!/^0/",
-      "automerge": true,
+      description: 'Auto-merge most dependency updates.',
+      matchUpdateTypes: [
+        'minor',
+        'patch',
+      ],
+      matchCurrentVersion: '!/^0/',
+      automerge: true,
     },
     {
-      "description": "Compiler plugins are tightly coupled to Kotlin version.",
-      "groupName": "Kotlin",
-      "matchPackagePrefixes": [
-        "org.jetbrains.kotlin:",
-        "com.google.devtools.ksp",
-        "dev.drewhamilton.poko",
+      description: 'Compiler plugins are tightly coupled to Kotlin version.',
+      groupName: 'Kotlin',
+      automerge: false,
+      matchPackageNames: [
+        'org.jetbrains.kotlin:{/,}**',
+        'com.google.devtools.ksp{/,}**',
+        'dev.drewhamilton.poko{/,}**',
       ],
-      "automerge": false,
     },
     {
-      "description": "Android Gradle Plugin is tightly coupled to its android/platform/tools/base dependencies.",
-      "groupName": "Android Tools",
-      "matchPackagePrefixes": [
-        "com.android.tools:",
-        "com.android.tools.build:",
-        // LayoutLib intentionally omitted to be updated independently.
+      description: 'Android Gradle Plugin is tightly coupled to its android/platform/tools/base dependencies.',
+      groupName: 'Android Tools',
+      automerge: false,
+      matchPackageNames: [
+        'com.android.tools:{/,}**',
+        'com.android.tools.build:{/,}**',
       ],
-      "automerge": false,
     },
     {
-      "description": "LayoutLib shouldn't auto-merge",
-      "matchPackagePrefixes": [
-        "com.android.tools.layoutlib:",
+      description: "LayoutLib shouldn't auto-merge",
+      automerge: false,
+      matchPackageNames: [
+        'com.android.tools.layoutlib:{/,}**',
       ],
-      "automerge": false,
     },
   ],
 }
