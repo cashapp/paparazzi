@@ -66,25 +66,12 @@ public class PaparazziPreviewDetector : Detector(), SourceCodeScanner {
         message = "$annotatedMethodName is private. Make it internal or public to generate a snapshot."
       )
     }
-
-    val hasPreviewParameter = annotatedMethod.parameters.any {
-      it.annotations.any { it.qualifiedName == PREVIEW_PARAMETER_ANNOTATION }
-    }
-    if (hasPreviewParameter) {
-      context.report(
-        issue = PREVIEW_PARAMETERS_NOT_SUPPORTED,
-        scope = element,
-        location = context.getLocation(element),
-        message = "@Preview of $annotatedMethodName uses PreviewParameters which aren't currently supported."
-      )
-    }
   }
 
   internal companion object {
     private const val PAPARAZZI_ANNOTATION = "app.cash.paparazzi.annotations.Paparazzi"
     private const val COMPOSABLE_ANNOTATION = "androidx.compose.runtime.Composable"
     private const val PREVIEW_ANNOTATION = "androidx.compose.ui.tooling.preview.Preview"
-    private const val PREVIEW_PARAMETER_ANNOTATION = "androidx.compose.ui.tooling.preview.PreviewParameter"
 
     val COMPOSABLE_NOT_DETECTED: Issue = Issue.create(
       id = "ComposableAnnotationNotFound",
@@ -118,20 +105,6 @@ public class PaparazziPreviewDetector : Detector(), SourceCodeScanner {
       id = "PrivatePreviewDetected",
       briefDescription = "@Preview of private Composable detected",
       explanation = "Paparazzi Previews does not support private Composables.",
-      category = Category.CUSTOM_LINT_CHECKS,
-      priority = 10,
-      severity = Severity.ERROR,
-      implementation = Implementation(
-        PaparazziPreviewDetector::class.java,
-        Scope.JAVA_FILE_SCOPE,
-        Scope.JAVA_FILE_SCOPE
-      )
-    )
-
-    val PREVIEW_PARAMETERS_NOT_SUPPORTED: Issue = Issue.create(
-      id = "PreviewParametersNotSupported",
-      briefDescription = "Preview Parameters not supported",
-      explanation = "Paparazzi Previews does not support Preview Parameters.",
       category = Category.CUSTOM_LINT_CHECKS,
       priority = 10,
       severity = Severity.ERROR,

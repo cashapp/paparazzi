@@ -1,9 +1,12 @@
 package app.cash.paparazzi.preview.processor
 
+import com.google.devtools.ksp.closestClassDeclaration
 import com.google.devtools.ksp.getVisibility
 import com.google.devtools.ksp.processing.KSPLogger
+import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSAnnotation
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
+import com.google.devtools.ksp.symbol.KSType
 import com.google.devtools.ksp.symbol.KSValueParameter
 import com.google.devtools.ksp.symbol.Visibility
 import com.squareup.kotlinpoet.CodeBlock
@@ -40,7 +43,7 @@ internal class PaparazziPoet(
           addStatement("internal val %L = listOf<%L.PaparazziPreviewData>(", propertyName, PREVIEW_RUNTIME_PACKAGE_NAME)
           indent()
 
-          functions.process { func, previewParam ->
+          functions.process { func, preview, previewParam ->
             val snapshotName = func.snapshotName(namespace)
             val qualifiedName = func.qualifiedName?.asString()
             when {
@@ -49,11 +52,17 @@ internal class PaparazziPoet(
               }
 
               previewParam != null -> {
-                logger.error("$qualifiedName preview uses @PreviewParameters which aren't currently supported.")
+                addProvider(
+                  function = func,
+                  snapshotName = snapshotName,
+                  preview = preview,
+                  previewParam = previewParam
+                )
               }
 
               else -> addDefault(
                 function = func,
+                preview = preview,
                 snapshotName = snapshotName
               )
             }
@@ -65,22 +74,92 @@ internal class PaparazziPoet(
       )
       .build()
 
-  private fun Sequence<KSFunctionDeclaration>.process(block: (KSFunctionDeclaration, KSValueParameter?) -> Unit) =
-    flatMap { func ->
-      val previewParam = func.parameters.firstOrNull { param ->
-        param.annotations.any { it.isPreviewParameter() }
-      }
-      func.annotations.findPreviews().distinct()
-        .map { Pair(func, previewParam) }
-    }.forEach { (func, previewParam) ->
-      block(func, previewParam)
+  private fun Sequence<KSFunctionDeclaration>.process(
+    block: (KSFunctionDeclaration, preview: PreviewModel, KSValueParameter?) -> Unit
+  ) = flatMap { func ->
+    val previewParam = func.parameters.firstOrNull { param ->
+      param.annotations.any { it.isPreviewParameter() }
     }
+    func.findDistinctPreviews()
+      .map { AcceptableAnnotationsProcessData(func, it, previewParam) }
+  }.forEach { (func, preview, previewParam) ->
+    block(func, preview, previewParam)
+  }
 
-  private fun CodeBlock.Builder.addDefault(function: KSFunctionDeclaration, snapshotName: String) {
-    addStatement("%L.PaparazziPreviewData(", PREVIEW_RUNTIME_PACKAGE_NAME)
+  private data class AcceptableAnnotationsProcessData(
+    val func: KSFunctionDeclaration,
+    val model: PreviewModel,
+    val previewParam: KSValueParameter?
+  )
+
+  private fun CodeBlock.Builder.addDefault(
+    function: KSFunctionDeclaration,
+    preview: PreviewModel,
+    snapshotName: String
+  ) {
+    addStatement("%L.PaparazziPreviewData.Default(", PREVIEW_RUNTIME_PACKAGE_NAME)
     indent()
     addStatement("snapshotName = %S,", snapshotName)
     addStatement("composable = { %L() },", function.qualifiedName?.asString())
+    addPreviewData(preview)
+    unindent()
+    addStatement("),")
+  }
+
+  private fun CodeBlock.Builder.addProvider(
+    function: KSFunctionDeclaration,
+    snapshotName: String,
+    preview: PreviewModel,
+    previewParam: KSValueParameter
+  ) {
+    addStatement("%L.PaparazziPreviewData.Provider(", PREVIEW_RUNTIME_PACKAGE_NAME)
+    indent()
+    addStatement("snapshotName = %S,", snapshotName)
+    addStatement("composable = { %L(it) },", function.qualifiedName?.asString())
+    addPreviewParameterData(previewParam)
+    addPreviewData(preview)
+    unindent()
+    addStatement("),")
+  }
+
+  private fun CodeBlock.Builder.addPreviewData(preview: PreviewModel) {
+    addStatement("preview = %L.PreviewData(", PREVIEW_RUNTIME_PACKAGE_NAME)
+    indent()
+
+    preview.fontScale.takeIf { it != 1f }
+      ?.let { addStatement("fontScale = %Lf,", it) }
+
+    preview.device.takeIf { it.isNotEmpty() }
+      ?.let { addStatement("device = %S,", it) }
+
+    preview.widthDp.takeIf { it > -1 }
+      ?.let { addStatement("widthDp = %L,", it) }
+
+    preview.heightDp.takeIf { it > -1 }
+      ?.let { addStatement("heightDp = %L,", it) }
+
+    preview.uiMode.takeIf { it != 0 }
+      ?.let { addStatement("uiMode = %L,", it) }
+
+    preview.locale.takeIf { it.isNotEmpty() }
+      ?.let { addStatement("locale = %S,", it) }
+
+    preview.backgroundColor.takeIf { it != 0L && preview.showBackground }
+      ?.let { addStatement("backgroundColor = %S", it.toString(16)) }
+
+    unindent()
+    addStatement("),")
+  }
+
+  private fun CodeBlock.Builder.addPreviewParameterData(previewParam: KSValueParameter) {
+    addStatement("previewParameter = %L.PreviewParameterData(", PREVIEW_RUNTIME_PACKAGE_NAME)
+    indent()
+    addStatement("name = %S,", previewParam.name?.asString())
+    val previewParamProvider = previewParam.previewParamProvider()
+    val isClassObject = previewParamProvider.closestClassDeclaration()?.classKind == ClassKind.OBJECT
+    val previewParamProviderInstantiation =
+      "${previewParamProvider.qualifiedName?.asString()}${if (isClassObject) "" else "()"}"
+    addStatement("values = %L.values,", previewParamProviderInstantiation)
     unindent()
     addStatement("),")
   }
@@ -118,3 +197,53 @@ internal fun Sequence<KSAnnotation>.findPreviews(stack: Set<KSAnnotation> = setO
     .flatten()
   return direct.plus(indirect)
 }
+
+@Suppress("UNCHECKED_CAST")
+public fun <T> KSAnnotation.previewArg(name: String): T =
+  arguments
+    .first { it.name?.asString() == name }
+    .let { it.value as T }
+
+internal fun KSFunctionDeclaration.findDistinctPreviews() =
+  annotations.findPreviews().toList()
+    .map { preview ->
+      PreviewModel(
+        fontScale = preview.previewArg("fontScale"),
+        device = preview.previewArg("device"),
+        widthDp = preview.previewArg("widthDp"),
+        heightDp = preview.previewArg("heightDp"),
+        uiMode = preview.previewArg("uiMode"),
+        locale = preview.previewArg("locale"),
+        backgroundColor = preview.previewArg("backgroundColor"),
+        showBackground = preview.previewArg("showBackground")
+      )
+    }
+    .distinct()
+
+internal fun KSFunctionDeclaration.previewParam() =
+  parameters.firstOrNull { param ->
+    param.annotations.any { it.isPreviewParameter() }
+  }
+
+internal fun KSValueParameter.previewParamProvider() =
+  annotations
+    .first { it.isPreviewParameter() }
+    .arguments
+    .first { arg -> arg.name?.asString() == "provider" }
+    .let { it.value as KSType }
+    .declaration
+
+internal data class PreviewModel(
+  val fontScale: Float,
+  val device: String,
+  val widthDp: Int,
+  val heightDp: Int,
+  val uiMode: Int,
+  val locale: String,
+  val backgroundColor: Long,
+  val showBackground: Boolean
+)
+
+internal data class EnvironmentOptions(
+  val namespace: String
+)
