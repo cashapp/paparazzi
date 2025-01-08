@@ -7,11 +7,11 @@
     "python": "==3.12"
   },
   "ignorePaths": [
-    ".github/workflows/requirements.txt",
+    ".github/workflows/requirements.in",
   ],
   "pip-compile": {
     "fileMatch": [
-      ".github/workflows/requirements.txt"
+      ".github/workflows/requirements.in"
     ]
   },
   packageRules: [
