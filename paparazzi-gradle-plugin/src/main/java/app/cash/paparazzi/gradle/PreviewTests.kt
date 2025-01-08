@@ -5,12 +5,12 @@ internal fun previewTestSource(packageName: String) =
 package $packageName
 
 import app.cash.paparazzi.Paparazzi
-import app.cash.paparazzi.annotations.PaparazziPreviewData
 import app.cash.paparazzi.preview.DefaultLocaleRule
 import app.cash.paparazzi.preview.PaparazziValuesProvider
 import app.cash.paparazzi.preview.deviceConfig
 import app.cash.paparazzi.preview.locale
 import app.cash.paparazzi.preview.snapshot
+import app.cash.paparazzi.preview.runtime.PaparazziPreviewData
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode.SHRINK
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector

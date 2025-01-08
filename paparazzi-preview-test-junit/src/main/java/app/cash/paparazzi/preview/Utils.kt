@@ -14,7 +14,7 @@ import androidx.compose.ui.platform.LocalInspectionMode
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Paparazzi
 import app.cash.paparazzi.preview.runtime.PaparazziPreviewData
-import app.cash.paparazzi.annotations.PreviewData
+import app.cash.paparazzi.preview.runtime.PreviewData
 import com.android.resources.NightMode
 import com.android.resources.UiMode
 import java.util.Locale
