@@ -66,6 +66,7 @@ tasks.withType(Test).configureEach {
   dependsOn(':paparazzi:publishMavenPublicationToProjectLocalMavenRepository')
   dependsOn(':paparazzi-annotations:publishMavenPublicationToProjectLocalMavenRepository')
   dependsOn(':paparazzi-preview-processor:publishMavenPublicationToProjectLocalMavenRepository')
+  dependsOn(':paparazzi-preview-runtime:publishMavenPublicationToProjectLocalMavenRepository')
   dependsOn(':paparazzi-preview-test-junit:publishMavenPublicationToProjectLocalMavenRepository')
 }
 

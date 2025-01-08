@@ -286,6 +286,7 @@ public class PaparazziPlugin @Inject constructor(
     project.pluginManager.apply(KspGradleSubplugin::class.java)
 
     project.addAnnotationsDependency()
+    project.addPreviewRuntimeDependency()
     project.addProcessorDependency()
     project.addPreviewTestDependency()
     project.registerGeneratePreviewTask(extension)
@@ -370,6 +371,15 @@ public class PaparazziPlugin @Inject constructor(
       dependencies.project(mapOf("path" to ":paparazzi-annotations"))
     } else {
       dependencies.create("app.cash.paparazzi:paparazzi-annotations:$VERSION")
+    }
+    configurations.getByName("implementation").dependencies.add(dependency)
+  }
+
+  private fun Project.addPreviewRuntimeDependency() {
+    val dependency = if (isInternal()) {
+      dependencies.project(mapOf("path" to ":paparazzi-preview-runtime"))
+    } else {
+      dependencies.create("app.cash.paparazzi:paparazzi-preview-runtime:$VERSION")
     }
     configurations.getByName("implementation").dependencies.add(dependency)
   }

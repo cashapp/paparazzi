@@ -9,7 +9,6 @@ import com.tschuchort.compiletesting.kspAllWarningsAsErrors
 import com.tschuchort.compiletesting.kspArgs
 import com.tschuchort.compiletesting.kspIncremental
 import com.tschuchort.compiletesting.symbolProcessorProviders
-import org.jetbrains.kotlin.cli.common.collectSources
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.junit.Rule
 import org.junit.Test
