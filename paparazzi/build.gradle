@@ -73,18 +73,19 @@ dependencies {
   testImplementation libs.truth
 }
 
-tasks.named("dokkaGfm").configure {
-  outputDirectory = rootProject.file("docs/1.x")
+dokka {
+  dokkaPublications.html {
+    outputDirectory.set(rootProject.file("docs/1.x"))
+  }
 
-  dokkaSourceSets.named("main") {
-    configureEach {
-      reportUndocumented = false
-      skipDeprecated = true
-      jdkVersion = 8
-      perPackageOption {
-        prefix = "app.cash.paparazzi.internal"
-        suppress = true
-      }
+  dokkaSourceSets.main {
+    reportUndocumented = false
+    skipDeprecated = true
+    jdkVersion = libs.versions.javaTarget.get() as int
+
+    perPackageOption {
+      matchingRegex = "app.cash.paparazzi.internal.*"
+      suppress = true
     }
   }
 }
