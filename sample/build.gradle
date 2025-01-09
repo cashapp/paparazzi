@@ -5,11 +5,11 @@ apply plugin: 'app.cash.paparazzi'
 apply plugin: 'jacoco'
 
 android {
-  namespace 'app.cash.paparazzi.sample'
+  namespace = 'app.cash.paparazzi.sample'
 
-  compileSdk libs.versions.compileSdk.get() as int
+  compileSdk = libs.versions.compileSdk.get() as int
   defaultConfig {
-    minSdk libs.versions.minSdk.get() as int
+    minSdk = libs.versions.minSdk.get() as int
     resValue("string", "generated_string_name", "Generated Test String")
   }
   compileOptions {
@@ -17,8 +17,8 @@ android {
     targetCompatibility = libs.versions.javaTarget.get()
   }
   buildFeatures {
-    compose true
-    viewBinding true
+    compose = true
+    viewBinding = true
   }
 }
 
