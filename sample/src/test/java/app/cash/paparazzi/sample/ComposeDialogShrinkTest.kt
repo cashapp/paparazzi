@@ -22,7 +22,7 @@ import org.junit.Test
 class ComposeDialogShrinkTest {
   @get:Rule
   val paparazzi = Paparazzi(
-    maxPercentDifference = 1.0,
+    maxPercentDifference = 0.0,
     deviceConfig = DeviceConfig.PIXEL_5.copy(softButtons = false),
     renderingMode = RenderingMode.SHRINK
   )

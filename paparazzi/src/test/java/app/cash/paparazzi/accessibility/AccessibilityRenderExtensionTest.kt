@@ -21,7 +21,7 @@ class AccessibilityRenderExtensionTest {
   @get:Rule
   val paparazzi = Paparazzi(
     deviceConfig = DeviceConfig.NEXUS_5,
-    snapshotHandler = SnapshotVerifier(maxPercentDifference = 0.1),
+    snapshotHandler = SnapshotVerifier(maxPercentDifference = 0.0),
     renderExtensions = setOf(AccessibilityRenderExtension())
   )
 
