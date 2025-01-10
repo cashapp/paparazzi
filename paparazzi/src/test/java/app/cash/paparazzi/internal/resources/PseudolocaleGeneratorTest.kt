@@ -185,11 +185,16 @@ class PseudolocaleGeneratorTest {
         ResourceNamespace.TODO(),
         type,
         ResourceValueMap.create().apply {
-          putAll(items.map { it.name to it as ResourceValue })
+          items.forEach { put(it.name, it as ResourceValue) }
         }
       )
     }
 
     return table
   }
+
+  private val ResourceValueMap.size: Int
+    get() = values().size
+
+  private fun ResourceValueMap.getValue(name: String) = get(name)!!
 }
