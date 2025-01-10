@@ -137,7 +137,7 @@ internal object ImageUtils {
       throw IllegalStateException("expected:<$TYPE_INT_ARGB> but was:<${goldenImage.type}>")
     }
 
-    val differ: Differ = OffByTwo
+    val differ: Differ = PixelPerfect
     differ.compare(goldenImage, image).let { result ->
       return when (result) {
         is Identical -> result.delta to 0f
