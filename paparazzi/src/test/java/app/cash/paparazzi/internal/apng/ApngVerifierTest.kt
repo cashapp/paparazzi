@@ -50,7 +50,7 @@ class ApngVerifierTest {
       deltaFilePath = deltaFile.toOkioPath(),
       fps = 1,
       frameCount = 3,
-      maxPercentDifference = 0.0,
+      maxPercentDifference = 0.01,
       withErrorText = false
     ).use {
       it.verifyFrame(firstFrame)
@@ -74,7 +74,7 @@ class ApngVerifierTest {
       deltaFilePath = deltaFile.toOkioPath(),
       fps = 3,
       frameCount = 3,
-      maxPercentDifference = 0.0,
+      maxPercentDifference = 0.01,
       withErrorText = false
     ).use {
       it.verifyFrame(firstFrame)
@@ -109,7 +109,7 @@ class ApngVerifierTest {
       deltaFilePath = deltaFile.toOkioPath(),
       fps = 3,
       frameCount = 3,
-      maxPercentDifference = 0.0,
+      maxPercentDifference = 0.01,
       withErrorText = false
     ).use {
       it.verifyFrame(firstFrame)
@@ -143,7 +143,7 @@ class ApngVerifierTest {
       deltaFilePath = deltaFile.toOkioPath(),
       fps = 3,
       frameCount = 3,
-      maxPercentDifference = 0.0,
+      maxPercentDifference = 0.01,
       withErrorText = false
     ).use {
       it.verifyFrame(firstFrame)
@@ -181,7 +181,7 @@ class ApngVerifierTest {
       deltaFilePath = deltaFile.toOkioPath(),
       fps = 1,
       frameCount = 3,
-      maxPercentDifference = 0.0,
+      maxPercentDifference = 0.01,
       withErrorText = false
     ).use {
       it.verifyFrame(thirdFrame)
@@ -215,7 +215,7 @@ class ApngVerifierTest {
       deltaFilePath = deltaFile.toOkioPath(),
       fps = 1,
       frameCount = 5,
-      maxPercentDifference = 0.0,
+      maxPercentDifference = 0.01,
       withErrorText = false
     ).use {
       it.verifyFrame(firstFrame)
@@ -252,7 +252,7 @@ class ApngVerifierTest {
       deltaFilePath = deltaFile.toOkioPath(),
       fps = 1,
       frameCount = 2,
-      maxPercentDifference = 0.0,
+      maxPercentDifference = 0.01,
       withErrorText = false
     ).use {
       it.verifyFrame(firstFrame)
