@@ -232,7 +232,15 @@ public class PaparazziSdk @JvmOverloads constructor(
   private fun takeSnapshots(view: View, startNanos: Long, fps: Int, frameCount: Int) {
     val viewGroup = bridgeRenderSession.rootViews[0].viewObject as ViewGroup
     val modifiedView = renderExtensions.fold(view) { currentView, renderExtension ->
-      renderExtension.renderView(currentView)
+      val currentSessionRenderingMode = sessionParamsBuilder.build().renderingMode
+      if (currentSessionRenderingMode == RenderingMode.SHRINK && renderExtension is AccessibilityRenderExtension) {
+        throw IllegalStateException(
+          "AccessibilityRenderExtension cannot be used with the SHRINK rendering mode. " +
+            "See https://github.com/cashapp/paparazzi/issues/1350 for more context."
+        )
+      } else {
+        renderExtension.renderView(currentView)
+      }
     }
 
     System_Delegate.setNanosTime(0L)

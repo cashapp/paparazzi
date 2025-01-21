@@ -14,3 +14,13 @@
  8. `git push && git push --tags`
 
 This will trigger a GitHub Action workflow which will create a GitHub release and upload the release artifacts to Maven Central.
+
+## Internal Releasing
+
+1. Update `VERSION_NAME` in `gradle.properties` to the internal release (non-SNAPSHOT) version. [2.0.0-internal01] Ensure that the name doesn't collide with an already released version.
+2. Update `RELEASE_SIGNING_ENABLED` in `gradle.properties` to `false`.
+3. Check that the internal variables are configured correctly:
+   1. `internalUrl` is set in `~/.gradle/gradle.properties` to the internal repository URL.
+   2. Check `internalUsername` and `internalPassword` are set in `~/.gradle/gradle.properties` to the internal repository credentials.
+4. Run `./gradlew publishMavenPublicationToInternalRepository paparazzi-gradle-plugin:publishAllPublicationsToInternalRepository --no-parallel` to publish the internal release.
+   * *Note* if gradle publish fails with `403` error, ensure the `VERSION_NAME` in step 1 is unique and isn't already published.

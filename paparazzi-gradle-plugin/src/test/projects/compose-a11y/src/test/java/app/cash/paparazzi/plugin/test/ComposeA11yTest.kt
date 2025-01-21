@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Paparazzi
 import app.cash.paparazzi.accessibility.AccessibilityRenderExtension
+import com.android.ide.common.rendering.api.SessionParams.RenderingMode
 import org.junit.Rule
 import org.junit.Test
 
@@ -151,6 +152,16 @@ class ComposeA11yTest {
     paparazzi.snapshot {
       Column(Modifier.background(Color.LightGray)) {
         androidx.compose.material.Text("Some text that will appear scaled in the UI, but not scaled in the legend")
+      }
+    }
+  }
+
+  @Test(expected = IllegalStateException::class)
+  fun renderingModeSHRINKThrowsException() {
+    paparazzi.unsafeUpdateConfig(renderingMode = RenderingMode.SHRINK)
+    paparazzi.snapshot {
+      Column(Modifier.background(Color.LightGray)) {
+        Text("SHRINK and AccessibilityRenderExtension are not supported together")
       }
     }
   }
