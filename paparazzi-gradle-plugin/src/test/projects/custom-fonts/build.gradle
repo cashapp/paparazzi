@@ -17,9 +17,6 @@ android {
   kotlinOptions {
     jvmTarget = libs.versions.javaTarget.get()
   }
-
-  // For testing loading font resources from directories other than 'res/'
-  sourceSets.main.res.srcDirs += 'src/main/other_resources_dir'
 }
 
 dependencies {
