@@ -262,6 +262,22 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun maxPercentDifferenceDefaultSet() {
+    val fixtureRoot = File("src/test/projects/max-percent-difference-default-set")
+    // this is only a warning message, so subsequent runs would otherwise be UP-TO-DATE
+    fixtureRoot.resolve("build").registerForDeletionOnExit()
+
+    val result = gradleRunner
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    with(result.task(":testDebugUnitTest")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(SUCCESS)
+    }
+  }
+
+  @Test
   fun cacheable() {
     val fixtureRoot = File("src/test/projects/cacheable")
     val buildDir = fixtureRoot.resolve("build").registerForDeletionOnExit()
