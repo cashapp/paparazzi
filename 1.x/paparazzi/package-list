@@ -6,6 +6,7 @@ $dokka.location:app.cash.paparazzi.accessibility/AccessibilityRenderExtension/Ac
 $dokka.location:app.cash.paparazzi.accessibility/AccessibilityRenderExtension/renderView/#android.view.View/PointingToDeclaration/paparazzi/app.cash.paparazzi.accessibility/-accessibility-render-extension/render-view.md
 $dokka.location:app.cash.paparazzi////PointingToDeclaration/paparazzi/app.cash.paparazzi/index.md
 $dokka.location:app.cash.paparazzi//detectEnvironment/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/detect-environment.md
+$dokka.location:app.cash.paparazzi//detectMaxPercentDifferenceDefault/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/detect-max-percent-difference-default.md
 $dokka.location:app.cash.paparazzi/DeviceConfig.Companion///PointingToDeclaration/paparazzi/app.cash.paparazzi/-device-config/-companion/index.md
 $dokka.location:app.cash.paparazzi/DeviceConfig.Companion/GALAXY_WATCH4_CLASSIC_LARGE/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-device-config/-companion/-g-a-l-a-x-y_-w-a-t-c-h4_-c-l-a-s-s-i-c_-l-a-r-g-e.md
 $dokka.location:app.cash.paparazzi/DeviceConfig.Companion/NEXUS_10/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-device-config/-companion/-n-e-x-u-s_10.md
