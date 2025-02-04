@@ -7,9 +7,11 @@ apply plugin: 'jacoco'
 android {
   namespace = 'app.cash.paparazzi.sample'
 
-  compileSdk = libs.versions.compileSdk.get() as int
+  compileSdk = 35
+//  compileSdk = libs.versions.compileSdk.get() as int
   defaultConfig {
     minSdk = libs.versions.minSdk.get() as int
+    targetSdk = 34
     resValue("string", "generated_string_name", "Generated Test String")
   }
   compileOptions {
