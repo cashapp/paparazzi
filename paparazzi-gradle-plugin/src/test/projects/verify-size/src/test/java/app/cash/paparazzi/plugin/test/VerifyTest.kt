@@ -32,7 +32,7 @@ class VerifyTest {
   @Test
   fun verify() {
     val view = View(paparazzi.context).apply {
-      layoutParams = LayoutParams(/* width = */ 300, /* height = */ 200)
+      layoutParams = LayoutParams(300, 200)
       setBackgroundColor(Color.RED)
     }
     paparazzi.snapshot(view)
