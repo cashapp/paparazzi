@@ -673,6 +673,24 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun verifySize() {
+    val fixtureRoot = File("src/test/projects/verify-size")
+
+    val result = gradleRunner
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    assertThat(result.task(":testDebugUnitTest")).isNotNull()
+
+    val failureDir = File(fixtureRoot, "build/paparazzi/failures").registerForDeletionOnExit()
+    val delta = File(failureDir, "delta-app.cash.paparazzi.plugin.test_VerifyTest_verify.png")
+    assertThat(delta.exists()).isTrue()
+
+    val goldenImage = File(fixtureRoot, "src/test/resources/expected_delta.png")
+    assertThat(delta).isSimilarTo(goldenImage).withDefaultThreshold()
+  }
+
+  @Test
   fun verifySuccessMultiModule() {
     val fixtureRoot = File("src/test/projects/verify-mode-success-multiple-modules")
 
