@@ -16,7 +16,6 @@
 package app.cash.paparazzi.plugin.test
 
 import android.graphics.Color
-import android.graphics.Color.WHITE
 import android.view.View
 import android.view.ViewGroup.LayoutParams
 import app.cash.paparazzi.Paparazzi
@@ -37,5 +36,4 @@ class VerifyTest {
     }
     paparazzi.snapshot(view)
   }
-
 }
