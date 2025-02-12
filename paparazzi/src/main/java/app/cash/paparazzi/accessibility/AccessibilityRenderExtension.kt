@@ -28,6 +28,7 @@ import android.widget.FrameLayout
 import android.widget.LinearLayout
 import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.platform.ViewRootForTest
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsNode
 import androidx.compose.ui.semantics.SemanticsProperties
@@ -198,6 +199,23 @@ public class AccessibilityRenderExtension : RenderExtension {
       }
     }
     val errorLabel = config.getOrNull(SemanticsProperties.Error)
+    val progressBarRangeInfo = config.getOrNull(SemanticsProperties.ProgressBarRangeInfo)
+    val progressBarRangeInfoLabel = when (progressBarRangeInfo) {
+      ProgressBarRangeInfo.Indeterminate -> "$PROGRESS_LABEL: $INDETERMINATE_LABEL"
+      else -> {
+        progressBarRangeInfo?.let {
+          val progressPercent = (it.current / it.range.endInclusive * 100).toInt()
+          "$PROGRESS_LABEL: $progressPercent%"
+        }
+      }
+    }
+    val setProgress = config.getOrNull(SemanticsActions.SetProgress)?.let {
+      if (it.label != null) {
+        "$SET_PROGRESS_LABEL: ${it.label}"
+      } else {
+        ADJUSTABLE_LABEL
+      }
+    }
 
     return constructTextList(
       stateDescription,
@@ -208,7 +226,9 @@ public class AccessibilityRenderExtension : RenderExtension {
       disabled,
       onClickLabel,
       heading,
-      errorLabel
+      errorLabel,
+      progressBarRangeInfoLabel,
+      setProgress
     )
   }
 
@@ -258,6 +278,9 @@ public class AccessibilityRenderExtension : RenderExtension {
     private const val CHECKED_LABEL = "checked"
     private const val UNCHECKED_LABEL = "not checked"
     private const val INDETERMINATE_LABEL = "indeterminate"
+    private const val PROGRESS_LABEL = "<progress>"
+    private const val SET_PROGRESS_LABEL = "<set-progress>"
+    private const val ADJUSTABLE_LABEL = "<adjustable>"
   }
 }
 

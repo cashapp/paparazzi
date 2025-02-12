@@ -9,12 +9,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.progressSemantics
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,6 +25,8 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.setProgress
 import androidx.compose.ui.unit.dp
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Paparazzi
@@ -164,5 +169,33 @@ class ComposeA11yTest {
         Text("SHRINK and AccessibilityRenderExtension are not supported together")
       }
     }
+  }
+
+  @Test
+  fun `verify progress semantic information represented`() {
+    val view = ComposeView(paparazzi.context).apply {
+      setContent {
+        Column {
+          Slider(
+            value = 0.5f,
+            onValueChange = { _ -> },
+            valueRange = 0f..1f
+          )
+          CircularProgressIndicator(
+            modifier = Modifier.progressSemantics()
+          )
+          Slider(
+            modifier = Modifier.semantics {
+              setProgress("Adjust volume") { _ -> true }
+            },
+            value = 0.26f,
+            onValueChange = { _ -> },
+            valueRange = 0f..1f
+          )
+        }
+      }
+    }
+
+    paparazzi.snapshot(view)
   }
 }
