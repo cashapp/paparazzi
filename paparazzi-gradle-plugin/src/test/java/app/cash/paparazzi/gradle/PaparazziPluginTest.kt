@@ -262,6 +262,22 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun maxPercentDifferenceDefaultSet() {
+    val fixtureRoot = File("src/test/projects/max-percent-difference-default-set")
+    // this is only a warning message, so subsequent runs would otherwise be UP-TO-DATE
+    fixtureRoot.resolve("build").registerForDeletionOnExit()
+
+    val result = gradleRunner
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    with(result.task(":testDebugUnitTest")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(SUCCESS)
+    }
+  }
+
+  @Test
   fun cacheable() {
     val fixtureRoot = File("src/test/projects/cacheable")
     val buildDir = fixtureRoot.resolve("build").registerForDeletionOnExit()
@@ -641,6 +657,24 @@ class PaparazziPluginTest {
   @Test
   fun verifySimilar() {
     val fixtureRoot = File("src/test/projects/verify-similar")
+
+    val result = gradleRunner
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    assertThat(result.task(":testDebugUnitTest")).isNotNull()
+
+    val failureDir = File(fixtureRoot, "build/paparazzi/failures").registerForDeletionOnExit()
+    val delta = File(failureDir, "delta-app.cash.paparazzi.plugin.test_VerifyTest_verify.png")
+    assertThat(delta.exists()).isTrue()
+
+    val goldenImage = File(fixtureRoot, "src/test/resources/expected_delta.png")
+    assertThat(delta).isSimilarTo(goldenImage).withDefaultThreshold()
+  }
+
+  @Test
+  fun verifySize() {
+    val fixtureRoot = File("src/test/projects/verify-size")
 
     val result = gradleRunner
       .withArguments("verifyPaparazziDebug", "--stacktrace")

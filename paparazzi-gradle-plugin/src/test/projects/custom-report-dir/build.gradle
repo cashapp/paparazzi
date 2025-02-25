@@ -5,14 +5,14 @@ plugins {
 }
 
 reporting {
-  baseDir 'custom/our-reports'
+  baseDirectory = layout.projectDirectory.dir('custom/our-reports')
 }
 
 android {
-  namespace 'app.cash.paparazzi.plugin.test'
-  compileSdk libs.versions.compileSdk.get() as int
+  namespace = 'app.cash.paparazzi.plugin.test'
+  compileSdk = libs.versions.compileSdk.get() as int
   defaultConfig {
-    minSdk libs.versions.minSdk.get() as int
+    minSdk = libs.versions.minSdk.get() as int
   }
   compileOptions {
     sourceCompatibility = libs.versions.javaTarget.get()

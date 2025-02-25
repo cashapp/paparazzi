@@ -8,8 +8,6 @@ import kotlin.math.max
 
 internal object OffByTwo : Differ {
   override fun compare(expected: BufferedImage, actual: BufferedImage): DiffResult {
-    check(expected.width == actual.width && expected.height == actual.height) { "Images are different sizes" }
-
     val expectedWidth = expected.width
     val expectedHeight = expected.height
 
