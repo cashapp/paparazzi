@@ -72,11 +72,12 @@ jobs:
           java-version: 17
 
       - name: Publish Artifacts
-        run: ./gradlew publishMavenPublicationToMavenCentralRepository paparazzi-gradle-plugin:publishAllPublicationsToMavenCentralRepository --no-parallel
+        run: ./gradlew publishMavenPublicationToMavenCentralRepository paparazzi-gradle-plugin:publishAllPublicationsToMavenCentralRepository
         env:
-          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
-          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
-          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.ARTIFACT_SIGNING_PRIVATE_KEY }}
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.SONATYPE_USERNAME_APP_CASH }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.SONATYPE_PASSWORD_APP_CASH }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_SECRET_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.GPG_SECRET_PASSPHRASE }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
