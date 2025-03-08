@@ -89,10 +89,11 @@ class PaparazziPluginTest {
     val fixtureRoot = File("src/test/projects/multiplatform-plugin-with-android")
 
     val result = gradleRunner
-      .withArguments("preparePaparazziDebugResources", "--stacktrace")
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
 
     assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
+    assertThat(result.task(":testDebugUnitTest")).isNotNull()
   }
 
   @Test
