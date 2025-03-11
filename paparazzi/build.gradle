@@ -36,7 +36,7 @@ dependencies {
 
   implementation libs.bytebuddy.agent
   implementation libs.bytebuddy.core
-  implementation libs.trove4j
+  implementation libs.fastutil
   api libs.tools.common
   api libs.tools.layoutlib
   api libs.tools.layoutlib.api
