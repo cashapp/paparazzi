@@ -35,6 +35,8 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getAllSemanticsNodes
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.state.ToggleableState
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.substring
 import app.cash.paparazzi.RenderExtension
 import app.cash.paparazzi.internal.ComposeViewAdapter
 import com.android.internal.view.OneShotPreDrawListener
@@ -217,6 +219,28 @@ public class AccessibilityRenderExtension : RenderExtension {
       }
     }
 
+    val annotatedStringActions = config.getOrNull(SemanticsProperties.Text)?.flatMap { annotatedString ->
+      val annotations = annotatedString.getLinkAnnotations(start = 0, end = annotatedString.text.length)
+
+      if (annotations.isNotEmpty()) {
+        annotations.map {
+          val prefix = if (it.item is LinkAnnotation.Url) {
+            URL_ACTION_LABEL
+          } else {
+            CLICK_ACTION_LABEL
+          }
+
+          "$prefix: ${annotatedString.substring(it.start until it.end)}"
+        }
+      } else {
+        emptyList()
+      }
+    }?.takeIf { it.isNotEmpty() }?.joinToString(", ")
+
+    val customActions = config.getOrNull(SemanticsActions.CustomActions)?.joinToString(", ") { action ->
+      "$CUSTOM_ACTION_LABEL: ${action.label}"
+    }
+
     return constructTextList(
       stateDescription,
       selected,
@@ -228,7 +252,9 @@ public class AccessibilityRenderExtension : RenderExtension {
       heading,
       errorLabel,
       progressBarRangeInfoLabel,
-      setProgress
+      setProgress,
+      annotatedStringActions,
+      customActions
     )
   }
 
@@ -281,6 +307,9 @@ public class AccessibilityRenderExtension : RenderExtension {
     private const val PROGRESS_LABEL = "<progress>"
     private const val SET_PROGRESS_LABEL = "<set-progress>"
     private const val ADJUSTABLE_LABEL = "<adjustable>"
+    private const val URL_ACTION_LABEL = "<url-action>"
+    private const val CLICK_ACTION_LABEL = "<click-action>"
+    private const val CUSTOM_ACTION_LABEL = "<custom-action>"
   }
 }
 
