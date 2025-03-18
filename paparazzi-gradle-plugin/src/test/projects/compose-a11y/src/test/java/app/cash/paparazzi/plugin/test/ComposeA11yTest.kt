@@ -23,10 +23,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.setProgress
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.dp
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Paparazzi
@@ -192,6 +196,45 @@ class ComposeA11yTest {
             onValueChange = { _ -> },
             valueRange = 0f..1f
           )
+        }
+      }
+    }
+
+    paparazzi.snapshot(view)
+  }
+
+  @Test
+  fun `verify link annotation and custom actions`() {
+    val view = ComposeView(paparazzi.context).apply {
+      setContent {
+        Column {
+          // Test link annotation
+          val annotatedString = buildAnnotatedString {
+            append("Visit ")
+            pushLink(LinkAnnotation.Url("https://www.example.com"))
+            append("Url ")
+            pop()
+            pushLink(LinkAnnotation.Clickable(tag = "CLICK") {})
+            append("Clickable")
+            pop()
+          }
+
+          Text(text = annotatedString)
+
+          // Test custom actions
+          Box(
+            modifier = Modifier
+              .size(100.dp)
+              .background(Color.LightGray)
+              .semantics(mergeDescendants = true) {
+                customActions = listOf(
+                  CustomAccessibilityAction("Action 1") { true },
+                  CustomAccessibilityAction("Action 2") { true }
+                )
+              }
+          ) {
+            Text("Box with custom actions")
+          }
         }
       }
     }
