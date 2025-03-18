@@ -5,6 +5,7 @@ import android.view.View
 import android.view.View.GONE
 import android.widget.Button
 import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -27,9 +28,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.setProgress
 import androidx.compose.ui.text.LinkAnnotation
@@ -252,6 +255,42 @@ class ComposeA11yTest {
   fun `verify view custom actions`() {
     val view = buildViewWithCustomActions(paparazzi.context)
     paparazzi.snapshot(view, name = "custom-actions")
+  }
+
+  @Test
+  fun `verify compose live region`() {
+    val view = ComposeView(paparazzi.context).apply {
+      setContent {
+        Column {
+          Box(
+            modifier = Modifier
+              .size(100.dp)
+              .background(Color.LightGray)
+              .semantics(mergeDescendants = true) {
+                liveRegion = LiveRegionMode.Polite
+              }
+          ) {
+            Text("Box with live region")
+          }
+        }
+      }
+    }
+
+    paparazzi.snapshot(view)
+  }
+
+  @Test
+  fun `verify view live region`() {
+    val view = LinearLayout(paparazzi.context).apply {
+      addView(
+        TextView(paparazzi.context).apply {
+          text = "Live Region Text"
+          accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_ASSERTIVE
+        }
+      )
+    }
+
+    paparazzi.snapshot(view)
   }
 
   private fun buildViewWithCustomActions(context: Context) =
