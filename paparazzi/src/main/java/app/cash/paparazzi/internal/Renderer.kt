@@ -146,11 +146,15 @@ internal class Renderer(
     }
 
     buildClass.classes.forEach { inner ->
-      val originalInnerClass = originalBuildClass.classes.single { it.simpleName == inner.simpleName }
+      val originalInnerClass = originalBuildClass.classes.firstOrNull { it.simpleName == inner.simpleName }
       inner.fields.forEach {
         try {
-          val originalField = originalInnerClass.getField(it.name)
-          inner.getFieldReflectively(it.name).setStaticValue(originalField.get(null))
+          if (originalInnerClass != null) {
+            val originalField = originalInnerClass.getField(it.name)
+            inner.getFieldReflectively(it.name).setStaticValue(originalField.get(null))
+          } else {
+            // Not found
+          }
         } catch (e: NoSuchFieldException) {
           // android.os._Original_Build from layoutlib doesn't have this field, it's probably new.
           // Just ignore it and keep the value in android.os.Build
