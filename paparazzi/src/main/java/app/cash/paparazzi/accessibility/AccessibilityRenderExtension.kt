@@ -16,6 +16,7 @@
 package app.cash.paparazzi.accessibility
 
 import android.graphics.Rect
+import android.os.ext.util.SdkLevel
 import android.view.Gravity
 import android.view.View
 import android.view.View.VISIBLE
@@ -36,7 +37,6 @@ import androidx.compose.ui.semantics.getAllSemanticsNodes
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.LinkAnnotation
-import androidx.compose.ui.text.substring
 import app.cash.paparazzi.RenderExtension
 import app.cash.paparazzi.internal.ComposeViewAdapter
 import com.android.internal.view.OneShotPreDrawListener
@@ -259,6 +259,7 @@ public class AccessibilityRenderExtension : RenderExtension {
   }
 
   private fun View.accessibilityText(): String? {
+    val stateDescription = if (SdkLevel.isAtLeastR()) stateDescription?.toString() else null
     val selected = if (isSelected) SELECTED_LABEL else null
     val toggleableState = if (this is Checkable) {
       buildString {
@@ -270,13 +271,30 @@ public class AccessibilityRenderExtension : RenderExtension {
     }
     val mainAccessibilityText = iterableTextForAccessibility?.toString()
     val disabled = if (!isEnabled) DISABLED_LABEL else null
+    val heading = if (SdkLevel.isAtLeastR() && isAccessibilityHeading) HEADING_LABEL else null
+    val customActions = computeCustomActions()
 
     return constructTextList(
+      stateDescription,
       selected,
       toggleableState,
       mainAccessibilityText,
-      disabled
+      disabled,
+      heading,
+      customActions
     )
+  }
+
+  private fun View.computeCustomActions(): String? {
+    if (!SdkLevel.isAtLeastR()) return null
+    val nodeInfo = createAccessibilityNodeInfo()
+    accessibilityDelegate?.onInitializeAccessibilityNodeInfo(this, nodeInfo)
+    return nodeInfo.actionList
+      .filter { it.id > 0 && it.label != null }
+      .takeIf { it.isNotEmpty() }
+      ?.joinToString(", ") {
+        "$CUSTOM_ACTION_LABEL: ${it.label}"
+      }
   }
 
   private fun constructTextList(vararg text: String?): String? {
