@@ -57,9 +57,15 @@ Currently Supported Properties
     - Indicates whether an element is currently disabled and not interactive. Disabled elements are announced as "disabled" by TalkBack, signaling they are unavailable for interaction.
 - **On click label (Compose only)**
     - Provides additional context to a user about what will happen when an element is activated. This label is read by TalkBack alongside the action and is especially useful for custom buttons or interactive elements.
-- **Heading (Compose only)**
+- **Heading**
     - Marks an element as a heading for screen readers. This helps users navigate through content quickly, as headings can be used as landmarks or points of reference in a layout.
 - **Toggleable state**
     - Indicates whether an element can be toggled on or off, such as a switch or a checkbox. The state (e.g. "checked" or "unchecked") is announced by TalkBack to convey its current value.
 - **Error Description**
     - Provides additional context to a user about what went wrong when an error occurs. This is especially useful for form fields or other interactive elements that may have validation errors.
+- **Progress**
+    - Indicates the progress of an element, such as a progress bar or a loading spinner. The progress value is announced by TalkBack to inform users of the current state of the element.
+- **Custom Action**
+    - Custom actions allow the definition of additional interactive actions for UI elements, making them more accessible to users of assistive technologies. Links present in `AnnotatedString`'s (via `LinkAnnotation`) are another type of action that is supported.
+- **Live Region**
+    - A live region is a section of UI that is updated dynamically and relevant to the user. Screen readers can be configured to announce changes in live regions automatically, ensuring users are aware of updates without needing to navigate to the updated content.

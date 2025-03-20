@@ -29,6 +29,8 @@ import android.widget.FrameLayout
 import android.widget.LinearLayout
 import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.platform.ViewRootForTest
+import androidx.compose.ui.semantics.LiveRegionMode.Companion.Assertive
+import androidx.compose.ui.semantics.LiveRegionMode.Companion.Polite
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsNode
@@ -219,6 +221,12 @@ public class AccessibilityRenderExtension : RenderExtension {
       }
     }
 
+    val liveRegionMode = when (config.getOrNull(SemanticsProperties.LiveRegion)) {
+      Assertive -> "$LIVE_REGION_LABEL: $LIVE_REGION_ASSERTIVE_LABEL"
+      Polite -> "$LIVE_REGION_LABEL: $LIVE_REGION_POLITE_LABEL"
+      else -> null
+    }
+
     val annotatedStringActions = config.getOrNull(SemanticsProperties.Text)?.flatMap { annotatedString ->
       val annotations = annotatedString.getLinkAnnotations(start = 0, end = annotatedString.text.length)
 
@@ -253,6 +261,7 @@ public class AccessibilityRenderExtension : RenderExtension {
       errorLabel,
       progressBarRangeInfoLabel,
       setProgress,
+      liveRegionMode,
       annotatedStringActions,
       customActions
     )
@@ -272,6 +281,11 @@ public class AccessibilityRenderExtension : RenderExtension {
     val mainAccessibilityText = iterableTextForAccessibility?.toString()
     val disabled = if (!isEnabled) DISABLED_LABEL else null
     val heading = if (SdkLevel.isAtLeastR() && isAccessibilityHeading) HEADING_LABEL else null
+    val liveRegionMode = when (accessibilityLiveRegion) {
+      View.ACCESSIBILITY_LIVE_REGION_ASSERTIVE -> "$LIVE_REGION_LABEL: $LIVE_REGION_ASSERTIVE_LABEL"
+      View.ACCESSIBILITY_LIVE_REGION_POLITE -> "$LIVE_REGION_LABEL: $LIVE_REGION_POLITE_LABEL"
+      else -> null
+    }
     val customActions = computeCustomActions()
 
     return constructTextList(
@@ -281,6 +295,7 @@ public class AccessibilityRenderExtension : RenderExtension {
       mainAccessibilityText,
       disabled,
       heading,
+      liveRegionMode,
       customActions
     )
   }
@@ -328,6 +343,9 @@ public class AccessibilityRenderExtension : RenderExtension {
     private const val URL_ACTION_LABEL = "<url-action>"
     private const val CLICK_ACTION_LABEL = "<click-action>"
     private const val CUSTOM_ACTION_LABEL = "<custom-action>"
+    private const val LIVE_REGION_LABEL = "<live-region>"
+    private const val LIVE_REGION_ASSERTIVE_LABEL = "assertive"
+    private const val LIVE_REGION_POLITE_LABEL = "polite"
   }
 }
 
