@@ -596,7 +596,7 @@
 <li>Provides additional context to a user about what will happen when an element is activated. This label is read by TalkBack alongside the action and is especially useful for custom buttons or interactive elements.</li>
 </ul>
 </li>
-<li><strong>Heading (Compose only)</strong><ul>
+<li><strong>Heading</strong><ul>
 <li>Marks an element as a heading for screen readers. This helps users navigate through content quickly, as headings can be used as landmarks or points of reference in a layout.</li>
 </ul>
 </li>
@@ -606,6 +606,18 @@
 </li>
 <li><strong>Error Description</strong><ul>
 <li>Provides additional context to a user about what went wrong when an error occurs. This is especially useful for form fields or other interactive elements that may have validation errors.</li>
+</ul>
+</li>
+<li><strong>Progress</strong><ul>
+<li>Indicates the progress of an element, such as a progress bar or a loading spinner. The progress value is announced by TalkBack to inform users of the current state of the element.</li>
+</ul>
+</li>
+<li><strong>Custom Action</strong><ul>
+<li>Custom actions allow the definition of additional interactive actions for UI elements, making them more accessible to users of assistive technologies. Links present in <code>AnnotatedString</code>&rsquo;s (via <code>LinkAnnotation</code>) are another type of action that is supported.</li>
+</ul>
+</li>
+<li><strong>Live Region</strong><ul>
+<li>A live region is a section of UI that is updated dynamically and relevant to the user. Screen readers can be configured to announce changes in live regions automatically, ensuring users are aware of updates without needing to navigate to the updated content.</li>
 </ul>
 </li>
 </ul>
