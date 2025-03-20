@@ -1,6 +1,9 @@
 package app.cash.paparazzi.plugin.test
 
+import android.content.Context
+import android.view.View
 import android.view.View.GONE
+import android.widget.Button
 import android.widget.LinearLayout
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -32,6 +35,9 @@ import androidx.compose.ui.semantics.setProgress
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.dp
+import androidx.core.view.AccessibilityDelegateCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Paparazzi
 import app.cash.paparazzi.accessibility.AccessibilityRenderExtension
@@ -241,4 +247,39 @@ class ComposeA11yTest {
 
     paparazzi.snapshot(view)
   }
+
+  @Test
+  fun `verify view custom actions`() {
+    val view = buildViewWithCustomActions(paparazzi.context)
+    paparazzi.snapshot(view, name = "custom-actions")
+  }
+
+  private fun buildViewWithCustomActions(context: Context) =
+    LinearLayout(context).apply {
+      addView(
+        Button(context).apply {
+          text = "Actions Button"
+          ViewCompat.setAccessibilityDelegate(
+            this,
+            object : AccessibilityDelegateCompat() {
+              override fun onInitializeAccessibilityNodeInfo(host: View, info: AccessibilityNodeInfoCompat) {
+                super.onInitializeAccessibilityNodeInfo(host, info)
+                info.addAction(
+                  AccessibilityNodeInfoCompat.AccessibilityActionCompat(
+                    AccessibilityNodeInfoCompat.ACTION_CLICK,
+                    "Custom Click Action"
+                  )
+                )
+                info.addAction(
+                  AccessibilityNodeInfoCompat.AccessibilityActionCompat(
+                    AccessibilityNodeInfoCompat.ACTION_LONG_CLICK,
+                    "Custom Long Press Action"
+                  )
+                )
+              }
+            }
+          )
+        }
+      )
+    }
 }

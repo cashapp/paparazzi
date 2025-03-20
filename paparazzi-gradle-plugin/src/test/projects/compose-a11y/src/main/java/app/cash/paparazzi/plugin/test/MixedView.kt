@@ -8,6 +8,7 @@ import android.widget.LinearLayout
 import android.widget.Switch
 import android.widget.TextView
 import androidx.compose.ui.platform.ComposeView
+import androidx.core.view.ViewCompat
 
 class MixedView(context: Context) : LinearLayout(context) {
   init {
@@ -17,6 +18,7 @@ class MixedView(context: Context) : LinearLayout(context) {
       TextView(context).apply {
         id = 1
         text = "Legacy Text View"
+        ViewCompat.setAccessibilityHeading(this, true)
       }
     )
 
@@ -40,6 +42,7 @@ class MixedView(context: Context) : LinearLayout(context) {
         id = 6
         isChecked = true
         text = "Legacy Switch"
+        ViewCompat.setStateDescription(this, "Switched on")
       }
     )
 
