@@ -73,7 +73,7 @@ dependencies {
   testImplementation libs.truth
 }
 
-tasks.named("dokkaGfm").configure {
+tasks.named("dokkaHtml").configure {
   outputDirectory = rootProject.file("docs/1.x")
 
   dokkaSourceSets.named("main") {
@@ -81,6 +81,20 @@ tasks.named("dokkaGfm").configure {
       reportUndocumented = false
       skipDeprecated = true
       jdkVersion = 8
+      includeNonPublic = false
+      skipEmptyPackages = true
+      platform = "jvm"
+
+      externalDocumentationLink {
+        url.set(java.net.URL("https://developer.android.com/reference/"))
+      }
+
+      sourceLink {
+        localDirectory.set(file("src/main/java"))
+        remoteUrl.set(java.net.URL("https://github.com/cashapp/paparazzi/tree/master/paparazzi/src/main/java"))
+        remoteLineSuffix.set("#L")
+      }
+
       perPackageOption {
         prefix = "app.cash.paparazzi.internal"
         suppress = true

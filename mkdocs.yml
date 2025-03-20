@@ -53,7 +53,7 @@ markdown_extensions:
 
 nav:
   - 'Overview': index.md
-  - '1.x API': 1.x/paparazzi/app.cash.paparazzi/index.md
+  - '1.x API': 1.x/paparazzi/app.cash.paparazzi/index.html
   - 'Accessibility Snapshots': accessibility.md
   - 'Change Log': changelog.md
   - 'Code of Conduct': code_of_conduct.md
