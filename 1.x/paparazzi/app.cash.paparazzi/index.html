@@ -1,641 +1,350 @@
-
-<!doctype html>
-<html lang="en" class="no-js">
-  <head>
-    
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width,initial-scale=1">
-      
-        <meta name="description" content="Android screenshots without Android">
-      
-      
-        <meta name="author" content="Square, Inc.">
-      
-      
-        <link rel="canonical" href="https://cashapp.github.io/paparazzi/1.x/paparazzi/app.cash.paparazzi/">
-      
-      
-        <link rel="prev" href="../../..">
-      
-      
-        <link rel="next" href="../../../accessibility/">
-      
-      
-      <link rel="icon" href="../../../images/icon-square.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.9">
-    
-    
-      
-        <title>Package-level declarations - Paparazzi - Paparazzi</title>
-      
-    
-    
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.4af4bdda.min.css">
-      
-        
-        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
-      
-      
-
-
-    
-    
-      
-    
-    
-      
-        
-        
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
-      
-    
-    
-      <link rel="stylesheet" href="../../../css/app.css">
-    
-    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
-    
-      
-
-    
-    
-    
-  </head>
-  
-  
-    
-    
-      
-    
-    
-    
-    
-    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="light-blue" data-md-color-accent="blue">
-  
-    
-    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
-    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
-    <label class="md-overlay" for="__drawer"></label>
-    <div data-md-component="skip">
-      
-        
-        <a href="#package-level-declarations" class="md-skip">
-          Skip to content
-        </a>
-      
-    </div>
-    <div data-md-component="announce">
-      
-    </div>
-    
-    
-      
-
-  
-
-<header class="md-header md-header--shadow" data-md-component="header">
-  <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../../.." title="Paparazzi" class="md-header__button md-logo" aria-label="Paparazzi" data-md-component="logo">
-      
-  <img src="../../../images/icon-square.png" alt="logo">
-
-    </a>
-    <label class="md-header__button md-icon" for="__drawer">
-      
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
-    </label>
-    <div class="md-header__title" data-md-component="header-title">
-      <div class="md-header__ellipsis">
-        <div class="md-header__topic">
-          <span class="md-ellipsis">
-            Paparazzi
-          </span>
-        </div>
-        <div class="md-header__topic" data-md-component="header-topic">
-          <span class="md-ellipsis">
-            
-              Package-level declarations - Paparazzi
-            
-          </span>
-        </div>
-      </div>
-    </div>
-    
-      
-        <form class="md-header__option" data-md-component="palette">
-  
-    
-    
-    
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="light-blue" data-md-color-accent="blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
-    
-      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
-      </label>
-    
-  
-    
-    
-    
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="light-blue" data-md-color-accent="blue"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
-    
-      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
-      </label>
-    
-  
-</form>
-      
-    
-    
-      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
-    
-    
-    
-      <label class="md-header__button md-icon" for="__search">
-        
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
-      </label>
-      <div class="md-search" data-md-component="search" role="dialog">
-  <label class="md-search__overlay" for="__search"></label>
-  <div class="md-search__inner" role="search">
-    <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
-      <label class="md-search__icon md-icon" for="__search">
-        
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
-        
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
-      </label>
-      <nav class="md-search__options" aria-label="Search">
-        
-        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
-          
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+<!DOCTYPE html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>app.cash.paparazzi</title>
+    <link href="../../images/logo-icon.svg" rel="icon" type="image/svg">
+    <script>var pathToRoot = "../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async="async"></script>
+<script type="text/javascript" src="../../scripts/sourceset_dependencies.js" async="async"></script>
+<link href="../../styles/style.css" rel="Stylesheet">
+<link href="../../styles/main.css" rel="Stylesheet">
+<link href="../../styles/prism.css" rel="Stylesheet">
+<link href="../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<link href="../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../scripts/clipboard.js" async="async"></script>
+<script type="text/javascript" src="../../scripts/navigation-loader.js" async="async"></script>
+<script type="text/javascript" src="../../scripts/platform-content-handler.js" async="async"></script>
+<script type="text/javascript" src="../../scripts/main.js" defer="defer"></script>
+<script type="text/javascript" src="../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../ui-kit/ui-kit.min.js" defer="defer"></script>
+<script type="text/javascript" src="../../scripts/symbol-parameters-wrapper_deferred.js" defer="defer"></script>
+</head>
+<body>
+    <div class="root">
+    <nav class="navigation theme-dark" id="navigation-wrapper">
+            <a class="library-name--link" href="../../index.html">
+                    paparazzi
+            </a>
+        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle"
+                type="button">Toggle table of contents
         </button>
-      </nav>
-      
-    </form>
-    <div class="md-search__output">
-      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
-        <div class="md-search-result" data-md-component="search-result">
-          <div class="md-search-result__meta">
-            Initializing search
-          </div>
-          <ol class="md-search-result__list" role="presentation"></ol>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-    
-    
-      <div class="md-header__source">
-        <a href="https://github.com/cashapp/paparazzi" title="Go to repository" class="md-source" data-md-component="source">
-  <div class="md-source__icon md-icon">
-    
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
-  </div>
-  <div class="md-source__repository">
-    Paparazzi
-  </div>
-</a>
-      </div>
-    
-  </nav>
-  
-</header>
-    
-    <div class="md-container" data-md-component="container">
-      
-      
-        
-          
-        
-      
-      <main class="md-main" data-md-component="main">
-        <div class="md-main__inner md-grid">
-          
-            
-              
-              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
-                <div class="md-sidebar__scrollwrap">
-                  <div class="md-sidebar__inner">
-                    
-
-
-
-<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
-  <label class="md-nav__title" for="__drawer">
-    <a href="../../.." title="Paparazzi" class="md-nav__button md-logo" aria-label="Paparazzi" data-md-component="logo">
-      
-  <img src="../../../images/icon-square.png" alt="logo">
-
-    </a>
-    Paparazzi
-  </label>
-  
-    <div class="md-nav__source">
-      <a href="https://github.com/cashapp/paparazzi" title="Go to repository" class="md-source" data-md-component="source">
-  <div class="md-source__icon md-icon">
-    
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
-  </div>
-  <div class="md-source__repository">
-    Paparazzi
-  </div>
-</a>
-    </div>
-  
-  <ul class="md-nav__list" data-md-scrollfix>
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../.." class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Overview
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-    
-  
-  
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    1.x API
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
-        
-  
-  <span class="md-ellipsis">
-    1.x API
-    
-  </span>
-  
-
-      </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#types" class="md-nav__link">
-    <span class="md-ellipsis">
-      Types
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#functions" class="md-nav__link">
-    <span class="md-ellipsis">
-      Functions
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../accessibility/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Accessibility Snapshots
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../changelog/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Change Log
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../code_of_conduct/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Code of Conduct
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="https://stackoverflow.com/questions/tagged/paparazzi?sort=active" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Stack Overflow ⏏
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-    
-  </ul>
-</nav>
-                  </div>
-                </div>
-              </div>
-            
-            
-              
-              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
-                <div class="md-sidebar__scrollwrap">
-                  <div class="md-sidebar__inner">
-                    
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#types" class="md-nav__link">
-    <span class="md-ellipsis">
-      Types
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#functions" class="md-nav__link">
-    <span class="md-ellipsis">
-      Functions
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-                  </div>
-                </div>
-              </div>
-            
-          
-          
-            <div class="md-content" data-md-component="content">
-              <article class="md-content__inner md-typeset">
-                
-                  
-
-
-  
-  
-
-
-<p>//<a href="../../">paparazzi</a>/<a href="./">app.cash.paparazzi</a></p>
-<h1 id="package-level-declarations">Package-level declarations<a class="headerlink" href="#package-level-declarations" title="Permanent link">&para;</a></h1>
-<h2 id="types">Types<a class="headerlink" href="#types" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Summary</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><a href="-device-config/">DeviceConfig</a></td>
-<td>[jvm]<br>class <a href="-device-config/">DeviceConfig</a>(val screenHeight: <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a> = 1280, val screenWidth: <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a> = 768, val xdpi: <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a> = 320, val ydpi: <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a> = 320, val orientation: ScreenOrientation = ScreenOrientation.PORTRAIT, val uiMode: UiMode = UiMode.NORMAL, val nightMode: NightMode = NightMode.NOTNIGHT, val density: Density = Density.XHIGH, val fontScale: <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-float/index.html">Float</a> = 1.0f, val layoutDirection: LayoutDirection = LayoutDirection.LTR, val locale: <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a>? = null, val ratio: ScreenRatio = ScreenRatio.NOTLONG, val size: ScreenSize = ScreenSize.NORMAL, val keyboard: Keyboard = Keyboard.NOKEY, val touchScreen: TouchScreen = TouchScreen.FINGER, val keyboardState: KeyboardState = KeyboardState.SOFT, val softButtons: <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a> = true, val navigation: Navigation = Navigation.NONAV, val screenRound: ScreenRound? = null, val released: <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a> = &quot;November 13, 2012&quot;)<br>Provides FolderConfiguration and HardwareConfig for various devices. Also provides utility methods to parse <code>build.prop</code> and <code>attrs.xml</code> to generate the appropriate maps.</td>
-</tr>
-<tr>
-<td><a href="-environment/">Environment</a></td>
-<td>[jvm]<br>class <a href="-environment/">Environment</a>(val appTestDir: <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a>, val packageName: <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a>, val compileSdkVersion: <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a>, val resourcePackageNames: <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a>&gt;, val localResourceDirs: <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a>&gt;, val moduleResourceDirs: <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a>&gt;, val libraryResourceDirs: <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a>&gt;, val allModuleAssetDirs: <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a>&gt;, val libraryAssetDirs: <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a>&gt;)</td>
-</tr>
-<tr>
-<td><a href="-flags/">Flags</a></td>
-<td>[jvm]<br>object <a href="-flags/">Flags</a></td>
-</tr>
-<tr>
-<td><a href="-html-report-writer/">HtmlReportWriter</a></td>
-<td>[jvm]<br>class <a href="-html-report-writer/">HtmlReportWriter</a>@<a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-jvm-overloads/index.html">JvmOverloads</a>constructor(runName: <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a> = defaultRunName(), rootDirectory: <a href="https://docs.oracle.com/javase/8/docs/api/java/io/File.html">File</a> = File(System.getProperty(&quot;paparazzi.report.dir&quot;)), snapshotRootDirectory: <a href="https://docs.oracle.com/javase/8/docs/api/java/io/File.html">File</a> = File(System.getProperty(&quot;paparazzi.snapshot.dir&quot;))) : <a href="-snapshot-handler/">SnapshotHandler</a><br>Creates an HTML report that avoids writing files that have already been written.</td>
-</tr>
-<tr>
-<td><a href="-instant-animations-rule/">InstantAnimationsRule</a></td>
-<td>[jvm]<br>class <a href="-instant-animations-rule/">InstantAnimationsRule</a> : TestRule<br>Sets animation duration scale to 0 so all animations run instantly. Use this with Paparazzi to skip animations and snapshot their terminal state.</td>
-</tr>
-<tr>
-<td><a href="-paparazzi/">Paparazzi</a></td>
-<td>[jvm]<br>class <a href="-paparazzi/">Paparazzi</a>@<a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-jvm-overloads/index.html">JvmOverloads</a>constructor(environment: <a href="-environment/">Environment</a> = detectEnvironment(), deviceConfig: <a href="-device-config/">DeviceConfig</a> = DeviceConfig.NEXUS_5, theme: <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a> = &quot;android:Theme.Material.NoActionBar.Fullscreen&quot;, renderingMode: SessionParams.RenderingMode = RenderingMode.NORMAL, appCompatEnabled: <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a> = true, maxPercentDifference: <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-double/index.html">Double</a> = detectMaxPercentDifferenceDefault(), snapshotHandler: <a href="-snapshot-handler/">SnapshotHandler</a> = determineHandler(maxPercentDifference), renderExtensions: <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a>&lt;<a href="-render-extension/">RenderExtension</a>&gt; = setOf(), supportsRtl: <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a> = false, showSystemUi: <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a> = false, validateAccessibility: <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a> = false, useDeviceResolution: <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a> = false) : TestRule</td>
-</tr>
-<tr>
-<td><a href="-paparazzi-sdk/">PaparazziSdk</a></td>
-<td>[jvm]<br>class <a href="-paparazzi-sdk/">PaparazziSdk</a>@<a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-jvm-overloads/index.html">JvmOverloads</a>constructor(environment: <a href="-environment/">Environment</a> = detectEnvironment(), deviceConfig: <a href="-device-config/">DeviceConfig</a> = DeviceConfig.NEXUS_5, theme: <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a> = &quot;android:Theme.Material.NoActionBar.Fullscreen&quot;, renderingMode: SessionParams.RenderingMode = RenderingMode.NORMAL, appCompatEnabled: <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a> = true, renderExtensions: <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a>&lt;<a href="-render-extension/">RenderExtension</a>&gt; = setOf(), supportsRtl: <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a> = false, showSystemUi: <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a> = false, validateAccessibility: <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a> = false, useDeviceResolution: <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a> = false, onNewFrame: (<a href="https://docs.oracle.com/javase/8/docs/api/java/awt/image/BufferedImage.html">BufferedImage</a>) -&gt; <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a>)</td>
-</tr>
-<tr>
-<td><a href="-render-extension/">RenderExtension</a></td>
-<td>[jvm]<br>interface <a href="-render-extension/">RenderExtension</a><br>An extension for overlaying additional information on top of each rendered frame.</td>
-</tr>
-<tr>
-<td><a href="-snapshot/">Snapshot</a></td>
-<td>[jvm]<br>class <a href="-snapshot/">Snapshot</a>(val name: <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a>?, val testName: <a href="-test-name/">TestName</a>, val timestamp: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Date.html">Date</a>, val tags: <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a>&gt; = listOf(), val file: <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a>? = null)</td>
-</tr>
-<tr>
-<td><a href="-snapshot-handler/">SnapshotHandler</a></td>
-<td>[jvm]<br>interface <a href="-snapshot-handler/">SnapshotHandler</a> : <a href="https://docs.oracle.com/javase/8/docs/api/java/io/Closeable.html">Closeable</a></td>
-</tr>
-<tr>
-<td><a href="-snapshot-verifier/">SnapshotVerifier</a></td>
-<td>[jvm]<br>class <a href="-snapshot-verifier/">SnapshotVerifier</a>@<a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-jvm-overloads/index.html">JvmOverloads</a>constructor(maxPercentDifference: <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-double/index.html">Double</a>, rootDirectory: <a href="https://docs.oracle.com/javase/8/docs/api/java/io/File.html">File</a> = File(System.getProperty(&quot;paparazzi.snapshot.dir&quot;))) : <a href="-snapshot-handler/">SnapshotHandler</a></td>
-</tr>
-<tr>
-<td><a href="-test-name/">TestName</a></td>
-<td>[jvm]<br>class <a href="-test-name/">TestName</a>(val packageName: <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a>, val className: <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a>, val methodName: <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a>)</td>
-</tr>
-</tbody>
-</table>
-<h2 id="functions">Functions<a class="headerlink" href="#functions" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Summary</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><a href="detect-environment/">detectEnvironment</a></td>
-<td>[jvm]<br>fun <a href="detect-environment/">detectEnvironment</a>(): <a href="-environment/">Environment</a></td>
-</tr>
-<tr>
-<td><a href="detect-max-percent-difference-default/">detectMaxPercentDifferenceDefault</a></td>
-<td>[jvm]<br>fun <a href="detect-max-percent-difference-default/">detectMaxPercentDifferenceDefault</a>(): <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-double/index.html">Double</a></td>
-</tr>
-</tbody>
-</table>
-
-
-
-
-
-
-
-  
-  
-
-
-
-
-
-
-                
-              </article>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+2.0.0-SNAPSHOT        </div>
+        <div class="navigation-controls">
+        <div class="filter-section filter-section_loading" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active=""
+                        data-filter=":paparazzi:dokkaHtml/main">jvm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox"
+                        data-role="dropdown-toggle"
+                        aria-controls="platform-tags-listbox"
+                        aria-haspopup="listbox"
+                        aria-expanded="false"
+                        aria-label="Toggle source sets"
+                ></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox">
+                    <div class="dropdown--header"><span>Platform filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close platform filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":paparazzi:dokkaHtml/main"
+                                       data-filter=":paparazzi:dokkaHtml/main"/>
+                                <span class="checkbox--icon"></span>
+                                jvm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
             </div>
-          
-          
-<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
         </div>
-        
-      </main>
-      
-        <footer class="md-footer">
-  
-  <div class="md-footer-meta md-typeset">
-    <div class="md-footer-meta__inner md-grid">
-      <div class="md-copyright">
-  
-    <div class="md-copyright__highlight">
-      Copyright &copy; 2019 Square, Inc.
-    </div>
-  
-  
-    Made with
-    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
-      Material for MkDocs
-    </a>
-  
-</div>
-      
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button"
+                    type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                    <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list"
+                        data-role="dropdown-listbox">
+                        <div class="dropdown--header">
+                            <span>
+                                    paparazzi
+                            </span>
+                            <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                                <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                            </button>
+                        </div>
+                        <div class="sidebar--inner" id="sideMenu"></div>
+                    </ul>
+                    <div class="dropdown--overlay"></div>
+                </div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="package" id="content" pageIds="paparazzi::app.cash.paparazzi////PointingToDeclaration//-716466611">
+  <div class="breadcrumbs"><a href="../../index.html">paparazzi</a><span class="delimiter">/</span><span class="current">app.cash.paparazzi</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>Package-level</span></span> <span><span>declarations</span></span></h1>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="TYPE">Types</button><button class="section-tab" data-togglable="FUNCTION,EXTENSION_FUNCTION">Functions</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="">Types</h2>
+        <div class="table"><a data-name="877153844%2FClasslikes%2F-716466611" anchor-label="DeviceConfig" id="877153844%2FClasslikes%2F-716466611" data-filterable-set=":paparazzi:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":paparazzi:dokkaHtml/main" data-filterable-set=":paparazzi:dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-device-config/index.html"><span>Device</span><wbr></wbr><span><span>Config</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="877153844%2FClasslikes%2F-716466611"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":paparazzi:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-device-config/index.html">DeviceConfig</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>screenHeight<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">1280</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>screenWidth<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">768</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>xdpi<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">320</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>ydpi<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">320</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>orientation<span class="token operator">: </span><span data-unresolved-link="com.android.resources/ScreenOrientation///PointingToDeclaration/">ScreenOrientation</span><span class="token operator"> = </span>ScreenOrientation.PORTRAIT<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>uiMode<span class="token operator">: </span><span data-unresolved-link="com.android.resources/UiMode///PointingToDeclaration/">UiMode</span><span class="token operator"> = </span>UiMode.NORMAL<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>nightMode<span class="token operator">: </span><span data-unresolved-link="com.android.resources/NightMode///PointingToDeclaration/">NightMode</span><span class="token operator"> = </span>NightMode.NOTNIGHT<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>density<span class="token operator">: </span><span data-unresolved-link="com.android.resources/Density///PointingToDeclaration/">Density</span><span class="token operator"> = </span>Density.XHIGH<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>fontScale<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-float/index.html">Float</a><span class="token operator"> = </span><span class="token constant">1.0f</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>layoutDirection<span class="token operator">: </span><span data-unresolved-link="com.android.resources/LayoutDirection///PointingToDeclaration/">LayoutDirection</span><span class="token operator"> = </span>LayoutDirection.LTR<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>locale<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>ratio<span class="token operator">: </span><span data-unresolved-link="com.android.resources/ScreenRatio///PointingToDeclaration/">ScreenRatio</span><span class="token operator"> = </span>ScreenRatio.NOTLONG<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>size<span class="token operator">: </span><span data-unresolved-link="com.android.resources/ScreenSize///PointingToDeclaration/">ScreenSize</span><span class="token operator"> = </span>ScreenSize.NORMAL<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>keyboard<span class="token operator">: </span><span data-unresolved-link="com.android.resources/Keyboard///PointingToDeclaration/">Keyboard</span><span class="token operator"> = </span>Keyboard.NOKEY<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>touchScreen<span class="token operator">: </span><span data-unresolved-link="com.android.resources/TouchScreen///PointingToDeclaration/">TouchScreen</span><span class="token operator"> = </span>TouchScreen.FINGER<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>keyboardState<span class="token operator">: </span><span data-unresolved-link="com.android.resources/KeyboardState///PointingToDeclaration/">KeyboardState</span><span class="token operator"> = </span>KeyboardState.SOFT<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>softButtons<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>navigation<span class="token operator">: </span><span data-unresolved-link="com.android.resources/Navigation///PointingToDeclaration/">Navigation</span><span class="token operator"> = </span>Navigation.NONAV<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>screenRound<span class="token operator">: </span><span data-unresolved-link="com.android.resources/ScreenRound///PointingToDeclaration/">ScreenRound</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>released<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">&quot;November 13, 2012&quot;</span></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Provides <span data-unresolved-link="com.android.ide.common.resources.configuration/FolderConfiguration///PointingToDeclaration/">FolderConfiguration</span> and <span data-unresolved-link="com.android.ide.common.rendering.api/HardwareConfig///PointingToDeclaration/">HardwareConfig</span> for various devices. Also provides utility methods to parse <code class="lang-kotlin">build.prop</code> and <code class="lang-kotlin">attrs.xml</code> to generate the appropriate maps.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="167591395%2FClasslikes%2F-716466611" anchor-label="Environment" id="167591395%2FClasslikes%2F-716466611" data-filterable-set=":paparazzi:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":paparazzi:dokkaHtml/main" data-filterable-set=":paparazzi:dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-environment/index.html"><span><span>Environment</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="167591395%2FClasslikes%2F-716466611"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":paparazzi:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-environment/index.html">Environment</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>appTestDir<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>packageName<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>compileSdkVersion<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>resourcePackageNames<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>localResourceDirs<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>moduleResourceDirs<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>libraryResourceDirs<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>allModuleAssetDirs<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>libraryAssetDirs<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2030330961%2FClasslikes%2F-716466611" anchor-label="Flags" id="-2030330961%2FClasslikes%2F-716466611" data-filterable-set=":paparazzi:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":paparazzi:dokkaHtml/main" data-filterable-set=":paparazzi:dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-flags/index.html"><span><span>Flags</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2030330961%2FClasslikes%2F-716466611"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":paparazzi:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-flags/index.html">Flags</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="69899546%2FClasslikes%2F-716466611" anchor-label="HtmlReportWriter" id="69899546%2FClasslikes%2F-716466611" data-filterable-set=":paparazzi:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":paparazzi:dokkaHtml/main" data-filterable-set=":paparazzi:dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-html-report-writer/index.html"><span>Html</span><wbr></wbr><span>Report</span><wbr></wbr><span><span>Writer</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="69899546%2FClasslikes%2F-716466611"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":paparazzi:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-html-report-writer/index.html">HtmlReportWriter</a> <span><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-jvm-overloads/index.html"><span class="token annotation builtin">JvmOverloads</span></a> </span><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">runName<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span>defaultRunName()<span class="token punctuation">, </span></span><span class="parameter ">rootDirectory<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/io/File.html">File</a><span class="token operator"> = </span>File(System.getProperty(&quot;paparazzi.report.dir&quot;))<span class="token punctuation">, </span></span><span class="parameter ">snapshotRootDirectory<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/io/File.html">File</a><span class="token operator"> = </span>File(System.getProperty(&quot;paparazzi.snapshot.dir&quot;))</span></span><span class="token punctuation">)</span> : <a href="-snapshot-handler/index.html">SnapshotHandler</a></div><div class="brief "><p class="paragraph">Creates an HTML report that avoids writing files that have already been written.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="425767562%2FClasslikes%2F-716466611" anchor-label="InstantAnimationsRule" id="425767562%2FClasslikes%2F-716466611" data-filterable-set=":paparazzi:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":paparazzi:dokkaHtml/main" data-filterable-set=":paparazzi:dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-instant-animations-rule/index.html"><span>Instant</span><wbr></wbr><span>Animations</span><wbr></wbr><span><span>Rule</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="425767562%2FClasslikes%2F-716466611"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":paparazzi:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-instant-animations-rule/index.html">InstantAnimationsRule</a> : <span data-unresolved-link="org.junit.rules/TestRule///PointingToDeclaration/">TestRule</span></div><div class="brief "><p class="paragraph">Sets animation duration scale to 0 so all animations run instantly. Use this with Paparazzi to skip animations and snapshot their terminal state.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1595133598%2FClasslikes%2F-716466611" anchor-label="Paparazzi" id="1595133598%2FClasslikes%2F-716466611" data-filterable-set=":paparazzi:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":paparazzi:dokkaHtml/main" data-filterable-set=":paparazzi:dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-paparazzi/index.html"><span><span>Paparazzi</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1595133598%2FClasslikes%2F-716466611"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":paparazzi:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-paparazzi/index.html">Paparazzi</a> <span><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-jvm-overloads/index.html"><span class="token annotation builtin">JvmOverloads</span></a> </span><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">environment<span class="token operator">: </span><a href="-environment/index.html">Environment</a><span class="token operator"> = </span>detectEnvironment()<span class="token punctuation">, </span></span><span class="parameter ">deviceConfig<span class="token operator">: </span><a href="-device-config/index.html">DeviceConfig</a><span class="token operator"> = </span>DeviceConfig.NEXUS_5<span class="token punctuation">, </span></span><span class="parameter ">theme<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">&quot;android:Theme.Material.NoActionBar.Fullscreen&quot;</span><span class="token punctuation">, </span></span><span class="parameter ">renderingMode<span class="token operator">: </span><span data-unresolved-link="com.android.ide.common.rendering.api/SessionParams.RenderingMode///PointingToDeclaration/">SessionParams.RenderingMode</span><span class="token operator"> = </span>RenderingMode.NORMAL<span class="token punctuation">, </span></span><span class="parameter ">appCompatEnabled<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter ">maxPercentDifference<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-double/index.html">Double</a><span class="token operator"> = </span>detectMaxPercentDifferenceDefault()<span class="token punctuation">, </span></span><span class="parameter ">snapshotHandler<span class="token operator">: </span><a href="-snapshot-handler/index.html">SnapshotHandler</a><span class="token operator"> = </span>determineHandler(maxPercentDifference)<span class="token punctuation">, </span></span><span class="parameter ">renderExtensions<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="-render-extension/index.html">RenderExtension</a><span class="token operator">&gt;</span><span class="token operator"> = </span>setOf()<span class="token punctuation">, </span></span><span class="parameter ">supportsRtl<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter ">showSystemUi<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter ">validateAccessibility<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter ">useDeviceResolution<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span></span></span><span class="token punctuation">)</span> : <span data-unresolved-link="org.junit.rules/TestRule///PointingToDeclaration/">TestRule</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-64677942%2FClasslikes%2F-716466611" anchor-label="PaparazziSdk" id="-64677942%2FClasslikes%2F-716466611" data-filterable-set=":paparazzi:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":paparazzi:dokkaHtml/main" data-filterable-set=":paparazzi:dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-paparazzi-sdk/index.html"><span>Paparazzi</span><wbr></wbr><span><span>Sdk</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-64677942%2FClasslikes%2F-716466611"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":paparazzi:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-paparazzi-sdk/index.html">PaparazziSdk</a> <span><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-jvm-overloads/index.html"><span class="token annotation builtin">JvmOverloads</span></a> </span><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">environment<span class="token operator">: </span><a href="-environment/index.html">Environment</a><span class="token operator"> = </span>detectEnvironment()<span class="token punctuation">, </span></span><span class="parameter ">deviceConfig<span class="token operator">: </span><a href="-device-config/index.html">DeviceConfig</a><span class="token operator"> = </span>DeviceConfig.NEXUS_5<span class="token punctuation">, </span></span><span class="parameter ">theme<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">&quot;android:Theme.Material.NoActionBar.Fullscreen&quot;</span><span class="token punctuation">, </span></span><span class="parameter ">renderingMode<span class="token operator">: </span><span data-unresolved-link="com.android.ide.common.rendering.api/SessionParams.RenderingMode///PointingToDeclaration/">SessionParams.RenderingMode</span><span class="token operator"> = </span>RenderingMode.NORMAL<span class="token punctuation">, </span></span><span class="parameter ">appCompatEnabled<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter ">renderExtensions<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="-render-extension/index.html">RenderExtension</a><span class="token operator">&gt;</span><span class="token operator"> = </span>setOf()<span class="token punctuation">, </span></span><span class="parameter ">supportsRtl<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter ">showSystemUi<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter ">validateAccessibility<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter ">useDeviceResolution<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter ">onNewFrame<span class="token operator">: </span><span class="token punctuation">(</span><a href="https://docs.oracle.com/javase/8/docs/api/java/awt/image/BufferedImage.html">BufferedImage</a><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2132673811%2FClasslikes%2F-716466611" anchor-label="RenderExtension" id="-2132673811%2FClasslikes%2F-716466611" data-filterable-set=":paparazzi:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":paparazzi:dokkaHtml/main" data-filterable-set=":paparazzi:dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-render-extension/index.html"><span>Render</span><wbr></wbr><span><span>Extension</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2132673811%2FClasslikes%2F-716466611"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":paparazzi:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">interface </span><a href="-render-extension/index.html">RenderExtension</a></div><div class="brief "><p class="paragraph">An extension for overlaying additional information on top of each rendered frame.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1765656408%2FClasslikes%2F-716466611" anchor-label="Snapshot" id="-1765656408%2FClasslikes%2F-716466611" data-filterable-set=":paparazzi:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":paparazzi:dokkaHtml/main" data-filterable-set=":paparazzi:dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-snapshot/index.html"><span><span>Snapshot</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1765656408%2FClasslikes%2F-716466611"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":paparazzi:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-snapshot/index.html">Snapshot</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>name<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>testName<span class="token operator">: </span><a href="-test-name/index.html">TestName</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>timestamp<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/Date.html">Date</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>tags<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator"> = </span>listOf()<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>file<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1080384528%2FClasslikes%2F-716466611" anchor-label="SnapshotHandler" id="-1080384528%2FClasslikes%2F-716466611" data-filterable-set=":paparazzi:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":paparazzi:dokkaHtml/main" data-filterable-set=":paparazzi:dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-snapshot-handler/index.html"><span>Snapshot</span><wbr></wbr><span><span>Handler</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1080384528%2FClasslikes%2F-716466611"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":paparazzi:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">interface </span><a href="-snapshot-handler/index.html">SnapshotHandler</a> : <a href="https://docs.oracle.com/javase/8/docs/api/java/io/Closeable.html">Closeable</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1759604594%2FClasslikes%2F-716466611" anchor-label="SnapshotVerifier" id="1759604594%2FClasslikes%2F-716466611" data-filterable-set=":paparazzi:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":paparazzi:dokkaHtml/main" data-filterable-set=":paparazzi:dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-snapshot-verifier/index.html"><span>Snapshot</span><wbr></wbr><span><span>Verifier</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1759604594%2FClasslikes%2F-716466611"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":paparazzi:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-snapshot-verifier/index.html">SnapshotVerifier</a> <span><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.jvm/-jvm-overloads/index.html"><span class="token annotation builtin">JvmOverloads</span></a> </span><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">maxPercentDifference<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-double/index.html">Double</a><span class="token punctuation">, </span></span><span class="parameter ">rootDirectory<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/io/File.html">File</a><span class="token operator"> = </span>File(System.getProperty(&quot;paparazzi.snapshot.dir&quot;))</span></span><span class="token punctuation">)</span> : <a href="-snapshot-handler/index.html">SnapshotHandler</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1453900209%2FClasslikes%2F-716466611" anchor-label="TestName" id="-1453900209%2FClasslikes%2F-716466611" data-filterable-set=":paparazzi:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":paparazzi:dokkaHtml/main" data-filterable-set=":paparazzi:dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-test-name/index.html"><span>Test</span><wbr></wbr><span><span>Name</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1453900209%2FClasslikes%2F-716466611"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":paparazzi:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-test-name/index.html">TestName</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>packageName<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>className<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>methodName<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="1015616983%2FFunctions%2F-716466611" anchor-label="detectEnvironment" id="1015616983%2FFunctions%2F-716466611" data-filterable-set=":paparazzi:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":paparazzi:dokkaHtml/main" data-filterable-set=":paparazzi:dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="detect-environment.html"><span>detect</span><wbr></wbr><span><span>Environment</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1015616983%2FFunctions%2F-716466611"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":paparazzi:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="detect-environment.html"><span class="token function">detectEnvironment</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-environment/index.html">Environment</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1607820775%2FFunctions%2F-716466611" anchor-label="detectMaxPercentDifferenceDefault" id="1607820775%2FFunctions%2F-716466611" data-filterable-set=":paparazzi:dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":paparazzi:dokkaHtml/main" data-filterable-set=":paparazzi:dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="detect-max-percent-difference-default.html"><span>detect</span><wbr></wbr><span>Max</span><wbr></wbr><span>Percent</span><wbr></wbr><span>Difference</span><wbr></wbr><span><span>Default</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1607820775%2FFunctions%2F-716466611"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":paparazzi:dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="detect-max-percent-difference-default.html"><span class="token function">detectMaxPercentDifferenceDefault</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-double/index.html">Double</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
-</footer>
-      
+</div>
+    <div class="footer">
+        <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+        <span>© 2025 Copyright</span>
+        <span class="pull-right">
+            <span>Generated by </span>
+            <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                <span>dokka</span>
+            </a>
+        </span>
     </div>
-    <div class="md-dialog" data-md-component="dialog">
-      <div class="md-dialog__inner md-typeset"></div>
+            </div>
+        </div>
     </div>
-    
-    
-    <script id="__config" type="application/json">{"base": "../../..", "features": [], "search": "../../../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
-    
-    
-      <script src="../../../assets/javascripts/bundle.c8b220af.min.js"></script>
-      
-    
-  </body>
+</body>
 </html>
