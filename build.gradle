@@ -17,6 +17,7 @@ buildscript {
     classpath libs.plugin.spotless
     classpath libs.plugin.buildConfig
     classpath libs.plugin.poko
+    classpath libs.plugin.
 
     // Normally you would declare a version here, but we use dependency substitution in
     // settings.gradle to use the version built from inside the repo.
