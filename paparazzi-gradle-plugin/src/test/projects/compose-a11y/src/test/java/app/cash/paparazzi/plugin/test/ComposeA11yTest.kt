@@ -24,6 +24,7 @@ import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalDensity
@@ -32,6 +33,7 @@ import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.invisibleToUser
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.setProgress
@@ -157,6 +159,31 @@ class ComposeA11yTest {
         Column {
           Text(text = "Text 1")
           Text(text = "Text 2")
+        }
+      }
+    }
+
+    paparazzi.snapshot(view)
+  }
+
+  @Test
+  fun `verify hidden views are not in legend`() {
+    val view = ComposeView(paparazzi.context).apply {
+      setContent {
+        Column {
+          Text(
+            modifier = Modifier
+              .semantics {
+                invisibleToUser()
+              },
+            text = "Text invisible to user"
+          )
+          Text(
+            modifier = Modifier
+              .alpha(0f),
+            text = "Text with zero alpha"
+          )
+          Text(text = "Text that is visible!")
         }
       }
     }
