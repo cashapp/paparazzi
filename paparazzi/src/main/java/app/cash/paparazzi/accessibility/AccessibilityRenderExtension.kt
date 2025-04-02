@@ -27,6 +27,8 @@ import android.view.WindowManagerImpl
 import android.widget.Checkable
 import android.widget.FrameLayout
 import android.widget.LinearLayout
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.platform.ViewRootForTest
 import androidx.compose.ui.semantics.LiveRegionMode.Companion.Assertive
@@ -169,6 +171,16 @@ public class AccessibilityRenderExtension : RenderExtension {
   }
 
   private fun SemanticsNode.accessibilityText(): String? {
+    val invisibleToUser = config.getOrNull(SemanticsProperties.InvisibleToUser) != null
+    val hasZeroAlphaModifier = layoutInfo.getModifierInfo().any {
+      // We don't get direct access to an alpha field but we can inspect the modifiers and see if
+      // a modifier of 0f was applied to the node.
+      it.modifier == Modifier.alpha(0f)
+    }
+    if (invisibleToUser || hasZeroAlphaModifier) {
+      return null
+    }
+
     val stateDescription = config.getOrNull(SemanticsProperties.StateDescription)
     val selected = if (stateDescription != null) {
       // The selected state is only read by TalkBack if the state description is not set
