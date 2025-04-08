@@ -1,9 +1,11 @@
 package app.cash.paparazzi.plugin.test
 
 import android.content.Context
+import android.text.Editable
 import android.view.View
 import android.view.View.GONE
 import android.widget.Button
+import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.compose.foundation.background
@@ -313,6 +315,19 @@ class AccessibilityRenderingTest {
         TextView(paparazzi.context).apply {
           text = "Live Region Text"
           accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_ASSERTIVE
+        }
+      )
+    }
+
+    paparazzi.snapshot(view)
+  }
+
+  @Test
+  fun `verify view EditText`() {
+    val view = LinearLayout(paparazzi.context).apply {
+      addView(
+        EditText(context).apply {
+          text = Editable.Factory.getInstance().newEditable("Text input box")
         }
       )
     }

@@ -194,6 +194,7 @@ public class AccessibilityRenderExtension : RenderExtension {
         ?: config.getOrNull(SemanticsProperties.Text)?.joinToString(", ")
         ?: config.getOrNull(SemanticsProperties.EditableText)?.text
     val role = config.getOrNull(SemanticsProperties.Role)?.toString()
+    val editable = if (config.getOrNull(SemanticsProperties.IsEditable) == true) EDITABLE_LABEL else null
     val disabled =
       if (config.getOrNull(SemanticsProperties.Disabled) != null) DISABLED_LABEL else null
     val onClickLabel = if (disabled != null) {
@@ -267,6 +268,7 @@ public class AccessibilityRenderExtension : RenderExtension {
       toggleableState,
       mainAccessibilityText,
       role,
+      editable,
       disabled,
       onClickLabel,
       heading,
@@ -280,6 +282,9 @@ public class AccessibilityRenderExtension : RenderExtension {
   }
 
   private fun View.accessibilityText(): String? {
+    val nodeInfo = createAccessibilityNodeInfo()
+    onInitializeAccessibilityNodeInfo(nodeInfo)
+
     val stateDescription = if (SdkLevel.isAtLeastR()) stateDescription?.toString() else null
     val selected = if (isSelected) SELECTED_LABEL else null
     val toggleableState = if (this is Checkable) {
@@ -290,7 +295,8 @@ public class AccessibilityRenderExtension : RenderExtension {
     } else {
       null
     }
-    val mainAccessibilityText = iterableTextForAccessibility?.toString()
+    val mainAccessibilityText = iterableTextForAccessibility?.toString() ?: contentDescription?.toString()
+    val editable = if (nodeInfo.isEditable) EDITABLE_LABEL else null
     val disabled = if (!isEnabled) DISABLED_LABEL else null
     val heading = if (SdkLevel.isAtLeastR() && isAccessibilityHeading) HEADING_LABEL else null
     val liveRegionMode = when (accessibilityLiveRegion) {
@@ -305,6 +311,7 @@ public class AccessibilityRenderExtension : RenderExtension {
       selected,
       toggleableState,
       mainAccessibilityText,
+      editable,
       disabled,
       heading,
       liveRegionMode,
@@ -358,6 +365,7 @@ public class AccessibilityRenderExtension : RenderExtension {
     private const val LIVE_REGION_LABEL = "<live-region>"
     private const val LIVE_REGION_ASSERTIVE_LABEL = "assertive"
     private const val LIVE_REGION_POLITE_LABEL = "polite"
+    private const val EDITABLE_LABEL = "<editable>"
   }
 }
 
