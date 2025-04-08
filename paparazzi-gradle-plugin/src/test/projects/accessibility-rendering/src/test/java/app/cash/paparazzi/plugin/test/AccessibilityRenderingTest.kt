@@ -50,7 +50,7 @@ import com.android.ide.common.rendering.api.SessionParams.RenderingMode
 import org.junit.Rule
 import org.junit.Test
 
-class ComposeA11yTest {
+class AccessibilityRenderingTest {
   @get:Rule
   val paparazzi = Paparazzi(
     theme = "Theme.AppCompat.Light.NoActionBar",

@@ -1415,8 +1415,8 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun composeA11y() {
-    val fixtureRoot = File("src/test/projects/compose-a11y")
+  fun accessibilityRendering() {
+    val fixtureRoot = File("src/test/projects/accessibility-rendering")
     gradleRunner
       .withArguments("verifyPaparazziDebug", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
