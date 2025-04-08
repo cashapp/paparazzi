@@ -33,7 +33,7 @@ composeUi-material3-android = { module = "androidx.compose.material3:material3-a
 composeUi-material-icons = { module = "androidx.compose.material:material-icons-core", version.ref = "compose" }
 composeUi-uiTooling = { module = "androidx.compose.ui:ui-tooling" }
 
-guava = { module = "com.google.guava:guava", version = "33.4.6-jre" }
+guava = { module = "com.google.guava:guava", version = "33.4.7-android" }
 
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
 kotlinpoet-ksp = { module = "com.squareup:kotlinpoet-ksp", version = "2.0.0" }
