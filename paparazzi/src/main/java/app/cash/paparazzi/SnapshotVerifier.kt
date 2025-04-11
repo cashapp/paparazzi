@@ -20,6 +20,7 @@ import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.apng.ApngVerifier
 import okio.Path.Companion.toOkioPath
 import java.awt.image.BufferedImage
+import java.awt.image.BufferedImage.TYPE_INT_ARGB
 import java.io.File
 import javax.imageio.ImageIO
 
@@ -52,11 +53,12 @@ public class SnapshotVerifier @JvmOverloads constructor(
           return
         }
 
-        if (!expected.exists()) {
-          throw AssertionError("File $expected does not exist")
-        }
-
-        val goldenImage = ImageIO.read(expected) ?: throw NullPointerException(
+        val goldenImage = if (!expected.exists()) {
+          // Stub image for comparison and to proceed with failure output
+          BufferedImage(image.width, image.height, TYPE_INT_ARGB)
+        } else {
+          ImageIO.read(expected)
+        } ?: throw NullPointerException(
           """
           Failed to read the snapshot file from the file system.
 
