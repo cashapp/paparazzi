@@ -1,5 +1,5 @@
 apply plugin: 'org.jetbrains.kotlin.jvm'
-apply plugin: 'com.vanniktech.maven.publish'
+//apply plugin: 'com.vanniktech.maven.publish'
 apply plugin: 'com.android.lint'
 apply plugin: 'com.google.devtools.ksp'
 

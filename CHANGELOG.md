@@ -1,8 +1,30 @@
 # Change Log
 
 ## [Unreleased]
+
+## [2.0.0-alpha01] - 2025-04-15
+
+### New
 * Support for editable text in accessibility snapshots
 * Support for error description in accessibility snapshots
+* Support progress compose semantics in accessibility snapshots
+* Support custom actions and link annotations in Compose accessibility snapshots
+* Support additional accessibility properties on views
+* Support live regions in accessibility snapshots
+* Add support for compose views that are hidden or invisible
+* Add gradle property to control default max percent difference
+* LayoutLib v15
+* [Gradle Plugin] Android Gradle Plugin 8.7.1
+
+### Fixed
+* Fix default layout params for compose snapshots
+* Fix accessibility overlay drawing in root view instead of window manager
+* Fix issue where unmergedNode has 0 elements
+* Don't scale accessibility legend text when font scale is non-default
+* Use compileOnly for kotlin/agp plugins
+* Bypass font path prefix check in ResourcesCompat::loadFont
+
+Kudos to @geoff-powell, @colinmarsch, @darshanparajuli, @DSteve595, @adamalyyan and others for contributions this release!
 
 ## [1.3.5] - 2024-11-06
 
@@ -411,7 +433,8 @@ As of this release, consumers must build on Java 11 environments.
 
 
 
-[Unreleased]: https://github.com/cashapp/paparazzi/compare/1.3.5...HEAD
+[Unreleased]: https://github.com/cashapp/paparazzi/compare/2.0.0-alpha01...HEAD
+[2.0.0-alpha01]: https://github.com/cashapp/paparazzi/releases/tag/2.0.0-alpha01
 [1.3.5]: https://github.com/cashapp/paparazzi/releases/tag/1.3.5
 [1.3.4]: https://github.com/cashapp/paparazzi/releases/tag/1.3.4
 [1.3.3]: https://github.com/cashapp/paparazzi/releases/tag/1.3.3
