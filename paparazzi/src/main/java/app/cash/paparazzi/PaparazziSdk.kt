@@ -119,7 +119,7 @@ public class PaparazziSdk @JvmOverloads constructor(
     val layoutlibCallback = PaparazziCallback(
       logger = logger,
       packageName = environment.packageName,
-      resourcePackageNames = environment.resourcePackageNames // TODO: replace this, and draw the rest of the owl
+      resourcePackageNames = emptyList() //environment.resourcePackageNames // TODO: replace this, and draw the rest of the owl
     )
     layoutlibCallback.initResources()
 
