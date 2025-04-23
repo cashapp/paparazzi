@@ -37,21 +37,21 @@ Tasks
 -------
 
 ```bash
-./gradlew sample:testDebug
+./gradlew :sample:testDebug
 ```
 
 Runs tests and generates an HTML report at `sample/build/reports/paparazzi/` showing all
 test runs and snapshots.
 
 ```bash
-./gradlew sample:recordPaparazziDebug
+./gradlew :sample:recordPaparazziDebug
 ```
 
 Saves snapshots as golden values to a predefined source-controlled location
 (defaults to `src/test/snapshots`).
 
 ```bash
-./gradlew sample:verifyPaparazziDebug
+./gradlew :sample:verifyPaparazziDebug
 ```
 
 Runs tests and verifies against previously-recorded golden values. Failures generate diffs at `sample/build/paparazzi/failures`.
