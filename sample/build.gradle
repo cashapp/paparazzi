@@ -42,3 +42,8 @@ dependencies {
 tasks.withType(com.diffplug.gradle.spotless.SpotlessTask).configureEach {
   mustRunAfter(tasks.withType(Test))
 }
+
+// Verify screenshots as part of the standard check process
+tasks.named("check").configure {
+  dependsOn("verifyPaparazziDebug")
+}

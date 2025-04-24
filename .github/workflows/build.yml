@@ -42,8 +42,8 @@ jobs:
         with:
           validate-wrappers: true
 
-      - name: Run All Tests and verify :sample module
-        run: ./gradlew check :sample:verifyPaparazziDebug
+      - name: Run All Tests
+        run: ./gradlew check
 
       - name: Upload Test Failures
         if: failure()
