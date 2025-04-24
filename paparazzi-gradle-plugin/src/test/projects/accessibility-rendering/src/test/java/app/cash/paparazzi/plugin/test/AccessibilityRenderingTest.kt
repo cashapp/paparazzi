@@ -25,6 +25,7 @@ import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
@@ -52,6 +53,7 @@ import com.android.ide.common.rendering.api.SessionParams.RenderingMode
 import org.junit.Rule
 import org.junit.Test
 
+@OptIn(ExperimentalComposeUiApi::class)
 class AccessibilityRenderingTest {
   @get:Rule
   val paparazzi = Paparazzi(
