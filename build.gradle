@@ -27,8 +27,14 @@ buildscript {
 
 apply plugin: 'binary-compatibility-validator'
 
+def testProjectPath = 'paparazzi-gradle-plugin/src/test/projects'.replace('/', File.separator)
+// These projects are imported in IDEA but we don't want to run the API validation on them.
+def testProjectNames = allprojects.findAll {
+  it.projectDir.path.contains(testProjectPath)
+}.collect { it.name }
+
 apiValidation {
-  ignoredProjects += ['sample']
+  ignoredProjects += ['sample'] + testProjectNames
 }
 
 subprojects {
