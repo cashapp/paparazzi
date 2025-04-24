@@ -1156,7 +1156,7 @@ class PaparazziPluginTest {
     assertThat(config.projectAssetDirs).containsExactly(
       "src/main/assets",
       "src/debug/assets",
-      "../producer/build/intermediates/library_assets/debug/packageDebugAssets/out"
+      "../producer/build/intermediates/assets/debug/mergeDebugAssets"
     )
 
     buildDir.deleteRecursively()
@@ -1183,7 +1183,7 @@ class PaparazziPluginTest {
     assertThat(config.projectAssetDirs).containsExactly(
       "src/main/assets",
       "src/debug/assets",
-      "../producer/build/intermediates/library_assets/debug/packageDebugAssets/out"
+      "../producer/build/intermediates/assets/debug/mergeDebugAssets"
     )
   }
 

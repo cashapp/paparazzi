@@ -94,7 +94,7 @@ internal open class AarSourceResourceRepository(
   @Throws(IOException::class)
   fun loadFromStream(
     stream: Base128InputStream,
-    stringCache: Map<String, String>,
+    stringCache: MutableMap<String, String>,
     namespaceResolverCache: MutableMap<NamespaceResolver, NamespaceResolver>?
   ) = ResourceSerializationUtil.readResourcesFromStream(
     stream,
