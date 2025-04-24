@@ -33,7 +33,7 @@ internal object ResourceSerializationUtil {
   @Throws(IOException::class)
   fun readResourcesFromStream(
     stream: Base128InputStream,
-    stringCache: Map<String, String>,
+    stringCache: MutableMap<String, String>,
     namespaceResolverCache: MutableMap<NamespaceResolver, NamespaceResolver>?,
     repository: LoadableResourceRepository,
     resourceConsumer: Consumer<BasicResourceItem>

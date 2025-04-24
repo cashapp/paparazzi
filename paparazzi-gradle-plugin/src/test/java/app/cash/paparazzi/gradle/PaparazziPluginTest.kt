@@ -691,6 +691,32 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun verifyMissingGolden() {
+    val fixtureRoot = File("src/test/projects/verify-missing-golden")
+
+    val fileName = "app.cash.paparazzi.plugin.test_VerifyTest_verify.png"
+    val snapshot = File(fixtureRoot, "src/test/snapshots/images/$fileName")
+    assertThat(snapshot.exists()).isFalse()
+
+    val result = gradleRunner
+      .withArguments("verifyPaparazziDebug", "--stacktrace", "--info")
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    assertThat(result.task(":testDebugUnitTest")).isNotNull()
+
+    val failureDir = File(fixtureRoot, "build/paparazzi/failures").registerForDeletionOnExit()
+
+    val golden = File(failureDir, fileName)
+    assertThat(golden.exists()).isTrue()
+
+    val delta = File(failureDir, "delta-$fileName")
+    assertThat(delta.exists()).isTrue()
+
+    val expectedDelta = File(fixtureRoot, "src/test/resources/expected_delta.png")
+    assertThat(delta).isSimilarTo(expectedDelta).withDefaultThreshold()
+  }
+
+  @Test
   fun verifySuccessMultiModule() {
     val fixtureRoot = File("src/test/projects/verify-mode-success-multiple-modules")
 
@@ -1156,7 +1182,7 @@ class PaparazziPluginTest {
     assertThat(config.projectAssetDirs).containsExactly(
       "src/main/assets",
       "src/debug/assets",
-      "../producer/build/intermediates/library_assets/debug/packageDebugAssets/out"
+      "../producer/build/intermediates/assets/debug/mergeDebugAssets"
     )
 
     buildDir.deleteRecursively()
@@ -1183,7 +1209,7 @@ class PaparazziPluginTest {
     assertThat(config.projectAssetDirs).containsExactly(
       "src/main/assets",
       "src/debug/assets",
-      "../producer/build/intermediates/library_assets/debug/packageDebugAssets/out"
+      "../producer/build/intermediates/assets/debug/mergeDebugAssets"
     )
   }
 

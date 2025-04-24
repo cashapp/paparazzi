@@ -1,6 +1,6 @@
 [versions]
-agp = "8.8.1"
-androidTools = "31.8.1" # == 23.0.0 + agp version
+agp = "8.9.2"
+androidTools = "31.9.2" # == 23.0.0 + agp version
 bytebuddy = "1.17.5"
 compose = "1.8.0"
 coroutines = "1.10.2"
@@ -36,7 +36,7 @@ composeUi-uiTooling = { module = "androidx.compose.ui:ui-tooling" }
 guava = { module = "com.google.guava:guava", version = "33.4.8-jre" }
 
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
-kotlinpoet-ksp = { module = "com.squareup:kotlinpoet-ksp", version = "2.0.0" }
+kotlinpoet-ksp = { module = "com.squareup:kotlinpoet-ksp", version = "2.1.0" }
 kotlin-compile-testing-ksp = { module = "dev.zacsweers.kctfork:ksp", version = "0.7.0" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
