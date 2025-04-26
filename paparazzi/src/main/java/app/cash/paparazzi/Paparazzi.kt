@@ -149,10 +149,7 @@ public class Paparazzi @JvmOverloads constructor(
     private val isVerifying: Boolean =
       System.getProperty("paparazzi.test.verify")?.toBoolean() == true
 
-    private fun determineHandler(
-      maxPercentDifference: Double,
-      withExpectedActualLabels: Boolean,
-    ): SnapshotHandler =
+    private fun determineHandler(maxPercentDifference: Double, withExpectedActualLabels: Boolean): SnapshotHandler =
       if (isVerifying) {
         SnapshotVerifier(maxPercentDifference, withExpectedActualLabels)
       } else {

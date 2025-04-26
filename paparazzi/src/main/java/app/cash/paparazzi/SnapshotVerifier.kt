@@ -75,7 +75,7 @@ public class SnapshotVerifier @JvmOverloads constructor(
           goldenImage = goldenImage,
           maxPercentDifferent = maxPercentDifference,
           failureDir = failureDir,
-          withExpectedActualLabels = withExpectedActualLabels,
+          withExpectedActualLabels = withExpectedActualLabels
         )
       }
 
