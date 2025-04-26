@@ -24,9 +24,7 @@ android {
 
 // Disable unnecessary release build type
 androidComponents {
-  beforeVariants(selector().all()) {
-    enabled = buildType == "debug"
-  }
+  beforeVariants(selector().withBuildType("release")) { enable = false }
 }
 
 dependencies {
