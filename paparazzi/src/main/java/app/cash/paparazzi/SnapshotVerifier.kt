@@ -26,6 +26,7 @@ import javax.imageio.ImageIO
 
 public class SnapshotVerifier @JvmOverloads constructor(
   private val maxPercentDifference: Double,
+  private val withExpectedActualLabels: Boolean = true,
   rootDirectory: File = File(System.getProperty("paparazzi.snapshot.dir"))
 ) : SnapshotHandler {
   private val imagesDirectory: File = File(rootDirectory, "images")
@@ -73,7 +74,8 @@ public class SnapshotVerifier @JvmOverloads constructor(
           image = image,
           goldenImage = goldenImage,
           maxPercentDifferent = maxPercentDifference,
-          failureDir = failureDir
+          failureDir = failureDir,
+          withExpectedActualLabels = withExpectedActualLabels,
         )
       }
 

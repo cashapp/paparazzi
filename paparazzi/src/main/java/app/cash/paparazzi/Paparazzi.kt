@@ -34,7 +34,8 @@ public class Paparazzi @JvmOverloads constructor(
   private val renderingMode: RenderingMode = RenderingMode.NORMAL,
   private val appCompatEnabled: Boolean = true,
   private val maxPercentDifference: Double = detectMaxPercentDifferenceDefault(),
-  private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference),
+  private val withExpectedActualLabels: Boolean = true,
+  private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference, withExpectedActualLabels),
   private val renderExtensions: Set<RenderExtension> = setOf(),
   private val supportsRtl: Boolean = false,
   private val showSystemUi: Boolean = false,
@@ -148,9 +149,12 @@ public class Paparazzi @JvmOverloads constructor(
     private val isVerifying: Boolean =
       System.getProperty("paparazzi.test.verify")?.toBoolean() == true
 
-    private fun determineHandler(maxPercentDifference: Double): SnapshotHandler =
+    private fun determineHandler(
+      maxPercentDifference: Double,
+      withExpectedActualLabels: Boolean,
+    ): SnapshotHandler =
       if (isVerifying) {
-        SnapshotVerifier(maxPercentDifference)
+        SnapshotVerifier(maxPercentDifference, withExpectedActualLabels)
       } else {
         HtmlReportWriter()
       }
