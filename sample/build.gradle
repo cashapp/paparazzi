@@ -22,6 +22,13 @@ android {
   }
 }
 
+// Disable unnecessary release build type
+androidComponents {
+  beforeVariants(selector().all()) {
+    enabled = buildType == "debug"
+  }
+}
+
 dependencies {
   implementation libs.composeUi.material
   implementation libs.composeUi.material.icons
@@ -45,5 +52,5 @@ tasks.withType(com.diffplug.gradle.spotless.SpotlessTask).configureEach {
 
 // Verify screenshots as part of the standard check process
 tasks.named("check").configure {
-  dependsOn("verifyPaparazziDebug")
+  dependsOn("verifyPaparazzi")
 }
