@@ -262,6 +262,8 @@ public class AccessibilityRenderExtension : RenderExtension {
       "$CUSTOM_ACTION_LABEL: ${action.label}"
     }
 
+    val isInList = parent?.config?.getOrNull(SemanticsProperties.CollectionInfo)?.let { IN_LIST_LABEL }
+
     return constructTextList(
       stateDescription,
       selected,
@@ -277,13 +279,24 @@ public class AccessibilityRenderExtension : RenderExtension {
       setProgress,
       liveRegionMode,
       annotatedStringActions,
-      customActions
+      customActions,
+      isInList
     )
   }
 
   private fun View.accessibilityText(): String? {
     val nodeInfo = createAccessibilityNodeInfo()
     onInitializeAccessibilityNodeInfo(nodeInfo)
+
+    val parentView = parent?.let { it as? View }
+    val isInList = if (parentView != null && parentView.isImportantForAccessibility) {
+      val parentNodeInfo = createAccessibilityNodeInfo()
+      parentView.onInitializeAccessibilityNodeInfo(parentNodeInfo)
+
+      parentNodeInfo.collectionInfo?.let { IN_LIST_LABEL }
+    } else {
+      null
+    }
 
     val stateDescription = if (SdkLevel.isAtLeastR()) stateDescription?.toString() else null
     val selected = if (isSelected) SELECTED_LABEL else null
@@ -315,7 +328,8 @@ public class AccessibilityRenderExtension : RenderExtension {
       disabled,
       heading,
       liveRegionMode,
-      customActions
+      customActions,
+      isInList
     )
   }
 
@@ -366,6 +380,7 @@ public class AccessibilityRenderExtension : RenderExtension {
     private const val LIVE_REGION_ASSERTIVE_LABEL = "assertive"
     private const val LIVE_REGION_POLITE_LABEL = "polite"
     private const val EDITABLE_LABEL = "<editable>"
+    private const val IN_LIST_LABEL = "<in-list>"
   }
 }
 

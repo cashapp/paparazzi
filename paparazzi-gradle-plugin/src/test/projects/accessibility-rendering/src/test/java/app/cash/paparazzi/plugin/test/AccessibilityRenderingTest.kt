@@ -7,6 +7,7 @@ import android.view.View.GONE
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.ListView
 import android.widget.TextView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.progressSemantics
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -335,6 +337,35 @@ class AccessibilityRenderingTest {
     }
 
     paparazzi.snapshot(view)
+  }
+
+  @Test
+  fun `verify compose list semantics`() {
+    paparazzi.snapshot {
+      LazyColumn {
+        items(5) {
+          Text(text = "Item = $it")
+        }
+      }
+    }
+  }
+
+  @Test
+  fun `verify view list semantics`() {
+    val listView = ListView(paparazzi.context)
+    listView.adapter = object : android.widget.ArrayAdapter<String>(
+      paparazzi.context,
+      android.R.layout.simple_list_item_1,
+      listOf("Item = 0", "Item = 1", "Item = 2", "Item = 3", "Item = 4")
+    ) {
+      override fun getView(position: Int, convertView: View?, parent: android.view.ViewGroup): View {
+        val view = super.getView(position, convertView, parent)
+        view.contentDescription = "Item = $position"
+        return view
+      }
+    }
+
+    paparazzi.snapshot(listView)
   }
 
   private fun buildViewWithCustomActions(context: Context) =
