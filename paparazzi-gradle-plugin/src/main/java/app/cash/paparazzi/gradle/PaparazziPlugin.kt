@@ -119,7 +119,9 @@ public class PaparazziPlugin @Inject constructor(
     }
 
     extension.onVariants { variant ->
-      val variantSlug = variant.name.capitalize(Locale.US)
+      val variantSlug = variant.name.replaceFirstChar {
+        if (it.isLowerCase()) it.titlecase(Locale.US) else it.toString()
+      }
       val testVariant = (variant as? HasUnitTest)?.unitTest ?: return@onVariants
 
       val projectDirectory = project.layout.projectDirectory
@@ -163,7 +165,9 @@ public class PaparazziPlugin @Inject constructor(
         task.paparazziResources.set(buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.json"))
       }
 
-      val testVariantSlug = testVariant.name.capitalize(Locale.US)
+      val testVariantSlug = testVariant.name.replaceFirstChar {
+        if (it.isLowerCase()) it.titlecase(Locale.US) else it.toString()
+      }
 
       project.tasks.named { it == "test$testVariantSlug" }
         .configureEach { it.dependsOn(writeResourcesTask) }
