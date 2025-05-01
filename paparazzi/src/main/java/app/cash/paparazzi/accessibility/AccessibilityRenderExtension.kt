@@ -19,7 +19,6 @@ import android.graphics.Rect
 import android.os.ext.util.SdkLevel
 import android.view.Gravity
 import android.view.View
-import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.WindowManager
@@ -41,6 +40,7 @@ import androidx.compose.ui.semantics.getAllSemanticsNodes
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.LinkAnnotation
+import androidx.core.view.isVisible
 import app.cash.paparazzi.RenderExtension
 import app.cash.paparazzi.internal.ComposeViewAdapter
 import com.android.internal.view.OneShotPreDrawListener
@@ -94,7 +94,7 @@ public class AccessibilityRenderExtension : RenderExtension {
 
   private fun View.processAccessibleChildren(processElement: (AccessibilityElement) -> Unit) {
     val accessibilityText = this.accessibilityText()
-    if (isImportantForAccessibility && !accessibilityText.isNullOrBlank() && visibility == VISIBLE) {
+    if (isImportantForAccessibility && !accessibilityText.isNullOrBlank() && isVisible) {
       val bounds = Rect().also(::getBoundsOnScreen)
 
       processElement(
@@ -106,7 +106,7 @@ public class AccessibilityRenderExtension : RenderExtension {
       )
     }
 
-    if (this is AbstractComposeView && visibility == VISIBLE) {
+    if (this is AbstractComposeView && isVisible) {
       // ComposeView creates a child view `AndroidComposeView` for view root for test.
       val viewRoot = getChildAt(0) as ViewRootForTest
       val unmergedNodes = viewRoot.semanticsOwner.getAllSemanticsNodes(false)

@@ -44,7 +44,7 @@ internal fun Snapshot.toFileName(delimiter: String = "_", extension: String): St
     if (invalidPrintableChars.matchesAnyOf(name)) {
       throw IllegalArgumentException("Supplied snapshot name contains invalid characters ('$name')")
     }
-    "$delimiter${name.toLowerCase(Locale.US).replace("\\s".toRegex(), delimiter)}"
+    "$delimiter${name.lowercase(Locale.US).replace("\\s".toRegex(), delimiter)}"
   } else {
     ""
   }
