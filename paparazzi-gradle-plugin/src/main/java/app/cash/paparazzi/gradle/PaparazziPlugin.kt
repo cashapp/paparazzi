@@ -18,6 +18,7 @@ package app.cash.paparazzi.gradle
 import app.cash.paparazzi.gradle.instrumentation.ResourcesCompatVisitorFactory
 import app.cash.paparazzi.gradle.reporting.PaparazziTestReporter
 import app.cash.paparazzi.gradle.utils.artifactViewFor
+import app.cash.paparazzi.gradle.utils.capitalize
 import app.cash.paparazzi.gradle.utils.relativize
 import com.android.build.api.instrumentation.FramesComputationMode
 import com.android.build.api.instrumentation.InstrumentationScope
@@ -119,9 +120,7 @@ public class PaparazziPlugin @Inject constructor(
     }
 
     extension.onVariants { variant ->
-      val variantSlug = variant.name.replaceFirstChar {
-        if (it.isLowerCase()) it.titlecase(Locale.US) else it.toString()
-      }
+      val variantSlug = variant.name.capitalize()
       val testVariant = (variant as? HasUnitTest)?.unitTest ?: return@onVariants
 
       val projectDirectory = project.layout.projectDirectory
@@ -165,9 +164,7 @@ public class PaparazziPlugin @Inject constructor(
         task.paparazziResources.set(buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.json"))
       }
 
-      val testVariantSlug = testVariant.name.replaceFirstChar {
-        if (it.isLowerCase()) it.titlecase(Locale.US) else it.toString()
-      }
+      val testVariantSlug = testVariant.name.capitalize()
 
       project.tasks.named { it == "test$testVariantSlug" }
         .configureEach { it.dependsOn(writeResourcesTask) }
