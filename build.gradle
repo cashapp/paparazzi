@@ -70,9 +70,16 @@ subprojects {
   plugins.withId('com.vanniktech.maven.publish') {
     publishing {
       repositories {
+        def localMavenDir = rootProject.layout.buildDirectory.dir("localMaven")
         maven {
           name = "projectLocalMaven"
-          url = rootProject.layout.buildDirectory.dir("localMaven")
+          url = localMavenDir
+        }
+        publications.configureEach {
+          tasks.named("publish${name.capitalize()}PublicationToProjectLocalMavenRepository").configure {
+	          // Ensure task is up to date, when there are no input changes, fo this we need to declare outputs.
+            outputs.dir(localMavenDir).withPropertyName("repository")
+          }
         }
         /**
          * Want to push to an internal repository for testing?
