@@ -2,7 +2,7 @@
 agp = "8.9.2"
 androidTools = "31.9.2" # == 23.0.0 + agp version
 bytebuddy = "1.17.5"
-compose = "1.8.0"
+compose = "1.8.1"
 coroutines = "1.10.2"
 javaTarget = "17"
 kotlin = "2.1.0"
