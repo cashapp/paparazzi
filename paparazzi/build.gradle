@@ -33,6 +33,7 @@ dependencies {
   compileOnlyAarAsJar libs.androidx.compose.ui.android
   compileOnlyAarAsJar libs.androidx.activity
   compileOnlyAarAsJar libs.androidx.lifecycle.runtime // Needed for setViewTreeLifecycleOwner
+  compileOnlyAarAsJar libs.androidx.savedstate // Needed for setViewTreeSavedStateRegistryOwner
 
   implementation libs.bytebuddy.agent
   implementation libs.bytebuddy.core
