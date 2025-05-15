@@ -24,7 +24,6 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import app.cash.paparazzi.Paparazzi
 import com.android.ide.common.rendering.api.SessionParams
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import kotlinx.coroutines.delay
@@ -35,7 +34,6 @@ class ComposeRippleTest {
     renderingMode = SessionParams.RenderingMode.SHRINK
   )
 
-  @Ignore("Failing on Compose UI 1.8")
   @Test
   fun ripple() {
     val view = ComposeView(paparazzi.context).apply {

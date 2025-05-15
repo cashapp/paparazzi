@@ -25,6 +25,7 @@ import android.util.AttributeSet
 import android.util.DisplayMetrics
 import android.view.BridgeInflater
 import android.view.Choreographer
+import android.view.Choreographer_Delegate
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.NO_ID
@@ -243,10 +244,13 @@ public class PaparazziSdk @JvmOverloads constructor(
       }
     }
 
-    System_Delegate.setNanosTime(0L)
-    System_Delegate.setBootTimeNanos(0L)
+    System_Delegate.setNanosTime(0)
+    System_Delegate.setNanosTime(0)
+    System_Delegate.setBootTimeNanos(0)
+    Choreographer_Delegate.sChoreographerTime = 0
+
     try {
-      withTime(0L) {
+      withTime(0) {
         // Initialize the choreographer at time=0.
       }
 
@@ -343,11 +347,8 @@ public class PaparazziSdk @JvmOverloads constructor(
   }
 
   private fun withTime(timeNanos: Long, block: () -> Unit) {
-    val frameNanos = timeNanos
-
     // Execute the block at the requested time.
-    System_Delegate.setNanosTime(0L)
-    System_Delegate.setNanosTime(frameNanos)
+    System_Delegate.setNanosTime(timeNanos)
 
     val choreographer = Choreographer.getInstance()
     val areCallbacksRunningField = choreographer::class.java.getDeclaredField("mCallbacksRunning")
@@ -361,6 +362,12 @@ public class PaparazziSdk @JvmOverloads constructor(
       val choreographerCallbacks =
         RenderAction.getCurrentContext().sessionInteractiveData.choreographerCallbacks
       choreographerCallbacks.execute(currentTimeNanos, Bridge.getLog())
+
+      // The choreographer needs to be manually ticked in order for the frame time to become visible to the native layer
+      // which is necessary in order for ripples to work.
+      if (currentTimeNanos != 0L) {
+        Choreographer_Delegate.doFrame(currentTimeNanos)
+      }
 
       return block()
     } catch (e: Throwable) {
