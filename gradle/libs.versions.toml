@@ -37,7 +37,7 @@ composeUi-uiTooling = { module = "androidx.compose.ui:ui-tooling" }
 guava = { module = "com.google.guava:guava", version = "33.4.8-jre" }
 
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
-kotlinpoet-ksp = { module = "com.squareup:kotlinpoet-ksp", version = "2.1.0" }
+kotlinpoet-ksp = { module = "com.squareup:kotlinpoet-ksp", version = "2.2.0" }
 kotlin-compile-testing-ksp = { module = "dev.zacsweers.kctfork:ksp", version = "0.7.1" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
