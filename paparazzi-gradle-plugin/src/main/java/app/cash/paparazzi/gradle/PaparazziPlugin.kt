@@ -358,4 +358,4 @@ public class PaparazziPlugin @Inject constructor(
       ?: providerFactory.provider { emptyList() }
 }
 
-private const val DEFAULT_COMPILE_SDK_VERSION = 34
+private const val DEFAULT_COMPILE_SDK_VERSION = 35
