@@ -113,7 +113,7 @@ def generateTestConfig = tasks.register("generateTestConfig") {
     configFile.write("""{
       "mainPackage": "app.cash.paparazzi",
       "mergeResourcesOutputDir": ".",
-      "targetSdkVersion": "34",
+      "targetSdkVersion": "36",
       "mergeAssetsOutputDir": ".",
       "resourcePackageNames": ["app.cash.paparazzi"],
       "projectResourceDirs": [],
