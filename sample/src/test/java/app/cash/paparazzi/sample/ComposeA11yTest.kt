@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.selection.toggleable
@@ -22,11 +24,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.unit.dp
+import androidx.wear.compose.foundation.CurvedAlignment
+import androidx.wear.compose.foundation.CurvedDirection
+import androidx.wear.compose.foundation.CurvedLayout
+import androidx.wear.compose.foundation.curvedComposable
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Paparazzi
 import app.cash.paparazzi.accessibility.AccessibilityRenderExtension
@@ -39,6 +47,31 @@ class ComposeA11yTest {
     deviceConfig = DeviceConfig.PIXEL,
     renderExtensions = setOf(AccessibilityRenderExtension())
   )
+
+  @Test
+  fun traversalLayout() {
+    paparazzi.snapshot {
+      CurvedLayout(
+        anchor = 90f,
+        radialAlignment = CurvedAlignment.Radial.Outer,
+        angularDirection = CurvedDirection.Angular.Clockwise,
+        modifier = Modifier.semantics {
+          isTraversalGroup = true
+        }
+      ) {
+        repeat(12) {
+          curvedComposable {
+            Text(
+              text = it.toString(),
+              modifier = Modifier.semantics {
+                traversalIndex = it.toFloat() // (12 - it).toFloat()
+              }.size(64.dp),
+            )
+          }
+        }
+      }
+    }
+  }
 
   @Test
   fun compositeItems() {

@@ -28,6 +28,7 @@ androidComponents {
 }
 
 dependencies {
+  implementation libs.compose.wear.foundation
   implementation libs.composeUi.material
   implementation libs.composeUi.material.icons
   implementation libs.composeUi.uiTooling
