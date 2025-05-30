@@ -25,6 +25,7 @@ import android.util.AttributeSet
 import android.util.DisplayMetrics
 import android.view.BridgeInflater
 import android.view.Choreographer
+import android.view.Choreographer_Delegate
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.NO_ID
@@ -339,6 +340,12 @@ public class PaparazziSdk @JvmOverloads constructor(
       if (hasComposeRuntime) {
         forceReleaseComposeReferenceLeaks()
       }
+
+      // Reset the choreographer to its initial state for last for future test runs as it is a singleton.
+      val choreographer = Choreographer.getInstance()
+      val mLastFrameTimeNanos = choreographer::class.java.getDeclaredField("mLastFrameTimeNanos")
+      mLastFrameTimeNanos.isAccessible = true
+      mLastFrameTimeNanos.set(choreographer, 0L)
     }
   }
 
@@ -347,27 +354,24 @@ public class PaparazziSdk @JvmOverloads constructor(
 
     // Execute the block at the requested time.
     System_Delegate.setNanosTime(0L)
-    System_Delegate.setNanosTime(frameNanos)
-
-    val choreographer = Choreographer.getInstance()
-    val areCallbacksRunningField = choreographer::class.java.getDeclaredField("mCallbacksRunning")
-    areCallbacksRunningField.isAccessible = true
+    Choreographer_Delegate.sChoreographerTime = frameNanos
 
     try {
-      areCallbacksRunningField.setBoolean(choreographer, true)
-
       executeHandlerCallbacks()
       val currentTimeNanos = uptimeNanos()
-      val choreographerCallbacks =
-        RenderAction.getCurrentContext().sessionInteractiveData.choreographerCallbacks
-      choreographerCallbacks.execute(currentTimeNanos, Bridge.getLog())
+      /**
+       * The choreographer needs to be manually ticked in order for the frame time to become visible to the native layer
+       * which is necessary in order for ripples to work is compose, as well as view animation classes.
+       *
+       * After frame is run, we have to reset sChoreographerTime since [com.android.layoutlib.bridge.SessionInteractiveData.getNanosTime]
+       * uses sChoreographerTime to calculate nanoTime via [System_Delegate.nanoTime].
+       */
+      Choreographer_Delegate.doFrame(currentTimeNanos)
 
       return block()
     } catch (e: Throwable) {
       Bridge.getLog().error("broken", "Failed executing Choreographer#doFrame", e, null, null)
       throw e
-    } finally {
-      areCallbacksRunningField.setBoolean(choreographer, false)
     }
   }
 
