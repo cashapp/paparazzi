@@ -340,6 +340,12 @@ public class PaparazziSdk @JvmOverloads constructor(
       if (hasComposeRuntime) {
         forceReleaseComposeReferenceLeaks()
       }
+
+      // Reset the choreographer to its initial state for last for future test runs as it is a singleton.
+      val choreographer = Choreographer.getInstance()
+      val mLastFrameTimeNanos = choreographer::class.java.getDeclaredField("mLastFrameTimeNanos")
+      mLastFrameTimeNanos.isAccessible = true
+      mLastFrameTimeNanos.set(choreographer, 0L)
     }
   }
 
@@ -350,20 +356,9 @@ public class PaparazziSdk @JvmOverloads constructor(
     System_Delegate.setNanosTime(0L)
     Choreographer_Delegate.sChoreographerTime = frameNanos
 
-    val choreographer = Choreographer.getInstance()
-    val areCallbacksRunningField = choreographer::class.java.getDeclaredField("mCallbacksRunning")
-    areCallbacksRunningField.isAccessible = true
-
     try {
-      areCallbacksRunningField.setBoolean(choreographer, true)
-
       executeHandlerCallbacks()
       val currentTimeNanos = uptimeNanos()
-
-      val choreographerCallbacks =
-        RenderAction.getCurrentContext().sessionInteractiveData.choreographerCallbacks
-      choreographerCallbacks.execute(currentTimeNanos, Bridge.getLog())
-
       /**
        * The choreographer needs to be manually ticked in order for the frame time to become visible to the native layer
        * which is necessary in order for ripples to work is compose, as well as view animation classes.
@@ -377,8 +372,6 @@ public class PaparazziSdk @JvmOverloads constructor(
     } catch (e: Throwable) {
       Bridge.getLog().error("broken", "Failed executing Choreographer#doFrame", e, null, null)
       throw e
-    } finally {
-      areCallbacksRunningField.setBoolean(choreographer, false)
     }
   }
 
