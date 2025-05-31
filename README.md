@@ -164,13 +164,13 @@ plugins {
 }
 ```
 
-Snapshots of the development version are available in [Sonatype's `snapshots` repository][snap].
+Snapshots of the development version are available in [the Central Portal Snapshots repository][snap].
 
 ```groovy
 repositories {
   // ...
   maven {
-    url 'https://oss.sonatype.org/content/repositories/snapshots/'
+    url 'https://central.sonatype.com/repository/maven-snapshots/'
   }
 }
 ```
@@ -198,4 +198,4 @@ limitations under the License.
  [sample]: https://github.com/cashapp/paparazzi/tree/master/sample
  [lfs]: https://git-lfs.github.com/
  [changelog]: https://cashapp.github.io/paparazzi/changelog/
- [snap]: https://oss.sonatype.org/content/repositories/snapshots/app/cash/paparazzi/
+ [snap]: https://central.sonatype.com/service/rest/repository/browse/maven-snapshots/app/cash/paparazzi/
