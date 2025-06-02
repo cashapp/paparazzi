@@ -11,7 +11,7 @@ layoutlib = "15.2.2"
 moshi = "1.15.2"
 
 minSdk = "25"
-compileSdk = "35"
+compileSdk = "36"
 
 [libraries]
 androidx-annotations = { module = "androidx.annotation:annotation", version = "1.9.1" }
