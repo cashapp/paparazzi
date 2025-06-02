@@ -1,6 +1,6 @@
 [versions]
-agp = "8.10.0"
-androidTools = "31.10.0" # == 23.0.0 + agp version
+agp = "8.10.1"
+androidTools = "31.10.1" # == 23.0.0 + agp version
 bytebuddy = "1.17.5"
 compose = "1.8.2"
 coroutines = "1.10.2"
@@ -55,7 +55,7 @@ moshi-adapters = { module = "com.squareup.moshi:moshi-adapters", version.ref = "
 moshi-core = { module = "com.squareup.moshi:moshi", version.ref = "moshi" }
 moshi-kotlinReflect = { module = "com.squareup.moshi:moshi-kotlin", version.ref = "moshi" }
 
-okio = { module = "com.squareup.okio:okio", version = "3.11.0" }
+okio = { module = "com.squareup.okio:okio", version = "3.12.0" }
 
 tools-common = { module = "com.android.tools:common", version.ref = "androidTools" }
 tools-layoutlib = { module = "com.android.tools.layoutlib:layoutlib", version.ref = "layoutlib" }
@@ -82,4 +82,4 @@ plugin-kotlinApiDump = { module = "org.jetbrains.kotlinx:binary-compatibility-va
 plugin-ksp = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version.ref = "ksp" }
 plugin-mavenPublish = { module = "com.vanniktech:gradle-maven-publish-plugin", version = "0.32.0" }
 plugin-poko = { module = "dev.drewhamilton.poko:poko-gradle-plugin", version = "0.18.6" }
-plugin-spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version = "7.0.3" }
+plugin-spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version = "7.0.4" }
