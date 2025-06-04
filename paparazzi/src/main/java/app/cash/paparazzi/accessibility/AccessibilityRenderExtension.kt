@@ -94,9 +94,9 @@ public class AccessibilityRenderExtension : RenderExtension {
 
   private fun View.processAccessibleChildren(processElement: (AccessibilityElement) -> Unit) {
     val accessibilityText = this.accessibilityText()
-    if (isImportantForAccessibility && !accessibilityText.isNullOrBlank() && isVisible) {
-      val bounds = Rect().also(::getBoundsOnScreen)
+    val bounds = Rect().also(::getBoundsOnScreen)
 
+    if (isImportantForAccessibility && !accessibilityText.isNullOrBlank() && isVisible) {
       processElement(
         AccessibilityElement(
           id = "${this::class.simpleName}($accessibilityText)",
@@ -111,12 +111,13 @@ public class AccessibilityRenderExtension : RenderExtension {
       val viewRoot = getChildAt(0) as ViewRootForTest
       val unmergedNodes = viewRoot.semanticsOwner.getAllSemanticsNodes(false)
       // SemanticsNode.boundsInScreen isn't reported correctly for nodes so locationOnScreen used to correctly calculate displayBounds.
-      val locationOnScreen = locationOnScreen
+      val locationOnScreen = arrayOf(bounds.left, bounds.top).toIntArray()
       locationOnScreen[0] += paddingLeft
       locationOnScreen[1] += paddingTop
       viewRoot.semanticsOwner.rootSemanticsNode.processAccessibleChildren(
         processElement = processElement,
         locationOnScreen = locationOnScreen,
+        viewBounds = bounds,
         unmergedNodes = unmergedNodes
       )
     }
@@ -131,6 +132,7 @@ public class AccessibilityRenderExtension : RenderExtension {
   private fun SemanticsNode.processAccessibleChildren(
     processElement: (AccessibilityElement) -> Unit,
     locationOnScreen: IntArray,
+    viewBounds: Rect,
     unmergedNodes: List<SemanticsNode>?
   ) {
     val accessibilityText = if (config.isMergingSemanticsOfDescendants) {
@@ -148,9 +150,11 @@ public class AccessibilityRenderExtension : RenderExtension {
     if (accessibilityText != null) {
       // SemanticsNode.boundsInScreen isn't reported correctly for nodes so boundsInRoot + locationOnScreen used to correctly calculate displayBounds.
       val displayBounds = with(boundsInRoot) {
-        Rect(left.toInt(), top.toInt(), right.toInt(), bottom.toInt())
+        Rect(left.toInt(), top.toInt(), right.toInt(), bottom.toInt()).run {
+          offset(locationOnScreen[0], locationOnScreen[1])
+          Rect(left, top, right.coerceIn(0, viewBounds.right), bottom.coerceIn(0, viewBounds.bottom))
+        }
       }
-      displayBounds.offset(locationOnScreen[0], locationOnScreen[1])
 
       processElement(
         AccessibilityElement(
@@ -163,7 +167,12 @@ public class AccessibilityRenderExtension : RenderExtension {
     }
 
     children.forEach {
-      it.processAccessibleChildren(processElement, locationOnScreen, unmergedNodes)
+      it.processAccessibleChildren(
+        processElement = processElement,
+        locationOnScreen = locationOnScreen,
+        viewBounds = viewBounds,
+        unmergedNodes = unmergedNodes
+      )
     }
   }
 
