@@ -110,7 +110,15 @@ public class AccessibilityRenderExtension : RenderExtension {
       // ComposeView creates a child view `AndroidComposeView` for view root for test.
       val viewRoot = getChildAt(0) as ViewRootForTest
       val unmergedNodes = viewRoot.semanticsOwner.getAllSemanticsNodes(false)
-      viewRoot.semanticsOwner.rootSemanticsNode.processAccessibleChildren(processElement, unmergedNodes)
+      // SemanticsNode.boundsInScreen isn't reported correctly for nodes so locationOnScreen used to correctly calculate displayBounds.
+      val locationOnScreen = locationOnScreen
+      locationOnScreen[0] += paddingLeft
+      locationOnScreen[1] += paddingTop
+      viewRoot.semanticsOwner.rootSemanticsNode.processAccessibleChildren(
+        processElement = processElement,
+        locationOnScreen = locationOnScreen,
+        unmergedNodes = unmergedNodes
+      )
     }
 
     if (this is ViewGroup) {
@@ -122,6 +130,7 @@ public class AccessibilityRenderExtension : RenderExtension {
 
   private fun SemanticsNode.processAccessibleChildren(
     processElement: (AccessibilityElement) -> Unit,
+    locationOnScreen: IntArray,
     unmergedNodes: List<SemanticsNode>?
   ) {
     val accessibilityText = if (config.isMergingSemanticsOfDescendants) {
@@ -137,9 +146,12 @@ public class AccessibilityRenderExtension : RenderExtension {
     }
 
     if (accessibilityText != null) {
-      val displayBounds = with(boundsInWindow) {
+      // SemanticsNode.boundsInScreen isn't reported correctly for nodes so boundsInRoot + locationOnScreen used to correctly calculate displayBounds.
+      val displayBounds = with(boundsInRoot) {
         Rect(left.toInt(), top.toInt(), right.toInt(), bottom.toInt())
       }
+      displayBounds.offset(locationOnScreen[0], locationOnScreen[1])
+
       processElement(
         AccessibilityElement(
           // SemanticsNode.id is backed by AtomicInteger and is not guaranteed consistent across runs.
@@ -151,7 +163,7 @@ public class AccessibilityRenderExtension : RenderExtension {
     }
 
     children.forEach {
-      it.processAccessibleChildren(processElement, unmergedNodes)
+      it.processAccessibleChildren(processElement, locationOnScreen, unmergedNodes)
     }
   }
 
