@@ -1,6 +1,5 @@
 package app.cash.paparazzi.sample
 
-import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.LinearLayout
@@ -45,24 +44,34 @@ class ComposeA11yTest {
     renderExtensions = setOf(AccessibilityRenderExtension())
   )
 
-  private fun composeView(text: String): View {
-    return ComposeView(context = paparazzi.context).apply {
-      setPaddingRelative(32, 32, 32, 32)
-      setContent { Text(text) }
-    }
-  }
-
   @Test
   fun multiComposeViews() {
-    println()
     val view = LinearLayout(paparazzi.context).apply {
       orientation = LinearLayout.VERTICAL
       layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
       setPaddingRelative(25, 25, 25, 25)
 
-      addView(composeView("Number 1"), LinearLayout.LayoutParams(WRAP_CONTENT, 0, 1f))
-      addView(composeView("Number 2"), LinearLayout.LayoutParams(WRAP_CONTENT, 0, 1f))
-      addView(composeView("Number 3"), LinearLayout.LayoutParams(WRAP_CONTENT, 0, 1f))
+      addView(
+        ComposeView(context = paparazzi.context).apply {
+          setPaddingRelative(32, 32, 32, 32)
+          setContent { Text("Number 1") }
+        },
+        LinearLayout.LayoutParams(WRAP_CONTENT, 0, 1f)
+      )
+      addView(
+        ComposeView(context = paparazzi.context).apply {
+          setPaddingRelative(32, 32, 32, 32)
+          setContent { Text("Number 2") }
+        },
+        LinearLayout.LayoutParams(WRAP_CONTENT, 0, 1f)
+      )
+      addView(
+        ComposeView(context = paparazzi.context).apply {
+          setPaddingRelative(32, 32, 32, 32)
+          setContent { Text("Number 3") }
+        },
+        LinearLayout.LayoutParams(WRAP_CONTENT, 0, 1f)
+      )
     }
 
     paparazzi.snapshot(view)

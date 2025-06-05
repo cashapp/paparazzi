@@ -121,8 +121,9 @@ public class AccessibilityRenderExtension : RenderExtension {
           processElement = processElement,
           locationOnScreen = locationOnScreen,
           viewBounds = bounds,
-        unmergedNodes = unmergedNodes
-      )}
+          unmergedNodes = unmergedNodes
+        )
+      }
     }
 
     if (this is ViewGroup) {
