@@ -1056,9 +1056,14 @@ class PaparazziPluginTest {
       .comparingElementsUsing(MATCHES_PATTERN)
       .containsExactly(
         "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/external1/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/core-1.10.0/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/annotation-experimental-1.3.0/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/lifecycle-runtime-2.3.1/res\$"
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/core-1.16.0/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/annotation-experimental-1.4.1/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/core-viewtree-1.0.0/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/lifecycle-runtime-2.6.2/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/profileinstaller-1.3.0/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/startup-runtime-1.1.1/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/tracing-1.2.0/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/core-runtime-2.2.0/res\$"
       )
 
     buildDir.deleteRecursively()
@@ -1080,9 +1085,14 @@ class PaparazziPluginTest {
       .comparingElementsUsing(MATCHES_PATTERN)
       .containsExactly(
         "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/external2/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/core-1.10.1/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/annotation-experimental-1.3.0/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/lifecycle-runtime-2.3.1/res\$"
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/core-1.16.0/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/annotation-experimental-1.4.1/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/core-viewtree-1.0.0/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/lifecycle-runtime-2.6.2/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/profileinstaller-1.3.0/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/startup-runtime-1.1.1/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/tracing-1.2.0/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/core-runtime-2.2.0/res\$"
       )
   }
 
