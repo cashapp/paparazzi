@@ -71,6 +71,7 @@ dependencies {
   layoutlibRuntime variantOf(libs.tools.layoutlib.runtime) { classifier(osLabel) }
   layoutlibResources libs.tools.layoutlib.resources
 
+  testImplementation libs.testParameterInjector
   testImplementation libs.truth
 }
 
