@@ -98,6 +98,17 @@ internal abstract class MultiResourceRepository internal constructor(displayName
     cachedMaps.clear()
   }
 
+  /**
+   * Returns resource repositories for the given namespace. In case of nested single-namespace repositories only the outermost
+   * repositories are returned. Collectively the returned repositories are guaranteed to contain all resources in the given namespace
+   * contained in this repository.
+   *
+   * @param namespace the namespace to return resource repositories for
+   * @return a list of namespaces for the given namespace
+   */
+  fun getRepositoriesForNamespace(namespace: ResourceNamespace): List<SingleNamespaceResourceRepository> =
+    repositoriesByNamespace.get(namespace)
+
   override fun getNamespaces(): Set<ResourceNamespace> = repositoriesByNamespace.keySet()
 
   override fun accept(visitor: ResourceVisitor): VisitResult {

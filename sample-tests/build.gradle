@@ -1,0 +1,15 @@
+apply plugin: 'com.android.library'
+apply plugin: 'org.jetbrains.kotlin.android'
+
+android {
+  namespace = 'app.cash.paparazzi.sample.tests'
+
+  compileSdk = libs.versions.compileSdk.get() as int
+  defaultConfig {
+    minSdk = libs.versions.minSdk.get() as int
+  }
+  compileOptions {
+    sourceCompatibility = libs.versions.javaTarget.get()
+    targetCompatibility = libs.versions.javaTarget.get()
+  }
+}

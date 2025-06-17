@@ -117,8 +117,11 @@ public class PaparazziSdk @JvmOverloads constructor(
   }
 
   public fun prepare() {
-    val layoutlibCallback =
-      PaparazziCallback(logger, environment.packageName, environment.resourcePackageNames)
+    val layoutlibCallback = PaparazziCallback(
+      logger = logger,
+      packageName = environment.packageName,
+      resourcePackageNames = environment.resourcePackageNames
+    )
     layoutlibCallback.initResources()
 
     if (!isInitialized) {

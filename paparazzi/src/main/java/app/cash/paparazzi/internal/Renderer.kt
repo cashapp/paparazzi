@@ -43,6 +43,10 @@ internal class Renderer(
   private var bridge: Bridge? = null
   private lateinit var sessionParamsBuilder: SessionParamsBuilder
 
+  companion object {
+    lateinit var appResources: AppResourceRepository
+  }
+
   /** Initialize the bridge and the resource maps. */
   fun prepare(): SessionParamsBuilder {
     val layoutlibResourcesRoot = System.getProperty("paparazzi.layoutlib.resources.root")
@@ -65,6 +69,7 @@ internal class Renderer(
         )
       }
     )
+    appResources = projectResources
 
     sessionParamsBuilder = SessionParamsBuilder(
       layoutlibCallback = layoutlibCallback,

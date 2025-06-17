@@ -65,7 +65,7 @@ tools-layoutlib-runtime = { module = "com.android.tools.layoutlib:layoutlib-runt
 tools-ninepatch = { module = "com.android.tools:ninepatch", version.ref = "androidTools" }
 tools-sdkCommon = { module = "com.android.tools:sdk-common", version.ref = "androidTools" }
 
-trove4j = { module = "org.jetbrains.intellij.deps:trove4j", version = "1.0.20200330" }
+fastutil = { module = "it.unimi.dsi:fastutil-core", version = "8.5.13" }
 
 # Test libraries
 junit = { module = "junit:junit", version = "4.13.2" }

@@ -53,4 +53,16 @@ internal class AndroidVariantSources(
       .artifactsFor(AndroidArtifacts.ArtifactType.SYMBOL_LIST_WITH_PACKAGE_NAME.type)
       .artifactFiles
   }
+
+  val packageAwareProjectArtifactFiles: FileCollection by lazy {
+    variant.runtimeConfiguration
+      .artifactsFor(AndroidArtifacts.ArtifactType.SYMBOL_LIST_WITH_PACKAGE_NAME.type) { it is ProjectComponentIdentifier }
+      .artifactFiles
+  }
+
+  val packageAwareExternalArtifactFiles: FileCollection by lazy {
+    variant.runtimeConfiguration
+      .artifactsFor(AndroidArtifacts.ArtifactType.SYMBOL_LIST_WITH_PACKAGE_NAME.type) { it !is ProjectComponentIdentifier }
+      .artifactFiles
+  }
 }

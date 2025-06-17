@@ -149,8 +149,20 @@ public class PaparazziPlugin @Inject constructor(
           project.providers.gradleProperty("android.nonTransitiveRClass").orNull?.toBoolean() ?: true
         val gradleHomeDir = projectDirectory.dir(project.gradle.gradleUserHomeDir.path)
 
+        val isAppOrFeature = when (extension) {
+          is ApplicationAndroidComponentsExtension,
+          is DynamicFeatureAndroidComponentsExtension -> true
+
+          else -> false
+        }
+        val namespacing = android.aaptOptions.namespaced
+
+
+
         task.packageName.set(android.packageName())
         task.artifactFiles.from(sources.packageAwareArtifactFiles)
+        task.projectArtifactFiles.from(sources.packageAwareProjectArtifactFiles)
+        task.externalArtifactFiles.from(sources.packageAwareExternalArtifactFiles)
         task.nonTransitiveRClassEnabled.set(nonTransitiveRClassEnabled)
         task.targetSdkVersion.set(android.targetSdkVersion())
         task.projectResourceDirs.set(sources.localResourceDirs.relativize(projectDirectory))

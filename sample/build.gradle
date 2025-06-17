@@ -28,6 +28,7 @@ androidComponents {
 }
 
 dependencies {
+  implementation projects.sampleTests
   implementation libs.composeUi.material
   implementation libs.composeUi.material.icons
   implementation libs.composeUi.uiTooling

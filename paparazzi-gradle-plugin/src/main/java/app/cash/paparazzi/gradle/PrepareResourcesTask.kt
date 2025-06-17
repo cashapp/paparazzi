@@ -60,6 +60,14 @@ public abstract class PrepareResourcesTask : DefaultTask() {
   @get:PathSensitive(PathSensitivity.NONE)
   public abstract val artifactFiles: ConfigurableFileCollection
 
+  @get:InputFiles
+  @get:PathSensitive(PathSensitivity.NONE)
+  public abstract val projectArtifactFiles: ConfigurableFileCollection
+
+  @get:InputFiles
+  @get:PathSensitive(PathSensitivity.NONE)
+  public abstract val externalArtifactFiles: ConfigurableFileCollection
+
   @get:OutputFile
   public abstract val paparazziResources: RegularFileProperty
 
@@ -79,6 +87,13 @@ public abstract class PrepareResourcesTask : DefaultTask() {
     } else {
       listOf(mainPackage)
     }
+
+    println("packageAwareProjectArtifactFiles: " + projectArtifactFiles.files.map { file ->
+      file.useLines { lines -> lines.first() }
+    })
+    println("packageAwareExternalArtifactFiles: " + externalArtifactFiles.files.map { file ->
+      file.useLines { lines -> lines.first() }
+    })
 
     val config = Config(
       mainPackage = mainPackage,

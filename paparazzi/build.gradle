@@ -37,7 +37,7 @@ dependencies {
 
   implementation libs.bytebuddy.agent
   implementation libs.bytebuddy.core
-  implementation libs.trove4j
+  implementation libs.fastutil
   api libs.tools.common
   api libs.tools.layoutlib
   api libs.tools.layoutlib.api
@@ -53,6 +53,8 @@ dependencies {
   implementation libs.moshi.core
   implementation libs.moshi.adapters
   implementation libs.moshi.kotlinReflect
+  implementation 'org.ow2.asm:asm:9.7.1'
+  implementation 'org.ow2.asm:asm-util:9.7.1'
 
   def osName = System.getProperty("os.name").toLowerCase(Locale.US)
   def osLabel
@@ -115,7 +117,6 @@ def generateTestConfig = tasks.register("generateTestConfig") {
       "mergeResourcesOutputDir": ".",
       "targetSdkVersion": "36",
       "mergeAssetsOutputDir": ".",
-      "resourcePackageNames": ["app.cash.paparazzi"],
       "projectResourceDirs": [],
       "moduleResourceDirs": [],
       "aarExplodedDirs": [],
