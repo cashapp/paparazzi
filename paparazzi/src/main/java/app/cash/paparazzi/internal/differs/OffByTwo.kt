@@ -1,6 +1,6 @@
-package app.cash.paparazzi.internal
+package app.cash.paparazzi.internal.differs
 
-import app.cash.paparazzi.internal.Differ.DiffResult
+import app.cash.paparazzi.internal.differs.Differ.DiffResult
 import java.awt.image.BufferedImage
 import java.awt.image.BufferedImage.TYPE_INT_ARGB
 import kotlin.math.abs
