@@ -5,42 +5,15 @@ import org.gradle.api.tasks.testing.TestOutputEvent
 import org.gradle.internal.html.SimpleHtmlWriter
 import org.gradle.internal.xml.SimpleMarkupWriter
 import org.gradle.reporting.CodePanelRenderer
-import java.io.File
 import java.io.IOException
-import kotlin.io.encoding.Base64
-import kotlin.io.encoding.ExperimentalEncodingApi
 
 internal class ClassPageRenderer(
   private val resultsProvider: TestResultsProvider,
-  isVerifyRun: Boolean,
-  failureDir: File
+  diffRegistryFactory: () -> Map<Pair<String, String>, DiffImage>
 ) : PageRenderer<ClassTestResults>() {
   private val codePanelRenderer = CodePanelRenderer()
   private val imagePanelRenderer = ImagePanelRenderer()
-
-  @OptIn(ExperimentalEncodingApi::class)
-  private val diffImages: List<DiffImage> =
-    if (isVerifyRun && failureDir.exists()) {
-      failureDir.listFiles()
-        ?.filter { it.name.startsWith("delta-") }
-        ?.map { diff ->
-          // TODO: read from failure diff metadata file instead of brittle parsing
-          val nameSegments = diff.name.split("_", limit = 3)
-          val testClassPackage = nameSegments[0].replace("delta-", "")
-          val testClass = "$testClassPackage.${nameSegments[1]}"
-          val testMethodWithLabel = nameSegments[2].removeSuffix(".png")
-
-          return@map DiffImage(
-            testClass = testClass,
-            testMethod = testMethodWithLabel,
-            path = diff.path,
-            base64EncodedImage = Base64.encode(diff.readBytes())
-          )
-        }
-        ?.toList() ?: emptyList()
-    } else {
-      emptyList()
-    }
+  private val diffImages: Map<Pair<String, String>, DiffImage> = diffRegistryFactory.invoke()
 
   @Throws(IOException::class)
   override fun renderBreadcrumbs(htmlWriter: SimpleHtmlWriter) {
@@ -133,7 +106,7 @@ internal class ClassPageRenderer(
         .characters(test.displayName)
         .endElement()
       for (failure in test.failures) {
-        val diffImage = diffImages.find { it.testClass == results.name && it.testMethod == test.name }
+        val diffImage = diffImages[results.name to test.name]
         if (diffImage != null) {
           imagePanelRenderer.render(diffImage, htmlWriter)
         }

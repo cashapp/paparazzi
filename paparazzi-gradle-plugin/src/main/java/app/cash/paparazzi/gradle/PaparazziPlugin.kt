@@ -16,6 +16,7 @@
 package app.cash.paparazzi.gradle
 
 import app.cash.paparazzi.gradle.instrumentation.ResourcesCompatVisitorFactory
+import app.cash.paparazzi.gradle.reporting.DiffImage
 import app.cash.paparazzi.gradle.reporting.PaparazziTestReporter
 import app.cash.paparazzi.gradle.utils.artifactViewFor
 import app.cash.paparazzi.gradle.utils.capitalize
@@ -54,6 +55,8 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
 import java.util.Locale
 import javax.inject.Inject
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 
 @Suppress("unused")
 public class PaparazziPlugin @Inject constructor(
@@ -195,6 +198,7 @@ public class PaparazziPlugin @Inject constructor(
         isVerifyRun.set(verifyTaskProvider.map { graph.hasTask(it) })
       }
 
+      val failureDir = buildDirectory.dir("paparazzi/failures")
       val testTaskProvider =
         project.tasks.withType(Test::class.java).named { it == "test$testVariantSlug" }
       testTaskProvider.configureEach { test ->
@@ -202,8 +206,7 @@ public class PaparazziPlugin @Inject constructor(
           PaparazziTestReporter(
             buildOperationRunner = buildOperationRunner,
             buildOperationExecutor = buildOperationExecutor,
-            isVerifyRun = isVerifyRun,
-            failureSnapshotDir = buildDirectory.dir("paparazzi/failures")
+            diffRegistryFactory = createDiffRegistryFactory(failureDir, isVerifyRun)
           )
         )
 
@@ -278,6 +281,34 @@ public class PaparazziPlugin @Inject constructor(
     }
   }
 
+  private fun createDiffRegistryFactory(
+    failureDirProperty: Provider<Directory>,
+    isVerifyRun: Provider<Boolean>
+  ): () -> Map<Pair<String, String>, DiffImage> =
+    {
+      val failureDir = failureDirProperty.get().asFile
+      if (isVerifyRun.get() && failureDir.exists()) {
+        failureDir.listFiles()
+          ?.filter { it.name.startsWith("delta-") }
+          ?.associate { diff ->
+            // TODO: read from failure diff metadata file instead of brittle parsing
+            val nameSegments = diff.name.split("_", limit = 3)
+            val testClassPackage = nameSegments[0].replace("delta-", "")
+            val testClass = "$testClassPackage.${nameSegments[1]}"
+            val testMethodWithLabel = nameSegments[2].removeSuffix(".png")
+
+            Pair(testClass, testMethodWithLabel) to DiffImage(
+              path = diff.path,
+              base64EncodedImage =
+              @OptIn(ExperimentalEncodingApi::class)
+              Base64.encode(diff.readBytes())
+            )
+          } ?: emptyMap()
+      } else {
+        emptyMap()
+      }
+    }
+
   public abstract class PaparazziTask : DefaultTask() {
     @Option(option = "tests", description = "Sets test class or method name to be included, '*' is supported.")
     public open fun setTestNameIncludePatterns(testNamePattern: List<String>): PaparazziTask {
@@ -303,6 +334,7 @@ public class PaparazziPlugin @Inject constructor(
         val osArch = System.getProperty("os.arch").lowercase(Locale.US)
         if (osArch.startsWith("x86")) "mac" else "mac-arm"
       }
+
       operatingSystem.isWindows -> "win"
       else -> "linux"
     }
