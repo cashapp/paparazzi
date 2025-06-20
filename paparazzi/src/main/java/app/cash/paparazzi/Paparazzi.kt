@@ -21,6 +21,9 @@ import android.view.LayoutInflater
 import android.view.View
 import androidx.annotation.LayoutRes
 import androidx.compose.runtime.Composable
+import app.cash.paparazzi.internal.Differ
+import app.cash.paparazzi.internal.OffByTwo
+import app.cash.paparazzi.internal.PixelPerfect
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode
 import org.junit.rules.TestRule
 import org.junit.runner.Description
@@ -34,7 +37,7 @@ public class Paparazzi @JvmOverloads constructor(
   private val renderingMode: RenderingMode = RenderingMode.NORMAL,
   private val appCompatEnabled: Boolean = true,
   private val maxPercentDifference: Double = detectMaxPercentDifferenceDefault(),
-  private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference),
+  private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference, differ),
   private val renderExtensions: Set<RenderExtension> = setOf(),
   private val supportsRtl: Boolean = false,
   private val showSystemUi: Boolean = false,
@@ -148,9 +151,19 @@ public class Paparazzi @JvmOverloads constructor(
     private val isVerifying: Boolean =
       System.getProperty("paparazzi.test.verify")?.toBoolean() == true
 
-    private fun determineHandler(maxPercentDifference: Double): SnapshotHandler =
+    private val differ: Differ =
+      System.getProperty("app.cash.paparazzi.differ")?.lowercase().let { differ ->
+        when (differ) {
+          "offbytwo" -> OffByTwo
+          "pixelperfect" -> PixelPerfect
+          null, "", "default" -> OffByTwo
+          else -> error("Unknown differ type '$differ'.")
+        }
+      }
+
+    private fun determineHandler(maxPercentDifference: Double, differ: Differ): SnapshotHandler =
       if (isVerifying) {
-        SnapshotVerifier(maxPercentDifference)
+        SnapshotVerifier(maxPercentDifference, differ = differ)
       } else {
         HtmlReportWriter()
       }

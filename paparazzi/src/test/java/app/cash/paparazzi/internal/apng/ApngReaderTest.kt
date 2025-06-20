@@ -17,6 +17,7 @@
 package app.cash.paparazzi.internal.apng
 
 import app.cash.paparazzi.internal.ImageUtils
+import app.cash.paparazzi.internal.OffByTwo
 import com.google.common.truth.Truth.assertThat
 import okio.FileSystem
 import okio.Path.Companion.toPath
@@ -46,7 +47,8 @@ class ApngReaderTest {
         goldenImage = expectedImage,
         image = actualImage,
         maxPercentDifferent = 0.0,
-        failureDir = tempDir.newFolder()
+        failureDir = tempDir.newFolder(),
+        differ = OffByTwo
       )
     }
 

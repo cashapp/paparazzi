@@ -9,6 +9,7 @@ import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
+import app.cash.paparazzi.internal.OffByTwo
 import org.junit.Rule
 import org.junit.Test
 
@@ -16,7 +17,7 @@ class RenderExtensionTest {
   @get:Rule
   val paparazzi = Paparazzi(
     deviceConfig = DeviceConfig.NEXUS_5,
-    snapshotHandler = SnapshotVerifier(maxPercentDifference = 0.01),
+    snapshotHandler = SnapshotVerifier(maxPercentDifference = 0.01, differ = OffByTwo),
     renderExtensions = setOf(
       WrappedRenderExtension(Color.DKGRAY),
       WrappedRenderExtension(Color.RED),

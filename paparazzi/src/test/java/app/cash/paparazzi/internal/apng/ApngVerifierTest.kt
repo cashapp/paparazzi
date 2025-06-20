@@ -1,6 +1,7 @@
 package app.cash.paparazzi.internal.apng
 
 import app.cash.paparazzi.internal.ImageUtils.compareImages
+import app.cash.paparazzi.internal.OffByTwo
 import app.cash.paparazzi.internal.apng.PngTestUtils.createImage
 import com.google.common.truth.Truth.assertThat
 import okio.FileSystem
@@ -51,7 +52,8 @@ class ApngVerifierTest {
       fps = 1,
       frameCount = 3,
       maxPercentDifference = 0.01,
-      withErrorText = false
+      withErrorText = false,
+      differ = OffByTwo
     ).use {
       it.verifyFrame(firstFrame)
       it.verifyFrame(secondFrame)
@@ -75,7 +77,8 @@ class ApngVerifierTest {
       fps = 3,
       frameCount = 3,
       maxPercentDifference = 0.01,
-      withErrorText = false
+      withErrorText = false,
+      differ = OffByTwo
     ).use {
       it.verifyFrame(firstFrame)
       it.verifyFrame(secondFrame)
@@ -110,7 +113,8 @@ class ApngVerifierTest {
       fps = 3,
       frameCount = 3,
       maxPercentDifference = 0.01,
-      withErrorText = false
+      withErrorText = false,
+      differ = OffByTwo
     ).use {
       it.verifyFrame(firstFrame)
       it.verifyFrame(secondFrame)
@@ -144,7 +148,8 @@ class ApngVerifierTest {
       fps = 3,
       frameCount = 3,
       maxPercentDifference = 0.01,
-      withErrorText = false
+      withErrorText = false,
+      differ = OffByTwo
     ).use {
       it.verifyFrame(firstFrame)
       it.verifyFrame(firstFrame)
@@ -182,7 +187,8 @@ class ApngVerifierTest {
       fps = 1,
       frameCount = 3,
       maxPercentDifference = 0.01,
-      withErrorText = false
+      withErrorText = false,
+      differ = OffByTwo
     ).use {
       it.verifyFrame(thirdFrame)
       it.verifyFrame(secondFrame)
@@ -216,7 +222,8 @@ class ApngVerifierTest {
       fps = 1,
       frameCount = 5,
       maxPercentDifference = 0.01,
-      withErrorText = false
+      withErrorText = false,
+      differ = OffByTwo
     ).use {
       it.verifyFrame(firstFrame)
       it.verifyFrame(secondFrame)
@@ -253,7 +260,8 @@ class ApngVerifierTest {
       fps = 1,
       frameCount = 2,
       maxPercentDifference = 0.01,
-      withErrorText = false
+      withErrorText = false,
+      differ = OffByTwo
     ).use {
       it.verifyFrame(firstFrame)
       it.verifyFrame(secondFrame)
@@ -278,7 +286,7 @@ class ApngVerifierTest {
     ApngReader(FileSystem.SYSTEM.openReadOnly(actualPath)).use { actual ->
       ApngReader(FileSystem.SYSTEM.openReadOnly(expectedPath)).use { expected ->
         while (!expected.isFinished()) {
-          val (_, percentDiff) = compareImages(expected.readNextFrame()!!, actual.readNextFrame()!!)
+          val (_, percentDiff) = compareImages(expected.readNextFrame()!!, actual.readNextFrame()!!, OffByTwo)
           assertThat(percentDiff).isEqualTo(0F)
         }
         assertThat(actual.isFinished()).isTrue()

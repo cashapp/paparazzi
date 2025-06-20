@@ -50,9 +50,10 @@ internal object ImageUtils {
     goldenImage: BufferedImage,
     image: BufferedImage,
     maxPercentDifferent: Double,
-    failureDir: File
+    failureDir: File,
+    differ: Differ
   ) {
-    val (deltaImage, percentDifference) = compareImages(goldenImage, image)
+    val (deltaImage, percentDifference) = compareImages(goldenImage, image, differ)
 
     val goldenImageWidth = goldenImage.width
     val goldenImageHeight = goldenImage.height
@@ -126,7 +127,7 @@ internal object ImageUtils {
   }
 
   @Throws(IOException::class)
-  fun compareImages(goldenImage: BufferedImage, image: BufferedImage): Pair<BufferedImage, Float> {
+  fun compareImages(goldenImage: BufferedImage, image: BufferedImage, differ: Differ): Pair<BufferedImage, Float> {
     var goldenImage = goldenImage
     if (goldenImage.type != TYPE_INT_ARGB) {
       val temp = BufferedImage(goldenImage.width, goldenImage.height, TYPE_INT_ARGB)
@@ -137,7 +138,6 @@ internal object ImageUtils {
       throw IllegalStateException("expected:<$TYPE_INT_ARGB> but was:<${goldenImage.type}>")
     }
 
-    val differ: Differ = OffByTwo
     differ.compare(goldenImage, image).let { result ->
       return when (result) {
         is Identical -> result.delta to 0f

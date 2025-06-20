@@ -2,23 +2,23 @@ package app.cash.paparazzi.internal
 
 import java.awt.image.BufferedImage
 
-internal interface Differ {
-  fun compare(expected: BufferedImage, actual: BufferedImage): DiffResult
+public sealed interface Differ {
+  public fun compare(expected: BufferedImage, actual: BufferedImage): DiffResult
 
-  sealed interface DiffResult {
-    data class Identical(
-      val delta: BufferedImage
+  public sealed interface DiffResult {
+    public class Identical(
+      public val delta: BufferedImage
     ) : DiffResult
 
-    data class Similar(
-      val delta: BufferedImage,
-      val numSimilarPixels: Long
+    public class Similar(
+      public val delta: BufferedImage,
+      public val numSimilarPixels: Long
     ) : DiffResult
 
-    data class Different(
-      val delta: BufferedImage,
-      val percentDifference: Float,
-      val numDifferentPixels: Long
+    public class Different(
+      public val delta: BufferedImage,
+      public val percentDifference: Float,
+      public val numDifferentPixels: Long
     ) : DiffResult
   }
 }
