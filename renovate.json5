@@ -3,6 +3,17 @@
   extends: [
     'config:recommended',
   ],
+  "constraints": {
+    "python": "==3.12"
+  },
+  "ignorePaths": [
+    ".github/workflows/requirements.txt",
+  ],
+  "pip-compile": {
+    "fileMatch": [
+      ".github/workflows/requirements.txt"
+    ]
+  },
   packageRules: [
     {
       description: 'Auto-merge most dependency updates.',
