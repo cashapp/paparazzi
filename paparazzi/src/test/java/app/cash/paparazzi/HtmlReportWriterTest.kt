@@ -17,9 +17,12 @@ package app.cash.paparazzi
 
 import app.cash.paparazzi.FileSubject.Companion.assertThat
 import com.google.common.truth.Truth.assertThat
+import com.google.testing.junit.testparameterinjector.TestParameter
+import com.google.testing.junit.testparameterinjector.TestParameterInjector
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import org.junit.runner.RunWith
 import java.awt.image.BufferedImage
 import java.io.File
 import java.nio.file.Files
@@ -28,6 +31,7 @@ import java.nio.file.attribute.FileTime
 import java.time.Instant
 import java.util.Date
 
+@RunWith(TestParameterInjector::class)
 class HtmlReportWriterTest {
   @get:Rule
   val reportRoot: TemporaryFolder = TemporaryFolder()
@@ -113,12 +117,17 @@ class HtmlReportWriterTest {
   }
 
   @Test
-  fun imagesAlwaysOverwriteOnRecord() {
+  fun snapshotsOverwriteOnRecord(@TestParameter params: SnapshotOverwriteTestParams) {
     try {
       // set record mode
       System.setProperty("paparazzi.test.record", "true")
 
-      val htmlReportWriter = HtmlReportWriter("record_run", reportRoot.root, snapshotRoot.root)
+      val htmlReportWriter = HtmlReportWriter(
+        "record_run",
+        reportRoot.root,
+        snapshotRoot.root,
+        params.maxPercentDifference
+      )
       htmlReportWriter.use {
         val now = Instant.parse("2021-02-23T10:27:43Z")
         val snapshot = Snapshot(
@@ -127,7 +136,10 @@ class HtmlReportWriterTest {
           timestamp = now.toDate()
         )
         val golden =
-          File("${snapshotRoot.root}/images/app.cash.paparazzi_HomeView_testSettings_test.png")
+          File(
+            "${snapshotRoot.root}/${params.snapshotType.goldenSnapshotFolder}/" +
+              "app.cash.paparazzi_HomeView_testSettings_test.png"
+          )
 
         // precondition
         assertThat(golden).doesNotExist()
@@ -135,10 +147,10 @@ class HtmlReportWriterTest {
         // take 1
         val frameHandler1 = htmlReportWriter.newFrameHandler(
           snapshot = snapshot,
-          frameCount = 1,
-          fps = -1
+          frameCount = params.frames1.size,
+          fps = params.snapshotType.fps
         )
-        frameHandler1.use { frameHandler1.handle(anyImage) }
+        frameHandler1.use { handler -> params.frames1.forEach(handler::handle) }
         assertThat(golden).exists()
         val timeFirstWrite = golden.lastModifiedTime()
 
@@ -148,15 +160,18 @@ class HtmlReportWriterTest {
         // take 2
         val frameHandler2 = htmlReportWriter.newFrameHandler(
           snapshot = snapshot.copy(timestamp = now.plusSeconds(1).toDate()),
-          frameCount = 1,
-          fps = -1
+          frameCount = params.frames2.size,
+          fps = params.snapshotType.fps
         )
-        frameHandler2.use { frameHandler2.handle(anyImage) }
+        frameHandler2.use { handler -> params.frames2.forEach(handler::handle) }
         assertThat(golden).exists()
         val timeOverwrite = golden.lastModifiedTime()
 
-        // should always overwrite
-        assertThat(timeOverwrite).isGreaterThan(timeFirstWrite)
+        if (params.shouldBeOverwritten) {
+          assertThat(timeOverwrite).isGreaterThan(timeFirstWrite)
+        } else {
+          assertThat(timeOverwrite).isEqualTo(timeFirstWrite)
+        }
       }
     } finally {
       System.clearProperty("paparazzi.test.record")
@@ -208,67 +223,96 @@ class HtmlReportWriterTest {
     )
   }
 
-  @Test
-  fun videosAlwaysOverwriteOnRecord() {
-    try {
-      // set record mode
-      System.setProperty("paparazzi.test.record", "true")
-
-      val htmlReportWriter = HtmlReportWriter("record_run", reportRoot.root, snapshotRoot.root)
-      htmlReportWriter.use {
-        val now = Instant.parse("2021-02-23T10:27:43Z")
-        val snapshot = Snapshot(
-          name = "test",
-          testName = TestName("app.cash.paparazzi", "HomeView", "testSettings"),
-          timestamp = now.toDate()
-        )
-        val golden =
-          File("${snapshotRoot.root}/videos/app.cash.paparazzi_HomeView_testSettings_test.png")
-
-        // precondition
-        assertThat(golden).doesNotExist()
-
-        // take 1
-        val frameHandler1 = htmlReportWriter.newFrameHandler(
-          snapshot = snapshot,
-          frameCount = 2,
-          fps = 1
-        )
-        frameHandler1.use {
-          frameHandler1.handle(anyImage)
-          frameHandler1.handle(anyImage)
-        }
-        assertThat(golden).exists()
-        val timeFirstWrite = golden.lastModifiedTime()
-
-        // I know....but guarantees writes won't happen in same tick
-        Thread.sleep(100)
-
-        // take 2
-        val frameHandler2 = htmlReportWriter.newFrameHandler(
-          snapshot = snapshot.copy(timestamp = now.plusSeconds(1).toDate()),
-          frameCount = 2,
-          fps = 1
-        )
-        frameHandler2.use {
-          frameHandler2.handle(anyImage)
-          frameHandler2.handle(anyImage)
-        }
-        assertThat(golden).exists()
-        val timeOverwrite = golden.lastModifiedTime()
-
-        // should always overwrite
-        assertThat(timeOverwrite).isGreaterThan(timeFirstWrite)
-      }
-    } finally {
-      // reset record mode
-      System.setProperty("paparazzi.test.record", "false")
-    }
-  }
-
   private fun Instant.toDate() = Date(toEpochMilli())
 
   private fun File.lastModifiedTime(): FileTime {
     return Files.readAttributes(this.toPath(), BasicFileAttributes::class.java).lastModifiedTime()
+  }
+
+  @Suppress("unused") // Used by TestParameterInjector
+  enum class SnapshotOverwriteTestParams(
+    val snapshotType: SnapshotType,
+    val maxPercentDifference: Double?,
+    val frames1: Collection<BufferedImage>,
+    val frames2: Collection<BufferedImage>,
+    val shouldBeOverwritten: Boolean
+  ) {
+    ImageWithoutThresholdShouldBeOverwritten(
+      snapshotType = SnapshotType.Image,
+      maxPercentDifference = null,
+      frames1 = listOf(BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB)),
+      frames2 = listOf(BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB)),
+      shouldBeOverwritten = true
+    ),
+    ImageWithThresholdShouldBeOverwritten(
+      snapshotType = SnapshotType.Image,
+      maxPercentDifference = 20.0, // 20% < ~25%
+      frames1 = listOf(BufferedImage(2, 2, BufferedImage.TYPE_INT_ARGB)),
+      frames2 = listOf(
+        BufferedImage(2, 2, BufferedImage.TYPE_INT_ARGB).apply {
+          setRGB(0, 0, 0xFFFFFFFF.toInt())
+        }
+      ),
+      shouldBeOverwritten = true
+    ),
+    ImageWithThresholdShouldNotBeOverwritten(
+      snapshotType = SnapshotType.Image,
+      maxPercentDifference = 30.0, // 30% > ~25%
+      frames1 = listOf(BufferedImage(2, 2, BufferedImage.TYPE_INT_ARGB)),
+      frames2 = listOf(
+        BufferedImage(2, 2, BufferedImage.TYPE_INT_ARGB).apply {
+          setRGB(0, 0, 0xFFFFFFFF.toInt())
+        }
+      ),
+      shouldBeOverwritten = false
+    ),
+    VideoWithoutThresholdShouldBeOverwritten(
+      snapshotType = SnapshotType.Video,
+      maxPercentDifference = null,
+      frames1 = listOf(
+        BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB),
+        BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB)
+      ),
+      frames2 = listOf(
+        BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB),
+        BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB)
+      ),
+      shouldBeOverwritten = true
+    ),
+    VideoWithThresholdShouldBeOverwritten(
+      snapshotType = SnapshotType.Video,
+      maxPercentDifference = 20.0, // 20% < ~25%
+      frames1 = listOf(
+        BufferedImage(2, 2, BufferedImage.TYPE_INT_ARGB),
+        BufferedImage(2, 2, BufferedImage.TYPE_INT_ARGB)
+      ),
+      frames2 = listOf(
+        BufferedImage(2, 2, BufferedImage.TYPE_INT_ARGB),
+        BufferedImage(2, 2, BufferedImage.TYPE_INT_ARGB).apply { setRGB(0, 0, 0xFFFFFFFF.toInt()) }
+      ),
+      shouldBeOverwritten = true
+    ),
+    VideoWithThresholdShouldNotBeOverwritten(
+      snapshotType = SnapshotType.Video,
+      maxPercentDifference = 30.0, // 30% > ~25%
+      frames1 = listOf(
+        BufferedImage(2, 2, BufferedImage.TYPE_INT_ARGB),
+        BufferedImage(2, 2, BufferedImage.TYPE_INT_ARGB)
+      ),
+      frames2 = listOf(
+        BufferedImage(2, 2, BufferedImage.TYPE_INT_ARGB),
+        BufferedImage(2, 2, BufferedImage.TYPE_INT_ARGB).apply { setRGB(0, 0, 0xFFFFFFFF.toInt()) }
+      ),
+      shouldBeOverwritten = false
+    )
+    ;
+
+    sealed class SnapshotType(
+      val goldenSnapshotFolder: String,
+      val fps: Int
+    ) {
+      data object Image : SnapshotType(goldenSnapshotFolder = "images", fps = -1)
+      data object Video : SnapshotType(goldenSnapshotFolder = "videos", fps = 1)
+    }
   }
 }

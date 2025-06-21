@@ -17,6 +17,7 @@ package app.cash.paparazzi
 
 import app.cash.paparazzi.SnapshotHandler.FrameHandler
 import app.cash.paparazzi.internal.PaparazziJson
+import app.cash.paparazzi.internal.RecordOverwritePolicy.shouldOverwriteGoldenFile
 import app.cash.paparazzi.internal.apng.ApngWriter
 import com.google.common.base.CharMatcher
 import com.google.common.io.Files
@@ -61,7 +62,8 @@ import java.util.UUID
 public class HtmlReportWriter @JvmOverloads constructor(
   private val runName: String = defaultRunName(),
   private val rootDirectory: File = File(System.getProperty("paparazzi.report.dir")),
-  snapshotRootDirectory: File = File(System.getProperty("paparazzi.snapshot.dir"))
+  snapshotRootDirectory: File = File(System.getProperty("paparazzi.snapshot.dir")),
+  private val maxPercentDifference: Double? = null
 ) : SnapshotHandler {
   private val runsDirectory: File = File(rootDirectory, "runs")
   private val imagesDirectory: File = File(rootDirectory, "images")
@@ -106,7 +108,9 @@ public class HtmlReportWriter @JvmOverloads constructor(
 
         if (isRecording) {
           val goldenFile = File(goldenDir, snapshot.toFileName("_", "png"))
-          snapshotFile.copyTo(target = goldenFile, overwrite = true)
+          if (shouldOverwriteGoldenFile(goldenFile, snapshotFile, fps, maxPercentDifference)) {
+            snapshotFile.copyTo(target = goldenFile, overwrite = true)
+          }
         }
 
         shots += snapshot.copy(file = snapshotFile.toJsonPath())
