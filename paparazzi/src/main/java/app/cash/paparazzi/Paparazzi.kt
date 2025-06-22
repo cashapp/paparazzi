@@ -34,7 +34,11 @@ public class Paparazzi @JvmOverloads constructor(
   private val renderingMode: RenderingMode = RenderingMode.NORMAL,
   private val appCompatEnabled: Boolean = true,
   private val maxPercentDifference: Double = detectMaxPercentDifferenceDefault(),
-  private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference),
+  private val useMaxPercentDifferenceForRecord: Boolean = false,
+  private val snapshotHandler: SnapshotHandler = determineHandler(
+    maxPercentDifference,
+    useMaxPercentDifferenceForRecord
+  ),
   private val renderExtensions: Set<RenderExtension> = setOf(),
   private val supportsRtl: Boolean = false,
   private val showSystemUi: Boolean = false,
@@ -148,11 +152,16 @@ public class Paparazzi @JvmOverloads constructor(
     private val isVerifying: Boolean =
       System.getProperty("paparazzi.test.verify")?.toBoolean() == true
 
-    private fun determineHandler(maxPercentDifference: Double): SnapshotHandler =
+    private fun determineHandler(
+      maxPercentDifference: Double,
+      useMaxPercentDifferenceForRecord: Boolean
+    ): SnapshotHandler =
       if (isVerifying) {
         SnapshotVerifier(maxPercentDifference)
       } else {
-        HtmlReportWriter()
+        HtmlReportWriter(
+          maxPercentDifference = maxPercentDifference.takeIf { useMaxPercentDifferenceForRecord }
+        )
       }
   }
 }
