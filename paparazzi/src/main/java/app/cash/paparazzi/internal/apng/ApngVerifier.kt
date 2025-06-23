@@ -15,7 +15,7 @@
  */
 package app.cash.paparazzi.internal.apng
 
-import app.cash.paparazzi.internal.Differ
+import app.cash.paparazzi.Differ
 import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.ImageUtils.resize
 import okio.FileSystem
