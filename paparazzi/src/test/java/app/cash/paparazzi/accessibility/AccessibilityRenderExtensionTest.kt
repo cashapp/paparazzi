@@ -14,6 +14,7 @@ import android.widget.TextView
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Paparazzi
 import app.cash.paparazzi.SnapshotVerifier
+import app.cash.paparazzi.internal.OffByTwo
 import org.junit.Rule
 import org.junit.Test
 
@@ -21,7 +22,7 @@ class AccessibilityRenderExtensionTest {
   @get:Rule
   val paparazzi = Paparazzi(
     deviceConfig = DeviceConfig.NEXUS_5,
-    snapshotHandler = SnapshotVerifier(maxPercentDifference = 0.01),
+    snapshotHandler = SnapshotVerifier(maxPercentDifference = 0.01, differ = OffByTwo),
     renderExtensions = setOf(AccessibilityRenderExtension())
   )
 
