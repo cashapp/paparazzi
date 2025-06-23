@@ -4,6 +4,22 @@ $dokka.location:app.cash.paparazzi.accessibility////PointingToDeclaration/papar
 $dokka.location:app.cash.paparazzi.accessibility/AccessibilityRenderExtension///PointingToDeclaration/paparazzi/app.cash.paparazzi.accessibility/-accessibility-render-extension/index.html
 $dokka.location:app.cash.paparazzi.accessibility/AccessibilityRenderExtension/AccessibilityRenderExtension/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.accessibility/-accessibility-render-extension/-accessibility-render-extension.html
 $dokka.location:app.cash.paparazzi.accessibility/AccessibilityRenderExtension/renderView/#android.view.View/PointingToDeclaration/paparazzi/app.cash.paparazzi.accessibility/-accessibility-render-extension/render-view.html
+$dokka.location:app.cash.paparazzi.internal////PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/index.html
+$dokka.location:app.cash.paparazzi.internal/Differ.DiffResult.Different///PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-differ/-diff-result/-different/index.html
+$dokka.location:app.cash.paparazzi.internal/Differ.DiffResult.Different/Different/#java.awt.image.BufferedImage#kotlin.Float#kotlin.Long/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-differ/-diff-result/-different/-different.html
+$dokka.location:app.cash.paparazzi.internal/Differ.DiffResult.Different/delta/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-differ/-diff-result/-different/delta.html
+$dokka.location:app.cash.paparazzi.internal/Differ.DiffResult.Different/numDifferentPixels/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-differ/-diff-result/-different/num-different-pixels.html
+$dokka.location:app.cash.paparazzi.internal/Differ.DiffResult.Different/percentDifference/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-differ/-diff-result/-different/percent-difference.html
+$dokka.location:app.cash.paparazzi.internal/Differ.DiffResult.Identical///PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-differ/-diff-result/-identical/index.html
+$dokka.location:app.cash.paparazzi.internal/Differ.DiffResult.Identical/Identical/#java.awt.image.BufferedImage/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-differ/-diff-result/-identical/-identical.html
+$dokka.location:app.cash.paparazzi.internal/Differ.DiffResult.Identical/delta/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-differ/-diff-result/-identical/delta.html
+$dokka.location:app.cash.paparazzi.internal/Differ.DiffResult.Similar///PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-differ/-diff-result/-similar/index.html
+$dokka.location:app.cash.paparazzi.internal/Differ.DiffResult.Similar/Similar/#java.awt.image.BufferedImage#kotlin.Long/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-differ/-diff-result/-similar/-similar.html
+$dokka.location:app.cash.paparazzi.internal/Differ.DiffResult.Similar/delta/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-differ/-diff-result/-similar/delta.html
+$dokka.location:app.cash.paparazzi.internal/Differ.DiffResult.Similar/numSimilarPixels/#/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-differ/-diff-result/-similar/num-similar-pixels.html
+$dokka.location:app.cash.paparazzi.internal/Differ.DiffResult///PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-differ/-diff-result/index.html
+$dokka.location:app.cash.paparazzi.internal/Differ///PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-differ/index.html
+$dokka.location:app.cash.paparazzi.internal/Differ/compare/#java.awt.image.BufferedImage#java.awt.image.BufferedImage/PointingToDeclaration/paparazzi/app.cash.paparazzi.internal/-differ/compare.html
 $dokka.location:app.cash.paparazzi////PointingToDeclaration/paparazzi/app.cash.paparazzi/index.html
 $dokka.location:app.cash.paparazzi//detectEnvironment/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/detect-environment.html
 $dokka.location:app.cash.paparazzi//detectMaxPercentDifferenceDefault/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/detect-max-percent-difference-default.html
@@ -119,7 +135,7 @@ $dokka.location:app.cash.paparazzi/SnapshotHandler.FrameHandler/handle/#java.awt
 $dokka.location:app.cash.paparazzi/SnapshotHandler///PointingToDeclaration/paparazzi/app.cash.paparazzi/-snapshot-handler/index.html
 $dokka.location:app.cash.paparazzi/SnapshotHandler/newFrameHandler/#app.cash.paparazzi.Snapshot#kotlin.Int#kotlin.Int/PointingToDeclaration/paparazzi/app.cash.paparazzi/-snapshot-handler/new-frame-handler.html
 $dokka.location:app.cash.paparazzi/SnapshotVerifier///PointingToDeclaration/paparazzi/app.cash.paparazzi/-snapshot-verifier/index.html
-$dokka.location:app.cash.paparazzi/SnapshotVerifier/SnapshotVerifier/#kotlin.Double#java.io.File/PointingToDeclaration/paparazzi/app.cash.paparazzi/-snapshot-verifier/-snapshot-verifier.html
+$dokka.location:app.cash.paparazzi/SnapshotVerifier/SnapshotVerifier/#kotlin.Double#java.io.File#app.cash.paparazzi.internal.Differ/PointingToDeclaration/paparazzi/app.cash.paparazzi/-snapshot-verifier/-snapshot-verifier.html
 $dokka.location:app.cash.paparazzi/SnapshotVerifier/close/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-snapshot-verifier/close.html
 $dokka.location:app.cash.paparazzi/SnapshotVerifier/newFrameHandler/#app.cash.paparazzi.Snapshot#kotlin.Int#kotlin.Int/PointingToDeclaration/paparazzi/app.cash.paparazzi/-snapshot-verifier/new-frame-handler.html
 $dokka.location:app.cash.paparazzi/TestName///PointingToDeclaration/paparazzi/app.cash.paparazzi/-test-name/index.html
@@ -130,3 +146,4 @@ $dokka.location:app.cash.paparazzi/TestName/methodName/#/PointingToDeclaration/
 $dokka.location:app.cash.paparazzi/TestName/packageName/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-test-name/package-name.html
 app.cash.paparazzi
 app.cash.paparazzi.accessibility
+app.cash.paparazzi.internal
