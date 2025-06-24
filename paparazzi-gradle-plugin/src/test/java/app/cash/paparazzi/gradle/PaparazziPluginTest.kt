@@ -61,8 +61,8 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun missingSupportedPlugins() {
-    val fixtureRoot = File("src/test/projects/missing-supported-plugins")
+  fun missingSupportedPluginsInNonRootProject() {
+    val fixtureRoot = File("src/test/projects/missing-supported-plugins-non-root-project")
 
     val result = gradleRunner
       .withArguments("preparePaparazziDebugResources", "--stacktrace")
