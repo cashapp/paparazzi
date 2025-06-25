@@ -15,6 +15,13 @@
  */
 package app.cash.paparazzi.gradle
 
+import app.cash.paparazzi.gradle.artifacts.PaparazziArtifacts
+import app.cash.paparazzi.gradle.artifacts.PaparazziArtifacts.Companion.CATEGORY_ATTRIBUTE
+import app.cash.paparazzi.gradle.artifacts.PaparazziArtifacts.Companion.PAPARAZZI_ARTIFACTS_ATTRIBUTE
+import app.cash.paparazzi.gradle.artifacts.PaparazziArtifacts.Kind.SNAPSHOT_METADATA
+import app.cash.paparazzi.gradle.artifacts.consumableConfiguration
+import app.cash.paparazzi.gradle.artifacts.dependencyScopeConfiguration
+import app.cash.paparazzi.gradle.artifacts.resolvableConfiguration
 import app.cash.paparazzi.gradle.instrumentation.ResourcesCompatVisitorFactory
 import app.cash.paparazzi.gradle.reporting.DiffImage
 import app.cash.paparazzi.gradle.reporting.PaparazziTestReporter
@@ -30,8 +37,10 @@ import com.android.build.api.variant.HasUnitTest
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import com.android.build.gradle.BaseExtension
 import org.gradle.api.DefaultTask
+import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE
 import org.gradle.api.file.Directory
@@ -65,9 +74,13 @@ public class PaparazziPlugin @Inject constructor(
   private val buildOperationExecutor: BuildOperationExecutor
 ) : Plugin<Project> {
   override fun apply(project: Project) {
+    if (project == project.rootProject) {
+      project.configureRootProject()
+    }
+
     val supportedPlugins = listOf("com.android.application", "com.android.library", "com.android.dynamic-feature")
     project.afterEvaluate {
-      check(supportedPlugins.any { project.plugins.hasPlugin(it) }) {
+      check(supportedPlugins.any { project.plugins.hasPlugin(it) } || project == project.rootProject) {
         "One of ${supportedPlugins.joinToString(", ")} must be applied for Paparazzi to work properly."
       }
       project.plugins.withId("org.jetbrains.kotlin.multiplatform") {
@@ -89,6 +102,22 @@ public class PaparazziPlugin @Inject constructor(
           else -> error("${androidComponents.javaClass.name} from $plugin is not supported in Paparazzi")
         }
         setupPaparazzi(project, androidComponents)
+      }
+    }
+  }
+
+  private fun Project.configureRootProject() {
+    val resolver = createResolver()
+    tasks.register("generateSnapshotBrowser", GenerateBrowserTask::class.java) { task ->
+      val paths = resolver.map { c -> c.incoming.artifactView { it.lenient(true) }.artifacts.artifactFiles }
+      task.projectRoot.set(providerFactory.provider { layout.projectDirectory.asFile.path })
+      task.snapshotMetadataReports.setFrom(paths)
+      task.output.set(project.layout.buildDirectory.dir("paparazzi"))
+    }
+
+    allprojects.forEach { p ->
+      dependencies.let { d ->
+        d.add(SNAPSHOT_METADATA.declarableName, d.project(mapOf("path" to p.path)))
       }
     }
   }
@@ -121,6 +150,8 @@ public class PaparazziPlugin @Inject constructor(
       }
       it.delete(files)
     }
+
+    val snapshotPublisher = project.createPublisher()
 
     extension.onVariants { variant ->
       val variantSlug = variant.name.capitalize()
@@ -278,6 +309,8 @@ public class PaparazziPlugin @Inject constructor(
 
       recordTaskProvider.configure { it.dependsOn(testTaskProvider) }
       verifyTaskProvider.configure { it.dependsOn(testTaskProvider) }
+
+      snapshotPublisher.publish(project.layout.buildDirectory.dir("reports/paparazzi/${variant.name}/metadata"))
     }
   }
 
@@ -376,6 +409,45 @@ public class PaparazziPlugin @Inject constructor(
     }
     configurations.getByName("testImplementation").dependencies.add(dependency)
   }
+
+  private fun Project.createResolver(): NamedDomainObjectProvider<out Configuration> {
+    val declarableName = SNAPSHOT_METADATA.declarableName
+    return resolvableConfiguration(
+      "${declarableName}Classpath",
+      dependencyScopeConfiguration(declarableName).get()
+    ) {
+      it.attributes {
+        it.attribute(
+          PAPARAZZI_ARTIFACTS_ATTRIBUTE,
+          objects.named(PAPARAZZI_ARTIFACTS_ATTRIBUTE.type, SNAPSHOT_METADATA.artifactName)
+        )
+        it.attribute(CATEGORY_ATTRIBUTE, PaparazziArtifacts.category(objects))
+      }
+    }
+  }
+
+  private fun Project.createPublisher(): NamedDomainObjectProvider<out Configuration> {
+    val ext = extensions.extraProperties
+    return if (ext.has(SNAPSHOT_METADATA.artifactName)) {
+      @Suppress("UNCHECKED_CAST")
+      ext[SNAPSHOT_METADATA.artifactName] as NamedDomainObjectProvider<out Configuration>
+    } else {
+      consumableConfiguration("${SNAPSHOT_METADATA.declarableName}Elements") {
+        it.attributes {
+          it.attribute(
+            PAPARAZZI_ARTIFACTS_ATTRIBUTE,
+            objects.named(PAPARAZZI_ARTIFACTS_ATTRIBUTE.type, SNAPSHOT_METADATA.artifactName)
+          )
+          it.attribute(CATEGORY_ATTRIBUTE, PaparazziArtifacts.category(objects))
+        }
+      }.also {
+        ext[SNAPSHOT_METADATA.artifactName] = it
+      }
+    }
+  }
+
+  private fun NamedDomainObjectProvider<out Configuration>.publish(output: Provider<Directory>) =
+    configure { it.outgoing.artifact(output) }
 
   private fun Project.isInternal(): Boolean = providers.gradleProperty("app.cash.paparazzi.internal").orNull == "true"
 

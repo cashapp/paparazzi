@@ -25,6 +25,8 @@ import app.cash.paparazzi.internal.Differ
 import app.cash.paparazzi.internal.OffByTwo
 import app.cash.paparazzi.internal.PixelPerfect
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode
+import com.android.ide.common.resources.configuration.LocaleQualifier
+import com.android.resources.ScreenOrientation.LANDSCAPE
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
@@ -42,7 +44,8 @@ public class Paparazzi @JvmOverloads constructor(
   private val supportsRtl: Boolean = false,
   private val showSystemUi: Boolean = false,
   private val validateAccessibility: Boolean = false,
-  private val useDeviceResolution: Boolean = false
+  private val useDeviceResolution: Boolean = false,
+  private val ruleTags: Map<String, String> = emptyMap()
 ) : TestRule {
   private lateinit var sdk: PaparazziSdk
   private lateinit var frameHandler: SnapshotHandler.FrameHandler
@@ -97,29 +100,45 @@ public class Paparazzi @JvmOverloads constructor(
 
   public fun <V : View> inflate(@LayoutRes layoutId: Int): V = sdk.inflate(layoutId)
 
-  public fun snapshot(name: String? = null, composable: @Composable () -> Unit) {
-    createFrameHandler(name).use { handler ->
+  public fun snapshot(
+    name: String? = null,
+    tags: Map<String, String> = emptyMap(),
+    composable: @Composable () -> Unit
+  ) {
+    createFrameHandler(name, tags = tags).use { handler ->
       frameHandler = handler
       sdk.snapshot(composable)
     }
   }
 
   @JvmOverloads
-  public fun snapshot(view: View, name: String? = null, offsetMillis: Long = 0L) {
-    createFrameHandler(name).use { handler ->
+  public fun snapshot(
+    view: View,
+    name: String? = null,
+    offsetMillis: Long = 0L,
+    tags: Map<String, String> = emptyMap()
+  ) {
+    createFrameHandler(name, tags = tags).use { handler ->
       frameHandler = handler
       sdk.snapshot(view, offsetMillis)
     }
   }
 
   @JvmOverloads
-  public fun gif(view: View, name: String? = null, start: Long = 0L, end: Long = 500L, fps: Int = 30) {
+  public fun gif(
+    view: View,
+    name: String? = null,
+    start: Long = 0L,
+    end: Long = 500L,
+    fps: Int = 30,
+    tags: Map<String, String> = emptyMap()
+  ) {
     // Add one to the frame count so we get the last frame. Otherwise a 1 second, 60 FPS animation
     // our 60th frame will be at time 983 ms, and we want our last frame to be 1,000 ms. This gets
     // us 61 frames for a 1 second animation, 121 frames for a 2 second animation, etc.
     val durationMillis = (end - start).toInt()
     val frameCount = (durationMillis * fps) / 1000 + 1
-    createFrameHandler(name, frameCount, fps).use { handler ->
+    createFrameHandler(name, frameCount, fps, tags).use { handler ->
       frameHandler = handler
       sdk.gif(view, start, end, fps)
     }
@@ -134,10 +153,31 @@ public class Paparazzi @JvmOverloads constructor(
   private fun createFrameHandler(
     name: String? = null,
     frameCount: Int = 1,
-    fps: Int = -1
+    fps: Int = -1,
+    tags: Map<String, String>
   ): SnapshotHandler.FrameHandler {
-    val snapshot = Snapshot(name, testName!!, Date())
+    val snapshot = Snapshot(
+      name = name,
+      testName = testName!!,
+      timestamp = Date(),
+      tags = buildMap {
+        putAll(tags)
+        putAll(ruleTags)
+        addTagsFromDeviceConfig()
+      }
+    )
     return snapshotHandler.newFrameHandler(snapshot, frameCount, fps)
+  }
+
+  private fun MutableMap<String, String>.addTagsFromDeviceConfig() {
+    if (deviceConfig.locale != null) {
+      put("locale", LocaleQualifier.getQualifier(deviceConfig.locale).value)
+    }
+    if (deviceConfig.orientation == LANDSCAPE) {
+      put("orientation", "landscape")
+    } else {
+      put("orientation", "portrait")
+    }
   }
 
   private fun Description.toTestName(): TestName {
