@@ -41,9 +41,42 @@ public class Paparazzi @JvmOverloads constructor(
   private val renderExtensions: Set<RenderExtension> = setOf(),
   private val supportsRtl: Boolean = false,
   private val showSystemUi: Boolean = false,
-  private val validateAccessibility: Boolean = false,
   private val useDeviceResolution: Boolean = false
 ) : TestRule {
+  private var validateAccessibility = false
+
+  @Deprecated(
+    "validateAccessibility is deprecated. " +
+      "Use the AccessibilityRenderExtension for accessibility testing instead."
+  )
+  public constructor(
+    environment: Environment = detectEnvironment(),
+    deviceConfig: DeviceConfig = DeviceConfig.NEXUS_5,
+    theme: String = "android:Theme.Material.NoActionBar.Fullscreen",
+    renderingMode: RenderingMode = RenderingMode.NORMAL,
+    appCompatEnabled: Boolean = true,
+    maxPercentDifference: Double = detectMaxPercentDifferenceDefault(),
+    snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference),
+    renderExtensions: Set<RenderExtension> = setOf(),
+    supportsRtl: Boolean = false,
+    showSystemUi: Boolean = false,
+    useDeviceResolution: Boolean = false,
+    validateAccessibility: Boolean = false
+  ) : this(
+    environment,
+    deviceConfig,
+    theme,
+    renderingMode,
+    appCompatEnabled,
+    maxPercentDifference,
+    snapshotHandler,
+    renderExtensions,
+    supportsRtl,
+    showSystemUi,
+    useDeviceResolution
+  ) {
+    this.validateAccessibility = validateAccessibility
+  }
   private lateinit var sdk: PaparazziSdk
   private lateinit var frameHandler: SnapshotHandler.FrameHandler
   private var testName: TestName? = null
