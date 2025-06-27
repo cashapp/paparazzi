@@ -1,5 +1,8 @@
 package app.cash.paparazzi.sample
 
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+import android.widget.LinearLayout
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -19,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
@@ -39,6 +43,39 @@ class ComposeA11yTest {
     deviceConfig = DeviceConfig.PIXEL,
     renderExtensions = setOf(AccessibilityRenderExtension())
   )
+
+  @Test
+  fun multiComposeViews() {
+    val view = LinearLayout(paparazzi.context).apply {
+      orientation = LinearLayout.VERTICAL
+      layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+      setPaddingRelative(25, 25, 25, 25)
+
+      addView(
+        ComposeView(context = paparazzi.context).apply {
+          setPaddingRelative(32, 32, 32, 32)
+          setContent { Text("Number 1") }
+        },
+        LinearLayout.LayoutParams(WRAP_CONTENT, 0, 1f)
+      )
+      addView(
+        ComposeView(context = paparazzi.context).apply {
+          setPaddingRelative(32, 32, 32, 32)
+          setContent { Text("Number 2") }
+        },
+        LinearLayout.LayoutParams(WRAP_CONTENT, 0, 1f)
+      )
+      addView(
+        ComposeView(context = paparazzi.context).apply {
+          setPaddingRelative(32, 32, 32, 32)
+          setContent { Text("Number 3") }
+        },
+        LinearLayout.LayoutParams(WRAP_CONTENT, 0, 1f)
+      )
+    }
+
+    paparazzi.snapshot(view)
+  }
 
   @Test
   fun compositeItems() {
