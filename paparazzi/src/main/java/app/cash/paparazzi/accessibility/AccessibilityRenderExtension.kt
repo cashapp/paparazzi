@@ -110,7 +110,11 @@ public class AccessibilityRenderExtension : RenderExtension {
       // ComposeView creates a child view `AndroidComposeView` for view root for test.
       val viewRoot = getChildAt(0) as ViewRootForTest
       val unmergedNodes = viewRoot.semanticsOwner.getAllSemanticsNodes(false)
-      viewRoot.semanticsOwner.rootSemanticsNode.processAccessibleChildren(processElement, unmergedNodes)
+
+      val orderedSemanticsNodes = viewRoot.semanticsOwner.rootSemanticsNode.orderSemanticsNodeGroup()
+      orderedSemanticsNodes.forEach {
+        it.processAccessibleChildren(processElement, unmergedNodes)
+      }
     }
 
     if (this is ViewGroup) {
@@ -118,6 +122,53 @@ public class AccessibilityRenderExtension : RenderExtension {
         getChildAt(it).processAccessibleChildren(processElement)
       }
     }
+  }
+
+  private fun SemanticsNode.orderSemanticsNodeGroup(): List<SemanticsNode> {
+    val topLevelNodes = mutableListOf<SemanticsNodeTraversalEntry>()
+
+    val currentNodeTraversalIndex = config.getOrNull(SemanticsProperties.TraversalIndex)
+    if (currentNodeTraversalIndex != null) {
+      topLevelNodes.add(SemanticsNodeTraversalEntry(currentNodeTraversalIndex, listOf(this)))
+    } else {
+      topLevelNodes.add(SemanticsNodeTraversalEntry(nodes = listOf(this)))
+    }
+
+    for (child in children) {
+      val descendants = child.orderSemanticsNodeGroup()
+      if (child.config.getOrNull(SemanticsProperties.IsTraversalGroup) == true) {
+        // Treat group as one item, recurse within it
+        val childTraversalIndex = child.config.getOrNull(SemanticsProperties.TraversalIndex)
+        topLevelNodes.add(
+          if (childTraversalIndex != null) {
+            SemanticsNodeTraversalEntry(childTraversalIndex, descendants)
+          } else {
+            SemanticsNodeTraversalEntry(nodes = descendants)
+          }
+        )
+      } else {
+        // Leaf or regular node
+        for (node in descendants) {
+          val nodeTraversalIndex = child.config.getOrNull(SemanticsProperties.TraversalIndex)
+          topLevelNodes.add(
+            if (nodeTraversalIndex != null) {
+              SemanticsNodeTraversalEntry(nodeTraversalIndex, descendants)
+            } else {
+              SemanticsNodeTraversalEntry(nodes = listOf(node))
+            }
+          )
+        }
+      }
+    }
+
+    return topLevelNodes
+      .sortedWith(
+        compareBy(
+          { it.traversalIndex },
+          { it.orderIndex } // Order of discovery = fallback layout order
+        )
+      )
+      .flatMap { it.nodes }
   }
 
   private fun SemanticsNode.processAccessibleChildren(
@@ -148,10 +199,6 @@ public class AccessibilityRenderExtension : RenderExtension {
           contentDescription = accessibilityText
         )
       )
-    }
-
-    children.forEach {
-      it.processAccessibleChildren(processElement, unmergedNodes)
     }
   }
 
@@ -381,6 +428,17 @@ public class AccessibilityRenderExtension : RenderExtension {
     private const val LIVE_REGION_POLITE_LABEL = "polite"
     private const val EDITABLE_LABEL = "<editable>"
     private const val IN_LIST_LABEL = "<in-list>"
+
+    data class SemanticsNodeTraversalEntry(
+      val traversalIndex: Float = 0f,
+      val nodes: List<SemanticsNode>, // May be 1 node or a whole traversal group
+      val orderIndex: Int = nextOrderIndex()
+    )
+
+    private var orderIndexCounter = 0
+    fun nextOrderIndex(): Int {
+      return orderIndexCounter++
+    }
   }
 }
 
