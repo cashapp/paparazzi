@@ -56,7 +56,7 @@ public class Paparazzi @JvmOverloads constructor(
     renderingMode: RenderingMode = RenderingMode.NORMAL,
     appCompatEnabled: Boolean = true,
     maxPercentDifference: Double = detectMaxPercentDifferenceDefault(),
-    snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference),
+    snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference, differ),
     renderExtensions: Set<RenderExtension> = setOf(),
     supportsRtl: Boolean = false,
     showSystemUi: Boolean = false,
