@@ -42,6 +42,7 @@ import androidx.compose.ui.semantics.invisibleToUser
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.setProgress
+import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.dp
@@ -366,6 +367,28 @@ class AccessibilityRenderingTest {
     }
 
     paparazzi.snapshot(listView)
+  }
+
+  @Test
+  fun `verify traversalIndex order`() {
+    paparazzi.snapshot {
+      Column {
+        Text(
+          text = "Third",
+          modifier = Modifier
+            .semantics { traversalIndex = 2f }
+        )
+        Text(
+          text = "First",
+          modifier = Modifier
+            .semantics { traversalIndex = -1f }
+        )
+        Text(
+          // Displayed second as the default traversalIndex is 0
+          text = "Second"
+        )
+      }
+    }
   }
 
   private fun buildViewWithCustomActions(context: Context) =
