@@ -56,10 +56,7 @@ import org.xmlpull.v1.XmlPullParserFactory
 import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
-import java.lang.UnsupportedOperationException
 import java.util.Properties
-import kotlin.math.max
-import kotlin.math.min
 
 /**
  * Provides [FolderConfiguration] and [HardwareConfig] for various devices. Also provides utility
@@ -163,7 +160,7 @@ public class DeviceConfig(
 
   public val hardwareConfig: HardwareConfig
     get() = HardwareConfig(
-      currentWidth, currentHeight, density, xdpi.toFloat(), ydpi.toFloat(), size,
+      screenWidth, screenHeight, density, xdpi.toFloat(), ydpi.toFloat(), size,
       orientation, screenRound, softButtons
     )
 
@@ -184,19 +181,6 @@ public class DeviceConfig(
         UiMode.VR_HEADSET -> Configuration.UI_MODE_TYPE_VR_HEADSET
       }
       return nightMask or typeMask
-    }
-
-  private val currentWidth: Int
-    get() = when (orientation) {
-      ScreenOrientation.PORTRAIT -> min(screenWidth, screenHeight)
-      ScreenOrientation.LANDSCAPE -> max(screenWidth, screenHeight)
-      else -> throw UnsupportedOperationException("Only Portrait or Landscape orientations are supported")
-    }
-  private val currentHeight: Int
-    get() = when (orientation) {
-      ScreenOrientation.PORTRAIT -> max(screenWidth, screenHeight)
-      ScreenOrientation.LANDSCAPE -> min(screenWidth, screenHeight)
-      else -> throw UnsupportedOperationException("Only Portrait or Landscape orientations are supported")
     }
 
   /**
