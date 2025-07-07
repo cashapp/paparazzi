@@ -26,6 +26,22 @@ import android.widget.LinearLayout.LayoutParams
 import android.widget.LinearLayout.VERTICAL
 import android.widget.TextView
 import androidx.appcompat.widget.AppCompatTextView
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.LocalTextStyle
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
+import androidx.compose.material.Typography
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.AlignmentLine
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.core.content.res.ResourcesCompat
 import app.cash.paparazzi.Paparazzi
 import org.junit.Rule
@@ -97,6 +113,67 @@ class CustomFontsTest {
       }
     }
     paparazzi.snapshot(text)
+  }
+
+  @Test
+  fun compose() {
+    paparazzi.snapshot {
+      MaterialTheme(
+        typography = Typography(
+          FontFamily(
+            Font(R.font.cashmarket_medium),
+          )
+        ),
+      ) {
+        Column(
+          modifier = Modifier
+            .background(Color.White)
+            .fillMaxSize(),
+          verticalArrangement = Arrangement.Center,
+          horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+          Text(
+            text = "Normal (theming)",
+          )
+          Text(
+            text = "Normal (default)",
+            style = LocalTextStyle.current.copy(
+              fontFamily = FontFamily(
+                Font(R.font.cashmarket_medium)
+              )
+            )
+          )
+          Text(
+            text = "Normal (styled)",
+            style = LocalTextStyle.current.copy(
+              fontStyle = FontStyle.Normal
+            )
+          )
+          Text(
+            text = "Normal (explicit)",
+            style = LocalTextStyle.current.copy(
+              fontFamily = FontFamily(
+                Font(R.font.cashmarket_medium_normal, style = FontStyle.Normal)
+              )
+            )
+          )
+          Text(
+            text = "Italics (styled)",
+            style = LocalTextStyle.current.copy(
+              fontStyle = FontStyle.Italic
+            )
+          )
+          Text(
+            text = "Italics (explicit)",
+            style = LocalTextStyle.current.copy(
+              fontFamily = FontFamily(
+                Font(R.font.cashmarket_medium_italic, style = FontStyle.Italic)
+              )
+            )
+          )
+        }
+      }
+    }
   }
 
   private fun createTextView(context: Context) =
