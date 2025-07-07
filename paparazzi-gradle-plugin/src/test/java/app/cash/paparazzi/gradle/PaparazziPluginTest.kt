@@ -1484,6 +1484,15 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun customScreenDimensions() {
+    val fixtureRoot = File("src/test/projects/custom-screen-dimensions")
+
+    gradleRunner
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+  }
+
+  @Test
   fun scaledVersusFullDeviceResolution() {
     val fixtureRoot = File("src/test/projects/device-resolution")
 

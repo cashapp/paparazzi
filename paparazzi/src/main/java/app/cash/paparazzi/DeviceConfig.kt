@@ -114,6 +114,12 @@ public class DeviceConfig(
         screenRoundQualifier = ScreenRoundQualifier(screenRound)
       }
 
+  init {
+    if (orientation != ScreenOrientation.PORTRAIT && orientation != ScreenOrientation.LANDSCAPE) {
+      throw IllegalArgumentException("Only portrait and landscape orientations are supported")
+    }
+  }
+
   public fun copy(
     screenHeight: Int = this.screenHeight,
     screenWidth: Int = this.screenWidth,
@@ -134,29 +140,37 @@ public class DeviceConfig(
     softButtons: Boolean = this.softButtons,
     navigation: Navigation = this.navigation,
     screenRound: ScreenRound? = this.screenRound
-  ): DeviceConfig =
-    DeviceConfig(
-      screenHeight,
-      screenWidth,
-      xdpi,
-      ydpi,
-      orientation,
-      uiMode,
-      nightMode,
-      density,
-      fontScale,
-      layoutDirection,
-      locale,
-      ratio,
-      size,
-      keyboard,
-      touchScreen,
-      keyboardState,
-      softButtons,
-      navigation,
-      screenRound,
-      this.released
+  ): DeviceConfig {
+    var currentScreenWidth = screenWidth
+    var currentScreenHeight = screenHeight
+
+    if (orientation != this.orientation && (screenWidth == this.screenWidth && screenHeight == this.screenHeight)) {
+      currentScreenWidth = screenHeight
+      currentScreenHeight = screenWidth
+    }
+    return DeviceConfig(
+      screenHeight = currentScreenHeight,
+      screenWidth = currentScreenWidth,
+      xdpi = xdpi,
+      ydpi = ydpi,
+      orientation = orientation,
+      uiMode = uiMode,
+      nightMode = nightMode,
+      density = density,
+      fontScale = fontScale,
+      layoutDirection = layoutDirection,
+      locale = locale,
+      ratio = ratio,
+      size = size,
+      keyboard = keyboard,
+      touchScreen = touchScreen,
+      keyboardState = keyboardState,
+      softButtons = softButtons,
+      navigation = navigation,
+      screenRound = screenRound,
+      released = this.released
     )
+  }
 
   public val hardwareConfig: HardwareConfig
     get() = HardwareConfig(
