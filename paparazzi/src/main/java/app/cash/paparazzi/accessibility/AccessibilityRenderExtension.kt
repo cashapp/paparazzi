@@ -216,15 +216,6 @@ public class AccessibilityRenderExtension : RenderExtension {
         )
       )
     }
-
-    children.forEach {
-      it.processAccessibleChildren(
-        processElement = processElement,
-        locationOnScreen = locationOnScreen,
-        viewBounds = viewBounds,
-        unmergedNodes = unmergedNodes
-      )
-    }
   }
 
   private fun SemanticsNode.findAllUnmergedNodes(): List<SemanticsNode> {
