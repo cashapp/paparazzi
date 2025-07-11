@@ -63,6 +63,7 @@ buildConfig {
 
 tasks.withType(Test).configureEach {
   dependsOn(':paparazzi:publishMavenPublicationToProjectLocalMavenRepository')
+  outputs.cacheIf { false }
 }
 
 // When cleaning this project, we also want to clean the test projects.
