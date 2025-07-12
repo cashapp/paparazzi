@@ -14,7 +14,7 @@ import android.widget.TextView
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Paparazzi
 import app.cash.paparazzi.SnapshotVerifier
-import app.cash.paparazzi.internal.OffByTwo
+import app.cash.paparazzi.internal.differs.OffByTwo
 import org.junit.Rule
 import org.junit.Test
 
