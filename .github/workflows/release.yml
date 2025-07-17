@@ -44,10 +44,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.8
+          python-version: 3.12 # See the pinned version in renovate.json too
 
       - name: Prep mkdocs
         run: .github/workflows/prepare_mkdocs.sh
