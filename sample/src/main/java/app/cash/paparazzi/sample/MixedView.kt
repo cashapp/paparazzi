@@ -1,7 +1,7 @@
-package app.cash.paparazzi.plugin.test
+package app.cash.paparazzi.sample
 
+import android.annotation.SuppressLint
 import android.content.Context
-import android.view.View.GONE
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -10,9 +10,10 @@ import android.widget.TextView
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.view.ViewCompat
 
+@SuppressLint("ResourceType")
 class MixedView(context: Context) : LinearLayout(context) {
   init {
-    orientation = LinearLayout.VERTICAL
+    orientation = VERTICAL
 
     addView(
       TextView(context).apply {

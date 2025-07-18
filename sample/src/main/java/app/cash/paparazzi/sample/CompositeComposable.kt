@@ -1,4 +1,4 @@
-package app.cash.paparazzi.plugin.test
+package app.cash.paparazzi.sample
 
 import android.widget.TextView
 import androidx.compose.foundation.Image
