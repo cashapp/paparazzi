@@ -1,4 +1,4 @@
-package app.cash.paparazzi.plugin.test
+package app.cash.paparazzi.sample
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.Button
