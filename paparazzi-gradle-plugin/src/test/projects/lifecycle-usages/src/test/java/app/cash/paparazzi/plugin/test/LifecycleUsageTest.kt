@@ -6,7 +6,6 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.OnBackPressedDispatcher
 import androidx.activity.findViewTreeOnBackPressedDispatcherOwner
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.ViewTreeLifecycleOwner
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.findViewTreeSavedStateRegistryOwner
 import app.cash.paparazzi.Paparazzi
@@ -25,7 +24,7 @@ class LifecycleUsageTest {
     var currentLifecycleState: Lifecycle.State? = null
 
     view.doOnAttach {
-      val lifecycleOwner = ViewTreeLifecycleOwner.get(view)!!
+      val lifecycleOwner = view.findViewTreeSavedStateRegistryOwner()!!
       currentLifecycleState = lifecycleOwner.lifecycle.currentState
     }
 
@@ -59,7 +58,7 @@ class LifecycleUsageTest {
       val dispatcherOwner = view.findViewTreeOnBackPressedDispatcherOwner()!!
       dispatcher = dispatcherOwner.onBackPressedDispatcher
 
-      dispatcher!!.addCallback(
+      dispatcher.addCallback(
         object : OnBackPressedCallback(true) {
           override fun handleOnBackPressed() = Unit
         }
