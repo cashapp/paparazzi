@@ -54,7 +54,7 @@ jobs:
 
       - name: Build mkdocs
         run: |
-          pip3 install -r .github/workflows/requirements.txt
+          pip3 install -r .github/workflows/requirements.in
           mkdocs build
 
       - name: Deploy docs to website
