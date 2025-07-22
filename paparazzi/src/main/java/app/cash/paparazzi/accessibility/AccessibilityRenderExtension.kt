@@ -328,6 +328,7 @@ public class AccessibilityRenderExtension : RenderExtension {
     val isInList = parent?.config?.getOrNull(SemanticsProperties.CollectionInfo)?.let { IN_LIST_LABEL }
 
     return constructTextList(
+      isInList = isInList,
       stateDescription,
       selected,
       toggleableState,
@@ -342,8 +343,7 @@ public class AccessibilityRenderExtension : RenderExtension {
       setProgress,
       liveRegionMode,
       annotatedStringActions,
-      customActions,
-      isInList
+      customActions
     )
   }
 
@@ -383,6 +383,7 @@ public class AccessibilityRenderExtension : RenderExtension {
     val customActions = computeCustomActions()
 
     return constructTextList(
+      isInList = isInList,
       stateDescription,
       selected,
       toggleableState,
@@ -391,8 +392,7 @@ public class AccessibilityRenderExtension : RenderExtension {
       disabled,
       heading,
       liveRegionMode,
-      customActions,
-      isInList
+      customActions
     )
   }
 
@@ -408,11 +408,11 @@ public class AccessibilityRenderExtension : RenderExtension {
       }
   }
 
-  private fun constructTextList(vararg text: String?): String? {
+  private fun constructTextList(isInList: String?, vararg text: String?): String? {
     val textList = listOfNotNull(*text)
     return if (textList.isNotEmpty()) {
       // Escape newline characters to simplify accessibility text.
-      textList.joinToString(", ").replaceLineBreaks()
+      (textList + isInList).filterNotNull().joinToString(", ").replaceLineBreaks()
     } else {
       null
     }

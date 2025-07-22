@@ -13,7 +13,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
@@ -347,6 +349,10 @@ class AccessibilityRenderingTest {
         items(5) {
           Text(text = "Item = $it")
         }
+        // Shouldn't be included in the legend
+        item {
+          Spacer(Modifier.height(16.dp))
+        }
       }
     }
   }
@@ -357,9 +363,13 @@ class AccessibilityRenderingTest {
     listView.adapter = object : android.widget.ArrayAdapter<String>(
       paparazzi.context,
       android.R.layout.simple_list_item_1,
-      listOf("Item = 0", "Item = 1", "Item = 2", "Item = 3", "Item = 4")
+      listOf("Item = 0", "Item = 1", "Item = 2", "Item = 3", "Item = 4", "")
     ) {
       override fun getView(position: Int, convertView: View?, parent: android.view.ViewGroup): View {
+        if (position == 5) {
+          return View(paparazzi.context)
+        }
+
         val view = super.getView(position, convertView, parent)
         view.contentDescription = "Item = $position"
         return view
