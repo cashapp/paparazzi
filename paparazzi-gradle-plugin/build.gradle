@@ -62,6 +62,10 @@ buildConfig {
 }
 
 tasks.withType(Test).configureEach {
+  inputs.file(rootProject.layout.projectDirectory.file("gradle/libs.versions.toml"))
+    .withPropertyName("libs.versions.toml")
+  inputs.dir(rootProject.layout.buildDirectory.dir("localMaven"))
+    .withPropertyName("localMaven")
   dependsOn(':paparazzi:publishMavenPublicationToProjectLocalMavenRepository')
 }
 
