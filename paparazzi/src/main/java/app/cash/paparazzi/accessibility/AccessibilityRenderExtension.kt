@@ -329,7 +329,7 @@ public class AccessibilityRenderExtension : RenderExtension {
     val isInList = parent?.config?.getOrNull(SemanticsProperties.CollectionInfo)?.let { IN_LIST_LABEL }
 
     return constructTextList(
-      isInList = isInList, // Allows filtering out in list label above since child nodes are joined together
+      isInList = null, // Allows filtering out in list label above since child nodes are joined together
       stateDescription,
       selected,
       toggleableState,
@@ -344,7 +344,8 @@ public class AccessibilityRenderExtension : RenderExtension {
       setProgress,
       liveRegionMode,
       annotatedStringActions,
-      customActions
+      customActions,
+      isInList
     )
   }
 
