@@ -193,7 +193,7 @@ public class AccessibilityRenderExtension : RenderExtension {
           .mapNotNull { it.accessibilityText() }
           .joinToString(", ")
           .ifEmpty { null }
-//          .takeIf { it != IN_LIST_LABEL }
+          .takeIf { it != IN_LIST_LABEL }
       }
     } else {
       accessibilityText()
