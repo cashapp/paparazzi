@@ -346,12 +346,20 @@ class AccessibilityRenderingTest {
   fun `verify compose list semantics`() {
     paparazzi.snapshot {
       LazyColumn {
-        items(5) {
+        items(4) {
           Text(text = "Item = $it")
+        }
+        item {
+          // Box Nesting on purpose
+          Box {
+            Box {
+              Text(text = "Item = 5")
+            }
+          }
         }
         // Shouldn't be included in the legend
         item {
-          Spacer(Modifier.height(16.dp))
+          Box { Spacer(Modifier.height(16.dp)) }
         }
       }
     }
