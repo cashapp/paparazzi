@@ -32,7 +32,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.12
+          python-version: 3.13
 
       - name: Prep mkdocs
         run: .github/workflows/prepare_mkdocs.sh
@@ -119,7 +119,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.12 # See the pinned version in renovate.json too
+          python-version: 3.13 # See the pinned version in renovate.json too
 
       - name: Prep mkdocs
         run: .github/workflows/prepare_mkdocs.sh
