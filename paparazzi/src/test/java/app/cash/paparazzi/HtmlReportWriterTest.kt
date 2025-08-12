@@ -16,6 +16,9 @@
 package app.cash.paparazzi
 
 import app.cash.paparazzi.FileSubject.Companion.assertThat
+import app.cash.paparazzi.internal.Differ
+import app.cash.paparazzi.internal.OffByTwo
+import app.cash.paparazzi.internal.PixelPerfect
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
@@ -36,12 +39,21 @@ class HtmlReportWriterTest {
   val snapshotRoot: TemporaryFolder = TemporaryFolder()
 
   private val anyImage = BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB)
+  private val otherImage = BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB).apply {
+    setRGB(0, 0, 0xFFFFFFFF.toInt())
+  }
   private val anyImageHash = "5007e8fef3bc5eeffa89d2797c63768390460f90"
   private val anyVideoHash = "80ff0587a0fbd0ede0247a021edfb1a3aaf9ccb5"
 
   @Test
   fun happyPathImages() {
-    val htmlReportWriter = HtmlReportWriter("run_one", reportRoot.root)
+    val htmlReportWriter = HtmlReportWriter(
+      runName = "run_one",
+      rootDirectory = reportRoot.root,
+      maxPercentDifference = 0.0,
+      differ = PixelPerfect,
+      snapshotRootDirectory = snapshotRoot.root
+    )
     htmlReportWriter.use {
       val frameHandler = htmlReportWriter.newFrameHandler(
         snapshot = Snapshot(
@@ -92,7 +104,13 @@ class HtmlReportWriterTest {
 
   @Test
   fun noSnapshotOnFailure() {
-    val htmlReportWriter = HtmlReportWriter("run_one", reportRoot.root)
+    val htmlReportWriter = HtmlReportWriter(
+      runName = "run_one",
+      rootDirectory = reportRoot.root,
+      maxPercentDifference = 0.0,
+      differ = PixelPerfect,
+      snapshotRootDirectory = snapshotRoot.root
+    )
     htmlReportWriter.use {
       val frameHandler = htmlReportWriter.newFrameHandler(
         snapshot = Snapshot(
@@ -118,7 +136,13 @@ class HtmlReportWriterTest {
       // set record mode
       System.setProperty("paparazzi.test.record", "true")
 
-      val htmlReportWriter = HtmlReportWriter("record_run", reportRoot.root, snapshotRoot.root)
+      val htmlReportWriter = HtmlReportWriter(
+        runName = "record_run",
+        rootDirectory = reportRoot.root,
+        maxPercentDifference = 0.0,
+        differ = PixelPerfect,
+        snapshotRootDirectory = snapshotRoot.root
+      )
       htmlReportWriter.use {
         val now = Instant.parse("2021-02-23T10:27:43Z")
         val snapshot = Snapshot(
@@ -164,8 +188,132 @@ class HtmlReportWriterTest {
   }
 
   @Test
+  fun imagesDoesntOverwriteOnRecordWithFlag() {
+    try {
+      // set record mode
+      System.setProperty("paparazzi.test.record", "true")
+      System.setProperty("paparazzi.test.record.overwriteOnMaxPercentDifference", "true")
+
+      val htmlReportWriter = HtmlReportWriter(
+        runName = "record_run",
+        rootDirectory = reportRoot.root,
+        maxPercentDifference = 0.0,
+        differ = PixelPerfect,
+        snapshotRootDirectory = snapshotRoot.root
+      )
+      htmlReportWriter.use {
+        val now = Instant.parse("2021-02-23T10:27:43Z")
+        val snapshot = Snapshot(
+          name = "test",
+          testName = TestName("app.cash.paparazzi", "HomeView", "testSettings"),
+          timestamp = now.toDate()
+        )
+        val golden =
+          File("${snapshotRoot.root}/images/app.cash.paparazzi_HomeView_testSettings_test.png")
+
+        // precondition
+        assertThat(golden).doesNotExist()
+
+        // take 1
+        val frameHandler1 = htmlReportWriter.newFrameHandler(
+          snapshot = snapshot,
+          frameCount = 1,
+          fps = -1
+        )
+        frameHandler1.use { frameHandler1.handle(anyImage) }
+        assertThat(golden).exists()
+        val timeFirstWrite = golden.lastModifiedTime()
+
+        // I know....but guarantees writes won't happen in same tick
+        Thread.sleep(100)
+
+        // take 2
+        val frameHandler2 = htmlReportWriter.newFrameHandler(
+          snapshot = snapshot.copy(timestamp = now.plusSeconds(1).toDate()),
+          frameCount = 1,
+          fps = -1
+        )
+        frameHandler2.use { frameHandler2.handle(anyImage) }
+        assertThat(golden).exists()
+        val timeOverwrite = golden.lastModifiedTime()
+
+        // should always overwrite
+        assertThat(timeOverwrite).isEqualTo(timeFirstWrite)
+      }
+    } finally {
+      System.clearProperty("paparazzi.test.record")
+      System.clearProperty("paparazzi.test.record.overwriteOnMaxPercentDifference")
+    }
+  }
+
+  @Test
+  fun imagesOverwriteOnRecordWithFlagAndImageDiff() {
+    try {
+      // set record mode
+      System.setProperty("paparazzi.test.record", "true")
+      System.setProperty("paparazzi.test.record.overwriteOnMaxPercentDifference", "true")
+
+      val htmlReportWriter = HtmlReportWriter(
+        runName = "record_run",
+        rootDirectory = reportRoot.root,
+        maxPercentDifference = 0.0,
+        differ = PixelPerfect,
+        snapshotRootDirectory = snapshotRoot.root
+      )
+      htmlReportWriter.use {
+        val now = Instant.parse("2021-02-23T10:27:43Z")
+        val snapshot = Snapshot(
+          name = "test",
+          testName = TestName("app.cash.paparazzi", "HomeView", "testSettings"),
+          timestamp = now.toDate()
+        )
+        val golden =
+          File("${snapshotRoot.root}/images/app.cash.paparazzi_HomeView_testSettings_test.png")
+
+        // precondition
+        assertThat(golden).doesNotExist()
+
+        // take 1
+        val frameHandler1 = htmlReportWriter.newFrameHandler(
+          snapshot = snapshot,
+          frameCount = 1,
+          fps = -1
+        )
+        frameHandler1.use { frameHandler1.handle(anyImage) }
+        assertThat(golden).exists()
+        val timeFirstWrite = golden.lastModifiedTime()
+
+        // I know....but guarantees writes won't happen in same tick
+        Thread.sleep(100)
+
+        // take 2
+        val frameHandler2 = htmlReportWriter.newFrameHandler(
+          snapshot = snapshot.copy(timestamp = now.plusSeconds(1).toDate()),
+          frameCount = 1,
+          fps = -1
+        )
+        frameHandler2.use { frameHandler2.handle(otherImage) }
+        assertThat(golden).exists()
+        val timeOverwrite = golden.lastModifiedTime()
+
+        // should always overwrite
+        assertThat(timeOverwrite).isGreaterThan(timeFirstWrite)
+      }
+    } finally {
+      System.clearProperty("paparazzi.test.record")
+      System.clearProperty("paparazzi.test.record.overwriteOnMaxPercentDifference")
+    }
+  }
+
+  @Test
   fun happyPathVideos() {
-    val htmlReportWriter = HtmlReportWriter("run_one", reportRoot.root)
+    val htmlReportWriter = HtmlReportWriter(
+      runName = "run_one",
+      rootDirectory = reportRoot.root,
+      maxPercentDifference = 0.0,
+      differ = PixelPerfect,
+      snapshotRootDirectory = snapshotRoot.root
+    )
     htmlReportWriter.use {
       val frameHandler = htmlReportWriter.newFrameHandler(
         Snapshot(
@@ -214,7 +362,13 @@ class HtmlReportWriterTest {
       // set record mode
       System.setProperty("paparazzi.test.record", "true")
 
-      val htmlReportWriter = HtmlReportWriter("record_run", reportRoot.root, snapshotRoot.root)
+      val htmlReportWriter = HtmlReportWriter(
+        runName = "record_run",
+        rootDirectory = reportRoot.root,
+        maxPercentDifference = 0.0,
+        differ = PixelPerfect,
+        snapshotRootDirectory = snapshotRoot.root
+      )
       htmlReportWriter.use {
         val now = Instant.parse("2021-02-23T10:27:43Z")
         val snapshot = Snapshot(
@@ -263,6 +417,138 @@ class HtmlReportWriterTest {
     } finally {
       // reset record mode
       System.setProperty("paparazzi.test.record", "false")
+    }
+  }
+
+  @Test
+  fun videoDoesntOverwriteOnRecordWithFlag() {
+    try {
+      // set record mode
+      System.setProperty("paparazzi.test.record", "true")
+      System.setProperty("paparazzi.test.record.overwriteOnMaxPercentDifference", "true")
+
+      val htmlReportWriter = HtmlReportWriter(
+        runName = "record_run",
+        rootDirectory = reportRoot.root,
+        maxPercentDifference = 0.0,
+        differ = PixelPerfect,
+        snapshotRootDirectory = snapshotRoot.root
+      )
+      htmlReportWriter.use {
+        val now = Instant.parse("2021-02-23T10:27:43Z")
+        val snapshot = Snapshot(
+          name = "test",
+          testName = TestName("app.cash.paparazzi", "HomeView", "testSettings"),
+          timestamp = now.toDate()
+        )
+        val golden =
+          File("${snapshotRoot.root}/videos/app.cash.paparazzi_HomeView_testSettings_test.png")
+
+        // precondition
+        assertThat(golden).doesNotExist()
+
+        // take 1
+        val frameHandler1 = htmlReportWriter.newFrameHandler(
+          snapshot = snapshot,
+          frameCount = 2,
+          fps = 1
+        )
+        frameHandler1.use {
+          frameHandler1.handle(anyImage)
+          frameHandler1.handle(anyImage)
+        }
+        assertThat(golden).exists()
+        val timeFirstWrite = golden.lastModifiedTime()
+
+        // I know....but guarantees writes won't happen in same tick
+        Thread.sleep(100)
+
+        // take 2
+        val frameHandler2 = htmlReportWriter.newFrameHandler(
+          snapshot = snapshot.copy(timestamp = now.plusSeconds(1).toDate()),
+          frameCount = 2,
+          fps = 1
+        )
+        frameHandler2.use {
+          frameHandler2.handle(anyImage)
+          frameHandler2.handle(anyImage)
+        }
+        assertThat(golden).exists()
+        val timeOverwrite = golden.lastModifiedTime()
+
+        // should always overwrite
+        assertThat(timeOverwrite).isEqualTo(timeFirstWrite)
+      }
+    } finally {
+      // reset record mode
+      System.setProperty("paparazzi.test.record", "false")
+      System.clearProperty("paparazzi.test.record.overwriteOnMaxPercentDifference")
+    }
+  }
+
+  @Test
+  fun videoOverwritesOnRecordWithFlagAndImageDiff() {
+    try {
+      // set record mode
+      System.setProperty("paparazzi.test.record", "true")
+      System.setProperty("paparazzi.test.record.overwriteOnMaxPercentDifference", "true")
+
+      val htmlReportWriter = HtmlReportWriter(
+        runName = "record_run",
+        rootDirectory = reportRoot.root,
+        maxPercentDifference = 0.0,
+        differ = PixelPerfect,
+        snapshotRootDirectory = snapshotRoot.root
+      )
+      htmlReportWriter.use {
+        val now = Instant.parse("2021-02-23T10:27:43Z")
+        val snapshot = Snapshot(
+          name = "test",
+          testName = TestName("app.cash.paparazzi", "HomeView", "testSettings"),
+          timestamp = now.toDate()
+        )
+        val golden =
+          File("${snapshotRoot.root}/videos/app.cash.paparazzi_HomeView_testSettings_test.png")
+
+        // precondition
+        assertThat(golden).doesNotExist()
+
+        // take 1
+        val frameHandler1 = htmlReportWriter.newFrameHandler(
+          snapshot = snapshot,
+          frameCount = 2,
+          fps = 1
+        )
+        frameHandler1.use {
+          frameHandler1.handle(anyImage)
+          frameHandler1.handle(anyImage)
+        }
+        assertThat(golden).exists()
+        val timeFirstWrite = golden.lastModifiedTime()
+
+        // I know....but guarantees writes won't happen in same tick
+        Thread.sleep(100)
+
+        // take 2
+        val frameHandler2 = htmlReportWriter.newFrameHandler(
+          snapshot = snapshot.copy(timestamp = now.plusSeconds(1).toDate()),
+          frameCount = 2,
+          fps = 1
+        )
+        frameHandler2.use {
+          frameHandler2.handle(otherImage)
+          frameHandler2.handle(otherImage)
+        }
+        assertThat(golden).exists()
+        val timeOverwrite = golden.lastModifiedTime()
+
+        // should always overwrite
+        assertThat(timeOverwrite).isGreaterThan(timeFirstWrite)
+      }
+    } finally {
+      // reset record mode
+      System.setProperty("paparazzi.test.record", "false")
+      System.clearProperty("paparazzi.test.record.overwriteOnMaxPercentDifference")
     }
   }
 
