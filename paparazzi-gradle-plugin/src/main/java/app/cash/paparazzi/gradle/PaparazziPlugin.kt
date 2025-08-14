@@ -267,6 +267,8 @@ public class PaparazziPlugin @Inject constructor(
           test.systemProperties["paparazzi.layoutlib.resources.root"] =
             layoutlibResourcesFileCollection.singleFile.absolutePath
           test.systemProperties["paparazzi.test.record"] = isRecordRun.get()
+          test.systemProperties["paparazzi.test.record.overwriteOnMaxPercentDifference"] =
+            project.overwriteOnMaxPercentDifference()
           test.systemProperties["paparazzi.test.verify"] = isVerifyRun.get()
         }
 
@@ -378,6 +380,9 @@ public class PaparazziPlugin @Inject constructor(
   }
 
   private fun Project.isInternal(): Boolean = providers.gradleProperty("app.cash.paparazzi.internal").orNull == "true"
+
+  private fun Project.overwriteOnMaxPercentDifference(): Boolean =
+    providers.gradleProperty("app.cash.paparazzi.overwriteOnMaxPercentDifference").orNull == "true"
 
   private fun BaseExtension.packageName(): String = namespace ?: ""
 

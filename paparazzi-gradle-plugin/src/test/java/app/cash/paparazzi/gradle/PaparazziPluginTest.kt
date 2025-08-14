@@ -18,6 +18,9 @@ import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
+import javax.imageio.ImageIO
 
 class PaparazziPluginTest {
   private val filesToDelete = mutableListOf<File>()
@@ -1603,6 +1606,25 @@ class PaparazziPluginTest {
     gradleRunner
       .withArguments("testDebug", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
+  }
+
+  @Test
+  fun overwriteSnapshotOnMaxPercentDiff() {
+    val fixtureRoot = File("src/test/projects/overwrite-on-max-percent-difference")
+
+    val dontRecordFile =
+      File(fixtureRoot, "src/test/snapshots/images/app.cash.paparazzi.plugin.test_RecordSnapshotTest_dontRecord.png")
+    val dontRecordLastModified = dontRecordFile.lastModified()
+    val recordFile =
+      File(fixtureRoot, "src/test/snapshots/images/app.cash.paparazzi.plugin.test_RecordSnapshotTest_record.png")
+    val recordLastModified = dontRecordFile.lastModified()
+
+    gradleRunner
+      .withArguments("recordPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(dontRecordLastModified).isEqualTo(dontRecordFile.lastModified())
+    assertThat(recordLastModified).isNotEqualTo(recordFile.lastModified())
   }
 
   private fun File.loadConfig() = source().buffer().use { CONFIG_ADAPTER.fromJson(it)!! }
