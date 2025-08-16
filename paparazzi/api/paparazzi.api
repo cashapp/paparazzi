@@ -60,6 +60,34 @@ public final class app/cash/paparazzi/DeviceConfig {
 public final class app/cash/paparazzi/DeviceConfig$Companion {
 }
 
+public abstract interface class app/cash/paparazzi/Differ {
+	public abstract fun compare (Ljava/awt/image/BufferedImage;Ljava/awt/image/BufferedImage;)Lapp/cash/paparazzi/Differ$DiffResult;
+}
+
+public abstract interface class app/cash/paparazzi/Differ$DiffResult {
+}
+
+public final class app/cash/paparazzi/Differ$DiffResult$Different : app/cash/paparazzi/Differ$DiffResult {
+	public static final field $stable I
+	public fun <init> (Ljava/awt/image/BufferedImage;FJ)V
+	public final fun getDelta ()Ljava/awt/image/BufferedImage;
+	public final fun getNumDifferentPixels ()J
+	public final fun getPercentDifference ()F
+}
+
+public final class app/cash/paparazzi/Differ$DiffResult$Identical : app/cash/paparazzi/Differ$DiffResult {
+	public static final field $stable I
+	public fun <init> (Ljava/awt/image/BufferedImage;)V
+	public final fun getDelta ()Ljava/awt/image/BufferedImage;
+}
+
+public final class app/cash/paparazzi/Differ$DiffResult$Similar : app/cash/paparazzi/Differ$DiffResult {
+	public static final field $stable I
+	public fun <init> (Ljava/awt/image/BufferedImage;J)V
+	public final fun getDelta ()Ljava/awt/image/BufferedImage;
+	public final fun getNumSimilarPixels ()J
+}
+
 public final class app/cash/paparazzi/Environment {
 	public static final field $stable I
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;)V
@@ -215,9 +243,9 @@ public final class app/cash/paparazzi/SnapshotHandlerKt {
 
 public final class app/cash/paparazzi/SnapshotVerifier : app/cash/paparazzi/SnapshotHandler {
 	public static final field $stable I
-	public fun <init> (DLapp/cash/paparazzi/internal/Differ;)V
-	public fun <init> (DLjava/io/File;Lapp/cash/paparazzi/internal/Differ;)V
-	public synthetic fun <init> (DLjava/io/File;Lapp/cash/paparazzi/internal/Differ;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (DLapp/cash/paparazzi/Differ;)V
+	public fun <init> (DLjava/io/File;Lapp/cash/paparazzi/Differ;)V
+	public synthetic fun <init> (DLjava/io/File;Lapp/cash/paparazzi/Differ;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun close ()V
 	public fun newFrameHandler (Lapp/cash/paparazzi/Snapshot;II)Lapp/cash/paparazzi/SnapshotHandler$FrameHandler;
 }
@@ -239,33 +267,5 @@ public final class app/cash/paparazzi/accessibility/AccessibilityRenderExtension
 	public static final field $stable I
 	public fun <init> ()V
 	public fun renderView (Landroid/view/View;)Landroid/view/View;
-}
-
-public abstract interface class app/cash/paparazzi/internal/Differ {
-	public abstract fun compare (Ljava/awt/image/BufferedImage;Ljava/awt/image/BufferedImage;)Lapp/cash/paparazzi/internal/Differ$DiffResult;
-}
-
-public abstract interface class app/cash/paparazzi/internal/Differ$DiffResult {
-}
-
-public final class app/cash/paparazzi/internal/Differ$DiffResult$Different : app/cash/paparazzi/internal/Differ$DiffResult {
-	public static final field $stable I
-	public fun <init> (Ljava/awt/image/BufferedImage;FJ)V
-	public final fun getDelta ()Ljava/awt/image/BufferedImage;
-	public final fun getNumDifferentPixels ()J
-	public final fun getPercentDifference ()F
-}
-
-public final class app/cash/paparazzi/internal/Differ$DiffResult$Identical : app/cash/paparazzi/internal/Differ$DiffResult {
-	public static final field $stable I
-	public fun <init> (Ljava/awt/image/BufferedImage;)V
-	public final fun getDelta ()Ljava/awt/image/BufferedImage;
-}
-
-public final class app/cash/paparazzi/internal/Differ$DiffResult$Similar : app/cash/paparazzi/internal/Differ$DiffResult {
-	public static final field $stable I
-	public fun <init> (Ljava/awt/image/BufferedImage;J)V
-	public final fun getDelta ()Ljava/awt/image/BufferedImage;
-	public final fun getNumSimilarPixels ()J
 }
 
