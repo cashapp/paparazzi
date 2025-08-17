@@ -207,6 +207,20 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun onlyJunitTest() {
+    val fixtureRoot = File("src/test/projects/only-junit-test")
+
+    val result = gradleRunner
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .forwardOutput()
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":verifyPaparazziDebug")?.outcome).isEqualTo(SUCCESS)
+    assertThat(result.output).contains("Snapshot directory not found: ")
+    assertThat(result.output).contains("Please run the `recordPaparazziDebug` task to generate snapshots.")
+  }
+
+  @Test
   fun invalidChars() {
     val fixtureRoot = File("src/test/projects/invalid-chars")
 
