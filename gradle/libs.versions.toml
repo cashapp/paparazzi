@@ -4,10 +4,10 @@ androidTools = "31.13.1" # == 23.0.0 + agp version
 bytebuddy = "1.18.1"
 compose = "1.9.5"
 coroutines = "1.10.2"
-javaTarget = "17"
+javaTarget = "21"
 kotlin = "2.2.10"
 ksp = "2.2.10-2.0.2"
-layoutlib = "16.0.0"
+layoutlib = "16.0.1"
 moshi = "1.15.2"
 
 minSdk = "25"
