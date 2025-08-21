@@ -77,7 +77,8 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Run All Tests
-        run: ./gradlew check
+        run: ./gradlew paparazzi-gradle-plugin:check
+#        run: ./gradlew check
 
       - name: Upload Test Failures
         if: failure()

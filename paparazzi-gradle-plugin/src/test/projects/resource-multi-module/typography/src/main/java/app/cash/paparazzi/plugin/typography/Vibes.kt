@@ -23,7 +23,7 @@ import app.cash.paparazzi.plugin.typography.R
 
 val GreatVibes = FontFamily(
   Font(
-    resId = R.font.great_vibes_regular,
+    resId = R.font.cashmarket_medium_normal,
     weight = FontWeight.Normal,
     FontStyle.Normal
   )
