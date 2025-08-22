@@ -41,7 +41,10 @@ internal abstract class ResourcesCompatVisitorFactory : AsmClassVisitorFactory<I
     private class LoadFontVisitor(api: Int, delegate: MethodVisitor) : MethodVisitor(api, delegate) {
       override fun visitMethodInsn(opcode: Int, owner: String, name: String, descriptor: String, isInterface: Boolean) {
         if ("startsWith" == name) {
-          super.visitMethodInsn(opcode, owner, "contains", "(Ljava/lang/CharSequence;)Z", isInterface)
+          // Skip calls to `startsWith`, return true
+          super.visitInsn(Opcodes.POP) // Pop the arg being passed to `startsWith`, which is "res/"
+          super.visitInsn(Opcodes.POP) // Pop the receiver of `startsWith`, which is the font file path
+          super.visitLdcInsn(1) // Push `1` to the stack, as if `startsWith` returned true
         } else {
           super.visitMethodInsn(opcode, owner, name, descriptor, isInterface)
         }
