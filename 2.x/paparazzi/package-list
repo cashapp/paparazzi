@@ -72,7 +72,7 @@ $dokka.location:app.cash.paparazzi/Environment/resourcePackageNames/#/PointingTo
 $dokka.location:app.cash.paparazzi/Flags///PointingToDeclaration/paparazzi/app.cash.paparazzi/-flags/index.html
 $dokka.location:app.cash.paparazzi/Flags/DEBUG_LINKED_OBJECTS/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-flags/-d-e-b-u-g_-l-i-n-k-e-d_-o-b-j-e-c-t-s.html
 $dokka.location:app.cash.paparazzi/HtmlReportWriter///PointingToDeclaration/paparazzi/app.cash.paparazzi/-html-report-writer/index.html
-$dokka.location:app.cash.paparazzi/HtmlReportWriter/HtmlReportWriter/#kotlin.String#java.io.File#java.io.File/PointingToDeclaration/paparazzi/app.cash.paparazzi/-html-report-writer/-html-report-writer.html
+$dokka.location:app.cash.paparazzi/HtmlReportWriter/HtmlReportWriter/#kotlin.String#java.io.File#kotlin.Double#app.cash.paparazzi.internal.Differ#java.io.File/PointingToDeclaration/paparazzi/app.cash.paparazzi/-html-report-writer/-html-report-writer.html
 $dokka.location:app.cash.paparazzi/HtmlReportWriter/close/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-html-report-writer/close.html
 $dokka.location:app.cash.paparazzi/HtmlReportWriter/newFrameHandler/#app.cash.paparazzi.Snapshot#kotlin.Int#kotlin.Int/PointingToDeclaration/paparazzi/app.cash.paparazzi/-html-report-writer/new-frame-handler.html
 $dokka.location:app.cash.paparazzi/InstantAnimationsRule///PointingToDeclaration/paparazzi/app.cash.paparazzi/-instant-animations-rule/index.html
