@@ -88,6 +88,7 @@ jobs:
             **/build/reports/tests/*/
             **/build/paparazzi/failures/
             paparazzi-gradle-plugin/src/test/projects/**/build/reports/paparazzi/**/images/
+            paparazzi-gradle-plugin/src/test/projects/**/build/reports/configuration-cache/**/
 
   publish:
     runs-on: ubuntu-latest

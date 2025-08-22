@@ -198,6 +198,7 @@ public class PaparazziPlugin @Inject constructor(
         isVerifyRun.set(verifyTaskProvider.map { graph.hasTask(it) })
       }
 
+      val overwriteOnMaxPercentDifferenceProvider = project.overwriteOnMaxPercentDifferenceProvider()
       val failureDir = buildDirectory.dir("paparazzi/failures")
       val testTaskProvider =
         project.tasks.withType(Test::class.java).named { it == "test$testVariantSlug" }
@@ -267,6 +268,8 @@ public class PaparazziPlugin @Inject constructor(
           test.systemProperties["paparazzi.layoutlib.resources.root"] =
             layoutlibResourcesFileCollection.singleFile.absolutePath
           test.systemProperties["paparazzi.test.record"] = isRecordRun.get()
+          test.systemProperties["paparazzi.test.record.overwriteOnMaxPercentDifference"] =
+            overwriteOnMaxPercentDifferenceProvider.orNull == "true"
           test.systemProperties["paparazzi.test.verify"] = isVerifyRun.get()
         }
 
@@ -378,6 +381,9 @@ public class PaparazziPlugin @Inject constructor(
   }
 
   private fun Project.isInternal(): Boolean = providers.gradleProperty("app.cash.paparazzi.internal").orNull == "true"
+
+  private fun Project.overwriteOnMaxPercentDifferenceProvider(): Provider<String> =
+    providers.gradleProperty("app.cash.paparazzi.overwriteOnMaxPercentDifference")
 
   private fun BaseExtension.packageName(): String = namespace ?: ""
 

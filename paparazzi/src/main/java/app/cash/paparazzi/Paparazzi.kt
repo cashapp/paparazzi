@@ -198,7 +198,7 @@ public class Paparazzi @JvmOverloads constructor(
       if (isVerifying) {
         SnapshotVerifier(maxPercentDifference, differ = differ)
       } else {
-        HtmlReportWriter()
+        HtmlReportWriter(maxPercentDifference = maxPercentDifference, differ = differ)
       }
   }
 }
