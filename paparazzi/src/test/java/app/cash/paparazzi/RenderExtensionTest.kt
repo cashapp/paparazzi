@@ -9,7 +9,7 @@ import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
-import app.cash.paparazzi.internal.OffByTwo
+import app.cash.paparazzi.internal.differs.OffByTwo
 import org.junit.Rule
 import org.junit.Test
 

@@ -15,8 +15,8 @@
  */
 package app.cash.paparazzi
 
+import app.cash.paparazzi.Differ
 import app.cash.paparazzi.SnapshotHandler.FrameHandler
-import app.cash.paparazzi.internal.Differ
 import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.apng.ApngVerifier
 import okio.Path.Companion.toOkioPath
