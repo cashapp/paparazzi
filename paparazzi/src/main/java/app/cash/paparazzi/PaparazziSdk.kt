@@ -53,6 +53,7 @@ import app.cash.paparazzi.internal.PaparazziOnBackPressedDispatcherOwner
 import app.cash.paparazzi.internal.PaparazziSavedStateRegistryOwner
 import app.cash.paparazzi.internal.Renderer
 import app.cash.paparazzi.internal.SessionParamsBuilder
+import app.cash.paparazzi.internal.interceptors.AnimationConstantsInterceptor
 import app.cash.paparazzi.internal.interceptors.EditModeInterceptor
 import app.cash.paparazzi.internal.parsers.LayoutPullParser
 import com.android.ide.common.rendering.api.RenderSession
@@ -325,14 +326,14 @@ public class PaparazziSdk @JvmOverloads constructor(
        *
        * Multiple render calls needed for [androidx.compose.animation.core.Transition] like the one used by [androidx.compose.animation.AnimatedVisibility] to work properly.
        */
-      if (recomposer != null && startNanos > 0) {
-        withTime(0) {
-          renderSession.render(false)
-        }
-        withTime(0) {
-          renderSession.render(false)
-        }
-      }
+//      if (recomposer != null && startNanos > 0) {
+//        withTime(0) {
+//          renderSession.render(false)
+//        }
+//        withTime(0) {
+//          renderSession.render(false)
+//        }
+//      }
 
       for (frame in 0 until frameCount) {
         val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()

@@ -12,6 +12,7 @@ moshi = "1.15.2"
 
 minSdk = "25"
 compileSdk = "36"
+uiToolingAndroid = "1.9.0"
 
 [libraries]
 androidx-annotations = { module = "androidx.annotation:annotation", version = "1.9.1" }
@@ -83,3 +84,6 @@ plugin-ksp = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin
 plugin-mavenPublish = { module = "com.vanniktech:gradle-maven-publish-plugin", version = "0.34.0" }
 plugin-poko = { module = "dev.drewhamilton.poko:poko-gradle-plugin", version = "0.18.7" }
 plugin-spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version = "7.2.0" }
+androidx-ui-tooling-android = { group = "androidx.compose.ui", name = "ui-tooling-android", version.ref = "compose" }
+androidx-animation-tooling = { group = "androidx.compose.animation", name = "animation-tooling-internal", version.ref = "compose" }
+ui-tooling-android = { group = "androidx.compose.ui", name = "ui-tooling-android", version.ref = "uiToolingAndroid" }

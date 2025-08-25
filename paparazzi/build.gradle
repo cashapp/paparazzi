@@ -31,6 +31,10 @@ dependencies {
 }
 
 dependencies {
+//  implementation libs.ui.tooling.android
+//  implementation libs.androidx.ui.tooling.android
+  implementation libs.androidx.animation.tooling
+  compileOnlyAarAsJar libs.androidx.ui.tooling.android
   testImplementationAarAsJar libs.androidx.compose.ui.android
   compileOnlyAarAsJar libs.androidx.compose.ui.android
   compileOnlyAarAsJar libs.androidx.activity
