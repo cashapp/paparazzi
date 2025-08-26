@@ -50,6 +50,7 @@ internal object OffByTwo : Differ {
           continue
         }
 
+        val deltaA = (actualRgb and -0x1000000).ushr(24) - (expectedRgb and -0x1000000).ushr(24)
         val deltaR = (actualRgb and 0xFF0000).ushr(16) - (expectedRgb and 0xFF0000).ushr(16)
         val deltaG = (actualRgb and 0x00FF00).ushr(8) - (expectedRgb and 0x00FF00).ushr(8)
         val deltaB = (actualRgb and 0x0000FF) - (expectedRgb and 0x0000FF)
@@ -61,7 +62,8 @@ internal object OffByTwo : Differ {
           ((expectedRgb and -0x1000000).ushr(24) + (actualRgb and -0x1000000).ushr(24)) / 2 shl 24
         val newRGB = avgAlpha or (newR shl 16) or (newG shl 8) or newB
 
-        if (abs(deltaR) <= 2 && abs(deltaG) <= 2 && abs(deltaB) <= 2) {
+        if (abs(deltaR) <= 2 && abs(deltaG) <= 2 && abs(deltaB) <= 2 //* && abs(deltaA) <= 2 *//
+           ) {
           similarPixels++
           deltaImage.setRGB(expectedWidth + x, y, 0xFF0000FF.toInt())
           continue
@@ -85,7 +87,13 @@ internal object OffByTwo : Differ {
 
     // 3 different colors, 256 color levels
     val total = actualHeight.toLong() * actualWidth.toLong() * 3L * 256L
-    val percentDifference = (delta * 100 / total.toDouble()).toFloat()
+    var percentDifference = (delta * 100 / total.toDouble()).toFloat()
+
+    // If the delta diff is all black pixels, the computed difference is 0, but there are still
+    // different pixels. We can fallback to the amount of different pixels to less precise difference to ensure difference is reported.
+    if (differentPixels > 0 && percentDifference == 0f) {
+      percentDifference = differentPixels * 100 / (actualWidth * actualHeight.toDouble()).toFloat()
+    }
 
     return if (differentPixels > 0) {
       DiffResult.Different(
