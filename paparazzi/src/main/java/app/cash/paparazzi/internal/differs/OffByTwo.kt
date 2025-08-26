@@ -62,8 +62,7 @@ internal object OffByTwo : Differ {
           ((expectedRgb and -0x1000000).ushr(24) + (actualRgb and -0x1000000).ushr(24)) / 2 shl 24
         val newRGB = avgAlpha or (newR shl 16) or (newG shl 8) or newB
 
-        if (abs(deltaR) <= 2 && abs(deltaG) <= 2 && abs(deltaB) <= 2 //* && abs(deltaA) <= 2 *//
-           ) {
+        if (abs(deltaR) <= 2 && abs(deltaG) <= 2 && abs(deltaB) <= 2 && abs(deltaA) <= 2) {
           similarPixels++
           deltaImage.setRGB(expectedWidth + x, y, 0xFF0000FF.toInt())
           continue

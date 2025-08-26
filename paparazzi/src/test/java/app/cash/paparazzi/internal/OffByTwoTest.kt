@@ -31,7 +31,7 @@ class OffByTwoTest {
     expected.setRGB(0, 0, 0x00000000.toInt())
     actual.setRGB(0, 0, 0xFF000000.toInt())
     val result = OffByTwo.compare(expected, actual)
-    assertThat(result).isInstanceOf(Differ.DiffResult.Similar::class.java)
+    assertThat(result).isInstanceOf(Differ.DiffResult.Different::class.java)
   }
 
   @Test

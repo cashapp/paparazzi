@@ -83,9 +83,9 @@ internal object PixelPerfect : Differ {
 
     // If the delta diff is all black pixels, the computed difference is 0, but there are still
     // different pixels. We can fallback to the amount of different pixels to less precise difference to ensure difference is reported.
-//    if (differentPixels > 0 && percentDifference == 0f) {
-//      percentDifference = differentPixels * 100 / (actualWidth * actualHeight.toDouble()).toFloat()
-//    }
+    if (differentPixels > 0 && percentDifference == 0f) {
+      percentDifference = differentPixels * 100 / (actualWidth * actualHeight.toDouble()).toFloat()
+    }
 
     return if (percentDifference == 0f) {
       DiffResult.Identical(delta = deltaImage)
