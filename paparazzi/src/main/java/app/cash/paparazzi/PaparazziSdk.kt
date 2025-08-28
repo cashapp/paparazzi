@@ -323,6 +323,12 @@ public class PaparazziSdk @JvmOverloads constructor(
 
         // If we have pendingTasks run recomposer to ensure we get the correct frame.
         var hasPendingWork = false
+
+        if (startNanos > 0) {
+          // Initialize the choreographer at time=1 to initialize non sdk animations that rely on lastFrameTimeNanos=0 logic to track animation progress
+          withTime(1) {}
+        }
+
         withTime(nowNanos) {
           val result = renderSession.render(true)
           if (result.status == ERROR_UNKNOWN) {
