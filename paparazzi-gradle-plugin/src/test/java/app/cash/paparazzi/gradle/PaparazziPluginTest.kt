@@ -210,6 +210,16 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun resourceMultiModule() {
+    val fixtureRoot = File("src/test/projects/resource-multi-module")
+
+    gradleRunner
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .forwardOutput()
+      .runFixture(fixtureRoot) { build() }
+  }
+
+  @Test
   fun invalidChars() {
     val fixtureRoot = File("src/test/projects/invalid-chars")
 
