@@ -1,8 +1,9 @@
 package app.cash.paparazzi.gradle.reporting
 
 import org.gradle.api.Action
+import java.io.Writer
 
-internal abstract class ErroringAction<T> : Action<T> {
+internal abstract class ErroringAction<T : Writer> : Action<T> {
   override fun execute(thing: T) {
     try {
       doExecute(thing)
