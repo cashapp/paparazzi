@@ -21,9 +21,13 @@ import android.view.LayoutInflater
 import android.view.View
 import androidx.annotation.LayoutRes
 import androidx.compose.runtime.Composable
-import app.cash.paparazzi.internal.Differ
-import app.cash.paparazzi.internal.OffByTwo
-import app.cash.paparazzi.internal.PixelPerfect
+import app.cash.paparazzi.Differ
+import app.cash.paparazzi.internal.differs.DeltaE2000
+import app.cash.paparazzi.internal.differs.Flip
+import app.cash.paparazzi.internal.differs.Mssim
+import app.cash.paparazzi.internal.differs.OffByTwo
+import app.cash.paparazzi.internal.differs.PixelPerfect
+import app.cash.paparazzi.internal.differs.Sift
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode
 import org.junit.rules.TestRule
 import org.junit.runner.Description
@@ -189,6 +193,10 @@ public class Paparazzi @JvmOverloads constructor(
         when (differ) {
           "offbytwo" -> OffByTwo
           "pixelperfect" -> PixelPerfect
+          "mssim" -> Mssim
+          "sift" -> Sift
+          "flip" -> Flip
+          "de2000" -> DeltaE2000
           null, "", "default" -> OffByTwo
           else -> error("Unknown differ type '$differ'.")
         }
