@@ -115,14 +115,15 @@ public final class app/cash/paparazzi/Paparazzi : org/junit/rules/TestRule {
 	public fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;)V
 	public fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;Z)V
 	public fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZD)V
-	public fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZDLapp/cash/paparazzi/SnapshotHandler;)V
-	public fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZDLapp/cash/paparazzi/SnapshotHandler;Ljava/util/Set;)V
-	public fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZDLapp/cash/paparazzi/SnapshotHandler;Ljava/util/Set;Z)V
-	public fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZDLapp/cash/paparazzi/SnapshotHandler;Ljava/util/Set;ZZ)V
-	public fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZDLapp/cash/paparazzi/SnapshotHandler;Ljava/util/Set;ZZZ)V
-	public synthetic fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZDLapp/cash/paparazzi/SnapshotHandler;Ljava/util/Set;ZZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZDLapp/cash/paparazzi/SnapshotHandler;Ljava/util/Set;ZZZZ)V
-	public synthetic fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZDLapp/cash/paparazzi/SnapshotHandler;Ljava/util/Set;ZZZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZDZ)V
+	public fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZDZLapp/cash/paparazzi/SnapshotHandler;)V
+	public fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZDZLapp/cash/paparazzi/SnapshotHandler;Ljava/util/Set;)V
+	public fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZDZLapp/cash/paparazzi/SnapshotHandler;Ljava/util/Set;Z)V
+	public fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZDZLapp/cash/paparazzi/SnapshotHandler;Ljava/util/Set;ZZ)V
+	public fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZDZLapp/cash/paparazzi/SnapshotHandler;Ljava/util/Set;ZZZ)V
+	public synthetic fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZDZLapp/cash/paparazzi/SnapshotHandler;Ljava/util/Set;ZZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZDZLapp/cash/paparazzi/SnapshotHandler;Ljava/util/Set;ZZZZ)V
+	public synthetic fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZDZLapp/cash/paparazzi/SnapshotHandler;Ljava/util/Set;ZZZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun apply (Lorg/junit/runners/model/Statement;Lorg/junit/runner/Description;)Lorg/junit/runners/model/Statement;
 	public final fun close ()V
 	public final fun getContext ()Landroid/content/Context;
@@ -216,8 +217,9 @@ public final class app/cash/paparazzi/SnapshotHandlerKt {
 public final class app/cash/paparazzi/SnapshotVerifier : app/cash/paparazzi/SnapshotHandler {
 	public static final field $stable I
 	public fun <init> (DLapp/cash/paparazzi/internal/Differ;)V
-	public fun <init> (DLjava/io/File;Lapp/cash/paparazzi/internal/Differ;)V
-	public synthetic fun <init> (DLjava/io/File;Lapp/cash/paparazzi/internal/Differ;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (DZLapp/cash/paparazzi/internal/Differ;)V
+	public fun <init> (DZLjava/io/File;Lapp/cash/paparazzi/internal/Differ;)V
+	public synthetic fun <init> (DZLjava/io/File;Lapp/cash/paparazzi/internal/Differ;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun close ()V
 	public fun newFrameHandler (Lapp/cash/paparazzi/Snapshot;II)Lapp/cash/paparazzi/SnapshotHandler$FrameHandler;
 }
