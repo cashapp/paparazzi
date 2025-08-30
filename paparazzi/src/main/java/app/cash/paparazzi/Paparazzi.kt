@@ -38,7 +38,8 @@ public class Paparazzi @JvmOverloads constructor(
   private val appCompatEnabled: Boolean = true,
   private val maxPercentDifference: Double = detectMaxPercentDifferenceDefault(),
   private val withExpectedActualLabels: Boolean = true,
-  private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference, differ, withExpectedActualLabels),
+  private val snapshotHandler: SnapshotHandler =
+    determineHandler(maxPercentDifference, differ, withExpectedActualLabels),
   private val renderExtensions: Set<RenderExtension> = setOf(),
   private val supportsRtl: Boolean = false,
   private val showSystemUi: Boolean = false,
@@ -57,7 +58,8 @@ public class Paparazzi @JvmOverloads constructor(
     renderingMode: RenderingMode = RenderingMode.NORMAL,
     appCompatEnabled: Boolean = true,
     maxPercentDifference: Double = detectMaxPercentDifferenceDefault(),
-    snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference, differ),
+    withExpectedActualLabels: Boolean = true,
+    snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference, differ, withExpectedActualLabels),
     renderExtensions: Set<RenderExtension> = setOf(),
     supportsRtl: Boolean = false,
     showSystemUi: Boolean = false,
@@ -70,6 +72,7 @@ public class Paparazzi @JvmOverloads constructor(
     renderingMode,
     appCompatEnabled,
     maxPercentDifference,
+    withExpectedActualLabels,
     snapshotHandler,
     renderExtensions,
     supportsRtl,
@@ -195,9 +198,13 @@ public class Paparazzi @JvmOverloads constructor(
         }
       }
 
-    private fun determineHandler(maxPercentDifference: Double, differ: Differ, withExpectedActualLabels: Boolean): SnapshotHandler =
+    private fun determineHandler(
+      maxPercentDifference: Double,
+      differ: Differ,
+      withExpectedActualLabels: Boolean
+    ): SnapshotHandler =
       if (isVerifying) {
-        SnapshotVerifier(maxPercentDifference, differ = differ, withExpectedActualLabels)
+        SnapshotVerifier(maxPercentDifference, differ = differ, withExpectedActualLabels = withExpectedActualLabels)
       } else {
         HtmlReportWriter(maxPercentDifference = maxPercentDifference, differ = differ)
       }

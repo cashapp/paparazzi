@@ -52,7 +52,7 @@ internal object ImageUtils {
     maxPercentDifferent: Double,
     failureDir: File,
     differ: Differ,
-    withExpectedActualLabels: Boolean = false,
+    withExpectedActualLabels: Boolean = false
   ) {
     val (deltaImage, percentDifference) = compareImages(goldenImage, image, differ)
 
