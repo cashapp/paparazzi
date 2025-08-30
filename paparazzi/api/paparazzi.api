@@ -91,11 +91,11 @@ public final class app/cash/paparazzi/Flags {
 
 public final class app/cash/paparazzi/HtmlReportWriter : app/cash/paparazzi/SnapshotHandler {
 	public static final field $stable I
-	public fun <init> ()V
-	public fun <init> (Ljava/lang/String;)V
-	public fun <init> (Ljava/lang/String;Ljava/io/File;)V
-	public fun <init> (Ljava/lang/String;Ljava/io/File;Ljava/io/File;)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/io/File;Ljava/io/File;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (DLapp/cash/paparazzi/internal/Differ;)V
+	public fun <init> (Ljava/lang/String;DLapp/cash/paparazzi/internal/Differ;)V
+	public fun <init> (Ljava/lang/String;Ljava/io/File;DLapp/cash/paparazzi/internal/Differ;)V
+	public fun <init> (Ljava/lang/String;Ljava/io/File;DLapp/cash/paparazzi/internal/Differ;Ljava/io/File;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/io/File;DLapp/cash/paparazzi/internal/Differ;Ljava/io/File;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun close ()V
 	public fun newFrameHandler (Lapp/cash/paparazzi/Snapshot;II)Lapp/cash/paparazzi/SnapshotHandler$FrameHandler;
 }
@@ -153,6 +153,7 @@ public final class app/cash/paparazzi/PaparazziSdk {
 	public fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZLjava/util/Set;ZLkotlin/jvm/functions/Function1;)V
 	public fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZLjava/util/Set;ZZLkotlin/jvm/functions/Function1;)V
 	public fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZLjava/util/Set;ZZZLkotlin/jvm/functions/Function1;)V
+	public synthetic fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZLjava/util/Set;ZZZLkotlin/jvm/functions/Function1;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZLjava/util/Set;ZZZZLkotlin/jvm/functions/Function1;)V
 	public synthetic fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZLjava/util/Set;ZZZZLkotlin/jvm/functions/Function1;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZLkotlin/jvm/functions/Function1;)V
@@ -214,10 +215,9 @@ public final class app/cash/paparazzi/SnapshotHandlerKt {
 
 public final class app/cash/paparazzi/SnapshotVerifier : app/cash/paparazzi/SnapshotHandler {
 	public static final field $stable I
-	public fun <init> (D)V
-	public fun <init> (DZ)V
-	public fun <init> (DZLjava/io/File;)V
-	public synthetic fun <init> (DZLjava/io/File;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (DLapp/cash/paparazzi/internal/Differ;)V
+	public fun <init> (DLjava/io/File;Lapp/cash/paparazzi/internal/Differ;)V
+	public synthetic fun <init> (DLjava/io/File;Lapp/cash/paparazzi/internal/Differ;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun close ()V
 	public fun newFrameHandler (Lapp/cash/paparazzi/Snapshot;II)Lapp/cash/paparazzi/SnapshotHandler$FrameHandler;
 }
@@ -239,5 +239,33 @@ public final class app/cash/paparazzi/accessibility/AccessibilityRenderExtension
 	public static final field $stable I
 	public fun <init> ()V
 	public fun renderView (Landroid/view/View;)Landroid/view/View;
+}
+
+public abstract interface class app/cash/paparazzi/internal/Differ {
+	public abstract fun compare (Ljava/awt/image/BufferedImage;Ljava/awt/image/BufferedImage;)Lapp/cash/paparazzi/internal/Differ$DiffResult;
+}
+
+public abstract interface class app/cash/paparazzi/internal/Differ$DiffResult {
+}
+
+public final class app/cash/paparazzi/internal/Differ$DiffResult$Different : app/cash/paparazzi/internal/Differ$DiffResult {
+	public static final field $stable I
+	public fun <init> (Ljava/awt/image/BufferedImage;FJ)V
+	public final fun getDelta ()Ljava/awt/image/BufferedImage;
+	public final fun getNumDifferentPixels ()J
+	public final fun getPercentDifference ()F
+}
+
+public final class app/cash/paparazzi/internal/Differ$DiffResult$Identical : app/cash/paparazzi/internal/Differ$DiffResult {
+	public static final field $stable I
+	public fun <init> (Ljava/awt/image/BufferedImage;)V
+	public final fun getDelta ()Ljava/awt/image/BufferedImage;
+}
+
+public final class app/cash/paparazzi/internal/Differ$DiffResult$Similar : app/cash/paparazzi/internal/Differ$DiffResult {
+	public static final field $stable I
+	public fun <init> (Ljava/awt/image/BufferedImage;J)V
+	public final fun getDelta ()Ljava/awt/image/BufferedImage;
+	public final fun getNumSimilarPixels ()J
 }
 

@@ -62,6 +62,12 @@ buildConfig {
 }
 
 tasks.withType(Test).configureEach {
+  // These are referenced with relative paths in src/test/projects/test.settings.gradle.
+  // They need to be declared on the Test task to make sure it runs with the new files.
+  inputs.file(rootProject.layout.projectDirectory.file("gradle/libs.versions.toml"))
+    .withPropertyName("libs.versions.toml")
+  inputs.dir(rootProject.layout.buildDirectory.dir("localMaven"))
+    .withPropertyName("localMaven")
   dependsOn(':paparazzi:publishMavenPublicationToProjectLocalMavenRepository')
 }
 

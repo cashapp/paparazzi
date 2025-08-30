@@ -150,7 +150,7 @@ buildscript {
     google()
   }
   dependencies {
-    classpath 'app.cash.paparazzi:paparazzi-gradle-plugin:2.0.0-alpha01'
+    classpath 'app.cash.paparazzi:paparazzi-gradle-plugin:2.0.0-alpha02'
   }
 }
 
@@ -160,17 +160,17 @@ apply plugin: 'app.cash.paparazzi'
 Using the plugins DSL:
 ```groovy
 plugins {
-  id 'app.cash.paparazzi' version '2.0.0-alpha01'
+  id 'app.cash.paparazzi' version '2.0.0-alpha02'
 }
 ```
 
-Snapshots of the development version are available in [Sonatype's `snapshots` repository][snap].
+Snapshots of the development version are available in [the Central Portal Snapshots repository][snap].
 
 ```groovy
 repositories {
   // ...
   maven {
-    url 'https://oss.sonatype.org/content/repositories/snapshots/'
+    url 'https://central.sonatype.com/repository/maven-snapshots/'
   }
 }
 ```
@@ -198,4 +198,4 @@ limitations under the License.
  [sample]: https://github.com/cashapp/paparazzi/tree/master/sample
  [lfs]: https://git-lfs.github.com/
  [changelog]: https://cashapp.github.io/paparazzi/changelog/
- [snap]: https://oss.sonatype.org/content/repositories/snapshots/app/cash/paparazzi/
+ [snap]: https://central.sonatype.com/service/rest/repository/browse/maven-snapshots/app/cash/paparazzi/

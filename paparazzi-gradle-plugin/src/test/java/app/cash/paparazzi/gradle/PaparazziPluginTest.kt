@@ -18,6 +18,9 @@ import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
+import javax.imageio.ImageIO
 
 class PaparazziPluginTest {
   private val filesToDelete = mutableListOf<File>()
@@ -1056,9 +1059,14 @@ class PaparazziPluginTest {
       .comparingElementsUsing(MATCHES_PATTERN)
       .containsExactly(
         "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/external1/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/core-1.10.0/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/annotation-experimental-1.3.0/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/lifecycle-runtime-2.3.1/res\$"
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/core-1.17.0/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/annotation-experimental-1.4.1/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/core-viewtree-1.0.0/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/lifecycle-runtime-2.6.2/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/profileinstaller-1.3.0/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/startup-runtime-1.1.1/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/tracing-1.2.0/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/core-runtime-2.2.0/res\$"
       )
 
     buildDir.deleteRecursively()
@@ -1080,9 +1088,14 @@ class PaparazziPluginTest {
       .comparingElementsUsing(MATCHES_PATTERN)
       .containsExactly(
         "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/external2/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/core-1.10.1/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/annotation-experimental-1.3.0/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/lifecycle-runtime-2.3.1/res\$"
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/core-1.17.0/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/annotation-experimental-1.4.1/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/core-viewtree-1.0.0/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/lifecycle-runtime-2.6.2/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/profileinstaller-1.3.0/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/startup-runtime-1.1.1/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/tracing-1.2.0/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/core-runtime-2.2.0/res\$"
       )
   }
 
@@ -1593,6 +1606,25 @@ class PaparazziPluginTest {
     gradleRunner
       .withArguments("testDebug", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
+  }
+
+  @Test
+  fun overwriteSnapshotOnMaxPercentDiff() {
+    val fixtureRoot = File("src/test/projects/overwrite-on-max-percent-difference")
+
+    val dontRecordFile =
+      File(fixtureRoot, "src/test/snapshots/images/app.cash.paparazzi.plugin.test_RecordSnapshotTest_dontRecord.png")
+    val dontRecordLastModified = dontRecordFile.lastModified()
+    val recordFile =
+      File(fixtureRoot, "src/test/snapshots/images/app.cash.paparazzi.plugin.test_RecordSnapshotTest_record.png")
+    val recordLastModified = dontRecordFile.lastModified()
+
+    gradleRunner
+      .withArguments("recordPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(dontRecordLastModified).isEqualTo(dontRecordFile.lastModified())
+    assertThat(recordLastModified).isNotEqualTo(recordFile.lastModified())
   }
 
   private fun File.loadConfig() = source().buffer().use { CONFIG_ADAPTER.fromJson(it)!! }

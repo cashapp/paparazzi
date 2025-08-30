@@ -16,6 +16,8 @@
 package app.cash.paparazzi
 
 import app.cash.paparazzi.SnapshotHandler.FrameHandler
+import app.cash.paparazzi.internal.Differ
+import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.PaparazziJson
 import app.cash.paparazzi.internal.apng.ApngWriter
 import com.google.common.base.CharMatcher
@@ -33,6 +35,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
+import javax.imageio.ImageIO
 
 /**
  * Creates an HTML report that avoids writing files that have already been written.
@@ -61,6 +64,8 @@ import java.util.UUID
 public class HtmlReportWriter @JvmOverloads constructor(
   private val runName: String = defaultRunName(),
   private val rootDirectory: File = File(System.getProperty("paparazzi.report.dir")),
+  private val maxPercentDifference: Double,
+  private val differ: Differ,
   snapshotRootDirectory: File = File(System.getProperty("paparazzi.snapshot.dir"))
 ) : SnapshotHandler {
   private val runsDirectory: File = File(rootDirectory, "runs")
@@ -74,6 +79,8 @@ public class HtmlReportWriter @JvmOverloads constructor(
 
   private val isRecording: Boolean =
     System.getProperty("paparazzi.test.record")?.toBoolean() == true
+  private val overwriteOnMaxPercentDifference: Boolean =
+    System.getProperty("paparazzi.test.record.overwriteOnMaxPercentDifference")?.toBoolean() == true
 
   init {
     runsDirectory.mkdirs()
@@ -106,7 +113,18 @@ public class HtmlReportWriter @JvmOverloads constructor(
 
         if (isRecording) {
           val goldenFile = File(goldenDir, snapshot.toFileName("_", "png"))
-          snapshotFile.copyTo(target = goldenFile, overwrite = true)
+          if (!overwriteOnMaxPercentDifference || !goldenFile.exists()) {
+            snapshotFile.copyTo(target = goldenFile, overwrite = true)
+          } else {
+            val result = ImageUtils.compareImages(
+              goldenImage = ImageIO.read(goldenFile),
+              image = ImageIO.read(snapshotFile),
+              differ = differ
+            )
+            if (result.second > maxPercentDifference) {
+              snapshotFile.copyTo(target = goldenFile, overwrite = true)
+            }
+          }
         }
 
         shots += snapshot.copy(file = snapshotFile.toJsonPath())
@@ -236,6 +254,6 @@ internal val filenameSafeChars = CharMatcher.inRange('a', 'z')
   .or(CharMatcher.inRange('0', '9'))
   .or(CharMatcher.anyOf("_-.~@^()[]{}:;,"))
 
-internal fun String.sanitizeForFilename(): String? {
-  return filenameSafeChars.negate().replaceFrom(toLowerCase(Locale.US), '_')
+internal fun String.sanitizeForFilename(): String {
+  return filenameSafeChars.negate().replaceFrom(lowercase(Locale.US), '_')
 }

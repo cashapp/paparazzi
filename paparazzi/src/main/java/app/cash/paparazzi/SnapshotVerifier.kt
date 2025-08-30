@@ -16,6 +16,7 @@
 package app.cash.paparazzi
 
 import app.cash.paparazzi.SnapshotHandler.FrameHandler
+import app.cash.paparazzi.internal.Differ
 import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.apng.ApngVerifier
 import okio.Path.Companion.toOkioPath
@@ -27,7 +28,8 @@ import javax.imageio.ImageIO
 public class SnapshotVerifier @JvmOverloads constructor(
   private val maxPercentDifference: Double,
   private val withExpectedActualLabels: Boolean = true,
-  rootDirectory: File = File(System.getProperty("paparazzi.snapshot.dir"))
+  rootDirectory: File = File(System.getProperty("paparazzi.snapshot.dir")),
+  private val differ: Differ
 ) : SnapshotHandler {
   private val imagesDirectory: File = File(rootDirectory, "images")
   private val videosDirectory: File = File(rootDirectory, "videos")
@@ -43,7 +45,7 @@ public class SnapshotVerifier @JvmOverloads constructor(
       val expected = File(snapshotDir, snapshot.toFileName(extension = "png"))
       val failurePath = File(failureDir, "delta-${expected.name}").toOkioPath()
       val pngVerifier: ApngVerifier? = if (fps != -1) {
-        ApngVerifier(expected.toOkioPath(), failurePath, fps, frameCount, maxPercentDifference)
+        ApngVerifier(expected.toOkioPath(), failurePath, fps, frameCount, maxPercentDifference, differ = differ)
       } else {
         null
       }
@@ -75,7 +77,8 @@ public class SnapshotVerifier @JvmOverloads constructor(
           goldenImage = goldenImage,
           maxPercentDifferent = maxPercentDifference,
           failureDir = failureDir,
-          withExpectedActualLabels = withExpectedActualLabels
+          withExpectedActualLabels = withExpectedActualLabels,
+          differ = differ
         )
       }
 

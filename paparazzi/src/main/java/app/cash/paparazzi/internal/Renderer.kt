@@ -160,7 +160,7 @@ internal class Renderer(
   }
 
   private fun getNativeLibDir(): String {
-    val osName = System.getProperty("os.name").toLowerCase(Locale.US)
+    val osName = System.getProperty("os.name").lowercase(Locale.US)
     val osLabel = when {
       osName.startsWith("windows") -> "win"
       osName.startsWith("mac") -> {

@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## [2.0.0-alpha02] - 2025-06-20
+
+### New
+* Bump default compileSdk to API 36
+* LayoutLib v15.2.3
+* Compose 1.8.3
+* Kotlin 2.1.21
+* [Gradle Plugin] Gradle 8.14.2
+* [Gradle Plugin] Android Gradle Plugin 8.10.1
+
+### Fixed
+* Generate build failures even if golden images are not present
+* Fully advance choreographer correctly for Compose
+* [Accessibility] Denote elements in lists in the legend
+
+### Changed
+- In-development snapshots are now published to the Central Portal Snapshots repository at https://central.sonatype.com/repository/maven-snapshots/.
+
+Kudos to @geoff-powell, @colinmarsch, @SimonMarquis and others for contributions this release!
+
 ## [2.0.0-alpha01] - 2025-04-15
 
 ### New
@@ -13,8 +33,9 @@
 * Support live regions in accessibility snapshots
 * Add support for compose views that are hidden or invisible
 * Add gradle property to control default max percent difference
-* LayoutLib v15
-* [Gradle Plugin] Android Gradle Plugin 8.7.1
+* LayoutLib v15.1.4
+* [Gradle Plugin] Gradle 8.13
+* [Gradle Plugin] Android Gradle Plugin 8.8.1
 
 ### Fixed
 * Fix default layout params for compose snapshots
@@ -433,7 +454,8 @@ As of this release, consumers must build on Java 11 environments.
 
 
 
-[Unreleased]: https://github.com/cashapp/paparazzi/compare/2.0.0-alpha01...HEAD
+[Unreleased]: https://github.com/cashapp/paparazzi/compare/2.0.0-alpha02...HEAD
+[2.0.0-alpha02]: https://github.com/cashapp/paparazzi/releases/tag/2.0.0-alpha02
 [2.0.0-alpha01]: https://github.com/cashapp/paparazzi/releases/tag/2.0.0-alpha01
 [1.3.5]: https://github.com/cashapp/paparazzi/releases/tag/1.3.5
 [1.3.4]: https://github.com/cashapp/paparazzi/releases/tag/1.3.4

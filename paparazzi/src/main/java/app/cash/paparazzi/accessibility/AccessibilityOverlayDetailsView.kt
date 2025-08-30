@@ -24,6 +24,7 @@ import android.text.TextPaint
 import android.text.TextUtils
 import android.util.TypedValue
 import android.widget.FrameLayout
+import androidx.core.graphics.withTranslation
 import app.cash.paparazzi.accessibility.RenderSettings.DEFAULT_TEXT_COLOR
 import app.cash.paparazzi.accessibility.RenderSettings.toColorInt
 import java.lang.Float.max
@@ -78,11 +79,9 @@ internal class AccessibilityOverlayDetailsView(context: Context) : FrameLayout(c
         .obtain(text, 0, text.length, textPaint, textLayoutWidth)
         .setEllipsize(TextUtils.TruncateAt.END)
         .build()
-      canvas.save()
-
-      canvas.translate(textX, textY)
-      textLayout.draw(canvas)
-      canvas.restore()
+      canvas.withTranslation(textX, textY) {
+        textLayout.draw(this)
+      }
 
       lastYCoord = max(badge.bottom + margin, textY + textLayout.height.toFloat())
     }

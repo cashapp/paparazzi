@@ -69,3 +69,7 @@ Currently Supported Properties
     - Custom actions allow the definition of additional interactive actions for UI elements, making them more accessible to users of assistive technologies. Links present in `AnnotatedString`'s (via `LinkAnnotation`) are another type of action that is supported.
 - **Live Region**
     - A live region is a section of UI that is updated dynamically and relevant to the user. Screen readers can be configured to announce changes in live regions automatically, ensuring users are aware of updates without needing to navigate to the updated content.
+- **Collection Info**
+    - Indicates whether an element is in a list or not. This is helpful to let Talkback users know that they are currently navigating through a list of items which gives more context to the user that these items are related to each other rather than separate elements on the screen.
+- **Editable**
+    - Indicates whether an element is editable. For example, a field that allows the user to input text, Talkback will announce it is editable so the user knows this isn't just a standard text field.

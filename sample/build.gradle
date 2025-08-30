@@ -22,6 +22,11 @@ android {
   }
 }
 
+// Disable unnecessary release build type
+androidComponents {
+  beforeVariants(selector().withBuildType("release")) { enable = false }
+}
+
 dependencies {
   implementation libs.composeUi.material
   implementation libs.composeUi.material.icons
@@ -29,7 +34,7 @@ dependencies {
   // Remove if https://github.com/airbnb/lottie-android/pull/2507 lands
   implementation libs.androidx.appcompat
   // deliberately not in versions.toml as a one-off
-  implementation 'com.airbnb.android:lottie:6.6.6'
+  implementation 'com.airbnb.android:lottie:6.6.7'
 
   // TODO: wire via plugin
   implementation projects.paparazziAnnotations
@@ -45,5 +50,5 @@ tasks.withType(com.diffplug.gradle.spotless.SpotlessTask).configureEach {
 
 // Verify screenshots as part of the standard check process
 tasks.named("check").configure {
-  dependsOn("verifyPaparazziDebug")
+  dependsOn("verifyPaparazzi")
 }

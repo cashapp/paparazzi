@@ -16,8 +16,10 @@
 package app.cash.paparazzi.gradle
 
 import app.cash.paparazzi.gradle.instrumentation.ResourcesCompatVisitorFactory
+import app.cash.paparazzi.gradle.reporting.DiffImage
 import app.cash.paparazzi.gradle.reporting.PaparazziTestReporter
 import app.cash.paparazzi.gradle.utils.artifactViewFor
+import app.cash.paparazzi.gradle.utils.capitalize
 import app.cash.paparazzi.gradle.utils.relativize
 import com.android.build.api.instrumentation.FramesComputationMode
 import com.android.build.api.instrumentation.InstrumentationScope
@@ -53,6 +55,8 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
 import java.util.Locale
 import javax.inject.Inject
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 
 @Suppress("unused")
 public class PaparazziPlugin @Inject constructor(
@@ -119,7 +123,7 @@ public class PaparazziPlugin @Inject constructor(
     }
 
     extension.onVariants { variant ->
-      val variantSlug = variant.name.capitalize(Locale.US)
+      val variantSlug = variant.name.capitalize()
       val testVariant = (variant as? HasUnitTest)?.unitTest ?: return@onVariants
 
       val projectDirectory = project.layout.projectDirectory
@@ -163,7 +167,7 @@ public class PaparazziPlugin @Inject constructor(
         task.paparazziResources.set(buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.json"))
       }
 
-      val testVariantSlug = testVariant.name.capitalize(Locale.US)
+      val testVariantSlug = testVariant.name.capitalize()
 
       project.tasks.named { it == "test$testVariantSlug" }
         .configureEach { it.dependsOn(writeResourcesTask) }
@@ -194,6 +198,8 @@ public class PaparazziPlugin @Inject constructor(
         isVerifyRun.set(verifyTaskProvider.map { graph.hasTask(it) })
       }
 
+      val overwriteOnMaxPercentDifferenceProvider = project.overwriteOnMaxPercentDifferenceProvider()
+      val failureDir = buildDirectory.dir("paparazzi/failures")
       val testTaskProvider =
         project.tasks.withType(Test::class.java).named { it == "test$testVariantSlug" }
       testTaskProvider.configureEach { test ->
@@ -201,8 +207,7 @@ public class PaparazziPlugin @Inject constructor(
           PaparazziTestReporter(
             buildOperationRunner = buildOperationRunner,
             buildOperationExecutor = buildOperationExecutor,
-            isVerifyRun = isVerifyRun,
-            failureSnapshotDir = buildDirectory.dir("paparazzi/failures")
+            diffRegistryFactory = createDiffRegistryFactory(failureDir, isVerifyRun)
           )
         )
 
@@ -263,6 +268,8 @@ public class PaparazziPlugin @Inject constructor(
           test.systemProperties["paparazzi.layoutlib.resources.root"] =
             layoutlibResourcesFileCollection.singleFile.absolutePath
           test.systemProperties["paparazzi.test.record"] = isRecordRun.get()
+          test.systemProperties["paparazzi.test.record.overwriteOnMaxPercentDifference"] =
+            overwriteOnMaxPercentDifferenceProvider.orNull == "true"
           test.systemProperties["paparazzi.test.verify"] = isVerifyRun.get()
         }
 
@@ -276,6 +283,34 @@ public class PaparazziPlugin @Inject constructor(
       verifyTaskProvider.configure { it.dependsOn(testTaskProvider) }
     }
   }
+
+  private fun createDiffRegistryFactory(
+    failureDirProperty: Provider<Directory>,
+    isVerifyRun: Provider<Boolean>
+  ): () -> Map<Pair<String, String>, DiffImage> =
+    {
+      val failureDir = failureDirProperty.get().asFile
+      if (isVerifyRun.get() && failureDir.exists()) {
+        failureDir.listFiles()
+          ?.filter { it.name.startsWith("delta-") }
+          ?.associate { diff ->
+            // TODO: read from failure diff metadata file instead of brittle parsing
+            val nameSegments = diff.name.split("_", limit = 3)
+            val testClassPackage = nameSegments[0].replace("delta-", "")
+            val testClass = "$testClassPackage.${nameSegments[1]}"
+            val testMethodWithLabel = nameSegments[2].removeSuffix(".png")
+
+            Pair(testClass, testMethodWithLabel) to DiffImage(
+              path = diff.path,
+              base64EncodedImage =
+              @OptIn(ExperimentalEncodingApi::class)
+              Base64.encode(diff.readBytes())
+            )
+          } ?: emptyMap()
+      } else {
+        emptyMap()
+      }
+    }
 
   public abstract class PaparazziTask : DefaultTask() {
     @Option(option = "tests", description = "Sets test class or method name to be included, '*' is supported.")
@@ -302,6 +337,7 @@ public class PaparazziPlugin @Inject constructor(
         val osArch = System.getProperty("os.arch").lowercase(Locale.US)
         if (osArch.startsWith("x86")) "mac" else "mac-arm"
       }
+
       operatingSystem.isWindows -> "win"
       else -> "linux"
     }
@@ -346,6 +382,9 @@ public class PaparazziPlugin @Inject constructor(
 
   private fun Project.isInternal(): Boolean = providers.gradleProperty("app.cash.paparazzi.internal").orNull == "true"
 
+  private fun Project.overwriteOnMaxPercentDifferenceProvider(): Provider<String> =
+    providers.gradleProperty("app.cash.paparazzi.overwriteOnMaxPercentDifference")
+
   private fun BaseExtension.packageName(): String = namespace ?: ""
 
   private fun BaseExtension.targetSdkVersion(): String =
@@ -357,4 +396,4 @@ public class PaparazziPlugin @Inject constructor(
       ?: providerFactory.provider { emptyList() }
 }
 
-private const val DEFAULT_COMPILE_SDK_VERSION = 34
+private const val DEFAULT_COMPILE_SDK_VERSION = 36

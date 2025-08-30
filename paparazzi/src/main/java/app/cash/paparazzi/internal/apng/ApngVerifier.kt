@@ -15,6 +15,7 @@
  */
 package app.cash.paparazzi.internal.apng
 
+import app.cash.paparazzi.internal.Differ
 import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.ImageUtils.resize
 import okio.FileSystem
@@ -31,7 +32,8 @@ internal class ApngVerifier(
   private val frameCount: Int,
   private val maxPercentDifference: Double,
   private val fileSystem: FileSystem = FileSystem.SYSTEM,
-  private val withErrorText: Boolean = true
+  private val withErrorText: Boolean = true,
+  private val differ: Differ
 ) : Closeable {
   private val pngReader = ApngReader(fileSystem.openReadOnly(goldenFilePath))
   private val blankFrame by lazy { createBlankFrame(pngReader.width, pngReader.height) }
@@ -55,7 +57,7 @@ internal class ApngVerifier(
 
   fun verifyFrame(image: BufferedImage) {
     val (expectedFrame, actualFrame) = resizeMaxBounds(currentGoldenFrame ?: blankFrame, image)
-    val (deltaImage, percentDifferent) = ImageUtils.compareImages(expectedFrame, actualFrame)
+    val (deltaImage, percentDifferent) = ImageUtils.compareImages(expectedFrame, actualFrame, differ)
     if (percentDifferent > maxPercentDifference) {
       if (deltaWriter == null) {
         deltaWriter = pngReader.initializeWriter()
@@ -79,7 +81,7 @@ internal class ApngVerifier(
       if (writer.frameCount % expectedDeltasPerFrame == 0) {
         currentGoldenFrame = pngReader.readNextFrame()
         val (expectedFrame, actualFrame) = resizeMaxBounds(currentGoldenFrame ?: blankFrame, image)
-        currentDelta = ImageUtils.compareImages(expectedFrame, actualFrame).first
+        currentDelta = ImageUtils.compareImages(expectedFrame, actualFrame, differ).first
       }
     }
   }
@@ -88,7 +90,7 @@ internal class ApngVerifier(
     val deltaWriter = deltaWriter ?: return
     currentGoldenFrame?.let { lastFrame ->
       val (expectedFrame, actualFrame) = resizeMaxBounds(lastFrame, blankFrame)
-      val (currentDelta) = ImageUtils.compareImages(expectedFrame, actualFrame)
+      val (currentDelta) = ImageUtils.compareImages(expectedFrame, actualFrame, differ)
 
       val times = expectedDeltasPerFrame - (deltaWriter.frameCount % expectedDeltasPerFrame)
       repeat(times) { deltaWriter.writeImage(currentDelta) }
@@ -98,7 +100,8 @@ internal class ApngVerifier(
     while (!pngReader.isFinished()) {
       val (deltaImage) = ImageUtils.compareImages(
         goldenImage = pngReader.readNextFrame()!!,
-        image = blankFrame
+        image = blankFrame,
+        differ = differ
       )
       repeat(expectedDeltasPerFrame) { deltaWriter.writeImage(deltaImage) }
       invalidFrames++
@@ -142,7 +145,8 @@ internal class ApngVerifier(
         val nextFrame = readNextFrame() ?: blankFrame
         val (deltaImage) = ImageUtils.compareImages(
           goldenImage = nextFrame,
-          image = nextFrame
+          image = nextFrame,
+          differ = differ
         )
 
         writeImage(deltaImage)

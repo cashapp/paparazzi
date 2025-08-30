@@ -1,4 +1,6 @@
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
+import org.jetbrains.dokka.gradle.engine.parameters.KotlinPlatform
+import org.jetbrains.dokka.gradle.engine.parameters.VisibilityModifier
 
 apply plugin: 'org.jetbrains.kotlin.jvm'
 apply plugin: 'org.jetbrains.kotlin.plugin.compose'
@@ -33,6 +35,7 @@ dependencies {
   compileOnlyAarAsJar libs.androidx.compose.ui.android
   compileOnlyAarAsJar libs.androidx.activity
   compileOnlyAarAsJar libs.androidx.lifecycle.runtime // Needed for setViewTreeLifecycleOwner
+  compileOnlyAarAsJar libs.androidx.savedstate // Needed for setViewTreeSavedStateRegistryOwner
 
   implementation libs.bytebuddy.agent
   implementation libs.bytebuddy.core
@@ -73,32 +76,32 @@ dependencies {
   testImplementation libs.truth
 }
 
-tasks.named("dokkaHtml").configure {
-  outputDirectory = rootProject.file("docs/1.x")
+dokka {
+  dokkaPublications.html {
+    outputDirectory.set(rootProject.file("docs/2.x"))
+  }
 
-  dokkaSourceSets.named("main") {
-    configureEach {
-      reportUndocumented = false
-      skipDeprecated = true
-      jdkVersion = 8
-      includeNonPublic = false
-      skipEmptyPackages = true
-      platform = "jvm"
+  dokkaSourceSets.named("main").configure {
+    reportUndocumented = false
+    skipDeprecated = true
+    jdkVersion = libs.versions.javaTarget.get() as int
+    documentedVisibilities(VisibilityModifier.Public)
+    skipEmptyPackages = true
+    analysisPlatform = KotlinPlatform.JVM
 
-      externalDocumentationLink {
-        url.set(java.net.URL("https://developer.android.com/reference/"))
-      }
+    externalDocumentationLinks.register("docs") {
+      url("https://developer.android.com/reference/")
+    }
 
-      sourceLink {
-        localDirectory.set(file("src/main/java"))
-        remoteUrl.set(java.net.URL("https://github.com/cashapp/paparazzi/tree/master/paparazzi/src/main/java"))
-        remoteLineSuffix.set("#L")
-      }
+    sourceLink {
+      localDirectory.set(file("src/main/java"))
+      remoteUrl("https://github.com/cashapp/paparazzi/tree/master/paparazzi/src/main/java")
+      remoteLineSuffix.set("#L")
+    }
 
-      perPackageOption {
-        prefix = "app.cash.paparazzi.internal"
-        suppress = true
-      }
+    perPackageOption {
+      matchingRegex = /app\.cash\.paparazzi\.internal(\..*)?/
+      suppress = true
     }
   }
 }
@@ -112,7 +115,7 @@ def generateTestConfig = tasks.register("generateTestConfig") {
     configFile.write("""{
       "mainPackage": "app.cash.paparazzi",
       "mergeResourcesOutputDir": ".",
-      "targetSdkVersion": "34",
+      "targetSdkVersion": "36",
       "mergeAssetsOutputDir": ".",
       "resourcePackageNames": ["app.cash.paparazzi"],
       "projectResourceDirs": [],

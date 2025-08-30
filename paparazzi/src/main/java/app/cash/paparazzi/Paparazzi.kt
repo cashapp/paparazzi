@@ -21,6 +21,9 @@ import android.view.LayoutInflater
 import android.view.View
 import androidx.annotation.LayoutRes
 import androidx.compose.runtime.Composable
+import app.cash.paparazzi.internal.Differ
+import app.cash.paparazzi.internal.OffByTwo
+import app.cash.paparazzi.internal.PixelPerfect
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode
 import org.junit.rules.TestRule
 import org.junit.runner.Description
@@ -35,13 +38,46 @@ public class Paparazzi @JvmOverloads constructor(
   private val appCompatEnabled: Boolean = true,
   private val maxPercentDifference: Double = detectMaxPercentDifferenceDefault(),
   private val withExpectedActualLabels: Boolean = true,
-  private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference, withExpectedActualLabels),
+  private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference, differ, withExpectedActualLabels),
   private val renderExtensions: Set<RenderExtension> = setOf(),
   private val supportsRtl: Boolean = false,
   private val showSystemUi: Boolean = false,
-  private val validateAccessibility: Boolean = false,
   private val useDeviceResolution: Boolean = false
 ) : TestRule {
+  private var validateAccessibility = false
+
+  @Deprecated(
+    "validateAccessibility is deprecated. " +
+      "Use the AccessibilityRenderExtension for accessibility testing instead."
+  )
+  public constructor(
+    environment: Environment = detectEnvironment(),
+    deviceConfig: DeviceConfig = DeviceConfig.NEXUS_5,
+    theme: String = "android:Theme.Material.NoActionBar.Fullscreen",
+    renderingMode: RenderingMode = RenderingMode.NORMAL,
+    appCompatEnabled: Boolean = true,
+    maxPercentDifference: Double = detectMaxPercentDifferenceDefault(),
+    snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference, differ),
+    renderExtensions: Set<RenderExtension> = setOf(),
+    supportsRtl: Boolean = false,
+    showSystemUi: Boolean = false,
+    useDeviceResolution: Boolean = false,
+    validateAccessibility: Boolean = false
+  ) : this(
+    environment,
+    deviceConfig,
+    theme,
+    renderingMode,
+    appCompatEnabled,
+    maxPercentDifference,
+    snapshotHandler,
+    renderExtensions,
+    supportsRtl,
+    showSystemUi,
+    useDeviceResolution
+  ) {
+    this.validateAccessibility = validateAccessibility
+  }
   private lateinit var sdk: PaparazziSdk
   private lateinit var frameHandler: SnapshotHandler.FrameHandler
   private var testName: TestName? = null
@@ -149,11 +185,21 @@ public class Paparazzi @JvmOverloads constructor(
     private val isVerifying: Boolean =
       System.getProperty("paparazzi.test.verify")?.toBoolean() == true
 
-    private fun determineHandler(maxPercentDifference: Double, withExpectedActualLabels: Boolean): SnapshotHandler =
+    private val differ: Differ =
+      System.getProperty("app.cash.paparazzi.differ")?.lowercase().let { differ ->
+        when (differ) {
+          "offbytwo" -> OffByTwo
+          "pixelperfect" -> PixelPerfect
+          null, "", "default" -> OffByTwo
+          else -> error("Unknown differ type '$differ'.")
+        }
+      }
+
+    private fun determineHandler(maxPercentDifference: Double, differ: Differ, withExpectedActualLabels: Boolean): SnapshotHandler =
       if (isVerifying) {
-        SnapshotVerifier(maxPercentDifference, withExpectedActualLabels)
+        SnapshotVerifier(maxPercentDifference, differ = differ, withExpectedActualLabels)
       } else {
-        HtmlReportWriter()
+        HtmlReportWriter(maxPercentDifference = maxPercentDifference, differ = differ)
       }
   }
 }

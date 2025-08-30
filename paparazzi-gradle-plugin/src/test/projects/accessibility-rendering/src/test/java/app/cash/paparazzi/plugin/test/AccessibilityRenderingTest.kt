@@ -7,14 +7,18 @@ import android.view.View.GONE
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.ListView
 import android.widget.TextView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.progressSemantics
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -40,6 +44,7 @@ import androidx.compose.ui.semantics.invisibleToUser
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.setProgress
+import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.dp
@@ -335,6 +340,73 @@ class AccessibilityRenderingTest {
     }
 
     paparazzi.snapshot(view)
+  }
+
+  @Test
+  fun `verify compose list semantics`() {
+    paparazzi.snapshot {
+      LazyColumn {
+        items(4) {
+          Text(text = "Item = $it")
+        }
+        item {
+          // Box Nesting on purpose
+          Box {
+            Box {
+              Text(text = "Item = 5")
+            }
+          }
+        }
+        // Shouldn't be included in the legend
+        item {
+          Box { Spacer(Modifier.height(16.dp)) }
+        }
+      }
+    }
+  }
+
+  @Test
+  fun `verify view list semantics`() {
+    val listView = ListView(paparazzi.context)
+    listView.adapter = object : android.widget.ArrayAdapter<String>(
+      paparazzi.context,
+      android.R.layout.simple_list_item_1,
+      listOf("Item = 0", "Item = 1", "Item = 2", "Item = 3", "Item = 4", "")
+    ) {
+      override fun getView(position: Int, convertView: View?, parent: android.view.ViewGroup): View {
+        if (position == 5) {
+          return View(paparazzi.context)
+        }
+
+        val view = super.getView(position, convertView, parent)
+        view.contentDescription = "Item = $position"
+        return view
+      }
+    }
+
+    paparazzi.snapshot(listView)
+  }
+
+  @Test
+  fun `verify traversalIndex order`() {
+    paparazzi.snapshot {
+      Column {
+        Text(
+          text = "Third",
+          modifier = Modifier
+            .semantics { traversalIndex = 2f }
+        )
+        Text(
+          text = "First",
+          modifier = Modifier
+            .semantics { traversalIndex = -1f }
+        )
+        Text(
+          // Displayed second as the default traversalIndex is 0
+          text = "Second"
+        )
+      }
+    }
   }
 
   private fun buildViewWithCustomActions(context: Context) =

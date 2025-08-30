@@ -20,9 +20,9 @@ dependencies {
   def isFirstRun = System.getProperty("isFirstRun", "false").toBoolean()
   if (isFirstRun) {
     implementation files('libs/external1.aar')
-    implementation 'androidx.core:core:1.10.0'
+    implementation 'androidx.core:core:1.17.0'
   } else {
     implementation files('libs/external2.aar')
-    implementation 'androidx.core:core:1.10.1'
+    implementation 'androidx.core:core:1.17.0'
   }
 }

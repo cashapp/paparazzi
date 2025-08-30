@@ -19,7 +19,6 @@ import android.graphics.Rect
 import android.os.ext.util.SdkLevel
 import android.view.Gravity
 import android.view.View
-import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.WindowManager
@@ -41,6 +40,7 @@ import androidx.compose.ui.semantics.getAllSemanticsNodes
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.LinkAnnotation
+import androidx.core.view.isVisible
 import app.cash.paparazzi.RenderExtension
 import app.cash.paparazzi.internal.ComposeViewAdapter
 import com.android.internal.view.OneShotPreDrawListener
@@ -94,9 +94,9 @@ public class AccessibilityRenderExtension : RenderExtension {
 
   private fun View.processAccessibleChildren(processElement: (AccessibilityElement) -> Unit) {
     val accessibilityText = this.accessibilityText()
-    if (isImportantForAccessibility && !accessibilityText.isNullOrBlank() && visibility == VISIBLE) {
-      val bounds = Rect().also(::getBoundsOnScreen)
+    val bounds = Rect().also(::getBoundsOnScreen)
 
+    if (isImportantForAccessibility && !accessibilityText.isNullOrBlank() && isVisible) {
       processElement(
         AccessibilityElement(
           id = "${this::class.simpleName}($accessibilityText)",
@@ -106,11 +106,24 @@ public class AccessibilityRenderExtension : RenderExtension {
       )
     }
 
-    if (this is AbstractComposeView && visibility == VISIBLE) {
+    if (this is AbstractComposeView && isVisible) {
       // ComposeView creates a child view `AndroidComposeView` for view root for test.
       val viewRoot = getChildAt(0) as ViewRootForTest
       val unmergedNodes = viewRoot.semanticsOwner.getAllSemanticsNodes(false)
-      viewRoot.semanticsOwner.rootSemanticsNode.processAccessibleChildren(processElement, unmergedNodes)
+
+      // SemanticsNode.boundsInScreen isn't reported correctly for nodes so locationOnScreen used to correctly calculate displayBounds.
+      val locationOnScreen = arrayOf(bounds.left, bounds.top).toIntArray()
+      locationOnScreen[0] += paddingLeft
+      locationOnScreen[1] += paddingTop
+      val orderedSemanticsNodes = viewRoot.semanticsOwner.rootSemanticsNode.orderSemanticsNodeGroup()
+      orderedSemanticsNodes.forEach {
+        it.processAccessibleChildren(
+          processElement = processElement,
+          locationOnScreen = locationOnScreen,
+          viewBounds = bounds,
+          unmergedNodes = unmergedNodes
+        )
+      }
     }
 
     if (this is ViewGroup) {
@@ -120,8 +133,57 @@ public class AccessibilityRenderExtension : RenderExtension {
     }
   }
 
+  private fun SemanticsNode.orderSemanticsNodeGroup(): List<SemanticsNode> {
+    val topLevelNodes = mutableListOf<SemanticsNodeTraversalEntry>()
+
+    val currentNodeTraversalIndex = config.getOrNull(SemanticsProperties.TraversalIndex)
+    if (currentNodeTraversalIndex != null) {
+      topLevelNodes.add(SemanticsNodeTraversalEntry(currentNodeTraversalIndex, listOf(this)))
+    } else {
+      topLevelNodes.add(SemanticsNodeTraversalEntry(nodes = listOf(this)))
+    }
+
+    for (child in children) {
+      val descendants = child.orderSemanticsNodeGroup()
+      if (child.config.getOrNull(SemanticsProperties.IsTraversalGroup) == true) {
+        // Treat group as one item, recurse within it
+        val childTraversalIndex = child.config.getOrNull(SemanticsProperties.TraversalIndex)
+        topLevelNodes.add(
+          if (childTraversalIndex != null) {
+            SemanticsNodeTraversalEntry(childTraversalIndex, descendants)
+          } else {
+            SemanticsNodeTraversalEntry(nodes = descendants)
+          }
+        )
+      } else {
+        // Leaf or regular node
+        for (node in descendants) {
+          val nodeTraversalIndex = child.config.getOrNull(SemanticsProperties.TraversalIndex)
+          topLevelNodes.add(
+            if (nodeTraversalIndex != null) {
+              SemanticsNodeTraversalEntry(nodeTraversalIndex, descendants)
+            } else {
+              SemanticsNodeTraversalEntry(nodes = listOf(node))
+            }
+          )
+        }
+      }
+    }
+
+    return topLevelNodes
+      .sortedWith(
+        compareBy(
+          { it.traversalIndex },
+          { it.orderIndex } // Order of discovery = fallback layout order
+        )
+      )
+      .flatMap { it.nodes }
+  }
+
   private fun SemanticsNode.processAccessibleChildren(
     processElement: (AccessibilityElement) -> Unit,
+    locationOnScreen: IntArray,
+    viewBounds: Rect,
     unmergedNodes: List<SemanticsNode>?
   ) {
     val accessibilityText = if (config.isMergingSemanticsOfDescendants) {
@@ -131,15 +193,21 @@ public class AccessibilityRenderExtension : RenderExtension {
           .mapNotNull { it.accessibilityText() }
           .joinToString(", ")
           .ifEmpty { null }
+          .takeIf { it != IN_LIST_LABEL }
       }
     } else {
       accessibilityText()
     }
 
     if (accessibilityText != null) {
-      val displayBounds = with(boundsInWindow) {
-        Rect(left.toInt(), top.toInt(), right.toInt(), bottom.toInt())
+      // SemanticsNode.boundsInScreen isn't reported correctly for nodes so boundsInRoot + locationOnScreen used to correctly calculate displayBounds.
+      val displayBounds = with(boundsInRoot) {
+        Rect(left.toInt(), top.toInt(), right.toInt(), bottom.toInt()).run {
+          offset(locationOnScreen[0], locationOnScreen[1])
+          Rect(left, top, right.coerceIn(0, viewBounds.right), bottom.coerceIn(0, viewBounds.bottom))
+        }
       }
+
       processElement(
         AccessibilityElement(
           // SemanticsNode.id is backed by AtomicInteger and is not guaranteed consistent across runs.
@@ -148,10 +216,6 @@ public class AccessibilityRenderExtension : RenderExtension {
           contentDescription = accessibilityText
         )
       )
-    }
-
-    children.forEach {
-      it.processAccessibleChildren(processElement, unmergedNodes)
     }
   }
 
@@ -262,7 +326,10 @@ public class AccessibilityRenderExtension : RenderExtension {
       "$CUSTOM_ACTION_LABEL: ${action.label}"
     }
 
+    val isInList = parent?.config?.getOrNull(SemanticsProperties.CollectionInfo)?.let { IN_LIST_LABEL }
+
     return constructTextList(
+      isInList = null, // Allows filtering out in list label above since child nodes are joined together
       stateDescription,
       selected,
       toggleableState,
@@ -277,13 +344,24 @@ public class AccessibilityRenderExtension : RenderExtension {
       setProgress,
       liveRegionMode,
       annotatedStringActions,
-      customActions
+      customActions,
+      isInList
     )
   }
 
   private fun View.accessibilityText(): String? {
     val nodeInfo = createAccessibilityNodeInfo()
     onInitializeAccessibilityNodeInfo(nodeInfo)
+
+    val parentView = parent?.let { it as? View }
+    val isInList = if (parentView != null && parentView.isImportantForAccessibility) {
+      val parentNodeInfo = createAccessibilityNodeInfo()
+      parentView.onInitializeAccessibilityNodeInfo(parentNodeInfo)
+
+      parentNodeInfo.collectionInfo?.let { IN_LIST_LABEL }
+    } else {
+      null
+    }
 
     val stateDescription = if (SdkLevel.isAtLeastR()) stateDescription?.toString() else null
     val selected = if (isSelected) SELECTED_LABEL else null
@@ -307,6 +385,7 @@ public class AccessibilityRenderExtension : RenderExtension {
     val customActions = computeCustomActions()
 
     return constructTextList(
+      isInList = isInList,
       stateDescription,
       selected,
       toggleableState,
@@ -331,11 +410,11 @@ public class AccessibilityRenderExtension : RenderExtension {
       }
   }
 
-  private fun constructTextList(vararg text: String?): String? {
+  private fun constructTextList(isInList: String?, vararg text: String?): String? {
     val textList = listOfNotNull(*text)
     return if (textList.isNotEmpty()) {
       // Escape newline characters to simplify accessibility text.
-      textList.joinToString(", ").replaceLineBreaks()
+      (textList + isInList).filterNotNull().joinToString(", ").replaceLineBreaks()
     } else {
       null
     }
@@ -366,6 +445,18 @@ public class AccessibilityRenderExtension : RenderExtension {
     private const val LIVE_REGION_ASSERTIVE_LABEL = "assertive"
     private const val LIVE_REGION_POLITE_LABEL = "polite"
     private const val EDITABLE_LABEL = "<editable>"
+    private const val IN_LIST_LABEL = "<in-list>"
+
+    data class SemanticsNodeTraversalEntry(
+      val traversalIndex: Float = 0f,
+      val nodes: List<SemanticsNode>, // May be 1 node or a whole traversal group
+      val orderIndex: Int = nextOrderIndex()
+    )
+
+    private var orderIndexCounter = 0
+    fun nextOrderIndex(): Int {
+      return orderIndexCounter++
+    }
   }
 }
 
