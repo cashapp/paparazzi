@@ -378,6 +378,14 @@ public class PaparazziSdk @JvmOverloads constructor(
       val mLastFrameTimeNanos = choreographer::class.java.getDeclaredField("mLastFrameTimeNanos")
       mLastFrameTimeNanos.isAccessible = true
       mLastFrameTimeNanos.set(choreographer, 0L)
+
+
+      (Choreographer.CALLBACK_INPUT until Choreographer.CALLBACK_COMMIT)
+      choreographer.mCallbackQueues.forEach {
+        if (it.mHead != null) {
+          error("Choreographer callback queue is not empty")
+        }
+      }
     }
   }
 
