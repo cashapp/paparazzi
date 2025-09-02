@@ -26,6 +26,7 @@ import android.util.DisplayMetrics
 import android.view.BridgeInflater
 import android.view.Choreographer
 import android.view.Choreographer_Delegate
+import android.view.Display
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.NO_ID
@@ -182,6 +183,15 @@ public class PaparazziSdk @JvmOverloads constructor(
     }
 
     bridgeRenderSession = createBridgeSession(renderSession, renderSession.inflate())
+
+    val viewGroup = bridgeRenderSession.rootViews[0].viewObject as ViewGroup
+    // Fixes issue where layoutlib's [DisplayManagerGlobal] doesn't have a [registerForRefreshRateChanges] method.
+    // This method is called by [Display.getRefreshRate] which is called by [AndroidPrefetchScheduler.calculateFrameIntervalIfNeeded].
+    // [Display.getRefreshRate] doesn't call [registerForRefreshRateChanges] if [mRefreshRateChangesRegistered] is true.
+    Display::class.java.getDeclaredField("mRefreshRateChangesRegistered").apply {
+      isAccessible = true
+      set(viewGroup.display, true)
+    }
   }
 
   public fun teardown() {
