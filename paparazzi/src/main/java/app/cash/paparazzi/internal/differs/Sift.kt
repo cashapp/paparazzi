@@ -8,17 +8,21 @@ import java.awt.image.BufferedImage
 import kotlin.math.ceil
 import kotlin.math.exp
 import kotlin.math.hypot
+import kotlin.math.min
 import kotlin.math.pow
 
 internal object Sift : Differ {
   override fun compare(expected: BufferedImage, actual: BufferedImage): DiffResult {
     require(expected.width == actual.width && expected.height == actual.height)
 
+    val width = expected.width
+    val height = expected.height
+
     val grayscaleExpected = toGrayscale(expected)
     val grayscaleActual = toGrayscale(actual)
 
-    val octaves = 4
-    val scalesPerOctave = 3
+    val octaves = 4.coerceAtMost(min(width, height).coerceAtMost(128))
+    val scalesPerOctave = 3.coerceAtMost(octaves)
 
     val gExpected = buildGaussianPyramid(grayscaleExpected, octaves, scalesPerOctave)
     val gActual = buildGaussianPyramid(grayscaleActual, octaves, scalesPerOctave)
@@ -31,7 +35,7 @@ internal object Sift : Differ {
 
     val matches = matchKeypoints(keypointsExpected, keypointsActual)
 
-    val delta = BufferedImage(expected.width, expected.height, BufferedImage.TYPE_INT_RGB)
+    val delta = BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
     val g = delta.createGraphics()
     g.drawImage(expected, 0, 0, null)
     drawKeypoints(g, keypointsExpected, Color.RED)
@@ -52,14 +56,12 @@ internal object Sift : Differ {
   private fun toGrayscale(image: BufferedImage): Array<DoubleArray> {
     val w = image.width
     val h = image.height
-    val gray = Array(h) { DoubleArray(w) }
-    for (y in 0 until h) {
-      for (x in 0 until w) {
+    return Array(h) { y ->
+      DoubleArray(w) { x ->
         val rgb = Color(image.getRGB(x, y))
-        gray[y][x] = 0.299 * rgb.red + 0.587 * rgb.green + 0.114 * rgb.blue
+        0.299 * rgb.red + 0.587 * rgb.green + 0.114 * rgb.blue
       }
     }
-    return gray
   }
 
   private fun gaussianBlur(src: Array<DoubleArray>, sigma: Double): Array<DoubleArray> {
@@ -128,32 +130,34 @@ internal object Sift : Differ {
 
   private fun buildDoGPyramid(gaussians: List<List<Array<DoubleArray>>>): List<List<Array<DoubleArray>>> {
     return gaussians.map { octave ->
-      octave.zipWithNext { a, b -> subtractImages(b, a) }
+      buildList(maxOf(0, octave.size - 1)) {
+        for (i in 0 until octave.size - 1) {
+          add(subtractImagesInPlace(octave[i], octave[i + 1]))
+        }
+      }
     }
   }
 
-  private fun subtractImages(a: Array<DoubleArray>, b: Array<DoubleArray>): Array<DoubleArray> {
+  private fun subtractImagesInPlace(a: Array<DoubleArray>, b: Array<DoubleArray>): Array<DoubleArray> {
     val h = a.size
     val w = a[0].size
-    val result = Array(h) { DoubleArray(w) }
+    // Modify 'a' in place
     for (y in 0 until h) {
       for (x in 0 until w) {
-        result[y][x] = a[y][x] - b[y][x]
+        a[y][x] -= b[y][x]
       }
     }
-    return result
+    return a // Return the modified 'a'
   }
 
   private fun downsample(image: Array<DoubleArray>): Array<DoubleArray> {
     val h = image.size / 2
     val w = image[0].size / 2
-    val result = Array(h) { DoubleArray(w) }
-    for (y in 0 until h) {
-      for (x in 0 until w) {
-        result[y][x] = image[y * 2][x * 2]
+    return Array(h) { y ->
+      DoubleArray(w) { x ->
+        image[y * 2][x * 2]
       }
     }
-    return result
   }
 
   private fun detectDoGExtrema(dogPyramid: List<List<Array<DoubleArray>>>): List<SiftKeypoint> {
