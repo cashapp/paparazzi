@@ -119,11 +119,11 @@ public final class app/cash/paparazzi/Flags {
 
 public final class app/cash/paparazzi/HtmlReportWriter : app/cash/paparazzi/SnapshotHandler {
 	public static final field $stable I
-	public fun <init> (DLapp/cash/paparazzi/internal/Differ;)V
-	public fun <init> (Ljava/lang/String;DLapp/cash/paparazzi/internal/Differ;)V
-	public fun <init> (Ljava/lang/String;Ljava/io/File;DLapp/cash/paparazzi/internal/Differ;)V
-	public fun <init> (Ljava/lang/String;Ljava/io/File;DLapp/cash/paparazzi/internal/Differ;Ljava/io/File;)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/io/File;DLapp/cash/paparazzi/internal/Differ;Ljava/io/File;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (DLapp/cash/paparazzi/Differ;)V
+	public fun <init> (Ljava/lang/String;DLapp/cash/paparazzi/Differ;)V
+	public fun <init> (Ljava/lang/String;Ljava/io/File;DLapp/cash/paparazzi/Differ;)V
+	public fun <init> (Ljava/lang/String;Ljava/io/File;DLapp/cash/paparazzi/Differ;Ljava/io/File;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/io/File;DLapp/cash/paparazzi/Differ;Ljava/io/File;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun close ()V
 	public fun newFrameHandler (Lapp/cash/paparazzi/Snapshot;II)Lapp/cash/paparazzi/SnapshotHandler$FrameHandler;
 }

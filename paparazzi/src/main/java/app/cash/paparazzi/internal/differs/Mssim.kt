@@ -1,10 +1,12 @@
 package app.cash.paparazzi.internal.differs
 
+import androidx.compose.ui.util.fastCoerceAtLeast
 import app.cash.paparazzi.Differ
 import app.cash.paparazzi.Differ.DiffResult
 import java.awt.Color
 import java.awt.image.BufferedImage
 import kotlin.math.exp
+import kotlin.math.min
 import kotlin.math.pow
 
 internal object Mssim : Differ {
@@ -13,7 +15,7 @@ internal object Mssim : Differ {
 
     val width = expected.width
     val height = expected.height
-    val windowSize = 11
+    val windowSize = 11.coerceAtMost(min(width, height))
     val sigma = 1.5
     val gaussianKernel = createGaussianKernel(windowSize, sigma)
 
@@ -25,8 +27,8 @@ internal object Mssim : Differ {
 
     val deltaImage = BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
 
-    for (y in 0 until height - windowSize) {
-      for (x in 0 until width - windowSize) {
+    for (y in 0 until (height - windowSize).coerceAtLeast(1)) {
+      for (x in 0 until (width - windowSize).coerceAtLeast(1)) {
         val window1 = extractWindow(expectedLuma, x, y, windowSize)
         val window2 = extractWindow(actualLuma, x, y, windowSize)
 
@@ -41,7 +43,7 @@ internal object Mssim : Differ {
       }
     }
 
-    val mssim = sumSSIM / numWindows
+    val mssim = (sumSSIM / numWindows)
     val percentDifference = ((1.0 - mssim) * 100).toFloat()
 
     return when {
