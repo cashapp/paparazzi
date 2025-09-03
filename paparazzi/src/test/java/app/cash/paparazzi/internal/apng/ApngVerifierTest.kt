@@ -1,8 +1,8 @@
 package app.cash.paparazzi.internal.apng
 
 import app.cash.paparazzi.internal.ImageUtils.compareImages
-import app.cash.paparazzi.internal.OffByTwo
 import app.cash.paparazzi.internal.apng.PngTestUtils.createImage
+import app.cash.paparazzi.internal.differs.OffByTwo
 import com.google.common.truth.Truth.assertThat
 import okio.FileSystem
 import okio.Path

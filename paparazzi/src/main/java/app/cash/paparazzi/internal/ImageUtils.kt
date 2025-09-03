@@ -16,9 +16,10 @@
 
 package app.cash.paparazzi.internal
 
-import app.cash.paparazzi.internal.Differ.DiffResult.Different
-import app.cash.paparazzi.internal.Differ.DiffResult.Identical
-import app.cash.paparazzi.internal.Differ.DiffResult.Similar
+import app.cash.paparazzi.Differ
+import app.cash.paparazzi.Differ.DiffResult.Different
+import app.cash.paparazzi.Differ.DiffResult.Identical
+import app.cash.paparazzi.Differ.DiffResult.Similar
 import java.awt.AlphaComposite
 import java.awt.Color
 import java.awt.Graphics2D

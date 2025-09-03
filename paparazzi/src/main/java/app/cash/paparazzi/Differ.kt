@@ -1,8 +1,8 @@
-package app.cash.paparazzi.internal
+package app.cash.paparazzi
 
 import java.awt.image.BufferedImage
 
-public sealed interface Differ {
+public interface Differ {
   public fun compare(expected: BufferedImage, actual: BufferedImage): DiffResult
 
   public sealed interface DiffResult {
