@@ -1,44 +1,38 @@
-package app.cash.paparazzi.internal
+package app.cash.paparazzi.internal.differs
 
+import app.cash.paparazzi.Differ
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
-import java.awt.image.BufferedImage
-import java.awt.image.BufferedImage.TYPE_INT_ARGB
 
 class OffByTwoTest {
   @Test
   fun `compare identical images`() {
-    val expected = BufferedImage(1, 1, TYPE_INT_ARGB)
-    val actual = BufferedImage(1, 1, TYPE_INT_ARGB)
+    val expected = createImage(width = 1, height = 1)
+    val actual = createImage(width = 1, height = 1)
     val result = OffByTwo.compare(expected, actual)
     assertThat(result).isInstanceOf(Differ.DiffResult.Identical::class.java)
   }
 
   @Test
   fun `compare similar images`() {
-    val expected = BufferedImage(1, 1, TYPE_INT_ARGB)
-    val actual = BufferedImage(1, 1, TYPE_INT_ARGB)
-    expected.setRGB(0, 0, 0xFFFFFFFE.toInt())
-    actual.setRGB(0, 0, 0xFFFFFFFF.toInt())
+    val expected = createImage(width = 1, height = 1, rgb = 0xFFFFFFFE)
+    val actual = createImage(width = 1, height = 1)
     val result = OffByTwo.compare(expected, actual)
     assertThat(result).isInstanceOf(Differ.DiffResult.Similar::class.java)
   }
 
   @Test
   fun `compare similar images using black actual and alpha expected`() {
-    val expected = BufferedImage(1, 1, TYPE_INT_ARGB)
-    val actual = BufferedImage(1, 1, TYPE_INT_ARGB)
-    expected.setRGB(0, 0, 0x00000000.toInt())
-    actual.setRGB(0, 0, 0xFF000000.toInt())
+    val expected = createImage(width = 1, height = 1, rgb = 0x00000000)
+    val actual = createImage(width = 1, height = 1, rgb = 0xFF000000)
     val result = OffByTwo.compare(expected, actual)
     assertThat(result).isInstanceOf(Differ.DiffResult.Different::class.java)
   }
 
   @Test
   fun `compare different images`() {
-    val expected = BufferedImage(1, 1, TYPE_INT_ARGB)
-    val actual = BufferedImage(1, 1, TYPE_INT_ARGB)
-    actual.setRGB(0, 0, 0xFFFFFFFF.toInt())
+    val expected = createImage(width = 1, height = 1, rgb = 0x00000000)
+    val actual = createImage(width = 1, height = 1)
     val result = OffByTwo.compare(expected, actual)
     assertThat(result).isInstanceOf(Differ.DiffResult.Different::class.java)
   }

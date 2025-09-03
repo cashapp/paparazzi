@@ -77,7 +77,7 @@ class DiffersTest {
 
     //  Java heap space error (OOM)
 
-//    val siftResult2 = SiftDiffer.compare(linuxFullScreen, macosxFullScreen)
+//    val siftResult2 = Sift.compare(linuxFullScreen, macosxFullScreen)
 //    with(siftResult2) {
 //      assertThat(this).isInstanceOf(DiffResult.Similar::class.java)
 //      this as DiffResult.Similar

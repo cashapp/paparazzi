@@ -16,9 +16,7 @@
 package app.cash.paparazzi
 
 import app.cash.paparazzi.FileSubject.Companion.assertThat
-import app.cash.paparazzi.internal.Differ
-import app.cash.paparazzi.internal.OffByTwo
-import app.cash.paparazzi.internal.PixelPerfect
+import app.cash.paparazzi.internal.differs.PixelPerfect
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
