@@ -53,6 +53,8 @@ import org.gradle.internal.os.OperatingSystem
 import org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
+import org.jetbrains.kotlin.gradle.plugin.sources.android.findAndroidSourceSet
+import org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget
 import java.io.File
 import java.util.Locale
 import javax.inject.Inject
@@ -99,12 +101,15 @@ public class PaparazziPlugin @Inject constructor(
     val layoutlibNativeRuntimeFileCollection = project.setupLayoutlibRuntimeDependency()
     val layoutlibResourcesFileCollection = project.setupLayoutlibResourcesDependency()
     val testSourceSetProvider = project.objects.directoryProperty()
-    testSourceSetProvider.set(project.layout.projectDirectory.dir("src/test"))
+
+    val defaultUnitTestDir = project.layout.projectDirectory.dir("src/test")
+    testSourceSetProvider.set(defaultUnitTestDir)
 
     project.plugins.withId("org.jetbrains.kotlin.multiplatform") {
       val kmpExtension = project.extensions.getByType(KotlinMultiplatformExtension::class.java)
-      kmpExtension.sourceSets.all { sourceSet ->
-        if (sourceSet.name == "androidUnitTest" || sourceSet.name == "androidTest") {
+      kmpExtension.sourceSets.configureEach { sourceSet ->
+        // TODO: Should we allow snapshots held in commonTest dir?
+        if (sourceSet.name == "androidUnitTest") {
           testSourceSetProvider.set(
             sourceSet.kotlin.srcDirs.map {
               File(it.parent)
@@ -114,7 +119,6 @@ public class PaparazziPlugin @Inject constructor(
       }
     }
 
-    val defaultUnitTestDir = project.layout.projectDirectory.dir("src/test")
     val snapshotOutputDir = testSourceSetProvider.map {
       if (it.asFile.exists() && !defaultUnitTestDir.asFile.exists()) {
         it.dir("snapshots")
