@@ -34,28 +34,33 @@ includeBuild('build-logic') {
   }
 }
 
-def isIdea = !(System.getProperty("idea.version") ?: "").isEmpty()
-if (isIdea) {
-  includeTestProjectsIntoIDE()
+// Some of the test projects are intentionally supposed to fail. Don't import these into the main project.
+def brokenProjects = [
+  "invalid-application-plugin", // intentionally does not import
+  "missing-library-plugin", // intentionally does not import
+  "missing-supported-plugins", // intentionally does not import
+  "multiplatform-plugin-without-android", // intentionally does not import
+]
+def testProjectNames = []
+new File(rootDir, "paparazzi-gradle-plugin/src/test/projects").eachDir {
+  def dirName = it.name
+  if (!dirName.startsWith(".") && !brokenProjects.contains(dirName)) {
+    testProjectNames += dirName
+  }
 }
 
-private void includeTestProjectsIntoIDE() {
-  // Some of the test projects are intentionally supposed to fail. Don't import these into the main project.
-  def brokenProjects = [
-    "invalid-application-plugin", // intentionally does not import
-    "missing-library-plugin", // intentionally does not import
-    "missing-supported-plugins", // intentionally does not import
-    "multiplatform-plugin-without-android", // intentionally does not import
-  ]
+def isIdea = !(System.getProperty("idea.version") ?: "").isEmpty()
+if (isIdea) {
+  System.setProperty("app.cash.paparazzi.testProjectNames", testProjectNames.join(","))
+  includeTestProjectsIntoIDE(testProjectNames)
+}
 
+private void includeTestProjectsIntoIDE(ArrayList<String> testProjectNames) {
   include(":test-projects")
   project(":test-projects").projectDir = new File(rootDir, "paparazzi-gradle-plugin/src/test/projects")
 
-  new File(rootDir, "paparazzi-gradle-plugin/src/test/projects").eachDir {
-    def dirName = it.name
-    if (!dirName.startsWith(".") && !brokenProjects.contains(dirName)) {
-      include ":test-projects:$dirName"
-      project(":test-projects:$dirName").projectDir = new File(rootDir, "paparazzi-gradle-plugin/src/test/projects/$dirName")
-    }
+  testProjectNames.forEach { dirName ->
+    include ":test-projects:$dirName"
+    project(":test-projects:$dirName").projectDir = new File(rootDir, "paparazzi-gradle-plugin/src/test/projects/$dirName")
   }
 }
