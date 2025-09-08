@@ -26,8 +26,6 @@ import android.view.WindowManagerImpl
 import android.widget.Checkable
 import android.widget.FrameLayout
 import android.widget.LinearLayout
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.platform.ViewRootForTest
 import androidx.compose.ui.semantics.LiveRegionMode.Companion.Assertive
@@ -236,12 +234,9 @@ public class AccessibilityRenderExtension : RenderExtension {
 
   private fun SemanticsNode.accessibilityText(): String? {
     val invisibleToUser = config.getOrNull(SemanticsProperties.InvisibleToUser) != null
-    val hasZeroAlphaModifier = layoutInfo.getModifierInfo().any {
-      // We don't get direct access to an alpha field but we can inspect the modifiers and see if
-      // a modifier of 0f was applied to the node.
-      it.modifier == Modifier.alpha(0f)
-    }
-    if (invisibleToUser || hasZeroAlphaModifier) {
+    val hideFromAccessibility = config.getOrNull(SemanticsProperties.HideFromAccessibility) != null
+    val hasZeroAlphaModifier = hasZeroAlpha()
+    if (invisibleToUser || hideFromAccessibility || hasZeroAlphaModifier) {
       return null
     }
 
@@ -347,6 +342,27 @@ public class AccessibilityRenderExtension : RenderExtension {
       customActions,
       isInList
     )
+  }
+
+  private fun SemanticsNode.hasZeroAlpha(): Boolean {
+    // try to reflectively query internal SemanticsNode.isTransparent() by iterating on kotlin field mangled names:
+    val candidateGetterNames = arrayOf(
+      "isTransparent",
+      "isTransparent\$ui_release",
+      "getIsTransparent",
+      "getIsTransparent\$ui_release"
+    )
+    for (name in candidateGetterNames) {
+      try {
+        val method = SemanticsNode::class.java.getDeclaredMethod(name)
+        method.isAccessible = true
+        val transparent = method.invoke(this) as? Boolean
+        if (transparent == true) return true
+      } catch (_: Exception) {
+        // Try next candidate name
+      }
+    }
+    return false
   }
 
   private fun View.accessibilityText(): String? {
