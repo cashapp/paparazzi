@@ -41,6 +41,7 @@ import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.semantics.invisibleToUser
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
@@ -185,6 +186,13 @@ class AccessibilityRenderingTest {
             modifier = Modifier
               .semantics {
                 invisibleToUser()
+              },
+            text = "Text invisible to user"
+          )
+          Text(
+            modifier = Modifier
+              .semantics {
+                hideFromAccessibility()
               },
             text = "Text invisible to user"
           )
