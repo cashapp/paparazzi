@@ -27,8 +27,14 @@ buildscript {
 
 apply plugin: 'binary-compatibility-validator'
 
+def testProjectProp = System.getProperty("app.cash.paparazzi.testProjectNames")
 apiValidation {
   ignoredProjects += ['sample']
+
+  if (testProjectProp != null) {
+    def testProjectNames = testProjectProp.split(",").toList()
+    ignoredProjects += testProjectNames
+  }
 }
 
 subprojects {
