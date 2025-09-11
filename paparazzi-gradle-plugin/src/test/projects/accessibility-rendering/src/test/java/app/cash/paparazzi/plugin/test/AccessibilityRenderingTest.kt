@@ -187,14 +187,14 @@ class AccessibilityRenderingTest {
               .semantics {
                 invisibleToUser()
               },
-            text = "Text invisible to user"
+            text = "Text invisible to user via `invisibleToUser`"
           )
           Text(
             modifier = Modifier
               .semantics {
                 hideFromAccessibility()
               },
-            text = "Text invisible to user"
+            text = "Text invisible to user via `hideFromAccessibility`"
           )
           Text(
             modifier = Modifier
