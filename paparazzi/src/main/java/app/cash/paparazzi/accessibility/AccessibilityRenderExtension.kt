@@ -437,6 +437,7 @@ public class AccessibilityRenderExtension : RenderExtension {
     // Cached reflection method for SemanticsNode transparency to avoid repeated lookups.
     @Volatile
     private var cachedIsTransparentMethod: Method? = null
+
     @Volatile
     private var attemptedResolveIsTransparentMethod: Boolean = false
 
