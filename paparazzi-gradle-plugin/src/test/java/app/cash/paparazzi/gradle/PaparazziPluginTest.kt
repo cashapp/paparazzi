@@ -421,13 +421,13 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun rerunOnResourceChange() {
+  fun rerunRecordOnResourceChange() {
     val fixtureRoot = File("src/test/projects/rerun-resource-change")
 
     val snapshotsDir = File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
     val snapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_RecordTest_record.png")
 
-    val valuesDir = File(fixtureRoot, "src/main/res/values/").registerForDeletionOnExit()
+    val valuesDir = File(fixtureRoot, "src/main/res/values").registerForDeletionOnExit()
     val destResourceFile = File(valuesDir, "colors.xml")
     val firstResourceFile = File(fixtureRoot, "src/test/resources/colors1.xml")
     val secondResourceFile = File(fixtureRoot, "src/test/resources/colors2.xml")
@@ -469,13 +469,58 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun rerunVerifyOnResourceChange() {
+    val fixtureRoot = File("src/test/projects/rerun-resource-change")
+
+    val snapshotsDir = File(fixtureRoot, "src/test/snapshots")
+    snapshotsDir.deleteRecursively()
+    val valuesDir = File(fixtureRoot, "src/main/res/values")
+    valuesDir.deleteRecursively()
+
+    val destResourceFile = File(valuesDir, "colors.xml")
+    val firstResourceFile = File(fixtureRoot, "src/test/resources/colors1.xml")
+    val secondResourceFile = File(fixtureRoot, "src/test/resources/colors2.xml")
+
+    // Original resource
+    firstResourceFile.copyTo(destResourceFile, overwrite = false)
+
+    // Setup
+    gradleRunner
+      .withArguments("recordPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    // Take 1
+    val firstRunResult = gradleRunner
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    with(firstRunResult.task(":testDebugUnitTest")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(SUCCESS) // not UP-TO-DATE
+    }
+
+    // Update resource
+    secondResourceFile.copyTo(destResourceFile, overwrite = true)
+
+    // Take 2
+    val secondRunResult = gradleRunner
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    with(secondRunResult.task(":testDebugUnitTest")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(TaskOutcome.FAILED) // not UP-TO-DATE
+    }
+  }
+
+  @Test
   fun rerunOnAssetChange() {
     val fixtureRoot = File("src/test/projects/rerun-asset-change")
 
     val snapshotsDir = File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
     val snapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_RecordTest_record.png")
 
-    val assetsDir = File(fixtureRoot, "src/main/assets/").registerForDeletionOnExit()
+    val assetsDir = File(fixtureRoot, "src/main/assets").registerForDeletionOnExit()
     val destAssetFile = File(assetsDir, "secret.txt")
     val firstAssetFile = File(fixtureRoot, "src/test/resources/secret1.txt")
     val secondAssetFile = File(fixtureRoot, "src/test/resources/secret2.txt")
@@ -925,7 +970,7 @@ class PaparazziPluginTest {
     val buildDir = fixtureRoot.resolve("build").registerForDeletionOnExit()
     fixtureRoot.resolve("build-cache").registerForDeletionOnExit()
 
-    val valuesDir = File(fixtureRoot, "src/main/res/values/").registerForDeletionOnExit()
+    val valuesDir = File(fixtureRoot, "src/main/res/values").registerForDeletionOnExit()
     val destResourceFile = File(valuesDir, "colors.xml")
     val firstResourceFile = File(fixtureRoot, "src/test/resources/colors1.xml")
     val secondResourceFile = File(fixtureRoot, "src/test/resources/colors2.xml")
@@ -992,7 +1037,7 @@ class PaparazziPluginTest {
     val buildDir = consumerModuleRoot.resolve("build").registerForDeletionOnExit()
 
     val producerModuleRoot = File(fixtureRoot, "producer")
-    val valuesDir = File(producerModuleRoot, "src/main/res/values/").registerForDeletionOnExit()
+    val valuesDir = File(producerModuleRoot, "src/main/res/values").registerForDeletionOnExit()
     val destResourceFile = File(valuesDir, "colors.xml")
     val firstResourceFile = File(producerModuleRoot, "src/test/resources/colors1.xml")
     val secondResourceFile = File(producerModuleRoot, "src/test/resources/colors2.xml")
@@ -1115,7 +1160,7 @@ class PaparazziPluginTest {
     val buildDir = fixtureRoot.resolve("build").registerForDeletionOnExit()
     fixtureRoot.resolve("build-cache").registerForDeletionOnExit()
 
-    val assetsDir = File(fixtureRoot, "src/main/assets/").registerForDeletionOnExit()
+    val assetsDir = File(fixtureRoot, "src/main/assets").registerForDeletionOnExit()
     val destAssetFile = File(assetsDir, "secret.txt")
     val firstAssetFile = File(fixtureRoot, "src/test/resources/secret1.txt")
     val secondAssetFile = File(fixtureRoot, "src/test/resources/secret2.txt")
@@ -1176,7 +1221,7 @@ class PaparazziPluginTest {
     val buildDir = consumerModuleRoot.resolve("build").registerForDeletionOnExit()
 
     val producerModuleRoot = File(fixtureRoot, "producer")
-    val assetsDir = File(producerModuleRoot, "src/main/assets/").registerForDeletionOnExit()
+    val assetsDir = File(producerModuleRoot, "src/main/assets").registerForDeletionOnExit()
     val destAssetFile = File(assetsDir, "secret.txt")
     val firstAssetFile = File(producerModuleRoot, "src/test/resources/secret1.txt")
     val secondAssetFile = File(producerModuleRoot, "src/test/resources/secret2.txt")
