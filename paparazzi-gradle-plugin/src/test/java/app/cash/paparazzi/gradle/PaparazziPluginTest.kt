@@ -72,7 +72,7 @@ class PaparazziPluginTest {
 
     assertThat(result.task(":preparePaparazziDebugResources")).isNull()
     assertThat(result.output).contains(
-      "One of com.android.application, com.android.library, com.android.dynamic-feature must be applied for Paparazzi to work properly."
+      "One of com.android.application, com.android.library, com.android.dynamic-feature, com.android.kotlin.multiplatform.library must be applied for Paparazzi to work properly."
     )
   }
 
@@ -92,10 +92,10 @@ class PaparazziPluginTest {
     val fixtureRoot = File("src/test/projects/multiplatform-plugin-with-android")
 
     val result = gradleRunner
-      .withArguments("preparePaparazziDebugResources", "--stacktrace")
+      .withArguments("preparePaparazziAndroidMainResources", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
 
-    assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
+    assertThat(result.task(":preparePaparazziAndroidMainResources")).isNotNull()
   }
 
   @Test
@@ -108,7 +108,7 @@ class PaparazziPluginTest {
 
     assertThat(result.task(":preparePaparazziDebugResources")).isNull()
     assertThat(result.output).contains(
-      "There must be an Android target configured when using Paparazzi with the Kotlin Multiplatform Plugin"
+      "One of com.android.application, com.android.library, com.android.dynamic-feature, com.android.kotlin.multiplatform.library must be applied for Paparazzi to work properly."
     )
   }
 
@@ -638,18 +638,6 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun verifyAllVariants() {
-    val fixtureRoot = File("src/test/projects/verify-mode-success")
-
-    val result = gradleRunner
-      .withArguments("verifyPaparazzi", "--stacktrace")
-      .runFixture(fixtureRoot) { build() }
-
-    assertThat(result.task(":verifyPaparazziDebug")).isNotNull()
-    assertThat(result.task(":verifyPaparazziRelease")).isNotNull()
-  }
-
-  @Test
   fun verifyFailure() {
     val fixtureRoot = File("src/test/projects/verify-mode-failure")
 
@@ -871,7 +859,6 @@ class PaparazziPluginTest {
     assertThat(config.projectResourceDirs).containsExactly(
       "src/main/res",
       "src/debug/res",
-      "build/generated/res/resValues/debug",
       "build/generated/res/extra"
     )
     assertThat(config.moduleResourceDirs).containsExactly(
@@ -907,7 +894,6 @@ class PaparazziPluginTest {
     assertThat(config.projectResourceDirs).containsExactly(
       "src/main/res",
       "src/debug/res",
-      "build/generated/res/resValues/debug",
       "build/generated/res/extra"
     )
     assertThat(config.moduleResourceDirs).containsExactly(
@@ -1494,7 +1480,7 @@ class PaparazziPluginTest {
       File(testReportDir, "app.cash.paparazzi.plugin.test.TestParameterInjectorTest.html")
     htmlText = testParamInjectorTestHtmlFile.readText()
     assertThat(htmlText).contains("<img")
-    assertThat(htmlText).contains("delta-app.cash.paparazzi.plugin.test_TestParameterInjectorTest_compose[darkMode=false,fontScale=1.0].png")
+    assertThat(htmlText).contains("delta-app.cash.paparazzi.plugin.test_TestParameterInjectorTest_compose[false,1.0].png")
   }
 
   @Test

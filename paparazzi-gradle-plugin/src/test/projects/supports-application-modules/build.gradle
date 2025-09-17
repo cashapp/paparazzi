@@ -1,6 +1,7 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
   id 'com.android.application'
-  id 'kotlin-android'
   id 'app.cash.paparazzi'
 }
 
@@ -14,8 +15,10 @@ android {
     sourceCompatibility = libs.versions.javaTarget.get()
     targetCompatibility = libs.versions.javaTarget.get()
   }
-  kotlinOptions {
-    jvmTarget = libs.versions.javaTarget.get()
-  }
 }
 
+kotlin {
+  compilerOptions {
+    jvmTarget = JvmTarget.fromTarget(libs.versions.javaTarget.get())
+  }
+}
