@@ -13,8 +13,11 @@ android {
     sourceCompatibility = libs.versions.javaTarget.get()
     targetCompatibility = libs.versions.javaTarget.get()
   }
-  libraryVariants.configureEach {
-    it.registerGeneratedResFolders(project.layout.buildDirectory.files("generated/res/extra"))
+}
+
+androidComponents {
+  onVariants(selector().all()) { variant ->
+    variant.sources.res?.addStaticSourceDirectory(project.layout.buildDirectory.dir("generated/res/extra").get().asFile.absolutePath)
   }
 }
 
