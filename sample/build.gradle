@@ -1,8 +1,9 @@
-apply plugin: 'com.android.library'
-apply plugin: 'org.jetbrains.kotlin.android'
-apply plugin: 'org.jetbrains.kotlin.plugin.compose'
-apply plugin: 'app.cash.paparazzi'
-apply plugin: 'jacoco'
+plugins {
+  id 'com.android.library'
+  id 'org.jetbrains.kotlin.plugin.compose'
+  id 'app.cash.paparazzi'
+  id 'jacoco'
+}
 
 android {
   namespace = 'app.cash.paparazzi.sample'
@@ -19,6 +20,7 @@ android {
   buildFeatures {
     compose = true
     viewBinding = true
+    resValues = true
   }
 }
 
