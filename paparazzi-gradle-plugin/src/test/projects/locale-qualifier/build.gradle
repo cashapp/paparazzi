@@ -1,6 +1,7 @@
 plugins {
   id 'com.android.library'
   id 'kotlin-android'
+  id 'org.jetbrains.kotlin.plugin.compose'
   id 'app.cash.paparazzi'
 }
 
@@ -17,10 +18,22 @@ android {
   kotlinOptions {
     jvmTarget = libs.versions.javaTarget.get()
   }
+  buildFeatures {
+    compose = true
+  }
 }
 
 dependencies {
   implementation libs.androidx.appcompat
+
+  // Compose dependencies
+  implementation libs.androidx.compose.ui.android
+  implementation libs.composeUi.uiTooling
+  implementation libs.compose.runtime
+
+  // Add ui-tooling-preview for @Preview annotation
+  implementation "androidx.compose.ui:ui-tooling-preview:${libs.versions.compose.get()}"
+  implementation libs.composeUi.material
 
   testImplementation libs.testParameterInjector
 }
