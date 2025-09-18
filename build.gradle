@@ -26,6 +26,7 @@ buildscript {
 }
 
 apply plugin: 'binary-compatibility-validator'
+apply plugin: 'app.cash.paparazzi'
 
 def testProjectProp = System.getProperty("app.cash.paparazzi.testProjectNames")
 apiValidation {
