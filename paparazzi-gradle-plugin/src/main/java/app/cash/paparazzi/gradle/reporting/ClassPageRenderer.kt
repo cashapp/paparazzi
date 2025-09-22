@@ -4,7 +4,6 @@ import org.gradle.api.internal.tasks.testing.junit.result.TestResultsProvider
 import org.gradle.api.tasks.testing.TestOutputEvent
 import org.gradle.internal.html.SimpleHtmlWriter
 import org.gradle.internal.xml.SimpleMarkupWriter
-import org.gradle.reporting.CodePanelRenderer
 import java.io.IOException
 
 internal class ClassPageRenderer(
@@ -117,7 +116,13 @@ internal class ClassPageRenderer(
           } else {
             failure.stackTrace
           }
-        codePanelRenderer.render(message, htmlWriter)
+        codePanelRenderer.render(
+          data = CodePanelRenderer.Data(
+            text = message,
+            codePanelId = "failure-${failure.message}-${failure.exceptionType}"
+          ),
+          htmlWriter = htmlWriter
+        )
       }
       htmlWriter.endElement()
     }
