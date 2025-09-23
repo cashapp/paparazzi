@@ -117,10 +117,7 @@ internal class ClassPageRenderer(
             failure.stackTrace
           }
         codePanelRenderer.render(
-          data = CodePanelRenderer.Data(
-            text = message,
-            codePanelId = "failure-${failure.message}-${failure.exceptionType}"
-          ),
+          text = message,
           htmlWriter = htmlWriter
         )
       }
