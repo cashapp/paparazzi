@@ -56,7 +56,13 @@ internal class PaparazziCallback(
   @Throws(ClassNotFoundException::class)
   fun initResources() {
     for (rPackageName in resourcePackageNames) {
-      val rClass = Class.forName("$rPackageName.R")
+      val rClass = try {
+        Class.forName("$rPackageName.R")
+      } catch (e: ClassNotFoundException) {
+        if (rPackageName in KNOWN_PACKAGES_WITHOUT_R_CLASS) continue
+        throw e
+      }
+
       for (resourceClass in rClass.declaredClasses) {
         val resourceType = ResourceType.fromClassName(resourceClass.simpleName) ?: continue
 
@@ -223,5 +229,11 @@ internal class PaparazziCallback(
     private val EMPTY_OBJECT_ARRAY = emptyArray<Any>()
     private const val CN_ANDROIDX_CUSTOM_ADAPTER = "com.android.layoutlib.bridge.android.androidx.Adapter"
     private const val CN_SUPPORT_CUSTOM_ADAPTER = "com.android.layoutlib.bridge.android.support.Adapter"
+
+    /**
+     * Some special AndroidX packages don't publish an R.class. These packages have no resources so it's safe to skip
+     * them. (But if a new release starts publishing an R.class, we should honor it.)
+     */
+    private val KNOWN_PACKAGES_WITHOUT_R_CLASS = setOf("androidx.legacy.coreutils")
   }
 }
