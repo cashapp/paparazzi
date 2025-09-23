@@ -28,10 +28,12 @@ import com.android.build.api.instrumentation.InstrumentationScope
 import com.android.build.api.variant.AndroidComponentsExtension
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension
 import com.android.build.api.variant.DynamicFeatureAndroidComponentsExtension
+import com.android.build.api.variant.HasHostTests
 import com.android.build.api.variant.HasUnitTest
+import com.android.build.api.variant.HostTestBuilder
 import com.android.build.api.variant.KotlinMultiplatformAndroidComponentsExtension
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
-import com.android.build.api.variant.UnitTest
+import com.android.build.api.variant.TestComponent
 import com.android.builder.model.Version.ANDROID_GRADLE_PLUGIN_VERSION
 import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
@@ -135,8 +137,12 @@ public class PaparazziPlugin @Inject constructor(
 
     extension.onVariants { variant ->
       val variantSlug = variant.name.capitalize()
-      val testVariant = (variant as? HasUnitTest)?.unitTest ?: return@onVariants
-      val snapshotOutputDir = snapshotDir(testVariant)
+      val testComponent = when (variant) {
+        is HasHostTests -> variant.hostTests[HostTestBuilder.UNIT_TEST_TYPE]
+        is HasUnitTest -> (variant as HasUnitTest).unitTest
+        else -> null
+      } ?: return@onVariants
+      val snapshotOutputDir = snapshotDir(testComponent)
 
       val deleteVariantSnapshot =
         project.tasks.register("delete${variantSlug}PaparazziSnapshots", Delete::class.java) {
@@ -161,7 +167,7 @@ public class PaparazziPlugin @Inject constructor(
       // This transform is a best-effort fix for ResourcesCompat font loading, so skip it for KMP
       // projects until AGP 9+.
       if (!isMultiplatformProject || isAgpAtLeast(major = 9)) {
-        val testInstrumentation = testVariant.instrumentation
+        val testInstrumentation = testComponent.instrumentation
         testInstrumentation.transformClassesWith(
           ResourcesCompatVisitorFactory::class.java,
           InstrumentationScope.ALL
@@ -196,7 +202,7 @@ public class PaparazziPlugin @Inject constructor(
         task.paparazziResources.set(buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.json"))
       }
 
-      val testVariantSlug = testVariant.name.capitalize()
+      val testVariantSlug = testComponent.name.capitalize()
 
       val testTasks = project.tasks.named { it == "test$testVariantSlug" }
       testTasks.configureEach { it.dependsOn(writeResourcesTask) }
@@ -471,15 +477,29 @@ public class PaparazziPlugin @Inject constructor(
   private fun <T : Any> Provider<T>.presentWhen(condition: Provider<Boolean>): Provider<T> =
     condition.filter { it }.flatMap { this }
 
-  private fun Project.snapshotDir(testVariant: UnitTest): Provider<Directory> {
-    val sources = testVariant.sources.kotlin?.all
-      ?: testVariant.sources.java?.all
-      ?: error("No Kotlin or Java sources on ${testVariant.name}")
-    val projectDirectory = layout.projectDirectory
-    return sources.map { dirs ->
-      val sourceSetRoot = dirs.firstOrNull()?.asFile?.parentFile
-        ?: error("No source dirs registered for ${testVariant.name}")
-      projectDirectory.dir(sourceSetRoot.path).dir("snapshots")
+  private fun Project.snapshotDir(testComponent: TestComponent): Provider<Directory> {
+    val testSources = requireNotNull(testComponent.sources.java?.all ?: testComponent.sources.kotlin?.all) {
+      "No test sources found for test component: ${testComponent.name}"
+    }
+    return testSources.map { sourceDirs ->
+      val defaultTestDir = sourceDirs.first().asFile.parentFile
+      val defaultTestDirectory = layout.projectDirectory.dir(defaultTestDir.path)
+      (
+        sourceDirs.firstNotNullOfOrNull { sourceDir ->
+          // Sources usually in `/src/test/java/` so need to move to parent `/src/test/`.
+          val parentFile = sourceDir.asFile.parentFile
+          val testFiles = sourceDir.asFileTree.relativize(layout.projectDirectory)
+          val isNonBuildDirectorySources =
+            parentFile.path.contains(layout.buildDirectory.get().asFile.path).not()
+          val containsTestFiles = testFiles.isPresent
+
+          if (isNonBuildDirectorySources && containsTestFiles) {
+            layout.projectDirectory.dir(parentFile.path)
+          } else {
+            null
+          }
+        } ?: defaultTestDirectory
+        ).dir("snapshots")
     }
   }
 
