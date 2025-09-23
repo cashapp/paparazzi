@@ -27,6 +27,7 @@ import com.android.build.api.instrumentation.InstrumentationScope
 import com.android.build.api.variant.AndroidComponentsExtension
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension
 import com.android.build.api.variant.DynamicFeatureAndroidComponentsExtension
+import com.android.build.api.variant.GeneratesApk
 import com.android.build.api.variant.HasUnitTest
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import org.gradle.api.DefaultTask
