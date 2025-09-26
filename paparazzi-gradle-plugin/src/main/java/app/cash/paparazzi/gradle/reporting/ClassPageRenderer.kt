@@ -104,7 +104,7 @@ internal class ClassPageRenderer(
         .attribute("class", test.statusClass)
         .characters(test.displayName)
         .endElement()
-      for (failure in test.failures) {
+      test.failures.forEachIndexed { index, failure ->
         val diffImage = diffImages[results.name to test.name]
         if (diffImage != null) {
           imagePanelRenderer.render(diffImage, htmlWriter)
@@ -117,7 +117,7 @@ internal class ClassPageRenderer(
             failure.stackTrace
           }
         codePanelRenderer.render(
-          text = message,
+          data = CodePanelRenderer.Data(text = message, codePanelId = "${test.id}-failure-$index-stacktrace"),
           htmlWriter = htmlWriter
         )
       }

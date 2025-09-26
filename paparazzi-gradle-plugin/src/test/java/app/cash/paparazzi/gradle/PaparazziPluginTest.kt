@@ -18,10 +18,8 @@ import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
 import java.io.File
-import java.nio.file.Files
-import java.nio.file.Path
-import javax.imageio.ImageIO
 
+@Suppress("ktlint:standard:max-line-length")
 class PaparazziPluginTest {
   private val filesToDelete = mutableListOf<File>()
 
@@ -1528,7 +1526,6 @@ class PaparazziPluginTest {
   }
 
   @Test
-  @Suppress("ktlint:standard:max-line-length")
   fun snapshotReport() {
     val fixtureRoot = File("src/test/projects/report-snapshots")
     val testReportDir = File(fixtureRoot, "build/reports/tests/testDebugUnitTest/classes")
