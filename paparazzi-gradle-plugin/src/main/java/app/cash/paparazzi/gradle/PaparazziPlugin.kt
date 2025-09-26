@@ -21,6 +21,7 @@ import app.cash.paparazzi.gradle.reporting.PaparazziTestReporter
 import app.cash.paparazzi.gradle.utils.artifactViewFor
 import app.cash.paparazzi.gradle.utils.capitalize
 import app.cash.paparazzi.gradle.utils.relativize
+import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.instrumentation.FramesComputationMode
 import com.android.build.api.instrumentation.InstrumentationScope
 import com.android.build.api.variant.AndroidComponentsExtension
@@ -28,7 +29,6 @@ import com.android.build.api.variant.ApplicationAndroidComponentsExtension
 import com.android.build.api.variant.DynamicFeatureAndroidComponentsExtension
 import com.android.build.api.variant.HasUnitTest
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
-import com.android.build.gradle.BaseExtension
 import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -122,6 +122,12 @@ public class PaparazziPlugin @Inject constructor(
       it.delete(files)
     }
 
+    // We need to pull target sdk as defined from DSL otherwise it gets set to some default value when resolving during [onVariants]
+    var targetSdkVersion: String? = null
+    extension.finalizeDsl { androidExtension ->
+      targetSdkVersion = androidExtension?.targetSdkVersion() ?: DEFAULT_COMPILE_SDK_VERSION.toString()
+    }
+
     extension.onVariants { variant ->
       val variantSlug = variant.name.capitalize()
       val testVariant = (variant as? HasUnitTest)?.unitTest ?: return@onVariants
@@ -147,15 +153,14 @@ public class PaparazziPlugin @Inject constructor(
         "preparePaparazzi${variantSlug}Resources",
         PrepareResourcesTask::class.java
       ) { task ->
-        val android = project.extensions.getByType(BaseExtension::class.java)
         val nonTransitiveRClassEnabled =
           project.providers.gradleProperty("android.nonTransitiveRClass").orNull?.toBoolean() ?: true
         val gradleHomeDir = projectDirectory.dir(project.gradle.gradleUserHomeDir.path)
 
-        task.packageName.set(android.packageName())
+        task.packageName.set(variant.namespace)
         task.artifactFiles.from(sources.packageAwareArtifactFiles)
         task.nonTransitiveRClassEnabled.set(nonTransitiveRClassEnabled)
-        task.targetSdkVersion.set(android.targetSdkVersion())
+        task.targetSdkVersion.set(targetSdkVersion)
         task.projectResourceDirs.set(sources.localResourceDirs.relativize(projectDirectory))
         task.moduleResourceDirs.set(sources.moduleResourceDirs.relativize(projectDirectory))
         task.aarExplodedDirs.set(sources.aarExplodedDirs.relativize(gradleHomeDir))
@@ -385,11 +390,8 @@ public class PaparazziPlugin @Inject constructor(
   private fun Project.overwriteOnMaxPercentDifferenceProvider(): Provider<String> =
     providers.gradleProperty("app.cash.paparazzi.overwriteOnMaxPercentDifference")
 
-  private fun BaseExtension.packageName(): String = namespace ?: ""
-
-  private fun BaseExtension.targetSdkVersion(): String =
-    defaultConfig.targetSdkVersion?.apiLevel?.toString()
-      ?: DEFAULT_COMPILE_SDK_VERSION.toString()
+  private fun Any.targetSdkVersion(): String =
+    ((this as? CommonExtension<*, *, *, *, *, *>)?.testOptions?.targetSdk ?: DEFAULT_COMPILE_SDK_VERSION).toString()
 
   private fun Provider<List<Directory>>?.relativize(directory: Directory): Provider<List<String>> =
     this?.map { dirs -> dirs.map { directory.relativize(it.asFile) } }
