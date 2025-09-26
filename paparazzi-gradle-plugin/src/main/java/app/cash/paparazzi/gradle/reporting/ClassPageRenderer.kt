@@ -4,7 +4,6 @@ import org.gradle.api.internal.tasks.testing.junit.result.TestResultsProvider
 import org.gradle.api.tasks.testing.TestOutputEvent
 import org.gradle.internal.html.SimpleHtmlWriter
 import org.gradle.internal.xml.SimpleMarkupWriter
-import org.gradle.reporting.CodePanelRenderer
 import java.io.IOException
 
 internal class ClassPageRenderer(
@@ -105,7 +104,7 @@ internal class ClassPageRenderer(
         .attribute("class", test.statusClass)
         .characters(test.displayName)
         .endElement()
-      for (failure in test.failures) {
+      test.failures.forEachIndexed { index, failure ->
         val diffImage = diffImages[results.name to test.name]
         if (diffImage != null) {
           imagePanelRenderer.render(diffImage, htmlWriter)
@@ -117,7 +116,10 @@ internal class ClassPageRenderer(
           } else {
             failure.stackTrace
           }
-        codePanelRenderer.render(message, htmlWriter)
+        codePanelRenderer.render(
+          data = CodePanelRenderer.Data(text = message, codePanelId = "${test.id}-failure-$index-stacktrace"),
+          htmlWriter = htmlWriter
+        )
       }
       htmlWriter.endElement()
     }
