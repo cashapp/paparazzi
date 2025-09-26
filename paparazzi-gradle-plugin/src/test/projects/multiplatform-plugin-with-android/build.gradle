@@ -1,21 +1,32 @@
+import com.android.build.api.instrumentation.InstrumentationScope
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import app.cash.paparazzi.gradle.instrumentation.ResourcesCompatVisitorFactory
+
 plugins {
+  id 'com.android.kotlin.multiplatform.library'
   id 'org.jetbrains.kotlin.multiplatform'
-  id 'com.android.library'
   id 'app.cash.paparazzi'
 }
 
 kotlin {
-  androidTarget()
-}
-
-android {
-  namespace = 'app.cash.paparazzi.plugin.test'
-  compileSdk = libs.versions.compileSdk.get() as int
-  defaultConfig {
+  androidLibrary {
+    namespace = 'app.cash.paparazzi.plugin.test'
+    compileSdk = libs.versions.compileSdk.get() as int
     minSdk = libs.versions.minSdk.get() as int
-  }
-  compileOptions {
-    sourceCompatibility = libs.versions.javaTarget.get()
-    targetCompatibility = libs.versions.javaTarget.get()
+
+    withJava()
+    withHostTest {
+    }
+
+    compilerOptions {
+      jvmTarget.set(JvmTarget.fromTarget(libs.versions.javaTarget.get()))
+    }
   }
 }
+//
+//androidComponents {
+//    onVariants(selector().all()) {
+//      instrumentation.transformClassesWith(ResourcesCompatVisitorFactory.class, InstrumentationScope.ALL) { params ->
+//      }
+//  }
+//}
