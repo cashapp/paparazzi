@@ -55,7 +55,7 @@ moshi-adapters = { module = "com.squareup.moshi:moshi-adapters", version.ref = "
 moshi-core = { module = "com.squareup.moshi:moshi", version.ref = "moshi" }
 moshi-kotlinReflect = { module = "com.squareup.moshi:moshi-kotlin", version.ref = "moshi" }
 
-okio = { module = "com.squareup.okio:okio", version = "3.16.1" }
+okio = { module = "com.squareup.okio:okio", version = "3.16.2" }
 
 tools-common = { module = "com.android.tools:common", version.ref = "androidTools" }
 tools-layoutlib = { module = "com.android.tools.layoutlib:layoutlib", version.ref = "layoutlib" }
