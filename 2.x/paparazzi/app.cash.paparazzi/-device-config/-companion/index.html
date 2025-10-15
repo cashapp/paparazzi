@@ -1,23 +1,23 @@
 <!DOCTYPE html>
-<html class="no-js">
+<html class="no-js" lang="en">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
     <title>Companion</title>
     <link href="../../../../images/logo-icon.svg" rel="icon" type="image/svg">
-    <script>var pathToRoot = "../../../../";</script>
-    <script>document.documentElement.classList.replace("no-js","js");</script>
+        <script>var pathToRoot = "../../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
     <script>const storage = localStorage.getItem("dokka-dark-mode")
-    if (storage == null) {
+      if (storage == null) {
         const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
         if (osDarkSchemePreferred === true) {
-            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
         }
-    } else {
+      } else {
         const savedDarkMode = JSON.parse(storage)
-        if(savedDarkMode === true) {
-            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
         }
-    }
+      }
     </script>
 <script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async="async"></script>
 <script type="text/javascript" src="../../../../scripts/sourceset_dependencies.js" async="async"></script>
@@ -25,20 +25,18 @@
 <link href="../../../../styles/main.css" rel="Stylesheet">
 <link href="../../../../styles/prism.css" rel="Stylesheet">
 <link href="../../../../styles/logo-styles.css" rel="Stylesheet">
-<link href="../../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
 <link href="../../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
-<script type="text/javascript" src="../../../../scripts/clipboard.js" async="async"></script>
+<script type="text/javascript" src="../../../../scripts/safe-local-storage_blocking.js"></script>
 <script type="text/javascript" src="../../../../scripts/navigation-loader.js" async="async"></script>
 <script type="text/javascript" src="../../../../scripts/platform-content-handler.js" async="async"></script>
 <script type="text/javascript" src="../../../../scripts/main.js" defer="defer"></script>
 <script type="text/javascript" src="../../../../scripts/prism.js" async="async"></script>
 <script type="text/javascript" src="../../../../ui-kit/ui-kit.min.js" defer="defer"></script>
-<script type="text/javascript" src="../../../../scripts/symbol-parameters-wrapper_deferred.js" defer="defer"></script>
 </head>
 <body>
-    <div class="root">
-    <nav class="navigation theme-dark" id="navigation-wrapper">
-            <a class="library-name--link" href="../../../../index.html">
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+            <a class="library-name--link" href="../../../../index.html" tabindex="1">
                     paparazzi
             </a>
         <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle"
@@ -48,8 +46,8 @@
         <div class="library-version" id="library-version">
 2.0.0-SNAPSHOT        </div>
         <div class="navigation-controls">
-        <div class="filter-section filter-section_loading" id="filter-section">
-                <button class="platform-tag platform-selector jvm-like" data-active=""
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true"
                         data-filter=":paparazzi/main">jvm</button>
             <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
                 <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox"
@@ -59,9 +57,9 @@
                         aria-expanded="false"
                         aria-label="Toggle source sets"
                 ></button>
-                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox">
-                    <div class="dropdown--header"><span>Platform filter</span>
-                        <button class="button" data-role="dropdown-toggle" aria-label="Close platform filter">
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
                             <i class="ui-kit-icon ui-kit-icon_cross"></i>
                         </button>
                     </div>
@@ -76,7 +74,7 @@
                 </ul>
                 <div class="dropdown--overlay"></div>
             </div>
-        </div>
+        </ul>
             <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button"
                     type="button">Switch theme
             </button>
@@ -84,39 +82,41 @@
                 API
             </div>
         </div>
-    </nav>
-        <div id="container">
-            <div class="sidebar" id="leftColumn">
-                <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
-                    <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list"
-                        data-role="dropdown-listbox">
-                        <div class="dropdown--header">
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config='{"defaultSize": 280, "minSize": 200, "maxSize": 400}'>
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list"
+                    data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
                             <span>
                                     paparazzi
                             </span>
-                            <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
-                                <i class="ui-kit-icon ui-kit-icon_cross"></i>
-                            </button>
-                        </div>
-                        <div class="sidebar--inner" id="sideMenu"></div>
-                    </ul>
-                    <div class="dropdown--overlay"></div>
-                </div>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
             </div>
-            <div id="main">
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
 <div class="main-content" data-page-type="classlike" id="content" pageIds="paparazzi::app.cash.paparazzi/DeviceConfig.Companion///PointingToDeclaration//-738307930">
   <div class="breadcrumbs"><a href="../../../../index.html">paparazzi</a><span class="delimiter">/</span><a href="../../index.html">app.cash.paparazzi</a><span class="delimiter">/</span><a href="../index.html">DeviceConfig</a><span class="delimiter">/</span><span class="current">Companion</span></div>
   <div class="cover ">
     <h1 class="cover"><span><span>Companion</span></span></h1>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":paparazzi/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="index.html">Companion</a><span class="clearfix"><span class="floating-right">(<a href="https://github.com/cashapp/paparazzi/tree/master/paparazzi/src/main/java/app/cash/paparazzi/DeviceConfig.kt#L202">source</a>)</span></span></div><p class="paragraph">Device specs per: https://android.googlesource.com/platform/tools/base/+/mirror-goog-studio-master-dev/sdklib/src/main/java/com/android/sdklib/devices/nexus.xml</p><p class="paragraph">Release dates obtained from Wikipedia.</p></div></div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":paparazzi/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="index.html">Companion</a><span class="source-link-wrapper"><span class="source-link" data-element-type="source-link">(<a href="https://github.com/cashapp/paparazzi/tree/master/paparazzi/src/main/java/app/cash/paparazzi/DeviceConfig.kt#L202">source</a>)</span></span></div><p class="paragraph">Device specs per: https://android.googlesource.com/platform/tools/base/+/mirror-goog-studio-master-dev/sdklib/src/main/java/com/android/sdklib/devices/nexus.xml</p><p class="paragraph">Release dates obtained from Wikipedia.</p></div></div>
   </div>
   <div class="tabbedcontent">
     <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
     <div class="tabs-section-body">
       <div data-togglable="PROPERTY">
-        <h2 class="">Properties</h2>
+        <h2 class="tableheader">Properties</h2>
         <div class="table"><a data-name="-207889330%2FProperties%2F-738307930" anchor-label="GALAXY_WATCH4_CLASSIC_LARGE" id="-207889330%2FProperties%2F-738307930" data-filterable-set=":paparazzi/main"></a>
-          <div class="table-row" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
+          <div class="table-row table-row_content" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-g-a-l-a-x-y_-w-a-t-c-h4_-c-l-a-s-s-i-c_-l-a-r-g-e.html"><span>GALAXY_</span><wbr></wbr><span>WATCH4_</span><wbr></wbr><span>CLASSIC_</span><wbr></wbr><span>LARGE</span></a></div>
@@ -131,7 +131,7 @@
             </div>
           </div>
 <a data-name="496719338%2FProperties%2F-738307930" anchor-label="NEXUS_10" id="496719338%2FProperties%2F-738307930" data-filterable-set=":paparazzi/main"></a>
-          <div class="table-row" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
+          <div class="table-row table-row_content" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-n-e-x-u-s_10.html"><span>NEXUS_</span><wbr></wbr><span>10</span></a></div>
@@ -146,7 +146,7 @@
             </div>
           </div>
 <a data-name="-982777571%2FProperties%2F-738307930" anchor-label="NEXUS_4" id="-982777571%2FProperties%2F-738307930" data-filterable-set=":paparazzi/main"></a>
-          <div class="table-row" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
+          <div class="table-row table-row_content" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-n-e-x-u-s_4.html"><span>NEXUS_</span><wbr></wbr><span>4</span></a></div>
@@ -161,7 +161,7 @@
             </div>
           </div>
 <a data-name="-951757764%2FProperties%2F-738307930" anchor-label="NEXUS_5" id="-951757764%2FProperties%2F-738307930" data-filterable-set=":paparazzi/main"></a>
-          <div class="table-row" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
+          <div class="table-row table-row_content" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-n-e-x-u-s_5.html"><span>NEXUS_</span><wbr></wbr><span>5</span></a></div>
@@ -176,7 +176,7 @@
             </div>
           </div>
 <a data-name="-889718150%2FProperties%2F-738307930" anchor-label="NEXUS_7" id="-889718150%2FProperties%2F-738307930" data-filterable-set=":paparazzi/main"></a>
-          <div class="table-row" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
+          <div class="table-row table-row_content" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-n-e-x-u-s_7.html"><span>NEXUS_</span><wbr></wbr><span>7</span></a></div>
@@ -191,7 +191,7 @@
             </div>
           </div>
 <a data-name="2111250210%2FProperties%2F-738307930" anchor-label="NEXUS_7_2012" id="2111250210%2FProperties%2F-738307930" data-filterable-set=":paparazzi/main"></a>
-          <div class="table-row" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
+          <div class="table-row table-row_content" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-n-e-x-u-s_7_2012.html"><span>NEXUS_</span><wbr></wbr><span>7_</span><wbr></wbr><span>2012</span></a></div>
@@ -206,7 +206,7 @@
             </div>
           </div>
 <a data-name="-839067701%2FProperties%2F-738307930" anchor-label="PIXEL" id="-839067701%2FProperties%2F-738307930" data-filterable-set=":paparazzi/main"></a>
-          <div class="table-row" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
+          <div class="table-row table-row_content" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-p-i-x-e-l.html"><span><span>PIXEL</span></span></a></div>
@@ -221,7 +221,7 @@
             </div>
           </div>
 <a data-name="-83394568%2FProperties%2F-738307930" anchor-label="PIXEL_2" id="-83394568%2FProperties%2F-738307930" data-filterable-set=":paparazzi/main"></a>
-          <div class="table-row" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
+          <div class="table-row table-row_content" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-p-i-x-e-l_2.html"><span>PIXEL_</span><wbr></wbr><span>2</span></a></div>
@@ -236,7 +236,7 @@
             </div>
           </div>
 <a data-name="-2007415441%2FProperties%2F-738307930" anchor-label="PIXEL_2_XL" id="-2007415441%2FProperties%2F-738307930" data-filterable-set=":paparazzi/main"></a>
-          <div class="table-row" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
+          <div class="table-row table-row_content" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-p-i-x-e-l_2_-x-l.html"><span>PIXEL_</span><wbr></wbr><span>2_</span><wbr></wbr><span>XL</span></a></div>
@@ -251,7 +251,7 @@
             </div>
           </div>
 <a data-name="-52374761%2FProperties%2F-738307930" anchor-label="PIXEL_3" id="-52374761%2FProperties%2F-738307930" data-filterable-set=":paparazzi/main"></a>
-          <div class="table-row" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
+          <div class="table-row table-row_content" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-p-i-x-e-l_3.html"><span>PIXEL_</span><wbr></wbr><span>3</span></a></div>
@@ -266,7 +266,7 @@
             </div>
           </div>
 <a data-name="-1314313744%2FProperties%2F-738307930" anchor-label="PIXEL_3_XL" id="-1314313744%2FProperties%2F-738307930" data-filterable-set=":paparazzi/main"></a>
-          <div class="table-row" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
+          <div class="table-row table-row_content" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-p-i-x-e-l_3_-x-l.html"><span>PIXEL_</span><wbr></wbr><span>3_</span><wbr></wbr><span>XL</span></a></div>
@@ -281,7 +281,7 @@
             </div>
           </div>
 <a data-name="-1608353150%2FProperties%2F-738307930" anchor-label="PIXEL_3A" id="-1608353150%2FProperties%2F-738307930" data-filterable-set=":paparazzi/main"></a>
-          <div class="table-row" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
+          <div class="table-row table-row_content" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-p-i-x-e-l_3-a.html"><span>PIXEL_</span><wbr></wbr><span>3A</span></a></div>
@@ -296,7 +296,7 @@
             </div>
           </div>
 <a data-name="115525285%2FProperties%2F-738307930" anchor-label="PIXEL_3A_XL" id="115525285%2FProperties%2F-738307930" data-filterable-set=":paparazzi/main"></a>
-          <div class="table-row" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
+          <div class="table-row table-row_content" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-p-i-x-e-l_3-a_-x-l.html"><span>PIXEL_</span><wbr></wbr><span>3A_</span><wbr></wbr><span>XL</span></a></div>
@@ -311,7 +311,7 @@
             </div>
           </div>
 <a data-name="-21354954%2FProperties%2F-738307930" anchor-label="PIXEL_4" id="-21354954%2FProperties%2F-738307930" data-filterable-set=":paparazzi/main"></a>
-          <div class="table-row" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
+          <div class="table-row table-row_content" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-p-i-x-e-l_4.html"><span>PIXEL_</span><wbr></wbr><span>4</span></a></div>
@@ -326,7 +326,7 @@
             </div>
           </div>
 <a data-name="-621212047%2FProperties%2F-738307930" anchor-label="PIXEL_4_XL" id="-621212047%2FProperties%2F-738307930" data-filterable-set=":paparazzi/main"></a>
-          <div class="table-row" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
+          <div class="table-row table-row_content" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-p-i-x-e-l_4_-x-l.html"><span>PIXEL_</span><wbr></wbr><span>4_</span><wbr></wbr><span>XL</span></a></div>
@@ -341,7 +341,7 @@
             </div>
           </div>
 <a data-name="-646739133%2FProperties%2F-738307930" anchor-label="PIXEL_4A" id="-646739133%2FProperties%2F-738307930" data-filterable-set=":paparazzi/main"></a>
-          <div class="table-row" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
+          <div class="table-row table-row_content" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-p-i-x-e-l_4-a.html"><span>PIXEL_</span><wbr></wbr><span>4A</span></a></div>
@@ -356,7 +356,7 @@
             </div>
           </div>
 <a data-name="9664853%2FProperties%2F-738307930" anchor-label="PIXEL_5" id="9664853%2FProperties%2F-738307930" data-filterable-set=":paparazzi/main"></a>
-          <div class="table-row" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
+          <div class="table-row table-row_content" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-p-i-x-e-l_5.html"><span>PIXEL_</span><wbr></wbr><span>5</span></a></div>
@@ -371,7 +371,7 @@
             </div>
           </div>
 <a data-name="40684660%2FProperties%2F-738307930" anchor-label="PIXEL_6" id="40684660%2FProperties%2F-738307930" data-filterable-set=":paparazzi/main"></a>
-          <div class="table-row" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
+          <div class="table-row table-row_content" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-p-i-x-e-l_6.html"><span>PIXEL_</span><wbr></wbr><span>6</span></a></div>
@@ -386,7 +386,7 @@
             </div>
           </div>
 <a data-name="1907078886%2FProperties%2F-738307930" anchor-label="PIXEL_6_PRO" id="1907078886%2FProperties%2F-738307930" data-filterable-set=":paparazzi/main"></a>
-          <div class="table-row" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
+          <div class="table-row table-row_content" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-p-i-x-e-l_6_-p-r-o.html"><span>PIXEL_</span><wbr></wbr><span>6_</span><wbr></wbr><span>PRO</span></a></div>
@@ -401,7 +401,7 @@
             </div>
           </div>
 <a data-name="443942151%2FProperties%2F-738307930" anchor-label="PIXEL_C" id="443942151%2FProperties%2F-738307930" data-filterable-set=":paparazzi/main"></a>
-          <div class="table-row" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
+          <div class="table-row table-row_content" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-p-i-x-e-l_-c.html"><span>PIXEL_</span><wbr></wbr><span>C</span></a></div>
@@ -416,7 +416,7 @@
             </div>
           </div>
 <a data-name="-47155012%2FProperties%2F-738307930" anchor-label="PIXEL_XL" id="-47155012%2FProperties%2F-738307930" data-filterable-set=":paparazzi/main"></a>
-          <div class="table-row" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
+          <div class="table-row table-row_content" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-p-i-x-e-l_-x-l.html"><span>PIXEL_</span><wbr></wbr><span>XL</span></a></div>
@@ -431,7 +431,7 @@
             </div>
           </div>
 <a data-name="-936337962%2FProperties%2F-738307930" anchor-label="WEAR_OS_SMALL_ROUND" id="-936337962%2FProperties%2F-738307930" data-filterable-set=":paparazzi/main"></a>
-          <div class="table-row" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
+          <div class="table-row table-row_content" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-w-e-a-r_-o-s_-s-m-a-l-l_-r-o-u-n-d.html"><span>WEAR_</span><wbr></wbr><span>OS_</span><wbr></wbr><span>SMALL_</span><wbr></wbr><span>ROUND</span></a></div>
@@ -446,7 +446,7 @@
             </div>
           </div>
 <a data-name="-1087606159%2FProperties%2F-738307930" anchor-label="WEAR_OS_SQUARE" id="-1087606159%2FProperties%2F-738307930" data-filterable-set=":paparazzi/main"></a>
-          <div class="table-row" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
+          <div class="table-row table-row_content" data-filterable-current=":paparazzi/main" data-filterable-set=":paparazzi/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-w-e-a-r_-o-s_-s-q-u-a-r-e.html"><span>WEAR_</span><wbr></wbr><span>OS_</span><wbr></wbr><span>SQUARE</span></a></div>
@@ -466,17 +466,21 @@
   </div>
 </div>
     <div class="footer">
-        <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
-        <span>© 2025 Copyright</span>
-        <span class="pull-right">
-            <span>Generated by </span>
-            <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
-                <span>dokka</span>
-            </a>
-        </span>
-    </div>
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2025 Copyright</div>
+                </div>
             </div>
         </div>
     </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>
