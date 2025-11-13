@@ -243,6 +243,12 @@ public class PaparazziPlugin @Inject constructor(
         test.inputs.files(layoutlibNativeRuntimeFileCollection)
           .withPropertyName("paparazzi.nativeRuntime")
           .withPathSensitivity(PathSensitivity.NONE)
+        test.inputs.files(layoutlibResourcesFileCollection)
+          .withPropertyName("paparazzi.resources")
+          .withPathSensitivity(PathSensitivity.NONE)
+        test.inputs.files(writeResourcesTask.flatMap { it.paparazziResources.asFile })
+          .withPropertyName("paparazzi.test.resources")
+          .withPathSensitivity(PathSensitivity.NONE)
 
         test.inputs.dir(
           isVerifyRun.flatMap {
