@@ -25,6 +25,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Slider
@@ -522,6 +523,33 @@ class AccessibilityRenderingTest {
     }
 
     paparazzi.snapshot(view)
+  }
+
+  @Test
+  @OptIn(ExperimentalMaterial3Api::class)
+  fun `verify Scaffold ordering - top bar, content, bottom bar`() {
+    paparazzi.snapshot {
+      Scaffold(
+        topBar = {
+          Column {
+            Text("Top Bar Item 1")
+            Text("Top Bar Item 2")
+          }
+        },
+        bottomBar = {
+          Column {
+            Text("Bottom Bar Item 1")
+            Text("Bottom Bar Item 2")
+          }
+        }
+      ) { paddingValues ->
+        Column(modifier = Modifier.fillMaxSize()) {
+          Text("Body Content 1")
+          Text("Body Content 2")
+          Text("Body Content 3")
+        }
+      }
+    }
   }
 
   private fun buildViewWithCustomActions(context: Context) =

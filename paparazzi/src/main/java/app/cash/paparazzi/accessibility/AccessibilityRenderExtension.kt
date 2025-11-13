@@ -80,10 +80,10 @@ public class AccessibilityRenderExtension : RenderExtension {
         }
 
         OneShotPreDrawListener.add(this@apply) {
-          val elements = buildSet {
+          val elements = buildList {
             windowManagerRootView?.processAccessibleChildren { add(it) }
             processAccessibleChildren { add(it) }
-          }
+          }.distinctBy { it.contentDescription }
 
           overlayDrawable.updateElements(elements)
           overlayDetailsView.updateElements(elements)

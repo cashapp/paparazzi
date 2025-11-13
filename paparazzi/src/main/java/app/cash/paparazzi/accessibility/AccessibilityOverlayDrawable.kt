@@ -8,7 +8,7 @@ import android.graphics.drawable.Drawable
 import app.cash.paparazzi.accessibility.RenderSettings.toColorInt
 
 internal class AccessibilityOverlayDrawable : Drawable() {
-  private var accessibilityElements = mutableSetOf<AccessibilityElement>()
+  private var accessibilityElements = mutableListOf<AccessibilityElement>()
   private val paint = Paint().apply {
     isAntiAlias = true
     style = Paint.Style.FILL
