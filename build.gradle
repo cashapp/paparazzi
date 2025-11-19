@@ -1,3 +1,6 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
+
 buildscript {
   repositories {
     mavenCentral()
@@ -63,9 +66,9 @@ subprojects {
     targetCompatibility = libs.versions.javaTarget.get()
   }
 
-  tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile).configureEach {
-    kotlinOptions {
-      jvmTarget = libs.versions.javaTarget.get()
+  tasks.withType(KotlinJvmCompile).configureEach {
+    compilerOptions {
+      jvmTarget = JvmTarget.fromTarget(libs.versions.javaTarget.get())
     }
   }
 

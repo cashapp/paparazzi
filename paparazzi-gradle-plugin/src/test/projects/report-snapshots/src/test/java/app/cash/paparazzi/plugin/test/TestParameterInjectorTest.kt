@@ -15,8 +15,8 @@ import org.junit.runner.RunWith
 
 @RunWith(TestParameterInjector::class)
 class TestParameterInjectorTest(
-  @TestParameter val darkMode: Boolean,
-  @TestParameter("1", "2") val fontScale: Float
+  @param:TestParameter val darkMode: Boolean,
+  @param:TestParameter("1", "2") val fontScale: Float
 ) {
   @get:Rule
   val paparazzi = Paparazzi(
