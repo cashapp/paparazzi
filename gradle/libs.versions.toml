@@ -82,4 +82,4 @@ plugin-kotlinApiDump = { module = "org.jetbrains.kotlinx:binary-compatibility-va
 plugin-ksp = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version.ref = "ksp" }
 plugin-mavenPublish = { module = "com.vanniktech:gradle-maven-publish-plugin", version = "0.35.0" }
 plugin-poko = { module = "dev.drewhamilton.poko:poko-gradle-plugin", version = "0.19.3" }
-plugin-spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version = "8.0.0" }
+plugin-spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version = "8.1.0" }
