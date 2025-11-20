@@ -19,6 +19,8 @@ import app.cash.paparazzi.Differ
 import app.cash.paparazzi.SnapshotHandler.FrameHandler
 import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.apng.ApngVerifier
+import app.cash.paparazzi.internal.differs.OffByTwo
+import app.cash.paparazzi.internal.differs.PixelPerfect
 import okio.Path.Companion.toOkioPath
 import java.awt.image.BufferedImage
 import java.awt.image.BufferedImage.TYPE_INT_ARGB
@@ -28,7 +30,7 @@ import javax.imageio.ImageIO
 public class SnapshotVerifier @JvmOverloads constructor(
   private val maxPercentDifference: Double,
   rootDirectory: File = File(System.getProperty("paparazzi.snapshot.dir")),
-  private val differ: Differ
+  private val differ: Differ = determineDiffer()
 ) : SnapshotHandler {
   private val imagesDirectory: File = File(rootDirectory, "images")
   private val videosDirectory: File = File(rootDirectory, "videos")
@@ -103,3 +105,17 @@ public class SnapshotVerifier @JvmOverloads constructor(
       }
   }
 }
+
+/**
+ * Convenience method to select a built-in differ via system property.
+ * This allows selection of built-in differs without requiring direct access to internal implementations.
+ */
+private fun determineDiffer() =
+  System.getProperty("app.cash.paparazzi.differ")?.lowercase().let { differ ->
+    when (differ) {
+      "offbytwo" -> OffByTwo
+      "pixelperfect" -> PixelPerfect
+      null, "", "default" -> OffByTwo
+      else -> error("Unknown differ type '$differ'.")
+    }
+  }
