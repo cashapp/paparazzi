@@ -21,13 +21,6 @@ import android.view.LayoutInflater
 import android.view.View
 import androidx.annotation.LayoutRes
 import androidx.compose.runtime.Composable
-import app.cash.paparazzi.Differ
-import app.cash.paparazzi.internal.differs.DeltaE2000
-import app.cash.paparazzi.internal.differs.Flip
-import app.cash.paparazzi.internal.differs.Mssim
-import app.cash.paparazzi.internal.differs.OffByTwo
-import app.cash.paparazzi.internal.differs.PixelPerfect
-import app.cash.paparazzi.internal.differs.Sift
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode
 import org.junit.rules.TestRule
 import org.junit.runner.Description
@@ -41,7 +34,7 @@ public class Paparazzi @JvmOverloads constructor(
   private val renderingMode: RenderingMode = RenderingMode.NORMAL,
   private val appCompatEnabled: Boolean = true,
   private val maxPercentDifference: Double = detectMaxPercentDifferenceDefault(),
-  private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference, differ),
+  private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference),
   private val renderExtensions: Set<RenderExtension> = setOf(),
   private val supportsRtl: Boolean = false,
   private val showSystemUi: Boolean = false,
@@ -60,7 +53,7 @@ public class Paparazzi @JvmOverloads constructor(
     renderingMode: RenderingMode = RenderingMode.NORMAL,
     appCompatEnabled: Boolean = true,
     maxPercentDifference: Double = detectMaxPercentDifferenceDefault(),
-    snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference, differ),
+    snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference),
     renderExtensions: Set<RenderExtension> = setOf(),
     supportsRtl: Boolean = false,
     showSystemUi: Boolean = false,
@@ -188,25 +181,11 @@ public class Paparazzi @JvmOverloads constructor(
     private val isVerifying: Boolean =
       System.getProperty("paparazzi.test.verify")?.toBoolean() == true
 
-    private val differ: Differ =
-      System.getProperty("app.cash.paparazzi.differ")?.lowercase().let { differ ->
-        when (differ) {
-          "offbytwo" -> OffByTwo
-          "pixelperfect" -> PixelPerfect
-          "mssim" -> Mssim
-          "sift" -> Sift
-          "flip" -> Flip
-          "de2000" -> DeltaE2000
-          null, "", "default" -> OffByTwo
-          else -> error("Unknown differ type '$differ'.")
-        }
-      }
-
-    private fun determineHandler(maxPercentDifference: Double, differ: Differ): SnapshotHandler =
+    private fun determineHandler(maxPercentDifference: Double): SnapshotHandler =
       if (isVerifying) {
-        SnapshotVerifier(maxPercentDifference, differ = differ)
+        SnapshotVerifier(maxPercentDifference)
       } else {
-        HtmlReportWriter(maxPercentDifference = maxPercentDifference, differ = differ)
+        HtmlReportWriter(maxPercentDifference = maxPercentDifference)
       }
   }
 }

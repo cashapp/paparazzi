@@ -19,8 +19,12 @@ import app.cash.paparazzi.Differ
 import app.cash.paparazzi.SnapshotHandler.FrameHandler
 import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.apng.ApngVerifier
+import app.cash.paparazzi.internal.differs.DeltaE2000
+import app.cash.paparazzi.internal.differs.Flip
+import app.cash.paparazzi.internal.differs.Mssim
 import app.cash.paparazzi.internal.differs.OffByTwo
 import app.cash.paparazzi.internal.differs.PixelPerfect
+import app.cash.paparazzi.internal.differs.Sift
 import okio.Path.Companion.toOkioPath
 import java.awt.image.BufferedImage
 import java.awt.image.BufferedImage.TYPE_INT_ARGB
@@ -106,15 +110,15 @@ public class SnapshotVerifier @JvmOverloads constructor(
   }
 }
 
-/**
- * Convenience method to select a built-in differ via system property.
- * This allows selection of built-in differs without requiring direct access to internal implementations.
- */
-private fun determineDiffer() =
+internal fun determineDiffer() =
   System.getProperty("app.cash.paparazzi.differ")?.lowercase().let { differ ->
     when (differ) {
       "offbytwo" -> OffByTwo
       "pixelperfect" -> PixelPerfect
+      "mssim" -> Mssim
+      "sift" -> Sift
+      "flip" -> Flip
+      "de2000" -> DeltaE2000
       null, "", "default" -> OffByTwo
       else -> error("Unknown differ type '$differ'.")
     }
