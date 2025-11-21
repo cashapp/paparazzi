@@ -119,8 +119,9 @@ public final class app/cash/paparazzi/Flags {
 
 public final class app/cash/paparazzi/HtmlReportWriter : app/cash/paparazzi/SnapshotHandler {
 	public static final field $stable I
-	public fun <init> (DLapp/cash/paparazzi/Differ;)V
-	public fun <init> (Ljava/lang/String;DLapp/cash/paparazzi/Differ;)V
+	public fun <init> (D)V
+	public fun <init> (Ljava/lang/String;D)V
+	public fun <init> (Ljava/lang/String;Ljava/io/File;D)V
 	public fun <init> (Ljava/lang/String;Ljava/io/File;DLapp/cash/paparazzi/Differ;)V
 	public fun <init> (Ljava/lang/String;Ljava/io/File;DLapp/cash/paparazzi/Differ;Ljava/io/File;)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/io/File;DLapp/cash/paparazzi/Differ;Ljava/io/File;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -243,7 +244,8 @@ public final class app/cash/paparazzi/SnapshotHandlerKt {
 
 public final class app/cash/paparazzi/SnapshotVerifier : app/cash/paparazzi/SnapshotHandler {
 	public static final field $stable I
-	public fun <init> (DLapp/cash/paparazzi/Differ;)V
+	public fun <init> (D)V
+	public fun <init> (DLjava/io/File;)V
 	public fun <init> (DLjava/io/File;Lapp/cash/paparazzi/Differ;)V
 	public synthetic fun <init> (DLjava/io/File;Lapp/cash/paparazzi/Differ;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun close ()V
