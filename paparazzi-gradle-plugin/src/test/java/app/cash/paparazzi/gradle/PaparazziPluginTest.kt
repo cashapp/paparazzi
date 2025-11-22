@@ -72,7 +72,7 @@ class PaparazziPluginTest {
 
     assertThat(result.task(":preparePaparazziDebugResources")).isNull()
     assertThat(result.output).contains(
-      "One of com.android.application, com.android.library, com.android.dynamic-feature must be applied for Paparazzi to work properly."
+      "One of com.android.application, com.android.library, com.android.dynamic-feature, com.android.kotlin.multiplatform.library must be applied for Paparazzi to work properly."
     )
   }
 
@@ -85,6 +85,17 @@ class PaparazziPluginTest {
       .runFixture(fixtureRoot) { build() }
 
     assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
+  }
+
+  @Test
+  fun kotlinMultiplatformPluginWithNewAndroidLibraryPlugin() {
+    val fixtureRoot = File("src/test/projects/multiplatform-plugin-with-new-android-library-plugin")
+
+    val result = gradleRunner
+      .withArguments("preparePaparazziAndroidMainResources", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":preparePaparazziAndroidMainResources")).isNotNull()
   }
 
   @Test
