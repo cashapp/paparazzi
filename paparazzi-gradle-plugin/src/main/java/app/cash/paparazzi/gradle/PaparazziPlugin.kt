@@ -223,7 +223,7 @@ public class PaparazziPlugin @Inject constructor(
         test.systemProperties["paparazzi.report.dir"] = reportOutputDir.get().toString()
         test.systemProperties["paparazzi.snapshot.dir"] = snapshotOutputDir.toString()
         test.systemProperties["paparazzi.artifacts.cache.dir"] = gradleUserHomeDir.path
-        test.systemProperties.putAll(project.properties.filterKeys { it.startsWith("app.cash.paparazzi") })
+        test.systemProperties.putAll(project.providers.gradlePropertiesPrefixedBy("app.cash.paparazzi").get())
 
         test.inputs.property("paparazzi.test.record", isRecordRun)
         test.inputs.property("paparazzi.test.verify", isVerifyRun)
