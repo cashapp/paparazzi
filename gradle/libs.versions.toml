@@ -44,7 +44,7 @@ kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-t
 
 ksp = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }
 
-ktlint-core = "com.pinterest.ktlint:ktlint-cli:1.7.1"
+ktlint-core = "com.pinterest.ktlint:ktlint-cli:1.8.0"
 
 kxml2 = { module = "kxml2:kxml2", version = "2.3.0" }
 
