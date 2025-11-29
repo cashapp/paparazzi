@@ -55,10 +55,10 @@ class HelloComposeTest {
 
   @Test
   fun `when strict mode is false then no exception thrown snapshot`() {
-      paparazzi.snapshot {
-        LaunchedEffect(key1 = Unit) { }
-        Column { }
-      }
+    paparazzi.snapshot {
+      LaunchedEffect(key1 = Unit) { }
+      Column { }
+    }
   }
 
   @Test
