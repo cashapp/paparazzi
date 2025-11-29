@@ -73,6 +73,7 @@ dependencies {
   layoutlibRuntime variantOf(libs.tools.layoutlib.runtime) { classifier(osLabel) }
   layoutlibResources libs.tools.layoutlib.resources
 
+  testImplementation libs.kotlinx.coroutines.test
   testImplementation libs.truth
 }
 
