@@ -54,7 +54,7 @@ class HelloComposeTest {
   }
 
   @Test
-  fun `given strict mode false, when paparazzi takes a snapshot, then no exception is thrown`() {
+  fun `when strict mode is false then no exception thrown snapshot`() {
       paparazzi.snapshot {
         LaunchedEffect(key1 = Unit) { }
         Column { }
@@ -71,7 +71,7 @@ class HelloComposeTest {
   }
 
   @Test
-  fun `given strict mode false, when paparazzi takes a gif, then no exception is thrown`() {
+  fun `when strict mode is false then no exception thrown gif`() {
     paparazzi.gif(ComposeView(paparazzi.context), end = 100L)
   }
 }
