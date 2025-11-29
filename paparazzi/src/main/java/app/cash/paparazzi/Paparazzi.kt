@@ -21,6 +21,7 @@ import android.view.LayoutInflater
 import android.view.View
 import androidx.annotation.LayoutRes
 import androidx.compose.runtime.Composable
+import app.cash.paparazzi.internal.validation.MainDispatcherValidator
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode
 import org.junit.rules.TestRule
 import org.junit.runner.Description
@@ -41,6 +42,9 @@ public class Paparazzi @JvmOverloads constructor(
   private val useDeviceResolution: Boolean = false
 ) : TestRule {
   private var validateAccessibility = false
+  private val mainDispatcherValidator = MainDispatcherValidator(
+    strictMode = System.getProperty("paparazzi.dispatcher.strict", "false").toBoolean()
+  )
 
   @Deprecated(
     "validateAccessibility is deprecated. " +
@@ -166,6 +170,7 @@ public class Paparazzi @JvmOverloads constructor(
     frameCount: Int = 1,
     fps: Int = -1
   ): SnapshotHandler.FrameHandler {
+    mainDispatcherValidator.checkMainCoroutineDispatcher()
     val snapshot = Snapshot(name, testName!!, Date())
     return snapshotHandler.newFrameHandler(snapshot, frameCount, fps)
   }
