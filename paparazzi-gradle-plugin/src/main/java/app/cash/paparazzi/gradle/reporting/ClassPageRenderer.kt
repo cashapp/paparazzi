@@ -5,6 +5,7 @@ import org.gradle.api.tasks.testing.TestOutputEvent
 import org.gradle.internal.html.SimpleHtmlWriter
 import org.gradle.internal.xml.SimpleMarkupWriter
 import org.gradle.reporting.CodePanelRenderer
+import org.gradle.reporting.HtmlWriterTools.addClipboardCopyButton
 import java.io.IOException
 
 internal class ClassPageRenderer(
@@ -95,11 +96,13 @@ internal class ClassPageRenderer(
   @Throws(IOException::class)
   override fun renderFailures(htmlWriter: SimpleHtmlWriter) {
     for (test in results.failures) {
+      val testId = test.id.toString()
       htmlWriter
         .startElement("div")
         .attribute("class", "test")
         .startElement("a")
-        .attribute("name", test.id.toString()).characters("")
+        .attribute("name", testId)
+        .characters("")
         .endElement() // browsers dont understand <a name="..."/>
         .startElement("h3")
         .attribute("class", test.statusClass)
@@ -117,7 +120,10 @@ internal class ClassPageRenderer(
           } else {
             failure.stackTrace
           }
-        codePanelRenderer.render(message, htmlWriter)
+        codePanelRenderer.render(
+          CodePanelRenderer.Data(message, "test-message-$testId"),
+          htmlWriter
+        )
       }
       htmlWriter.endElement()
     }
@@ -141,13 +147,17 @@ internal class ClassPageRenderer(
         object : ErroringAction<SimpleHtmlWriter>() {
           @Throws(IOException::class)
           override fun doExecute(htmlWriter: SimpleHtmlWriter) {
+            val codeId = "class-stdout"
             htmlWriter
               .startElement("span")
               .attribute("class", "code")
               .startElement("pre")
+              .attribute("id", codeId)
               .characters("")
             resultsProvider.writeAllOutput(classId, TestOutputEvent.Destination.StdOut, htmlWriter)
-            htmlWriter.endElement().endElement()
+            htmlWriter.endElement()
+            addClipboardCopyButton(htmlWriter, codeId)
+            htmlWriter.endElement()
           }
         }
       )
@@ -158,13 +168,17 @@ internal class ClassPageRenderer(
         object : ErroringAction<SimpleHtmlWriter>() {
           @Throws(Exception::class)
           override fun doExecute(htmlWriter: SimpleHtmlWriter) {
+            val codeId = "class-stderr"
             htmlWriter
               .startElement("span")
               .attribute("class", "code")
               .startElement("pre")
+              .attribute("id", codeId)
               .characters("")
             resultsProvider.writeAllOutput(classId, TestOutputEvent.Destination.StdErr, htmlWriter)
-            htmlWriter.endElement().endElement()
+            htmlWriter.endElement()
+            addClipboardCopyButton(htmlWriter, codeId)
+            htmlWriter.endElement()
           }
         }
       )
