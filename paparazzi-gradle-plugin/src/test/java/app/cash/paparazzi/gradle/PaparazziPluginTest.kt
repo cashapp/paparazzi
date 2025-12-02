@@ -1596,6 +1596,15 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun dispatcherValidation() {
+    val fixtureRoot = File("src/test/projects/dispatcher-validation")
+
+    gradleRunner
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+  }
+
+  @Test
   fun verifyCoroutineDelay() {
     val fixtureRoot = File("src/test/projects/coroutine-delay-main")
 

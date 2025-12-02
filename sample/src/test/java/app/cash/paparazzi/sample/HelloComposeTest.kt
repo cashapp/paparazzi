@@ -6,73 +6,23 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import app.cash.paparazzi.Paparazzi
-import org.junit.After
-import org.junit.Assert.assertThrows
 import org.junit.Rule
 import org.junit.Test
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.setMain
 
 class HelloComposeTest {
-
-  init {
-    System.setProperty("paparazzi.dispatcher.strict", "true")
-  }
-
   @get:Rule
   val paparazzi = Paparazzi()
-
-  @After
-  fun tearDown() {
-    Dispatchers.resetMain()
-    System.setProperty("paparazzi.dispatcher.strict", "false")
-  }
 
   @Test
   fun compose() {
     paparazzi.snapshot { HelloPaparazzi() }
-  }
-
-  @Test
-  fun `given strict mode true, when paparazzi takes a snapshot, then throw an exception`() {
-    Dispatchers.setMain(StandardTestDispatcher())
-
-    assertThrows(IllegalStateException::class.java) {
-      paparazzi.snapshot { HelloPaparazzi() }
-    }
-  }
-
-  @Test
-  fun `when strict mode is false then no exception thrown snapshot`() {
-    paparazzi.snapshot {
-      LaunchedEffect(key1 = Unit) { }
-      Column { }
-    }
-  }
-
-  @Test
-  fun `given strict mode true, when paparazzi takes a gif, then throw an exception`() {
-    Dispatchers.setMain(StandardTestDispatcher())
-
-    assertThrows(IllegalStateException::class.java) {
-      paparazzi.gif(ComposeView(paparazzi.context), end = 100L)
-    }
-  }
-
-  @Test
-  fun `when strict mode is false then no exception thrown gif`() {
-    paparazzi.gif(ComposeView(paparazzi.context), end = 100L)
   }
 }
 

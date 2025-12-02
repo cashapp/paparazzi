@@ -55,6 +55,7 @@ import app.cash.paparazzi.internal.Renderer
 import app.cash.paparazzi.internal.SessionParamsBuilder
 import app.cash.paparazzi.internal.interceptors.EditModeInterceptor
 import app.cash.paparazzi.internal.parsers.LayoutPullParser
+import app.cash.paparazzi.internal.validation.MainDispatcherValidator
 import com.android.ide.common.rendering.api.RenderSession
 import com.android.ide.common.rendering.api.Result
 import com.android.ide.common.rendering.api.Result.Status.ERROR_UNKNOWN
@@ -94,6 +95,9 @@ public class PaparazziSdk @JvmOverloads constructor(
   private val onNewFrame: (BufferedImage) -> Unit
 ) {
   private var validateAccessibility = false
+  private val mainDispatcherValidator = MainDispatcherValidator(
+    strictMode = System.getProperty("paparazzi.dispatcher.strict", "false").toBoolean()
+  )
 
   @Deprecated(
     "validateAccessibility is deprecated. " +
@@ -263,6 +267,7 @@ public class PaparazziSdk @JvmOverloads constructor(
   }
 
   private fun takeSnapshots(view: View, startNanos: Long, fps: Int, frameCount: Int) {
+    mainDispatcherValidator.checkMainCoroutineDispatcher()
     val viewGroup = bridgeRenderSession.rootViews[0].viewObject as ViewGroup
     val modifiedView = renderExtensions.fold(view) { currentView, renderExtension ->
       val currentSessionRenderingMode = sessionParamsBuilder.build().renderingMode

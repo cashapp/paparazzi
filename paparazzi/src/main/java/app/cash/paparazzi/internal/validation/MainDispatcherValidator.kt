@@ -28,10 +28,15 @@ internal class MainDispatcherValidator(
   private val strictMode: Boolean
 ) {
 
+  private val errorMessage = "Main dispatcher was modified." +
+    " Please do not change Main dispatcher in paparazzi tests." +
+    "If overriding Main dispatched is needed, please call " +
+    "\"Dispatchers.resetMain()\" before Paparazzi.snapshot or Paparazzi.gif is called."
+
   internal fun checkMainCoroutineDispatcher() {
     if (isMainDispatcherModified()) {
       throw MainDispatcherAlteredException(
-        message = "Main dispatcher was modified. Please do not change Main dispatcher in paparazzi tests."
+        message = errorMessage
       )
     }
   }

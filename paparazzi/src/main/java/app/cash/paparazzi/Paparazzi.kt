@@ -42,9 +42,6 @@ public class Paparazzi @JvmOverloads constructor(
   private val useDeviceResolution: Boolean = false
 ) : TestRule {
   private var validateAccessibility = false
-  private val mainDispatcherValidator = MainDispatcherValidator(
-    strictMode = System.getProperty("paparazzi.dispatcher.strict", "false").toBoolean()
-  )
 
   @Deprecated(
     "validateAccessibility is deprecated. " +
@@ -170,7 +167,6 @@ public class Paparazzi @JvmOverloads constructor(
     frameCount: Int = 1,
     fps: Int = -1
   ): SnapshotHandler.FrameHandler {
-    mainDispatcherValidator.checkMainCoroutineDispatcher()
     val snapshot = Snapshot(name, testName!!, Date())
     return snapshotHandler.newFrameHandler(snapshot, frameCount, fps)
   }
