@@ -16,7 +16,7 @@ compileSdk = "36"
 [libraries]
 androidx-annotations = { module = "androidx.annotation:annotation", version = "1.9.1" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version = "1.7.1" }
-androidx-activity = { module = "androidx.activity:activity", version = "1.12.0" }
+androidx-activity = { module = "androidx.activity:activity", version = "1.12.1" }
 androidx-compose-ui-android = { module = "androidx.compose.ui:ui-android", version.ref = "compose" }
 androidx-lifecycle-runtime = { module = "androidx.lifecycle:lifecycle-runtime-android", version = "2.10.0" }
 androidx-savedstate = { module = "androidx.savedstate:savedstate-android", version = "1.4.0" }
