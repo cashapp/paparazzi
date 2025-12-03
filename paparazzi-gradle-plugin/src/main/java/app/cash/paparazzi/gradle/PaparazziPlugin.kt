@@ -27,9 +27,7 @@ import com.android.build.api.instrumentation.InstrumentationScope
 import com.android.build.api.variant.AndroidComponentsExtension
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension
 import com.android.build.api.variant.DynamicFeatureAndroidComponentsExtension
-import com.android.build.api.variant.GeneratesApk
 import com.android.build.api.variant.HasUnitTest
-import com.android.build.api.variant.KotlinMultiplatformAndroidComponentsExtension
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
@@ -46,7 +44,6 @@ import org.gradle.api.provider.ProviderFactory
 import org.gradle.api.reporting.ReportingExtension
 import org.gradle.api.tasks.Delete
 import org.gradle.api.tasks.PathSensitivity
-import org.gradle.api.tasks.TaskCollection
 import org.gradle.api.tasks.options.Option
 import org.gradle.api.tasks.testing.AbstractTestTask
 import org.gradle.api.tasks.testing.Test
@@ -68,21 +65,15 @@ public class PaparazziPlugin @Inject constructor(
   private val buildOperationExecutor: BuildOperationExecutor
 ) : Plugin<Project> {
   override fun apply(project: Project) {
-    val supportedPlugins = listOf(
-      "com.android.application",
-      "com.android.library",
-      "com.android.dynamic-feature",
-      ANDROID_KOTLIN_MULTIPLATFORM_LIBRARY_PLUGIN
-    )
+    val supportedPlugins = listOf("com.android.application", "com.android.library", "com.android.dynamic-feature")
     project.afterEvaluate {
       check(supportedPlugins.any { project.plugins.hasPlugin(it) }) {
         "One of ${supportedPlugins.joinToString(", ")} must be applied for Paparazzi to work properly."
       }
-      val supportsNewAndroidKMPPlugin = project.plugins.hasPlugin(ANDROID_KOTLIN_MULTIPLATFORM_LIBRARY_PLUGIN)
       project.plugins.withId("org.jetbrains.kotlin.multiplatform") {
         val kmpExtension = project.extensions.getByType(KotlinMultiplatformExtension::class.java)
-        check(supportsNewAndroidKMPPlugin || kmpExtension.targets.any { target -> target is KotlinAndroidTarget }) {
-          "There must be an Android target configured when using Paparazzi with the Kotlin Multiplatform Plugin. You can also try adding then new Android Library KMP plugin: https://developer.android.com/kotlin/multiplatform/plugin. "
+        check(kmpExtension.targets.any { target -> target is KotlinAndroidTarget }) {
+          "There must be an Android target configured when using Paparazzi with the Kotlin Multiplatform Plugin"
         }
       }
     }
@@ -93,8 +84,7 @@ public class PaparazziPlugin @Inject constructor(
         when (androidComponents) {
           is LibraryAndroidComponentsExtension,
           is ApplicationAndroidComponentsExtension,
-          is DynamicFeatureAndroidComponentsExtension,
-          is KotlinMultiplatformAndroidComponentsExtension -> Unit
+          is DynamicFeatureAndroidComponentsExtension -> Unit
           // exhaustive to avoid potential breaking changes in future AGP releases
           else -> error("${androidComponents.javaClass.name} from $plugin is not supported in Paparazzi")
         }
@@ -104,9 +94,7 @@ public class PaparazziPlugin @Inject constructor(
   }
 
   private fun setupPaparazzi(project: Project, extension: AndroidComponentsExtension<*, *, *>) {
-    val newMultiplatformPlugin = extension is KotlinMultiplatformAndroidComponentsExtension
-    val isMultiplatform = newMultiplatformPlugin || project.plugins.hasPlugin("org.jetbrains.kotlin.multiplatform")
-    project.addTestDependency(isMultiplatform)
+    project.addTestDependency()
     val layoutlibNativeRuntimeFileCollection = project.setupLayoutlibRuntimeDependency()
     val layoutlibResourcesFileCollection = project.setupLayoutlibResourcesDependency()
     val snapshotOutputDir = project.layout.projectDirectory.dir("src/test/snapshots")
@@ -150,29 +138,14 @@ public class PaparazziPlugin @Inject constructor(
       val reportOutputDir =
         project.extensions.getByType(ReportingExtension::class.java).baseDirectory.dir("paparazzi/${variant.name}")
 
-      // TODO: Fixup with for [Android Multiplatform Library Plugin] doesn't have exception with instrumentation transformations for KMP
-      /**
-       *****
-       * Caused by: kotlin.UninitializedPropertyAccessException: lateinit property visitorFactory has not been initialized
-       * 	at com.android.build.gradle.internal.instrumentation.AsmClassVisitorFactoryEntry.getVisitorFactory(AsmClassVisitorFactoryEntry.kt:33)
-       * 	at com.android.build.gradle.internal.dsl.InstrumentationImpl.getRegisteredDependenciesClassesVisitors(InstrumentationImpl.kt:72)
-       * 	at com.android.build.api.component.impl.features.InstrumentationCreationConfigImpl.getRegisteredDependenciesClassesVisitors(InstrumentationCreationConfigImpl.kt:118)
-       * 	at com.android.build.api.component.impl.features.InstrumentationCreationConfigImpl.getDependenciesClassesAreInstrumented(InstrumentationCreationConfigImpl.kt:56)
-       * 	at com.android.build.gradle.internal.dependency.AsmClassesTransform$Companion.registerAsmTransformForComponent(AsmClassesTransform.kt:68)
-       * 	at com.android.build.gradle.internal.DependencyConfigurator.configureVariantTransforms(DependencyConfigurator.kt:895)
-       * 	at com.android.build.gradle.internal.plugins.KotlinMultiplatformAndroidPlugin.afterEvaluate(KotlinMultiplatformAndroidPlugin.kt:427)
-       * 	at com.android.build.gradle.internal.plugins.KotlinMultiplatformAndroidPlugin.access$afterEvaluate(KotlinMultiplatformAndroidPlugin.kt:127)
-       */
-      if (!newMultiplatformPlugin) {
-        val testInstrumentation = testVariant.instrumentation
-        testInstrumentation.transformClassesWith(
-          ResourcesCompatVisitorFactory::class.java,
-          InstrumentationScope.ALL
-        ) { }
-        testInstrumentation.setAsmFramesComputationMode(
-          FramesComputationMode.COMPUTE_FRAMES_FOR_INSTRUMENTED_METHODS
-        )
-      }
+      val testInstrumentation = testVariant.instrumentation
+      testInstrumentation.transformClassesWith(
+        ResourcesCompatVisitorFactory::class.java,
+        InstrumentationScope.ALL
+      ) { }
+      testInstrumentation.setAsmFramesComputationMode(
+        FramesComputationMode.COMPUTE_FRAMES_FOR_INSTRUMENTED_METHODS
+      )
 
       val sources = AndroidVariantSources(variant)
 
@@ -201,10 +174,8 @@ public class PaparazziPlugin @Inject constructor(
 
       val testVariantSlug = testVariant.name.capitalize()
 
-      val testTasks = project.tasks.named {
-        it == "test$testVariantSlug" || (isMultiplatform && it == "testAndroidHostTest")
-      }
-      testTasks.configureEach { it.dependsOn(writeResourcesTask) }
+      project.tasks.named { it == "test$testVariantSlug" }
+        .configureEach { it.dependsOn(writeResourcesTask) }
 
       val recordTaskProvider = project.tasks.register("recordPaparazzi$variantSlug", PaparazziTask::class.java) {
         it.group = VERIFICATION_GROUP
@@ -234,9 +205,8 @@ public class PaparazziPlugin @Inject constructor(
 
       val overwriteOnMaxPercentDifferenceProvider = project.overwriteOnMaxPercentDifferenceProvider()
       val failureDir = buildDirectory.dir("paparazzi/failures")
-
-      @Suppress("UNCHECKED_CAST")
-      val testTaskProvider = testTasks.matching { it is Test } as TaskCollection<Test>
+      val testTaskProvider =
+        project.tasks.withType(Test::class.java).named { it == "test$testVariantSlug" }
       testTaskProvider.configureEach { test ->
         test.setTestReporter(
           PaparazziTestReporter(
@@ -406,14 +376,13 @@ public class PaparazziPlugin @Inject constructor(
       .files
   }
 
-  private fun Project.addTestDependency(isMultiplatform: Boolean) {
+  private fun Project.addTestDependency() {
     val dependency = if (isInternal()) {
       dependencies.project(mapOf("path" to ":paparazzi"))
     } else {
       dependencies.create("app.cash.paparazzi:paparazzi:$VERSION")
     }
-    val configurationName = if (isMultiplatform) "commonTestImplementation" else "testImplementation"
-    configurations.getByName(configurationName).dependencies.add(dependency)
+    configurations.getByName("testImplementation").dependencies.add(dependency)
   }
 
   private fun Project.isInternal(): Boolean = providers.gradleProperty("app.cash.paparazzi.internal").orNull == "true"
@@ -430,4 +399,3 @@ public class PaparazziPlugin @Inject constructor(
 }
 
 private const val DEFAULT_COMPILE_SDK_VERSION = 36
-private const val ANDROID_KOTLIN_MULTIPLATFORM_LIBRARY_PLUGIN = "com.android.kotlin.multiplatform.library"
