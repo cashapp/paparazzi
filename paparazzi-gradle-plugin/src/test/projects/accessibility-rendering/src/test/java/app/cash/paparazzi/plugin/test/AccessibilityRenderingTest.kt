@@ -34,7 +34,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -118,8 +117,10 @@ class AccessibilityRenderingTest {
         onDismissRequest = {},
         sheetState = SheetState(
           skipPartiallyExpanded = true,
-          density = LocalDensity.current,
-          initialValue = SheetValue.Expanded
+          initialValue = SheetValue.Expanded,
+          positionalThreshold = { 1f },
+          velocityThreshold = { 1f },
+          skipHiddenState = true
         )
       ) {
         Text(text = "Text 2")
