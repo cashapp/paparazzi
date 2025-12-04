@@ -1,12 +1,12 @@
 [versions]
 agp = "8.13.1"
 androidTools = "31.13.1" # == 23.0.0 + agp version
-bytebuddy = "1.18.1"
-compose = "1.9.5"
+bytebuddy = "1.18.2"
+compose = "1.10.0"
 coroutines = "1.10.2"
 javaTarget = "21"
-kotlin = "2.2.10"
-ksp = "2.2.10-2.0.2"
+kotlin = "2.2.21"
+ksp = "2.3.3"
 layoutlib = "16.0.1"
 moshi = "1.15.2"
 
@@ -16,7 +16,7 @@ compileSdk = "36"
 [libraries]
 androidx-annotations = { module = "androidx.annotation:annotation", version = "1.9.1" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version = "1.7.1" }
-androidx-activity = { module = "androidx.activity:activity", version = "1.12.0" }
+androidx-activity = { module = "androidx.activity:activity", version = "1.12.1" }
 androidx-compose-ui-android = { module = "androidx.compose.ui:ui-android", version.ref = "compose" }
 androidx-lifecycle-runtime = { module = "androidx.lifecycle:lifecycle-runtime-android", version = "2.10.0" }
 androidx-savedstate = { module = "androidx.savedstate:savedstate-android", version = "1.4.0" }
@@ -74,12 +74,12 @@ truth = { module = "com.google.truth:truth", version = "1.4.5" }
 
 # Plugins
 plugin-android = { module = "com.android.tools.build:gradle", version.ref = "agp" }
-plugin-buildConfig = { module = "com.github.gmazzo.buildconfig:plugin", version = "6.0.5" }
+plugin-buildConfig = { module = "com.github.gmazzo.buildconfig:plugin", version = "6.0.6" }
 plugin-dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version = "2.1.0" }
 plugin-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 plugin-kotlin-compose = { module = "org.jetbrains.kotlin:compose-compiler-gradle-plugin", version.ref = "kotlin" }
 plugin-kotlinApiDump = { module = "org.jetbrains.kotlinx:binary-compatibility-validator", version = '0.18.1' }
 plugin-ksp = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version.ref = "ksp" }
 plugin-mavenPublish = { module = "com.vanniktech:gradle-maven-publish-plugin", version = "0.35.0" }
-plugin-poko = { module = "dev.drewhamilton.poko:poko-gradle-plugin", version = "0.19.3" }
+plugin-poko = { module = "dev.drewhamilton.poko:poko-gradle-plugin", version = "0.20.2" }
 plugin-spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version = "8.1.0" }

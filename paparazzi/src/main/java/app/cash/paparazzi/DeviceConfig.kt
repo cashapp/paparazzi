@@ -612,6 +612,258 @@ public class DeviceConfig(
       released = "October 28, 2021"
     )
 
+    @JvmField
+    public val PIXEL_6A: DeviceConfig = DeviceConfig(
+      screenHeight = 2400,
+      screenWidth = 1080,
+      xdpi = 429,
+      ydpi = 429,
+      orientation = ScreenOrientation.PORTRAIT,
+      density = Density.create(420),
+      ratio = ScreenRatio.LONG,
+      size = ScreenSize.NORMAL,
+      keyboard = Keyboard.NOKEY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.SOFT,
+      softButtons = true,
+      navigation = Navigation.NONAV,
+      released = "May 11, 2022"
+    )
+
+    @JvmField
+    public val PIXEL_7_PRO: DeviceConfig = DeviceConfig(
+      screenHeight = 3120,
+      screenWidth = 1440,
+      xdpi = 386,
+      ydpi = 383,
+      orientation = ScreenOrientation.PORTRAIT,
+      density = Density.create(560),
+      ratio = ScreenRatio.LONG,
+      size = ScreenSize.NORMAL,
+      keyboard = Keyboard.NOKEY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.SOFT,
+      softButtons = true,
+      navigation = Navigation.NONAV,
+      released = "October 6, 2022"
+    )
+
+    @JvmField
+    public val PIXEL_7: DeviceConfig = DeviceConfig(
+      screenHeight = 2400,
+      screenWidth = 1080,
+      xdpi = 416,
+      ydpi = 418,
+      orientation = ScreenOrientation.PORTRAIT,
+      density = Density.create(420),
+      ratio = ScreenRatio.LONG,
+      size = ScreenSize.NORMAL,
+      keyboard = Keyboard.NOKEY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.SOFT,
+      softButtons = true,
+      navigation = Navigation.NONAV,
+      released = "October 6, 2022"
+    )
+
+    @JvmField
+    public val PIXEL_FOLD: DeviceConfig = DeviceConfig(
+      screenHeight = 2208,
+      screenWidth = 1840,
+      xdpi = 379,
+      ydpi = 380,
+      orientation = ScreenOrientation.PORTRAIT,
+      density = Density.create(420),
+      ratio = ScreenRatio.NOTLONG,
+      size = ScreenSize.LARGE,
+      keyboard = Keyboard.NOKEY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.SOFT,
+      softButtons = true,
+      navigation = Navigation.NONAV,
+      released = "May 10, 2023"
+    )
+
+    @JvmField
+    public val PIXEL_TABLET: DeviceConfig = DeviceConfig(
+      screenHeight = 2560,
+      screenWidth = 1600,
+      xdpi = 276,
+      ydpi = 276,
+      orientation = ScreenOrientation.LANDSCAPE,
+      density = Density.XHIGH,
+      ratio = ScreenRatio.NOTLONG,
+      size = ScreenSize.LARGE,
+      keyboard = Keyboard.NOKEY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.SOFT,
+      softButtons = true,
+      navigation = Navigation.NONAV,
+      released = "June 20, 2023"
+    )
+
+    @JvmField
+    public val PIXEL_7A: DeviceConfig = DeviceConfig(
+      screenHeight = 2400,
+      screenWidth = 1080,
+      xdpi = 440,
+      ydpi = 440,
+      orientation = ScreenOrientation.PORTRAIT,
+      density = Density.create(420),
+      ratio = ScreenRatio.LONG,
+      size = ScreenSize.NORMAL,
+      keyboard = Keyboard.NOKEY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.SOFT,
+      softButtons = true,
+      navigation = Navigation.NONAV,
+      released = "May 10, 2023"
+    )
+
+    @JvmField
+    public val PIXEL_8: DeviceConfig = DeviceConfig(
+      screenHeight = 2400,
+      screenWidth = 1080,
+      xdpi = 429,
+      ydpi = 427,
+      orientation = ScreenOrientation.PORTRAIT,
+      density = Density.create(420),
+      ratio = ScreenRatio.LONG,
+      size = ScreenSize.NORMAL,
+      keyboard = Keyboard.NOKEY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.SOFT,
+      softButtons = true,
+      navigation = Navigation.NONAV,
+      released = "October 12, 2023"
+    )
+
+    @JvmField
+    public val PIXEL_8_PRO: DeviceConfig = DeviceConfig(
+      screenHeight = 2992,
+      screenWidth = 1344,
+      xdpi = 488,
+      ydpi = 491,
+      orientation = ScreenOrientation.PORTRAIT,
+      density = Density.XXHIGH,
+      ratio = ScreenRatio.LONG,
+      size = ScreenSize.NORMAL,
+      keyboard = Keyboard.NOKEY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.SOFT,
+      softButtons = true,
+      navigation = Navigation.NONAV,
+      released = "October 12, 2023"
+    )
+
+    @JvmField
+    public val PIXEL_8A: DeviceConfig = DeviceConfig(
+      screenHeight = 2400,
+      screenWidth = 1080,
+      xdpi = 440,
+      ydpi = 440,
+      orientation = ScreenOrientation.PORTRAIT,
+      density = Density.create(420),
+      ratio = ScreenRatio.LONG,
+      size = ScreenSize.NORMAL,
+      keyboard = Keyboard.NOKEY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.SOFT,
+      softButtons = true,
+      navigation = Navigation.NONAV,
+      released = "May 7, 2024"
+    )
+
+    @JvmField
+    public val PIXEL_9: DeviceConfig = DeviceConfig(
+      screenHeight = 2424,
+      screenWidth = 1080,
+      xdpi = 428,
+      ydpi = 424,
+      orientation = ScreenOrientation.PORTRAIT,
+      density = Density.create(420),
+      ratio = ScreenRatio.LONG,
+      size = ScreenSize.NORMAL,
+      keyboard = Keyboard.NOKEY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.SOFT,
+      softButtons = true,
+      navigation = Navigation.NONAV,
+      released = "August 13, 2024"
+    )
+
+    @JvmField
+    public val PIXEL_9A: DeviceConfig = DeviceConfig(
+      screenHeight = 2424,
+      screenWidth = 1080,
+      xdpi = 428,
+      ydpi = 424,
+      orientation = ScreenOrientation.PORTRAIT,
+      density = Density.create(420),
+      ratio = ScreenRatio.LONG,
+      size = ScreenSize.NORMAL,
+      keyboard = Keyboard.NOKEY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.SOFT,
+      softButtons = true,
+      navigation = Navigation.NONAV,
+      released = "March 19, 2025"
+    )
+
+    @JvmField
+    public val PIXEL_9_PRO: DeviceConfig = DeviceConfig(
+      screenHeight = 2856,
+      screenWidth = 1280,
+      xdpi = 494,
+      ydpi = 497,
+      orientation = ScreenOrientation.PORTRAIT,
+      density = Density.XXHIGH,
+      ratio = ScreenRatio.LONG,
+      size = ScreenSize.NORMAL,
+      keyboard = Keyboard.NOKEY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.SOFT,
+      softButtons = true,
+      navigation = Navigation.NONAV,
+      released = "August 13, 2024"
+    )
+
+    @JvmField
+    public val PIXEL_9_PRO_XL: DeviceConfig = DeviceConfig(
+      screenHeight = 2992,
+      screenWidth = 1344,
+      xdpi = 482,
+      ydpi = 481,
+      orientation = ScreenOrientation.PORTRAIT,
+      density = Density.XXHIGH,
+      ratio = ScreenRatio.LONG,
+      size = ScreenSize.NORMAL,
+      keyboard = Keyboard.NOKEY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.SOFT,
+      softButtons = true,
+      navigation = Navigation.NONAV,
+      released = "August 13, 2024"
+    )
+
+    @JvmField
+    public val PIXEL_9_PRO_FOLD: DeviceConfig = DeviceConfig(
+      screenHeight = 2152,
+      screenWidth = 2076,
+      xdpi = 379,
+      ydpi = 380,
+      orientation = ScreenOrientation.PORTRAIT,
+      density = Density.create(390),
+      ratio = ScreenRatio.NOTLONG,
+      size = ScreenSize.LARGE,
+      keyboard = Keyboard.NOKEY,
+      touchScreen = TouchScreen.FINGER,
+      keyboardState = KeyboardState.SOFT,
+      softButtons = true,
+      navigation = Navigation.NONAV,
+      released = "September 4, 2024"
+    )
+
     private const val TAG_ATTR = "attr"
     private const val TAG_ENUM = "enum"
     private const val TAG_FLAG = "flag"

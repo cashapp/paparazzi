@@ -187,7 +187,7 @@ public class PaparazziSdk @JvmOverloads constructor(
     val viewGroup = bridgeRenderSession.rootViews[0].viewObject as ViewGroup
     // Workaround since layoutlib's [DisplayManagerGlobal] is missing [registerForRefreshRateChanges].
     // This method is called by [Display.getRefreshRate] if [mRefreshRateChangesRegistered] is true.
-    // Remove once an updated layoutlib contains this upstream fix: https://android-review.googlesource.com/c/platform/frameworks/layoutlib/+/3876099 
+    // Remove once an updated layoutlib contains this upstream fix: https://android-review.googlesource.com/c/platform/frameworks/layoutlib/+/3876099
     Display::class.java.getDeclaredField("mRefreshRateChangesRegistered").apply {
       isAccessible = true
       set(viewGroup.display, true)
