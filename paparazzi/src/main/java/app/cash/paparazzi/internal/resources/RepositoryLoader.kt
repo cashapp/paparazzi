@@ -120,7 +120,7 @@ internal abstract class RepositoryLoader<T : LoadableResourceRepository>(
   val resourceFilesAndFolders: Collection<PathString>?,
   val namespace: ResourceNamespace
 ) : FileFilter {
-  @Suppress("ktlint:standard:property-naming")
+  @Suppress("ktlint:standard:property-naming", "ktlint:standard:kdoc")
   /** The set of attribute formats that is used when no formats are explicitly specified and the attribute is not a flag or enum.  */
   private val DEFAULT_ATTR_FORMATS: Set<AttributeFormat> = Sets.immutableEnumSet(
     AttributeFormat.BOOLEAN,
@@ -859,7 +859,7 @@ internal abstract class RepositoryLoader<T : LoadableResourceRepository>(
     var event: Int
     do {
       event = parser.nextToken()
-      if (event == XmlPullParser.START_TAG && (tagName == null || tagName == parser.name && parser.prefix == null)) {
+      if (event == XmlPullParser.START_TAG && (tagName == null || (tagName == parser.name && parser.prefix == null))) {
         subtagVisitor.visitTag()
       }
     } while (event != XmlPullParser.END_DOCUMENT && (event != XmlPullParser.END_TAG || parser.depth > elementDepth))
