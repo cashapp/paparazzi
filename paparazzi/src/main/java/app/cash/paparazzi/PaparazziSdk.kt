@@ -185,9 +185,9 @@ public class PaparazziSdk @JvmOverloads constructor(
     bridgeRenderSession = createBridgeSession(renderSession, renderSession.inflate())
 
     val viewGroup = bridgeRenderSession.rootViews[0].viewObject as ViewGroup
-    // Fixes issue where layoutlib's [DisplayManagerGlobal] doesn't have a [registerForRefreshRateChanges] method.
-    // This method is called by [Display.getRefreshRate] which is called by [AndroidPrefetchScheduler.calculateFrameIntervalIfNeeded].
-    // [Display.getRefreshRate] doesn't call [registerForRefreshRateChanges] if [mRefreshRateChangesRegistered] is true.
+    // Workaround since layoutlib's [DisplayManagerGlobal] is missing [registerForRefreshRateChanges].
+    // This method is called by [Display.getRefreshRate] if [mRefreshRateChangesRegistered] is true.
+    // Remove once an updated layoutlib contains this upstream fix: https://android-review.googlesource.com/c/platform/frameworks/layoutlib/+/3876099 
     Display::class.java.getDeclaredField("mRefreshRateChangesRegistered").apply {
       isAccessible = true
       set(viewGroup.display, true)
