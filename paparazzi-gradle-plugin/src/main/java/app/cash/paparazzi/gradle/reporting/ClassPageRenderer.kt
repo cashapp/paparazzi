@@ -141,7 +141,7 @@ internal class ClassPageRenderer(
       }
     )
     val classId = model.id
-    if (resultsProvider.hasOutput(classId, TestOutputEvent.Destination.StdOut)) {
+    if (resultsProvider.hasOutput(classId, 1L, TestOutputEvent.Destination.StdOut)) {
       addTab(
         "Standard output",
         object : ErroringAction<SimpleHtmlWriter>() {
@@ -162,7 +162,7 @@ internal class ClassPageRenderer(
         }
       )
     }
-    if (resultsProvider.hasOutput(classId, TestOutputEvent.Destination.StdErr)) {
+    if (resultsProvider.hasOutput(classId, 1L, TestOutputEvent.Destination.StdErr)) {
       addTab(
         "Standard error",
         object : ErroringAction<SimpleHtmlWriter>() {

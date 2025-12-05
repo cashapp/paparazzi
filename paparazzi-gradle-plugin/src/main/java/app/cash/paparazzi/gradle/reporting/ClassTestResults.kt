@@ -1,6 +1,7 @@
 package app.cash.paparazzi.gradle.reporting
 
-import org.gradle.internal.FileUtils
+import org.gradle.internal.impldep.com.google.common.base.CharMatcher
+import java.util.Locale
 import java.util.TreeSet
 
 /**
@@ -15,7 +16,7 @@ internal class ClassTestResults(
   packageResults
 ) {
   private val results: MutableSet<TestResult> = TreeSet()
-  override val baseUrl: String = "classes/" + FileUtils.toSafeFileName(name) + ".html"
+  override val baseUrl: String = "classes/${name.sanitizeForFilename()}.html"
   override val title: String
     get() = if (name == displayName) "Class $name" else displayName!!
 
@@ -43,5 +44,15 @@ internal class ClassTestResults(
     val test = TestResult(testName, testDisplayName, duration, this)
     results += test
     return addTest(test)
+  }
+
+  companion object {
+    internal val filenameSafeChars = CharMatcher.inRange('a', 'z')
+      .or(CharMatcher.inRange('0', '9'))
+      .or(CharMatcher.anyOf("_-.~@^()[]{}:;,"))
+
+    internal fun String.sanitizeForFilename(): String {
+      return filenameSafeChars.negate().replaceFrom(lowercase(Locale.US), '0')
+    }
   }
 }
