@@ -89,7 +89,7 @@ class ApngVerifierTest {
         fail("Should have already failed")
       } catch (e: AssertionError) {
         assertThat(e.message).isEqualTo(
-          "4 frames differed by more than 0.0%\n" +
+          "4 frames differed by more than 0.010000%\n" +
             "Mismatched video fps expected: 1 actual: 3\n" +
             " - see details in file://${deltaFile.path}\n\n"
         )
@@ -124,7 +124,7 @@ class ApngVerifierTest {
         fail("Should have already failed")
       } catch (e: AssertionError) {
         assertThat(e.message).isEqualTo(
-          "4 frames differed by more than 0.0%\n" +
+          "4 frames differed by more than 0.010000%\n" +
             "Mismatched video fps expected: 1 actual: 3\n" +
             " - see details in file://${deltaFile.path}\n\n"
         )
@@ -163,7 +163,7 @@ class ApngVerifierTest {
         fail("Should have already failed")
       } catch (e: AssertionError) {
         assertThat(e.message).isEqualTo(
-          "1 frames differed by more than 0.0%\n" +
+          "1 frames differed by more than 0.010000%\n" +
             "Mismatched video fps expected: 1 actual: 3\n" +
             " - see details in file://${deltaFile.path}\n\n"
         )
@@ -199,7 +199,7 @@ class ApngVerifierTest {
         fail("Should have already failed")
       } catch (e: AssertionError) {
         assertThat(e.message).isEqualTo(
-          "2 frames differed by more than 0.0%\n" +
+          "2 frames differed by more than 0.010000%\n" +
             " - see details in file://${deltaFile.path}\n\n"
         )
       }
@@ -236,7 +236,7 @@ class ApngVerifierTest {
         fail("Should have already failed")
       } catch (e: AssertionError) {
         assertThat(e.message).isEqualTo(
-          "2 frames differed by more than 0.0%\n" +
+          "2 frames differed by more than 0.010000%\n" +
             "Mismatched frame count expected: 3 actual: 5\n" +
             " - see details in file://${deltaFile.path}\n\n"
         )
@@ -271,7 +271,7 @@ class ApngVerifierTest {
         fail("Should have already failed")
       } catch (e: AssertionError) {
         assertThat(e.message).isEqualTo(
-          "1 frames differed by more than 0.0%\n" +
+          "1 frames differed by more than 0.010000%\n" +
             "Mismatched frame count expected: 3 actual: 2\n" +
             " - see details in file://${deltaFile.path}\n\n"
         )
