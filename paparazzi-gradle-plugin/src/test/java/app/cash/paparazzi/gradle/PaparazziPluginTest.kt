@@ -230,10 +230,10 @@ class PaparazziPluginTest {
     assertThat(result.output).doesNotContain("InvalidCharsTest > goodValues[MULTIPLICATION] FAILED")
     assertThat(result.output).doesNotContain("InvalidCharsTest > goodValues[DIVISION] FAILED")
     assertThat(result.output).contains("InvalidCharsTest > badSnapshotName FAILED")
-    assertThat(result.output).doesNotContain("InvalidCharsTest > badValues[+] FAILED")
-    assertThat(result.output).doesNotContain("InvalidCharsTest > badValues[-] FAILED")
-    assertThat(result.output).contains("InvalidCharsTest > badValues[*] FAILED")
-    assertThat(result.output).contains("InvalidCharsTest > badValues[/] FAILED")
+    assertThat(result.output).doesNotContain("InvalidCharsTest > badValues[char=+] FAILED")
+    assertThat(result.output).doesNotContain("InvalidCharsTest > badValues[char=-] FAILED")
+    assertThat(result.output).contains("InvalidCharsTest > badValues[char=*] FAILED")
+    assertThat(result.output).contains("InvalidCharsTest > badValues[char=/] FAILED")
   }
 
   @Test
