@@ -43,7 +43,7 @@ jobs:
           mkdocs build
 
       - name: Upload Html Docs
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: mkdocs-${{ github.sha }}
           path: |
@@ -81,7 +81,7 @@ jobs:
 
       - name: Upload Test Failures
         if: failure()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: test-failures-${{ matrix.os }}-${{ matrix.java-version }}
           path: |
