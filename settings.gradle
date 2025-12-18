@@ -40,6 +40,7 @@ def brokenProjects = [
   "missing-library-plugin", // intentionally does not import
   "missing-supported-plugins", // intentionally does not import
   "multiplatform-plugin-without-android", // intentionally does not import
+  "multiplatform-plugin-with-android", // AGP 9.x failures
 ]
 def testProjectNames = []
 new File(rootDir, "paparazzi-gradle-plugin/src/test/projects").eachDir {
@@ -50,7 +51,8 @@ new File(rootDir, "paparazzi-gradle-plugin/src/test/projects").eachDir {
 }
 
 def isIdea = !(System.getProperty("idea.version") ?: "").isEmpty()
-if (isIdea) {
+if (isIdea || providers.gradleProperty("app.cash.paparazzi.includeTestProjectModules").orNull == "true") {
+  println("Including test projects...")
   System.setProperty("app.cash.paparazzi.testProjectNames", testProjectNames.join(","))
   includeTestProjectsIntoIDE(testProjectNames)
 }
