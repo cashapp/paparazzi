@@ -51,8 +51,7 @@ new File(rootDir, "paparazzi-gradle-plugin/src/test/projects").eachDir {
 }
 
 def isIdea = !(System.getProperty("idea.version") ?: "").isEmpty()
-if (isIdea || providers.gradleProperty("app.cash.paparazzi.includeTestProjectModules").orNull == "true") {
-  println("Including test projects...")
+if (isIdea) {
   System.setProperty("app.cash.paparazzi.testProjectNames", testProjectNames.join(","))
   includeTestProjectsIntoIDE(testProjectNames)
 }
