@@ -90,7 +90,7 @@ class PaparazziPluginTest {
     val fixtureRoot = File("src/test/projects/multiplatform-plugin-with-new-android-library-plugin")
 
     val result = gradleRunner
-      .withArguments("preparePaparazziAndroidMainResources", "--stacktrace")
+      .withArguments("verifyPaparazziAndroidMain", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
 
     assertThat(result.task(":preparePaparazziAndroidMainResources")).isNotNull()
