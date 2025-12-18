@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
   id 'org.jetbrains.kotlin.multiplatform'
   id 'com.android.kotlin.multiplatform.library'
@@ -20,10 +18,6 @@ kotlin {
       hostTest.includeAndroidResources = true
     }
     androidResources.enable = true
-
-    compilerOptions {
-      jvmTarget = JvmTarget.fromTarget(libs.versions.javaTarget.get())
-    }
   }
 
   sourceSets {

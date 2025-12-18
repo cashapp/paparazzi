@@ -1,6 +1,3 @@
-
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
   id 'com.android.library'
   id 'org.jetbrains.kotlin.plugin.compose'
@@ -17,11 +14,6 @@ android {
     sourceCompatibility = libs.versions.javaTarget.get()
     targetCompatibility = libs.versions.javaTarget.get()
   }
-  kotlin {
-  compilerOptions {
-    jvmTarget = JvmTarget.fromTarget(libs.versions.javaTarget.get())
-  }
-}
   buildFeatures {
     compose = true
   }

@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
   id 'app.cash.paparazzi'
   id 'com.android.library' // intentionally declared after paparazzi plugin

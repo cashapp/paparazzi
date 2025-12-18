@@ -1677,7 +1677,7 @@ class PaparazziPluginTest {
     val dontRecordLastModified = dontRecordFile.lastModified()
     val recordFile =
       File(fixtureRoot, "src/test/snapshots/images/app.cash.paparazzi.plugin.test_RecordSnapshotTest_record.png")
-    val recordLastModified = dontRecordFile.lastModified()
+    val recordLastModified = recordFile.lastModified()
 
     gradleRunner
       .withArguments("recordPaparazziDebug", "--stacktrace")
