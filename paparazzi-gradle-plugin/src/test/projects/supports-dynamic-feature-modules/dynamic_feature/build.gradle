@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
   id 'com.android.dynamic-feature'
   id 'app.cash.paparazzi'
@@ -15,11 +13,6 @@ android {
     sourceCompatibility = libs.versions.javaTarget.get()
     targetCompatibility = libs.versions.javaTarget.get()
   }
-  kotlin {
-  compilerOptions {
-    jvmTarget = JvmTarget.fromTarget(libs.versions.javaTarget.get())
-  }
-}
 }
 
 dependencies {
