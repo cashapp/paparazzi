@@ -467,9 +467,11 @@ public class PaparazziPlugin @Inject constructor(
     } else {
       dependencies.create("app.cash.paparazzi:paparazzi:$VERSION")
     }
-    val configurationName = if (isMultiplatform) "commonTestImplementation" else "testImplementation"
-    configurations.getByName(configurationName).dependencies.add(dependency)
+    val testConfiguration = if (isMultiplatform()) "commonTestImplementation" else "testImplementation"
+    configurations.getByName(testConfiguration).dependencies.add(dependency)
   }
+
+  private fun Project.isMultiplatform(): Boolean = plugins.hasPlugin("org.jetbrains.kotlin.multiplatform")
 
   private fun Project.isInternal(): Boolean = providers.gradleProperty("app.cash.paparazzi.internal").orNull == "true"
 
