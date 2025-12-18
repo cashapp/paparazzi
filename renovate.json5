@@ -30,7 +30,6 @@
       automerge: false,
       matchPackageNames: [
         'org.jetbrains.kotlin:{/,}**',
-        'com.google.devtools.ksp{/,}**',
         'dev.drewhamilton.poko{/,}**',
       ],
     },
