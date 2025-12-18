@@ -513,6 +513,8 @@ public class PaparazziPlugin @Inject constructor(
     }
   }
 
+  private fun Project.isMultiplatform(): Boolean = plugins.hasPlugin("org.jetbrains.kotlin.multiplatform")
+
   private fun Project.isInternal(): Boolean = providers.gradleProperty("app.cash.paparazzi.internal").orNull == "true"
 
   private fun Project.overwriteOnMaxPercentDifferenceProvider(): Provider<String> =
