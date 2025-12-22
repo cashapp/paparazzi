@@ -22,28 +22,24 @@ import app.cash.paparazzi.gradle.utils.artifactViewFor
 import app.cash.paparazzi.gradle.utils.capitalize
 import app.cash.paparazzi.gradle.utils.relativize
 import com.android.build.api.component.analytics.AnalyticsEnabledComponent
+import com.android.build.api.component.analytics.AnalyticsEnabledLibraryVariant
 import com.android.build.api.dsl.CommonExtension
-import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryExtension
 import com.android.build.api.instrumentation.FramesComputationMode
 import com.android.build.api.instrumentation.InstrumentationScope
 import com.android.build.api.variant.AndroidComponentsExtension
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension
 import com.android.build.api.variant.Component
 import com.android.build.api.variant.DynamicFeatureAndroidComponentsExtension
-import com.android.build.api.variant.GeneratesApk
 import com.android.build.api.variant.HasHostTests
 import com.android.build.api.variant.HasUnitTest
-import com.android.build.api.variant.HasUnitTestBuilder
+import com.android.build.api.variant.HostTest
 import com.android.build.api.variant.HostTestBuilder
 import com.android.build.api.variant.KotlinMultiplatformAndroidComponentsExtension
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
-import com.android.build.api.variant.LibraryVariant
 import com.android.build.api.variant.TestComponent
-import com.android.build.api.variant.Variant
 import com.android.build.api.variant.impl.HasHostTestsCreationConfig
-import com.android.build.api.variant.impl.HasTestSuitesCreationConfig
 import com.android.build.gradle.internal.component.TestCreationConfig
-import com.android.build.gradle.internal.component.VariantCreationConfig
+import com.android.builder.model.Version.ANDROID_GRADLE_PLUGIN_VERSION
 import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -110,69 +106,15 @@ public class PaparazziPlugin @Inject constructor(
           // exhaustive to avoid potential breaking changes in future AGP releases
           else -> error("${androidComponents.javaClass.name} from $plugin is not supported in Paparazzi")
         }
-        AndroidProjectScope(project = project, extension = androidComponents).setupPaparazzi()
+        project.setupPaparazzi(androidComponents)
       }
     }
   }
 
-  private class AndroidProjectScope(
-    val project: Project,
-    val extension: AndroidComponentsExtension<*, *, *>
-  ) {
-    val isMultiplatformProject: Boolean =
-      extension is KotlinMultiplatformAndroidComponentsExtension ||
-        project.plugins.hasPlugin(KOTLIN_MULTIPLATFORM_PLUGIN)
-
-    private fun Project.isInternal(): Boolean = providers.gradleProperty("app.cash.paparazzi.internal").orNull == "true"
-
-    fun addTestDependency() {
-      val dependency = if (project.isInternal()) {
-        project.dependencies.project(mapOf("path" to ":paparazzi"))
-      } else {
-        project.dependencies.create("app.cash.paparazzi:paparazzi:$VERSION")
-      }
-      val configurationName = if (isMultiplatformProject) "commonTestImplementation" else "testImplementation"
-      project.configurations.getByName(configurationName).dependencies.add(dependency)
-    }
-
-    fun snapshotDir(testComponent: TestComponent): Provider<Directory> {
-      val testSources = requireNotNull(testComponent.sources.java?.all ?: testComponent.sources.kotlin?.all) {
-        "No test sources found for test component: ${testComponent.name}"
-      }
-      return testSources.map { sourceDirs ->
-        val defaultTestDir = sourceDirs.first().asFile.parentFile
-        val defaultTestDirectory = project.layout.projectDirectory.dir(defaultTestDir.path)
-        (
-          sourceDirs.firstNotNullOfOrNull { sourceDir ->
-            // Sources usually in `/src/test/java/` so need to move to parent `/src/test/`
-            val parentFile = sourceDir.asFile.parentFile
-            val testFiles = sourceDir.asFileTree.relativize(project.layout.projectDirectory)
-            val isNonBuildDirectorySources =
-              parentFile.path.contains(project.layout.buildDirectory.get().asFile.path).not()
-            val containsTestFiles = testFiles.isPresent
-
-            if (isNonBuildDirectorySources && containsTestFiles) {
-              project.layout.projectDirectory.dir(parentFile.path)
-            } else {
-              null
-            }
-          } ?: defaultTestDirectory
-          ).dir("snapshots")
-      }
-    }
-
-    fun Provider<Boolean>.provideOnEnabled(provider: Provider<*>): Provider<*> =
-      flatMap { record ->
-        if (record) {
-          provider
-        } else {
-          project.objects.directoryProperty()
-        }
-      }
-  }
-
-  private fun AndroidProjectScope.setupPaparazzi() {
-    addTestDependency()
+  private fun Project.setupPaparazzi(extension: AndroidComponentsExtension<*, *, *>) {
+    val isMultiplatformProject: Boolean = extension is KotlinMultiplatformAndroidComponentsExtension ||
+      project.plugins.hasPlugin(KOTLIN_MULTIPLATFORM_PLUGIN)
+    addTestDependency(isMultiplatformProject)
 
     val layoutlibNativeRuntimeFileCollection = project.setupLayoutlibRuntimeDependency()
     val layoutlibResourcesFileCollection = project.setupLayoutlibResourcesDependency()
@@ -204,8 +146,8 @@ public class PaparazziPlugin @Inject constructor(
     extension.onVariants { variant ->
       val variantSlug = variant.name.capitalize()
       val testComponent = when (variant) {
-        is HasUnitTest -> (variant as HasUnitTest).unitTest
         is HasHostTests -> variant.hostTests[HostTestBuilder.UNIT_TEST_TYPE]
+        is HasUnitTest -> (variant as HasUnitTest).unitTest
         else -> null
       } ?: return@onVariants
       val snapshotOutputDir = snapshotDir(testComponent)
@@ -228,20 +170,11 @@ public class PaparazziPlugin @Inject constructor(
       val reportOutputDir =
         project.extensions.getByType(ReportingExtension::class.java).baseDirectory.dir("paparazzi/${variant.name}")
 
-      // TODO: Fixup with for [Android Multiplatform Library Plugin] doesn't have exception with instrumentation transformations for KMP
-      /**
-       *****
-       * Caused by: kotlin.UninitializedPropertyAccessException: lateinit property visitorFactory has not been initialized
-       * 	at com.android.build.gradle.internal.instrumentation.AsmClassVisitorFactoryEntry.getVisitorFactory(AsmClassVisitorFactoryEntry.kt:33)
-       * 	at com.android.build.gradle.internal.dsl.InstrumentationImpl.getRegisteredDependenciesClassesVisitors(InstrumentationImpl.kt:72)
-       * 	at com.android.build.api.component.impl.features.InstrumentationCreationConfigImpl.getRegisteredDependenciesClassesVisitors(InstrumentationCreationConfigImpl.kt:118)
-       * 	at com.android.build.api.component.impl.features.InstrumentationCreationConfigImpl.getDependenciesClassesAreInstrumented(InstrumentationCreationConfigImpl.kt:56)
-       * 	at com.android.build.gradle.internal.dependency.AsmClassesTransform$Companion.registerAsmTransformForComponent(AsmClassesTransform.kt:68)
-       * 	at com.android.build.gradle.internal.DependencyConfigurator.configureVariantTransforms(DependencyConfigurator.kt:895)
-       * 	at com.android.build.gradle.internal.plugins.KotlinMultiplatformAndroidPlugin.afterEvaluate(KotlinMultiplatformAndroidPlugin.kt:427)
-       * 	at com.android.build.gradle.internal.plugins.KotlinMultiplatformAndroidPlugin.access$afterEvaluate(KotlinMultiplatformAndroidPlugin.kt:127)
-       */
-      if (!isMultiplatformProject) {
+      // AGP < 9 does not fully initialize ASM instrumentation for Android KMP variants, causing
+      // `lateinit property visitorFactory has not been initialized` during configuration.
+      // This transform is a best-effort fix for ResourcesCompat font loading, so skip it for KMP
+      // projects until AGP 9+.
+      if (!isMultiplatformProject || isAgpAtLeast(major = 9)) {
         val testInstrumentation = testComponent.instrumentation
         testInstrumentation.transformClassesWith(
           ResourcesCompatVisitorFactory::class.java,
@@ -354,13 +287,13 @@ public class PaparazziPlugin @Inject constructor(
           .withPathSensitivity(PathSensitivity.NONE)
 
         test.inputs.dir(
-          isVerifyRun.provideOnEnabled(snapshotOutputDir)
+          project.provideOnEnabled(filterProvider = isVerifyRun, sourceProvider = snapshotOutputDir)
         ).withPropertyName("paparazzi.snapshot.input.dir")
           .withPathSensitivity(PathSensitivity.RELATIVE)
           .optional()
 
         test.outputs.dir(
-          isRecordRun.provideOnEnabled(snapshotOutputDir)
+          project.provideOnEnabled(filterProvider = isRecordRun, sourceProvider = snapshotOutputDir)
         ).withPropertyName("paparazzi.snapshots.output.dir")
           .optional()
 
@@ -478,17 +411,50 @@ public class PaparazziPlugin @Inject constructor(
       .files
   }
 
-  private fun Project.addTestDependency(isMultiplatform: Boolean) {
-    val dependency = if (isInternal()) {
-      dependencies.project(mapOf("path" to ":paparazzi"))
+  private fun Project.addTestDependency(isMultiplatformProject: Boolean) {
+    val dependency = if (project.isInternal()) {
+      project.dependencies.project(mapOf("path" to ":paparazzi"))
     } else {
-      dependencies.create("app.cash.paparazzi:paparazzi:$VERSION")
+      project.dependencies.create("app.cash.paparazzi:paparazzi:$VERSION")
     }
-    val testConfiguration = if (isMultiplatform()) "commonTestImplementation" else "testImplementation"
-    configurations.getByName(testConfiguration).dependencies.add(dependency)
+    val configurationName = if (isMultiplatformProject) "commonTestImplementation" else "testImplementation"
+    project.configurations.getByName(configurationName).dependencies.add(dependency)
   }
 
-  private fun Project.isMultiplatform(): Boolean = plugins.hasPlugin(KOTLIN_MULTIPLATFORM_PLUGIN)
+  private fun Project.provideOnEnabled(filterProvider: Provider<Boolean>, sourceProvider: Provider<*>): Provider<*> =
+    filterProvider.flatMap { enabled ->
+      if (enabled) {
+        sourceProvider
+      } else {
+        project.objects.directoryProperty()
+      }
+    }
+
+  private fun Project.snapshotDir(testComponent: TestComponent): Provider<Directory> {
+    val testSources = requireNotNull(testComponent.sources.java?.all ?: testComponent.sources.kotlin?.all) {
+      "No test sources found for test component: ${testComponent.name}"
+    }
+    return testSources.map { sourceDirs ->
+      val defaultTestDir = sourceDirs.first().asFile.parentFile
+      val defaultTestDirectory = layout.projectDirectory.dir(defaultTestDir.path)
+      (
+        sourceDirs.firstNotNullOfOrNull { sourceDir ->
+          // Sources usually in `/src/test/java/` so need to move to parent `/src/test/`
+          val parentFile = sourceDir.asFile.parentFile
+          val testFiles = sourceDir.asFileTree.relativize(layout.projectDirectory)
+          val isNonBuildDirectorySources =
+            parentFile.path.contains(layout.buildDirectory.get().asFile.path).not()
+          val containsTestFiles = testFiles.isPresent
+
+          if (isNonBuildDirectorySources && containsTestFiles) {
+            layout.projectDirectory.dir(parentFile.path)
+          } else {
+            null
+          }
+        } ?: defaultTestDirectory
+        ).dir("snapshots")
+    }
+  }
 
   private fun Project.isInternal(): Boolean = providers.gradleProperty("app.cash.paparazzi.internal").orNull == "true"
 
@@ -498,6 +464,7 @@ public class PaparazziPlugin @Inject constructor(
   private fun Any.targetSdkVersion(): String? =
     when {
       this is CommonExtension<*, *, *, *, *, *> -> testOptions.targetSdk?.toString()
+        ?: DEFAULT_COMPILE_SDK_VERSION.toString()
       else -> null
     }
 
@@ -517,3 +484,10 @@ public class PaparazziPlugin @Inject constructor(
 private const val DEFAULT_COMPILE_SDK_VERSION = 36
 private const val ANDROID_KOTLIN_MULTIPLATFORM_LIBRARY_PLUGIN = "com.android.kotlin.multiplatform.library"
 private const val KOTLIN_MULTIPLATFORM_PLUGIN = "org.jetbrains.kotlin.multiplatform"
+
+private fun isAgpAtLeast(major: Int): Boolean {
+  val agpMajor = ANDROID_GRADLE_PLUGIN_VERSION
+    .substringBefore('.')
+    .toIntOrNull()
+  return agpMajor != null && agpMajor >= major
+}
