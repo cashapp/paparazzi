@@ -24,6 +24,8 @@ import app.cash.paparazzi.gradle.utils.relativize
 import com.android.build.api.component.analytics.AnalyticsEnabledComponent
 import com.android.build.api.component.analytics.AnalyticsEnabledLibraryVariant
 import com.android.build.api.component.analytics.AnalyticsEnabledComponent
+import com.android.build.api.dsl.CommonExtension
+import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryExtension
 import com.android.build.api.instrumentation.FramesComputationMode
 import com.android.build.api.instrumentation.InstrumentationScope
 import com.android.build.api.variant.AndroidComponentsExtension
@@ -31,16 +33,23 @@ import com.android.build.api.variant.ApplicationAndroidComponentsExtension
 import com.android.build.api.variant.Component
 import com.android.build.api.variant.DynamicFeatureAndroidComponentsExtension
 import com.android.build.api.variant.HasHostTests
+import com.android.build.api.variant.GeneratesApk
 import com.android.build.api.variant.HasHostTests
 import com.android.build.api.variant.HasUnitTest
 import com.android.build.api.variant.HostTest
+import com.android.build.api.variant.HasUnitTestBuilder
 import com.android.build.api.variant.HostTestBuilder
 import com.android.build.api.variant.KotlinMultiplatformAndroidComponentsExtension
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
+import com.android.build.api.variant.LibraryVariant
 import com.android.build.api.variant.TestComponent
+import com.android.build.api.variant.Variant
+import com.android.build.api.variant.impl.HasHostTestsCreationConfig
+import com.android.build.api.variant.impl.HasTestSuitesCreationConfig
 import com.android.build.api.variant.impl.HasHostTestsCreationConfig
 import com.android.build.gradle.internal.component.TestCreationConfig
 import com.android.builder.model.Version.ANDROID_GRADLE_PLUGIN_VERSION
+import com.android.build.gradle.internal.component.VariantCreationConfig
 import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -203,8 +212,8 @@ public class PaparazziPlugin @Inject constructor(
     extension.onVariants { variant ->
       val variantSlug = variant.name.capitalize()
       val testComponent = when (variant) {
-        is HasHostTests -> variant.hostTests[HostTestBuilder.UNIT_TEST_TYPE]
         is HasUnitTest -> (variant as HasUnitTest).unitTest
+        is HasHostTests -> variant.hostTests[HostTestBuilder.UNIT_TEST_TYPE]
         else -> null
       } ?: return@onVariants
       val snapshotOutputDir = snapshotDir(testComponent)
@@ -513,7 +522,7 @@ public class PaparazziPlugin @Inject constructor(
     }
   }
 
-  private fun Project.isMultiplatform(): Boolean = plugins.hasPlugin("org.jetbrains.kotlin.multiplatform")
+  private fun Project.isMultiplatform(): Boolean = plugins.hasPlugin(KOTLIN_MULTIPLATFORM_PLUGIN)
 
   private fun Project.isInternal(): Boolean = providers.gradleProperty("app.cash.paparazzi.internal").orNull == "true"
 
