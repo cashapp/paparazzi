@@ -537,8 +537,7 @@ public class PaparazziPlugin @Inject constructor(
 
   private fun Any.targetSdkVersion(): String? =
     when {
-      this is CommonExtension<*, *, *, *, *, *> -> testOptions.targetSdk?.toString()
-        ?: DEFAULT_COMPILE_SDK_VERSION.toString()
+      this is CommonExtension<*, *, *, *, *, *> -> testOptions.targetSdk?.toString() ?: DEFAULT_COMPILE_SDK_VERSION.toString()
       else -> null
     }
 
