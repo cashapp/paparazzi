@@ -13,11 +13,11 @@ kotlin {
     minSdk = libs.versions.minSdk.get() as int
 
     withJava()
-    withHostTest {
-      it.targetSdk {
+    withHostTest { hostTest ->
+      hostTest.targetSdk {
         version = release(libs.versions.compileSdk.get() as int)
       }
-      it.includeAndroidResources = true
+      hostTest.includeAndroidResources = true
     }
     androidResources.enable = true
 
