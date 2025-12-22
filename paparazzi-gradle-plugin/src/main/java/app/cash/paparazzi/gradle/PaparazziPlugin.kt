@@ -199,8 +199,8 @@ public class PaparazziPlugin @Inject constructor(
     extension.onVariants { variant ->
       val variantSlug = variant.name.capitalize()
       val testComponent = when (variant) {
-        is HasUnitTest -> (variant as HasUnitTest).unitTest
         is HasHostTests -> variant.hostTests[HostTestBuilder.UNIT_TEST_TYPE]
+        is HasUnitTest -> (variant as HasUnitTest).unitTest
         else -> null
       } ?: return@onVariants
       val snapshotOutputDir = snapshotDir(testComponent)
@@ -508,8 +508,6 @@ public class PaparazziPlugin @Inject constructor(
         ).dir("snapshots")
     }
   }
-
-  private fun Project.isMultiplatform(): Boolean = plugins.hasPlugin(KOTLIN_MULTIPLATFORM_PLUGIN)
 
   private fun Project.isInternal(): Boolean = providers.gradleProperty("app.cash.paparazzi.internal").orNull == "true"
 
