@@ -47,6 +47,13 @@
       ],
     },
     {
+      description: "Disable Gradle wrapper milestone releases, only interested stables and RCs for now.",
+      matchPackageNames: [
+        "gradle",
+      ],
+      allowedVersions: "!/-milestone-\\d+$/",
+    },
+    {
       description: "LayoutLib shouldn't auto-merge",
       automerge: false,
       matchPackageNames: [
