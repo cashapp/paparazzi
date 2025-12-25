@@ -23,6 +23,27 @@ class LottieTest {
   }
 
   @Test
+  fun `GIVEN animated view WHEN snapshot at different offsets THEN show images at correct frames`() {
+    val composition = LottieCompositionFactory.fromRawResSync(
+      paparazzi.context,
+      R.raw.lottie_logo
+    ).value!!
+
+    val view = LottieAnimationView(paparazzi.context).apply {
+      setComposition(composition)
+      playAnimation()
+    }
+
+    for (offsetInMs in 400..1000 step 200) {
+      paparazzi.snapshot(
+        view = view,
+        name = "lottie logo at ${offsetInMs}ms",
+        offsetMillis = offsetInMs.toLong()
+      )
+    }
+  }
+
+  @Test
   fun lottie2() {
     val composition = LottieCompositionFactory.fromRawResSync(paparazzi.context, R.raw.masks).value!!
     val view = LottieAnimationView(paparazzi.context)

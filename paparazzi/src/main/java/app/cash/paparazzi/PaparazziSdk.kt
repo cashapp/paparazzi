@@ -328,6 +328,7 @@ public class PaparazziSdk @JvmOverloads constructor(
       }
 
       viewGroup.addView(modifiedView)
+      advanceChoreographerIfNeeded(offsetNanos = startNanos, fps = fps)
       for (frame in 0 until frameCount) {
         val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
 
@@ -388,6 +389,26 @@ public class PaparazziSdk @JvmOverloads constructor(
       val mLastFrameTimeNanos = choreographer::class.java.getDeclaredField("mLastFrameTimeNanos")
       mLastFrameTimeNanos.isAccessible = true
       mLastFrameTimeNanos.set(choreographer, 0L)
+    }
+  }
+
+  /**
+   * Used when taking a single-frame snapshot (`snapshot`) with a specific `offsetNanos`.
+   * If `offsetNanos` is zero or `fps` is positive, the method returns
+   * immediately (a GIF or multi-frame capture is assumed).
+   *
+   * @param offsetNanos The time offset to advance in nanoseconds.
+   * @param fps The frames per second; if positive, no manual advancement is performed.
+   */
+  private fun advanceChoreographerIfNeeded(offsetNanos: Long, fps: Int) {
+    if (offsetNanos < 1L || fps > 0) {
+      return
+    }
+
+    val frameDurationNanos = 1_000_000_000L / 60
+    val frameCount = (offsetNanos / frameDurationNanos)
+    withTime(timeNanos = frameCount) {
+      // Advance the choreographer by frameCount.
     }
   }
 
