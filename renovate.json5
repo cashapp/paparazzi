@@ -14,6 +14,10 @@
       ".github/workflows/requirements.in"
     ]
   },
+  "gradle-wrapper": {
+    description: "Update Gradle wrapper to non-stable versions",
+    ignoreUnstable: false,
+  },
   packageRules: [
     {
       description: 'Auto-merge most dependency updates.',
