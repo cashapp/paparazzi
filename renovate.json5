@@ -14,6 +14,10 @@
       ".github/workflows/requirements.in"
     ]
   },
+  "gradle-wrapper": {
+    description: "Update Gradle wrapper to non-stable versions",
+    ignoreUnstable: false,
+  },
   packageRules: [
     {
       description: 'Auto-merge most dependency updates.',
@@ -41,6 +45,13 @@
         'com.android.tools:{/,}**',
         'com.android.tools.build:{/,}**',
       ],
+    },
+    {
+      description: "Disable Gradle wrapper milestone releases, only interested stables and RCs for now.",
+      matchPackageNames: [
+        "gradle",
+      ],
+      allowedVersions: "!/-milestone-\\d+$/",
     },
     {
       description: "LayoutLib shouldn't auto-merge",
