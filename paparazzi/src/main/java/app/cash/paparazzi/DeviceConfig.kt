@@ -23,7 +23,6 @@ import com.android.ide.common.resources.configuration.DensityQualifier
 import com.android.ide.common.resources.configuration.FolderConfiguration
 import com.android.ide.common.resources.configuration.KeyboardStateQualifier
 import com.android.ide.common.resources.configuration.LayoutDirectionQualifier
-import com.android.ide.common.resources.configuration.LocaleQualifier
 import com.android.ide.common.resources.configuration.NavigationMethodQualifier
 import com.android.ide.common.resources.configuration.NetworkCodeQualifier
 import com.android.ide.common.resources.configuration.NightModeQualifier
@@ -112,7 +111,7 @@ public class DeviceConfig(
         countryCodeQualifier = CountryCodeQualifier()
         layoutDirectionQualifier = LayoutDirectionQualifier(layoutDirection)
         networkCodeQualifier = NetworkCodeQualifier()
-        localeQualifier = if (locale != null) LocaleQualifier.getQualifier(locale) else LocaleQualifier()
+        localeQualifier = detectLocaleQualifierDefault(locale = locale)
         versionQualifier = VersionQualifier()
         screenRoundQualifier = ScreenRoundQualifier(screenRound)
       }
