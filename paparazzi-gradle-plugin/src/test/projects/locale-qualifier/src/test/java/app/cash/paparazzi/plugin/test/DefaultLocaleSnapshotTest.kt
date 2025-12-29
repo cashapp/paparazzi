@@ -32,7 +32,7 @@ internal class DefaultLocaleSnapshotTest(
   }
 
   @Test
-  fun `GIVEN system prop WHEN snapshot THEN use provided locale`() {
+  fun `Verify system prop default locale`() {
     paparazzi.snapshot(
       view = paparazzi.inflate(R.layout.title_color)
     )
