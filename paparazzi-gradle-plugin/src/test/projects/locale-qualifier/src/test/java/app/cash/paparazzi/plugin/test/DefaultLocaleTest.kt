@@ -4,23 +4,21 @@ import app.cash.paparazzi.Paparazzi
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
 import org.junit.After
+import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-@RunWith(TestParameterInjector::class)
-internal class DefaultLocaleSnapshotTest(
-  @TestParameter private val defaultLocale: SystemPropLocale
-) {
+class DefaultLocaleTest {
 
-  internal enum class SystemPropLocale(val tag: String?) {
-    Default(null),
-    EN_GB("en-rGB"),
-    FR_FR("fr-rFR")
-  }
-
-  init {
-    System.setProperty("app.cash.paparazzi.localeDefault", defaultLocale.tag.orEmpty())
+  // Work-around to force system property before Paparazzi loads config.
+  // Not a pattern to follow or copy.
+  companion object {
+    @JvmStatic
+    @BeforeClass
+    fun setup() {
+      System.setProperty("app.cash.paparazzi.defaultLocale", "fr-rFR")
+    }
   }
 
   @get:Rule
@@ -28,11 +26,11 @@ internal class DefaultLocaleSnapshotTest(
 
   @After
   fun tearDown() {
-    System.clearProperty("app.cash.paparazzi.localeDefault")
+    System.clearProperty("app.cash.paparazzi.defaultLocale")
   }
 
   @Test
-  fun `Verify system prop default locale`() {
+  fun `verify system property sets default locale`() {
     paparazzi.snapshot(
       view = paparazzi.inflate(R.layout.title_color)
     )

@@ -15,10 +15,8 @@
  */
 package app.cash.paparazzi
 
-import com.android.ide.common.resources.configuration.LocaleQualifier
 import java.awt.image.BufferedImage
 import java.io.Closeable
-import java.util.Locale
 
 public interface SnapshotHandler : Closeable {
   public fun newFrameHandler(snapshot: Snapshot, frameCount: Int, fps: Int): FrameHandler
@@ -30,23 +28,3 @@ public interface SnapshotHandler : Closeable {
 
 public fun detectMaxPercentDifferenceDefault(): Double =
   System.getProperty("app.cash.paparazzi.maxPercentDifferenceDefault")?.toDoubleOrNull() ?: 0.01
-
-/**
- * Returns a LocaleQualifier for snapshots.
- *
- * Uses the provided `locale` if passed in, otherwise falls back to the
- * `app.cash.paparazzi.localeDefault` system property, and finally the
- * default `LocaleQualifier()` if neither are available.
- *
- * @param locale Optional Locale to use for snapshot tests.
- * @return LocaleQualifier for snapshot tests.
- */
-internal fun detectLocaleQualifierDefault(locale: String?): LocaleQualifier {
-  val propLocale = System.getProperty("app.cash.paparazzi.localeDefault")
-    ?.takeIf { it.isNotEmpty() }
-  return when {
-    locale != null -> LocaleQualifier.getQualifier(locale)
-    propLocale != null -> LocaleQualifier.getQualifier(propLocale)
-    else -> LocaleQualifier()
-  }
-}

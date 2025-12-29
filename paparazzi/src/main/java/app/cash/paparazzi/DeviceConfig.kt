@@ -23,6 +23,7 @@ import com.android.ide.common.resources.configuration.DensityQualifier
 import com.android.ide.common.resources.configuration.FolderConfiguration
 import com.android.ide.common.resources.configuration.KeyboardStateQualifier
 import com.android.ide.common.resources.configuration.LayoutDirectionQualifier
+import com.android.ide.common.resources.configuration.LocaleQualifier
 import com.android.ide.common.resources.configuration.NavigationMethodQualifier
 import com.android.ide.common.resources.configuration.NetworkCodeQualifier
 import com.android.ide.common.resources.configuration.NightModeQualifier
@@ -78,7 +79,7 @@ public class DeviceConfig(
   public val density: Density = Density.XHIGH,
   public val fontScale: Float = 1f,
   public val layoutDirection: LayoutDirection = LayoutDirection.LTR,
-  public val locale: String? = null,
+  public val locale: String? = detectLocaleProperty(),
   public val ratio: ScreenRatio = ScreenRatio.NOTLONG,
   public val size: ScreenSize = ScreenSize.NORMAL,
   public val keyboard: Keyboard = Keyboard.NOKEY,
@@ -111,7 +112,7 @@ public class DeviceConfig(
         countryCodeQualifier = CountryCodeQualifier()
         layoutDirectionQualifier = LayoutDirectionQualifier(layoutDirection)
         networkCodeQualifier = NetworkCodeQualifier()
-        localeQualifier = detectLocaleQualifierDefault(locale = locale)
+        localeQualifier = if (locale != null) LocaleQualifier.getQualifier(locale) else LocaleQualifier()
         versionQualifier = VersionQualifier()
         screenRoundQualifier = ScreenRoundQualifier(screenRound)
       }
@@ -916,5 +917,9 @@ public class DeviceConfig(
 
       return map
     }
+
+    internal fun detectLocaleProperty(): String? =
+      System.getProperty("app.cash.paparazzi.defaultLocale")
+        ?.takeIf { it.isNotEmpty() }
   }
 }
