@@ -47,6 +47,15 @@ class SnapshotWithOffsetTest {
     paparazzi.snapshot(view = view, offsetMillis = -1L)
   }
 
+  @Test
+  fun `verify animated view is completed with gif`() {
+    val composition = getCompositionLogo(res = R.raw.lottie_logo, context = paparazzi.context)
+
+    val view = getLottieAnimationView(context = paparazzi.context, composition = composition)
+
+    paparazzi.gif(view = view)
+  }
+
   private fun getLottieAnimationView(context: Context, composition: LottieComposition) =
     LottieAnimationView(context).apply {
       setComposition(composition)
