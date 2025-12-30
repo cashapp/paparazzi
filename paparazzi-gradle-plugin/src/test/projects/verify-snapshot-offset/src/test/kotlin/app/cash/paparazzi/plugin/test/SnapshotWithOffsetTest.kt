@@ -15,7 +15,7 @@ class SnapshotWithOffsetTest {
   var paparazzi = Paparazzi()
 
   @Test
-  fun `Verify animated view progress`() {
+  fun `verify animated view progress with multiple offsets`() {
     val composition = getCompositionLogo(res = R.raw.lottie_logo, context = paparazzi.context)
 
     val view = getLottieAnimationView(context = paparazzi.context, composition = composition)
@@ -30,7 +30,7 @@ class SnapshotWithOffsetTest {
   }
 
   @Test
-  fun `Verify animated view completed with large offset`() {
+  fun `verify animated view is completed with large offset`() {
     val composition = getCompositionLogo(res = R.raw.lottie_logo, context = paparazzi.context)
 
     val view = getLottieAnimationView(context = paparazzi.context, composition = composition)
@@ -39,7 +39,7 @@ class SnapshotWithOffsetTest {
   }
 
   @Test
-  fun `Verify animated view blank with negative offset`() {
+  fun `verify animated view is blank with negative offset`() {
     val composition = getCompositionLogo(res = R.raw.lottie_logo, context = paparazzi.context)
 
     val view = getLottieAnimationView(context = paparazzi.context, composition = composition)
