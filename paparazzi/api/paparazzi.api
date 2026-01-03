@@ -166,7 +166,9 @@ public final class app/cash/paparazzi/Paparazzi : org/junit/rules/TestRule {
 	public synthetic fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZDLapp/cash/paparazzi/SnapshotHandler;Ljava/util/Set;ZZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZDLapp/cash/paparazzi/SnapshotHandler;Ljava/util/Set;ZZZZ)V
 	public synthetic fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZDLapp/cash/paparazzi/SnapshotHandler;Ljava/util/Set;ZZZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun afterTest ()V
 	public fun apply (Lorg/junit/runners/model/Statement;Lorg/junit/runner/Description;)Lorg/junit/runners/model/Statement;
+	public final fun beforeTest (Lapp/cash/paparazzi/TestName;)V
 	public final fun close ()V
 	public final fun getContext ()Landroid/content/Context;
 	public final fun getLayoutInflater ()Landroid/view/LayoutInflater;

@@ -90,25 +90,11 @@ public class Paparazzi @JvmOverloads constructor(
   override fun apply(base: Statement, description: Description): Statement {
     return object : Statement() {
       override fun evaluate() {
-        sdk = PaparazziSdk(
-          environment = environment,
-          deviceConfig = deviceConfig,
-          theme = theme,
-          renderingMode = renderingMode,
-          appCompatEnabled = appCompatEnabled,
-          renderExtensions = renderExtensions,
-          supportsRtl = supportsRtl,
-          showSystemUi = showSystemUi,
-          validateAccessibility = validateAccessibility,
-          onNewFrame = { frameHandler.handle(it) },
-          useDeviceResolution = useDeviceResolution
-        )
-        sdk.setup()
-        prepare(description)
+        beforeTest(testName = description.toTestName())
         try {
           base.evaluate()
         } finally {
-          close()
+          afterTest()
         }
       }
     }
@@ -119,6 +105,32 @@ public class Paparazzi @JvmOverloads constructor(
     sdk.prepare()
   }
 
+  public fun beforeTest(testName: TestName) {
+    sdk = PaparazziSdk(
+      environment = environment,
+      deviceConfig = deviceConfig,
+      theme = theme,
+      renderingMode = renderingMode,
+      appCompatEnabled = appCompatEnabled,
+      renderExtensions = renderExtensions,
+      supportsRtl = supportsRtl,
+      showSystemUi = showSystemUi,
+      validateAccessibility = validateAccessibility,
+      onNewFrame = { frameHandler.handle(it) },
+      useDeviceResolution = useDeviceResolution
+    )
+    sdk.setup()
+    this.testName = testName
+    sdk.prepare()
+  }
+
+  public fun afterTest() {
+    testName = null
+    sdk.teardown()
+    snapshotHandler.close()
+  }
+
+  @Deprecated("Please use afterTest() instead.")
   public fun close() {
     testName = null
     sdk.teardown()
