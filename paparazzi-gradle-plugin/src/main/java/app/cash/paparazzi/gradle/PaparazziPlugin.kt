@@ -15,15 +15,12 @@
  */
 package app.cash.paparazzi.gradle
 
-import app.cash.paparazzi.gradle.instrumentation.ResourcesCompatVisitorFactory
 import app.cash.paparazzi.gradle.reporting.DiffImage
 import app.cash.paparazzi.gradle.reporting.PaparazziTestReporter
 import app.cash.paparazzi.gradle.utils.artifactViewFor
 import app.cash.paparazzi.gradle.utils.capitalize
 import app.cash.paparazzi.gradle.utils.relativize
 import com.android.build.api.dsl.CommonExtension
-import com.android.build.api.instrumentation.FramesComputationMode
-import com.android.build.api.instrumentation.InstrumentationScope
 import com.android.build.api.variant.AndroidComponentsExtension
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension
 import com.android.build.api.variant.DynamicFeatureAndroidComponentsExtension
@@ -138,17 +135,7 @@ public class PaparazziPlugin @Inject constructor(
       val reportOutputDir =
         project.extensions.getByType(ReportingExtension::class.java).baseDirectory.dir("paparazzi/${variant.name}")
 
-      val testInstrumentation = testVariant.instrumentation
-      testInstrumentation.transformClassesWith(
-        ResourcesCompatVisitorFactory::class.java,
-        InstrumentationScope.ALL
-      ) { }
-      testInstrumentation.setAsmFramesComputationMode(
-        FramesComputationMode.COMPUTE_FRAMES_FOR_INSTRUMENTED_METHODS
-      )
-
       val sources = AndroidVariantSources(variant)
-
       val writeResourcesTask = project.tasks.register(
         "preparePaparazzi${variantSlug}Resources",
         PrepareResourcesTask::class.java

@@ -143,6 +143,7 @@ public class PaparazziSdk @JvmOverloads constructor(
   public fun setup() {
     if (!isInitialized) {
       registerViewEditModeInterception()
+      InterceptorRegistrar.registerResourcesCompatFontLoadFix()
 
       ByteBuddyAgent.install()
       InterceptorRegistrar.registerMethodInterceptors()
