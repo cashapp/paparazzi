@@ -90,11 +90,11 @@ public class Paparazzi @JvmOverloads constructor(
   override fun apply(base: Statement, description: Description): Statement {
     return object : Statement() {
       override fun evaluate() {
-        beforeTest(testName = description.toTestName())
+        setup(testName = description.toTestName())
         try {
           base.evaluate()
         } finally {
-          afterTest()
+          teardown()
         }
       }
     }
@@ -105,7 +105,7 @@ public class Paparazzi @JvmOverloads constructor(
     sdk.prepare()
   }
 
-  public fun beforeTest(testName: TestName) {
+  public fun setup(testName: TestName) {
     sdk = PaparazziSdk(
       environment = environment,
       deviceConfig = deviceConfig,
@@ -124,13 +124,13 @@ public class Paparazzi @JvmOverloads constructor(
     sdk.prepare()
   }
 
-  public fun afterTest() {
+  public fun teardown() {
     testName = null
     sdk.teardown()
     snapshotHandler.close()
   }
 
-  @Deprecated("Please use afterTest() instead.")
+  @Deprecated("Please use teardown() instead.")
   public fun close() {
     testName = null
     sdk.teardown()

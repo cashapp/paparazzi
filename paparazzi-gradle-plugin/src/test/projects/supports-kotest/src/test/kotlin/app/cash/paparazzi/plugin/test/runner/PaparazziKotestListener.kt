@@ -11,13 +11,13 @@ class PaparazziKotestListener(
 ) : TestListener {
 
   override suspend fun beforeTest(testCase: TestCase) {
-    api.beforeTest(testCase.toTestName())
+    api.setup(testCase.toTestName())
     super.beforeTest(testCase)
   }
 
   override suspend fun afterTest(testCase: TestCase, result: TestResult) {
     super.afterTest(testCase, result)
-    api.afterTest()
+    api.teardown()
   }
 
   private fun TestCase.toTestName() =

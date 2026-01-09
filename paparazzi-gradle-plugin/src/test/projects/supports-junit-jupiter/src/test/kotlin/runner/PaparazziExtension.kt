@@ -11,11 +11,11 @@ class PaparazziExtension(
 ) : BeforeEachCallback, AfterEachCallback {
 
   override fun beforeEach(context: ExtensionContext) {
-    api.beforeTest(testName = context.toTestName())
+    api.setup(testName = context.toTestName())
   }
 
   override fun afterEach(context: ExtensionContext) {
-    api.afterTest()
+    api.teardown()
   }
 
   private fun ExtensionContext.toTestName() =

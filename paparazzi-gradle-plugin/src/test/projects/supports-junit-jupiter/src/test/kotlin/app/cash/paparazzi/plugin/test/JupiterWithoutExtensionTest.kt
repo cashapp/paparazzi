@@ -24,12 +24,12 @@ class JupiterWithoutExtensionTest {
       methodName = testInfo.testMethod.get().name
     )
     paparazzi = Paparazzi()
-    paparazzi.beforeTest(testName = name)
+    paparazzi.setup(testName = name)
   }
 
   @AfterEach
   fun tearDown() {
-    paparazzi.afterTest()
+    paparazzi.teardown()
   }
 
   @ParameterizedTest(name = "Jupiter param test: {0}")

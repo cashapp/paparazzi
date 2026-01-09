@@ -23,12 +23,12 @@ class TestNgPaparazziTest {
     val testName = TestName(packageName, className, methodName)
 
     paparazzi = Paparazzi()
-    paparazzi.beforeTest(testName = testName)
+    paparazzi.setup(testName = testName)
   }
 
   @AfterMethod
   fun tearDown() {
-    paparazzi.afterTest()
+    paparazzi.teardown()
   }
 
   @Test

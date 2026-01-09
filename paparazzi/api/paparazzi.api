@@ -166,9 +166,7 @@ public final class app/cash/paparazzi/Paparazzi : org/junit/rules/TestRule {
 	public synthetic fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZDLapp/cash/paparazzi/SnapshotHandler;Ljava/util/Set;ZZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZDLapp/cash/paparazzi/SnapshotHandler;Ljava/util/Set;ZZZZ)V
 	public synthetic fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ZDLapp/cash/paparazzi/SnapshotHandler;Ljava/util/Set;ZZZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun afterTest ()V
 	public fun apply (Lorg/junit/runners/model/Statement;Lorg/junit/runner/Description;)Lorg/junit/runners/model/Statement;
-	public final fun beforeTest (Lapp/cash/paparazzi/TestName;)V
 	public final fun close ()V
 	public final fun getContext ()Landroid/content/Context;
 	public final fun getLayoutInflater ()Landroid/view/LayoutInflater;
@@ -181,12 +179,14 @@ public final class app/cash/paparazzi/Paparazzi : org/junit/rules/TestRule {
 	public static synthetic fun gif$default (Lapp/cash/paparazzi/Paparazzi;Landroid/view/View;Ljava/lang/String;JJIILjava/lang/Object;)V
 	public final fun inflate (I)Landroid/view/View;
 	public final fun prepare (Lorg/junit/runner/Description;)V
+	public final fun setup (Lapp/cash/paparazzi/TestName;)V
 	public final fun snapshot (Landroid/view/View;)V
 	public final fun snapshot (Landroid/view/View;Ljava/lang/String;)V
 	public final fun snapshot (Landroid/view/View;Ljava/lang/String;J)V
 	public final fun snapshot (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
 	public static synthetic fun snapshot$default (Lapp/cash/paparazzi/Paparazzi;Landroid/view/View;Ljava/lang/String;JILjava/lang/Object;)V
 	public static synthetic fun snapshot$default (Lapp/cash/paparazzi/Paparazzi;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
+	public final fun teardown ()V
 	public final fun unsafeUpdateConfig (Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;)V
 	public static synthetic fun unsafeUpdateConfig$default (Lapp/cash/paparazzi/Paparazzi;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ILjava/lang/Object;)V
 }
