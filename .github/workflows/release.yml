@@ -14,16 +14,16 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Configure JDK
         uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
-          java-version: 17
+          java-version: 21
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
 
       - name: Publish Artifacts
         run: ./gradlew publishMavenPublicationToMavenCentralRepository paparazzi-gradle-plugin:publishAllPublicationsToMavenCentralRepository
@@ -35,7 +35,7 @@ jobs:
 
       - name: Extract release notes
         id: release_notes
-        uses: ffurrer2/extract-release-notes@v2
+        uses: ffurrer2/extract-release-notes@v3
 
       - name: Create release
         uses: softprops/action-gh-release@v2
@@ -47,7 +47,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version: 3.13 # See the pinned version in renovate.json too
+          python-version: 3.14 # See the pinned version in renovate.json too
 
       - name: Prep mkdocs
         run: .github/workflows/prepare_mkdocs.sh

@@ -10,13 +10,13 @@ import org.junit.runner.RunWith
 
 @RunWith(TestParameterInjector::class)
 class DeviceResolutionTest(
-  @TestParameter useDeviceResolutionFlag: Boolean
+  @TestParameter useDeviceResolution: Boolean
 ) {
 
   @get:Rule
   val paparazzi = Paparazzi(
     deviceConfig = DeviceConfig.NEXUS_5,
-    useDeviceResolution = useDeviceResolutionFlag
+    useDeviceResolution = useDeviceResolution
   )
 
   @Test

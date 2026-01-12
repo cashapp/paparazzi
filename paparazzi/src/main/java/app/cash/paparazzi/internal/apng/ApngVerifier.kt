@@ -110,7 +110,7 @@ internal class ApngVerifier(
     val error = buildString {
       if (invalidFrames >= 1) {
         appendLine(
-          "$invalidFrames frames differed by more than %.1f%%".format(maxPercentDifference)
+          "$invalidFrames frames differed by more than %f%%".format(maxPercentDifference)
         )
       }
       if (pngReader.getFps() != fps) {

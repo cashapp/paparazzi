@@ -18,21 +18,21 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Configure JDK
         uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
-          java-version: 17
+          java-version: 21
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
 
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version: 3.13
+          python-version: 3.14
 
       - name: Prep mkdocs
         run: .github/workflows/prepare_mkdocs.sh
@@ -43,7 +43,7 @@ jobs:
           mkdocs build
 
       - name: Upload Html Docs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: mkdocs-${{ github.sha }}
           path: |
@@ -59,13 +59,13 @@ jobs:
           windows-latest,
           ubuntu-latest
         ]
-        java-version: [17, 21, 24]
+        java-version: [21, 24]
 
     runs-on: ${{matrix.os}}
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Configure JDK
         uses: actions/setup-java@v5
@@ -74,14 +74,14 @@ jobs:
           java-version: ${{ matrix.java-version }}
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
 
       - name: Run All Tests
         run: ./gradlew check
 
       - name: Upload Test Failures
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: test-failures-${{ matrix.os }}-${{ matrix.java-version }}
           path: |
@@ -98,16 +98,16 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Configure JDK
         uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
-          java-version: 17
+          java-version: 21
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
 
       - name: Publish Artifacts
         run: ./gradlew publishMavenPublicationToMavenCentralRepository paparazzi-gradle-plugin:publishAllPublicationsToMavenCentralRepository
@@ -120,7 +120,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version: 3.13 # See the pinned version in renovate.json too
+          python-version: 3.14 # See the pinned version in renovate.json too
 
       - name: Prep mkdocs
         run: .github/workflows/prepare_mkdocs.sh

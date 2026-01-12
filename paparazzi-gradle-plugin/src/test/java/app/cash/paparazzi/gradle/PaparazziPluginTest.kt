@@ -18,10 +18,8 @@ import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
 import java.io.File
-import java.nio.file.Files
-import java.nio.file.Path
-import javax.imageio.ImageIO
 
+@Suppress("ktlint:standard:max-line-length")
 class PaparazziPluginTest {
   private val filesToDelete = mutableListOf<File>()
 
@@ -232,10 +230,10 @@ class PaparazziPluginTest {
     assertThat(result.output).doesNotContain("InvalidCharsTest > goodValues[MULTIPLICATION] FAILED")
     assertThat(result.output).doesNotContain("InvalidCharsTest > goodValues[DIVISION] FAILED")
     assertThat(result.output).contains("InvalidCharsTest > badSnapshotName FAILED")
-    assertThat(result.output).doesNotContain("InvalidCharsTest > badValues[+] FAILED")
-    assertThat(result.output).doesNotContain("InvalidCharsTest > badValues[-] FAILED")
-    assertThat(result.output).contains("InvalidCharsTest > badValues[*] FAILED")
-    assertThat(result.output).contains("InvalidCharsTest > badValues[/] FAILED")
+    assertThat(result.output).doesNotContain("InvalidCharsTest > badValues[char=+] FAILED")
+    assertThat(result.output).doesNotContain("InvalidCharsTest > badValues[char=-] FAILED")
+    assertThat(result.output).contains("InvalidCharsTest > badValues[char=*] FAILED")
+    assertThat(result.output).contains("InvalidCharsTest > badValues[char=/] FAILED")
   }
 
   @Test
@@ -925,7 +923,7 @@ class PaparazziPluginTest {
     )
     assertThat(config.aarExplodedDirs)
       .comparingElementsUsing(MATCHES_PATTERN)
-      .containsExactly("^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/external/res\$")
+      .containsExactly("^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/external/res\$")
   }
 
   @Test
@@ -961,7 +959,7 @@ class PaparazziPluginTest {
     )
     assertThat(config.aarExplodedDirs)
       .comparingElementsUsing(MATCHES_PATTERN)
-      .containsExactly("^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/external/res\$")
+      .containsExactly("^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/external/res\$")
   }
 
   @Test
@@ -1113,15 +1111,15 @@ class PaparazziPluginTest {
     assertThat(config.aarExplodedDirs)
       .comparingElementsUsing(MATCHES_PATTERN)
       .containsExactly(
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/external1/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/core-1.17.0/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/annotation-experimental-1.4.1/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/core-viewtree-1.0.0/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/lifecycle-runtime-2.6.2/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/profileinstaller-1.3.0/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/startup-runtime-1.1.1/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/tracing-1.2.0/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/core-runtime-2.2.0/res\$"
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/external1/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/core-1.17.0/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/annotation-experimental-1.4.1/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/core-viewtree-1.0.0/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/lifecycle-runtime-2.6.2/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/profileinstaller-1.3.0/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/startup-runtime-1.1.1/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/tracing-1.2.0/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/core-runtime-2.2.0/res\$"
       )
 
     buildDir.deleteRecursively()
@@ -1142,15 +1140,15 @@ class PaparazziPluginTest {
     assertThat(config.aarExplodedDirs)
       .comparingElementsUsing(MATCHES_PATTERN)
       .containsExactly(
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/external2/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/core-1.17.0/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/annotation-experimental-1.4.1/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/core-viewtree-1.0.0/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/lifecycle-runtime-2.6.2/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/profileinstaller-1.3.0/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/startup-runtime-1.1.1/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/tracing-1.2.0/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/core-runtime-2.2.0/res\$"
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/external2/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/core-1.17.0/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/annotation-experimental-1.4.1/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/core-viewtree-1.0.0/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/lifecycle-runtime-2.6.2/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/profileinstaller-1.3.0/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/startup-runtime-1.1.1/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/tracing-1.2.0/res\$",
+        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/core-runtime-2.2.0/res\$"
       )
   }
 
@@ -1304,7 +1302,7 @@ class PaparazziPluginTest {
     var config = resourcesFile.loadConfig()
     assertThat(config.aarAssetDirs)
       .comparingElementsUsing(MATCHES_PATTERN)
-      .containsExactly("^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/external1/assets\$")
+      .containsExactly("^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/external1/assets\$")
 
     buildDir.deleteRecursively()
 
@@ -1323,7 +1321,7 @@ class PaparazziPluginTest {
     config = resourcesFile.loadConfig()
     assertThat(config.aarAssetDirs)
       .comparingElementsUsing(MATCHES_PATTERN)
-      .containsExactly("^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/external2/assets\$")
+      .containsExactly("^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/external2/assets\$")
   }
 
   @Test
@@ -1517,7 +1515,6 @@ class PaparazziPluginTest {
   }
 
   @Test
-  @Suppress("ktlint:standard:max-line-length")
   fun snapshotReport() {
     val fixtureRoot = File("src/test/projects/report-snapshots")
     val testReportDir = File(fixtureRoot, "build/reports/tests/testDebugUnitTest/classes")

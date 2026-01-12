@@ -206,7 +206,7 @@ class PreviewProcessorProviderTest {
         // Needed for @PreviewParameterProvider annotation that uses `@JvmDefaultWithCompatibility`
         kotlincArguments = listOf("-Xjvm-default=all")
 
-        configureKsp(useKsp2 = true) {
+        configureKsp {
           allWarningsAsErrors = true
           kspProcessorOptions += "app.cash.paparazzi.preview.namespace" to TEST_NAMESPACE
           kspIncremental = true

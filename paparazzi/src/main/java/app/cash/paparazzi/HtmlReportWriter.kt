@@ -64,7 +64,7 @@ public class HtmlReportWriter @JvmOverloads constructor(
   private val runName: String = defaultRunName(),
   private val rootDirectory: File = File(System.getProperty("paparazzi.report.dir")),
   private val maxPercentDifference: Double,
-  private val differ: Differ,
+  private val differ: Differ = determineDiffer(),
   snapshotRootDirectory: File = File(System.getProperty("paparazzi.snapshot.dir"))
 ) : SnapshotHandler {
   private val runsDirectory: File = File(rootDirectory, "runs")

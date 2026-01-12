@@ -1,13 +1,13 @@
 [versions]
-agp = "8.13.0"
-androidTools = "31.13.0" # == 23.0.0 + agp version
-bytebuddy = "1.17.7"
-compose = "1.9.2"
+agp = "8.13.2"
+androidTools = "31.13.2" # == 23.0.0 + agp version
+bytebuddy = "1.18.3"
+compose = "1.10.0"
 coroutines = "1.10.2"
-javaTarget = "17"
-kotlin = "2.2.10"
-ksp = "2.2.10-2.0.2"
-layoutlib = "15.2.3"
+javaTarget = "21"
+kotlin = "2.3.0"
+ksp = "2.3.4"
+layoutlib = "16.1.1"
 moshi = "1.15.2"
 
 minSdk = "25"
@@ -16,10 +16,10 @@ compileSdk = "36"
 [libraries]
 androidx-annotations = { module = "androidx.annotation:annotation", version = "1.9.1" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version = "1.7.1" }
-androidx-activity = { module = "androidx.activity:activity", version = "1.11.0" }
+androidx-activity = { module = "androidx.activity:activity", version = "1.12.2" }
 androidx-compose-ui-android = { module = "androidx.compose.ui:ui-android", version.ref = "compose" }
-androidx-lifecycle-runtime = { module = "androidx.lifecycle:lifecycle-runtime-android", version = "2.9.4" }
-androidx-savedstate = { module = "androidx.savedstate:savedstate-android", version = "1.3.3" }
+androidx-lifecycle-runtime = { module = "androidx.lifecycle:lifecycle-runtime-android", version = "2.10.0" }
+androidx-savedstate = { module = "androidx.savedstate:savedstate-android", version = "1.4.0" }
 androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version = "1.4.0" }
 
 autoService-annotations = "com.google.auto.service:auto-service-annotations:1.1.1"
@@ -30,7 +30,7 @@ bytebuddy-core = { module = "net.bytebuddy:byte-buddy", version.ref = "bytebuddy
 
 compose-runtime = { module = "androidx.compose.runtime:runtime", version.ref = "compose" }
 composeUi-material = { module = "androidx.compose.material:material", version.ref = "compose" }
-composeUi-material3-android = { module = "androidx.compose.material3:material3-android", version = "1.3.2" }
+composeUi-material3-android = { module = "androidx.compose.material3:material3-android", version = "1.4.0" }
 composeUi-material-icons = { module = "androidx.compose.material:material-icons-core", version = "1.7.8" }
 composeUi-uiTooling = { module = "androidx.compose.ui:ui-tooling" }
 
@@ -38,13 +38,13 @@ guava = { module = "com.google.guava:guava", version = "33.5.0-jre" }
 
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
 kotlinpoet-ksp = { module = "com.squareup:kotlinpoet-ksp", version = "2.2.0" }
-kotlin-compile-testing-ksp = { module = "dev.zacsweers.kctfork:ksp", version = "0.8.0" }
+kotlin-compile-testing-ksp = { module = "dev.zacsweers.kctfork:ksp", version = "0.12.1" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
 
 ksp = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }
 
-ktlint-core = "com.pinterest.ktlint:ktlint-cli:1.7.1"
+ktlint-core = "com.pinterest.ktlint:ktlint-cli:1.8.0"
 
 kxml2 = { module = "kxml2:kxml2", version = "2.3.0" }
 
@@ -55,11 +55,11 @@ moshi-adapters = { module = "com.squareup.moshi:moshi-adapters", version.ref = "
 moshi-core = { module = "com.squareup.moshi:moshi", version.ref = "moshi" }
 moshi-kotlinReflect = { module = "com.squareup.moshi:moshi-kotlin", version.ref = "moshi" }
 
-okio = { module = "com.squareup.okio:okio", version = "3.16.0" }
+okio = { module = "com.squareup.okio:okio", version = "3.16.4" }
 
 tools-common = { module = "com.android.tools:common", version.ref = "androidTools" }
 tools-layoutlib = { module = "com.android.tools.layoutlib:layoutlib", version.ref = "layoutlib" }
-tools-layoutlib-api = { module = "com.android.tools.layoutlib:layoutlib-api", version = "31.13.0" }
+tools-layoutlib-api = { module = "com.android.tools.layoutlib:layoutlib-api", version = "31.13.2" }
 tools-layoutlib-resources = { module = "com.android.tools.layoutlib:layoutlib-resources", version.ref = "layoutlib" }
 tools-layoutlib-runtime = { module = "com.android.tools.layoutlib:layoutlib-runtime", version.ref = "layoutlib" }
 tools-ninepatch = { module = "com.android.tools:ninepatch", version.ref = "androidTools" }
@@ -69,17 +69,17 @@ trove4j = { module = "org.jetbrains.intellij.deps:trove4j", version = "1.0.20200
 
 # Test libraries
 junit = { module = "junit:junit", version = "4.13.2" }
-testParameterInjector = { module = "com.google.testparameterinjector:test-parameter-injector", version = "1.19" }
+testParameterInjector = { module = "com.google.testparameterinjector:test-parameter-injector", version = "1.20" }
 truth = { module = "com.google.truth:truth", version = "1.4.5" }
 
 # Plugins
 plugin-android = { module = "com.android.tools.build:gradle", version.ref = "agp" }
-plugin-buildConfig = { module = "com.github.gmazzo.buildconfig:plugin", version = "5.6.8" }
-plugin-dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version = "2.0.0" }
+plugin-buildConfig = { module = "com.github.gmazzo.buildconfig:plugin", version = "6.0.7" }
+plugin-dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version = "2.1.0" }
 plugin-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 plugin-kotlin-compose = { module = "org.jetbrains.kotlin:compose-compiler-gradle-plugin", version.ref = "kotlin" }
 plugin-kotlinApiDump = { module = "org.jetbrains.kotlinx:binary-compatibility-validator", version = '0.18.1' }
 plugin-ksp = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version.ref = "ksp" }
-plugin-mavenPublish = { module = "com.vanniktech:gradle-maven-publish-plugin", version = "0.34.0" }
-plugin-poko = { module = "dev.drewhamilton.poko:poko-gradle-plugin", version = "0.19.3" }
-plugin-spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version = "8.0.0" }
+plugin-mavenPublish = { module = "com.vanniktech:gradle-maven-publish-plugin", version = "0.35.0" }
+plugin-poko = { module = "dev.drewhamilton.poko:poko-gradle-plugin", version = "0.21.0" }
+plugin-spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version = "8.1.0" }

@@ -126,8 +126,9 @@ public class AccessibilityRenderExtension : RenderExtension {
     }
 
     if (this is ViewGroup) {
-      (0 until childCount).forEach {
-        getChildAt(it).processAccessibleChildren(processElement)
+      val orderedViews = orderViewGroup()
+      orderedViews.forEach {
+        it.processAccessibleChildren(processElement)
       }
     }
   }
@@ -177,6 +178,108 @@ public class AccessibilityRenderExtension : RenderExtension {
         )
       )
       .flatMap { it.nodes }
+  }
+
+  private fun ViewGroup.orderViewGroup(): List<View> {
+    if (childCount == 0) return emptyList()
+
+    // Build a map of view ID to view for quick lookups
+    val viewsById = mutableMapOf<Int, View>()
+    val childViews = (0 until childCount).map { getChildAt(it) }
+
+    childViews.forEach { child ->
+      if (child.id != View.NO_ID) {
+        viewsById[child.id] = child
+      }
+    }
+
+    // Build the dependency graph based on accessibilityTraversalBefore/After
+    // TraversalConstraints: before = Views that should come before this view, after = Views that should come after this view
+    data class TraversalConstraints(
+      val before: MutableList<View> = mutableListOf(),
+      val after: MutableList<View> = mutableListOf()
+    )
+
+    val constraints = mutableMapOf<View, TraversalConstraints>()
+    childViews.forEach { child ->
+      constraints[child] = TraversalConstraints()
+    }
+
+    // Process accessibilityTraversalBefore and accessibilityTraversalAfter
+    // These APIs were added in API 22 (Lollipop MR1)
+    childViews.forEach { child ->
+      // accessibilityTraversalBefore: this view comes BEFORE the referenced view
+      val traversalBeforeId = child.accessibilityTraversalBefore
+      if (traversalBeforeId != View.NO_ID) {
+        val beforeView = viewsById[traversalBeforeId]
+        if (beforeView != null && beforeView.parent == this) {
+          // child -> beforeView (child should come before beforeView)
+          constraints[beforeView]?.before?.add(child)
+          constraints[child]?.after?.add(beforeView)
+        }
+      }
+
+      // accessibilityTraversalAfter: this view comes AFTER the referenced view
+      val traversalAfterId = child.accessibilityTraversalAfter
+      if (traversalAfterId != View.NO_ID) {
+        val afterView = viewsById[traversalAfterId]
+        if (afterView != null && afterView.parent == this) {
+          // afterView -> child (child should come after afterView)
+          constraints[child]?.before?.add(afterView)
+          constraints[afterView]?.after?.add(child)
+        }
+      }
+    }
+
+    // Perform topological sort with fallback to layout order
+    val result = mutableListOf<View>()
+    val visited = mutableSetOf<View>()
+    val visiting = mutableSetOf<View>()
+
+    fun visit(view: View, orderIndex: Int): Boolean {
+      if (visited.contains(view)) return true
+      if (visiting.contains(view)) {
+        // Cycle detected, use layout order
+        return false
+      }
+
+      visiting.add(view)
+
+      val viewConstraints = constraints[view] ?: TraversalConstraints()
+      // Visit all views that should come before this one
+      for (beforeView in viewConstraints.before) {
+        if (!visit(beforeView, childViews.indexOf(beforeView))) {
+          // Cycle detected, abort topological sort
+          visiting.remove(view)
+          return false
+        }
+      }
+
+      visiting.remove(view)
+      visited.add(view)
+      result.add(view)
+      return true
+    }
+
+    // Try topological sort with layout order as fallback
+    val viewsWithOrder = childViews.mapIndexed { index, view -> view to index }
+    var hasCycle = false
+
+    for ((view, orderIndex) in viewsWithOrder) {
+      if (!visited.contains(view)) {
+        if (!visit(view, orderIndex)) {
+          hasCycle = true
+          break
+        }
+      }
+    }
+
+    // If we detected a cycle or constraints create conflicts, fall back to layout order
+    return if (hasCycle || result.size != childViews.size) {
+      childViews
+    } else {
+      result
+    }
   }
 
   private fun SemanticsNode.processAccessibleChildren(
@@ -329,6 +432,8 @@ public class AccessibilityRenderExtension : RenderExtension {
       stateDescription,
       selected,
       toggleableState,
+      progressBarRangeInfoLabel,
+      setProgress,
       mainAccessibilityText,
       role,
       editable,
@@ -336,8 +441,6 @@ public class AccessibilityRenderExtension : RenderExtension {
       onClickLabel,
       heading,
       errorLabel,
-      progressBarRangeInfoLabel,
-      setProgress,
       liveRegionMode,
       annotatedStringActions,
       customActions,

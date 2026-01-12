@@ -35,15 +35,16 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.semantics.invisibleToUser
 import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.setProgress
 import androidx.compose.ui.semantics.traversalIndex
@@ -120,8 +121,10 @@ class AccessibilityRenderingTest {
         onDismissRequest = {},
         sheetState = SheetState(
           skipPartiallyExpanded = true,
-          density = LocalDensity.current,
-          initialValue = SheetValue.Expanded
+          initialValue = SheetValue.Expanded,
+          positionalThreshold = { 1f },
+          velocityThreshold = { 1f },
+          skipHiddenState = true
         )
       ) {
         Text(text = "Text 2")
@@ -250,6 +253,7 @@ class AccessibilityRenderingTest {
           )
           Slider(
             modifier = Modifier.semantics {
+              contentDescription = "Volume Slider"
               setProgress("Adjust volume") { _ -> true }
             },
             value = 0.26f,
@@ -422,6 +426,121 @@ class AccessibilityRenderingTest {
         )
       }
     }
+  }
+
+  @Test
+  fun `verify view accessibilityTraversalBefore order`() {
+    val view = LinearLayout(paparazzi.context).apply {
+      orientation = LinearLayout.VERTICAL
+
+      // Create views with IDs
+      val textView1 = TextView(context).apply {
+        id = View.generateViewId()
+        text = "Third"
+        contentDescription = "Third"
+      }
+
+      val textView2 = TextView(context).apply {
+        id = View.generateViewId()
+        text = "First"
+        contentDescription = "First"
+        // This view should come before textView1
+        accessibilityTraversalBefore = textView1.id
+      }
+
+      val textView3 = TextView(context).apply {
+        id = View.generateViewId()
+        text = "Second"
+        contentDescription = "Second"
+        // This view should come before textView1 (but after textView2)
+        accessibilityTraversalBefore = textView1.id
+      }
+
+      // Add in visual order: Third, First, Second
+      addView(textView1)
+      addView(textView2)
+      addView(textView3)
+      // Expected accessibility order: First, Second, Third
+    }
+
+    paparazzi.snapshot(view)
+  }
+
+  @Test
+  fun `verify view accessibilityTraversalAfter order`() {
+    val view = LinearLayout(paparazzi.context).apply {
+      orientation = LinearLayout.VERTICAL
+
+      // Create views with IDs
+      val textView1 = TextView(context).apply {
+        id = View.generateViewId()
+        text = "First"
+        contentDescription = "First"
+      }
+
+      val textView3 = TextView(context).apply {
+        id = View.generateViewId()
+        text = "Second"
+        contentDescription = "Second"
+        // This view should come after textView1
+        accessibilityTraversalAfter = textView1.id
+      }
+
+      val textView2 = TextView(context).apply {
+        id = View.generateViewId()
+        text = "Third"
+        contentDescription = "Third"
+        // This view should come after textView3
+        accessibilityTraversalAfter = textView3.id
+      }
+
+      // Add in visual order: First, Third, Second
+      addView(textView1)
+      addView(textView2)
+      addView(textView3)
+      // Expected accessibility order: First, Second, Third
+    }
+
+    paparazzi.snapshot(view)
+  }
+
+  @Test
+  fun `verify view accessibilityTraversal cycle fallback to layout order`() {
+    val view = LinearLayout(paparazzi.context).apply {
+      orientation = LinearLayout.VERTICAL
+
+      // Create views with IDs that form a cycle
+      val textView1 = TextView(context).apply {
+        id = View.generateViewId()
+        text = "View A"
+        contentDescription = "View A"
+      }
+
+      val textView2 = TextView(context).apply {
+        id = View.generateViewId()
+        text = "View B"
+        contentDescription = "View B"
+      }
+
+      val textView3 = TextView(context).apply {
+        id = View.generateViewId()
+        text = "View C"
+        contentDescription = "View C"
+      }
+
+      // Create a cycle: A -> B -> C -> A
+      textView1.accessibilityTraversalAfter = textView3.id // A comes after C
+      textView2.accessibilityTraversalAfter = textView1.id // B comes after A
+      textView3.accessibilityTraversalAfter = textView2.id // C comes after B
+
+      // Add in layout order: A, B, C
+      addView(textView1)
+      addView(textView2)
+      addView(textView3)
+      // Expected: Cycle detected, falls back to layout order: A, B, C
+    }
+
+    paparazzi.snapshot(view)
   }
 
   private fun buildViewWithCustomActions(context: Context) =

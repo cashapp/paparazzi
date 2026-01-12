@@ -248,8 +248,10 @@ internal class FrameworkResourceRepository private constructor(
       val fileName: String = fileOrDirectory.fileName.toString()
       if (attrs.isDirectory) {
         if (fileName.startsWith("values-mcc") ||
-          fileName.startsWith(FD_RES_RAW) &&
-          (fileName.length == FD_RES_RAW.length || fileName[FD_RES_RAW.length] == '-')
+          (
+            fileName.startsWith(FD_RES_RAW) &&
+              (fileName.length == FD_RES_RAW.length || fileName[FD_RES_RAW.length] == '-')
+            )
         ) {
           // Mobile country codes and raw resources are not used by LayoutLib.
           return true

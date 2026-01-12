@@ -19,8 +19,22 @@ public final class app/cash/paparazzi/DeviceConfig {
 	public static final field PIXEL_4_XL Lapp/cash/paparazzi/DeviceConfig;
 	public static final field PIXEL_5 Lapp/cash/paparazzi/DeviceConfig;
 	public static final field PIXEL_6 Lapp/cash/paparazzi/DeviceConfig;
+	public static final field PIXEL_6A Lapp/cash/paparazzi/DeviceConfig;
 	public static final field PIXEL_6_PRO Lapp/cash/paparazzi/DeviceConfig;
+	public static final field PIXEL_7 Lapp/cash/paparazzi/DeviceConfig;
+	public static final field PIXEL_7A Lapp/cash/paparazzi/DeviceConfig;
+	public static final field PIXEL_7_PRO Lapp/cash/paparazzi/DeviceConfig;
+	public static final field PIXEL_8 Lapp/cash/paparazzi/DeviceConfig;
+	public static final field PIXEL_8A Lapp/cash/paparazzi/DeviceConfig;
+	public static final field PIXEL_8_PRO Lapp/cash/paparazzi/DeviceConfig;
+	public static final field PIXEL_9 Lapp/cash/paparazzi/DeviceConfig;
+	public static final field PIXEL_9A Lapp/cash/paparazzi/DeviceConfig;
+	public static final field PIXEL_9_PRO Lapp/cash/paparazzi/DeviceConfig;
+	public static final field PIXEL_9_PRO_FOLD Lapp/cash/paparazzi/DeviceConfig;
+	public static final field PIXEL_9_PRO_XL Lapp/cash/paparazzi/DeviceConfig;
 	public static final field PIXEL_C Lapp/cash/paparazzi/DeviceConfig;
+	public static final field PIXEL_FOLD Lapp/cash/paparazzi/DeviceConfig;
+	public static final field PIXEL_TABLET Lapp/cash/paparazzi/DeviceConfig;
 	public static final field PIXEL_XL Lapp/cash/paparazzi/DeviceConfig;
 	public static final field WEAR_OS_SMALL_ROUND Lapp/cash/paparazzi/DeviceConfig;
 	public static final field WEAR_OS_SQUARE Lapp/cash/paparazzi/DeviceConfig;
@@ -119,8 +133,9 @@ public final class app/cash/paparazzi/Flags {
 
 public final class app/cash/paparazzi/HtmlReportWriter : app/cash/paparazzi/SnapshotHandler {
 	public static final field $stable I
-	public fun <init> (DLapp/cash/paparazzi/Differ;)V
-	public fun <init> (Ljava/lang/String;DLapp/cash/paparazzi/Differ;)V
+	public fun <init> (D)V
+	public fun <init> (Ljava/lang/String;D)V
+	public fun <init> (Ljava/lang/String;Ljava/io/File;D)V
 	public fun <init> (Ljava/lang/String;Ljava/io/File;DLapp/cash/paparazzi/Differ;)V
 	public fun <init> (Ljava/lang/String;Ljava/io/File;DLapp/cash/paparazzi/Differ;Ljava/io/File;)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/io/File;DLapp/cash/paparazzi/Differ;Ljava/io/File;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -243,7 +258,8 @@ public final class app/cash/paparazzi/SnapshotHandlerKt {
 
 public final class app/cash/paparazzi/SnapshotVerifier : app/cash/paparazzi/SnapshotHandler {
 	public static final field $stable I
-	public fun <init> (DLapp/cash/paparazzi/Differ;)V
+	public fun <init> (D)V
+	public fun <init> (DLjava/io/File;)V
 	public fun <init> (DLjava/io/File;Lapp/cash/paparazzi/Differ;)V
 	public synthetic fun <init> (DLjava/io/File;Lapp/cash/paparazzi/Differ;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun close ()V
