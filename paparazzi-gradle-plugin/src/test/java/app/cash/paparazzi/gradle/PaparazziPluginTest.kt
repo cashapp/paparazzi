@@ -1670,7 +1670,7 @@ class PaparazziPluginTest {
 
     assertThat(result.task(":testDebugUnitTest")).isNotNull()
     assertThat(result.output).contains("LaunchedEffectExceptionTest > launchedEffectExceptionPropagates FAILED")
-    assertThat(result.output).contains("java.lang.IllegalStateException")
+    assertThat(result.output).contains("java.lang.IllegalStateException: Exception thrown in LaunchedEffect")
   }
 
   @Test

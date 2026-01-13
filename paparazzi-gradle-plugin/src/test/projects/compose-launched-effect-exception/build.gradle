@@ -26,3 +26,9 @@ android {
 dependencies {
   implementation libs.composeUi.material
 }
+
+tasks.withType(Test).configureEach {
+  testLogging {
+    showStandardStreams true
+  }
+}
