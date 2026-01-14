@@ -53,7 +53,7 @@ class SnapshotWithOffsetTest {
 
     val view = getLottieAnimationView(context = paparazzi.context, composition = composition)
 
-    paparazzi.gif(view = view)
+    paparazzi.gif(view = view, end = 2000L, fps = 60)
   }
 
   private fun getLottieAnimationView(context: Context, composition: LottieComposition) =
