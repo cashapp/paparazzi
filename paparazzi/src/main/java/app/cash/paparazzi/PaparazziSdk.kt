@@ -288,6 +288,15 @@ public class PaparazziSdk @JvmOverloads constructor(
 
     System_Delegate.setNanosTime(0L)
     System_Delegate.setBootTimeNanos(0L)
+
+    // Set up an UncaughtExceptionHandler to ensure that uncaught exceptions are propagated to the
+    // test framework rather than being silently swallowed. See https://github.com/cashapp/paparazzi/issues/2127
+    val previousUncaughtExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
+    Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
+      logger.error(throwable, throwable.message)
+      previousUncaughtExceptionHandler?.uncaughtException(thread, throwable)
+    }
+
     try {
       withTime(0L) {
         // Initialize the choreographer at time=0.
@@ -388,6 +397,8 @@ public class PaparazziSdk @JvmOverloads constructor(
       val mLastFrameTimeNanos = choreographer::class.java.getDeclaredField("mLastFrameTimeNanos")
       mLastFrameTimeNanos.isAccessible = true
       mLastFrameTimeNanos.set(choreographer, 0L)
+
+      Thread.setDefaultUncaughtExceptionHandler(previousUncaughtExceptionHandler)
     }
   }
 

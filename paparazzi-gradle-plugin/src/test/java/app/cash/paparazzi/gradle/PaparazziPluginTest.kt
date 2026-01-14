@@ -1661,6 +1661,19 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun composeLaunchedEffectExceptionPropagates() {
+    val fixtureRoot = File("src/test/projects/compose-launched-effect-exception")
+
+    val result = gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    assertThat(result.task(":testDebugUnitTest")).isNotNull()
+    assertThat(result.output).contains("LaunchedEffectExceptionTest > launchedEffectExceptionPropagates FAILED")
+    assertThat(result.output).contains("java.lang.IllegalStateException: Exception thrown in LaunchedEffect")
+  }
+
+  @Test
   fun overwriteSnapshotOnMaxPercentDiff() {
     val fixtureRoot = File("src/test/projects/overwrite-on-max-percent-difference")
 
