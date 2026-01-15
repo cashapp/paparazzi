@@ -23,7 +23,9 @@ class DefaultLocaleTest(@TestParameter val locale: Locale) {
       object : Statement() {
         override fun evaluate() {
           try {
-            System.setProperty("app.cash.paparazzi.defaultLocale", locale.tag.orEmpty())
+            locale.tag?.let { localeTag ->
+              System.setProperty("app.cash.paparazzi.defaultLocale", localeTag)
+            }
             base.evaluate()
           } catch (_: Exception) {
             System.clearProperty("app.cash.paparazzi.defaultLocale")
