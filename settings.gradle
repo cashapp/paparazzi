@@ -51,16 +51,16 @@ new File(rootDir, "paparazzi-gradle-plugin/src/test/projects").eachDir {
 
 def isIdea = !(System.getProperty("idea.version") ?: "").isEmpty()
 if (isIdea) {
-  System.setProperty("app.cash.paparazzi.testProjectNames", testProjectNames.join(","))
-  includeTestProjectsIntoIDE(testProjectNames)
+//  System.setProperty("app.cash.paparazzi.testProjectNames", testProjectNames.join(","))
+//  includeTestProjectsIntoIDE(testProjectNames)
 }
 
-private void includeTestProjectsIntoIDE(ArrayList<String> testProjectNames) {
-  include(":test-projects")
-  project(":test-projects").projectDir = new File(rootDir, "paparazzi-gradle-plugin/src/test/projects")
-
-  testProjectNames.forEach { dirName ->
-    include ":test-projects:$dirName"
-    project(":test-projects:$dirName").projectDir = new File(rootDir, "paparazzi-gradle-plugin/src/test/projects/$dirName")
-  }
-}
+//private void includeTestProjectsIntoIDE(ArrayList<String> testProjectNames) {
+//  include(":test-projects")
+//  project(":test-projects").projectDir = new File(rootDir, "paparazzi-gradle-plugin/src/test/projects")
+//
+//  testProjectNames.forEach { dirName ->
+//    include ":test-projects:$dirName"
+//    project(":test-projects:$dirName").projectDir = new File(rootDir, "paparazzi-gradle-plugin/src/test/projects/$dirName")
+//  }
+//}
