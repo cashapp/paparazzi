@@ -58,7 +58,7 @@ public abstract class GenerateBrowserTask : DefaultTask() {
 
   private fun ConfigurableFileCollection.allRelative(root: Path): List<String> =
     files
-      .flatMap { it.listFiles().toList() }
+      .flatMap { it.listFiles()?.asList() ?: emptyList() }
       .map { root.relativize(it.toPath()).toString() }
       .sorted()
 

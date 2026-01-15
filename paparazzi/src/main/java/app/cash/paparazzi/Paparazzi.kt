@@ -62,7 +62,7 @@ public class Paparazzi @JvmOverloads constructor(
     showSystemUi: Boolean = false,
     useDeviceResolution: Boolean = false,
     ruleTags: Map<String, String> = emptyMap(),
-    validateAccessibility: Boolean = false
+    validateAccessibility: Boolean = false,
   ) : this(
     environment = environment,
     deviceConfig = deviceConfig,

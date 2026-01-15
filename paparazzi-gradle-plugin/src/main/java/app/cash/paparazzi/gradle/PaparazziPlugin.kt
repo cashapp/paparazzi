@@ -135,7 +135,7 @@ public class PaparazziPlugin @Inject constructor(
 
     allprojects.forEach { p ->
       dependencies.let { d ->
-        d.add(SNAPSHOT_METADATA.declarableName, d.project(mapOf("path" to p.path)))
+        d.add(SNAPSHOT_METADATA.declarableName, d.project(mapOf("path" to p.isolated.path)))
       }
     }
   }
