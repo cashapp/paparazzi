@@ -40,7 +40,7 @@ public class Paparazzi @JvmOverloads constructor(
   private val renderExtensions: Set<RenderExtension> = setOf(),
   private val supportsRtl: Boolean = false,
   private val showSystemUi: Boolean = false,
-  private val useDeviceResolution: Boolean = false
+  private val useDeviceResolution: Boolean = false,
   private val ruleTags: Map<String, String> = emptyMap()
 ) : TestRule {
   private var validateAccessibility = false
@@ -61,7 +61,8 @@ public class Paparazzi @JvmOverloads constructor(
     supportsRtl: Boolean = false,
     showSystemUi: Boolean = false,
     useDeviceResolution: Boolean = false,
-    validateAccessibility: Boolean = false
+    validateAccessibility: Boolean = false,
+    ruleTags: Map<String, String> = emptyMap()
   ) : this(
     environment,
     deviceConfig,
@@ -73,7 +74,8 @@ public class Paparazzi @JvmOverloads constructor(
     renderExtensions,
     supportsRtl,
     showSystemUi,
-    useDeviceResolution
+    useDeviceResolution,
+    ruleTags
   ) {
     this.validateAccessibility = validateAccessibility
   }
