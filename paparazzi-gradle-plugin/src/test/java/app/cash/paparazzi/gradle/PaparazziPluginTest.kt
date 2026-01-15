@@ -1711,6 +1711,56 @@ class PaparazziPluginTest {
     assertThat(recordLastModified).isNotEqualTo(recordFile.lastModified())
   }
 
+  @Test
+  fun snapshotBrowser() {
+    val fixtureRoot = File("src/test/projects/snapshot-browser")
+
+    gradleRunner
+      .withArguments("recordPaparazziDebug", "--stacktrace")
+      .forwardOutput()
+      .runFixture(fixtureRoot) { build() }
+
+    gradleRunner
+      .withArguments("generateSnapshotBrowser", "--stacktrace")
+      .forwardOutput()
+      .runFixture(fixtureRoot) { build() }
+
+    val rootBuildDir = File(fixtureRoot, "build/paparazzi")
+    val browserHtml = File(rootBuildDir, "index.html")
+    assertThat(browserHtml.exists()).isTrue()
+    val browserJs = File(rootBuildDir, "browser.js")
+    assertThat(browserJs.exists()).isTrue()
+
+    val browserJsContent = browserJs.readText()
+
+    val metadataRegex = """window\.all_metadata\s*=\s*(\[[\s\S]*?\]);""".toRegex()
+    val matchResult = metadataRegex.find(browserJsContent)
+    assertThat(matchResult).isNotNull()
+
+    val metadataArrayJson = matchResult!!.groupValues[1]
+    val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
+    val listAdapter = moshi.adapter<List<String>>(List::class.java)
+    val metadataPaths = listAdapter.fromJson(metadataArrayJson)!!
+    assertThat(metadataPaths).isNotEmpty()
+
+    val expectedTestNames = listOf(
+      listOf("app.cash.paparazzi.plugin.module1.test.HelloComposeTest#compose"),
+      listOf("app.cash.paparazzi.plugin.module2.test.ComposeDialogShrinkTest#test")
+    )
+
+    val testNameRegex = """"testName":\s*"([^"]+)"""".toRegex()
+    metadataPaths.forEachIndexed { index, path ->
+      val metadataFile = File(fixtureRoot, path)
+      assertThat(metadataFile.exists()).isTrue()
+
+      val actualTestNames = testNameRegex
+        .findAll(metadataFile.readText())
+        .map { match -> match.groupValues[1] }
+
+      assertThat(actualTestNames.toList()).isEqualTo(expectedTestNames[index])
+    }
+  }
+
   private fun File.loadConfig() = source().buffer().use { CONFIG_ADAPTER.fromJson(it)!! }
 
   private fun GradleRunner.runFixture(projectRoot: File, action: GradleRunner.() -> BuildResult): BuildResult {
