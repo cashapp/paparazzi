@@ -79,7 +79,7 @@ public class DeviceConfig(
   public val density: Density = Density.XHIGH,
   public val fontScale: Float = 1f,
   public val layoutDirection: LayoutDirection = LayoutDirection.LTR,
-  public val locale: String? = null,
+  public val locale: String? = detectLocaleProperty(),
   public val ratio: ScreenRatio = ScreenRatio.NOTLONG,
   public val size: ScreenSize = ScreenSize.NORMAL,
   public val keyboard: Keyboard = Keyboard.NOKEY,
@@ -917,5 +917,9 @@ public class DeviceConfig(
 
       return map
     }
+
+    internal fun detectLocaleProperty(): String? =
+      System.getProperty("app.cash.paparazzi.defaultLocale")
+        ?.takeIf { it.isNotEmpty() }
   }
 }
