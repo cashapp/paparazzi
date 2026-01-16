@@ -1,0 +1,42 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
+plugins {
+  id 'org.jetbrains.kotlin.multiplatform'
+  id 'com.android.kotlin.multiplatform.library'
+  id 'app.cash.paparazzi'
+}
+
+kotlin {
+  androidLibrary {
+    namespace = 'app.cash.paparazzi.plugin.test'
+    compileSdk = libs.versions.compileSdk.get() as int
+    minSdk = libs.versions.minSdk.get() as int
+
+    withJava()
+    withHostTest { hostTest ->
+      hostTest.targetSdk {
+        version = release(libs.versions.compileSdk.get() as int)
+      }
+      hostTest.includeAndroidResources = true
+    }
+    androidResources.enable = true
+
+    compilerOptions {
+      jvmTarget = JvmTarget.fromTarget(libs.versions.javaTarget.get())
+    }
+  }
+
+  sourceSets {
+    androidMain {
+      dependencies {
+        implementation libs.composeUi.material
+      }
+    }
+
+    named("androidHostTest") {
+      dependencies {
+        implementation libs.junit
+      }
+    }
+  }
+}
