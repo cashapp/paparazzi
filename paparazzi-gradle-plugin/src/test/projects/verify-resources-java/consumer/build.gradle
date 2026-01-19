@@ -13,8 +13,6 @@ android {
     sourceCompatibility = libs.versions.javaTarget.get()
     targetCompatibility = libs.versions.javaTarget.get()
   }
-
-
 }
 
 androidComponents {
@@ -27,9 +25,4 @@ dependencies {
   implementation files('libs/external.aar')
   implementation projects.module1
   implementation projects.module2
-}
-
-abstract class SourceGenTask extends DefaultTask {
-  @OutputDirectory
-  abstract DirectoryProperty getOutputDirectory()
 }
