@@ -2,6 +2,40 @@
 
 ## [Unreleased]
 
+## [2.0.0-alpha03] - 2026-01-20
+
+### New
+* Allow differ to be configured (#2001)
+* Introduce additional differ types (#2009)
+* Introduce defaultLocale system property (#2203)
+* Update DeviceConfigs (#2176)
+* Support custom view accessibility hierarchy ordering in accessibility snapshots (#2150)
+* Add support for overwriting snapshots when max percent diff threshold is reached (#2067)
+* LayoutLib v16.1.1
+* Compose 1.10.1
+* Kotlin 2.3.0
+* [Gradle Plugin] Gradle 9.2.1
+* [Gradle Plugin] Android Gradle Plugin 8.13.2
+
+### Fixed
+* Handle SemanticsNode traversalIndices to support Compose accessibility reordering (#2019)
+* Add fix for boundsInWindow incorrectly calculating position on screen (#1983)
+* Fix compose accessibility ordering (#2037)
+* Fix in-list reporting for nested nodes for accessibility (#2053)
+* Fix reporting in list when item doesn't have any accessibility identifiers (#2051)
+* Fix progress bar accessibility ordering (#2208)
+* Fix font loading on Windows (#2074)
+* Fail test if exception is thrown during effect (#2214)
+* Fix differ comparison between black pixels with 100% alpha and black pixels with 0% alpha (#2078)
+* Adjust apng failure precision (#2186)
+* Make plugin compatible with Gradle Isolated Projects (#2154)
+
+### Changed
+* Deprecate validateAccessibility parameter (#1997)
+* Migrate to Dokka2 (#1783)
+
+Kudos to @geoff-powell, @colinmarsch, @SimonMarquis, @nishatoma, @joshskeen, @kboyarshinov and others for contributions this release!
+
 ## [2.0.0-alpha02] - 2025-06-20
 
 ### New
@@ -454,7 +488,8 @@ As of this release, consumers must build on Java 11 environments.
 
 
 
-[Unreleased]: https://github.com/cashapp/paparazzi/compare/2.0.0-alpha02...HEAD
+[Unreleased]: https://github.com/cashapp/paparazzi/compare/2.0.0-alpha03...HEAD
+[2.0.0-alpha03]: https://github.com/cashapp/paparazzi/releases/tag/2.0.0-alpha03
 [2.0.0-alpha02]: https://github.com/cashapp/paparazzi/releases/tag/2.0.0-alpha02
 [2.0.0-alpha01]: https://github.com/cashapp/paparazzi/releases/tag/2.0.0-alpha01
 [1.3.5]: https://github.com/cashapp/paparazzi/releases/tag/1.3.5
