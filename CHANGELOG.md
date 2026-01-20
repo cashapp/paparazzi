@@ -36,6 +36,10 @@
 
 Kudos to @geoff-powell, @colinmarsch, @SimonMarquis, @nishatoma, @joshskeen, @kboyarshinov and others for contributions this release!
 
+## [2.0.0-alpha03] - 2026-01-20
+
+Ignore; use 2.0.0-alpha04 instead.
+
 ## [2.0.0-alpha02] - 2025-06-20
 
 ### New
@@ -55,10 +59,6 @@ Kudos to @geoff-powell, @colinmarsch, @SimonMarquis, @nishatoma, @joshskeen, @kb
 - In-development snapshots are now published to the Central Portal Snapshots repository at https://central.sonatype.com/repository/maven-snapshots/.
 
 Kudos to @geoff-powell, @colinmarsch, @SimonMarquis and others for contributions this release!
-
-## [2.0.0-alpha03] - 2026-01-20
-
-Ignore; use 2.0.0-alpha04 instead.
 
 ## [2.0.0-alpha01] - 2025-04-15
 
