@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-## [2.0.0-alpha03] - 2026-01-20
+## [2.0.0-alpha04] - 2026-01-20
 
 ### New
 * Allow differ to be configured (#2001)
@@ -55,6 +55,10 @@ Kudos to @geoff-powell, @colinmarsch, @SimonMarquis, @nishatoma, @joshskeen, @kb
 - In-development snapshots are now published to the Central Portal Snapshots repository at https://central.sonatype.com/repository/maven-snapshots/.
 
 Kudos to @geoff-powell, @colinmarsch, @SimonMarquis and others for contributions this release!
+
+## [2.0.0-alpha03] - 2026-01-20
+
+Ignore; use 2.0.0-alpha04 instead.
 
 ## [2.0.0-alpha01] - 2025-04-15
 
@@ -488,7 +492,8 @@ As of this release, consumers must build on Java 11 environments.
 
 
 
-[Unreleased]: https://github.com/cashapp/paparazzi/compare/2.0.0-alpha03...HEAD
+[Unreleased]: https://github.com/cashapp/paparazzi/compare/2.0.0-alpha04...HEAD
+[2.0.0-alpha04]: https://github.com/cashapp/paparazzi/releases/tag/2.0.0-alpha04
 [2.0.0-alpha03]: https://github.com/cashapp/paparazzi/releases/tag/2.0.0-alpha03
 [2.0.0-alpha02]: https://github.com/cashapp/paparazzi/releases/tag/2.0.0-alpha02
 [2.0.0-alpha01]: https://github.com/cashapp/paparazzi/releases/tag/2.0.0-alpha01
