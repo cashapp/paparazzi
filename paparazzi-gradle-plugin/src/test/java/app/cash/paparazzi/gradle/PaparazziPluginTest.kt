@@ -1531,12 +1531,20 @@ class PaparazziPluginTest {
     var htmlText = simpleTestHtmlFile.readText()
     assertThat(htmlText).contains("<img")
     assertThat(htmlText).contains("delta-app.cash.paparazzi.plugin.test_SimpleTest_compose.png")
+    assertThat(htmlText).contains("Failed tests")
+    assertThat(htmlText).contains("Tests")
+    assertThat(htmlText).contains("Standard output")
+    assertThat(htmlText).contains("Standard error")
 
     val testParamInjectorTestHtmlFile =
       File(testReportDir, "app.cash.paparazzi.plugin.test.TestParameterInjectorTest.html")
     htmlText = testParamInjectorTestHtmlFile.readText()
     assertThat(htmlText).contains("<img")
     assertThat(htmlText).contains("delta-app.cash.paparazzi.plugin.test_TestParameterInjectorTest_compose[darkMode=false,fontScale=1.0].png")
+    assertThat(htmlText).contains("Failed tests")
+    assertThat(htmlText).contains("Tests")
+    assertThat(htmlText).contains("Standard output")
+    assertThat(htmlText).contains("Standard error")
   }
 
   @Test
