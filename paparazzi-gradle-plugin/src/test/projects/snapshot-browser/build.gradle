@@ -1,11 +1,3 @@
 plugins {
   id 'app.cash.paparazzi'
 }
-
-if (rootProject == project) {
-  throw new Exception("root project")
-} else {
-  println("project name: " + project.name)
-  println("rootProject name: " + rootProject.name)
-  throw new Exception("non-root project")
-}
