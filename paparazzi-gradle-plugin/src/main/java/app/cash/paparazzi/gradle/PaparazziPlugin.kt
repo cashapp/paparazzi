@@ -22,9 +22,6 @@ import app.cash.paparazzi.gradle.utils.artifactViewFor
 import app.cash.paparazzi.gradle.utils.capitalize
 import app.cash.paparazzi.gradle.utils.relativize
 import com.android.build.api.component.analytics.AnalyticsEnabledComponent
-import com.android.build.api.component.analytics.AnalyticsEnabledLibraryVariant
-import com.android.build.api.component.analytics.AnalyticsEnabledComponent
-import com.android.build.api.component.analytics.AnalyticsEnabledLibraryVariant
 import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.instrumentation.FramesComputationMode
 import com.android.build.api.instrumentation.InstrumentationScope
@@ -33,20 +30,12 @@ import com.android.build.api.variant.ApplicationAndroidComponentsExtension
 import com.android.build.api.variant.Component
 import com.android.build.api.variant.DynamicFeatureAndroidComponentsExtension
 import com.android.build.api.variant.HasHostTests
-import com.android.build.api.variant.GeneratesApk
-import com.android.build.api.variant.HasHostTests
 import com.android.build.api.variant.HasUnitTest
-import com.android.build.api.variant.HostTest
-import com.android.build.api.variant.HostTest
 import com.android.build.api.variant.HostTestBuilder
 import com.android.build.api.variant.KotlinMultiplatformAndroidComponentsExtension
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import com.android.build.api.variant.TestComponent
-import com.android.build.api.variant.impl.HasHostTestsCreationConfig
-import com.android.build.api.variant.impl.HasTestSuitesCreationConfig
-import com.android.build.api.variant.impl.HasHostTestsCreationConfig
 import com.android.build.gradle.internal.component.TestCreationConfig
-import com.android.builder.model.Version.ANDROID_GRADLE_PLUGIN_VERSION
 import com.android.builder.model.Version.ANDROID_GRADLE_PLUGIN_VERSION
 import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
@@ -509,16 +498,6 @@ public class PaparazziPlugin @Inject constructor(
           val isNonBuildDirectorySources =
             parentFile.path.contains(layout.buildDirectory.get().asFile.path).not()
           val containsTestFiles = testFiles.isPresent
-
-          if (isNonBuildDirectorySources && containsTestFiles) {
-            layout.projectDirectory.dir(parentFile.path)
-          } else {
-            null
-          }
-        } ?: defaultTestDirectory
-        ).dir("snapshots")
-    }
-  }
 
           if (isNonBuildDirectorySources && containsTestFiles) {
             layout.projectDirectory.dir(parentFile.path)
