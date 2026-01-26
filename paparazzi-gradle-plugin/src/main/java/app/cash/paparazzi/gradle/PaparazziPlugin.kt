@@ -239,6 +239,11 @@ public class PaparazziPlugin @Inject constructor(
       val isRecordRun = project.objects.property(Boolean::class.java)
       val isVerifyRun = project.objects.property(Boolean::class.java)
 
+      // Adds verify variant tasks to check task
+      project.tasks.named("check").configure {
+        it.dependsOn(verifyVariants)
+      }
+
       project.gradle.taskGraph.whenReady { graph ->
         isRecordRun.set(recordTaskProvider.map { graph.hasTask(it) })
         isVerifyRun.set(verifyTaskProvider.map { graph.hasTask(it) })
