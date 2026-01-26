@@ -141,7 +141,26 @@ internal class ClassPageRenderer(
       }
     )
     val classId = model.id
-    if (resultsProvider.hasOutput(classId, TestOutputEvent.Destination.StdOut)) {
+    var hasStdOutOutput = false
+    var hasStdErrOutput = false
+    resultsProvider.visitClasses { classResult ->
+      if (classId == classResult.id) {
+        classResult.results.forEach { testMethodResult ->
+          hasStdOutOutput = hasStdOutOutput || resultsProvider.hasOutput(
+            classId,
+            testMethodResult.id,
+            TestOutputEvent.Destination.StdOut
+          )
+          hasStdErrOutput = hasStdErrOutput || resultsProvider.hasOutput(
+            classResult.id,
+            testMethodResult.id,
+            TestOutputEvent.Destination.StdErr
+          )
+        }
+      }
+    }
+
+    if (hasStdOutOutput) {
       addTab(
         "Standard output",
         object : ErroringAction<SimpleHtmlWriter>() {
@@ -162,7 +181,7 @@ internal class ClassPageRenderer(
         }
       )
     }
-    if (resultsProvider.hasOutput(classId, TestOutputEvent.Destination.StdErr)) {
+    if (hasStdErrOutput) {
       addTab(
         "Standard error",
         object : ErroringAction<SimpleHtmlWriter>() {
