@@ -20,6 +20,16 @@ configurations {
   }
 }
 
+tasks.named("jar").configure {
+  manifest {
+    attributes(
+      "Agent-Class": "app.cash.paparazzi.agent.PaparazziAsmAgent",
+      "Can-Redefine-Classes": "true",
+      "Can-Retransform-Classes": "true"
+    )
+  }
+}
+
 aar2jar.configureForConfiguration("compileOnly")
 aar2jar.configureForConfiguration("testImplementation")
 
@@ -37,8 +47,7 @@ dependencies {
   compileOnlyAarAsJar libs.androidx.lifecycle.runtime // Needed for setViewTreeLifecycleOwner
   compileOnlyAarAsJar libs.androidx.savedstate // Needed for setViewTreeSavedStateRegistryOwner
 
-  implementation libs.bytebuddy.agent
-  implementation libs.bytebuddy.core
+  api libs.asm
   implementation libs.trove4j
   api libs.tools.common
   api libs.tools.layoutlib

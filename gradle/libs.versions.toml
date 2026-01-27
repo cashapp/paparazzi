@@ -1,7 +1,7 @@
 [versions]
 agp = "8.13.2"
 androidTools = "31.13.2" # == 23.0.0 + agp version
-bytebuddy = "1.18.4"
+asm = "9.8"
 compose = "1.10.2"
 coroutines = "1.10.2"
 javaTarget = "21"
@@ -25,8 +25,7 @@ androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version
 autoService-annotations = "com.google.auto.service:auto-service-annotations:1.1.1"
 autoService-kspCompiler = "dev.zacsweers.autoservice:auto-service-ksp:1.2.0"
 
-bytebuddy-agent = { module = "net.bytebuddy:byte-buddy-agent", version.ref = "bytebuddy" }
-bytebuddy-core = { module = "net.bytebuddy:byte-buddy", version.ref = "bytebuddy" }
+asm = { module = "org.ow2.asm:asm", version.ref = "asm" }
 
 compose-runtime = { module = "androidx.compose.runtime:runtime", version.ref = "compose" }
 composeUi-material = { module = "androidx.compose.material:material", version.ref = "compose" }
