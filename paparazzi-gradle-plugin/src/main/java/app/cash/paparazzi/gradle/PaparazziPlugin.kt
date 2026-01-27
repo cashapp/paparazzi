@@ -22,7 +22,6 @@ import app.cash.paparazzi.gradle.utils.artifactViewFor
 import app.cash.paparazzi.gradle.utils.capitalize
 import app.cash.paparazzi.gradle.utils.relativize
 import com.android.build.api.component.analytics.AnalyticsEnabledComponent
-import com.android.build.api.component.analytics.AnalyticsEnabledLibraryVariant
 import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.instrumentation.FramesComputationMode
 import com.android.build.api.instrumentation.InstrumentationScope
@@ -32,12 +31,10 @@ import com.android.build.api.variant.Component
 import com.android.build.api.variant.DynamicFeatureAndroidComponentsExtension
 import com.android.build.api.variant.HasHostTests
 import com.android.build.api.variant.HasUnitTest
-import com.android.build.api.variant.HostTest
 import com.android.build.api.variant.HostTestBuilder
 import com.android.build.api.variant.KotlinMultiplatformAndroidComponentsExtension
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import com.android.build.api.variant.TestComponent
-import com.android.build.api.variant.impl.HasHostTestsCreationConfig
 import com.android.build.gradle.internal.component.TestCreationConfig
 import com.android.builder.model.Version.ANDROID_GRADLE_PLUGIN_VERSION
 import org.gradle.api.DefaultTask
@@ -287,13 +284,13 @@ public class PaparazziPlugin @Inject constructor(
           .withPathSensitivity(PathSensitivity.NONE)
 
         test.inputs.dir(
-          project.provideOnEnabled(filterProvider = isVerifyRun, sourceProvider = snapshotOutputDir)
+          provideOnEnabled(filterProvider = isVerifyRun, sourceProvider = snapshotOutputDir)
         ).withPropertyName("paparazzi.snapshot.input.dir")
           .withPathSensitivity(PathSensitivity.RELATIVE)
           .optional()
 
         test.outputs.dir(
-          project.provideOnEnabled(filterProvider = isRecordRun, sourceProvider = snapshotOutputDir)
+          provideOnEnabled(filterProvider = isRecordRun, sourceProvider = snapshotOutputDir)
         ).withPropertyName("paparazzi.snapshots.output.dir")
           .optional()
 
@@ -421,33 +418,33 @@ public class PaparazziPlugin @Inject constructor(
     project.configurations.getByName(configurationName).dependencies.add(dependency)
   }
 
-  private fun Project.provideOnEnabled(filterProvider: Provider<Boolean>, sourceProvider: Provider<*>): Provider<*> =
-    filterProvider.flatMap { enabled ->
-      if (enabled) {
-        sourceProvider
-      } else {
-        project.objects.directoryProperty()
-      }
+  private fun Project.provideOnEnabled(filterProvider: Provider<Boolean>, sourceProvider: Provider<*>): Provider<*> {
+    val emptyDir = objects.directoryProperty()
+    return filterProvider.flatMap { enabled ->
+      if (enabled) sourceProvider else emptyDir
     }
+  }
 
   private fun Project.snapshotDir(testComponent: TestComponent): Provider<Directory> {
     val testSources = requireNotNull(testComponent.sources.java?.all ?: testComponent.sources.kotlin?.all) {
       "No test sources found for test component: ${testComponent.name}"
     }
-    return testSources.map { sourceDirs ->
+    val projectDirectory = layout.projectDirectory
+    val buildDirectoryProvider = layout.buildDirectory
+    return testSources.zip(buildDirectoryProvider) { sourceDirs, buildDir ->
       val defaultTestDir = sourceDirs.first().asFile.parentFile
-      val defaultTestDirectory = layout.projectDirectory.dir(defaultTestDir.path)
+      val defaultTestDirectory = projectDirectory.dir(defaultTestDir.path)
+      val buildDirPath = buildDir.asFile.path
       (
         sourceDirs.firstNotNullOfOrNull { sourceDir ->
           // Sources usually in `/src/test/java/` so need to move to parent `/src/test/`
           val parentFile = sourceDir.asFile.parentFile
-          val testFiles = sourceDir.asFileTree.relativize(layout.projectDirectory)
-          val isNonBuildDirectorySources =
-            parentFile.path.contains(layout.buildDirectory.get().asFile.path).not()
+          val testFiles = sourceDir.asFileTree.relativize(projectDirectory)
+          val isNonBuildDirectorySources = parentFile.path.contains(buildDirPath).not()
           val containsTestFiles = testFiles.isPresent
 
           if (isNonBuildDirectorySources && containsTestFiles) {
-            layout.projectDirectory.dir(parentFile.path)
+            projectDirectory.dir(parentFile.path)
           } else {
             null
           }
