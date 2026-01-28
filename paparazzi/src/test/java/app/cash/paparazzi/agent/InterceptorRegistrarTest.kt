@@ -1,7 +1,6 @@
 package app.cash.paparazzi.agent
 
 import com.google.common.truth.Truth.assertThat
-import net.bytebuddy.agent.ByteBuddyAgent
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -16,9 +15,7 @@ class InterceptorRegistrarTest {
         "log2" to Interceptor2::class.java
       )
     )
-
-    ByteBuddyAgent.install()
-    InterceptorRegistrar.registerMethodInterceptors()
+    InterceptorRegistrar.registerInstrumentation()
   }
 
   @Test
@@ -31,7 +28,7 @@ class InterceptorRegistrarTest {
 
   @After
   fun teardown() {
-    InterceptorRegistrar.clearMethodInterceptors()
+    InterceptorRegistrar.clearInstrumentation()
   }
 
   object Utils {
