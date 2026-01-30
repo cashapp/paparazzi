@@ -46,6 +46,9 @@ import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import app.cash.paparazzi.accessibility.AccessibilityRenderExtension
 import app.cash.paparazzi.agent.InterceptorRegistrar
+import app.cash.paparazzi.agent.PaparazziAsmAgent
+import app.cash.paparazzi.agent.ResourcesCompatTransform
+import app.cash.paparazzi.agent.ResourcesCompatTransform.Companion.RESOURCES_COMPAT_CLASS_NAME
 import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.PaparazziCallback
 import app.cash.paparazzi.internal.PaparazziLifecycleOwner
@@ -74,7 +77,6 @@ import com.android.tools.idea.validator.LayoutValidator
 import com.android.tools.idea.validator.ValidatorData.Level
 import com.android.tools.idea.validator.ValidatorData.Policy
 import com.android.tools.idea.validator.ValidatorData.Type
-import net.bytebuddy.agent.ByteBuddyAgent
 import java.awt.geom.Ellipse2D
 import java.awt.image.BufferedImage
 import java.util.EnumSet
@@ -143,9 +145,8 @@ public class PaparazziSdk @JvmOverloads constructor(
   public fun setup() {
     if (!isInitialized) {
       registerViewEditModeInterception()
-
-      ByteBuddyAgent.install()
-      InterceptorRegistrar.registerMethodInterceptors()
+      registerResourceCompatFontOverride()
+      InterceptorRegistrar.registerInstrumentation()
     }
   }
 
@@ -192,6 +193,7 @@ public class PaparazziSdk @JvmOverloads constructor(
 
     renderer.dumpDelegates()
     logger.assertNoErrors()
+    PaparazziAsmAgent.uninstall()
   }
 
   public fun <V : View> inflate(@LayoutRes layoutId: Int): V = layoutInflater.inflate(layoutId, null) as V
@@ -573,6 +575,12 @@ public class PaparazziSdk @JvmOverloads constructor(
       "isInEditMode",
       EditModeInterceptor::class.java
     )
+  }
+
+  private fun registerResourceCompatFontOverride() {
+    InterceptorRegistrar.addClassVisitorOverride(RESOURCES_COMPAT_CLASS_NAME) {
+      ResourcesCompatTransform(delegate = it)
+    }
   }
 
   private fun forceReleaseComposeReferenceLeaks() {
