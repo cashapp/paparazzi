@@ -20,7 +20,7 @@ android {
 }
 
 dependencies {
-  testImplementation 'androidx.activity:activity-compose:1.12.2'
+  testImplementation 'androidx.activity:activity-compose:1.12.3'
   testImplementation libs.truth
 }
 
