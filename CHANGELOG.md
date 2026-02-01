@@ -33,6 +33,7 @@
 ### Changed
 * Deprecate validateAccessibility parameter (#1997)
 * Migrate to Dokka2 (#1783)
+* Paparazzi now depends on JDK 21+ (#2185)
 
 Kudos to @geoff-powell, @colinmarsch, @SimonMarquis, @nishatoma, @joshskeen, @kboyarshinov and others for contributions this release!
 
