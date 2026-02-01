@@ -72,6 +72,7 @@ public class PaparazziPlugin @Inject constructor(
   private val buildOperationRunner: BuildOperationRunner,
   private val buildOperationExecutor: BuildOperationExecutor
 ) : Plugin<Project> {
+
   override fun apply(project: Project) {
     val supportedPlugins = listOf(
       "com.android.application",
