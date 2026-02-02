@@ -4,6 +4,8 @@
 
 ## [2.0.0-alpha04] - 2026-01-20
 
+As of this release, consumers must build on Java 21+ environments.
+
 ### New
 * Allow differ to be configured (#2001)
 * Introduce additional differ types (#2009)
