@@ -4,6 +4,8 @@
 
 ## [2.0.0-alpha04] - 2026-01-20
 
+As of this release, consumers must build on Java 21+ environments.
+
 ### New
 * Allow differ to be configured (#2001)
 * Introduce additional differ types (#2009)
@@ -33,7 +35,6 @@
 ### Changed
 * Deprecate validateAccessibility parameter (#1997)
 * Migrate to Dokka2 (#1783)
-* Paparazzi now depends on JDK 21+ (#2185)
 
 Kudos to @geoff-powell, @colinmarsch, @SimonMarquis, @nishatoma, @joshskeen, @kboyarshinov and others for contributions this release!
 
