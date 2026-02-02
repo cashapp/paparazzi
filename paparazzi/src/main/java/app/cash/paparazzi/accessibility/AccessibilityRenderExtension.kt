@@ -26,8 +26,6 @@ import android.view.WindowManagerImpl
 import android.widget.Checkable
 import android.widget.FrameLayout
 import android.widget.LinearLayout
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.platform.ViewRootForTest
 import androidx.compose.ui.semantics.LiveRegionMode.Companion.Assertive
@@ -44,6 +42,7 @@ import androidx.core.view.isVisible
 import app.cash.paparazzi.RenderExtension
 import app.cash.paparazzi.internal.ComposeViewAdapter
 import com.android.internal.view.OneShotPreDrawListener
+import java.lang.reflect.Method
 
 /**
  * A [RenderExtension] that overlays accessibility property information on top of the rendered view.
@@ -339,12 +338,9 @@ public class AccessibilityRenderExtension : RenderExtension {
 
   private fun SemanticsNode.accessibilityText(): String? {
     val invisibleToUser = config.getOrNull(SemanticsProperties.InvisibleToUser) != null
-    val hasZeroAlphaModifier = layoutInfo.getModifierInfo().any {
-      // We don't get direct access to an alpha field but we can inspect the modifiers and see if
-      // a modifier of 0f was applied to the node.
-      it.modifier == Modifier.alpha(0f)
-    }
-    if (invisibleToUser || hasZeroAlphaModifier) {
+    val hideFromAccessibility = config.getOrNull(SemanticsProperties.HideFromAccessibility) != null
+    val hasZeroAlphaModifier = hasZeroAlpha()
+    if (invisibleToUser || hideFromAccessibility || hasZeroAlphaModifier) {
       return null
     }
 
@@ -452,6 +448,18 @@ public class AccessibilityRenderExtension : RenderExtension {
     )
   }
 
+  private fun SemanticsNode.hasZeroAlpha(): Boolean {
+    // Resolve and cache the reflection Method once; invoke on each call.
+    resolveIsTransparentMethod()
+    val method = cachedIsTransparentMethod ?: return false
+    return try {
+      val transparent = method.invoke(this) as? Boolean
+      transparent == true
+    } catch (_: Exception) {
+      false
+    }
+  }
+
   private fun View.accessibilityText(): String? {
     val nodeInfo = createAccessibilityNodeInfo()
     onInitializeAccessibilityNodeInfo(nodeInfo)
@@ -529,6 +537,34 @@ public class AccessibilityRenderExtension : RenderExtension {
       .replace("\t", "\\t")
 
   internal companion object {
+    // Cached reflection method for SemanticsNode transparency to avoid repeated lookups.
+    @Volatile
+    private var cachedIsTransparentMethod: Method? = null
+
+    @Volatile
+    private var attemptedResolveIsTransparentMethod: Boolean = false
+
+    private val TRANSPARENT_GETTER_CANDIDATES = arrayOf(
+      "isTransparent",
+      "isTransparent\$ui_release",
+      "getIsTransparent",
+      "getIsTransparent\$ui_release"
+    )
+
+    private fun resolveIsTransparentMethod() {
+      if (attemptedResolveIsTransparentMethod) return
+      attemptedResolveIsTransparentMethod = true
+      for (name in TRANSPARENT_GETTER_CANDIDATES) {
+        try {
+          val method = SemanticsNode::class.java.getDeclaredMethod(name)
+          method.isAccessible = true
+          cachedIsTransparentMethod = method
+          return
+        } catch (_: Exception) {
+          // Try next candidate name
+        }
+      }
+    }
     private const val ON_CLICK_LABEL = "<on-click>"
     private const val DISABLED_LABEL = "<disabled>"
     private const val TOGGLEABLE_LABEL = "<toggleable>"
