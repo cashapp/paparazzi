@@ -252,10 +252,6 @@ public abstract interface class app/cash/paparazzi/SnapshotHandler$FrameHandler 
 	public abstract fun handle (Ljava/awt/image/BufferedImage;)V
 }
 
-public final class app/cash/paparazzi/SnapshotHandlerKt {
-	public static final fun detectMaxPercentDifferenceDefault ()D
-}
-
 public final class app/cash/paparazzi/SnapshotVerifier : app/cash/paparazzi/SnapshotHandler {
 	public static final field $stable I
 	public fun <init> (D)V
