@@ -6,45 +6,34 @@ import app.cash.paparazzi.Paparazzi
 import com.airbnb.lottie.LottieAnimationView
 import com.airbnb.lottie.LottieComposition
 import com.airbnb.lottie.LottieCompositionFactory
+import com.google.testing.junit.testparameterinjector.TestParameter
+import com.google.testing.junit.testparameterinjector.TestParameterInjector
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
 
+@RunWith(TestParameterInjector::class)
 class SnapshotWithOffsetTest {
 
   @get:Rule
   var paparazzi = Paparazzi()
 
-  @Test
-  fun `verify animated view progress with multiple offsets`() {
-    val composition = getCompositionLogo(res = R.raw.lottie_logo, context = paparazzi.context)
-
-    val view = getLottieAnimationView(context = paparazzi.context, composition = composition)
-
-    for (offsetInMs in 400..1000 step 200) {
-      paparazzi.snapshot(
-        view = view,
-        name = "at ${offsetInMs}ms",
-        offsetMillis = offsetInMs.toLong()
-      )
-    }
+  enum class Offset(val current: Long) {
+    NEGATIVE_OFFSET(-1L),
+    AT_600(600L),
+    AT_800(800L),
+    AT_1000(1000L),
+    AT_4000(4000L),
+    LARGE_OFFSET(5000_000L)
   }
 
   @Test
-  fun `verify animated view is completed with large offset`() {
+  fun `verify animated view progress with offsets`(@TestParameter offset: Offset) {
     val composition = getCompositionLogo(res = R.raw.lottie_logo, context = paparazzi.context)
 
     val view = getLottieAnimationView(context = paparazzi.context, composition = composition)
 
-    paparazzi.snapshot(view = view, offsetMillis = 5000_000L)
-  }
-
-  @Test
-  fun `verify animated view is blank with negative offset`() {
-    val composition = getCompositionLogo(res = R.raw.lottie_logo, context = paparazzi.context)
-
-    val view = getLottieAnimationView(context = paparazzi.context, composition = composition)
-
-    paparazzi.snapshot(view = view, offsetMillis = -1L)
+    paparazzi.snapshot(view = view, offsetMillis = offset.current)
   }
 
   @Test
