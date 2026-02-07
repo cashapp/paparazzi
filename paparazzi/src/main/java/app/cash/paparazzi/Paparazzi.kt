@@ -187,5 +187,8 @@ public class Paparazzi @JvmOverloads constructor(
       } else {
         HtmlReportWriter(maxPercentDifference = maxPercentDifference)
       }
+
+    private fun detectMaxPercentDifferenceDefault(): Double =
+      System.getProperty("app.cash.paparazzi.maxPercentDifferenceDefault")?.toDoubleOrNull() ?: 0.01
   }
 }

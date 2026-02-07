@@ -25,6 +25,3 @@ public interface SnapshotHandler : Closeable {
     public fun handle(image: BufferedImage)
   }
 }
-
-public fun detectMaxPercentDifferenceDefault(): Double =
-  System.getProperty("app.cash.paparazzi.maxPercentDifferenceDefault")?.toDoubleOrNull() ?: 0.01
