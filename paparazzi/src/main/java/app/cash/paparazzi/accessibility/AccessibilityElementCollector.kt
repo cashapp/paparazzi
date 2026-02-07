@@ -41,11 +41,27 @@ internal class AccessibilityElementCollector {
    * [windowManagerRootView] is optional and is used for UI that renders in separate windows
    * (dialogs, popups, etc.). [rootView] is always traversed.
    */
-  fun collect(rootView: View, windowManagerRootView: View?): Set<AccessibilityElement> =
-    buildSet {
+  fun collect(rootView: View, windowManagerRootView: View?): Set<AccessibilityElement> {
+    val orderedElements = linkedSetOf<AccessibilityElement>().apply {
       windowManagerRootView?.processAccessibleChildren { add(it) }
       rootView.processAccessibleChildren { add(it) }
     }
+
+    return withTraversalNeighbors(orderedElements)
+  }
+
+  internal fun withTraversalNeighbors(elements: Collection<AccessibilityElement>): Set<AccessibilityElement> {
+    val orderedElements = elements.toList()
+
+    return orderedElements
+      .mapIndexed { index, element ->
+        element.copy(
+          beforeElementId = orderedElements.getOrNull(index - 1)?.id,
+          afterElementId = orderedElements.getOrNull(index + 1)?.id
+        )
+      }
+      .toCollection(linkedSetOf())
+  }
 
   private fun View.processAccessibleChildren(processElement: (AccessibilityElement) -> Unit) {
     val bounds = Rect().also(::getBoundsOnScreen)

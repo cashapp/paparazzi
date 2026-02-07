@@ -34,6 +34,8 @@ import androidx.compose.ui.text.LinkAnnotation
 internal data class AccessibilityElement(
   val id: String,
   val displayBounds: Rect,
+  val beforeElementId: String? = null,
+  val afterElementId: String? = null,
   val stateDescription: String? = null,
   val selected: String? = null,
   val toggleableState: String? = null,
