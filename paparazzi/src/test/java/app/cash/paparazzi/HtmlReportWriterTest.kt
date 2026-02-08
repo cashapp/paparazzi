@@ -58,7 +58,7 @@ class HtmlReportWriterTest {
           name = "loading",
           testName = TestName("app.cash.paparazzi", "CelebrityTest", "testSettings"),
           timestamp = Instant.parse("2019-03-20T10:27:43Z").toDate(),
-          tags = listOf("redesign")
+          tags = mapOf("project" to "redesign")
         ),
         frameCount = 1,
         fps = -1
@@ -83,9 +83,9 @@ class HtmlReportWriterTest {
         |    "name": "loading",
         |    "testName": "app.cash.paparazzi.CelebrityTest#testSettings",
         |    "timestamp": "2019-03-20T10:27:43.000Z",
-        |    "tags": [
-        |      "redesign"
-        |    ],
+        |    "tags": {
+        |      "project": "redesign"
+        |    },
         |    "file": "images/$anyImageHash.png"
         |  }
         |];
@@ -318,7 +318,7 @@ class HtmlReportWriterTest {
           name = "loading",
           testName = TestName("app.cash.paparazzi", "CelebrityTest", "testSettings"),
           timestamp = Instant.parse("2019-03-20T10:27:43Z").toDate(),
-          tags = listOf("redesign")
+          tags = mapOf("project" to "redesign")
         ),
         frameCount = 2,
         fps = 1
@@ -344,9 +344,9 @@ class HtmlReportWriterTest {
         |    "name": "loading",
         |    "testName": "app.cash.paparazzi.CelebrityTest#testSettings",
         |    "timestamp": "2019-03-20T10:27:43.000Z",
-        |    "tags": [
-        |      "redesign"
-        |    ],
+        |    "tags": {
+        |      "project": "redesign"
+        |    },
         |    "file": "videos/$anyVideoHash.png"
         |  }
         |];
