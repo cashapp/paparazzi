@@ -25,6 +25,10 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getAllSemanticsNodes
 import androidx.compose.ui.semantics.getOrNull
 import androidx.core.view.isVisible
+import com.squareup.moshi.JsonAdapter
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.Types
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 
 /**
  * Collects accessibility metadata from a rendered Paparazzi view hierarchy.
@@ -62,6 +66,9 @@ internal class AccessibilityElementCollector {
       }
       .toCollection(linkedSetOf())
   }
+
+  internal fun toHierarchyString(elements: Collection<AccessibilityElement>): String =
+    hierarchyJsonAdapter.toJson(elements.map { it.toHierarchyJsonElement() })
 
   private fun View.processAccessibleChildren(processElement: (AccessibilityElement) -> Unit) {
     val bounds = Rect().also(::getBoundsOnScreen)
@@ -267,7 +274,47 @@ internal class AccessibilityElementCollector {
     )?.let(processElement)
   }
 
+  private fun AccessibilityElement.toHierarchyJsonElement(): AccessibilityHierarchyJsonElement {
+    return AccessibilityHierarchyJsonElement(
+      id = id,
+      beforeElementId = beforeElementId,
+      afterElementId = afterElementId,
+      bounds = AccessibilityHierarchyBounds(
+        left = displayBounds.left,
+        top = displayBounds.top,
+        right = displayBounds.right,
+        bottom = displayBounds.bottom
+      ),
+      legendText = legendText
+    )
+  }
+
   private companion object {
+    private val hierarchyJsonAdapter: JsonAdapter<List<AccessibilityHierarchyJsonElement>> =
+      Moshi.Builder()
+        .addLast(KotlinJsonAdapterFactory())
+        .build()
+        .adapter<List<AccessibilityHierarchyJsonElement>>(
+          Types.newParameterizedType(List::class.java, AccessibilityHierarchyJsonElement::class.java)
+        )
+        .serializeNulls()
+        .indent("  ")
+
+    data class AccessibilityHierarchyJsonElement(
+      val id: String,
+      val beforeElementId: String?,
+      val afterElementId: String?,
+      val bounds: AccessibilityHierarchyBounds,
+      val legendText: String
+    )
+
+    data class AccessibilityHierarchyBounds(
+      val left: Int,
+      val top: Int,
+      val right: Int,
+      val bottom: Int
+    )
+
     data class SemanticsNodeTraversalEntry(
       val traversalIndex: Float = 0f,
       val nodes: List<SemanticsNode>, // May be 1 node or a whole traversal group
