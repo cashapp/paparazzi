@@ -59,4 +59,59 @@ class AccessibilityElementCollectorTest {
     assertThat(withNeighbors[0].afterElementId).isEqualTo("button#2")
     assertThat(withNeighbors[1].beforeElementId).isEqualTo("button#1")
   }
+
+  @Test
+  fun `toHierarchyString serializes all elements in traversal order`() {
+    val first = AccessibilityElement(
+      id = "first",
+      displayBounds = Rect(0, 0, 10, 10),
+      mainAccessibilityText = "First"
+    )
+    val second = AccessibilityElement(
+      id = "second",
+      displayBounds = Rect(0, 10, 10, 20),
+      mainAccessibilityText = "Second"
+    )
+    val orderedElements = collector.withTraversalNeighbors(linkedSetOf(first, second))
+
+    val hierarchy = collector.toHierarchyString(orderedElements)
+
+    assertThat(hierarchy).isEqualTo(
+      """
+      [
+        {
+          "id": "0:first",
+          "beforeElementId": null,
+          "afterElementId": "1:second",
+          "bounds": {
+            "left": 0,
+            "top": 0,
+            "right": 10,
+            "bottom": 10
+          },
+          "legendText": "First"
+        },
+        {
+          "id": "1:second",
+          "beforeElementId": "0:first",
+          "afterElementId": null,
+          "bounds": {
+            "left": 0,
+            "top": 10,
+            "right": 10,
+            "bottom": 20
+          },
+          "legendText": "Second"
+        }
+      ]
+      """.trimIndent()
+    )
+  }
+
+  @Test
+  fun `toHierarchyString returns empty JSON array for empty hierarchy`() {
+    val hierarchy = collector.toHierarchyString(emptyList())
+
+    assertThat(hierarchy).isEqualTo("[]")
+  }
 }
