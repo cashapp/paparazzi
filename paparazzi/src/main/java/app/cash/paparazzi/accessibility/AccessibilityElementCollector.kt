@@ -51,7 +51,26 @@ internal class AccessibilityElementCollector {
   }
 
   internal fun withTraversalNeighbors(elements: Collection<AccessibilityElement>): Set<AccessibilityElement> {
-    val orderedElements = elements.toList()
+    val duplicateIds = elements
+      .groupingBy { it.id }
+      .eachCount()
+      .filterValues { it > 1 }
+      .keys
+    val usedIds = elements.mapTo(mutableSetOf()) { it.id }
+    val nextSuffixById = mutableMapOf<String, Int>()
+    val orderedElements = elements.map { element ->
+      if (element.id !in duplicateIds) {
+        element
+      } else {
+        var suffix = nextSuffixById.getOrDefault(element.id, 1)
+        var uniqueId: String
+        do {
+          uniqueId = "${element.id}#${suffix++}"
+        } while (!usedIds.add(uniqueId))
+        nextSuffixById[element.id] = suffix
+        element.copy(id = uniqueId)
+      }
+    }
 
     return orderedElements
       .mapIndexed { index, element ->

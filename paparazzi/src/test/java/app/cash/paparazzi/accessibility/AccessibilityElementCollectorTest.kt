@@ -37,4 +37,26 @@ class AccessibilityElementCollectorTest {
     assertThat(withNeighbors[2].beforeElementId).isEqualTo("second")
     assertThat(withNeighbors[2].afterElementId).isNull()
   }
+
+  @Test
+  fun `withTraversalNeighbors assigns unique ids to elements with duplicate labels`() {
+    val first = AccessibilityElement(
+      id = "button",
+      displayBounds = Rect(0, 0, 10, 10),
+      mainAccessibilityText = "OK"
+    )
+    val second = AccessibilityElement(
+      id = "button",
+      displayBounds = Rect(0, 10, 10, 20),
+      mainAccessibilityText = "OK"
+    )
+
+    val withNeighbors = collector
+      .withTraversalNeighbors(listOf(first, second))
+      .toList()
+
+    assertThat(withNeighbors.map { it.id }).containsExactly("button#1", "button#2").inOrder()
+    assertThat(withNeighbors[0].afterElementId).isEqualTo("button#2")
+    assertThat(withNeighbors[1].beforeElementId).isEqualTo("button#1")
+  }
 }
