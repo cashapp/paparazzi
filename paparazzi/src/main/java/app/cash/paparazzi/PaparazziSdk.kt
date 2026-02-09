@@ -373,6 +373,10 @@ public class PaparazziSdk @JvmOverloads constructor(
         }
         onNewFrame(scaleImage(frameImage(image)))
       }
+
+      renderExtensions
+        .filterIsInstance<AccessibilityRenderExtension>()
+        .forEach { it.onSnapshotRunCompleted() }
     } finally {
       if (hasLifecycleOwnerRuntime) {
         lifecycleOwner.registry.currentState = Lifecycle.State.DESTROYED

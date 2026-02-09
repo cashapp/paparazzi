@@ -34,9 +34,23 @@ import com.android.internal.view.OneShotPreDrawListener
  * information and interpretation tips.
  */
 public class AccessibilityRenderExtension : RenderExtension {
-  private val accessibilityElementCollector = AccessibilityElementCollector()
+  private val accessibilityElementCollector: AccessibilityElementCollector
+  private val onHierarchyStringGenerated: (String) -> Unit
+  private var collectedElements = emptySet<AccessibilityElement>()
+
+  public constructor() : this(AccessibilityElementCollector(), {})
+
+  internal constructor(
+    accessibilityElementCollector: AccessibilityElementCollector,
+    onHierarchyStringGenerated: (String) -> Unit
+  ) {
+    this.accessibilityElementCollector = accessibilityElementCollector
+    this.onHierarchyStringGenerated = onHierarchyStringGenerated
+  }
 
   override fun renderView(contentView: View): View {
+    collectedElements = emptySet()
+
     // WindowManager needed to access accessibility elements for views that draw to other windows.
     val windowManager = contentView.context.getSystemService(WindowManager::class.java)
 
@@ -68,11 +82,18 @@ public class AccessibilityRenderExtension : RenderExtension {
             rootView = this@apply,
             windowManagerRootView = windowManagerRootView
           )
+          collectedElements = elements
           overlayDrawable.updateElements(elements)
           overlayDetailsView.updateElements(elements)
         }
       }
     }
+  }
+
+  internal fun onSnapshotRunCompleted() {
+    val hierarchyString = accessibilityElementCollector.toHierarchyString(collectedElements)
+    onHierarchyStringGenerated(hierarchyString)
+    collectedElements = emptySet()
   }
 }
 
