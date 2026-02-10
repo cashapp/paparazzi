@@ -80,9 +80,9 @@ class AccessibilityElementCollectorTest {
       """
       [
         {
-          "id": "0:first",
+          "id": "first",
           "beforeElementId": null,
-          "afterElementId": "1:second",
+          "afterElementId": "second",
           "bounds": {
             "left": 0,
             "top": 0,
@@ -92,8 +92,8 @@ class AccessibilityElementCollectorTest {
           "legendText": "First"
         },
         {
-          "id": "1:second",
-          "beforeElementId": "0:first",
+          "id": "second",
+          "beforeElementId": "first",
           "afterElementId": null,
           "bounds": {
             "left": 0,
