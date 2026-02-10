@@ -371,6 +371,8 @@ public class PaparazziSdk @JvmOverloads constructor(
         }
         onNewFrame(scaleImage(frameImage(image)))
       }
+
+      renderExtensions.forEach { it.onSnapshotRunCompleted() }
     } finally {
       viewGroup.removeAllViews()
 

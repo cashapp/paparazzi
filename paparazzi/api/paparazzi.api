@@ -225,7 +225,12 @@ public final class app/cash/paparazzi/PaparazziSdk {
 }
 
 public abstract interface class app/cash/paparazzi/RenderExtension {
+	public fun onSnapshotRunCompleted ()V
 	public abstract fun renderView (Landroid/view/View;)Landroid/view/View;
+}
+
+public final class app/cash/paparazzi/RenderExtension$DefaultImpls {
+	public static fun onSnapshotRunCompleted (Lapp/cash/paparazzi/RenderExtension;)V
 }
 
 public final class app/cash/paparazzi/Snapshot {
@@ -282,6 +287,7 @@ public final class app/cash/paparazzi/TestName {
 public final class app/cash/paparazzi/accessibility/AccessibilityRenderExtension : app/cash/paparazzi/RenderExtension {
 	public static final field $stable I
 	public fun <init> ()V
+	public fun onSnapshotRunCompleted ()V
 	public fun renderView (Landroid/view/View;)Landroid/view/View;
 }
 
