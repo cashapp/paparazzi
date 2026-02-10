@@ -127,6 +127,7 @@ public final class app/cash/paparazzi/EnvironmentKt {
 
 public final class app/cash/paparazzi/Flags {
 	public static final field $stable I
+	public static final field ACCESSIBILITY_HIERARCHY_ARTIFACTS_ENABLED Ljava/lang/String;
 	public static final field DEBUG_LINKED_OBJECTS Ljava/lang/String;
 	public static final field INSTANCE Lapp/cash/paparazzi/Flags;
 }
