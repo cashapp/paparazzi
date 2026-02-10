@@ -41,19 +41,7 @@ import com.android.layoutlib.bridge.android.BridgeContext
  * information and interpretation tips.
  */
 public class AccessibilityRenderExtension : RenderExtension {
-  private val accessibilityElementCollector: AccessibilityElementCollector
-  private val onHierarchyStringGenerated: (String) -> Unit
-  private var collectedElements = emptySet<AccessibilityElement>()
-
-  public constructor() : this(AccessibilityElementCollector(), {})
-
-  internal constructor(
-    accessibilityElementCollector: AccessibilityElementCollector,
-    onHierarchyStringGenerated: (String) -> Unit
-  ) {
-    this.accessibilityElementCollector = accessibilityElementCollector
-    this.onHierarchyStringGenerated = onHierarchyStringGenerated
-  }
+  private val accessibilityElementCollector = AccessibilityElementCollector()
 
   /**
    * The overlay for the elements of a sub-window - a dialog, popup or sheet - and the window it is
@@ -65,8 +53,6 @@ public class AccessibilityRenderExtension : RenderExtension {
   private var overlay: Overlay? = null
 
   override fun renderView(contentView: View): View {
-    collectedElements = emptySet()
-
     // Only a sub-window's own elements need a window of their own. layoutlib composites windows in
     // the order `getWindowViews()` returns them - window type ascending - so a window typed above
     // every sub-window is drawn above every sub-window, which is where those highlights belong. The
@@ -127,7 +113,6 @@ public class AccessibilityRenderExtension : RenderExtension {
             rootView = this@apply,
             windowManagerRootView = null
           )
-          collectedElements = windowElements + baseElements
           windowOverlayDrawable.updateElements(windowElements)
           baseOverlayDrawable.updateElements(baseElements)
           // The legend lists every element, in the order the two-root collection produced them.
@@ -136,12 +121,6 @@ public class AccessibilityRenderExtension : RenderExtension {
         }
       }
     }
-  }
-
-  internal fun onSnapshotRunCompleted() {
-    val hierarchyString = accessibilityElementCollector.toHierarchyString(collectedElements)
-    onHierarchyStringGenerated(hierarchyString)
-    collectedElements = emptySet()
   }
 
   /**
