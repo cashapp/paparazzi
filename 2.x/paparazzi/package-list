@@ -110,15 +110,16 @@ $dokka.location:app.cash.paparazzi/InstantAnimationsRule/apply/#org.junit.runner
 $dokka.location:app.cash.paparazzi/Paparazzi///PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/index.html
 $dokka.location:app.cash.paparazzi/Paparazzi/Paparazzi/#app.cash.paparazzi.Environment#app.cash.paparazzi.DeviceConfig#kotlin.String#com.android.ide.common.rendering.api.SessionParams.RenderingMode#kotlin.Boolean#kotlin.Double#app.cash.paparazzi.SnapshotHandler#kotlin.collections.Set[app.cash.paparazzi.RenderExtension]#kotlin.Boolean#kotlin.Boolean#kotlin.Boolean/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/-paparazzi.html
 $dokka.location:app.cash.paparazzi/Paparazzi/apply/#org.junit.runners.model.Statement#org.junit.runner.Description/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/apply.html
-$dokka.location:app.cash.paparazzi/Paparazzi/close/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/close.html
 $dokka.location:app.cash.paparazzi/Paparazzi/context/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/context.html
 $dokka.location:app.cash.paparazzi/Paparazzi/gif/#android.view.View#kotlin.String?#kotlin.Long#kotlin.Long#kotlin.Int/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/gif.html
 $dokka.location:app.cash.paparazzi/Paparazzi/inflate/#kotlin.Int/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/inflate.html
 $dokka.location:app.cash.paparazzi/Paparazzi/layoutInflater/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/layout-inflater.html
 $dokka.location:app.cash.paparazzi/Paparazzi/prepare/#org.junit.runner.Description/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/prepare.html
 $dokka.location:app.cash.paparazzi/Paparazzi/resources/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/resources.html
+$dokka.location:app.cash.paparazzi/Paparazzi/setup/#app.cash.paparazzi.TestName/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/setup.html
 $dokka.location:app.cash.paparazzi/Paparazzi/snapshot/#android.view.View#kotlin.String?#kotlin.Long/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/snapshot.html
 $dokka.location:app.cash.paparazzi/Paparazzi/snapshot/#kotlin.String?#kotlin.Function0[kotlin.Unit]/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/snapshot.html
+$dokka.location:app.cash.paparazzi/Paparazzi/teardown/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/teardown.html
 $dokka.location:app.cash.paparazzi/Paparazzi/unsafeUpdateConfig/#app.cash.paparazzi.DeviceConfig?#kotlin.String?#com.android.ide.common.rendering.api.SessionParams.RenderingMode?/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/unsafe-update-config.html
 $dokka.location:app.cash.paparazzi/PaparazziSdk///PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi-sdk/index.html
 $dokka.location:app.cash.paparazzi/PaparazziSdk/PaparazziSdk/#app.cash.paparazzi.Environment#app.cash.paparazzi.DeviceConfig#kotlin.String#com.android.ide.common.rendering.api.SessionParams.RenderingMode#kotlin.Boolean#kotlin.collections.Set[app.cash.paparazzi.RenderExtension]#kotlin.Boolean#kotlin.Boolean#kotlin.Boolean#kotlin.Function1[java.awt.image.BufferedImage,kotlin.Unit]/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi-sdk/-paparazzi-sdk.html

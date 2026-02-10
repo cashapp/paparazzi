@@ -308,6 +308,48 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#supporting-multiple-test-frameworks" class="md-nav__link">
+    <span class="md-ellipsis">
+      Supporting Multiple Test Frameworks
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Supporting Multiple Test Frameworks">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#junit-jupiter" class="md-nav__link">
+    <span class="md-ellipsis">
+      JUnit Jupiter
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kotest" class="md-nav__link">
+    <span class="md-ellipsis">
+      Kotest
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#testng" class="md-nav__link">
+    <span class="md-ellipsis">
+      TestNg
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#tasks" class="md-nav__link">
     <span class="md-ellipsis">
       Tasks
@@ -537,6 +579,48 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#supporting-multiple-test-frameworks" class="md-nav__link">
+    <span class="md-ellipsis">
+      Supporting Multiple Test Frameworks
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Supporting Multiple Test Frameworks">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#junit-jupiter" class="md-nav__link">
+    <span class="md-ellipsis">
+      JUnit Jupiter
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kotest" class="md-nav__link">
+    <span class="md-ellipsis">
+      Kotest
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#testng" class="md-nav__link">
+    <span class="md-ellipsis">
+      TestNg
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#tasks" class="md-nav__link">
     <span class="md-ellipsis">
       Tasks
@@ -643,6 +727,114 @@
 <span class="w">    </span><span class="n">paparazzi</span><span class="p">.</span><span class="na">snapshot</span><span class="w"> </span><span class="p">{</span>
 <span class="w">      </span><span class="n">MyComposable</span><span class="p">()</span>
 <span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="supporting-multiple-test-frameworks">Supporting Multiple Test Frameworks<a class="headerlink" href="#supporting-multiple-test-frameworks" title="Permanent link">&para;</a></h2>
+<h3 id="junit-jupiter">JUnit Jupiter<a class="headerlink" href="#junit-jupiter" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kd">lateinit</span><span class="w"> </span><span class="kd">var</span><span class="w"> </span><span class="nv">paparazzi</span><span class="p">:</span><span class="w"> </span><span class="n">Paparazzi</span>
+
+<span class="nd">@BeforeEach</span>
+<span class="kd">fun</span><span class="w"> </span><span class="nf">setup</span><span class="p">(</span><span class="n">testInfo</span><span class="p">:</span><span class="w"> </span><span class="n">TestInfo</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">paparazzi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Paparazzi</span><span class="p">().</span><span class="na">apply</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">setup</span><span class="p">(</span>
+<span class="w">      </span><span class="n">testName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TestName</span><span class="p">(</span>
+<span class="w">        </span><span class="n">packageName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">testInfo</span><span class="p">.</span><span class="na">testClass</span><span class="p">.</span><span class="na">get</span><span class="p">().</span><span class="n">`package`</span><span class="o">?.</span><span class="na">name</span><span class="p">.</span><span class="na">orEmpty</span><span class="p">(),</span>
+<span class="w">        </span><span class="n">className</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">testInfo</span><span class="p">.</span><span class="na">testClass</span><span class="p">.</span><span class="na">get</span><span class="p">().</span><span class="na">simpleName</span><span class="p">,</span>
+<span class="w">        </span><span class="n">methodName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">testInfo</span><span class="p">.</span><span class="na">testMethod</span><span class="p">.</span><span class="na">get</span><span class="p">().</span><span class="na">name</span>
+<span class="w">      </span><span class="p">)</span>
+<span class="w">    </span><span class="p">)</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="nd">@AfterEach</span>
+<span class="kd">fun</span><span class="w"> </span><span class="nf">tearDown</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">paparazzi</span><span class="p">.</span><span class="na">teardown</span><span class="p">()</span>
+<span class="p">}</span>
+
+<span class="nd">@Test</span>
+<span class="kd">fun</span><span class="w"> </span><span class="nf">snapshot_example</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">val</span><span class="w"> </span><span class="nv">view</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">paparazzi</span><span class="p">.</span><span class="na">inflate</span><span class="o">&lt;</span><span class="n">TextView</span><span class="o">&gt;</span><span class="p">(</span><span class="n">android</span><span class="p">.</span><span class="na">R</span><span class="p">.</span><span class="na">layout</span><span class="p">.</span><span class="na">simple_list_item_1</span><span class="p">).</span><span class="na">apply</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Hello Paparazzi&quot;</span>
+<span class="w">    </span><span class="n">textSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">24f</span>
+<span class="w">    </span><span class="n">gravity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Gravity</span><span class="p">.</span><span class="na">CENTER</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="n">paparazzi</span><span class="p">.</span><span class="na">snapshot</span><span class="p">(</span><span class="n">view</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="kotest">Kotest<a class="headerlink" href="#kotest" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kd">class</span><span class="w"> </span><span class="nc">PaparazziKotestListener</span><span class="p">(</span>
+<span class="w">  </span><span class="kd">val</span><span class="w"> </span><span class="nv">api</span><span class="p">:</span><span class="w"> </span><span class="n">Paparazzi</span>
+<span class="p">)</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">TestListener</span><span class="w"> </span><span class="p">{</span>
+
+<span class="w">  </span><span class="kd">override</span><span class="w"> </span><span class="kd">suspend</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">beforeTest</span><span class="p">(</span><span class="n">testCase</span><span class="p">:</span><span class="w"> </span><span class="n">TestCase</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">api</span><span class="p">.</span><span class="na">setup</span><span class="p">(</span><span class="n">testCase</span><span class="p">.</span><span class="na">toTestName</span><span class="p">())</span>
+<span class="w">    </span><span class="k">super</span><span class="p">.</span><span class="na">beforeTest</span><span class="p">(</span><span class="n">testCase</span><span class="p">)</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="kd">override</span><span class="w"> </span><span class="kd">suspend</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">afterTest</span><span class="p">(</span><span class="n">testCase</span><span class="p">:</span><span class="w"> </span><span class="n">TestCase</span><span class="p">,</span><span class="w"> </span><span class="n">result</span><span class="p">:</span><span class="w"> </span><span class="n">TestResult</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">super</span><span class="p">.</span><span class="na">afterTest</span><span class="p">(</span><span class="n">testCase</span><span class="p">,</span><span class="w"> </span><span class="n">result</span><span class="p">)</span>
+<span class="w">    </span><span class="n">api</span><span class="p">.</span><span class="na">teardown</span><span class="p">()</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="kd">private</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="n">TestCase</span><span class="p">.</span><span class="nf">toTestName</span><span class="p">()</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="n">TestName</span><span class="p">(</span>
+<span class="w">      </span><span class="n">packageName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="na">spec</span><span class="o">::</span><span class="n">class</span><span class="p">.</span><span class="na">java</span><span class="p">.</span><span class="n">`package`</span><span class="o">?.</span><span class="na">name</span><span class="p">.</span><span class="na">orEmpty</span><span class="p">(),</span>
+<span class="w">      </span><span class="n">className</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">this</span><span class="o">::</span><span class="n">class</span><span class="p">.</span><span class="na">simpleName</span><span class="p">.</span><span class="na">orEmpty</span><span class="p">(),</span>
+<span class="w">      </span><span class="n">methodName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="na">name</span><span class="p">.</span><span class="na">testName</span>
+<span class="w">    </span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Where you can use the Kotest listener like so:</p>
+<div class="highlight"><pre><span></span><code><span class="kd">class</span><span class="w"> </span><span class="nc">KotestPaparazziTest</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">FunSpec</span><span class="p">({</span>
+
+<span class="w">  </span><span class="kd">val</span><span class="w"> </span><span class="nv">listener</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PaparazziKotestListener</span><span class="p">(</span><span class="n">Paparazzi</span><span class="p">())</span>
+<span class="w">  </span><span class="n">listeners</span><span class="p">(</span><span class="n">listener</span><span class="p">)</span>
+
+<span class="w">  </span><span class="n">test</span><span class="p">(</span><span class="s">&quot;verify paparazzi snapshot works with kotest listener&quot;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">textView</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">listener</span><span class="p">.</span><span class="na">api</span><span class="p">.</span><span class="na">inflate</span><span class="o">&lt;</span><span class="n">TextView</span><span class="o">&gt;</span><span class="p">(</span><span class="n">android</span><span class="p">.</span><span class="na">R</span><span class="p">.</span><span class="na">layout</span><span class="p">.</span><span class="na">simple_list_item_1</span><span class="p">)</span>
+<span class="w">    </span><span class="n">textView</span><span class="p">.</span><span class="na">apply</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Kotest FunSpec Snapshot&quot;</span>
+<span class="w">      </span><span class="n">textSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">24f</span>
+<span class="w">      </span><span class="n">gravity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Gravity</span><span class="p">.</span><span class="na">CENTER</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">listener</span><span class="p">.</span><span class="na">api</span><span class="p">.</span><span class="na">snapshot</span><span class="p">(</span><span class="n">textView</span><span class="p">)</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">})</span>
+</code></pre></div>
+<h3 id="testng">TestNg<a class="headerlink" href="#testng" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kd">class</span><span class="w"> </span><span class="nc">TestNgPaparazziTest</span><span class="w"> </span><span class="p">{</span>
+
+<span class="w">  </span><span class="kd">lateinit</span><span class="w"> </span><span class="kd">var</span><span class="w"> </span><span class="nv">paparazzi</span><span class="p">:</span><span class="w"> </span><span class="n">Paparazzi</span>
+
+<span class="w">  </span><span class="nd">@BeforeMethod</span>
+<span class="w">  </span><span class="kd">fun</span><span class="w"> </span><span class="nf">setup</span><span class="p">(</span><span class="n">result</span><span class="p">:</span><span class="w"> </span><span class="n">ITestResult</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">testMethod</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">result</span><span class="p">.</span><span class="na">method</span>
+<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">className</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">testMethod</span><span class="p">.</span><span class="na">realClass</span><span class="p">.</span><span class="na">simpleName</span>
+<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">methodName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">testMethod</span><span class="p">.</span><span class="na">methodName</span>
+<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">packageName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">testMethod</span><span class="o">?.</span><span class="na">realClass</span><span class="o">?.</span><span class="n">`package`</span><span class="o">?.</span><span class="na">name</span><span class="p">.</span><span class="na">orEmpty</span><span class="p">()</span>
+
+<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">testName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TestName</span><span class="p">(</span><span class="n">packageName</span><span class="p">,</span><span class="w"> </span><span class="n">className</span><span class="p">,</span><span class="w"> </span><span class="n">methodName</span><span class="p">)</span>
+
+<span class="w">    </span><span class="n">paparazzi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Paparazzi</span><span class="p">()</span>
+<span class="w">    </span><span class="n">paparazzi</span><span class="p">.</span><span class="na">setup</span><span class="p">(</span><span class="n">testName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">testName</span><span class="p">)</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="nd">@AfterMethod</span>
+<span class="w">  </span><span class="kd">fun</span><span class="w"> </span><span class="nf">tearDown</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">paparazzi</span><span class="p">.</span><span class="na">teardown</span><span class="p">()</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="nd">@Test</span>
+<span class="w">  </span><span class="kd">fun</span><span class="w"> </span><span class="nf">`verify testng snapshot`</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">textView</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">paparazzi</span><span class="p">.</span><span class="na">inflate</span><span class="o">&lt;</span><span class="n">TextView</span><span class="o">&gt;</span><span class="p">(</span><span class="n">android</span><span class="p">.</span><span class="na">R</span><span class="p">.</span><span class="na">layout</span><span class="p">.</span><span class="na">simple_list_item_1</span><span class="p">).</span><span class="na">apply</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Paparazzi TestNg test&quot;</span>
+<span class="w">      </span><span class="n">textSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">24f</span>
+<span class="w">      </span><span class="n">gravity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Gravity</span><span class="p">.</span><span class="na">CENTER</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">paparazzi</span><span class="p">.</span><span class="na">snapshot</span><span class="p">(</span><span class="n">textView</span><span class="p">)</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
