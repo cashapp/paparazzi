@@ -287,3 +287,7 @@ public final class app/cash/paparazzi/accessibility/AccessibilityRenderExtension
 	public fun renderView (Landroid/view/View;)Landroid/view/View;
 }
 
+public final class app/cash/paparazzi/agent/PaparazziAgentAttacher {
+	public static fun main ([Ljava/lang/String;)V
+}
+
