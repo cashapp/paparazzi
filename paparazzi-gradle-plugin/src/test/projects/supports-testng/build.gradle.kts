@@ -31,7 +31,7 @@ android {
 dependencies {
   implementation(libs.androidx.appcompat)
 
-  testImplementation("org.testng:testng:7.9.0")
+  testImplementation("org.testng:testng:7.12.0")
 }
 
 tasks.withType<Test> {
