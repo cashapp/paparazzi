@@ -90,7 +90,7 @@ public class AccessibilityRenderExtension : RenderExtension {
     }
   }
 
-  internal fun onSnapshotRunCompleted() {
+  override fun onSnapshotRunCompleted() {
     val hierarchyString = accessibilityElementCollector.toHierarchyString(collectedElements)
     onHierarchyStringGenerated(hierarchyString)
     collectedElements = emptySet()

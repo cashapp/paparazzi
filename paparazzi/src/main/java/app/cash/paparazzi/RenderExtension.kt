@@ -27,4 +27,12 @@ public interface RenderExtension {
    * Returns the root view of the modified hierarchy.
    */
   public fun renderView(contentView: View): View
+
+  /**
+   * Called after a snapshot run (single snapshot or gif) has completed rendering all frames.
+   * This can be used to perform post-snapshot-run work.
+   *
+   * Default implementation is a no-op.
+   */
+  public fun onSnapshotRunCompleted() {}
 }

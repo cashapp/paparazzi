@@ -372,9 +372,7 @@ public class PaparazziSdk @JvmOverloads constructor(
         onNewFrame(scaleImage(frameImage(image)))
       }
 
-      renderExtensions
-        .filterIsInstance<AccessibilityRenderExtension>()
-        .forEach { it.onSnapshotRunCompleted() }
+      renderExtensions.forEach { it.onSnapshotRunCompleted() }
     } finally {
       viewGroup.removeAllViews()
 
