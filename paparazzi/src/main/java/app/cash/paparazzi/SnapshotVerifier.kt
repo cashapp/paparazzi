@@ -25,6 +25,8 @@ import app.cash.paparazzi.internal.differs.Mssim
 import app.cash.paparazzi.internal.differs.OffByTwo
 import app.cash.paparazzi.internal.differs.PixelPerfect
 import app.cash.paparazzi.internal.differs.Sift
+import com.squareup.moshi.JsonReader
+import okio.Buffer
 import okio.Path.Companion.toOkioPath
 import java.awt.image.BufferedImage
 import java.awt.image.BufferedImage.TYPE_INT_ARGB
@@ -38,14 +40,16 @@ public class SnapshotVerifier @JvmOverloads constructor(
 ) : SnapshotHandler {
   private val imagesDirectory: File = File(rootDirectory, "images")
   private val videosDirectory: File = File(rootDirectory, "videos")
+  private val artifactsDirectory: File = File(rootDirectory, ARTIFACTS_DIRECTORY_NAME)
 
   init {
     imagesDirectory.mkdirs()
     videosDirectory.mkdirs()
+    artifactsDirectory.mkdirs()
   }
 
   override fun newFrameHandler(snapshot: Snapshot, frameCount: Int, fps: Int): FrameHandler {
-    return object : FrameHandler {
+    return object : FrameHandler, ArtifactFrameHandler {
       val snapshotDir = if (fps == -1) imagesDirectory else videosDirectory
       val expected = File(snapshotDir, snapshot.toFileName(extension = "png"))
       val failurePath = File(failureDir, "delta-${expected.name}").toOkioPath()
@@ -93,10 +97,80 @@ public class SnapshotVerifier @JvmOverloads constructor(
           pngVerifier?.close()
         }
       }
+
+      override fun handleArtifact(name: String, content: String) {
+        val expected = snapshot.artifactFile(name, artifactsDirectory)
+        val failureFileBaseName = "${expected.parentFile.name.sanitizeForFilename()}-${expected.name}"
+        val actualFile = File(failureDir, "actual-$failureFileBaseName")
+        val diffFile = File(failureDir, "diff-$failureFileBaseName.txt")
+        if (!expected.exists()) {
+          actualFile.writeAtomically(content)
+          diffFile.writeAtomically(
+            buildString {
+              appendLine("Golden artifact not found for '$name'.")
+              appendLine("Expected file: ${expected.path}")
+              appendLine("Actual file: ${actualFile.path}")
+              appendLine()
+              appendLine("Actual:")
+              appendLine(content)
+            }
+          )
+          throw AssertionError(
+            "Golden artifact '$name' not found at ${expected.path}. " +
+              "See ${actualFile.path} and ${diffFile.path}."
+          )
+        }
+
+        val expectedContent = expected.readText()
+        val matches = if (name.endsWith(".json", ignoreCase = true)) {
+          expectedContent.parseJsonSafely() == content.parseJsonSafely()
+        } else {
+          expectedContent == content
+        }
+        if (matches) {
+          actualFile.delete()
+          diffFile.delete()
+          return
+        }
+
+        actualFile.writeAtomically(content)
+        diffFile.writeAtomically(
+          buildString {
+            appendLine("Artifact mismatch for '$name'.")
+            appendLine("Expected file: ${expected.path}")
+            appendLine()
+            appendLine("Expected:")
+            appendLine(expectedContent)
+            appendLine()
+            appendLine("Actual:")
+            appendLine(content)
+          }
+        )
+
+        throw AssertionError(
+          "Artifact '$name' mismatch for ${expected.path}. " +
+            "See ${actualFile.path} and ${diffFile.path}."
+        )
+      }
     }
   }
 
   override fun close(): Unit = Unit
+
+  private fun String.parseJsonSafely(): Any? {
+    return try {
+      JsonReader.of(Buffer().writeUtf8(this)).readJsonValue()
+    } catch (_: Exception) {
+      this
+    }
+  }
+
+  private fun File.writeAtomically(content: String) {
+    val tmpFile = File(parentFile, "$name.tmp")
+    tmpFile.writeText(content)
+    delete()
+    tmpFile.renameTo(this)
+  }
 
   private companion object {
     /** Directory where to write the thumbnails and deltas. */

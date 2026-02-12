@@ -18,3 +18,7 @@ package app.cash.paparazzi
 internal fun interface ArtifactFrameHandler {
   fun handleArtifact(name: String, content: String)
 }
+
+internal fun SnapshotHandler.FrameHandler.handleArtifact(name: String, content: String) {
+  (this as ArtifactFrameHandler).handleArtifact(name, content)
+}
