@@ -31,10 +31,10 @@ android {
 dependencies {
   implementation(libs.androidx.appcompat)
 
-  testImplementation("org.junit.jupiter:junit-jupiter-api:5.14.2")
-  testImplementation("org.junit.jupiter:junit-jupiter-params:5.14.2")
-  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.14.2")
-  testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.14.2")
+  testImplementation("org.junit.jupiter:junit-jupiter-api:6.0.2")
+  testImplementation("org.junit.jupiter:junit-jupiter-params:6.0.2")
+  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:6.0.2")
+  testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.2")
 }
 
 tasks.withType<Test> {
