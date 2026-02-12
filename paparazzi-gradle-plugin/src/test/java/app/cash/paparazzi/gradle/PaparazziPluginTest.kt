@@ -1526,6 +1526,38 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun accessibilityHierarchyArtifactsOptIn() {
+    val fixtureRoot = File("src/test/projects/accessibility-hierarchy-artifact")
+    val snapshotsDir = File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
+    val accessibilitySnapshot = File(
+      snapshotsDir,
+      "artifacts/accessibility-hierarchy/app.cash.paparazzi.plugin.test_AccessibilityHierarchyArtifactTest_record_accessibility.json"
+    )
+
+    val recordResult = gradleRunner
+      .withArguments("recordPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+    with(recordResult.task(":testDebugUnitTest")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(SUCCESS)
+    }
+    assertThat(accessibilitySnapshot.exists()).isTrue()
+
+    val verifyResult = gradleRunner
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+    with(verifyResult.task(":testDebugUnitTest")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(SUCCESS)
+    }
+
+    gradleRunner
+      .withArguments("deletePaparazziSnapshots", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+    assertThat(accessibilitySnapshot.exists()).isFalse()
+  }
+
+  @Test
   fun snapshotReport() {
     val fixtureRoot = File("src/test/projects/report-snapshots")
     val testReportDir = File(fixtureRoot, "build/reports/tests/testDebugUnitTest/classes")
