@@ -92,7 +92,8 @@ public class PaparazziSdk @JvmOverloads constructor(
   private val supportsRtl: Boolean = false,
   private val showSystemUi: Boolean = false,
   private val useDeviceResolution: Boolean = false,
-  private val onNewFrame: (BufferedImage) -> Unit
+  private val onNewFrame: (BufferedImage) -> Unit,
+  private val onArtifact: (String, String) -> Unit = { _, _ -> }
 ) {
   private var validateAccessibility = false
 
@@ -111,7 +112,8 @@ public class PaparazziSdk @JvmOverloads constructor(
     showSystemUi: Boolean = false,
     validateAccessibility: Boolean = false,
     useDeviceResolution: Boolean = false,
-    onNewFrame: (BufferedImage) -> Unit
+    onNewFrame: (BufferedImage) -> Unit,
+    onArtifact: (String, String) -> Unit = { _, _ -> }
   ) : this(
     environment,
     deviceConfig,
@@ -122,7 +124,8 @@ public class PaparazziSdk @JvmOverloads constructor(
     supportsRtl,
     showSystemUi,
     useDeviceResolution,
-    onNewFrame
+    onNewFrame,
+    onArtifact
   ) {
     this.validateAccessibility = validateAccessibility
   }
@@ -372,7 +375,9 @@ public class PaparazziSdk @JvmOverloads constructor(
         onNewFrame(scaleImage(frameImage(image)))
       }
 
-      renderExtensions.forEach { it.onSnapshotRunCompleted() }
+      renderExtensions.forEach { renderExtension ->
+        renderExtension.onSnapshotRunCompleted(onArtifact)
+      }
     } finally {
       viewGroup.removeAllViews()
 
