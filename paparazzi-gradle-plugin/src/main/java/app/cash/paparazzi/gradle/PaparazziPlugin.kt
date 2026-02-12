@@ -59,6 +59,7 @@ import org.gradle.internal.operations.BuildOperationExecutor
 import org.gradle.internal.operations.BuildOperationRunner
 import org.gradle.internal.os.OperatingSystem
 import org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
+import org.gradle.work.DisableCachingByDefault
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
 import java.util.Locale
@@ -349,6 +350,7 @@ public class PaparazziPlugin @Inject constructor(
       }
     }
 
+  @DisableCachingByDefault(because = "Paparazzi verify/record tasks are not cacheable")
   public abstract class PaparazziTask : DefaultTask() {
     @Option(option = "tests", description = "Sets test class or method name to be included, '*' is supported.")
     public open fun setTestNameIncludePatterns(testNamePattern: List<String>): PaparazziTask {
