@@ -1,6 +1,5 @@
 plugins {
   id 'com.android.application'
-  id 'kotlin-android'
   id 'app.cash.paparazzi'
 }
 
@@ -13,9 +12,6 @@ android {
   compileOptions {
     sourceCompatibility = libs.versions.javaTarget.get()
     targetCompatibility = libs.versions.javaTarget.get()
-  }
-  kotlinOptions {
-    jvmTarget = libs.versions.javaTarget.get()
   }
 }
 
