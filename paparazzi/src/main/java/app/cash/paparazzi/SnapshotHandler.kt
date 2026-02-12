@@ -23,6 +23,8 @@ public interface SnapshotHandler : Closeable {
 
   public interface FrameHandler : Closeable {
     public fun handle(image: BufferedImage)
+
+    public fun handleArtifact(name: String, content: String) {}
   }
 }
 

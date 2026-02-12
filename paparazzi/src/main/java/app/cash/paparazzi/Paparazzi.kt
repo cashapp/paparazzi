@@ -101,6 +101,7 @@ public class Paparazzi @JvmOverloads constructor(
           showSystemUi = showSystemUi,
           validateAccessibility = validateAccessibility,
           onNewFrame = { frameHandler.handle(it) },
+          onArtifact = { name, content -> frameHandler.handleArtifact(name, content) },
           useDeviceResolution = useDeviceResolution
         )
         sdk.setup()
