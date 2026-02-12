@@ -156,6 +156,7 @@ public class PaparazziPlugin @Inject constructor(
           val files = project.fileTree(snapshotOutputDir) { tree ->
             tree.include("**/*.png")
             tree.include("**/*.mov")
+            tree.include("artifacts/**")
           }
           it.delete(files)
         }
