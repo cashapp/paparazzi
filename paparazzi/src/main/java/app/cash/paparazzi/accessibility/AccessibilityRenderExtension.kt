@@ -23,6 +23,7 @@ import android.view.WindowManager
 import android.view.WindowManagerImpl
 import android.widget.FrameLayout
 import android.widget.LinearLayout
+import app.cash.paparazzi.Flags
 import app.cash.paparazzi.RenderExtension
 import app.cash.paparazzi.internal.ComposeViewAdapter
 import com.android.internal.view.OneShotPreDrawListener
@@ -91,8 +92,15 @@ public class AccessibilityRenderExtension : RenderExtension {
   }
 
   override fun onSnapshotRunCompleted() {
+    onSnapshotRunCompleted { _, _ -> }
+  }
+
+  override fun onSnapshotRunCompleted(onArtifact: (name: String, content: String) -> Unit) {
     val hierarchyString = accessibilityElementCollector.toHierarchyString(collectedElements)
     onHierarchyStringGenerated(hierarchyString)
+    if (System.getProperty(Flags.ACCESSIBILITY_HIERARCHY_ARTIFACTS_ENABLED)?.toBoolean() == true) {
+      onArtifact(ACCESSIBILITY_HIERARCHY_ARTIFACT_NAME, hierarchyString)
+    }
     collectedElements = emptySet()
   }
 }

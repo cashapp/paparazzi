@@ -16,6 +16,7 @@
 package app.cash.paparazzi
 
 import app.cash.paparazzi.FileSubject.Companion.assertThat
+import app.cash.paparazzi.accessibility.ACCESSIBILITY_HIERARCHY_ARTIFACT_NAME
 import app.cash.paparazzi.internal.differs.PixelPerfect
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
@@ -126,6 +127,133 @@ class HtmlReportWriterTest {
 
     assertThat(File(reportRoot.root, "images")).isEmptyDirectory()
     assertThat(File(reportRoot.root, "videos")).isEmptyDirectory()
+  }
+
+  @Test
+  fun writesAccessibilityArtifactToReportOutput() {
+    val htmlReportWriter = HtmlReportWriter(
+      runName = "run_one",
+      rootDirectory = reportRoot.root,
+      maxPercentDifference = 0.0,
+      differ = PixelPerfect,
+      snapshotRootDirectory = snapshotRoot.root
+    )
+
+    val snapshot = Snapshot(
+      name = "loading",
+      testName = TestName("app.cash.paparazzi", "CelebrityTest", "testSettings"),
+      timestamp = Instant.parse("2019-03-20T10:27:43Z").toDate()
+    )
+    val expectedReportArtifact = snapshot.artifactFile(
+      ACCESSIBILITY_HIERARCHY_ARTIFACT_NAME,
+      File(reportRoot.root, ARTIFACTS_DIRECTORY_NAME)
+    )
+    val expectedGoldenArtifact = snapshot.artifactFile(
+      ACCESSIBILITY_HIERARCHY_ARTIFACT_NAME,
+      File(snapshotRoot.root, ARTIFACTS_DIRECTORY_NAME)
+    )
+    val genericArtifactName = "debug-info.txt"
+    val genericArtifactContent = "artifact debug information"
+    val expectedReportGenericArtifact = snapshot.artifactFile(
+      genericArtifactName,
+      File(reportRoot.root, ARTIFACTS_DIRECTORY_NAME)
+    )
+    val expectedGoldenGenericArtifact = snapshot.artifactFile(
+      genericArtifactName,
+      File(snapshotRoot.root, ARTIFACTS_DIRECTORY_NAME)
+    )
+
+    htmlReportWriter.use {
+      val frameHandler = htmlReportWriter.newFrameHandler(
+        snapshot = snapshot,
+        frameCount = 1,
+        fps = -1
+      )
+      frameHandler.use {
+        frameHandler.handle(anyImage)
+        frameHandler.handleArtifact(
+          ACCESSIBILITY_HIERARCHY_ARTIFACT_NAME,
+          """
+            |[
+            |  {
+            |    "legendText": "First"
+            |  }
+            |]
+          """.trimMargin()
+        )
+        frameHandler.handleArtifact(genericArtifactName, genericArtifactContent)
+      }
+    }
+
+    assertThat(expectedReportArtifact).hasContent(
+      """
+        |[
+        |  {
+        |    "legendText": "First"
+        |  }
+        |]
+      """.trimMargin()
+    )
+    assertThat(expectedGoldenArtifact).doesNotExist()
+    assertThat(expectedReportGenericArtifact).hasContent(genericArtifactContent)
+    assertThat(expectedGoldenGenericArtifact).doesNotExist()
+  }
+
+  @Test
+  fun writesAccessibilityArtifactGoldenWhenRecording() {
+    try {
+      System.setProperty("paparazzi.test.record", "true")
+
+      val htmlReportWriter = HtmlReportWriter(
+        runName = "run_one",
+        rootDirectory = reportRoot.root,
+        maxPercentDifference = 0.0,
+        differ = PixelPerfect,
+        snapshotRootDirectory = snapshotRoot.root
+      )
+
+      val snapshot = Snapshot(
+        name = "loading",
+        testName = TestName("app.cash.paparazzi", "CelebrityTest", "testSettings"),
+        timestamp = Instant.parse("2019-03-20T10:27:43Z").toDate()
+      )
+      val artifactContent =
+        """
+          |[
+          |  {
+          |    "legendText": "First"
+          |  }
+          |]
+        """.trimMargin()
+      val genericArtifactName = "debug-info.txt"
+      val genericArtifactContent = "artifact debug information"
+      val expectedGoldenArtifact = snapshot.artifactFile(
+        ACCESSIBILITY_HIERARCHY_ARTIFACT_NAME,
+        File(snapshotRoot.root, ARTIFACTS_DIRECTORY_NAME)
+      )
+      val expectedGoldenGenericArtifact = snapshot.artifactFile(
+        genericArtifactName,
+        File(snapshotRoot.root, ARTIFACTS_DIRECTORY_NAME)
+      )
+
+      htmlReportWriter.use {
+        val frameHandler = htmlReportWriter.newFrameHandler(
+          snapshot = snapshot,
+          frameCount = 1,
+          fps = -1
+        )
+        frameHandler.use {
+          frameHandler.handle(anyImage)
+          frameHandler.handleArtifact(ACCESSIBILITY_HIERARCHY_ARTIFACT_NAME, artifactContent)
+          frameHandler.handleArtifact(genericArtifactName, genericArtifactContent)
+        }
+      }
+
+      assertThat(expectedGoldenArtifact).hasContent(artifactContent)
+      assertThat(expectedGoldenGenericArtifact).hasContent(genericArtifactContent)
+    } finally {
+      System.clearProperty("paparazzi.test.record")
+    }
   }
 
   @Test
