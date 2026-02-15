@@ -19,6 +19,7 @@ import android.animation.AnimationHandler
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Bitmap
+import android.graphics.Rect
 import android.os.Handler
 import android.os.Handler_Delegate
 import android.util.AttributeSet
@@ -34,13 +35,20 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
 import androidx.activity.setViewTreeOnBackPressedDispatcherOwner
 import androidx.annotation.LayoutRes
+import androidx.compose.animation.core.AnimationConstants
+import androidx.compose.runtime.BroadcastFrameClock
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MonotonicFrameClock
 import androidx.compose.runtime.Recomposer
+import androidx.compose.runtime.monotonicFrameClock
+import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.InternalComposeUiApi
+import androidx.compose.ui.platform.AndroidUiDispatcher
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.WindowRecomposerPolicy
 import androidx.compose.ui.platform.createLifecycleAwareWindowRecomposer
+import androidx.core.view.doOnAttach
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
@@ -62,6 +70,7 @@ import com.android.ide.common.rendering.api.Result.Status.ERROR_UNKNOWN
 import com.android.ide.common.rendering.api.SessionParams
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode
 import com.android.internal.lang.System_Delegate
+import com.android.internal.view.OneShotPreDrawListener
 import com.android.layoutlib.bridge.Bridge
 import com.android.layoutlib.bridge.Bridge.cleanupThread
 import com.android.layoutlib.bridge.Bridge.prepareThread
@@ -79,7 +88,14 @@ import java.awt.geom.Ellipse2D
 import java.awt.image.BufferedImage
 import java.util.EnumSet
 import java.util.concurrent.TimeUnit
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.android.asCoroutineDispatcher
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 @OptIn(ExperimentalComposeUiApi::class, InternalComposeUiApi::class)
 public class PaparazziSdk @JvmOverloads constructor(
@@ -143,6 +159,7 @@ public class PaparazziSdk @JvmOverloads constructor(
   public fun setup() {
     if (!isInitialized) {
       registerViewEditModeInterception()
+      InterceptorRegistrar.registerResourcesCompatFontLoadFix()
 
       ByteBuddyAgent.install()
       InterceptorRegistrar.registerMethodInterceptors()
@@ -289,8 +306,10 @@ public class PaparazziSdk @JvmOverloads constructor(
     }
 
     try {
-      withTime(0L) {
-        // Initialize the choreographer at time=0.
+      if (startNanos == 0L) {
+        withTime(0L) {
+          // Initialize the choreographer at time=0.
+        }
       }
 
       // The consumer may not have compose runtime on the classpath, so we don't reference the type.
@@ -308,6 +327,13 @@ public class PaparazziSdk @JvmOverloads constructor(
         // synchronizing expected behavior.
         WindowRecomposerPolicy.setFactory {
           val windowRecomposer = it.createLifecycleAwareWindowRecomposer(MAIN_DISPATCHER)
+
+          CoroutineScope(EmptyCoroutineContext).launch {
+            windowRecomposer.currentState.collectLatest { state ->
+              println("Recomposer changed: $state - ${windowRecomposer.changeCount}")
+            }
+          }
+
           recomposer = windowRecomposer
           return@setFactory windowRecomposer
         }
@@ -328,33 +354,66 @@ public class PaparazziSdk @JvmOverloads constructor(
       }
 
       viewGroup.addView(modifiedView)
+
+      /**
+       * Compose animation tracks a startTime to ensure animations run correctly.
+       * We need to ensure the startTime is 0 so when we using the startNanos for animation position works correctly.
+       *
+       * Multiple render calls needed for [androidx.compose.animation.core.Transition] like the one used by [androidx.compose.animation.AnimatedVisibility] to work properly.
+       */
+      val frameClock = (recomposer as? Recomposer)?.effectCoroutineContext[MonotonicFrameClock]
+      val broadcastFrameClock = frameClock as? BroadcastFrameClock
+      val recomposerI = (recomposer as Recomposer)
+//      if (recomposer != null && startNanos > 0) {
+      if (startNanos > 0) {
+        withTime(0) {
+          println("Prerender 1")
+          renderSession.render(false)
+          println("Recomposer hasPendingWork= ${recomposer.hasPendingWork()} - ${recomposerI.currentState.value}")
+        }
+        withTime(0) {
+          println("Prerender 2")
+          renderSession.render(false)
+          println("Recomposer hasPendingWork= ${recomposer.hasPendingWork()} - ${recomposerI.currentState.value}")
+        }
+      }
+
       for (frame in 0 until frameCount) {
         val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
 
         // If we have pendingTasks run recomposer to ensure we get the correct frame.
         var hasPendingWork = false
         withTime(nowNanos) {
-          val result = renderSession.render(true)
-          if (result.status == ERROR_UNKNOWN) {
-            throw result.exception
-          }
-          if (hasComposeRuntime && recomposer != null) {
-            // If we have pending tasks, we need to trigger it within the context of the first frame.
-            if (frame == 0 && (recomposer as Recomposer).hasPendingWork) {
-              hasPendingWork = true
-            }
+          println("Render")
+          renderForResult()
+
+          // If we have pending tasks, we need to trigger it within the context of the first frame.
+          if (frame == 0 && recomposer.hasPendingWork()) {
+            hasPendingWork = true
           }
         }
 
         if (hasPendingWork) {
-          withTime(nowNanos) {
-            val result = renderSession.render(true)
-            if (result.status == ERROR_UNKNOWN) {
-              throw result.exception
-            }
+          /**
+           * Compose animation tracks a startTime to ensure animations run correctly.
+           * We need to ensure the startTime is (0 for single frame snapshots, or the start time for animations) so when we use the withTime function,
+           * the startTime for animation position works correctly.
+           *
+           * Frame clock needs to report (timeNanos = 0) for [androidx.compose.animation.core.Transition] like the one used by [androidx.compose.animation.AnimatedVisibility] to work properly.
+           */
+          val recomposerInstance = recomposer as Recomposer
+          val frameClock = recomposerInstance.effectCoroutineContext[MonotonicFrameClock]
+          val broadcastFrameClock = frameClock as? BroadcastFrameClock
+          println("hasAwaiters = ${broadcastFrameClock?.hasAwaiters} - changeCount=${recomposerInstance.changeCount} currentState=${recomposerInstance.currentState.value} hasPendingWork=${recomposerInstance.hasPendingWork}")
+          if (recomposerInstance.hasPendingWork || broadcastFrameClock?.hasAwaiters == true) {
+//            broadcastFrameClock?.sendFrame(0)
           }
 
-          val recomposerInstance = recomposer as Recomposer
+          withTime(nowNanos) {
+            println("Pending Result re-render")
+            renderForResult()
+          }
+
           if (recomposerInstance.hasPendingWork) {
             logger.warning(
               "Pending work detected. This may cause unexpected results in your generated snapshots. ${recomposerInstance.changeCount}"
@@ -390,6 +449,17 @@ public class PaparazziSdk @JvmOverloads constructor(
       mLastFrameTimeNanos.set(choreographer, 0L)
 
       Thread.setDefaultUncaughtExceptionHandler(previousUncaughtExceptionHandler)
+    }
+  }
+
+  private fun Any?.hasPendingWork(): Boolean {
+    return this != null && hasComposeRuntime && (this as Recomposer).hasPendingWork
+  }
+
+  private fun renderForResult() {
+    val result = renderSession.render(true)
+    if (result.status == ERROR_UNKNOWN) {
+      throw result.exception
     }
   }
 
