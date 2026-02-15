@@ -1,0 +1,11 @@
+public class app/cash/paparazzi/preview/PaparazziValuesProvider : com/google/testing/junit/testparameterinjector/TestParameterValuesProvider {
+	public static final field $stable I
+	public fun <init> (Ljava/util/List;)V
+	protected fun provideValues (Lcom/google/testing/junit/testparameterinjector/TestParameterValuesProvider$Context;)Ljava/util/List;
+}
+
+public final class app/cash/paparazzi/preview/SnapshotKt {
+	public static final fun snapshot (Lapp/cash/paparazzi/Paparazzi;Lapp/cash/paparazzi/preview/runtime/PaparazziPreviewData;Ljava/lang/String;)V
+	public static synthetic fun snapshot$default (Lapp/cash/paparazzi/Paparazzi;Lapp/cash/paparazzi/preview/runtime/PaparazziPreviewData;Ljava/lang/String;ILjava/lang/Object;)V
+}
+
