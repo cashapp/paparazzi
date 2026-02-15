@@ -191,6 +191,12 @@ public final class app/cash/paparazzi/Paparazzi : org/junit/rules/TestRule {
 	public static synthetic fun unsafeUpdateConfig$default (Lapp/cash/paparazzi/Paparazzi;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ILjava/lang/Object;)V
 }
 
+public final class app/cash/paparazzi/Paparazzi$PaparazziUtils {
+	public static final field $stable I
+	public static final field INSTANCE Lapp/cash/paparazzi/Paparazzi$PaparazziUtils;
+	public final fun detectMaxPercentDifferenceDefault ()D
+}
+
 public final class app/cash/paparazzi/PaparazziSdk {
 	public static final field $stable I
 	public fun <init> (Lapp/cash/paparazzi/Environment;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;Lkotlin/jvm/functions/Function1;)V
@@ -252,10 +258,6 @@ public abstract interface class app/cash/paparazzi/SnapshotHandler : java/io/Clo
 
 public abstract interface class app/cash/paparazzi/SnapshotHandler$FrameHandler : java/io/Closeable {
 	public abstract fun handle (Ljava/awt/image/BufferedImage;)V
-}
-
-public final class app/cash/paparazzi/SnapshotHandlerKt {
-	public static final fun detectMaxPercentDifferenceDefault ()D
 }
 
 public final class app/cash/paparazzi/SnapshotVerifier : app/cash/paparazzi/SnapshotHandler {
