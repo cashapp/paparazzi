@@ -59,7 +59,7 @@ okio = { module = "com.squareup.okio:okio", version = "3.16.4" }
 
 tools-common = { module = "com.android.tools:common", version.ref = "androidTools" }
 tools-layoutlib = { module = "com.android.tools.layoutlib:layoutlib", version.ref = "layoutlib" }
-tools-layoutlib-api = { module = "com.android.tools.layoutlib:layoutlib-api", version = "32.0.0" }
+tools-layoutlib-api = { module = "com.android.tools.layoutlib:layoutlib-api", version = "32.0.1" }
 tools-layoutlib-resources = { module = "com.android.tools.layoutlib:layoutlib-resources", version.ref = "layoutlib" }
 tools-layoutlib-runtime = { module = "com.android.tools.layoutlib:layoutlib-runtime", version.ref = "layoutlib" }
 tools-ninepatch = { module = "com.android.tools:ninepatch", version.ref = "androidTools" }
