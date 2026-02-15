@@ -7,7 +7,7 @@ coroutines = "1.10.2"
 javaTarget = "21"
 kotlin = "2.3.0"
 ksp = "2.3.5"
-layoutlib = "16.2.1"
+layoutlib = "16.2.2"
 moshi = "1.15.2"
 
 minSdk = "25"
