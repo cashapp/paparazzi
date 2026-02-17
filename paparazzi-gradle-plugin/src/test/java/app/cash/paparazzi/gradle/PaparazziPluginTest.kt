@@ -61,6 +61,30 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun supportsJunitJupiterLibrary() {
+    val fixtureRoot = File("src/test/projects/supports-junit-jupiter")
+
+    gradleRunner.withArguments("verifyPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+  }
+
+  @Test
+  fun supportsKotestLibrary() {
+    val fixtureRoot = File("src/test/projects/supports-kotest")
+
+    gradleRunner.withArguments("verifyPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+  }
+
+  @Test
+  fun supportsTestNgLibrary() {
+    val fixtureRoot = File("src/test/projects/supports-testng")
+
+    gradleRunner.withArguments("verifyPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+  }
+
+  @Test
   fun missingSupportedPlugins() {
     val fixtureRoot = File("src/test/projects/missing-supported-plugins")
 
@@ -921,7 +945,7 @@ class PaparazziPluginTest {
     )
     assertThat(config.aarExplodedDirs)
       .comparingElementsUsing(MATCHES_PATTERN)
-      .containsExactly("^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/external/res\$")
+      .containsExactly("$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/external/res\$")
   }
 
   @Test
@@ -956,7 +980,7 @@ class PaparazziPluginTest {
     )
     assertThat(config.aarExplodedDirs)
       .comparingElementsUsing(MATCHES_PATTERN)
-      .containsExactly("^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/external/res\$")
+      .containsExactly("$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/external/res\$")
   }
 
   @Test
@@ -1106,15 +1130,15 @@ class PaparazziPluginTest {
     assertThat(config.aarExplodedDirs)
       .comparingElementsUsing(MATCHES_PATTERN)
       .containsExactly(
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/external1/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/core-1.17.0/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/annotation-experimental-1.4.1/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/core-viewtree-1.0.0/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/lifecycle-runtime-2.6.2/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/profileinstaller-1.3.0/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/startup-runtime-1.1.1/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/tracing-1.2.0/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/core-runtime-2.2.0/res\$"
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/external1/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/core-1.17.0/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/annotation-experimental-1.4.1/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/core-viewtree-1.0.0/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/lifecycle-runtime-2.6.2/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/profileinstaller-1.3.0/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/startup-runtime-1.1.1/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/tracing-1.2.0/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/core-runtime-2.2.0/res\$"
       )
 
     buildDir.deleteRecursively()
@@ -1135,15 +1159,15 @@ class PaparazziPluginTest {
     assertThat(config.aarExplodedDirs)
       .comparingElementsUsing(MATCHES_PATTERN)
       .containsExactly(
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/external2/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/core-1.17.0/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/annotation-experimental-1.4.1/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/core-viewtree-1.0.0/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/lifecycle-runtime-2.6.2/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/profileinstaller-1.3.0/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/startup-runtime-1.1.1/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/tracing-1.2.0/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/core-runtime-2.2.0/res\$"
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/external2/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/core-1.17.0/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/annotation-experimental-1.4.1/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/core-viewtree-1.0.0/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/lifecycle-runtime-2.6.2/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/profileinstaller-1.3.0/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/startup-runtime-1.1.1/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/tracing-1.2.0/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/core-runtime-2.2.0/res\$"
       )
   }
 
@@ -1297,7 +1321,7 @@ class PaparazziPluginTest {
     var config = resourcesFile.loadConfig()
     assertThat(config.aarAssetDirs)
       .comparingElementsUsing(MATCHES_PATTERN)
-      .containsExactly("^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/external1/assets\$")
+      .containsExactly("$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/external1/assets\$")
 
     buildDir.deleteRecursively()
 
@@ -1316,7 +1340,7 @@ class PaparazziPluginTest {
     config = resourcesFile.loadConfig()
     assertThat(config.aarAssetDirs)
       .comparingElementsUsing(MATCHES_PATTERN)
-      .containsExactly("^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/(workspace/)?transformed/external2/assets\$")
+      .containsExactly("$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/external2/assets\$")
   }
 
   @Test
@@ -1526,12 +1550,20 @@ class PaparazziPluginTest {
     var htmlText = simpleTestHtmlFile.readText()
     assertThat(htmlText).contains("<img")
     assertThat(htmlText).contains("delta-app.cash.paparazzi.plugin.test_SimpleTest_compose.png")
+    assertThat(htmlText).contains("Failed tests")
+    assertThat(htmlText).contains("Tests")
+    assertThat(htmlText).contains("Standard output")
+    assertThat(htmlText).contains("Standard error")
 
     val testParamInjectorTestHtmlFile =
       File(testReportDir, "app.cash.paparazzi.plugin.test.TestParameterInjectorTest.html")
     htmlText = testParamInjectorTestHtmlFile.readText()
     assertThat(htmlText).contains("<img")
     assertThat(htmlText).contains("delta-app.cash.paparazzi.plugin.test_TestParameterInjectorTest_compose[darkMode=false,fontScale=1.0].png")
+    assertThat(htmlText).contains("Failed tests")
+    assertThat(htmlText).contains("Tests")
+    assertThat(htmlText).contains("Standard output")
+    assertThat(htmlText).contains("Standard error")
   }
 
   @Test
@@ -1725,6 +1757,8 @@ class PaparazziPluginTest {
   private fun File.listFilesSorted() = listFiles()?.sortedBy { it.lastModified() }
 
   companion object {
+    private const val GRADLE_CACHE_TRANSFORMS_PATH_REGEX = "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?(-rc-[0-9]{1,2})?/transforms/[0-9a-f]{32}/(workspace/)?transformed"
+
     private val CONFIG_ADAPTER =
       Moshi.Builder().addLast(KotlinJsonAdapterFactory()).build()!!.adapter(Config::class.java)
     private val MATCHES_PATTERN = Correspondence.from<String, String>(

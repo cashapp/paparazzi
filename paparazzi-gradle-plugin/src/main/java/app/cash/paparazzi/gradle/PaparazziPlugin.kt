@@ -340,13 +340,13 @@ public class PaparazziPlugin @Inject constructor(
           .withPathSensitivity(PathSensitivity.NONE)
 
         test.inputs.dir(
-          project.provideOnEnabled(filterProvider = isVerifyRun, sourceProvider = snapshotOutputDir)
+          provideOnEnabled(filterProvider = isVerifyRun, sourceProvider = snapshotOutputDir)
         ).withPropertyName("paparazzi.snapshot.input.dir")
           .withPathSensitivity(PathSensitivity.RELATIVE)
           .optional()
 
         test.outputs.dir(
-          project.provideOnEnabled(filterProvider = isRecordRun, sourceProvider = snapshotOutputDir)
+          provideOnEnabled(filterProvider = isRecordRun, sourceProvider = snapshotOutputDir)
         ).withPropertyName("paparazzi.snapshots.output.dir")
           .optional()
 
@@ -474,33 +474,33 @@ public class PaparazziPlugin @Inject constructor(
     project.configurations.getByName(configurationName).dependencies.add(dependency)
   }
 
-  private fun Project.provideOnEnabled(filterProvider: Provider<Boolean>, sourceProvider: Provider<*>): Provider<*> =
-    filterProvider.flatMap { enabled ->
-      if (enabled) {
-        sourceProvider
-      } else {
-        project.objects.directoryProperty()
-      }
+  private fun Project.provideOnEnabled(filterProvider: Provider<Boolean>, sourceProvider: Provider<*>): Provider<*> {
+    val emptyDir = objects.directoryProperty()
+    return filterProvider.flatMap { enabled ->
+      if (enabled) sourceProvider else emptyDir
     }
+  }
 
   private fun Project.snapshotDir(testComponent: TestComponent): Provider<Directory> {
     val testSources = requireNotNull(testComponent.sources.java?.all ?: testComponent.sources.kotlin?.all) {
       "No test sources found for test component: ${testComponent.name}"
     }
-    return testSources.map { sourceDirs ->
+    val projectDirectory = layout.projectDirectory
+    val buildDirectoryProvider = layout.buildDirectory
+    return testSources.zip(buildDirectoryProvider) { sourceDirs, buildDir ->
       val defaultTestDir = sourceDirs.first().asFile.parentFile
-      val defaultTestDirectory = layout.projectDirectory.dir(defaultTestDir.path)
+      val defaultTestDirectory = projectDirectory.dir(defaultTestDir.path)
+      val buildDirPath = buildDir.asFile.path
       (
         sourceDirs.firstNotNullOfOrNull { sourceDir ->
           // Sources usually in `/src/test/java/` so need to move to parent `/src/test/`
           val parentFile = sourceDir.asFile.parentFile
-          val testFiles = sourceDir.asFileTree.relativize(layout.projectDirectory)
-          val isNonBuildDirectorySources =
-            parentFile.path.contains(layout.buildDirectory.get().asFile.path).not()
+          val testFiles = sourceDir.asFileTree.relativize(projectDirectory)
+          val isNonBuildDirectorySources = parentFile.path.contains(buildDirPath).not()
           val containsTestFiles = testFiles.isPresent
 
           if (isNonBuildDirectorySources && containsTestFiles) {
-            layout.projectDirectory.dir(parentFile.path)
+            projectDirectory.dir(parentFile.path)
           } else {
             null
           }
