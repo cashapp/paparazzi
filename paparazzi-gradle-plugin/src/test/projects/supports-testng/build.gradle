@@ -1,0 +1,26 @@
+plugins {
+  id("com.android.library")
+  id("app.cash.paparazzi")
+}
+
+android {
+  namespace = 'app.cash.paparazzi.plugin.test'
+  compileSdk = libs.versions.compileSdk.get() as int
+  defaultConfig {
+    minSdk = libs.versions.minSdk.get() as int
+  }
+  compileOptions {
+    sourceCompatibility = libs.versions.javaTarget.get()
+    targetCompatibility = libs.versions.javaTarget.get()
+  }
+}
+
+dependencies {
+  implementation(libs.androidx.appcompat)
+
+  testImplementation("org.testng:testng:7.12.0")
+}
+
+tasks.withType(Test).configureEach {
+  useTestNG()
+}
