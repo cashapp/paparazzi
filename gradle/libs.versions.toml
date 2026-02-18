@@ -6,7 +6,7 @@ compose = "1.10.3"
 coroutines = "1.10.2"
 javaTarget = "21"
 kotlin = "2.3.0"
-ksp = "2.3.5"
+ksp = "2.3.6"
 layoutlib = "16.2.1"
 moshi = "1.15.2"
 
