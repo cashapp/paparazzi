@@ -29,9 +29,9 @@ android {
 dependencies {
   implementation(libs.androidx.appcompat)
 
-  testImplementation("io.kotest:kotest-framework-engine:5.9.1")
+  testImplementation("io.kotest:kotest-framework-engine:6.1.3")
   testImplementation("io.kotest:kotest-runner-junit5:6.1.3")
-  testImplementation("io.kotest:kotest-assertions-core:5.9.1")
+  testImplementation("io.kotest:kotest-assertions-core:6.1.3")
 }
 
 tasks.withType<Test> {
