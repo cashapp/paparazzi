@@ -1,7 +1,6 @@
 plugins {
-  id 'com.android.library'
-  id 'org.jetbrains.kotlin.plugin.compose'
-  id 'app.cash.paparazzi'
+  id("com.android.library")
+  id("app.cash.paparazzi")
 }
 
 android {
@@ -14,13 +13,16 @@ android {
     sourceCompatibility = libs.versions.javaTarget.get()
     targetCompatibility = libs.versions.javaTarget.get()
   }
-
-  buildFeatures {
-    compose = true
-  }
 }
 
 dependencies {
-  implementation libs.composeUi.material
+  implementation(libs.androidx.appcompat)
+
+  testImplementation("io.kotest:kotest-framework-engine:5.9.1")
+  testImplementation("io.kotest:kotest-runner-junit5:5.9.1")
+  testImplementation("io.kotest:kotest-assertions-core:5.9.1")
 }
 
+tasks.withType(Test).configureEach {
+  useJUnitPlatform()
+}

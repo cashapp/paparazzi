@@ -1,10 +1,10 @@
 plugins {
-  id 'com.android.library'
-  id 'app.cash.paparazzi'
+  id("com.android.library")
+  id("app.cash.paparazzi")
 }
 
 android {
-  namespace = 'app.cash.paparazzi.plugin.test.consumer'
+  namespace = 'app.cash.paparazzi.plugin.test'
   compileSdk = libs.versions.compileSdk.get() as int
   defaultConfig {
     minSdk = libs.versions.minSdk.get() as int
@@ -16,9 +16,11 @@ android {
 }
 
 dependencies {
-  implementation files('libs/external.aar')
-  implementation projects.producer1
-  implementation projects.producer2
-  testImplementation libs.truth
+  implementation(libs.androidx.appcompat)
+
+  testImplementation("org.testng:testng:7.12.0")
 }
 
+tasks.withType(Test).configureEach {
+  useTestNG()
+}
