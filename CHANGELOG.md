@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### New
+* New `paparazzi-junit4-reporting` artifact: a JUnit Platform engine wrapper (`paparazzi-vintage`) that enables Gradle test report image attachments for JUnit 4 tests (requires Gradle 9.4+; use `excludeEngines("junit-vintage")` alongside it)
+* New `FrameHandler.outputFile` property exposing the output file produced by each snapshot or gif
+
 ## [2.0.0-alpha04] - 2026-01-20
 
 As of this release, consumers must build on Java 21+ environments.

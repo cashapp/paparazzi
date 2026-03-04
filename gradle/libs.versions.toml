@@ -69,6 +69,11 @@ trove4j = { module = "org.jetbrains.intellij.deps:trove4j", version = "1.0.20200
 
 # Test libraries
 junit = { module = "junit:junit", version = "4.13.2" }
+junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version = "5.12.2" }
+junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version = "5.12.2" }
+junit-platform-engine = { module = "org.junit.platform:junit-platform-engine", version = "1.12.2" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version = "1.12.2" }
+junit-vintage-engine = { module = "org.junit.vintage:junit-vintage-engine", version = "5.12.2" }
 testParameterInjector = { module = "com.google.testparameterinjector:test-parameter-injector", version = "1.21" }
 truth = { module = "com.google.truth:truth", version = "1.4.5" }
 
