@@ -25,8 +25,26 @@ import com.android.ide.common.rendering.api.SessionParams.RenderingMode
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
+import java.io.File
 import java.util.Date
 
+/**
+ * A JUnit 4 [TestRule] for rendering Android views and Compose composables as snapshot images
+ * without a physical device or emulator.
+ *
+ * Usage:
+ * ```
+ * class MyTest {
+ *   @get:Rule
+ *   val paparazzi = Paparazzi()
+ *
+ *   @Test
+ *   fun test() {
+ *     paparazzi.snapshot { MyComposable() }
+ *   }
+ * }
+ * ```
+ */
 public class Paparazzi @JvmOverloads constructor(
   private val environment: Environment = detectEnvironment(),
   private val deviceConfig: DeviceConfig = DeviceConfig.NEXUS_5,
@@ -87,6 +105,23 @@ public class Paparazzi @JvmOverloads constructor(
   public val context: Context
     get() = sdk.context
 
+  private fun createSdk() {
+    sdk = PaparazziSdk(
+      environment = environment,
+      deviceConfig = deviceConfig,
+      theme = theme,
+      renderingMode = renderingMode,
+      appCompatEnabled = appCompatEnabled,
+      renderExtensions = renderExtensions,
+      supportsRtl = supportsRtl,
+      showSystemUi = showSystemUi,
+      validateAccessibility = validateAccessibility,
+      onNewFrame = { frameHandler.handle(it) },
+      useDeviceResolution = useDeviceResolution
+    )
+    sdk.setup()
+  }
+
   override fun apply(base: Statement, description: Description): Statement {
     return object : Statement() {
       override fun evaluate() {
@@ -106,20 +141,7 @@ public class Paparazzi @JvmOverloads constructor(
   }
 
   public fun setup(testName: TestName) {
-    sdk = PaparazziSdk(
-      environment = environment,
-      deviceConfig = deviceConfig,
-      theme = theme,
-      renderingMode = renderingMode,
-      appCompatEnabled = appCompatEnabled,
-      renderExtensions = renderExtensions,
-      supportsRtl = supportsRtl,
-      showSystemUi = showSystemUi,
-      validateAccessibility = validateAccessibility,
-      onNewFrame = { frameHandler.handle(it) },
-      useDeviceResolution = useDeviceResolution
-    )
-    sdk.setup()
+    createSdk()
     this.testName = testName
     sdk.prepare()
   }
@@ -144,6 +166,7 @@ public class Paparazzi @JvmOverloads constructor(
       frameHandler = handler
       sdk.snapshot(composable)
     }
+    reportOutputFile()
   }
 
   @JvmOverloads
@@ -152,6 +175,7 @@ public class Paparazzi @JvmOverloads constructor(
       frameHandler = handler
       sdk.snapshot(view, offsetMillis)
     }
+    reportOutputFile()
   }
 
   @JvmOverloads
@@ -165,6 +189,12 @@ public class Paparazzi @JvmOverloads constructor(
       frameHandler = handler
       sdk.gif(view, start, end, fps)
     }
+    reportOutputFile()
+  }
+
+  private fun reportOutputFile() {
+    val file = frameHandler.outputFile ?: return
+    PaparazziReportingBridge.publishFile(file)
   }
 
   public fun unsafeUpdateConfig(
@@ -189,11 +219,11 @@ public class Paparazzi @JvmOverloads constructor(
     return TestName(packageName, className, methodName)
   }
 
-  private companion object {
-    private val isVerifying: Boolean =
+  internal companion object {
+    internal val isVerifying: Boolean =
       System.getProperty("paparazzi.test.verify")?.toBoolean() == true
 
-    private fun determineHandler(maxPercentDifference: Double): SnapshotHandler =
+    internal fun determineHandler(maxPercentDifference: Double): SnapshotHandler =
       if (isVerifying) {
         SnapshotVerifier(maxPercentDifference)
       } else {
