@@ -4,7 +4,7 @@ import app.cash.paparazzi.Paparazzi
 import app.cash.paparazzi.TestName
 import io.kotest.core.listeners.TestListener
 import io.kotest.core.test.TestCase
-import io.kotest.core.test.TestResult
+import io.kotest.engine.test.TestResult
 
 class PaparazziKotestListener(
   val api: Paparazzi
@@ -24,6 +24,6 @@ class PaparazziKotestListener(
     TestName(
       packageName = this.spec::class.java.`package`?.name.orEmpty(),
       className = this::class.simpleName.orEmpty(),
-      methodName = this.name.testName
+      methodName = this.name.name
     )
 }
