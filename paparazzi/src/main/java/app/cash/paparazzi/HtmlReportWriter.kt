@@ -98,6 +98,9 @@ public class HtmlReportWriter @JvmOverloads constructor(
       val snapshotTmpFile = File(snapshotDir, snapshot.toFileName(extension = "temp.png"))
       val writer = ApngWriter(snapshotTmpFile.path.toPath(), fps)
 
+      override var outputFile: File? = null
+        private set
+
       override fun handle(image: BufferedImage) {
         writer.writeImage(image)
         hashes += hash(image)
@@ -126,6 +129,7 @@ public class HtmlReportWriter @JvmOverloads constructor(
           }
         }
 
+        outputFile = snapshotFile
         shots += snapshot.copy(file = snapshotFile.toJsonPath())
       }
     }

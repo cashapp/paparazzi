@@ -55,6 +55,9 @@ import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.options.Option
 import org.gradle.api.tasks.testing.AbstractTestTask
 import org.gradle.api.tasks.testing.Test
+import org.gradle.api.tasks.testing.TestReport
+import org.gradle.api.tasks.testing.junitplatform.JUnitPlatformOptions
+import org.gradle.api.tasks.testing.testng.TestNGOptions
 import org.gradle.internal.operations.BuildOperationExecutor
 import org.gradle.internal.operations.BuildOperationRunner
 import org.gradle.internal.os.OperatingSystem
@@ -245,6 +248,19 @@ public class PaparazziPlugin @Inject constructor(
       val failureDir = buildDirectory.dir("paparazzi/failures")
       val testTaskProvider = testTasks.withType(Test::class.java)
       testTaskProvider.configureEach { test ->
+        // configureEach fires after all build-script configuration actions have run, so
+        // test.options reflects whatever framework the user configured (if any).
+        // - TestNG: leave it alone; the JUnit Platform runner would override useTestNG()
+        // - JUnit Platform already configured: just add the engine exclusion so that
+        //   junit-vintage doesn't run alongside paparazzi-vintage and double-execute tests
+        // - Default (JUnit 4 / nothing): switch to JUnit Platform with the exclusion so
+        //   paparazzi-vintage can attach snapshot images to the Gradle HTML test report
+        when (val opts = test.options) {
+          is TestNGOptions -> { /* Don't override TestNG test runner */ }
+          is JUnitPlatformOptions -> opts.excludeEngines("junit-vintage")
+          else -> test.useJUnitPlatform { it.excludeEngines("junit-vintage") }
+        }
+
         val localResourceDirs = sources.localResourceDirs ?: providerFactory.provider { emptyList() }
         val localAssetDirs = sources.localAssetDirs ?: providerFactory.provider { emptyList() }
 
@@ -314,6 +330,29 @@ public class PaparazziPlugin @Inject constructor(
           val uri = reportOutputDir.get().asFile.toPath().resolve("index.html").toUri()
           test.logger.log(LIFECYCLE, "See the Paparazzi report at: $uri")
         }
+      }
+
+      // Register a TestReport task that uses Gradle's generic HTML renderer — the only one
+      // that shows the Attachments tab for snapshot images published via fileEntryPublished.
+      // The built-in Test task HTML report uses the legacy PageRenderer which does not
+      // support file attachments at all.
+      val attachmentReportTask = project.tasks.register(
+        "test${testVariantSlug}Report",
+        TestReport::class.java
+      ) { report ->
+        report.group = VERIFICATION_GROUP
+        report.description =
+          "Generate HTML test report with snapshot image attachments for variant '${variant.name}'"
+        report.testResults.from(
+          project.tasks.named("test$testVariantSlug", AbstractTestTask::class.java)
+            .flatMap { it.binaryResultsDirectory }
+        )
+        report.destinationDirectory.set(
+          buildDirectory.dir("reports/tests/test${testVariantSlug}Report")
+        )
+      }
+      testTaskProvider.configureEach { test ->
+        test.finalizedBy(attachmentReportTask)
       }
 
       recordTaskProvider.configure { it.dependsOn(testTaskProvider) }
@@ -416,6 +455,14 @@ public class PaparazziPlugin @Inject constructor(
     }
     val configurationName = if (isMultiplatformProject) "commonTestImplementation" else "testImplementation"
     project.configurations.getByName(configurationName).dependencies.add(dependency)
+
+    val reportingDependency = if (project.isInternal()) {
+      project.dependencies.project(mapOf("path" to ":paparazzi-junit4-reporting"))
+    } else {
+      project.dependencies.create("app.cash.paparazzi:paparazzi-junit4-reporting:$VERSION")
+    }
+    val runtimeConfigurationName = if (isMultiplatformProject) "commonTestRuntimeOnly" else "testRuntimeOnly"
+    project.configurations.getByName(runtimeConfigurationName).dependencies.add(reportingDependency)
   }
 
   private fun Project.provideOnEnabled(filterProvider: Provider<Boolean>, sourceProvider: Provider<*>): Provider<*> {
