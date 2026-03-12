@@ -21,6 +21,7 @@ import android.view.LayoutInflater
 import android.view.View
 import androidx.annotation.LayoutRes
 import androidx.compose.runtime.Composable
+import app.cash.paparazzi.Paparazzi.PaparazziUtils.detectMaxPercentDifferenceDefault
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode
 import org.junit.rules.TestRule
 import org.junit.runner.Description
@@ -199,5 +200,10 @@ public class Paparazzi @JvmOverloads constructor(
       } else {
         HtmlReportWriter(maxPercentDifference = maxPercentDifference)
       }
+  }
+
+  public object PaparazziUtils {
+    public fun detectMaxPercentDifferenceDefault(): Double =
+      System.getProperty("app.cash.paparazzi.maxPercentDifferenceDefault")?.toDoubleOrNull() ?: 0.01
   }
 }
