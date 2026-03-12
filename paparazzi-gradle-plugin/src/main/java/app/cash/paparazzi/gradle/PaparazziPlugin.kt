@@ -282,6 +282,9 @@ public class PaparazziPlugin @Inject constructor(
         test.inputs.files(layoutlibNativeRuntimeFileCollection)
           .withPropertyName("paparazzi.nativeRuntime")
           .withPathSensitivity(PathSensitivity.NONE)
+        test.inputs.files(layoutlibResourcesFileCollection)
+          .withPropertyName("paparazzi.layoutlib.resources")
+          .withPathSensitivity(PathSensitivity.NONE)
 
         test.inputs.dir(
           provideOnEnabled(filterProvider = isVerifyRun, sourceProvider = snapshotOutputDir)
