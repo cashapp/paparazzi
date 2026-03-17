@@ -1,13 +1,13 @@
 package app.cash.paparazzi.agent
 
-import java.lang.instrument.ClassFileTransformer
-import java.security.ProtectionDomain
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
+import java.lang.instrument.ClassFileTransformer
+import java.security.ProtectionDomain
 
 internal object InterceptorRegistrar {
   private val pendingInterceptors = mutableMapOf<String, MutableSet<Pair<String, Class<*>>>>()
@@ -51,10 +51,7 @@ internal object InterceptorRegistrar {
     pendingInterceptors.clear()
   }
 
-  private fun transformClass(
-    classBytes: ByteArray,
-    interceptorMap: Map<String, Class<*>>
-  ): ByteArray {
+  private fun transformClass(classBytes: ByteArray, interceptorMap: Map<String, Class<*>>): ByteArray {
     val reader = ClassReader(classBytes)
     val writer = ClassWriter(reader, ClassWriter.COMPUTE_MAXS)
 
@@ -94,12 +91,13 @@ internal object InterceptorRegistrar {
     return writer.toByteArray()
   }
 
-  private fun returnOpcode(type: Type): Int = when (type.sort) {
-    Type.VOID -> Opcodes.RETURN
-    Type.BOOLEAN, Type.BYTE, Type.CHAR, Type.SHORT, Type.INT -> Opcodes.IRETURN
-    Type.LONG -> Opcodes.LRETURN
-    Type.FLOAT -> Opcodes.FRETURN
-    Type.DOUBLE -> Opcodes.DRETURN
-    else -> Opcodes.ARETURN
-  }
+  private fun returnOpcode(type: Type): Int =
+    when (type.sort) {
+      Type.VOID -> Opcodes.RETURN
+      Type.BOOLEAN, Type.BYTE, Type.CHAR, Type.SHORT, Type.INT -> Opcodes.IRETURN
+      Type.LONG -> Opcodes.LRETURN
+      Type.FLOAT -> Opcodes.FRETURN
+      Type.DOUBLE -> Opcodes.DRETURN
+      else -> Opcodes.ARETURN
+    }
 }

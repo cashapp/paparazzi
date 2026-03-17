@@ -12,10 +12,7 @@ internal object AgentInstaller {
   private var instrumentation: Instrumentation? = null
 
   @JvmStatic
-  fun agentmain(
-    @Suppress("unused") args: String?,
-    inst: Instrumentation
-  ) {
+  fun agentmain(@Suppress("unused") args: String?, inst: Instrumentation) {
     instrumentation = inst
   }
 
