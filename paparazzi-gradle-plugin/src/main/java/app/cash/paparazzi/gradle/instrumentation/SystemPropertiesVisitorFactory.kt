@@ -43,13 +43,10 @@ import org.objectweb.asm.Opcodes
 internal abstract class SystemPropertiesVisitorFactory :
   AsmClassVisitorFactory<InstrumentationParameters.None> {
 
-  override fun createClassVisitor(
-    classContext: ClassContext,
-    nextClassVisitor: ClassVisitor
-  ): ClassVisitor = SystemPropertiesTransform(nextClassVisitor)
+  override fun createClassVisitor(classContext: ClassContext, nextClassVisitor: ClassVisitor): ClassVisitor =
+    SystemPropertiesTransform(nextClassVisitor)
 
-  override fun isInstrumentable(classData: ClassData): Boolean =
-    classData.className == "android.os.SystemProperties"
+  override fun isInstrumentable(classData: ClassData): Boolean = classData.className == "android.os.SystemProperties"
 
   internal class SystemPropertiesTransform(delegate: ClassVisitor) :
     ClassVisitor(Opcodes.ASM9, delegate) {
