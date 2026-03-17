@@ -261,6 +261,8 @@ public class PaparazziPlugin @Inject constructor(
           )
         )
 
+        test.jvmArgs("-Djdk.attach.allowAttachSelf=true", "-XX:+EnableDynamicAgentLoading")
+
         test.systemProperties["paparazzi.test.resources"] =
           writeResourcesTask.flatMap { it.paparazziResources.asFile }.get().path
         test.systemProperties["paparazzi.project.dir"] = projectDirectory.toString()
