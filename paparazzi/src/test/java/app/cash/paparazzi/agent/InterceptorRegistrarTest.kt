@@ -1,7 +1,6 @@
 package app.cash.paparazzi.agent
 
 import com.google.common.truth.Truth.assertThat
-import net.bytebuddy.agent.ByteBuddyAgent
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -17,7 +16,6 @@ class InterceptorRegistrarTest {
       )
     )
 
-    ByteBuddyAgent.install()
     InterceptorRegistrar.registerMethodInterceptors()
   }
 

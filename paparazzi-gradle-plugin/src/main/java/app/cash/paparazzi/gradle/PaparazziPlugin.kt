@@ -258,6 +258,8 @@ public class PaparazziPlugin @Inject constructor(
           }
         }
 
+        test.jvmArgs("-Djdk.attach.allowAttachSelf=true", "-XX:+EnableDynamicAgentLoading")
+
         test.inputs.property("paparazzi.test.record", isRecordRun)
         test.inputs.property("paparazzi.test.verify", isVerifyRun)
         test.inputs.property("paparazzi.gradleProperties", paparazziGradlePropertiesProvider)

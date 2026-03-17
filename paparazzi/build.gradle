@@ -37,8 +37,7 @@ dependencies {
   compileOnlyAarAsJar libs.androidx.lifecycle.runtime // Needed for setViewTreeLifecycleOwner
   compileOnlyAarAsJar libs.androidx.savedstate // Needed for setViewTreeSavedStateRegistryOwner
 
-  implementation libs.bytebuddy.agent
-  implementation libs.bytebuddy.core
+  implementation libs.asm
   implementation libs.trove4j
   api libs.tools.common
   api libs.tools.layoutlib
@@ -128,6 +127,7 @@ def generateTestConfig = tasks.register("generateTestConfig") {
 }
 
 tasks.withType(Test).configureEach {
+  jvmArgs '-Djdk.attach.allowAttachSelf=true', '-XX:+EnableDynamicAgentLoading'
   dependsOn(generateTestConfig)
   systemProperty(
     "paparazzi.test.resources",
