@@ -324,13 +324,13 @@ val third = TextView(context).apply {
 Multi-Window Support
 -------
 
-The extension handles UI that renders in separate windows, such as:
+The extension handles UI that renders in separate windows. Any window displayed via `WindowManager` is supported, including:
 
 - **`DropdownMenu`** (Material3)
 - **`ModalBottomSheet`** (Material3)
 - **Dialogs and popups**
 
-These elements are accessed via `WindowManager.currentRootView` and their accessibility properties appear in the legend alongside the main content.
+Accessibility properties from these windows appear in the legend alongside the main content.
 
 ```kotlin
 paparazzi.snapshot {
