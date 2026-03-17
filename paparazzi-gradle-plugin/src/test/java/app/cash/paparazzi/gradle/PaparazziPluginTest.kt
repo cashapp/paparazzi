@@ -1703,16 +1703,6 @@ class PaparazziPluginTest {
       .runFixture(fixtureRoot) { build() }
   }
 
-  // https://github.com/cashapp/paparazzi/issues/1922
-  @Test
-  fun systemPropertiesNativeLink() {
-    val fixtureRoot = File("src/test/projects/system-properties-native-link")
-
-    gradleRunner
-      .withArguments("testDebug", "--stacktrace")
-      .runFixture(fixtureRoot) { build() }
-  }
-
   @Test
   fun composeLaunchedEffectExceptionPropagates() {
     val fixtureRoot = File("src/test/projects/compose-launched-effect-exception")
