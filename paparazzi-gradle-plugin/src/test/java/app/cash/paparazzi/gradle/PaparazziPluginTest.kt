@@ -1369,6 +1369,17 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun handlerThreadNiceness() {
+    val fixtureRoot = File("src/test/projects/handler-thread-niceness")
+
+    val result = gradleRunner
+      .withArguments("testDebugUnitTest", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":testDebugUnitTest")).isNotNull()
+  }
+
+  @Test
   fun verifySnapshot() {
     val fixtureRoot = File("src/test/projects/verify-snapshot")
 
