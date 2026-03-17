@@ -17,6 +17,7 @@ develocity {
 rootProject.name = 'paparazzi-root'
 
 include ':paparazzi'
+include ':paparazzi-junit4-reporting'
 include ':paparazzi-annotations'
 include ':paparazzi-gradle-plugin'
 include ':paparazzi-preview-lints'

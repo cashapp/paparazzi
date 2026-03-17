@@ -94,6 +94,100 @@ class HtmlReportWriterTest {
   }
 
   @Test
+  fun outputFileSetForImages() {
+    val htmlReportWriter = HtmlReportWriter(
+      runName = "run_one",
+      rootDirectory = reportRoot.root,
+      maxPercentDifference = 0.0,
+      differ = PixelPerfect,
+      snapshotRootDirectory = snapshotRoot.root
+    )
+    htmlReportWriter.use {
+      val frameHandler = htmlReportWriter.newFrameHandler(
+        snapshot = Snapshot(
+          name = "loading",
+          testName = TestName("app.cash.paparazzi", "CelebrityTest", "testSettings"),
+          timestamp = Instant.parse("2019-03-20T10:27:43Z").toDate()
+        ),
+        frameCount = 1,
+        fps = -1
+      )
+      // Before close, outputFile should be null
+      assertThat(frameHandler.outputFile).isNull()
+
+      frameHandler.use {
+        frameHandler.handle(anyImage)
+      }
+
+      // After close, outputFile should point to the written image
+      assertThat(frameHandler.outputFile).isNotNull()
+      assertThat(frameHandler.outputFile!!.exists()).isTrue()
+      assertThat(frameHandler.outputFile!!.name).endsWith(".png")
+      assertThat(frameHandler.outputFile!!.parentFile.name).isEqualTo("images")
+    }
+  }
+
+  @Test
+  fun outputFileSetForVideos() {
+    val htmlReportWriter = HtmlReportWriter(
+      runName = "run_one",
+      rootDirectory = reportRoot.root,
+      maxPercentDifference = 0.0,
+      differ = PixelPerfect,
+      snapshotRootDirectory = snapshotRoot.root
+    )
+    htmlReportWriter.use {
+      val frameHandler = htmlReportWriter.newFrameHandler(
+        snapshot = Snapshot(
+          name = "loading",
+          testName = TestName("app.cash.paparazzi", "CelebrityTest", "testSettings"),
+          timestamp = Instant.parse("2019-03-20T10:27:43Z").toDate()
+        ),
+        frameCount = 2,
+        fps = 1
+      )
+      assertThat(frameHandler.outputFile).isNull()
+
+      frameHandler.use {
+        frameHandler.handle(anyImage)
+        frameHandler.handle(anyImage)
+      }
+
+      assertThat(frameHandler.outputFile).isNotNull()
+      assertThat(frameHandler.outputFile!!.exists()).isTrue()
+      assertThat(frameHandler.outputFile!!.name).endsWith(".png")
+      assertThat(frameHandler.outputFile!!.parentFile.name).isEqualTo("videos")
+    }
+  }
+
+  @Test
+  fun outputFileNullWhenNoFramesWritten() {
+    val htmlReportWriter = HtmlReportWriter(
+      runName = "run_one",
+      rootDirectory = reportRoot.root,
+      maxPercentDifference = 0.0,
+      differ = PixelPerfect,
+      snapshotRootDirectory = snapshotRoot.root
+    )
+    htmlReportWriter.use {
+      val frameHandler = htmlReportWriter.newFrameHandler(
+        snapshot = Snapshot(
+          name = "loading",
+          testName = TestName("app.cash.paparazzi", "CelebrityTest", "testSettings"),
+          timestamp = Instant.parse("2019-03-20T10:27:43Z").toDate()
+        ),
+        frameCount = 1,
+        fps = -1
+      )
+      frameHandler.use {
+        // intentionally empty, no frames written
+      }
+
+      assertThat(frameHandler.outputFile).isNull()
+    }
+  }
+
+  @Test
   fun sanitizeForFilename() {
     assertThat("0 Dollars".sanitizeForFilename()).isEqualTo("0_dollars")
     assertThat("`!#$%&*+=|\\'\"<>?/".sanitizeForFilename()).isEqualTo("_________________")

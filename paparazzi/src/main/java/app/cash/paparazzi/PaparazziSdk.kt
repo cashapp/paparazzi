@@ -142,10 +142,20 @@ public class PaparazziSdk @JvmOverloads constructor(
 
   public fun setup() {
     if (!isInitialized) {
-      registerViewEditModeInterception()
+      // Guard against re-running ByteBuddy retransformation after the first setup().
+      // When tests run under JUnit Platform (useJUnitPlatform), the JUnit Platform
+      // launcher loads all test classes during discovery before running any tests.
+      // This can cause Android framework classes (e.g. android.view.View) to be loaded
+      // from the test classpath before PaparazziSdk.setup() runs, putting the JVM's live
+      // class in a state that ByteBuddy's original-bytes redefine would reject. A
+      // JVM-global System property prevents double-invocation across classloader boundaries.
+      if (System.getProperty("paparazzi.bytebuddy.initialized") == null) {
+        System.setProperty("paparazzi.bytebuddy.initialized", "true")
+        registerViewEditModeInterception()
 
-      ByteBuddyAgent.install()
-      InterceptorRegistrar.registerMethodInterceptors()
+        ByteBuddyAgent.install()
+        InterceptorRegistrar.registerMethodInterceptors()
+      }
     }
   }
 
