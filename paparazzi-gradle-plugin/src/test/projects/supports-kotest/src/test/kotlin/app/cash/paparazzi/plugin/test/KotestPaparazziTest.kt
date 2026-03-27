@@ -7,9 +7,8 @@ import app.cash.paparazzi.plugin.test.runner.PaparazziKotestListener
 import io.kotest.core.spec.style.FunSpec
 
 class KotestPaparazziTest : FunSpec({
-
   val listener = PaparazziKotestListener(Paparazzi())
-  listeners(listener)
+  extensions(listener)
 
   test("verify paparazzi snapshot works with kotest listener") {
     val textView = listener.api.inflate<TextView>(android.R.layout.simple_list_item_1)
