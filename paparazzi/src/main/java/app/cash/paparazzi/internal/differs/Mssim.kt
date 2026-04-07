@@ -1,6 +1,5 @@
 package app.cash.paparazzi.internal.differs
 
-import androidx.compose.ui.util.fastCoerceAtLeast
 import app.cash.paparazzi.Differ
 import app.cash.paparazzi.Differ.DiffResult
 import java.awt.Color
@@ -10,6 +9,9 @@ import kotlin.math.min
 import kotlin.math.pow
 
 internal object Mssim : Differ {
+
+  private const val THRESHOLD = 0.99
+
   override fun compare(expected: BufferedImage, actual: BufferedImage): DiffResult {
     require(expected.width == actual.width && expected.height == actual.height)
 
@@ -47,12 +49,17 @@ internal object Mssim : Differ {
     val percentDifference = ((1.0 - mssim) * 100).toFloat()
 
     return when {
-      percentDifference == 0f -> DiffResult.Identical(deltaImage)
+      mssim == 1.0 -> DiffResult.Identical(deltaImage)
+      mssim > THRESHOLD -> DiffResult.Similar(
+        delta = deltaImage,
+        numSimilarPixels = (mssim * width * height).toLong()
+      )
 
-      percentDifference < 5f ->
-        DiffResult.Similar(deltaImage, ((1.0 - percentDifference / 100f) * width * height).toLong())
-
-      else -> DiffResult.Different(deltaImage, percentDifference, (percentDifference / 100f * width * height).toLong())
+      else -> DiffResult.Different(
+        delta = deltaImage,
+        percentDifference = percentDifference,
+        numDifferentPixels = ((1.0 - mssim) * width * height).toLong()
+      )
     }
   }
 
