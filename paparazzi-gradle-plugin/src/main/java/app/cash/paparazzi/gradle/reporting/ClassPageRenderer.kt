@@ -5,7 +5,6 @@ import org.gradle.api.tasks.testing.TestOutputEvent
 import org.gradle.internal.html.SimpleHtmlWriter
 import org.gradle.internal.xml.SimpleMarkupWriter
 import org.gradle.reporting.CodePanelRenderer
-import org.gradle.reporting.HtmlWriterTools.addClipboardCopyButton
 import java.io.IOException
 
 internal class ClassPageRenderer(
@@ -175,7 +174,7 @@ internal class ClassPageRenderer(
               .characters("")
             resultsProvider.writeAllOutput(classId, TestOutputEvent.Destination.StdOut, htmlWriter)
             htmlWriter.endElement()
-            addClipboardCopyButton(htmlWriter, codeId)
+            addClipboardCopyButtonIfSupported(htmlWriter, codeId)
             htmlWriter.endElement()
           }
         }
@@ -196,11 +195,26 @@ internal class ClassPageRenderer(
               .characters("")
             resultsProvider.writeAllOutput(classId, TestOutputEvent.Destination.StdErr, htmlWriter)
             htmlWriter.endElement()
-            addClipboardCopyButton(htmlWriter, codeId)
+            addClipboardCopyButtonIfSupported(htmlWriter, codeId)
             htmlWriter.endElement()
           }
         }
       )
     }
+  }
+
+  private fun addClipboardCopyButtonIfSupported(htmlWriter: SimpleHtmlWriter, codeId: String) {
+    addClipboardCopyButtonMethod?.invoke(null, htmlWriter, codeId)
+  }
+
+  private companion object {
+    // Gradle 8 does not expose HtmlWriterTools, so copy buttons are best-effort.
+    val addClipboardCopyButtonMethod = runCatching {
+      Class.forName("org.gradle.reporting.HtmlWriterTools").getMethod(
+        "addClipboardCopyButton",
+        SimpleHtmlWriter::class.java,
+        String::class.java
+      )
+    }.getOrNull()
   }
 }
