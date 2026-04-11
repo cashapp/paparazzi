@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### New
+* [Gradle Plugin] Android Gradle Plugin 9.1.0
+* [Gradle Plugin] Android Tools 32.1.0
+
 ## [2.0.0-alpha04] - 2026-01-20
 
 As of this release, consumers must build on Java 21+ environments.

@@ -1,6 +1,5 @@
 plugins {
   id 'com.android.library'
-  id 'kotlin-android'
   id 'org.jetbrains.kotlin.plugin.compose'
   id 'app.cash.paparazzi'
 }
@@ -15,12 +14,15 @@ android {
     sourceCompatibility = libs.versions.javaTarget.get()
     targetCompatibility = libs.versions.javaTarget.get()
   }
-  kotlinOptions {
-    jvmTarget = libs.versions.javaTarget.get()
-    javaParameters = true
-  }
   buildFeatures {
     compose = true
+  }
+}
+
+// javaParameters required by TestParameterInjector for reflection
+kotlin {
+  compilerOptions {
+    javaParameters = true
   }
 }
 
