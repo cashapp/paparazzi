@@ -325,6 +325,25 @@ public class PaparazziSdk @JvmOverloads constructor(
       }
 
       viewGroup.addView(modifiedView)
+      if (renderingMode == RenderingMode.SHRINK && hasComposeRuntime) {
+        withTime(startNanos, useFrameTimeSystemClock) {
+          val result = renderSession.measure()
+          if (result.status == ERROR_UNKNOWN) {
+            throw result.exception
+          }
+        }
+        if (modifiedView.measuredWidth == 0 || modifiedView.measuredHeight == 0) {
+          val overlayWindow = android.view.WindowManagerGlobal.getInstance()
+            .findPopupRootView(viewGroup)
+            ?.takeIf { it.width > 0 && it.height > 0 }
+          if (overlayWindow != null) {
+            modifiedView.layoutParams = android.widget.FrameLayout.LayoutParams(
+              overlayWindow.width,
+              overlayWindow.height
+            )
+          }
+        }
+      }
       for (frame in 0 until frameCount) {
         val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
 
