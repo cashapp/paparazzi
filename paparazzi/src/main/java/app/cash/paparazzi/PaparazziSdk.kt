@@ -274,7 +274,7 @@ public class PaparazziSdk @JvmOverloads constructor(
       }
     }
 
-    System_Delegate.setNanosTime(if (useFrameTimeSystemClock) MIN_FRAME_TIME_NANOS else 0L)
+    System_Delegate.setNanosTime(0L)
     System_Delegate.setBootTimeNanos(0L)
 
     // Set up an UncaughtExceptionHandler to ensure that uncaught exceptions are propagated to the
@@ -414,11 +414,11 @@ public class PaparazziSdk @JvmOverloads constructor(
 
   private fun withTime(timeNanos: Long, useFrameTimeSystemClock: Boolean, block: () -> Unit) {
     // layoutlib 16.2.3's HWUI path rejects a frame timestamp of 0ms.
-    // Keep non-Compose snapshots at their legacy clock behavior while ensuring Compose snapshots
-    // always expose a positive frame time to HWUI, input dispatch, and render-thread animation
-    // paths.
+    // Keep the requested snapshot time visible to SystemClock while ensuring Compose snapshots
+    // always expose a positive frame timestamp to HWUI, input dispatch, and render-thread
+    // animation paths.
     val frameTimeNanos = if (timeNanos == 0L) MIN_FRAME_TIME_NANOS else timeNanos
-    System_Delegate.setNanosTime(if (useFrameTimeSystemClock) frameTimeNanos else 0L)
+    System_Delegate.setNanosTime(if (useFrameTimeSystemClock) timeNanos else 0L)
 
     try {
       executeHandlerCallbacks()
