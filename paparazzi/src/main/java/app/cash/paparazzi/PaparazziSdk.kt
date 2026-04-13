@@ -261,6 +261,7 @@ public class PaparazziSdk @JvmOverloads constructor(
 
   private fun takeSnapshots(view: View, startNanos: Long, fps: Int, frameCount: Int) {
     val viewGroup = bridgeRenderSession.rootViews[0].viewObject as ViewGroup
+    val useFrameTimeSystemClock = view is ComposeView
     val modifiedView = renderExtensions.fold(view) { currentView, renderExtension ->
       val currentSessionRenderingMode = sessionParamsBuilder.build().renderingMode
       if (currentSessionRenderingMode == RenderingMode.SHRINK && renderExtension is AccessibilityRenderExtension) {
@@ -273,7 +274,7 @@ public class PaparazziSdk @JvmOverloads constructor(
       }
     }
 
-    System_Delegate.setNanosTime(0L)
+    System_Delegate.setNanosTime(if (useFrameTimeSystemClock) MIN_FRAME_TIME_NANOS else 0L)
     System_Delegate.setBootTimeNanos(0L)
 
     // Set up an UncaughtExceptionHandler to ensure that uncaught exceptions are propagated to the
@@ -285,7 +286,7 @@ public class PaparazziSdk @JvmOverloads constructor(
     }
 
     try {
-      withTime(0L) {
+      withTime(0L, useFrameTimeSystemClock) {
         // Initialize the choreographer at time=0.
       }
 
@@ -329,7 +330,7 @@ public class PaparazziSdk @JvmOverloads constructor(
 
         // If we have pendingTasks run recomposer to ensure we get the correct frame.
         var hasPendingWork = false
-        withTime(nowNanos) {
+        withTime(nowNanos, useFrameTimeSystemClock) {
           val result = renderSession.render(true)
           if (result.status == ERROR_UNKNOWN) {
             throw result.exception
@@ -343,7 +344,7 @@ public class PaparazziSdk @JvmOverloads constructor(
         }
 
         if (hasPendingWork) {
-          withTime(nowNanos) {
+          withTime(nowNanos, useFrameTimeSystemClock) {
             val result = renderSession.render(true)
             if (result.status == ERROR_UNKNOWN) {
               throw result.exception
@@ -392,26 +393,26 @@ public class PaparazziSdk @JvmOverloads constructor(
     }
   }
 
-  private fun withTime(timeNanos: Long, block: () -> Unit) {
-    // layoutlib 16.2.3 HWUI path rejects a frame timestamp of 0ms.
+  private fun withTime(timeNanos: Long, useFrameTimeSystemClock: Boolean, block: () -> Unit) {
+    // layoutlib 16.2.3's HWUI path rejects a frame timestamp of 0ms.
+    // Keep non-Compose snapshots at their legacy clock behavior while ensuring Compose snapshots
+    // always expose a positive frame time to HWUI, input dispatch, and render-thread animation
+    // paths.
     val frameTimeNanos = if (timeNanos == 0L) MIN_FRAME_TIME_NANOS else timeNanos
-
-    // Execute the block at the requested time.
-    System_Delegate.setNanosTime(0L)
-    Choreographer_Delegate.sChoreographerTime = frameTimeNanos
+    System_Delegate.setNanosTime(if (useFrameTimeSystemClock) frameTimeNanos else 0L)
 
     try {
       executeHandlerCallbacks()
-      val currentTimeNanos = uptimeNanos()
-      /**
-       * The choreographer needs to be manually ticked in order for the frame time to become visible to the native layer
-       * which is necessary in order for ripples to work is compose, as well as view animation classes.
-       *
-       * After frame is run, we have to reset sChoreographerTime since [com.android.layoutlib.bridge.SessionInteractiveData.getNanosTime]
-       * uses sChoreographerTime to calculate nanoTime via [System_Delegate.nanoTime].
-       */
-      Choreographer_Delegate.doFrame(currentTimeNanos)
-
+      if (useFrameTimeSystemClock) {
+        Choreographer_Delegate.doFrame(frameTimeNanos)
+      } else {
+        Choreographer_Delegate.sChoreographerTime = frameTimeNanos
+        Choreographer_Delegate.doCallbacks(
+          Choreographer.getInstance(),
+          Choreographer.CALLBACK_ANIMATION,
+          frameTimeNanos
+        )
+      }
       return block()
     } catch (e: Throwable) {
       Bridge.getLog().error("broken", "Failed executing Choreographer#doFrame", e, null, null)
