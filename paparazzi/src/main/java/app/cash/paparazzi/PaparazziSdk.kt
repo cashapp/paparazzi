@@ -180,6 +180,8 @@ public class PaparazziSdk @JvmOverloads constructor(
     }
 
     bridgeRenderSession = createBridgeSession(renderSession, renderSession.inflate())
+    AnimationHandler.sAnimatorHandler.set(null)
+    AnimationHandler.sAnimatorHandler.remove()
   }
 
   public fun teardown() {
@@ -372,16 +374,19 @@ public class PaparazziSdk @JvmOverloads constructor(
       if (modifiedView !== view) {
         (view.parent as ViewGroup).removeView(view)
       }
-      AnimationHandler.sAnimatorHandler.set(null)
       if (hasComposeRuntime) {
         forceReleaseComposeReferenceLeaks()
       }
+      AnimationHandler.sAnimatorHandler.set(null)
+      AnimationHandler.sAnimatorHandler.remove()
 
       // Reset the choreographer to its initial state for last for future test runs as it is a singleton.
       val choreographer = Choreographer.getInstance()
       val mLastFrameTimeNanos = choreographer::class.java.getDeclaredField("mLastFrameTimeNanos")
       mLastFrameTimeNanos.isAccessible = true
       mLastFrameTimeNanos.set(choreographer, 0L)
+      AnimationHandler.sAnimatorHandler.set(null)
+      AnimationHandler.sAnimatorHandler.remove()
 
       Thread.setDefaultUncaughtExceptionHandler(previousUncaughtExceptionHandler)
     }
