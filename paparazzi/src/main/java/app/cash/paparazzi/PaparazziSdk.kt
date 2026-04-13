@@ -261,7 +261,7 @@ public class PaparazziSdk @JvmOverloads constructor(
 
   private fun takeSnapshots(view: View, startNanos: Long, fps: Int, frameCount: Int) {
     val viewGroup = bridgeRenderSession.rootViews[0].viewObject as ViewGroup
-    val useFrameTimeSystemClock = view is ComposeView
+    val useFrameTimeSystemClock = hasComposeRuntime && isComposeView(view)
     val modifiedView = renderExtensions.fold(view) { currentView, renderExtension ->
       val currentSessionRenderingMode = sessionParamsBuilder.build().renderingMode
       if (currentSessionRenderingMode == RenderingMode.SHRINK && renderExtension is AccessibilityRenderExtension) {
@@ -666,6 +666,17 @@ public class PaparazziSdk @JvmOverloads constructor(
         |              android:layout_width="${if (renderingMode.horizAction == RenderingMode.SizeAction.SHRINK) "wrap_content" else "match_parent"}"
         |              android:layout_height="${if (renderingMode.vertAction == RenderingMode.SizeAction.SHRINK) "wrap_content" else "match_parent"}"/>
       """.trimMargin()
+
+    private fun isComposeView(view: View): Boolean {
+      var currentClass: Class<*>? = view.javaClass
+      while (currentClass != null) {
+        if (currentClass.name == "androidx.compose.ui.platform.ComposeView") {
+          return true
+        }
+        currentClass = currentClass.superclass
+      }
+      return false
+    }
 
     private fun isPresentInClasspath(vararg classNames: String): Boolean {
       return try {
