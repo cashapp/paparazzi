@@ -63,8 +63,6 @@ import com.android.ide.common.rendering.api.SessionParams
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode
 import com.android.internal.lang.System_Delegate
 import com.android.layoutlib.bridge.Bridge
-import com.android.layoutlib.bridge.Bridge.cleanupThread
-import com.android.layoutlib.bridge.Bridge.prepareThread
 import com.android.layoutlib.bridge.BridgeRenderSession
 import com.android.layoutlib.bridge.impl.RenderAction
 import com.android.layoutlib.bridge.impl.RenderSessionImpl
@@ -173,7 +171,6 @@ public class PaparazziSdk @JvmOverloads constructor(
 
     val sessionParams = sessionParamsBuilder.build()
     renderSession = createRenderSession(sessionParams)
-    prepareThread()
     renderSession.init(sessionParams.timeout)
     Bitmap.setDefaultDensity(DisplayMetrics.DENSITY_DEVICE_STABLE)
 
@@ -188,7 +185,6 @@ public class PaparazziSdk @JvmOverloads constructor(
   public fun teardown() {
     renderSession.release()
     bridgeRenderSession.dispose()
-    cleanupThread()
 
     renderer.dumpDelegates()
     logger.assertNoErrors()
@@ -233,7 +229,6 @@ public class PaparazziSdk @JvmOverloads constructor(
     logger.flushErrors()
     renderSession.release()
     bridgeRenderSession.dispose()
-    cleanupThread()
 
     sessionParamsBuilder = sessionParamsBuilder
       .copy(
@@ -257,7 +252,6 @@ public class PaparazziSdk @JvmOverloads constructor(
 
     val sessionParams = sessionParamsBuilder.build()
     renderSession = createRenderSession(sessionParams)
-    prepareThread()
     renderSession.init(sessionParams.timeout)
     Bitmap.setDefaultDensity(DisplayMetrics.DENSITY_DEVICE_STABLE)
     bridgeRenderSession = createBridgeSession(renderSession, renderSession.inflate())
