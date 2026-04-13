@@ -393,11 +393,12 @@ public class PaparazziSdk @JvmOverloads constructor(
   }
 
   private fun withTime(timeNanos: Long, block: () -> Unit) {
-    val frameNanos = timeNanos
+    // layoutlib 16.2.3 HWUI path rejects a frame timestamp of 0ms.
+    val frameTimeNanos = if (timeNanos == 0L) MIN_FRAME_TIME_NANOS else timeNanos
 
     // Execute the block at the requested time.
     System_Delegate.setNanosTime(0L)
-    Choreographer_Delegate.sChoreographerTime = frameNanos
+    Choreographer_Delegate.sChoreographerTime = frameTimeNanos
 
     try {
       executeHandlerCallbacks()
@@ -420,7 +421,7 @@ public class PaparazziSdk @JvmOverloads constructor(
 
   private fun createRenderSession(sessionParams: SessionParams): RenderSessionImpl {
     val renderSession = RenderSessionImpl(sessionParams)
-    renderSession.setElapsedFrameTimeNanos(0L)
+    renderSession.setElapsedFrameTimeNanos(MIN_FRAME_TIME_NANOS)
     return renderSession
   }
 
@@ -612,6 +613,8 @@ public class PaparazziSdk @JvmOverloads constructor(
     }
 
   internal companion object {
+    private val MIN_FRAME_TIME_NANOS = TimeUnit.MILLISECONDS.toNanos(1L)
+
     internal lateinit var renderer: Renderer
     internal val isInitialized get() = ::renderer.isInitialized
 
