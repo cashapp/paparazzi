@@ -20,10 +20,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.WindowManager
-import android.view.WindowManagerImpl
+import android.view.WindowManagerGlobal
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import app.cash.paparazzi.RenderExtension
+import app.cash.paparazzi.findPopupRootView
 import app.cash.paparazzi.internal.ComposeViewAdapter
 import com.android.internal.view.OneShotPreDrawListener
 
@@ -37,9 +38,6 @@ public class AccessibilityRenderExtension : RenderExtension {
   private val accessibilityElementCollector = AccessibilityElementCollector()
 
   override fun renderView(contentView: View): View {
-    // WindowManager needed to access accessibility elements for views that draw to other windows.
-    val windowManager = contentView.context.getSystemService(WindowManager::class.java)
-
     return LinearLayout(contentView.context).apply {
       orientation = LinearLayout.HORIZONTAL
       weightSum = 2f
@@ -57,10 +55,18 @@ public class AccessibilityRenderExtension : RenderExtension {
 
         // The root of the view hierarchy is rendered at full width.
         // We need to restrict it when taking accessibility snapshots.
-        val windowManagerRootView = (windowManager as WindowManagerImpl).currentRootView
+        val windowManagerRootView = WindowManagerGlobal.getInstance().findPopupRootView(rootView)
         if (windowManagerRootView != null) {
-          windowManagerRootView.layoutParams =
-            FrameLayout.LayoutParams(contentView.measuredWidth, MATCH_PARENT, Gravity.START)
+          when (val layoutParams = windowManagerRootView.layoutParams) {
+            is WindowManager.LayoutParams -> {
+              layoutParams.width = contentView.measuredWidth
+              windowManagerRootView.layoutParams = layoutParams
+            }
+            else -> {
+              windowManagerRootView.layoutParams =
+                FrameLayout.LayoutParams(contentView.measuredWidth, MATCH_PARENT, Gravity.START)
+            }
+          }
         }
 
         OneShotPreDrawListener.add(this@apply) {
