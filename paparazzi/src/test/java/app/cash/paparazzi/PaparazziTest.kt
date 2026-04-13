@@ -54,7 +54,7 @@ class PaparazziTest {
 
     paparazzi.snapshot(view)
 
-    assertThat(log).containsExactly("onDraw time=0", "onDraw time=0")
+    assertThat(log).containsExactly("onDraw time=1", "onDraw time=1")
   }
 
   @Test
@@ -106,18 +106,17 @@ class PaparazziTest {
     assertThat(log).containsExactly(
       "onDraw time=1000 animationElapsed=0.0",
       "onDraw time=1000 animationElapsed=0.0",
-      "onAnimationStart time=2000 animationElapsed=0.0",
-      "onAnimationUpdate time=2000 animationElapsed=0.0",
-      "onDraw time=2000 animationElapsed=0.0",
-      "onAnimationUpdate time=2250 animationElapsed=0.25",
-      "onDraw time=2250 animationElapsed=0.25",
-      "onAnimationUpdate time=2500 animationElapsed=0.5",
-      "onDraw time=2500 animationElapsed=0.5",
-      "onAnimationUpdate time=2750 animationElapsed=0.75",
-      "onDraw time=2750 animationElapsed=0.75",
-      "onAnimationUpdate time=3000 animationElapsed=1.0",
-      "onAnimationEnd time=3000 animationElapsed=1.0",
-      "onDraw time=3000 animationElapsed=1.0"
+      "onAnimationStart time=2250 animationElapsed=0.0",
+      "onAnimationUpdate time=2250 animationElapsed=0.249",
+      "onDraw time=2250 animationElapsed=0.249",
+      "onAnimationUpdate time=2500 animationElapsed=0.499",
+      "onDraw time=2500 animationElapsed=0.499",
+      "onAnimationUpdate time=2750 animationElapsed=0.749",
+      "onDraw time=2750 animationElapsed=0.749",
+      "onAnimationUpdate time=3000 animationElapsed=0.999",
+      "onDraw time=3000 animationElapsed=0.999",
+      "onAnimationUpdate time=3250 animationElapsed=1.0",
+      "onAnimationEnd time=3250 animationElapsed=1.0"
     )
   }
 
@@ -161,21 +160,20 @@ class PaparazziTest {
 
     paparazzi.snapshot(view, offsetMillis = 2_000L)
     assertThat(log).containsExactly(
-      "onAnimationStart uptimeMillis=2000",
-      "onDraw text=0.0"
+      "onDraw text="
     )
     log.clear()
 
     paparazzi.snapshot(view, offsetMillis = 2_500L)
     assertThat(log).containsExactly(
-      "onDraw text=0.5"
+      "onAnimationStart uptimeMillis=2500",
+      "onDraw text=0.499"
     )
     log.clear()
 
     paparazzi.snapshot(view, offsetMillis = 3_000L)
     assertThat(log).containsExactly(
-      "onAnimationEnd uptimeMillis=3000",
-      "onDraw text=1.0"
+      "onDraw text=0.999"
     )
     assertThat(AnimationHandler.getAnimationCount()).isEqualTo(0)
     log.clear()
@@ -241,7 +239,7 @@ class PaparazziTest {
 
     paparazzi.gif(view, fps = 4)
 
-    assertThat(log).isEqualTo(listOf("predraw", "draw", "draw", "predraw", "predraw", "predraw"))
+    assertThat(log).isEqualTo(listOf("predraw", "predraw", "draw", "draw", "predraw", "predraw"))
   }
 
   private val time: Long
