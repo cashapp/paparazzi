@@ -458,9 +458,11 @@ class PaparazziPluginTest {
     val fixtureRoot = File("src/test/projects/rerun-resource-change")
 
     val snapshotsDir = File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
+    snapshotsDir.deleteRecursively()
     val snapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_RecordTest_record.png")
 
     val valuesDir = File(fixtureRoot, "src/main/res/values").registerForDeletionOnExit()
+    valuesDir.deleteRecursively()
     val destResourceFile = File(valuesDir, "colors.xml")
     val firstResourceFile = File(fixtureRoot, "src/test/resources/colors1.xml")
     val secondResourceFile = File(fixtureRoot, "src/test/resources/colors2.xml")
@@ -1725,7 +1727,7 @@ class PaparazziPluginTest {
     val dontRecordLastModified = dontRecordFile.lastModified()
     val recordFile =
       File(fixtureRoot, "src/test/snapshots/images/app.cash.paparazzi.plugin.test_RecordSnapshotTest_record.png")
-    val recordLastModified = dontRecordFile.lastModified()
+    val recordLastModified = recordFile.lastModified()
 
     gradleRunner
       .withArguments("recordPaparazziDebug", "--stacktrace")

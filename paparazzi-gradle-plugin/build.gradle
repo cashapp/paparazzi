@@ -56,8 +56,10 @@ buildConfig {
     topLevelConstants = true
   }
 
+  def paparazziVersion = findProperty("VERSION_NAME") ?: project.version
+
   packageName('app.cash.paparazzi.gradle')
-  buildConfigField("String", "VERSION", "\"${project.version}\"")
+  buildConfigField("String", "VERSION", "\"${paparazziVersion}\"")
   buildConfigField("String", "NATIVE_LIB_VERSION", "\"${libs.versions.layoutlib.get()}\"")
 }
 
