@@ -20,6 +20,8 @@ import app.cash.paparazzi.Differ
 import app.cash.paparazzi.Differ.DiffResult.Different
 import app.cash.paparazzi.Differ.DiffResult.Identical
 import app.cash.paparazzi.Differ.DiffResult.Similar
+import app.cash.paparazzi.internal.apng.ApngWriter
+import okio.Path.Companion.toPath
 import java.awt.AlphaComposite
 import java.awt.Color
 import java.awt.Graphics2D
@@ -118,7 +120,7 @@ internal object ImageUtils {
           throw IllegalStateException("Unable to delete $actualOutput")
         }
       }
-      ImageIO.write(image, "PNG", actualOutput)
+      ApngWriter(actualOutput.path.toPath(), fps = -1).use { it.writeImage(image) }
       error += "Thumbnail for current rendering stored at file://" + actualOutput.path
       error += "\nRun the following command to accept the changes:\n"
       error += "mv ${actualOutput.absolutePath} ${File(relativePath).absolutePath}"
