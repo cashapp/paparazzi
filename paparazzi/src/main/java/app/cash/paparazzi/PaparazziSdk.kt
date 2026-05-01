@@ -288,6 +288,8 @@ public class PaparazziSdk @JvmOverloads constructor(
       previousUncaughtExceptionHandler?.uncaughtException(thread, throwable)
     }
 
+    lateinit var lifecycleOwner: PaparazziLifecycleOwner
+
     try {
       withTime(0L) {
         // Initialize the choreographer at time=0.
@@ -314,7 +316,7 @@ public class PaparazziSdk @JvmOverloads constructor(
       }
 
       if (hasLifecycleOwnerRuntime) {
-        val lifecycleOwner = PaparazziLifecycleOwner()
+        lifecycleOwner = PaparazziLifecycleOwner()
         modifiedView.setViewTreeLifecycleOwner(lifecycleOwner)
 
         if (hasSavedStateRegistryOwnerRuntime) {
@@ -372,6 +374,9 @@ public class PaparazziSdk @JvmOverloads constructor(
         onNewFrame(scaleImage(frameImage(image)))
       }
     } finally {
+      if (hasLifecycleOwnerRuntime) {
+        lifecycleOwner.registry.currentState = Lifecycle.State.DESTROYED
+      }
       viewGroup.removeAllViews()
 
       // Remove any applied render extensions
