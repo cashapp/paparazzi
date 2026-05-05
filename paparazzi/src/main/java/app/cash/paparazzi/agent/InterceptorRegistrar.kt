@@ -9,7 +9,6 @@ import net.bytebuddy.pool.TypePool
 
 internal object InterceptorRegistrar {
   private val byteBuddy = ByteBuddy()
-  private val systemClassFileLocator = ClassFileLocator.ForClassLoader.ofSystemLoader()
   private val systemTypePool = TypePool.Default.ofSystemLoader()
   private val systemClassLoader = ClassLoader.getSystemClassLoader()
 
@@ -23,8 +22,15 @@ internal object InterceptorRegistrar {
     if (!typeResolution.isResolved) return
 
     methodInterceptors += {
+      // Use the bytes of the class as currently loaded in the JVM (via the instrumentation
+      // agent installed by ByteBuddyAgent.install()) rather than the original classfile
+      // bytes from the system classloader. This prevents "attempted to delete a method"
+      // errors when the class was loaded from a version with additional methods (e.g.
+      // from a mockable Android jar or after AGP ASM transforms caused it to be loaded
+      // early with extra stubs).
+      val classFileLocator = ClassFileLocator.ForInstrumentation.fromInstalledAgent(systemClassLoader)
       var builder = byteBuddy
-        .redefine<Any>(typeResolution.resolve(), systemClassFileLocator)
+        .redefine<Any>(typeResolution.resolve(), classFileLocator)
 
       methodNamesToInterceptors.forEach {
         builder = builder

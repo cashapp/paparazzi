@@ -30,10 +30,11 @@ import android.widget.Button
 import android.widget.TextView
 import com.android.internal.lang.System_Delegate
 import com.google.common.truth.Truth.assertThat
+import java.io.File
+import java.util.concurrent.TimeUnit
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
-import java.util.concurrent.TimeUnit
 
 class PaparazziTest {
   @get:Rule
@@ -242,6 +243,67 @@ class PaparazziTest {
     paparazzi.gif(view, fps = 4)
 
     assertThat(log).isEqualTo(listOf("predraw", "draw", "draw", "predraw", "predraw", "predraw"))
+  }
+
+  @Test
+  fun reportingBridgeCalledAfterSnapshot() {
+    val capturedFiles = mutableListOf<File>()
+    PaparazziReportingBridge.currentPublisher.set { file -> capturedFiles += file }
+    try {
+      val view = View(paparazzi.context)
+      paparazzi.snapshot(view)
+
+      assertThat(capturedFiles).hasSize(1)
+      assertThat(capturedFiles[0].exists()).isTrue()
+      assertThat(capturedFiles[0].name).endsWith(".png")
+    } finally {
+      PaparazziReportingBridge.currentPublisher.remove()
+    }
+  }
+
+  @Test
+  fun reportingBridgeCalledAfterGif() {
+    val capturedFiles = mutableListOf<File>()
+    PaparazziReportingBridge.currentPublisher.set { file -> capturedFiles += file }
+    try {
+      val view = View(paparazzi.context)
+      paparazzi.gif(view, start = 0L, end = 500L, fps = 4)
+
+      assertThat(capturedFiles).hasSize(1)
+      assertThat(capturedFiles[0].exists()).isTrue()
+      assertThat(capturedFiles[0].name).endsWith(".png")
+    } finally {
+      PaparazziReportingBridge.currentPublisher.remove()
+    }
+  }
+
+  @Test
+  fun reportingBridgeNotCalledWhenPublisherIsNull() {
+    PaparazziReportingBridge.currentPublisher.remove()
+
+    val view = View(paparazzi.context)
+    // Should not throw
+    paparazzi.snapshot(view)
+  }
+
+  @Test
+  fun reportingBridgeCalledForMultipleSnapshots() {
+    val capturedFiles = mutableListOf<File>()
+    PaparazziReportingBridge.currentPublisher.set { file -> capturedFiles += file }
+    try {
+      val view1 = View(paparazzi.context)
+      val view2 = View(paparazzi.context).apply {
+        setBackgroundColor(Color.RED)
+      }
+      paparazzi.snapshot(view1, name = "first")
+      paparazzi.snapshot(view2, name = "second")
+
+      assertThat(capturedFiles).hasSize(2)
+      // Different views produce different content hashes and thus different files
+      assertThat(capturedFiles[0]).isNotEqualTo(capturedFiles[1])
+    } finally {
+      PaparazziReportingBridge.currentPublisher.remove()
+    }
   }
 
   private val time: Long

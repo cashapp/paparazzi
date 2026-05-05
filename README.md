@@ -31,6 +31,17 @@ class LaunchViewTest {
 }
 ```
 
+### Gradle test report attachments (Gradle 9.4+)
+
+Snapshot images are automatically attached to the Gradle HTML test report with no extra
+configuration required. The plugin adds the necessary dependencies and routes JUnit 4 tests
+through the `paparazzi-vintage` engine, which publishes each snapshot as a file attachment
+via `PaparazziReportingBridge`. Run the generated report task to view the results:
+
+```bash
+./gradlew :sample:testDebugUnitTestReport
+```
+
 See the [project website][paparazzi] for documentation and APIs.
 
 Supporting Multiple Test Frameworks

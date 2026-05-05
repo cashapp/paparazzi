@@ -1,0 +1,23 @@
+apply plugin: 'org.jetbrains.kotlin.jvm'
+apply plugin: 'com.vanniktech.maven.publish'
+
+dependencies {
+  implementation projects.paparazzi
+  implementation libs.junit.vintage.engine
+
+  testImplementation libs.junit
+  testImplementation libs.junit.jupiter.api
+  testImplementation libs.junit.platform.engine
+  testImplementation libs.junit.vintage.engine
+  testImplementation libs.truth
+  testRuntimeOnly libs.junit.jupiter.engine
+  testRuntimeOnly libs.junit.platform.launcher
+}
+
+tasks.withType(Test).configureEach {
+  useJUnitPlatform {
+    // paparazzi-vintage (our engine) handles JUnit 4; exclude the standard vintage engine
+    // so that any JUnit 4 classes on the test classpath don't run twice.
+    excludeEngines("junit-vintage")
+  }
+}

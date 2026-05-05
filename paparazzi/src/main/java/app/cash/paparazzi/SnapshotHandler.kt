@@ -17,12 +17,32 @@ package app.cash.paparazzi
 
 import java.awt.image.BufferedImage
 import java.io.Closeable
+import java.io.File
 
+/**
+ * Handles writing snapshot output files. Implementations receive rendered frames via
+ * [FrameHandler.handle] and produce output files (e.g. PNG images or animated PNGs).
+ *
+ * @see HtmlReportWriter
+ * @see SnapshotVerifier
+ */
 public interface SnapshotHandler : Closeable {
+  /** Creates a new [FrameHandler] for the given [snapshot]. */
   public fun newFrameHandler(snapshot: Snapshot, frameCount: Int, fps: Int): FrameHandler
 
+  /**
+   * Receives rendered frames for a single snapshot or gif and produces an output file.
+   */
   public interface FrameHandler : Closeable {
+    /** Receives a single rendered frame. */
     public fun handle(image: BufferedImage)
+
+    /**
+     * The output file produced by this handler, available after [close].
+     * For single-frame snapshots this is the PNG image; for animations this is the animated PNG.
+     * Returns `null` if this handler does not produce an output file (e.g. during verification).
+     */
+    public val outputFile: File? get() = null
   }
 }
 
