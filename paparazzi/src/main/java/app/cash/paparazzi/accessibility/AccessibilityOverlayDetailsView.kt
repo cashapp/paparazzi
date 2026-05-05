@@ -28,14 +28,18 @@ import androidx.core.graphics.withTranslation
 import app.cash.paparazzi.accessibility.RenderSettings.DEFAULT_TEXT_COLOR
 import app.cash.paparazzi.accessibility.RenderSettings.toColorInt
 import java.lang.Float.max
+import kotlin.math.ceil
 
-internal class AccessibilityOverlayDetailsView(context: Context) : FrameLayout(context) {
+internal class AccessibilityOverlayDetailsView(
+  context: Context,
+  private val measureContent: Boolean = false
+) : FrameLayout(context) {
   private val accessibilityElements = mutableSetOf<AccessibilityElement>()
   private val paint = Paint().apply {
     isAntiAlias = true
     style = Paint.Style.FILL
   }
-  private val textPaint = Paint().apply {
+  private val textPaint = TextPaint().apply {
     style = Paint.Style.FILL
     color = DEFAULT_TEXT_COLOR.toColorInt()
     textSize = context.dip(RenderSettings.DEFAULT_TEXT_SIZE)
@@ -55,14 +59,39 @@ internal class AccessibilityOverlayDetailsView(context: Context) : FrameLayout(c
   fun updateElements(elements: Collection<AccessibilityElement>) {
     accessibilityElements.clear()
     accessibilityElements += elements
+    if (measureContent) {
+      requestLayout()
+    }
     invalidate()
+  }
+
+  override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+    if (!measureContent || accessibilityElements.isEmpty()) {
+      super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+      return
+    }
+
+    val desiredWidth = ceil(
+      margin +
+        rectSize +
+        innerMargin +
+        (accessibilityElements.maxOfOrNull { textPaint.measureText(it.contentDescription) } ?: 0f) +
+        margin
+    ).toInt()
+    val measuredWidth = resolveSize(desiredWidth, widthMeasureSpec)
+    val textLayoutWidth = measuredWidth.textLayoutWidth()
+    val desiredHeight = ceil(contentHeight(textLayoutWidth)).toInt()
+
+    setMeasuredDimension(
+      measuredWidth,
+      resolveSize(desiredHeight, heightMeasureSpec)
+    )
   }
 
   override fun draw(canvas: Canvas) {
     super.draw(canvas)
 
     var lastYCoord = innerMargin
-    val textPaint = TextPaint(textPaint)
 
     accessibilityElements.forEach {
       paint.color = it.color.toColorInt()
@@ -73,12 +102,9 @@ internal class AccessibilityOverlayDetailsView(context: Context) : FrameLayout(c
       val text = it.contentDescription
       val textX = badge.right + innerMargin
       val textY = badge.top
-      val textLayoutWidth = (width - textX).toInt()
+      val textLayoutWidth = width.textLayoutWidth()
 
-      val textLayout = StaticLayout.Builder
-        .obtain(text, 0, text.length, textPaint, textLayoutWidth)
-        .setEllipsize(TextUtils.TruncateAt.END)
-        .build()
+      val textLayout = textLayout(text, textLayoutWidth)
       canvas.withTranslation(textX, textY) {
         textLayout.draw(this)
       }
@@ -86,6 +112,27 @@ internal class AccessibilityOverlayDetailsView(context: Context) : FrameLayout(c
       lastYCoord = max(badge.bottom + margin, textY + textLayout.height.toFloat())
     }
   }
+
+  private fun contentHeight(textLayoutWidth: Int): Float {
+    var lastYCoord = innerMargin
+
+    accessibilityElements.forEach {
+      val badgeBottom = lastYCoord + rectSize
+      val textLayout = textLayout(it.contentDescription, textLayoutWidth)
+
+      lastYCoord = max(badgeBottom + margin, lastYCoord + textLayout.height.toFloat())
+    }
+
+    return lastYCoord
+  }
+
+  private fun textLayout(text: String, textLayoutWidth: Int): StaticLayout =
+    StaticLayout.Builder
+      .obtain(text, 0, text.length, TextPaint(textPaint), textLayoutWidth)
+      .setEllipsize(TextUtils.TruncateAt.END)
+      .build()
+
+  private fun Int.textLayoutWidth(): Int = java.lang.Math.max(1, (this - margin - rectSize - innerMargin).toInt())
 
   private fun Context.dip(value: Float): Float =
     TypedValue.applyDimension(

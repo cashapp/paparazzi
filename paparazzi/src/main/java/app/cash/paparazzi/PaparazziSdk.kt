@@ -265,13 +265,13 @@ public class PaparazziSdk @JvmOverloads constructor(
 
   private fun takeSnapshots(view: View, startNanos: Long, fps: Int, frameCount: Int) {
     val viewGroup = bridgeRenderSession.rootViews[0].viewObject as ViewGroup
+    val currentSessionRenderingMode = sessionParamsBuilder.build().renderingMode
+    val shouldRerenderForAccessibilityShrink = renderExtensions.any {
+      currentSessionRenderingMode == RenderingMode.SHRINK && it is AccessibilityRenderExtension
+    }
     val modifiedView = renderExtensions.fold(view) { currentView, renderExtension ->
-      val currentSessionRenderingMode = sessionParamsBuilder.build().renderingMode
-      if (currentSessionRenderingMode == RenderingMode.SHRINK && renderExtension is AccessibilityRenderExtension) {
-        throw IllegalStateException(
-          "AccessibilityRenderExtension cannot be used with the SHRINK rendering mode. " +
-            "See https://github.com/cashapp/paparazzi/issues/1350 for more context."
-        )
+      if (renderExtension is AccessibilityRenderExtension) {
+        renderExtension.renderView(currentView, currentSessionRenderingMode)
       } else {
         renderExtension.renderView(currentView)
       }
@@ -359,6 +359,15 @@ public class PaparazziSdk @JvmOverloads constructor(
             logger.warning(
               "Pending work detected. This may cause unexpected results in your generated snapshots. ${recomposerInstance.changeCount}"
             )
+          }
+        }
+
+        if (shouldRerenderForAccessibilityShrink) {
+          withTime(nowNanos) {
+            val result = renderSession.render(true)
+            if (result.status == ERROR_UNKNOWN) {
+              throw result.exception
+            }
           }
         }
 

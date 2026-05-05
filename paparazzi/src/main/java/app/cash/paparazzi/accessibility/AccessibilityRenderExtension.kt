@@ -19,12 +19,14 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.view.WindowManager
 import android.view.WindowManagerImpl
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import app.cash.paparazzi.RenderExtension
 import app.cash.paparazzi.internal.ComposeViewAdapter
+import com.android.ide.common.rendering.api.SessionParams.RenderingMode
 import com.android.internal.view.OneShotPreDrawListener
 
 /**
@@ -36,19 +38,26 @@ import com.android.internal.view.OneShotPreDrawListener
 public class AccessibilityRenderExtension : RenderExtension {
   private val accessibilityElementCollector = AccessibilityElementCollector()
 
-  override fun renderView(contentView: View): View {
+  override fun renderView(contentView: View): View = renderView(contentView, RenderingMode.NORMAL)
+
+  internal fun renderView(contentView: View, renderingMode: RenderingMode): View {
     // WindowManager needed to access accessibility elements for views that draw to other windows.
     val windowManager = contentView.context.getSystemService(WindowManager::class.java)
+    val shrink = renderingMode == RenderingMode.SHRINK
 
     return LinearLayout(contentView.context).apply {
       orientation = LinearLayout.HORIZONTAL
-      weightSum = 2f
-      layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+      if (shrink) {
+        layoutParams = ViewGroup.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
+      } else {
+        weightSum = 2f
+        layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+      }
 
-      addView(contentView, LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, 1f))
+      addView(contentView, contentLayoutParams(shrink))
 
-      val overlayDetailsView = AccessibilityOverlayDetailsView(context)
-      addView(overlayDetailsView, LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, 1f))
+      val overlayDetailsView = AccessibilityOverlayDetailsView(context, measureContent = shrink)
+      addView(overlayDetailsView, detailsLayoutParams(shrink))
 
       val overlayDrawable = AccessibilityOverlayDrawable()
       viewTreeObserver.addOnGlobalLayoutListener {
@@ -74,6 +83,24 @@ public class AccessibilityRenderExtension : RenderExtension {
       }
     }
   }
+
+  private fun View.contentLayoutParams(shrink: Boolean): LinearLayout.LayoutParams =
+    if (shrink) {
+      val existingLayoutParams = layoutParams
+      LinearLayout.LayoutParams(
+        existingLayoutParams?.width ?: WRAP_CONTENT,
+        existingLayoutParams?.height ?: WRAP_CONTENT
+      )
+    } else {
+      LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, 1f)
+    }
+
+  private fun detailsLayoutParams(shrink: Boolean): LinearLayout.LayoutParams =
+    if (shrink) {
+      LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
+    } else {
+      LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, 1f)
+    }
 }
 
 private fun View.findRootView(): View {

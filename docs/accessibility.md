@@ -45,7 +45,6 @@ fun mixedTest() {
 
 ### Limitations
 
-- **`RenderingMode.SHRINK` is not supported.** Using `AccessibilityRenderExtension` with `RenderingMode.SHRINK` throws an `IllegalStateException`. See [#1350](https://github.com/cashapp/paparazzi/issues/1350) for context.
 - **`validateAccessibility` is deprecated.** The older `validateAccessibility: Boolean` parameter on `Paparazzi` used Android's `LayoutValidator` for contrast checking. It has been replaced by `AccessibilityRenderExtension` and cannot be used simultaneously with render extensions.
 
 Interpreting Snapshots

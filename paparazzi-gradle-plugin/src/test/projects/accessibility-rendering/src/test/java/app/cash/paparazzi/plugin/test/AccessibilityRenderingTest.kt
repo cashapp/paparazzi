@@ -6,6 +6,7 @@ import android.view.View
 import android.view.View.GONE
 import android.widget.Button
 import android.widget.EditText
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.ListView
 import android.widget.TextView
@@ -213,14 +214,53 @@ class AccessibilityRenderingTest {
     }
   }
 
-  @Test(expected = IllegalStateException::class)
-  fun renderingModeSHRINKThrowsException() {
+  @Test
+  fun renderingModeSHRINKIncludesAccessibilityLegend() {
     paparazzi.unsafeUpdateConfig(renderingMode = RenderingMode.SHRINK)
     paparazzi.snapshot {
       Column(Modifier.background(Color.LightGray)) {
-        Text("SHRINK and AccessibilityRenderExtension are not supported together")
+        Text("SHRINK and AccessibilityRenderExtension are supported together")
       }
     }
+  }
+
+  @Test
+  fun renderingModeSHRINKIncludesLegendWiderThanContent() {
+    paparazzi.unsafeUpdateConfig(renderingMode = RenderingMode.SHRINK)
+    paparazzi.snapshot {
+      Box(
+        modifier = Modifier
+          .size(16.dp)
+          .background(Color.LightGray)
+          .semantics {
+            contentDescription = "Legend text that is intentionally wider than the tiny content"
+          }
+      )
+    }
+  }
+
+  @Test
+  fun renderingModeSHRINKIncludesLegendTallerThanContent() {
+    paparazzi.unsafeUpdateConfig(renderingMode = RenderingMode.SHRINK)
+    val view = FrameLayout(paparazzi.context).apply {
+      setBackgroundColor(android.graphics.Color.WHITE)
+      layoutParams = android.view.ViewGroup.LayoutParams(96, 96)
+
+      repeat(8) { index ->
+        addView(
+          View(context).apply {
+            contentDescription = "Legend row ${index + 1}"
+            setBackgroundColor(android.graphics.Color.LTGRAY)
+          },
+          FrameLayout.LayoutParams(14, 14).apply {
+            leftMargin = 8 + (index % 4) * 20
+            topMargin = 10 + (index / 4) * 24
+          }
+        )
+      }
+    }
+
+    paparazzi.snapshot(view)
   }
 
   @Test
