@@ -108,62 +108,6 @@ public class PaparazziPlugin @Inject constructor(
     }
   }
 
-  private class AndroidProjectScope(
-    val project: Project,
-    val extension: AndroidComponentsExtension<*, *, *>
-  ) {
-    val isMultiplatformProject: Boolean =
-      extension is KotlinMultiplatformAndroidComponentsExtension ||
-        project.plugins.hasPlugin(KOTLIN_MULTIPLATFORM_PLUGIN)
-
-    private fun Project.isInternal(): Boolean = providers.gradleProperty("app.cash.paparazzi.internal").orNull == "true"
-
-    fun addTestDependency() {
-      val dependency = if (project.isInternal()) {
-        project.dependencies.project(mapOf("path" to ":paparazzi"))
-      } else {
-        project.dependencies.create("app.cash.paparazzi:paparazzi:$VERSION")
-      }
-      val configurationName = if (isMultiplatformProject) "commonTestImplementation" else "testImplementation"
-      project.configurations.getByName(configurationName).dependencies.add(dependency)
-    }
-
-    fun snapshotDir(testComponent: TestComponent): Provider<Directory> {
-      val testSources = requireNotNull(testComponent.sources.java?.all ?: testComponent.sources.kotlin?.all) {
-        "No test sources found for test component: ${testComponent.name}"
-      }
-      return testSources.map { sourceDirs ->
-        val defaultTestDir = sourceDirs.first().asFile.parentFile
-        val defaultTestDirectory = project.layout.projectDirectory.dir(defaultTestDir.path)
-        (
-          sourceDirs.firstNotNullOfOrNull { sourceDir ->
-            // Sources usually in `/src/test/java/` so need to move to parent `/src/test/`
-            val parentFile = sourceDir.asFile.parentFile
-            val testFiles = sourceDir.asFileTree.relativize(project.layout.projectDirectory)
-            val isNonBuildDirectorySources =
-              parentFile.path.contains(project.layout.buildDirectory.get().asFile.path).not()
-            val containsTestFiles = testFiles.isPresent
-
-            if (isNonBuildDirectorySources && containsTestFiles) {
-              project.layout.projectDirectory.dir(parentFile.path)
-            } else {
-              null
-            }
-          } ?: defaultTestDirectory
-          ).dir("snapshots")
-      }
-    }
-
-    fun Provider<Boolean>.provideOnEnabled(provider: Provider<*>): Provider<*> =
-      flatMap { record ->
-        if (record) {
-          provider
-        } else {
-          project.objects.directoryProperty()
-        }
-      }
-  }
-
   private fun Project.setupPaparazzi(extension: AndroidComponentsExtension<*, *, *>) {
     val isMultiplatformProject: Boolean = extension is KotlinMultiplatformAndroidComponentsExtension ||
       project.plugins.hasPlugin(KOTLIN_MULTIPLATFORM_PLUGIN)
