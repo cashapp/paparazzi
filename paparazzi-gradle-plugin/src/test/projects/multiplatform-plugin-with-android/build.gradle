@@ -6,6 +6,7 @@ plugins {
 
 kotlin {
   androidTarget()
+  jvm()
 }
 
 android {
@@ -17,5 +18,16 @@ android {
   compileOptions {
     sourceCompatibility = libs.versions.javaTarget.get()
     targetCompatibility = libs.versions.javaTarget.get()
+  }
+}
+
+tasks.register('assertPaparazziDependencyScope') {
+  doLast {
+    if (configurations.commonTestImplementation.dependencies.any { it.name == 'paparazzi' }) {
+      throw new GradleException('Paparazzi must not be added to commonTestImplementation')
+    }
+    if (!configurations.androidUnitTestImplementation.dependencies.any { it.name == 'paparazzi' }) {
+      throw new GradleException('Paparazzi must be added to androidUnitTestImplementation')
+    }
   }
 }

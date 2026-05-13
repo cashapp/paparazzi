@@ -22,6 +22,7 @@ import app.cash.paparazzi.gradle.utils.artifactViewFor
 import app.cash.paparazzi.gradle.utils.capitalize
 import app.cash.paparazzi.gradle.utils.relativize
 import com.android.build.api.dsl.CommonExtension
+import com.android.build.api.dsl.KotlinMultiplatformAndroidHostTestCompilation
 import com.android.build.api.instrumentation.FramesComputationMode
 import com.android.build.api.instrumentation.InstrumentationScope
 import com.android.build.api.variant.AndroidComponentsExtension
@@ -108,7 +109,7 @@ public class PaparazziPlugin @Inject constructor(
   private fun Project.setupPaparazzi(extension: AndroidComponentsExtension<*, *, *>) {
     val isMultiplatformProject: Boolean = extension is KotlinMultiplatformAndroidComponentsExtension ||
       project.plugins.hasPlugin(KOTLIN_MULTIPLATFORM_PLUGIN)
-    addTestDependency(isMultiplatformProject)
+    addTestDependency(extension)
 
     val layoutlibNativeRuntimeFileCollection = project.setupLayoutlibRuntimeDependency()
     val layoutlibResourcesFileCollection = project.setupLayoutlibResourcesDependency()
@@ -424,14 +425,38 @@ public class PaparazziPlugin @Inject constructor(
       .files
   }
 
-  private fun Project.addTestDependency(isMultiplatformProject: Boolean) {
+  private fun Project.addTestDependency(extension: AndroidComponentsExtension<*, *, *>) {
     val dependency = if (project.isInternal()) {
       project.dependencies.project(mapOf("path" to ":paparazzi"))
     } else {
       project.dependencies.create("app.cash.paparazzi:paparazzi:$VERSION")
     }
-    val configurationName = if (isMultiplatformProject) "commonTestImplementation" else "testImplementation"
-    project.configurations.getByName(configurationName).dependencies.add(dependency)
+
+    when {
+      extension is KotlinMultiplatformAndroidComponentsExtension -> {
+        val kotlinExtension = project.extensions.getByType(KotlinMultiplatformExtension::class.java)
+        kotlinExtension.targets.configureEach { target ->
+          target.compilations.configureEach { compilation ->
+            if (compilation is KotlinMultiplatformAndroidHostTestCompilation) {
+              val configurationName = compilation.defaultSourceSet.implementationConfigurationName
+              project.configurations.getByName(configurationName).dependencies.add(dependency)
+            }
+          }
+        }
+      }
+      project.plugins.hasPlugin(KOTLIN_MULTIPLATFORM_PLUGIN) -> {
+        val kotlinExtension = project.extensions.getByType(KotlinMultiplatformExtension::class.java)
+        with(kotlinExtension) {
+          sourceSets.androidUnitTest.configure {
+            val configurationName = it.implementationConfigurationName
+            project.configurations.getByName(configurationName).dependencies.add(dependency)
+          }
+        }
+      }
+      else -> {
+        project.configurations.getByName("testImplementation").dependencies.add(dependency)
+      }
+    }
   }
 
   @Suppress("UnstableApiUsage")
