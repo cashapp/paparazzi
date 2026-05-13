@@ -693,6 +693,21 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun verifyDeletesStaleFailures() {
+    val fixtureRoot = File("src/test/projects/verify-mode-success")
+    val failureDir = File(fixtureRoot, "build/paparazzi/failures/debug").registerForDeletionOnExit()
+    val staleDelta = File(failureDir, "delta-stale.png")
+    failureDir.mkdirs()
+    staleDelta.writeText("stale")
+
+    gradleRunner
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(staleDelta.exists()).isFalse()
+  }
+
+  @Test
   fun verifyFailure() {
     val fixtureRoot = File("src/test/projects/verify-mode-failure")
 
@@ -702,7 +717,7 @@ class PaparazziPluginTest {
 
     assertThat(result.task(":testDebugUnitTest")).isNotNull()
 
-    val failureDir = File(fixtureRoot, "build/paparazzi/failures").registerForDeletionOnExit()
+    val failureDir = File(fixtureRoot, "build/paparazzi/failures/debug").registerForDeletionOnExit()
     val delta = File(failureDir, "delta-app.cash.paparazzi.plugin.test_VerifyTest_verify.png")
     assertThat(delta.exists()).isTrue()
 
@@ -720,7 +735,7 @@ class PaparazziPluginTest {
 
     assertThat(result.task(":testDebugUnitTest")).isNotNull()
 
-    val failureDir = File(fixtureRoot, "build/paparazzi/failures").registerForDeletionOnExit()
+    val failureDir = File(fixtureRoot, "build/paparazzi/failures/debug").registerForDeletionOnExit()
     val delta = File(failureDir, "delta-app.cash.paparazzi.plugin.test_VerifyTest_verify.png")
     assertThat(delta.exists()).isTrue()
 
@@ -738,7 +753,7 @@ class PaparazziPluginTest {
 
     assertThat(result.task(":testDebugUnitTest")).isNotNull()
 
-    val failureDir = File(fixtureRoot, "build/paparazzi/failures").registerForDeletionOnExit()
+    val failureDir = File(fixtureRoot, "build/paparazzi/failures/debug").registerForDeletionOnExit()
     val delta = File(failureDir, "delta-app.cash.paparazzi.plugin.test_VerifyTest_verify.png")
     assertThat(delta.exists()).isTrue()
 
@@ -760,7 +775,7 @@ class PaparazziPluginTest {
 
     assertThat(result.task(":testDebugUnitTest")).isNotNull()
 
-    val failureDir = File(fixtureRoot, "build/paparazzi/failures").registerForDeletionOnExit()
+    val failureDir = File(fixtureRoot, "build/paparazzi/failures/debug").registerForDeletionOnExit()
 
     val golden = File(failureDir, fileName)
     assertThat(golden.exists()).isTrue()
@@ -794,7 +809,7 @@ class PaparazziPluginTest {
 
     assertThat(result.task(":module:testDebugUnitTest")).isNotNull()
 
-    val failureDir = File(moduleRoot, "build/paparazzi/failures").registerForDeletionOnExit()
+    val failureDir = File(moduleRoot, "build/paparazzi/failures/debug").registerForDeletionOnExit()
     val delta = File(failureDir, "delta-app.cash.paparazzi.plugin.test_VerifyTest_verify.png")
     assertThat(delta.exists()).isTrue()
 
