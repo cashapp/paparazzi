@@ -949,7 +949,6 @@ class PaparazziPluginTest {
     assertThat(config.projectResourceDirs).containsExactly(
       "src/main/res",
       "src/debug/res",
-      "build/generated/res/resValues/debug",
       "build/generated/res/extra"
     )
     assertThat(config.moduleResourceDirs).containsExactly(
@@ -985,7 +984,6 @@ class PaparazziPluginTest {
     assertThat(config.projectResourceDirs).containsExactly(
       "src/main/res",
       "src/debug/res",
-      "build/generated/res/resValues/debug",
       "build/generated/res/extra"
     )
     assertThat(config.moduleResourceDirs).containsExactly(
@@ -995,6 +993,24 @@ class PaparazziPluginTest {
     assertThat(config.aarExplodedDirs)
       .comparingElementsUsing(MATCHES_PATTERN)
       .containsExactly("$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/external/res\$")
+  }
+
+  @Test
+  fun verifyResValuesIncludedInResourcesWhenConfigured() {
+    val fixtureRoot = File("src/test/projects/verify-resources-with-res-values")
+    fixtureRoot.resolve("build").registerForDeletionOnExit()
+
+    val result = gradleRunner
+      .withArguments("preparePaparazziDebugResources", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
+
+    val resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/debug/resources.json")
+    assertThat(resourcesFile.exists()).isTrue()
+
+    val config = resourcesFile.loadConfig()
+    assertThat(config.projectResourceDirs).contains("build/generated/res/resValues/debug")
   }
 
   @Test
@@ -1030,8 +1046,7 @@ class PaparazziPluginTest {
     var config = resourcesFile.loadConfig()
     assertThat(config.projectResourceDirs).containsExactly(
       "src/main/res",
-      "src/debug/res",
-      "build/generated/res/resValues/debug"
+      "src/debug/res"
     )
 
     buildDir.deleteRecursively()
@@ -1056,8 +1071,7 @@ class PaparazziPluginTest {
     config = resourcesFile.loadConfig()
     assertThat(config.projectResourceDirs).containsExactly(
       "src/main/res",
-      "src/debug/res",
-      "build/generated/res/resValues/debug"
+      "src/debug/res"
     )
   }
 
@@ -1740,8 +1754,10 @@ class PaparazziPluginTest {
   private fun GradleRunner.runFixture(projectRoot: File, action: GradleRunner.() -> BuildResult): BuildResult {
     val settings = File(projectRoot, "settings.gradle")
     val gradleProperties = File(projectRoot, "gradle.properties")
+    val localProperties = File(projectRoot, "local.properties")
     var generatedSettings = false
     var generatedGradleProperties = false
+    var generatedLocalProperties = false
 
     return try {
       if (!settings.exists()) {
@@ -1756,15 +1772,31 @@ class PaparazziPluginTest {
           """
             |android.useAndroidX=true
             |android.dependencyResolutionAtConfigurationTime.disallow=true
+            |android.onlyEnableUnitTestForTheTestedBuildType=false
           """.trimMargin()
         )
         generatedGradleProperties = true
+      }
+
+      if (!localProperties.exists()) {
+        val sdkDir = System.getenv("ANDROID_HOME") ?: run {
+          val rootLocalProps = java.util.Properties()
+          val rootLocalPropsFile = File("../local.properties")
+          if (rootLocalPropsFile.exists()) rootLocalProps.load(rootLocalPropsFile.inputStream())
+          rootLocalProps.getProperty("sdk.dir")
+        }
+        if (sdkDir != null) {
+          localProperties.createNewFile()
+          localProperties.writeText("sdk.dir=${sdkDir.replace("\\", "/")}\n")
+          generatedLocalProperties = true
+        }
       }
 
       withProjectDir(projectRoot).action()
     } finally {
       if (generatedSettings) settings.delete()
       if (generatedGradleProperties) gradleProperties.delete()
+      if (generatedLocalProperties) localProperties.delete()
     }
   }
 

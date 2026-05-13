@@ -14,3 +14,11 @@ dependencies {
   testImplementation libs.junit
   testImplementation libs.truth
 }
+
+tasks.withType(Test).configureEach {
+  def localProps = new Properties()
+  def localPropsFile = rootProject.file('local.properties')
+  if (localPropsFile.exists()) localProps.load(localPropsFile.newInputStream())
+  def sdkDir = localProps.getProperty('sdk.dir') ?: System.getenv('ANDROID_HOME')
+  if (sdkDir) environment('ANDROID_HOME', sdkDir)
+}

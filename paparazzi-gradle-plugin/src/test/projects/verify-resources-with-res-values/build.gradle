@@ -4,21 +4,17 @@ plugins {
 }
 
 android {
-  namespace = 'app.cash.paparazzi.plugin.test.consumer'
+  namespace = 'app.cash.paparazzi.plugin.test'
   compileSdk = libs.versions.compileSdk.get() as int
   defaultConfig {
     minSdk = libs.versions.minSdk.get() as int
+    resValue "string", "app_name", "Test"
   }
   compileOptions {
     sourceCompatibility = libs.versions.javaTarget.get()
     targetCompatibility = libs.versions.javaTarget.get()
   }
+  buildFeatures {
+    resValues = true
+  }
 }
-
-dependencies {
-  implementation files('libs/external.aar')
-  implementation projects.producer1
-  implementation projects.producer2
-  testImplementation libs.truth
-}
-
