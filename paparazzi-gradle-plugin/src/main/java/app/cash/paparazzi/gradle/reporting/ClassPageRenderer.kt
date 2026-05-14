@@ -207,6 +207,7 @@ internal class ClassPageRenderer(
     addClipboardCopyButtonMethod?.invoke(null, htmlWriter, codeId)
   }
 
+  // Workaround for Gradle 8.x users: remove once ported to the new testing infra
   private companion object {
     // Gradle 8 does not expose HtmlWriterTools, so copy buttons are best-effort.
     val addClipboardCopyButtonMethod = runCatching {
