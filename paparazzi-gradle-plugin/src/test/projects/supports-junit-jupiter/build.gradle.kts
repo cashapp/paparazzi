@@ -1,3 +1,4 @@
+import org.gradle.api.tasks.testing.Test
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -37,6 +38,8 @@ dependencies {
   testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.3")
 }
 
-tasks.withType<Test> {
-  useJUnitPlatform()
+afterEvaluate {
+  tasks.named<Test>("testDebugUnitTest") {
+    useJUnitPlatform()
+  }
 }

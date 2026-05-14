@@ -55,13 +55,18 @@ import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.options.Option
 import org.gradle.api.tasks.testing.AbstractTestTask
 import org.gradle.api.tasks.testing.Test
+import org.gradle.api.tasks.testing.junit.JUnitOptions
+import org.gradle.api.tasks.testing.junitplatform.JUnitPlatformOptions
+import org.gradle.api.tasks.testing.testng.TestNGOptions
 import org.gradle.internal.operations.BuildOperationExecutor
 import org.gradle.internal.operations.BuildOperationRunner
 import org.gradle.internal.os.OperatingSystem
 import org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
+import java.io.File
 import java.util.Locale
+import java.util.jar.JarFile
 import javax.inject.Inject
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
@@ -244,11 +249,40 @@ public class PaparazziPlugin @Inject constructor(
       val overwriteOnMaxPercentDifferenceProvider = project.overwriteOnMaxPercentDifferenceProvider()
       val failureDir = buildDirectory.dir("paparazzi/failures")
       val testTaskProvider = testTasks.withType(Test::class.java)
-      testTaskProvider.configureEach { test ->
+      val paparazziTestTaskProvider = project.tasks.register("testPaparazzi$variantSlug", Test::class.java) {
+        val paparazziTest = it
+        paparazziTest.group = VERIFICATION_GROUP
+        paparazziTest.description = "Run Paparazzi tests for variant '${variant.name}'"
+        paparazziTest.dependsOn(writeResourcesTask)
+        paparazziTest.shouldRunAfter(testTaskProvider)
+
+        paparazziTest.filter.isFailOnNoMatchingTests = false
+        paparazziTest.doFirst {
+          paparazziTest.includeOnlyPaparazziTests()
+        }
+      }
+      project.afterEvaluate {
+        val unitTestTask = testTaskProvider.singleOrNull()
+        if (unitTestTask != null) {
+          paparazziTestTaskProvider.configure {
+            it.configureClasspathFromUnitTestTask(unitTestTask)
+          }
+        }
+      }
+      project.gradle.projectsEvaluated {
+        val unitTestTask = testTaskProvider.singleOrNull()
+        if (unitTestTask != null) {
+          paparazziTestTaskProvider.configure {
+            it.configureExecutionOptionsFromUnitTestTask(unitTestTask)
+          }
+        }
+      }
+
+      fun Test.configureForPaparazzi() {
         val localResourceDirs = sources.localResourceDirs ?: providerFactory.provider { emptyList() }
         val localAssetDirs = sources.localAssetDirs ?: providerFactory.provider { emptyList() }
 
-        test.setTestReporter(
+        setTestReporter(
           PaparazziTestReporter(
             buildOperationRunner = buildOperationRunner,
             buildOperationExecutor = buildOperationExecutor,
@@ -256,69 +290,245 @@ public class PaparazziPlugin @Inject constructor(
           )
         )
 
-        test.systemProperties["paparazzi.test.resources"] =
+        systemProperties["paparazzi.test.resources"] =
           writeResourcesTask.flatMap { it.paparazziResources.asFile }.get().path
-        test.systemProperties["paparazzi.project.dir"] = projectDirectory.toString()
-        test.systemProperties["paparazzi.build.dir"] = buildDirectory.get().toString()
-        test.systemProperties["paparazzi.report.dir"] = reportOutputDir.get().toString()
-        test.systemProperties["paparazzi.artifacts.cache.dir"] = gradleUserHomeDir.path
-        test.systemProperties.putAll(project.providers.gradlePropertiesPrefixedBy("app.cash.paparazzi").get())
+        systemProperties["paparazzi.project.dir"] = projectDirectory.toString()
+        systemProperties["paparazzi.build.dir"] = buildDirectory.get().toString()
+        systemProperties["paparazzi.report.dir"] = reportOutputDir.get().toString()
+        systemProperties["paparazzi.artifacts.cache.dir"] = gradleUserHomeDir.path
+        systemProperties.putAll(project.providers.gradlePropertiesPrefixedBy("app.cash.paparazzi").get())
 
-        test.inputs.property("paparazzi.test.record", isRecordRun)
-        test.inputs.property("paparazzi.test.verify", isVerifyRun)
+        inputs.property("paparazzi.test.record", isRecordRun)
+        inputs.property("paparazzi.test.verify", isVerifyRun)
 
-        test.inputs.files(localResourceDirs)
+        inputs.files(localResourceDirs)
           .withPropertyName("paparazzi.localResourceDirs")
           .withPathSensitivity(PathSensitivity.RELATIVE)
-        test.inputs.files(sources.moduleResourceDirs)
+        inputs.files(sources.moduleResourceDirs)
           .withPropertyName("paparazzi.moduleResourceDirs")
           .withPathSensitivity(PathSensitivity.RELATIVE)
-        test.inputs.files(localAssetDirs)
+        inputs.files(localAssetDirs)
           .withPropertyName("paparazzi.localAssetDirs")
           .withPathSensitivity(PathSensitivity.RELATIVE)
-        test.inputs.files(sources.moduleAssetDirs)
+        inputs.files(sources.moduleAssetDirs)
           .withPropertyName("paparazzi.moduleAssetDirs")
           .withPathSensitivity(PathSensitivity.RELATIVE)
-        test.inputs.files(layoutlibNativeRuntimeFileCollection)
+        inputs.files(layoutlibNativeRuntimeFileCollection)
           .withPropertyName("paparazzi.nativeRuntime")
           .withPathSensitivity(PathSensitivity.NONE)
 
-        test.inputs.dir(
+        inputs.dir(
           provideOnEnabled(filterProvider = isVerifyRun, sourceProvider = snapshotOutputDir)
         ).withPropertyName("paparazzi.snapshot.input.dir")
           .withPathSensitivity(PathSensitivity.RELATIVE)
           .optional()
 
-        test.outputs.dir(
+        outputs.dir(
           provideOnEnabled(filterProvider = isRecordRun, sourceProvider = snapshotOutputDir)
         ).withPropertyName("paparazzi.snapshots.output.dir")
           .optional()
 
-        test.outputs.dir(reportOutputDir).withPropertyName("paparazzi.report.dir")
+        outputs.dir(reportOutputDir).withPropertyName("paparazzi.report.dir")
 
-        test.doFirst {
+        doFirst {
           // Note: these are lazy properties that are not resolvable in the Gradle configuration phase.
           // They need special handling, so they're added as inputs.property above, and systemProperty here.
-          test.systemProperties["paparazzi.layoutlib.runtime.root"] =
+          systemProperties["paparazzi.layoutlib.runtime.root"] =
             layoutlibNativeRuntimeFileCollection.singleFile.absolutePath
-          test.systemProperties["paparazzi.layoutlib.resources.root"] =
+          systemProperties["paparazzi.layoutlib.resources.root"] =
             layoutlibResourcesFileCollection.singleFile.absolutePath
-          test.systemProperties["paparazzi.test.record"] = isRecordRun.get()
-          test.systemProperties["paparazzi.test.record.overwriteOnMaxPercentDifference"] =
+          systemProperties["paparazzi.test.record"] = isRecordRun.get()
+          systemProperties["paparazzi.test.record.overwriteOnMaxPercentDifference"] =
             overwriteOnMaxPercentDifferenceProvider.orNull == "true"
-          test.systemProperties["paparazzi.test.verify"] = isVerifyRun.get()
-          test.systemProperties["paparazzi.snapshot.dir"] = snapshotOutputDir.get().asFile.absolutePath
+          systemProperties["paparazzi.test.verify"] = isVerifyRun.get()
+          systemProperties["paparazzi.snapshot.dir"] = snapshotOutputDir.get().asFile.absolutePath
         }
 
-        test.doLast {
+        doLast {
           val uri = reportOutputDir.get().asFile.toPath().resolve("index.html").toUri()
-          test.logger.log(LIFECYCLE, "See the Paparazzi report at: $uri")
+          logger.log(LIFECYCLE, "See the Paparazzi report at: $uri")
         }
       }
 
-      recordTaskProvider.configure { it.dependsOn(testTaskProvider) }
-      verifyTaskProvider.configure { it.dependsOn(testTaskProvider) }
+      testTaskProvider.configureEach { it.configureForPaparazzi() }
+      paparazziTestTaskProvider.configure { it.configureForPaparazzi() }
+
+      recordTaskProvider.configure { it.dependsOn(paparazziTestTaskProvider) }
+      verifyTaskProvider.configure { it.dependsOn(paparazziTestTaskProvider) }
     }
+  }
+
+  private fun Test.includeOnlyPaparazziTests() {
+    val testClassFiles = testClassesDirs.files
+      .filter { it.isDirectory }
+      .flatMap { testClassesDir ->
+        testClassesDir.walkTopDown()
+          .filter { it.isFile && it.extension == "class" && '$' !in it.nameWithoutExtension }
+          .toList()
+      }
+    val metadataByClassName = testClassFiles
+      .mapNotNull { it.classMetadata() }
+      .associateByTo(mutableMapOf()) { it.name }
+    val classpathFiles = classpath.files
+
+    val testClassNames = metadataByClassName.values.toList()
+      .filter { it.referencesPaparazziApi(metadataByClassName, classpathFiles) }
+      .map { it.name.replace('/', '.') }
+      .distinct()
+
+    if (testClassNames.isEmpty()) {
+      filter.includeTestsMatching(NO_PAPARAZZI_TESTS_PATTERN)
+    } else {
+      testClassNames.forEach { filter.includeTestsMatching(it) }
+    }
+  }
+
+  private fun Test.configureClasspathFromUnitTestTask(unitTestTask: Test) {
+    testClassesDirs = unitTestTask.testClassesDirs
+    classpath = unitTestTask.classpath
+  }
+
+  private fun Test.configureExecutionOptionsFromUnitTestTask(unitTestTask: Test) {
+    executable = unitTestTask.executable
+    workingDir = unitTestTask.workingDir
+    minHeapSize = unitTestTask.minHeapSize
+    maxHeapSize = unitTestTask.maxHeapSize
+    jvmArgs = unitTestTask.jvmArgs
+    systemProperties.putAll(unitTestTask.systemProperties)
+    environment(unitTestTask.environment)
+    bootstrapClasspath = unitTestTask.bootstrapClasspath
+    setEnableAssertions(unitTestTask.enableAssertions)
+    setDebug(unitTestTask.debug)
+    setFailFast(unitTestTask.failFast)
+    dryRun.set(unitTestTask.dryRun)
+    isScanForTestClasses = unitTestTask.isScanForTestClasses
+    forkEvery = unitTestTask.forkEvery
+    maxParallelForks = unitTestTask.maxParallelForks
+    setIncludes(unitTestTask.includes)
+    setExcludes(unitTestTask.excludes)
+
+    when (val unitTestOptions = unitTestTask.options) {
+      is JUnitOptions -> useJUnit { it.copyFrom(unitTestOptions) }
+      is JUnitPlatformOptions -> useJUnitPlatform { it.copyFrom(unitTestOptions) }
+      is TestNGOptions -> useTestNG { it.copyFrom(unitTestOptions) }
+    }
+  }
+
+  private fun ClassMetadata.referencesPaparazziApi(
+    metadataByClassName: MutableMap<String, ClassMetadata>,
+    classpathFiles: Set<File>,
+    visitedClassNames: MutableSet<String> = mutableSetOf()
+  ): Boolean {
+    if (!visitedClassNames.add(name)) return false
+    if (referencesPaparazziApi) return true
+    val superClassName = superName ?: return false
+    val superClassMetadata = metadataByClassName.getOrPut(superClassName) {
+      classpathFiles.findClassMetadata(superClassName) ?: return false
+    }
+    return superClassMetadata.referencesPaparazziApi(metadataByClassName, classpathFiles, visitedClassNames)
+  }
+
+  private fun Set<File>.findClassMetadata(className: String): ClassMetadata? {
+    val classFilePath = "$className.class"
+    for (classpathFile in this) {
+      val metadata = when {
+        classpathFile.isDirectory -> classpathFile.resolve(classFilePath)
+          .takeIf { it.isFile }
+          ?.classMetadata()
+
+        classpathFile.isFile && classpathFile.extension == "jar" -> classpathFile.readClassMetadata(classFilePath)
+
+        else -> null
+      }
+      if (metadata != null) return metadata
+    }
+    return null
+  }
+
+  private fun File.readClassMetadata(classFilePath: String): ClassMetadata? =
+    JarFile(this).use { jarFile ->
+      val entry = jarFile.getJarEntry(classFilePath) ?: return null
+      jarFile.getInputStream(entry).use { it.readBytes().classMetadata() }
+    }
+
+  private fun File.classMetadata(): ClassMetadata? = readBytes().classMetadata()
+
+  private fun ByteArray.classMetadata(): ClassMetadata? {
+    if (readInt(0) != JAVA_CLASS_MAGIC) return null
+
+    val constantPoolCount = readUnsignedShort(8)
+    val utf8Entries = mutableMapOf<Int, String>()
+    val classNameIndexes = mutableMapOf<Int, Int>()
+    var offset = 10
+    var constantPoolIndex = 1
+    while (constantPoolIndex < constantPoolCount) {
+      when (this[offset].toInt() and 0xFF) {
+        1 -> {
+          val length = readUnsignedShort(offset + 1)
+          utf8Entries[constantPoolIndex] = decodeToString(offset + 3, offset + 3 + length)
+          offset += 3 + length
+        }
+
+        3, 4, 9, 10, 11, 12, 17, 18 -> offset += 5
+        5, 6 -> {
+          offset += 9
+          constantPoolIndex++
+        }
+
+        7 -> {
+          classNameIndexes[constantPoolIndex] = readUnsignedShort(offset + 1)
+          offset += 3
+        }
+
+        8, 16, 19, 20 -> offset += 3
+        15 -> offset += 4
+        else -> return null
+      }
+      constantPoolIndex++
+    }
+
+    val thisClassIndex = readUnsignedShort(offset + 2)
+    val superClassIndex = readUnsignedShort(offset + 4).takeUnless { it == 0 }
+    val className = utf8Entries[classNameIndexes[thisClassIndex]] ?: return null
+    val superClassName = superClassIndex?.let { utf8Entries[classNameIndexes[it]] }
+    return ClassMetadata(
+      name = className,
+      superName = superClassName,
+      referencesPaparazziApi = PAPARAZZI_API_REFERENCES.any { containsAscii(it) }
+    )
+  }
+
+  private data class ClassMetadata(
+    val name: String,
+    val superName: String?,
+    val referencesPaparazziApi: Boolean
+  )
+
+  private fun ByteArray.readUnsignedShort(offset: Int): Int =
+    ((this[offset].toInt() and 0xFF) shl 8) or
+      (this[offset + 1].toInt() and 0xFF)
+
+  private fun ByteArray.readInt(offset: Int): Int =
+    ((this[offset].toInt() and 0xFF) shl 24) or
+      ((this[offset + 1].toInt() and 0xFF) shl 16) or
+      ((this[offset + 2].toInt() and 0xFF) shl 8) or
+      (this[offset + 3].toInt() and 0xFF)
+
+  private fun ByteArray.containsAscii(value: String): Boolean {
+    val needle = value.encodeToByteArray()
+    if (needle.isEmpty() || needle.size > size) return false
+
+    for (startIndex in 0..size - needle.size) {
+      var matches = true
+      for (needleIndex in needle.indices) {
+        if (this[startIndex + needleIndex] != needle[needleIndex]) {
+          matches = false
+          break
+        }
+      }
+      if (matches) return true
+    }
+    return false
   }
 
   private fun createDiffRegistryFactory(
@@ -481,6 +691,14 @@ public class PaparazziPlugin @Inject constructor(
 private const val DEFAULT_COMPILE_SDK_VERSION = 36
 private const val ANDROID_KOTLIN_MULTIPLATFORM_LIBRARY_PLUGIN = "com.android.kotlin.multiplatform.library"
 private const val KOTLIN_MULTIPLATFORM_PLUGIN = "org.jetbrains.kotlin.multiplatform"
+private const val JAVA_CLASS_MAGIC = -0x35014542
+private const val NO_PAPARAZZI_TESTS_PATTERN = "__NO_PAPARAZZI_TESTS__"
+private val PAPARAZZI_API_REFERENCES = listOf(
+  "app/cash/paparazzi/Paparazzi",
+  "app/cash/paparazzi/junit/PaparazziExtension",
+  "app/cash/paparazzi/junit/PaparazziKotestListener",
+  "app/cash/paparazzi/preview/"
+)
 
 private fun isAgpAtLeast(major: Int): Boolean {
   val agpMajor = ANDROID_GRADLE_PLUGIN_VERSION
