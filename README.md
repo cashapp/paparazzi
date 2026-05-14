@@ -154,6 +154,20 @@ class TestNgPaparazziTest {
   }
 }
 ```
+## Working on documentation locally
+
+If you want to preview the documentation locally using MkDocs:
+
+```bash
+mkdocs serve
+```
+> **Note for contributors**
+>
+> The public documentation site is generated and published from the `gh-pages` branch.
+> Because of this, some pages (such as the **Overview** page) may appear as **404**
+> when running MkDocs locally from the `main` branch.
+>
+> This is expected and does **not** affect the published site on GitHub Pages.
 
 Tasks
 -------
