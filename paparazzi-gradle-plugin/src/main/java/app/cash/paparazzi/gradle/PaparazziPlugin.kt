@@ -226,13 +226,24 @@ public class PaparazziPlugin @Inject constructor(
       }
 
       val overwriteOnMaxPercentDifferenceProvider = project.overwriteOnMaxPercentDifferenceProvider()
-      val failureDir = buildDirectory.dir("paparazzi/failures")
-
+      val paparazziGradlePropertiesProvider =
+        project.providers.gradlePropertiesPrefixedBy("app.cash.paparazzi")
+      val failureDir = buildDirectory.dir("paparazzi/failures/${variant.name}")
+      val deleteFailuresTaskProvider = project.tasks.register(
+        "deletePaparazzi${variantSlug}Failures",
+        Delete::class.java
+      ) {
+        it.group = VERIFICATION_GROUP
+        it.description = "Delete failed screenshot comparison images for variant '${variant.name}'"
+        it.delete(failureDir)
+        it.onlyIf { isVerifyRun.get() }
+      }
       val testTaskProvider = testTasks.withType(Test::class.java)
       testTaskProvider.configureEach { test ->
         val localResourceDirs = sources.localResourceDirs ?: providerFactory.provider { emptyList() }
         val localAssetDirs = sources.localAssetDirs ?: providerFactory.provider { emptyList() }
 
+        test.dependsOn(deleteFailuresTaskProvider)
         test.setTestReporter(
           PaparazziTestReporter(
             buildOperationRunner = buildOperationRunner,
@@ -247,10 +258,10 @@ public class PaparazziPlugin @Inject constructor(
         test.systemProperties["paparazzi.build.dir"] = buildDirectory.get().toString()
         test.systemProperties["paparazzi.report.dir"] = reportOutputDir.get().toString()
         test.systemProperties["paparazzi.artifacts.cache.dir"] = gradleUserHomeDir.path
-        test.systemProperties.putAll(project.providers.gradlePropertiesPrefixedBy("app.cash.paparazzi").get())
 
         test.inputs.property("paparazzi.test.record", isRecordRun)
         test.inputs.property("paparazzi.test.verify", isVerifyRun)
+        test.inputs.property("paparazzi.gradleProperties", paparazziGradlePropertiesProvider)
 
         test.inputs.files(localResourceDirs)
           .withPropertyName("paparazzi.localResourceDirs")
@@ -258,15 +269,29 @@ public class PaparazziPlugin @Inject constructor(
         test.inputs.files(sources.moduleResourceDirs)
           .withPropertyName("paparazzi.moduleResourceDirs")
           .withPathSensitivity(PathSensitivity.RELATIVE)
+        test.inputs.files(sources.aarExplodedDirs)
+          .withPropertyName("paparazzi.aarResourceDirs")
+          .withPathSensitivity(PathSensitivity.RELATIVE)
         test.inputs.files(localAssetDirs)
           .withPropertyName("paparazzi.localAssetDirs")
           .withPathSensitivity(PathSensitivity.RELATIVE)
         test.inputs.files(sources.moduleAssetDirs)
           .withPropertyName("paparazzi.moduleAssetDirs")
           .withPathSensitivity(PathSensitivity.RELATIVE)
+        test.inputs.files(sources.aarAssetDirs)
+          .withPropertyName("paparazzi.aarAssetDirs")
+          .withPathSensitivity(PathSensitivity.RELATIVE)
         test.inputs.files(layoutlibNativeRuntimeFileCollection)
           .withPropertyName("paparazzi.nativeRuntime")
           .withPathSensitivity(PathSensitivity.NONE)
+        test.inputs.files(layoutlibResourcesFileCollection)
+          .withPropertyName("paparazzi.layoutlib.resources")
+          .withPathSensitivity(PathSensitivity.NONE)
+        test.inputs.file(writeResourcesTask.flatMap { it.paparazziResources })
+          .withPropertyName("paparazzi.test.resources")
+          .withPathSensitivity(PathSensitivity.NONE)
+        test.inputs.property("paparazzi.test.overwriteOnMaxPercentDifference", overwriteOnMaxPercentDifferenceProvider)
+          .optional(true)
 
         test.inputs.dir(snapshotOutputDir.presentWhen(isVerifyRun))
           .withPropertyName("paparazzi.snapshot.input.dir")
@@ -278,10 +303,17 @@ public class PaparazziPlugin @Inject constructor(
           .optional()
 
         test.outputs.dir(reportOutputDir).withPropertyName("paparazzi.report.dir")
+        test.outputs.dir(failureDir)
+          .withPropertyName("paparazzi.failures.dir")
+          .optional()
 
         test.doFirst {
           // Note: these are lazy properties that are not resolvable in the Gradle configuration phase.
           // They need special handling, so they're added as inputs.property above, and systemProperty here.
+          if (isVerifyRun.get()) {
+            failureDir.get().asFile.deleteRecursively()
+          }
+          test.systemProperties.putAll(paparazziGradlePropertiesProvider.get())
           test.systemProperties["paparazzi.layoutlib.runtime.root"] =
             layoutlibNativeRuntimeFileCollection.singleFile.absolutePath
           test.systemProperties["paparazzi.layoutlib.resources.root"] =
@@ -291,6 +323,7 @@ public class PaparazziPlugin @Inject constructor(
             overwriteOnMaxPercentDifferenceProvider.orNull == "true"
           test.systemProperties["paparazzi.test.verify"] = isVerifyRun.get()
           test.systemProperties["paparazzi.snapshot.dir"] = snapshotOutputDir.get().asFile.absolutePath
+          test.systemProperties["paparazzi.failures.dir"] = failureDir.get().asFile.absolutePath
         }
 
         test.doLast {
