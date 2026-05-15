@@ -141,7 +141,7 @@ class PaparazziPluginTest {
 
     assertThat(result.task(":preparePaparazziDebugResources")).isNull()
     assertThat(result.output).contains(
-      "There must be an Android target configured when using Paparazzi with the Kotlin Multiplatform Plugin"
+      "There must be an androidTarget() configured when using Paparazzi with the legacy Kotlin Multiplatform Plugin"
     )
   }
 
