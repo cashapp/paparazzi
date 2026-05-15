@@ -59,8 +59,16 @@ public class AccessibilityRenderExtension : RenderExtension {
         if (windowManagerRootView != null) {
           when (val layoutParams = windowManagerRootView.layoutParams) {
             is WindowManager.LayoutParams -> {
+              val fillsWindow = layoutParams.width == MATCH_PARENT
               layoutParams.width = contentView.measuredWidth
-              windowManagerRootView.layoutParams = layoutParams
+              if (fillsWindow) {
+                layoutParams.height = MATCH_PARENT
+                layoutParams.gravity = Gravity.START
+                layoutParams.x = 0
+                WindowManagerGlobal.getInstance().updateViewLayout(windowManagerRootView, layoutParams)
+              } else {
+                windowManagerRootView.layoutParams = layoutParams
+              }
             }
             else -> {
               windowManagerRootView.layoutParams =

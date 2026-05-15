@@ -27,11 +27,14 @@ import android.view.BridgeInflater
 import android.view.Choreographer
 import android.view.Choreographer_Delegate
 import android.view.Display
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.NO_ID
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
+import android.view.WindowManager
+import android.view.WindowManagerGlobal
 import androidx.activity.setViewTreeOnBackPressedDispatcherOwner
 import androidx.annotation.LayoutRes
 import androidx.compose.runtime.Composable
@@ -335,7 +338,7 @@ public class PaparazziSdk @JvmOverloads constructor(
           }
         }
         if (modifiedView.measuredWidth == 0 || modifiedView.measuredHeight == 0) {
-          val overlayWindow = android.view.WindowManagerGlobal.getInstance()
+          val overlayWindow = WindowManagerGlobal.getInstance()
             .findPopupRootView(viewGroup)
             ?.takeIf { it.width > 0 && it.height > 0 }
           if (overlayWindow != null) {
@@ -343,6 +346,13 @@ public class PaparazziSdk @JvmOverloads constructor(
               overlayWindow.width,
               overlayWindow.height
             )
+            val overlayLayoutParams = overlayWindow.layoutParams
+            if (overlayLayoutParams is WindowManager.LayoutParams) {
+              overlayLayoutParams.gravity = Gravity.START or Gravity.TOP
+              overlayLayoutParams.x = 0
+              overlayLayoutParams.y = 0
+              WindowManagerGlobal.getInstance().updateViewLayout(overlayWindow, overlayLayoutParams)
+            }
           }
         }
       }
