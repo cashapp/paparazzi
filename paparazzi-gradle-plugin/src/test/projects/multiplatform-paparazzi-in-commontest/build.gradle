@@ -1,0 +1,26 @@
+plugins {
+  id 'org.jetbrains.kotlin.multiplatform'
+  id 'com.android.library'
+  id 'app.cash.paparazzi'
+}
+
+kotlin {
+  androidTarget()
+  jvm()
+}
+
+android {
+  namespace = 'app.cash.paparazzi.plugin.test'
+  compileSdk = libs.versions.compileSdk.get() as int
+  defaultConfig {
+    minSdk = libs.versions.minSdk.get() as int
+  }
+  compileOptions {
+    sourceCompatibility = libs.versions.javaTarget.get()
+    targetCompatibility = libs.versions.javaTarget.get()
+  }
+}
+
+dependencies {
+  commonTestImplementation('app.cash.paparazzi:paparazzi:99.99.99')
+}

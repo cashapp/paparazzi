@@ -146,6 +146,19 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun erroneouslyConfiguredInCommonTest() {
+    val fixtureRoot = File("src/test/projects/multiplatform-paparazzi-in-commontest")
+
+    val result = gradleRunner
+      .withArguments("preparePaparazziDebugResources", "--stacktrace")
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    assertThat(result.output).contains(
+      "Paparazzi must not be declared in 'commonTestImplementation', as it should only resolve on Android JVM tests."
+    )
+  }
+
+  @Test
   fun excludeAndroidTestSourceSets() {
     val fixtureRoot = File("src/test/projects/exclude-androidtest")
 

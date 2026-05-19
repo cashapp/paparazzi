@@ -22,6 +22,7 @@ import app.cash.paparazzi.gradle.utils.artifactViewFor
 import app.cash.paparazzi.gradle.utils.capitalize
 import app.cash.paparazzi.gradle.utils.relativize
 import com.android.build.api.dsl.CommonExtension
+import com.android.build.api.dsl.KotlinMultiplatformAndroidHostTestCompilation
 import com.android.build.api.instrumentation.FramesComputationMode
 import com.android.build.api.instrumentation.InstrumentationScope
 import com.android.build.api.variant.AndroidComponentsExtension
@@ -47,6 +48,7 @@ import org.gradle.api.provider.ProviderFactory
 import org.gradle.api.reporting.ReportingExtension
 import org.gradle.api.tasks.Delete
 import org.gradle.api.tasks.PathSensitivity
+import org.gradle.api.tasks.SourceSet.TEST_SOURCE_SET_NAME
 import org.gradle.api.tasks.options.Option
 import org.gradle.api.tasks.testing.AbstractTestTask
 import org.gradle.api.tasks.testing.Test
@@ -108,7 +110,7 @@ public class PaparazziPlugin @Inject constructor(
   private fun Project.setupPaparazzi(extension: AndroidComponentsExtension<*, *, *>) {
     val isMultiplatformProject: Boolean = extension is KotlinMultiplatformAndroidComponentsExtension ||
       project.plugins.hasPlugin(KOTLIN_MULTIPLATFORM_PLUGIN)
-    addTestDependency(isMultiplatformProject)
+    addTestDependency()
 
     val layoutlibNativeRuntimeFileCollection = project.setupLayoutlibRuntimeDependency()
     val layoutlibResourcesFileCollection = project.setupLayoutlibResourcesDependency()
@@ -424,14 +426,60 @@ public class PaparazziPlugin @Inject constructor(
       .files
   }
 
-  private fun Project.addTestDependency(isMultiplatformProject: Boolean) {
-    val dependency = if (project.isInternal()) {
-      project.dependencies.project(mapOf("path" to ":paparazzi"))
+  private fun Project.addTestDependency() {
+    val dependency = if (isInternal()) {
+      dependencies.project(mapOf("path" to ":paparazzi"))
     } else {
-      project.dependencies.create("app.cash.paparazzi:paparazzi:$VERSION")
+      dependencies.create("app.cash.paparazzi:paparazzi:$VERSION")
     }
-    val configurationName = if (isMultiplatformProject) "commonTestImplementation" else "testImplementation"
-    project.configurations.getByName(configurationName).dependencies.add(dependency)
+
+    val allowedConfigs = mutableSetOf<String>()
+
+    when {
+      plugins.hasPlugin(ANDROID_KOTLIN_MULTIPLATFORM_LIBRARY_PLUGIN) -> {
+        val kmp = extensions.getByType(KotlinMultiplatformExtension::class.java)
+        kmp.targets.configureEach { target ->
+          target.compilations.configureEach { compilation ->
+            if (compilation is KotlinMultiplatformAndroidHostTestCompilation) {
+              val configurationName = compilation.defaultSourceSet.implementationConfigurationName
+              allowedConfigs += configurationName
+              configurations.getByName(configurationName).dependencies.add(dependency)
+            }
+          }
+        }
+      }
+      plugins.hasPlugin(KOTLIN_MULTIPLATFORM_PLUGIN) -> {
+        val kmp = extensions.getByType(KotlinMultiplatformExtension::class.java)
+        with(kmp) {
+          sourceSets.androidUnitTest.configure {
+            val configurationName = it.implementationConfigurationName
+            allowedConfigs += configurationName
+            configurations.getByName(configurationName).dependencies.add(dependency)
+          }
+        }
+      }
+      else -> {
+        val android = extensions.getByType(CommonExtension::class.java)
+        val configurationName = android.sourceSets.getByName(TEST_SOURCE_SET_NAME).implementationConfigurationName
+        allowedConfigs += configurationName
+        configurations.getByName(configurationName).dependencies.add(dependency)
+      }
+    }
+
+    afterEvaluate {
+      val kmp = extensions.findByType(KotlinMultiplatformExtension::class.java) ?: return@afterEvaluate
+      kmp.sourceSets.forEach { sourceSet ->
+        val configName = sourceSet.implementationConfigurationName
+        if (configName in allowedConfigs) return@forEach
+        val config = configurations.findByName(configName) ?: return@forEach
+        val hasPaparazzi = config.dependencies.any {
+          it.group == "app.cash.paparazzi" && it.name == "paparazzi"
+        }
+        check(!hasPaparazzi) {
+          "Paparazzi must not be declared in '$configName', as it should only resolve on Android JVM tests."
+        }
+      }
+    }
   }
 
   @Suppress("UnstableApiUsage")
