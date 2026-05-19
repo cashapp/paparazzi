@@ -231,21 +231,11 @@ public class PaparazziPlugin @Inject constructor(
       val paparazziGradlePropertiesProvider =
         project.providers.gradlePropertiesPrefixedBy("app.cash.paparazzi")
       val failureDir = buildDirectory.dir("paparazzi/failures/${variant.name}")
-      val deleteFailuresTaskProvider = project.tasks.register(
-        "deletePaparazzi${variantSlug}Failures",
-        Delete::class.java
-      ) {
-        it.group = VERIFICATION_GROUP
-        it.description = "Delete failed screenshot comparison images for variant '${variant.name}'"
-        it.delete(failureDir)
-        it.onlyIf { isVerifyRun.get() }
-      }
       val testTaskProvider = testTasks.withType(Test::class.java)
       testTaskProvider.configureEach { test ->
         val localResourceDirs = sources.localResourceDirs ?: providerFactory.provider { emptyList() }
         val localAssetDirs = sources.localAssetDirs ?: providerFactory.provider { emptyList() }
 
-        test.dependsOn(deleteFailuresTaskProvider)
         test.setTestReporter(
           PaparazziTestReporter(
             buildOperationRunner = buildOperationRunner,
@@ -264,7 +254,10 @@ public class PaparazziPlugin @Inject constructor(
         test.inputs.property("paparazzi.test.record", isRecordRun)
         test.inputs.property("paparazzi.test.verify", isVerifyRun)
         test.inputs.property("paparazzi.gradleProperties", paparazziGradlePropertiesProvider)
+        test.inputs.property("paparazzi.layoutlib.version", NATIVE_LIB_VERSION)
 
+        // Source dirs catch in-place content edits. PrepareResourcesTask tracks paths only and
+        // its JSON output is byte-identical when contents change, so it can't invalidate the test.
         test.inputs.files(localResourceDirs)
           .withPropertyName("paparazzi.localResourceDirs")
           .withPathSensitivity(PathSensitivity.RELATIVE)
@@ -283,17 +276,11 @@ public class PaparazziPlugin @Inject constructor(
         test.inputs.files(sources.aarAssetDirs)
           .withPropertyName("paparazzi.aarAssetDirs")
           .withPathSensitivity(PathSensitivity.RELATIVE)
-        test.inputs.files(layoutlibNativeRuntimeFileCollection)
-          .withPropertyName("paparazzi.nativeRuntime")
-          .withPathSensitivity(PathSensitivity.NONE)
-        test.inputs.files(layoutlibResourcesFileCollection)
-          .withPropertyName("paparazzi.layoutlib.resources")
-          .withPathSensitivity(PathSensitivity.NONE)
+
+        // Declared so Test Distribution ships the file (#1790); also catches path-structure changes.
         test.inputs.file(writeResourcesTask.flatMap { it.paparazziResources })
           .withPropertyName("paparazzi.test.resources")
           .withPathSensitivity(PathSensitivity.NONE)
-        test.inputs.property("paparazzi.test.overwriteOnMaxPercentDifference", overwriteOnMaxPercentDifferenceProvider)
-          .optional(true)
 
         test.inputs.dir(snapshotOutputDir.presentWhen(isVerifyRun))
           .withPropertyName("paparazzi.snapshot.input.dir")
@@ -310,11 +297,9 @@ public class PaparazziPlugin @Inject constructor(
           .optional()
 
         test.doFirst {
+          if (isVerifyRun.get()) failureDir.get().asFile.deleteRecursively()
           // Note: these are lazy properties that are not resolvable in the Gradle configuration phase.
           // They need special handling, so they're added as inputs.property above, and systemProperty here.
-          if (isVerifyRun.get()) {
-            failureDir.get().asFile.deleteRecursively()
-          }
           test.systemProperties.putAll(paparazziGradlePropertiesProvider.get())
           test.systemProperties["paparazzi.layoutlib.runtime.root"] =
             layoutlibNativeRuntimeFileCollection.singleFile.absolutePath
