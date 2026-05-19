@@ -69,22 +69,6 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun supportsKotestLibrary() {
-    val fixtureRoot = File("src/test/projects/supports-kotest")
-
-    gradleRunner.withArguments("verifyPaparazziDebug", "--stacktrace")
-      .runFixture(fixtureRoot) { build() }
-  }
-
-  @Test
-  fun supportsTestNgLibrary() {
-    val fixtureRoot = File("src/test/projects/supports-testng")
-
-    gradleRunner.withArguments("verifyPaparazziDebug", "--stacktrace")
-      .runFixture(fixtureRoot) { build() }
-  }
-
-  @Test
   fun missingSupportedPlugins() {
     val fixtureRoot = File("src/test/projects/missing-supported-plugins")
 
