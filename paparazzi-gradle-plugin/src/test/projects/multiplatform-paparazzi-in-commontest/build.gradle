@@ -6,6 +6,7 @@ plugins {
 
 kotlin {
   androidTarget()
+  jvm()
 }
 
 android {
@@ -18,4 +19,8 @@ android {
     sourceCompatibility = libs.versions.javaTarget.get()
     targetCompatibility = libs.versions.javaTarget.get()
   }
+}
+
+dependencies {
+  commonTestImplementation('app.cash.paparazzi:paparazzi:99.99.99')
 }

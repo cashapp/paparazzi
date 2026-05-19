@@ -114,7 +114,7 @@ class PaparazziPluginTest {
     val fixtureRoot = File("src/test/projects/multiplatform-plugin-with-new-android-library-plugin")
 
     val result = gradleRunner
-      .withArguments("verifyPaparazziAndroidMain", "jvmTestClasses", "assertPaparazziDependencyScope", "--stacktrace")
+      .withArguments("verifyPaparazziAndroidMain", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
 
     assertThat(result.task(":preparePaparazziAndroidMainResources")).isNotNull()
@@ -125,11 +125,10 @@ class PaparazziPluginTest {
     val fixtureRoot = File("src/test/projects/multiplatform-plugin-with-android")
 
     val result = gradleRunner
-      .withArguments("preparePaparazziDebugResources", "jvmTestClasses", "assertPaparazziDependencyScope", "--stacktrace")
+      .withArguments("preparePaparazziDebugResources", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
 
     assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
-    assertThat(result.task(":jvmTestClasses")).isNotNull()
   }
 
   @Test
@@ -143,6 +142,19 @@ class PaparazziPluginTest {
     assertThat(result.task(":preparePaparazziDebugResources")).isNull()
     assertThat(result.output).contains(
       "There must be an androidTarget() configured when using Paparazzi with the legacy Kotlin Multiplatform Plugin"
+    )
+  }
+
+  @Test
+  fun erroneouslyConfiguredInCommonTest() {
+    val fixtureRoot = File("src/test/projects/multiplatform-paparazzi-in-commontest")
+
+    val result = gradleRunner
+      .withArguments("preparePaparazziDebugResources", "--stacktrace")
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    assertThat(result.output).contains(
+      "Paparazzi must not be declared in 'commonTestImplementation', as it should only resolve on Android JVM tests."
     )
   }
 

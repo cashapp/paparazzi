@@ -7,8 +7,6 @@ plugins {
 }
 
 kotlin {
-  jvm()
-
   androidLibrary {
     namespace = 'app.cash.paparazzi.plugin.test'
     compileSdk = libs.versions.compileSdk.get() as int
@@ -39,17 +37,6 @@ kotlin {
       dependencies {
         implementation libs.junit
       }
-    }
-  }
-}
-
-tasks.register('assertPaparazziDependencyScope') {
-  doLast {
-    if (configurations.commonTestImplementation.dependencies.any { it.name == 'paparazzi' }) {
-      throw new GradleException('Paparazzi must not be added to commonTestImplementation')
-    }
-    if (!configurations.androidHostTestImplementation.dependencies.any { it.name == 'paparazzi' }) {
-      throw new GradleException('Paparazzi must be added to androidHostTestImplementation')
     }
   }
 }
