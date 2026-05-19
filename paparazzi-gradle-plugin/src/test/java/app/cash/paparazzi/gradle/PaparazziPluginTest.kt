@@ -728,18 +728,35 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun verifyDeletesStaleFailures() {
+  fun verifyDeletesFailures() {
     val fixtureRoot = File("src/test/projects/verify-mode-success")
     val failureDir = File(fixtureRoot, "build/paparazzi/failures/debug").registerForDeletionOnExit()
-    val staleDelta = File(failureDir, "delta-stale.png")
     failureDir.mkdirs()
-    staleDelta.writeText("stale")
+    val stale = File(failureDir, "stale.txt")
+    stale.writeText("stale")
 
-    gradleRunner
+    val result = gradleRunner
       .withArguments("verifyPaparazziDebug", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
 
-    assertThat(staleDelta.exists()).isFalse()
+    assertThat(result.task(":testDebugUnitTest")?.outcome).isEqualTo(SUCCESS)
+    assertThat(stale.exists()).isFalse()
+  }
+
+  @Test
+  fun recordPreservesFailures() {
+    val fixtureRoot = File("src/test/projects/verify-mode-success")
+    val failureDir = File(fixtureRoot, "build/paparazzi/failures/debug").registerForDeletionOnExit()
+    failureDir.mkdirs()
+    val stale = File(failureDir, "stale.txt")
+    stale.writeText("stale")
+
+    val result = gradleRunner
+      .withArguments("recordPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":testDebugUnitTest")?.outcome).isEqualTo(SUCCESS)
+    assertThat(stale.exists()).isTrue()
   }
 
   @Test
