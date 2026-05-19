@@ -1,3 +1,11 @@
+public abstract class app/cash/paparazzi/gradle/GenerateBrowserTask : org/gradle/api/DefaultTask {
+	public fun <init> ()V
+	public final fun generateBrowser ()V
+	public abstract fun getOutput ()Lorg/gradle/api/file/DirectoryProperty;
+	public abstract fun getProjectRoot ()Lorg/gradle/api/provider/Property;
+	public abstract fun getSnapshotMetadataReports ()Lorg/gradle/api/file/ConfigurableFileCollection;
+}
+
 public final class app/cash/paparazzi/gradle/PaparazziPlugin : org/gradle/api/Plugin {
 	public fun <init> (Lorg/gradle/api/provider/ProviderFactory;Lorg/gradle/internal/operations/BuildOperationRunner;Lorg/gradle/internal/operations/BuildOperationExecutor;)V
 	public synthetic fun apply (Ljava/lang/Object;)V

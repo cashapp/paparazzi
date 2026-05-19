@@ -1,0 +1,3 @@
+apply from: '../test.settings.gradle'
+
+include ':module'

@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Paparazzi Snapshot Browser</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    .topbar {
+      background-color: #333;
+      color: white;
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .topbar .logo {
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+    .topbar .search input[type="text"] {
+      padding: 0.5rem;
+      font-size: 1rem;
+      width: 200px;
+    }
+    #content {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+    #sidebar {
+      width: 250px;
+      background-color: #f4f4f4;
+      padding: 1rem;
+      border-right: 1px solid #ccc;
+      box-sizing: border-box;
+      overflow-y: auto;
+    }
+    #search, select {
+      width: 100%;
+      padding: 0.5rem;
+      font-size: 1rem;
+      box-sizing: border-box;
+      margin-bottom: 1rem;
+    }
+    #sidebar input[type="text"],
+    #sidebar select,
+    #sidebar input[type="date"] {
+      border: 1.5px solid #ccc;
+      border-radius: 8px;
+      padding: 0.5rem 0.75rem;
+      font-size: 1rem;
+      outline-offset: 2px;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+      box-sizing: border-box;
+      background-color: white;
+      appearance: none; /* Remove default arrow on select in some browsers */
+    }
+
+    /* Focus state for better accessibility and style */
+    #sidebar input[type="text"]:focus,
+    #sidebar select:focus,
+    #sidebar input[type="date"]:focus {
+      border-color: #007bff;
+      box-shadow: 0 0 6px rgba(0, 123, 255, 0.5);
+      outline: none;
+      background-color: #fff;
+    }
+
+    /* Slightly reduce margin bottom for a cleaner stacked look */
+    #sidebar input[type="text"],
+    #sidebar select,
+    #sidebar input[type="date"] {
+      margin-bottom: 0.75rem;
+    }
+    #main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1rem;
+      box-sizing: border-box;
+    }
+    .card {
+      display: flex;
+      flex-direction: column;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 0.5rem;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+      cursor: pointer;
+    }
+    .card img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+    .card .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+      justify-content: center;
+      margin-bottom: 0.5rem;
+    }
+    .card .tag {
+      background-color: #eee;
+      border-radius: 12px;
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+    .card .tag.active {
+      background-color: #007bff;
+      color: white;
+    }
+    .card .info {
+      margin-top: auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+    .card .info p {
+      font-size: 0.8rem;
+      word-break: break-word;
+      margin: 0.1rem 0;
+      text-align: left;
+    }
+    .card .info p strong {
+      display: inline-block;
+      width: 65px;
+      white-space: nowrap;
+    }
+    #modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.75);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      display: none;
+    }
+    #modal-content {
+      background: white;
+      padding: 1rem;
+      max-width: 90vw;
+      max-height: 90vh;
+      overflow: auto;
+      display: flex;
+      gap: 1rem;
+    }
+    #modal img {
+      max-width: 60vw;
+      max-height: 80vh;
+    }
+    #modal .info {
+      min-width: 200px;
+    }
+    #modal-close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      font-size: 2rem;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
+  <script src="browser.js"></script>
+</head>
+<body>
+<section class="topbar">
+  <span class="logo">Snapshot Browser</span>
+  <div class="search">
+    <form onsubmit="event.preventDefault();">
+      <input type="text" id="search" list="suggestions" placeholder="Search..."/>
+      <datalist id="suggestions"></datalist>
+      <input hidden type="submit"/>
+    </form>
+  </div>
+</section>
+<div id="content">
+  <div id="sidebar"></div>
+  <div id="main"></div>
+</div>
+<div id="modal">
+  <span id="modal-close">&times;</span>
+  <div id="modal-content"></div>
+</div>
+<script>
+  const main = document.getElementById('main');
+  const searchInput = document.getElementById('search');
+  const sidebar = document.getElementById('sidebar');
+  const modal = document.getElementById('modal');
+  const modalContent = document.getElementById('modal-content');
+  const modalClose = document.getElementById('modal-close');
+  const suggestions = document.getElementById('suggestions');
+  let metadata = [];
+  let tagKeys = [];
+  const tagSelections = {};
+
+  // New date filter state
+  let fromDate = '';
+  let toDate = '';
+
+  // Create and insert date pickers at the top of sidebar
+  const fromLabel = document.createElement('label');
+  fromLabel.htmlFor = 'date-from';
+  fromLabel.textContent = 'From:';
+  fromLabel.style.display = 'block';
+  fromLabel.style.marginBottom = '0.25rem';
+
+  const fromDateInput = document.createElement('input');
+  fromDateInput.type = 'date';
+  fromDateInput.id = 'date-from';
+  fromDateInput.style.marginBottom = '1rem';
+
+  const toLabel = document.createElement('label');
+  toLabel.htmlFor = 'date-to';
+  toLabel.textContent = 'To:';
+  toLabel.style.display = 'block';
+  toLabel.style.marginBottom = '0.25rem';
+
+  const toDateInput = document.createElement('input');
+  toDateInput.type = 'date';
+  toDateInput.id = 'date-to';
+  toDateInput.style.marginBottom = '1rem';
+
+  // Insert in order: From label + input, then To label + input at top
+  sidebar.appendChild(fromLabel);
+  sidebar.appendChild(fromDateInput);
+  sidebar.appendChild(toLabel);
+  sidebar.appendChild(toDateInput);
+
+  function createDropdown(id, label) {
+    const select = document.createElement('select');
+    select.id = id;
+    const option = document.createElement('option');
+    option.value = '';
+    option.textContent = `All ${label}${label.endsWith('s') ? 'es' : 's'}`;
+    select.appendChild(option);
+    sidebar.appendChild(select);
+    return select;
+  }
+
+  function populateFiltersFromMetadata(metadata) {
+    const tagValues = {};
+    const searchTerms = new Set();
+
+    metadata.forEach(({ tags, testName, name }) => {
+      if (testName) searchTerms.add(testName);
+      if (name) searchTerms.add(name);
+      Object.entries(tags).forEach(([key, value]) => {
+        if (!tagValues[key]) tagValues[key] = new Set();
+        tagValues[key].add(value);
+      });
+    });
+
+    suggestions.innerHTML = Array.from(searchTerms)
+      .sort()
+      .map(term => `<option value="${term}">`)
+      .join('');
+
+    tagKeys = Object.keys(tagValues);
+
+    tagKeys.forEach(key => {
+      const select = createDropdown(`tag-${key}`, key);
+      Array.from(tagValues[key]).sort().forEach(value => {
+        const opt = document.createElement('option');
+        opt.value = value;
+        opt.textContent = value;
+        select.appendChild(opt);
+      });
+      select.addEventListener('input', () => {
+        tagSelections[key] = select.value;
+        updateURL();
+        render(filterMetadata());
+      });
+    });
+  }
+
+  function filterMetadata() {
+    const query = searchInput.value.toLowerCase();
+    return metadata.filter(m => {
+      const matchesSearch = !query || (m.name?.toLowerCase().includes(query) || m.testName?.toLowerCase().includes(query));
+      const matchesTags = tagKeys.every(key => !tagSelections[key] || m.tags[key] === tagSelections[key]);
+
+      let matchesDate = true;
+      if (fromDate) {
+        matchesDate = matchesDate && new Date(m.timestamp) >= new Date(fromDate);
+      }
+      if (toDate) {
+        matchesDate = matchesDate && new Date(m.timestamp) <= new Date(toDate);
+      }
+
+      return matchesSearch && matchesTags && matchesDate;
+    });
+  }
+
+  function updateURL() {
+    const params = new URLSearchParams();
+    if (searchInput.value) params.set('search', searchInput.value);
+    tagKeys.forEach(key => {
+      if (tagSelections[key]) params.set(key, tagSelections[key]);
+    });
+    if (fromDate) params.set('from', fromDate);
+    if (toDate) params.set('to', toDate);
+    history.replaceState(null, '', '?' + params.toString());
+  }
+
+  function applyFiltersFromURL() {
+    const params = new URLSearchParams(location.search);
+    const search = params.get('search') || '';
+    searchInput.value = search;
+
+    fromDate = params.get('from') || '';
+    toDate = params.get('to') || '';
+
+    if (fromDate) fromDateInput.value = fromDate;
+    if (toDate) toDateInput.value = toDate;
+
+    tagKeys.forEach(key => {
+      const val = params.get(key);
+      if (val) {
+        tagSelections[key] = val;
+        const select = document.getElementById(`tag-${key}`);
+        if (select) select.value = val;
+      }
+    });
+  }
+
+  function showModal({ file, name, testName, tags, timestamp }) {
+    const formattedTime = timestamp ? new Date(timestamp).toLocaleString() : null;
+    let html = `
+      <img src="${file}" alt="${name || ''}"/>
+      <div class="info">
+    `;
+
+    if (testName) {
+      const [pkgCls, method] = testName.split('#');
+      const pkgParts = pkgCls.split('.');
+      const cls = pkgParts.pop();
+      const pkg = pkgParts.join('.');
+      html += `
+        <p><strong>Package:</strong> ${pkg}</p>
+        <p><strong>Class:</strong> ${cls}</p>
+        <p><strong>Method:</strong> ${method}</p>
+      `;
+    }
+
+    if (name) {
+      html += `<p><strong>Name:</strong> ${name}</p>`;
+    }
+
+    if (formattedTime) {
+      html += `<p><strong>Recorded:</strong> ${formattedTime}</p>`;
+    }
+
+    html += Object.entries(tags || {})
+      .map(([k, v]) => `<p><strong>${k}:</strong> ${v}</p>`)
+      .join('');
+
+    html += `</div>`;
+
+    modalContent.innerHTML = html;
+    modal.style.display = 'flex';
+  }
+
+  function render(data) {
+    main.innerHTML = '';
+    data.forEach(item => {
+      const { file, name, testName, tags, timestamp } = item;
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.addEventListener('click', () => showModal(item));
+
+      const tagsContainer = document.createElement('div');
+      tagsContainer.className = 'tags';
+      Object.entries(tags || {}).forEach(([key, value]) => {
+        const tag = document.createElement('span');
+        tag.className = 'tag';
+        tag.textContent = value;
+        if (tagSelections[key] === value) tag.classList.add('active');
+        tag.addEventListener('click', e => {
+          e.stopPropagation();
+          const dropdown = document.getElementById(`tag-${key}`);
+          if (tagSelections[key] === value) {
+            tagSelections[key] = '';
+            dropdown.value = '';
+          } else {
+            tagSelections[key] = value;
+            dropdown.value = value;
+          }
+          updateURL();
+          render(filterMetadata());
+        });
+        tagsContainer.appendChild(tag);
+      });
+
+      const img = document.createElement('img');
+      img.src = file;
+      img.alt = name || '';
+
+      const info = document.createElement('div');
+      info.className = 'info';
+
+      if (testName) {
+        const [pkgCls, method] = testName.split('#');
+        const pkgParts = pkgCls.split('.');
+        const cls = pkgParts.pop();
+        const pkg = pkgParts.join('.');
+        info.innerHTML += `<p><strong>Package:</strong> ${pkg}</p><p><strong>Class:</strong> ${cls}</p><p><strong>Method:</strong> ${method}</p>`;
+      }
+      if (name) {
+        info.innerHTML += `<p><strong>Name:</strong> ${name}</p>`;
+      }
+      if (timestamp) {
+        const formattedTime = new Date(timestamp).toLocaleString();
+        info.innerHTML += `<p><strong>Recorded:</strong> ${formattedTime}</p>`;
+      }
+
+      card.appendChild(tagsContainer);
+      card.appendChild(img);
+      card.appendChild(info);
+      main.appendChild(card);
+    });
+  }
+
+  function initialize(allMetadata) {
+    metadata = allMetadata.flat();
+    populateFiltersFromMetadata(metadata);
+    applyFiltersFromURL();
+    render(filterMetadata());
+  }
+
+  async function loadMetadataFiles() {
+    try {
+      const filePaths = window.all_metadata;
+      const allMetadata = await Promise.all(
+        filePaths.map(async (relativeMetadataPath) => {
+          const projectRootDir = '../../';
+          const fullMetadataPath = projectRootDir + relativeMetadataPath;
+          console.log('Loading metadata file:', fullMetadataPath);
+          const resp = await fetch(fullMetadataPath);
+          const data = await resp.json();
+          data.forEach(item => {
+            if (item.file) {
+              item.file = fullMetadataPath + '/../../' + item.file;
+            }
+          });
+          return data;
+        })
+      );
+      initialize(allMetadata);
+    } catch (err) {
+      console.error('Failed to load metadata files:', err);
+      main.innerHTML = '<p style="color:red">Failed to load metadata files.</p>';
+    }
+  }
+
+  modalClose.addEventListener('click', () => {
+    modal.style.display = 'none';
+    modalContent.innerHTML = '';
+  });
+
+  loadMetadataFiles();
+
+  searchInput.addEventListener('input', () => {
+    updateURL();
+    render(filterMetadata());
+  });
+
+  fromDateInput.addEventListener('change', () => {
+    fromDate = fromDateInput.value;
+    updateURL();
+    render(filterMetadata());
+  });
+
+  toDateInput.addEventListener('change', () => {
+    toDate = toDateInput.value;
+    updateURL();
+    render(filterMetadata());
+  });
+</script>
+</body>
+</html>

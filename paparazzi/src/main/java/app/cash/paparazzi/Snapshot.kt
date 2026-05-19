@@ -25,14 +25,14 @@ public class Snapshot(
   public val name: String?,
   public val testName: TestName,
   public val timestamp: Date,
-  public val tags: List<String> = listOf(),
+  public val tags: Map<String, String> = mapOf(),
   public val file: String? = null
 ) {
   public fun copy(
     name: String? = this.name,
     testName: TestName = this.testName,
     timestamp: Date = this.timestamp,
-    tags: List<String> = this.tags,
+    tags: Map<String, String> = this.tags,
     file: String? = this.file
   ): Snapshot = Snapshot(name, testName, timestamp, tags, file)
 }

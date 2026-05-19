@@ -1,0 +1,7 @@
+rootProject.name = 'snapshot-browser'
+
+apply from: '../test.settings.gradle'
+
+include ':module1'
+include ':module2'
+
