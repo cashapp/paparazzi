@@ -68,6 +68,7 @@ public class HtmlReportWriter @JvmOverloads constructor(
   snapshotRootDirectory: File = File(System.getProperty("paparazzi.snapshot.dir"))
 ) : SnapshotHandler {
   private val runsDirectory: File = File(rootDirectory, "runs")
+  private val metadataDirectory: File = File(rootDirectory, "metadata")
   private val imagesDirectory: File = File(rootDirectory, "images")
   private val videosDirectory: File = File(rootDirectory, "videos")
 
@@ -83,6 +84,7 @@ public class HtmlReportWriter @JvmOverloads constructor(
 
   init {
     runsDirectory.mkdirs()
+    metadataDirectory.mkdirs()
     imagesDirectory.mkdirs()
     videosDirectory.mkdirs()
     writeStaticFiles()
@@ -161,6 +163,7 @@ public class HtmlReportWriter @JvmOverloads constructor(
   /** Release all resources and block until everything has been written to the file system. */
   override fun close() {
     writeRunJs()
+    writeMetadataJs()
   }
 
   /**
@@ -186,6 +189,36 @@ public class HtmlReportWriter @JvmOverloads constructor(
       writeUtf8("window.all_runs = ")
       PaparazziJson.listOfStringsAdapter.toJson(this, runNames)
       writeUtf8(";")
+    }
+  }
+
+  /**
+   * Emits a metadata index.
+   *
+   * ```
+   * window.runs["20190319153912aaab"] = [
+   *   {
+   *     "name": "loading",
+   *     "testName": "app.cash.CelebrityTest#testSettings",
+   *     "timestamp": "2019-03-20T10:27:43Z",
+   *     "tags": ["redesign"],
+   *     "file": "loading.png"
+   *   },
+   *   {
+   *     "name": "error",
+   *     "testName": "app.cash.CelebrityTest#testSettings",
+   *     "timestamp": "2019-03-20T10:27:43Z",
+   *     "tags": ["redesign"],
+   *     "file": "error.png"
+   *   }
+   * ];
+   * ```
+   */
+  private fun writeMetadataJs() {
+    if (shots.isEmpty()) return
+    val metadataJs = File(metadataDirectory, shots.first().toFileName(extension = "js"))
+    metadataJs.writeAtomically {
+      PaparazziJson.listOfShotsAdapter.toJson(this, shots)
     }
   }
 
@@ -223,7 +256,7 @@ public class HtmlReportWriter @JvmOverloads constructor(
   private fun writeStaticFiles() {
     for (staticFile in listOf("index.html", "paparazzi.js")) {
       File(rootDirectory, staticFile).writeAtomically {
-        writeAll(HtmlReportWriter::class.java.classLoader.getResourceAsStream(staticFile).source())
+        writeAll(HtmlReportWriter::class.java.classLoader.getResourceAsStream(staticFile)!!.source())
       }
     }
   }
