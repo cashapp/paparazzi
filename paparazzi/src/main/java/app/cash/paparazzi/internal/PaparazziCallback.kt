@@ -53,10 +53,14 @@ internal class PaparazziCallback(
 
   private val loadedClasses = mutableMapOf<String, Class<*>>()
 
-  @Throws(ClassNotFoundException::class)
   fun initResources() {
     for (rPackageName in resourcePackageNames) {
-      val rClass = Class.forName("$rPackageName.R")
+      val rClass = try {
+        Class.forName("$rPackageName.R")
+      } catch (e: ClassNotFoundException) {
+        logger.error(e, "R class not found %1\$s", "$rPackageName.R")
+        continue
+      }
       for (resourceClass in rClass.declaredClasses) {
         val resourceType = ResourceType.fromClassName(resourceClass.simpleName) ?: continue
 
