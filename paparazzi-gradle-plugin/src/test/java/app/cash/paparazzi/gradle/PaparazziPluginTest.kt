@@ -1754,7 +1754,6 @@ class PaparazziPluginTest {
         gradleProperties.createNewFile()
         gradleProperties.writeText(
           """
-            |android.useAndroidX=true
             |android.dependencyResolutionAtConfigurationTime.disallow=true
           """.trimMargin()
         )
