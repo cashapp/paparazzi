@@ -14,7 +14,6 @@ android {
     sourceCompatibility = libs.versions.javaTarget.get()
     targetCompatibility = libs.versions.javaTarget.get()
   }
-
   buildFeatures {
     compose = true
   }

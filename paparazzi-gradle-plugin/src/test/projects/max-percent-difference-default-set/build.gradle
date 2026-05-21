@@ -13,7 +13,6 @@ android {
     sourceCompatibility = libs.versions.javaTarget.get()
     targetCompatibility = libs.versions.javaTarget.get()
   }
-
 }
 
 tasks.withType(Test).configureEach {

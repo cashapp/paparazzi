@@ -14,4 +14,3 @@ android {
     targetCompatibility = libs.versions.javaTarget.get()
   }
 }
-

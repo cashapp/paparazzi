@@ -160,10 +160,15 @@ class PaparazziPluginTest {
     fixtureRoot.resolve("build-cache").registerForDeletionOnExit()
 
     val firstRun = gradleRunner
-      .withArguments("testDebug", "--build-cache", "--stacktrace")
+      .withArguments("testRelease", "testDebug", "--build-cache", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
 
     with(firstRun.task(":preparePaparazziDebugResources")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isNotEqualTo(FROM_CACHE)
+    }
+
+    with(firstRun.task(":preparePaparazziReleaseResources")) {
       assertThat(this).isNotNull()
       assertThat(this!!.outcome).isNotEqualTo(FROM_CACHE)
     }
@@ -172,6 +177,11 @@ class PaparazziPluginTest {
     assertThat(resourcesFile.exists()).isTrue()
     var resourceFileContents = resourcesFile.readLines()
     assertThat(resourceFileContents.any { it.contains("release") }).isFalse()
+
+    resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/release/resources.json")
+    assertThat(resourcesFile.exists()).isTrue()
+    resourceFileContents = resourcesFile.readLines()
+    assertThat(resourceFileContents.any { it.contains("debug") }).isFalse()
 
     // delete now (regardless of future cleanup)
     buildDir.deleteRecursively()
@@ -397,6 +407,7 @@ class PaparazziPluginTest {
       .runFixture(fixtureRoot) { build() }
 
     assertThat(result.task(":recordPaparazziDebug")).isNotNull()
+    assertThat(result.task(":recordPaparazziRelease")).isNotNull()
   }
 
   @Test
@@ -710,6 +721,7 @@ class PaparazziPluginTest {
       .runFixture(fixtureRoot) { build() }
 
     assertThat(result.task(":verifyPaparazziDebug")).isNotNull()
+    assertThat(result.task(":verifyPaparazziRelease")).isNotNull()
   }
 
   @Test
