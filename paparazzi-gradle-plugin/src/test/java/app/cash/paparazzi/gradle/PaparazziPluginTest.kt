@@ -435,6 +435,7 @@ class PaparazziPluginTest {
 
     val valuesDir = File(fixtureRoot, "src/main/res/values").registerForDeletionOnExit()
     valuesDir.deleteRecursively()
+    valuesDir.mkdirs()
     val destResourceFile = File(valuesDir, "colors.xml")
     val firstResourceFile = File(fixtureRoot, "src/test/resources/colors1.xml")
     val secondResourceFile = File(fixtureRoot, "src/test/resources/colors2.xml")
@@ -483,6 +484,7 @@ class PaparazziPluginTest {
     snapshotsDir.deleteRecursively()
     val valuesDir = File(fixtureRoot, "src/main/res/values").registerForDeletionOnExit()
     valuesDir.deleteRecursively()
+    valuesDir.mkdirs()
 
     val destResourceFile = File(valuesDir, "colors.xml")
     val firstResourceFile = File(fixtureRoot, "src/test/resources/colors1.xml")
