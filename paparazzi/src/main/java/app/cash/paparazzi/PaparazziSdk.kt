@@ -414,15 +414,17 @@ public class PaparazziSdk @JvmOverloads constructor(
     // Keep the requested snapshot time visible to SystemClock while ensuring Compose snapshots
     // always expose a positive frame timestamp to HWUI, input dispatch, and render-thread
     // animation paths.
-    val frameTimeNanos = if (timeNanos == 0L) MIN_FRAME_TIME_NANOS else timeNanos
+    val frameTimeNanos = if (useFrameTimeSystemClock && timeNanos == 0L) MIN_FRAME_TIME_NANOS else timeNanos
     System_Delegate.setNanosTime(if (useFrameTimeSystemClock) timeNanos else 0L)
 
     try {
+      if (!useFrameTimeSystemClock) {
+        Choreographer_Delegate.sChoreographerTime = frameTimeNanos
+      }
       executeHandlerCallbacks()
       if (useFrameTimeSystemClock) {
         Choreographer_Delegate.doFrame(frameTimeNanos)
       } else {
-        Choreographer_Delegate.sChoreographerTime = frameTimeNanos
         Choreographer_Delegate.doCallbacks(
           Choreographer.getInstance(),
           Choreographer.CALLBACK_ANIMATION,
