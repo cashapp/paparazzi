@@ -27,14 +27,11 @@ import android.view.BridgeInflater
 import android.view.Choreographer
 import android.view.Choreographer_Delegate
 import android.view.Display
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.NO_ID
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
-import android.view.WindowManager
-import android.view.WindowManagerGlobal
 import androidx.activity.setViewTreeOnBackPressedDispatcherOwner
 import androidx.annotation.LayoutRes
 import androidx.compose.runtime.Composable
@@ -49,6 +46,7 @@ import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import app.cash.paparazzi.accessibility.AccessibilityRenderExtension
 import app.cash.paparazzi.agent.InterceptorRegistrar
+import app.cash.paparazzi.internal.ComposeViewAdapter
 import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.PaparazziCallback
 import app.cash.paparazzi.internal.PaparazziLifecycleOwner
@@ -330,31 +328,15 @@ public class PaparazziSdk @JvmOverloads constructor(
       }
 
       viewGroup.addView(modifiedView)
-      if (renderingMode == RenderingMode.SHRINK && hasComposeRuntime) {
+      val composeViewAdapter = viewGroup as? ComposeViewAdapter
+      if (composeViewAdapter?.requiresPreRenderMeasure == true) {
         withTime(startNanos, useFrameTimeSystemClock) {
           val result = renderSession.measure()
           if (result.status == ERROR_UNKNOWN) {
             throw result.exception
           }
         }
-        if (modifiedView.measuredWidth == 0 || modifiedView.measuredHeight == 0) {
-          val overlayWindow = WindowManagerGlobal.getInstance()
-            .findPopupRootView(viewGroup)
-            ?.takeIf { it.width > 0 && it.height > 0 }
-          if (overlayWindow != null) {
-            modifiedView.layoutParams = android.widget.FrameLayout.LayoutParams(
-              overlayWindow.width,
-              overlayWindow.height
-            )
-            val overlayLayoutParams = overlayWindow.layoutParams
-            if (overlayLayoutParams is WindowManager.LayoutParams) {
-              overlayLayoutParams.gravity = Gravity.START or Gravity.TOP
-              overlayLayoutParams.x = 0
-              overlayLayoutParams.y = 0
-              WindowManagerGlobal.getInstance().updateViewLayout(overlayWindow, overlayLayoutParams)
-            }
-          }
-        }
+        composeViewAdapter.sizeZeroContentFromPopupRoot(modifiedView)
       }
       for (frame in 0 until frameCount) {
         val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
