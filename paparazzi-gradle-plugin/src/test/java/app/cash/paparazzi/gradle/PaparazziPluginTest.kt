@@ -479,9 +479,9 @@ class PaparazziPluginTest {
   fun rerunVerifyOnResourceChange() {
     val fixtureRoot = File("src/test/projects/rerun-resource-change")
 
-    val snapshotsDir = File(fixtureRoot, "src/test/snapshots")
+    val snapshotsDir = File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
     snapshotsDir.deleteRecursively()
-    val valuesDir = File(fixtureRoot, "src/main/res/values")
+    val valuesDir = File(fixtureRoot, "src/main/res/values").registerForDeletionOnExit()
     valuesDir.deleteRecursively()
 
     val destResourceFile = File(valuesDir, "colors.xml")
