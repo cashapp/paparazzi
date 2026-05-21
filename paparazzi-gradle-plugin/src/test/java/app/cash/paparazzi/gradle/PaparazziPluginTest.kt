@@ -95,38 +95,13 @@ class PaparazziPluginTest {
 
   @Test
   fun kotlinMultiplatformPluginWithNewAndroidLibraryPlugin() {
-    val fixtureRoot = File("src/test/projects/multiplatform-plugin-with-new-android-library-plugin")
+    val fixtureRoot = File("src/test/projects/multiplatform-android-plugin")
 
     val result = gradleRunner
       .withArguments("verifyPaparazziAndroidMain", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
 
     assertThat(result.task(":preparePaparazziAndroidMainResources")).isNotNull()
-  }
-
-  @Test
-  fun kotlinMultiplatformPluginWithAndroidTarget() {
-    val fixtureRoot = File("src/test/projects/multiplatform-plugin-with-android")
-
-    val result = gradleRunner
-      .withArguments("preparePaparazziDebugResources", "--stacktrace")
-      .runFixture(fixtureRoot) { build() }
-
-    assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
-  }
-
-  @Test
-  fun kotlinMultiplatformPluginWithoutAndroidTarget() {
-    val fixtureRoot = File("src/test/projects/multiplatform-plugin-without-android")
-
-    val result = gradleRunner
-      .withArguments("preparePaparazziDebugResources", "--stacktrace")
-      .runFixture(fixtureRoot) { buildAndFail() }
-
-    assertThat(result.task(":preparePaparazziDebugResources")).isNull()
-    assertThat(result.output).contains(
-      "There must be an androidTarget() configured when using Paparazzi with the legacy Kotlin Multiplatform Plugin"
-    )
   }
 
   @Test
