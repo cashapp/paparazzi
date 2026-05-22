@@ -57,7 +57,6 @@ import org.gradle.internal.operations.BuildOperationRunner
 import org.gradle.internal.os.OperatingSystem
 import org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
 import java.util.Locale
 import javax.inject.Inject
 import kotlin.io.encoding.Base64
@@ -79,15 +78,6 @@ public class PaparazziPlugin @Inject constructor(
     project.afterEvaluate {
       check(supportedPlugins.any { project.plugins.hasPlugin(it) }) {
         "One of ${supportedPlugins.joinToString(", ")} must be applied for Paparazzi to work properly."
-      }
-      project.plugins.withId(KOTLIN_MULTIPLATFORM_PLUGIN) {
-        val usesAndroidKmpLibraryPlugin = project.plugins.hasPlugin(ANDROID_KOTLIN_MULTIPLATFORM_LIBRARY_PLUGIN)
-        if (!usesAndroidKmpLibraryPlugin) {
-          val kmpExtension = project.extensions.getByType(KotlinMultiplatformExtension::class.java)
-          check(kmpExtension.targets.any { target -> target is KotlinAndroidTarget }) {
-            "There must be an androidTarget() configured when using Paparazzi with the legacy Kotlin Multiplatform Plugin"
-          }
-        }
       }
     }
 
@@ -160,16 +150,14 @@ public class PaparazziPlugin @Inject constructor(
       // `lateinit property visitorFactory has not been initialized` during configuration.
       // This transform is a best-effort fix for ResourcesCompat font loading, so skip it for KMP
       // projects until AGP 9+.
-      if (!isMultiplatformProject || isAgpAtLeast(major = 9)) {
-        val testInstrumentation = testVariant.instrumentation
-        testInstrumentation.transformClassesWith(
-          ResourcesCompatVisitorFactory::class.java,
-          InstrumentationScope.ALL
-        ) { }
-        testInstrumentation.setAsmFramesComputationMode(
-          FramesComputationMode.COMPUTE_FRAMES_FOR_INSTRUMENTED_METHODS
-        )
-      }
+      val testInstrumentation = testVariant.instrumentation
+      testInstrumentation.transformClassesWith(
+        ResourcesCompatVisitorFactory::class.java,
+        InstrumentationScope.ALL
+      ) { }
+      testInstrumentation.setAsmFramesComputationMode(
+        FramesComputationMode.COMPUTE_FRAMES_FOR_INSTRUMENTED_METHODS
+      )
 
       val sources = AndroidVariantSources(variant)
 

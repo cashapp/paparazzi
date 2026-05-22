@@ -95,38 +95,13 @@ class PaparazziPluginTest {
 
   @Test
   fun kotlinMultiplatformPluginWithNewAndroidLibraryPlugin() {
-    val fixtureRoot = File("src/test/projects/multiplatform-plugin-with-new-android-library-plugin")
+    val fixtureRoot = File("src/test/projects/multiplatform-android-plugin")
 
     val result = gradleRunner
       .withArguments("verifyPaparazziAndroidMain", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
 
     assertThat(result.task(":preparePaparazziAndroidMainResources")).isNotNull()
-  }
-
-  @Test
-  fun kotlinMultiplatformPluginWithAndroidTarget() {
-    val fixtureRoot = File("src/test/projects/multiplatform-plugin-with-android")
-
-    val result = gradleRunner
-      .withArguments("preparePaparazziDebugResources", "--stacktrace")
-      .runFixture(fixtureRoot) { build() }
-
-    assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
-  }
-
-  @Test
-  fun kotlinMultiplatformPluginWithoutAndroidTarget() {
-    val fixtureRoot = File("src/test/projects/multiplatform-plugin-without-android")
-
-    val result = gradleRunner
-      .withArguments("preparePaparazziDebugResources", "--stacktrace")
-      .runFixture(fixtureRoot) { buildAndFail() }
-
-    assertThat(result.task(":preparePaparazziDebugResources")).isNull()
-    assertThat(result.output).contains(
-      "There must be an androidTarget() configured when using Paparazzi with the legacy Kotlin Multiplatform Plugin"
-    )
   }
 
   @Test
@@ -978,7 +953,6 @@ class PaparazziPluginTest {
     assertThat(config.projectResourceDirs).containsExactly(
       "src/main/res",
       "src/debug/res",
-      "build/generated/res/resValues/debug",
       "build/generated/res/extra"
     )
     assertThat(config.moduleResourceDirs).containsExactly(
@@ -1014,7 +988,6 @@ class PaparazziPluginTest {
     assertThat(config.projectResourceDirs).containsExactly(
       "src/main/res",
       "src/debug/res",
-      "build/generated/res/resValues/debug",
       "build/generated/res/extra"
     )
     assertThat(config.moduleResourceDirs).containsExactly(
@@ -1059,8 +1032,7 @@ class PaparazziPluginTest {
     var config = resourcesFile.loadConfig()
     assertThat(config.projectResourceDirs).containsExactly(
       "src/main/res",
-      "src/debug/res",
-      "build/generated/res/resValues/debug"
+      "src/debug/res"
     )
 
     buildDir.deleteRecursively()
@@ -1085,8 +1057,7 @@ class PaparazziPluginTest {
     config = resourcesFile.loadConfig()
     assertThat(config.projectResourceDirs).containsExactly(
       "src/main/res",
-      "src/debug/res",
-      "build/generated/res/resValues/debug"
+      "src/debug/res"
     )
   }
 
@@ -1754,7 +1725,7 @@ class PaparazziPluginTest {
     val dontRecordLastModified = dontRecordFile.lastModified()
     val recordFile =
       File(fixtureRoot, "src/test/snapshots/images/app.cash.paparazzi.plugin.test_RecordSnapshotTest_record.png")
-    val recordLastModified = dontRecordFile.lastModified()
+    val recordLastModified = recordFile.lastModified()
 
     gradleRunner
       .withArguments("recordPaparazziDebug", "--stacktrace")
@@ -1783,7 +1754,6 @@ class PaparazziPluginTest {
         gradleProperties.createNewFile()
         gradleProperties.writeText(
           """
-            |android.useAndroidX=true
             |android.dependencyResolutionAtConfigurationTime.disallow=true
           """.trimMargin()
         )
