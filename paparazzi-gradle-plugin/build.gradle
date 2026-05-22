@@ -43,6 +43,7 @@ dependencies {
   implementation libs.moshi.kotlinReflect
 
   testImplementation libs.junit
+  testImplementation libs.testParameterInjector
   testImplementation libs.truth
 
   fixtureClasspath libs.plugin.kotlin
