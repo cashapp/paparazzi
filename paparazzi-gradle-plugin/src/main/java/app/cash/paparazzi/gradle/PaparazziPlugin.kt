@@ -269,6 +269,9 @@ public class PaparazziPlugin @Inject constructor(
         test.inputs.file(writeResourcesTask.flatMap { it.paparazziResources })
           .withPropertyName("paparazzi.test.resources")
           .withPathSensitivity(PathSensitivity.NONE)
+        test.inputs.files(layoutlibResourcesFileCollection)
+          .withPropertyName("paparazzi.layoutlib.resources")
+          .withPathSensitivity(PathSensitivity.NONE)
 
         test.inputs.dir(snapshotOutputDir.presentWhen(isVerifyRun))
           .withPropertyName("paparazzi.snapshot.input.dir")
