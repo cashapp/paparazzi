@@ -150,16 +150,14 @@ public class PaparazziPlugin @Inject constructor(
       // `lateinit property visitorFactory has not been initialized` during configuration.
       // This transform is a best-effort fix for ResourcesCompat font loading, so skip it for KMP
       // projects until AGP 9+.
-      if (!isMultiplatformProject || isAgpAtLeast(major = 9)) {
-        val testInstrumentation = testVariant.instrumentation
-        testInstrumentation.transformClassesWith(
-          ResourcesCompatVisitorFactory::class.java,
-          InstrumentationScope.ALL
-        ) { }
-        testInstrumentation.setAsmFramesComputationMode(
-          FramesComputationMode.COMPUTE_FRAMES_FOR_INSTRUMENTED_METHODS
-        )
-      }
+      val testInstrumentation = testVariant.instrumentation
+      testInstrumentation.transformClassesWith(
+        ResourcesCompatVisitorFactory::class.java,
+        InstrumentationScope.ALL
+      ) { }
+      testInstrumentation.setAsmFramesComputationMode(
+        FramesComputationMode.COMPUTE_FRAMES_FOR_INSTRUMENTED_METHODS
+      )
 
       val sources = AndroidVariantSources(variant)
 
