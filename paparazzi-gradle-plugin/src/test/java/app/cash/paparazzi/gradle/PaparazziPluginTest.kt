@@ -1381,6 +1381,18 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun verifySnapshotOffset() {
+    val fixtureRoot = File("src/test/projects/verify-snapshot-offset")
+
+    val result = gradleRunner
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
+    assertThat(result.task(":testDebugUnitTest")).isNotNull()
+  }
+
+  @Test
   fun verifyGif() {
     val fixtureRoot = File("src/test/projects/verify-gif")
 
