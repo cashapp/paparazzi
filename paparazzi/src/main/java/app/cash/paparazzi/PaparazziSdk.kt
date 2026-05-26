@@ -402,6 +402,7 @@ public class PaparazziSdk @JvmOverloads constructor(
       val mLastFrameTimeNanos = choreographer::class.java.getDeclaredField("mLastFrameTimeNanos")
       mLastFrameTimeNanos.isAccessible = true
       mLastFrameTimeNanos.set(choreographer, 0L)
+      Choreographer_Delegate.sChoreographerTime = 0L
       AnimationHandler.sAnimatorHandler.set(null)
       AnimationHandler.sAnimatorHandler.remove()
 
