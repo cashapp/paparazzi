@@ -34,6 +34,7 @@ import androidx.compose.ui.semantics.getAllSemanticsNodes
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.LinkAnnotation
+import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
 
 /**
@@ -86,7 +87,8 @@ internal class AccessibilityElementCollector {
           processElement = processElement,
           locationOnScreen = locationOnScreen,
           viewBounds = bounds,
-          unmergedNodes = unmergedNodes
+          unmergedNodes = unmergedNodes,
+          composeView = this
         )
       }
     }
@@ -252,19 +254,20 @@ internal class AccessibilityElementCollector {
     processElement: (AccessibilityElement) -> Unit,
     locationOnScreen: IntArray,
     viewBounds: Rect,
-    unmergedNodes: List<SemanticsNode>?
+    unmergedNodes: List<SemanticsNode>?,
+    composeView: View
   ) {
     val accessibilityText = if (config.isMergingSemanticsOfDescendants) {
       val unmergedNode = unmergedNodes?.filter { it.id == id }
       unmergedNode?.firstOrNull()?.let { node ->
         node.findAllUnmergedNodes()
-          .mapNotNull { it.accessibilityText() }
+          .mapNotNull { it.accessibilityText(composeView) }
           .joinToString(", ")
           .ifEmpty { null }
           .takeIf { it != IN_LIST_LABEL }
       }
     } else {
-      accessibilityText()
+      accessibilityText(composeView)
     }
 
     if (accessibilityText != null) {
@@ -302,16 +305,28 @@ internal class AccessibilityElementCollector {
     }
   }
 
-  private fun SemanticsNode.accessibilityText(): String? {
-    val invisibleToUser = config.getOrNull(SemanticsProperties.InvisibleToUser) != null
-    val hideFromAccessibility = config.getOrNull(SemanticsProperties.HideFromAccessibility) != null
-    val hasZeroAlphaModifier = layoutInfo.getModifierInfo().any {
-      // We don't get direct access to an alpha field but we can inspect the modifiers and see if
-      // a modifier of 0f was applied to the node.
-      it.modifier == Modifier.alpha(0f)
-    }
-    if (invisibleToUser || hideFromAccessibility || hasZeroAlphaModifier) {
-      return null
+  private fun SemanticsNode.accessibilityText(composeView: View): String? {
+    // Prefer AccessibilityNodeInfo.isVisibleToUser, which Compose derives from
+    // semanticsNode.isHidden — covering isTransparent (including graphicsLayer alpha),
+    // InvisibleToUser, and HideFromAccessibility in one reliable check.
+    val isVisibleToUser = ViewCompat.getAccessibilityNodeProvider(composeView)
+      ?.createAccessibilityNodeInfoForAccessibilityId(id)
+      ?.isVisibleToUser
+    when (isVisibleToUser) {
+      false -> return null
+      null -> {
+        // Node provider unavailable (e.g. accessibility not initialised in this environment).
+        // Fall back to individual semantics checks.
+        val invisibleToUser = config.getOrNull(SemanticsProperties.InvisibleToUser) != null
+        val hideFromAccessibility = config.getOrNull(SemanticsProperties.HideFromAccessibility) != null
+        val hasZeroAlphaModifier = layoutInfo.getModifierInfo().any {
+          // We don't get direct access to an alpha field but we can inspect the modifiers and see
+          // if a modifier of 0f was applied to the node.
+          it.modifier == Modifier.alpha(0f)
+        }
+        if (invisibleToUser || hideFromAccessibility || hasZeroAlphaModifier) return null
+      }
+      true -> { /* visible — continue */ }
     }
 
     val stateDescription = config.getOrNull(SemanticsProperties.StateDescription)
