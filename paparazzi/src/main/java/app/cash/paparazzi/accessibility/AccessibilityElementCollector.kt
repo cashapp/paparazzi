@@ -20,8 +20,6 @@ import android.os.ext.util.SdkLevel
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Checkable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.platform.ViewRootForTest
 import androidx.compose.ui.semantics.LiveRegionMode.Companion.Assertive
@@ -316,15 +314,10 @@ internal class AccessibilityElementCollector {
       false -> return null
       null -> {
         // Node provider unavailable (e.g. accessibility not initialised in this environment).
-        // Fall back to individual semantics checks.
+        // Fall back to the semantic properties we can read directly from the config.
         val invisibleToUser = config.getOrNull(SemanticsProperties.InvisibleToUser) != null
         val hideFromAccessibility = config.getOrNull(SemanticsProperties.HideFromAccessibility) != null
-        val hasZeroAlphaModifier = layoutInfo.getModifierInfo().any {
-          // We don't get direct access to an alpha field but we can inspect the modifiers and see
-          // if a modifier of 0f was applied to the node.
-          it.modifier == Modifier.alpha(0f)
-        }
-        if (invisibleToUser || hideFromAccessibility || hasZeroAlphaModifier) return null
+        if (invisibleToUser || hideFromAccessibility) return null
       }
       true -> { /* visible — continue */ }
     }
