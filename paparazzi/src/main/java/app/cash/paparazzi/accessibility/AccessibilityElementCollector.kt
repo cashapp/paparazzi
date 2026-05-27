@@ -308,7 +308,7 @@ internal class AccessibilityElementCollector {
     // semanticsNode.isHidden — covering isTransparent (including graphicsLayer alpha),
     // InvisibleToUser, and HideFromAccessibility in one reliable check.
     val isVisibleToUser = ViewCompat.getAccessibilityNodeProvider(composeView)
-      ?.createAccessibilityNodeInfoForAccessibilityId(id)
+      ?.createAccessibilityNodeInfo(id)
       ?.isVisibleToUser
     when (isVisibleToUser) {
       false -> return null
