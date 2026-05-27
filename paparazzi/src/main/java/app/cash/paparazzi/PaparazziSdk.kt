@@ -183,15 +183,6 @@ public class PaparazziSdk @JvmOverloads constructor(
     }
 
     bridgeRenderSession = createBridgeSession(renderSession, renderSession.inflate())
-
-    val viewGroup = bridgeRenderSession.rootViews[0].viewObject as ViewGroup
-    // Workaround since layoutlib's [DisplayManagerGlobal] is missing [registerForRefreshRateChanges].
-    // This method is called by [Display.getRefreshRate] if [mRefreshRateChangesRegistered] is true.
-    // Remove once an updated layoutlib contains this upstream fix: https://android-review.googlesource.com/c/platform/frameworks/layoutlib/+/3876099
-    Display::class.java.getDeclaredField("mRefreshRateChangesRegistered").apply {
-      isAccessible = true
-      set(viewGroup.display, true)
-    }
   }
 
   public fun teardown() {
@@ -288,6 +279,17 @@ public class PaparazziSdk @JvmOverloads constructor(
 
     System_Delegate.setNanosTime(0L)
     System_Delegate.setBootTimeNanos(0L)
+
+    // Set up an UncaughtExceptionHandler to ensure that uncaught exceptions are propagated to the
+    // test framework rather than being silently swallowed. See https://github.com/cashapp/paparazzi/issues/2127
+    val previousUncaughtExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
+    Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
+      logger.error(throwable, throwable.message)
+      previousUncaughtExceptionHandler?.uncaughtException(thread, throwable)
+    }
+
+    lateinit var lifecycleOwner: PaparazziLifecycleOwner
+
     try {
       withTime(0L) {
         // Initialize the choreographer at time=0.
@@ -314,7 +316,7 @@ public class PaparazziSdk @JvmOverloads constructor(
       }
 
       if (hasLifecycleOwnerRuntime) {
-        val lifecycleOwner = PaparazziLifecycleOwner()
+        lifecycleOwner = PaparazziLifecycleOwner()
         modifiedView.setViewTreeLifecycleOwner(lifecycleOwner)
 
         if (hasSavedStateRegistryOwnerRuntime) {
@@ -372,6 +374,9 @@ public class PaparazziSdk @JvmOverloads constructor(
         onNewFrame(scaleImage(frameImage(image)))
       }
     } finally {
+      if (hasLifecycleOwnerRuntime) {
+        lifecycleOwner.registry.currentState = Lifecycle.State.DESTROYED
+      }
       viewGroup.removeAllViews()
 
       // Remove any applied render extensions
@@ -388,6 +393,8 @@ public class PaparazziSdk @JvmOverloads constructor(
       val mLastFrameTimeNanos = choreographer::class.java.getDeclaredField("mLastFrameTimeNanos")
       mLastFrameTimeNanos.isAccessible = true
       mLastFrameTimeNanos.set(choreographer, 0L)
+
+      Thread.setDefaultUncaughtExceptionHandler(previousUncaughtExceptionHandler)
     }
   }
 
@@ -429,7 +436,16 @@ public class PaparazziSdk @JvmOverloads constructor(
       val constructor =
         bridgeSessionClass.getDeclaredConstructor(RenderSessionImpl::class.java, Result::class.java)
       constructor.isAccessible = true
-      return constructor.newInstance(renderSession, result) as BridgeRenderSession
+      val bridgeSession = constructor.newInstance(renderSession, result) as BridgeRenderSession
+      val viewGroup = bridgeSession.rootViews[0].viewObject as ViewGroup
+      // Workaround since layoutlib's [DisplayManagerGlobal] is missing [registerForRefreshRateChanges].
+      // This method is called by [Display.getRefreshRate] if [mRefreshRateChangesRegistered] is true.
+      // Remove once an updated layoutlib contains this upstream fix: https://android-review.googlesource.com/c/platform/frameworks/layoutlib/+/3876099
+      Display::class.java.getDeclaredField("mRefreshRateChangesRegistered").apply {
+        isAccessible = true
+        set(viewGroup.display, true)
+      }
+      return bridgeSession
     } catch (e: Exception) {
       throw RuntimeException(e)
     }

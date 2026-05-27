@@ -1,5 +1,5 @@
 plugins {
-  id 'com.gradle.develocity' version '4.3'
+  id 'com.gradle.develocity' version '4.4.1'
 }
 
 develocity {
@@ -39,7 +39,7 @@ def brokenProjects = [
   "invalid-application-plugin", // intentionally does not import
   "missing-library-plugin", // intentionally does not import
   "missing-supported-plugins", // intentionally does not import
-  "multiplatform-plugin-without-android", // intentionally does not import
+  "multiplatform-paparazzi-in-commontest", // intentionally throws on invalid configuration
 ]
 def testProjectNames = []
 new File(rootDir, "paparazzi-gradle-plugin/src/test/projects").eachDir {

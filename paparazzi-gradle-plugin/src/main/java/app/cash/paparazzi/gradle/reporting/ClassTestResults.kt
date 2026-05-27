@@ -1,6 +1,5 @@
 package app.cash.paparazzi.gradle.reporting
 
-import org.gradle.internal.FileUtils
 import java.util.TreeSet
 
 /**
@@ -15,7 +14,7 @@ internal class ClassTestResults(
   packageResults
 ) {
   private val results: MutableSet<TestResult> = TreeSet()
-  override val baseUrl: String = "classes/" + FileUtils.toSafeFileName(name) + ".html"
+  override val baseUrl: String = "classes/${name.safeFilename()}.html"
   override val title: String
     get() = if (name == displayName) "Class $name" else displayName!!
 
@@ -43,5 +42,13 @@ internal class ClassTestResults(
     val test = TestResult(testName, testDisplayName, duration, this)
     results += test
     return addTest(test)
+  }
+
+  companion object {
+    internal fun String.safeFilename(): String {
+      // The regex needs careful handling of backslashes and special characters
+      return replace("[\"<>|\\:*?/]+", "-")
+        .replace("[\\000-\\031]+", "")
+    }
   }
 }

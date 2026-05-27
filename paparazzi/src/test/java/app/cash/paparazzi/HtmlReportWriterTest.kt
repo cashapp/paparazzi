@@ -16,8 +16,10 @@
 package app.cash.paparazzi
 
 import app.cash.paparazzi.FileSubject.Companion.assertThat
+import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.differs.PixelPerfect
 import com.google.common.truth.Truth.assertThat
+import org.junit.Assert.assertThrows
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -91,6 +93,49 @@ class HtmlReportWriterTest {
         |];
       """.trimMargin()
     )
+  }
+
+  @Test
+  fun failureActualImageMatchesRecordedGoldenImageBytes() {
+    try {
+      System.setProperty("paparazzi.test.record", "true")
+
+      val htmlReportWriter = HtmlReportWriter(
+        runName = "record_run",
+        rootDirectory = reportRoot.root,
+        maxPercentDifference = 0.0,
+        differ = PixelPerfect,
+        snapshotRootDirectory = snapshotRoot.root
+      )
+      val snapshot = Snapshot(
+        name = "test",
+        testName = TestName("app.cash.paparazzi", "HomeView", "testSettings"),
+        timestamp = Instant.parse("2021-02-23T10:27:43Z").toDate()
+      )
+      val golden = File("${snapshotRoot.root}/images/app.cash.paparazzi_HomeView_testSettings_test.png")
+
+      htmlReportWriter.use {
+        htmlReportWriter.newFrameHandler(snapshot = snapshot, frameCount = 1, fps = -1).use { frameHandler ->
+          frameHandler.handle(otherImage)
+        }
+      }
+
+      val failureDir = reportRoot.newFolder("failures")
+      assertThrows(AssertionError::class.java) {
+        ImageUtils.assertImageSimilar(
+          relativePath = golden.path,
+          goldenImage = anyImage,
+          image = otherImage,
+          maxPercentDifferent = 0.0,
+          failureDir = failureDir,
+          differ = PixelPerfect
+        )
+      }
+
+      assertThat(File(failureDir, golden.name).readBytes()).isEqualTo(golden.readBytes())
+    } finally {
+      System.clearProperty("paparazzi.test.record")
+    }
   }
 
   @Test

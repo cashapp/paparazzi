@@ -22,13 +22,17 @@ import app.cash.paparazzi.gradle.utils.artifactViewFor
 import app.cash.paparazzi.gradle.utils.capitalize
 import app.cash.paparazzi.gradle.utils.relativize
 import com.android.build.api.dsl.CommonExtension
+import com.android.build.api.dsl.KotlinMultiplatformAndroidHostTestCompilation
 import com.android.build.api.instrumentation.FramesComputationMode
 import com.android.build.api.instrumentation.InstrumentationScope
 import com.android.build.api.variant.AndroidComponentsExtension
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension
 import com.android.build.api.variant.DynamicFeatureAndroidComponentsExtension
 import com.android.build.api.variant.HasUnitTest
+import com.android.build.api.variant.KotlinMultiplatformAndroidComponentsExtension
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
+import com.android.build.api.variant.UnitTest
+import com.android.builder.model.Version.ANDROID_GRADLE_PLUGIN_VERSION
 import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -44,6 +48,7 @@ import org.gradle.api.provider.ProviderFactory
 import org.gradle.api.reporting.ReportingExtension
 import org.gradle.api.tasks.Delete
 import org.gradle.api.tasks.PathSensitivity
+import org.gradle.api.tasks.SourceSet.TEST_SOURCE_SET_NAME
 import org.gradle.api.tasks.options.Option
 import org.gradle.api.tasks.testing.AbstractTestTask
 import org.gradle.api.tasks.testing.Test
@@ -52,7 +57,6 @@ import org.gradle.internal.operations.BuildOperationRunner
 import org.gradle.internal.os.OperatingSystem
 import org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
 import java.util.Locale
 import javax.inject.Inject
 import kotlin.io.encoding.Base64
@@ -65,16 +69,15 @@ public class PaparazziPlugin @Inject constructor(
   private val buildOperationExecutor: BuildOperationExecutor
 ) : Plugin<Project> {
   override fun apply(project: Project) {
-    val supportedPlugins = listOf("com.android.application", "com.android.library", "com.android.dynamic-feature")
+    val supportedPlugins = listOf(
+      "com.android.application",
+      "com.android.library",
+      "com.android.dynamic-feature",
+      ANDROID_KOTLIN_MULTIPLATFORM_LIBRARY_PLUGIN
+    )
     project.afterEvaluate {
       check(supportedPlugins.any { project.plugins.hasPlugin(it) }) {
         "One of ${supportedPlugins.joinToString(", ")} must be applied for Paparazzi to work properly."
-      }
-      project.plugins.withId("org.jetbrains.kotlin.multiplatform") {
-        val kmpExtension = project.extensions.getByType(KotlinMultiplatformExtension::class.java)
-        check(kmpExtension.targets.any { target -> target is KotlinAndroidTarget }) {
-          "There must be an Android target configured when using Paparazzi with the Kotlin Multiplatform Plugin"
-        }
       }
     }
 
@@ -84,20 +87,23 @@ public class PaparazziPlugin @Inject constructor(
         when (androidComponents) {
           is LibraryAndroidComponentsExtension,
           is ApplicationAndroidComponentsExtension,
-          is DynamicFeatureAndroidComponentsExtension -> Unit
+          is DynamicFeatureAndroidComponentsExtension,
+          is KotlinMultiplatformAndroidComponentsExtension -> Unit
           // exhaustive to avoid potential breaking changes in future AGP releases
           else -> error("${androidComponents.javaClass.name} from $plugin is not supported in Paparazzi")
         }
-        setupPaparazzi(project, androidComponents)
+        project.setupPaparazzi(androidComponents)
       }
     }
   }
 
-  private fun setupPaparazzi(project: Project, extension: AndroidComponentsExtension<*, *, *>) {
-    project.addTestDependency()
+  private fun Project.setupPaparazzi(extension: AndroidComponentsExtension<*, *, *>) {
+    val isMultiplatformProject: Boolean = extension is KotlinMultiplatformAndroidComponentsExtension ||
+      project.plugins.hasPlugin(KOTLIN_MULTIPLATFORM_PLUGIN)
+    addTestDependency()
+
     val layoutlibNativeRuntimeFileCollection = project.setupLayoutlibRuntimeDependency()
     val layoutlibResourcesFileCollection = project.setupLayoutlibResourcesDependency()
-    val snapshotOutputDir = project.layout.projectDirectory.dir("src/test/snapshots")
 
     // Create anchor tasks for all variants.
     val verifyVariants = project.tasks.register("verifyPaparazzi") {
@@ -112,25 +118,27 @@ public class PaparazziPlugin @Inject constructor(
       it.group = VERIFICATION_GROUP
       it.description = "Clean and record golden images for all variants"
     }
-    val deleteSnapshots = project.tasks.register("deletePaparazziSnapshots", Delete::class.java) {
+    val deleteSnapshots = project.tasks.register("deletePaparazziSnapshots") {
       it.group = VERIFICATION_GROUP
       it.description = "Delete all golden images"
-      val files = project.fileTree(snapshotOutputDir) { tree ->
-        tree.include("**/*.png")
-        tree.include("**/*.mov")
-      }
-      it.delete(files)
-    }
-
-    // We need to pull target sdk as defined from DSL otherwise it gets set to some default value when resolving during [onVariants]
-    var targetSdkVersion: String? = null
-    extension.finalizeDsl { androidExtension ->
-      targetSdkVersion = androidExtension?.targetSdkVersion() ?: DEFAULT_COMPILE_SDK_VERSION.toString()
     }
 
     extension.onVariants { variant ->
       val variantSlug = variant.name.capitalize()
       val testVariant = (variant as? HasUnitTest)?.unitTest ?: return@onVariants
+      val snapshotOutputDir = snapshotDir(testVariant)
+
+      val deleteVariantSnapshot =
+        project.tasks.register("delete${variantSlug}PaparazziSnapshots", Delete::class.java) {
+          it.group = VERIFICATION_GROUP
+          it.description = "Delete all golden images for variant '$variantSlug'"
+          val files = project.fileTree(snapshotOutputDir) { tree ->
+            tree.include("**/*.png")
+            tree.include("**/*.mov")
+          }
+          it.delete(files)
+        }
+      deleteSnapshots.configure { it.dependsOn(deleteVariantSnapshot) }
 
       val projectDirectory = project.layout.projectDirectory
       val buildDirectory = project.layout.buildDirectory
@@ -138,6 +146,10 @@ public class PaparazziPlugin @Inject constructor(
       val reportOutputDir =
         project.extensions.getByType(ReportingExtension::class.java).baseDirectory.dir("paparazzi/${variant.name}")
 
+      // AGP < 9 does not fully initialize ASM instrumentation for Android KMP variants, causing
+      // `lateinit property visitorFactory has not been initialized` during configuration.
+      // This transform is a best-effort fix for ResourcesCompat font loading, so skip it for KMP
+      // projects until AGP 9+.
       val testInstrumentation = testVariant.instrumentation
       testInstrumentation.transformClassesWith(
         ResourcesCompatVisitorFactory::class.java,
@@ -160,7 +172,7 @@ public class PaparazziPlugin @Inject constructor(
         task.packageName.set(variant.namespace)
         task.artifactFiles.from(sources.packageAwareArtifactFiles)
         task.nonTransitiveRClassEnabled.set(nonTransitiveRClassEnabled)
-        task.targetSdkVersion.set(targetSdkVersion)
+        task.targetSdkVersion.set(targetSdk())
         task.projectResourceDirs.set(sources.localResourceDirs.relativize(projectDirectory))
         task.moduleResourceDirs.set(sources.moduleResourceDirs.relativize(projectDirectory))
         task.aarExplodedDirs.set(sources.aarExplodedDirs.relativize(gradleHomeDir))
@@ -174,8 +186,8 @@ public class PaparazziPlugin @Inject constructor(
 
       val testVariantSlug = testVariant.name.capitalize()
 
-      project.tasks.named { it == "test$testVariantSlug" }
-        .configureEach { it.dependsOn(writeResourcesTask) }
+      val testTasks = project.tasks.named { it == "test$testVariantSlug" }
+      testTasks.configureEach { it.dependsOn(writeResourcesTask) }
 
       val recordTaskProvider = project.tasks.register("recordPaparazzi$variantSlug", PaparazziTask::class.java) {
         it.group = VERIFICATION_GROUP
@@ -204,10 +216,14 @@ public class PaparazziPlugin @Inject constructor(
       }
 
       val overwriteOnMaxPercentDifferenceProvider = project.overwriteOnMaxPercentDifferenceProvider()
-      val failureDir = buildDirectory.dir("paparazzi/failures")
-      val testTaskProvider =
-        project.tasks.withType(Test::class.java).named { it == "test$testVariantSlug" }
+      val paparazziGradlePropertiesProvider =
+        project.providers.gradlePropertiesPrefixedBy("app.cash.paparazzi")
+      val failureDir = buildDirectory.dir("paparazzi/failures/${variant.name}")
+      val testTaskProvider = testTasks.withType(Test::class.java)
       testTaskProvider.configureEach { test ->
+        val localResourceDirs = sources.localResourceDirs ?: providerFactory.provider { emptyList() }
+        val localAssetDirs = sources.localAssetDirs ?: providerFactory.provider { emptyList() }
+
         test.setTestReporter(
           PaparazziTestReporter(
             buildOperationRunner = buildOperationRunner,
@@ -221,53 +237,58 @@ public class PaparazziPlugin @Inject constructor(
         test.systemProperties["paparazzi.project.dir"] = projectDirectory.toString()
         test.systemProperties["paparazzi.build.dir"] = buildDirectory.get().toString()
         test.systemProperties["paparazzi.report.dir"] = reportOutputDir.get().toString()
-        test.systemProperties["paparazzi.snapshot.dir"] = snapshotOutputDir.toString()
         test.systemProperties["paparazzi.artifacts.cache.dir"] = gradleUserHomeDir.path
-        test.systemProperties.putAll(project.providers.gradlePropertiesPrefixedBy("app.cash.paparazzi").get())
 
         test.inputs.property("paparazzi.test.record", isRecordRun)
         test.inputs.property("paparazzi.test.verify", isVerifyRun)
+        test.inputs.property("paparazzi.gradleProperties", paparazziGradlePropertiesProvider)
+        test.inputs.property("paparazzi.layoutlib.version", NATIVE_LIB_VERSION)
 
-        test.inputs.files(sources.localResourceDirs)
+        // Source dirs catch in-place content edits. PrepareResourcesTask tracks paths only and
+        // its JSON output is byte-identical when contents change, so it can't invalidate the test.
+        test.inputs.files(localResourceDirs)
           .withPropertyName("paparazzi.localResourceDirs")
           .withPathSensitivity(PathSensitivity.RELATIVE)
         test.inputs.files(sources.moduleResourceDirs)
           .withPropertyName("paparazzi.moduleResourceDirs")
           .withPathSensitivity(PathSensitivity.RELATIVE)
-        test.inputs.files(sources.localAssetDirs)
+        test.inputs.files(sources.aarExplodedDirs)
+          .withPropertyName("paparazzi.aarResourceDirs")
+          .withPathSensitivity(PathSensitivity.RELATIVE)
+        test.inputs.files(localAssetDirs)
           .withPropertyName("paparazzi.localAssetDirs")
           .withPathSensitivity(PathSensitivity.RELATIVE)
         test.inputs.files(sources.moduleAssetDirs)
           .withPropertyName("paparazzi.moduleAssetDirs")
           .withPathSensitivity(PathSensitivity.RELATIVE)
-        test.inputs.files(layoutlibNativeRuntimeFileCollection)
-          .withPropertyName("paparazzi.nativeRuntime")
+        test.inputs.files(sources.aarAssetDirs)
+          .withPropertyName("paparazzi.aarAssetDirs")
+          .withPathSensitivity(PathSensitivity.RELATIVE)
+
+        // Declared so Test Distribution ships the file (#1790); also catches path-structure changes.
+        test.inputs.file(writeResourcesTask.flatMap { it.paparazziResources })
+          .withPropertyName("paparazzi.test.resources")
           .withPathSensitivity(PathSensitivity.NONE)
 
-        test.inputs.dir(
-          isVerifyRun.flatMap {
-            project.objects.directoryProperty().apply {
-              set(if (it) snapshotOutputDir else null)
-            }
-          }
-        ).withPropertyName("paparazzi.snapshot.input.dir")
+        test.inputs.dir(snapshotOutputDir.presentWhen(isVerifyRun))
+          .withPropertyName("paparazzi.snapshot.input.dir")
           .withPathSensitivity(PathSensitivity.RELATIVE)
           .optional()
 
-        test.outputs.dir(
-          isRecordRun.flatMap {
-            project.objects.directoryProperty().apply {
-              set(if (it) snapshotOutputDir else null)
-            }
-          }
-        ).withPropertyName("paparazzi.snapshots.output.dir")
+        test.outputs.dir(snapshotOutputDir.presentWhen(isRecordRun))
+          .withPropertyName("paparazzi.snapshots.output.dir")
           .optional()
 
         test.outputs.dir(reportOutputDir).withPropertyName("paparazzi.report.dir")
+        test.outputs.dir(failureDir)
+          .withPropertyName("paparazzi.failures.dir")
+          .optional()
 
         test.doFirst {
+          if (isVerifyRun.get()) failureDir.get().asFile.deleteRecursively()
           // Note: these are lazy properties that are not resolvable in the Gradle configuration phase.
           // They need special handling, so they're added as inputs.property above, and systemProperty here.
+          test.systemProperties.putAll(paparazziGradlePropertiesProvider.get())
           test.systemProperties["paparazzi.layoutlib.runtime.root"] =
             layoutlibNativeRuntimeFileCollection.singleFile.absolutePath
           test.systemProperties["paparazzi.layoutlib.resources.root"] =
@@ -276,6 +297,8 @@ public class PaparazziPlugin @Inject constructor(
           test.systemProperties["paparazzi.test.record.overwriteOnMaxPercentDifference"] =
             overwriteOnMaxPercentDifferenceProvider.orNull == "true"
           test.systemProperties["paparazzi.test.verify"] = isVerifyRun.get()
+          test.systemProperties["paparazzi.snapshot.dir"] = snapshotOutputDir.get().asFile.absolutePath
+          test.systemProperties["paparazzi.failures.dir"] = failureDir.get().asFile.absolutePath
         }
 
         test.doLast {
@@ -382,7 +405,70 @@ public class PaparazziPlugin @Inject constructor(
     } else {
       dependencies.create("app.cash.paparazzi:paparazzi:$VERSION")
     }
-    configurations.getByName("testImplementation").dependencies.add(dependency)
+
+    val allowedConfigs = mutableSetOf<String>()
+
+    when {
+      plugins.hasPlugin(ANDROID_KOTLIN_MULTIPLATFORM_LIBRARY_PLUGIN) -> {
+        val kmp = extensions.getByType(KotlinMultiplatformExtension::class.java)
+        kmp.targets.configureEach { target ->
+          target.compilations.configureEach { compilation ->
+            if (compilation is KotlinMultiplatformAndroidHostTestCompilation) {
+              val configurationName = compilation.defaultSourceSet.implementationConfigurationName
+              allowedConfigs += configurationName
+              configurations.getByName(configurationName).dependencies.add(dependency)
+            }
+          }
+        }
+      }
+      plugins.hasPlugin(KOTLIN_MULTIPLATFORM_PLUGIN) -> {
+        val kmp = extensions.getByType(KotlinMultiplatformExtension::class.java)
+        with(kmp) {
+          sourceSets.androidUnitTest.configure {
+            val configurationName = it.implementationConfigurationName
+            allowedConfigs += configurationName
+            configurations.getByName(configurationName).dependencies.add(dependency)
+          }
+        }
+      }
+      else -> {
+        val android = extensions.getByType(CommonExtension::class.java)
+        val configurationName = android.sourceSets.getByName(TEST_SOURCE_SET_NAME).implementationConfigurationName
+        allowedConfigs += configurationName
+        configurations.getByName(configurationName).dependencies.add(dependency)
+      }
+    }
+
+    afterEvaluate {
+      val kmp = extensions.findByType(KotlinMultiplatformExtension::class.java) ?: return@afterEvaluate
+      kmp.sourceSets.forEach { sourceSet ->
+        val configName = sourceSet.implementationConfigurationName
+        if (configName in allowedConfigs) return@forEach
+        val config = configurations.findByName(configName) ?: return@forEach
+        val hasPaparazzi = config.dependencies.any {
+          it.group == "app.cash.paparazzi" && it.name == "paparazzi"
+        }
+        check(!hasPaparazzi) {
+          "Paparazzi must not be declared in '$configName', as it should only resolve on Android JVM tests."
+        }
+      }
+    }
+  }
+
+  @Suppress("UnstableApiUsage")
+  private fun <T : Any> Provider<T>.presentWhen(condition: Provider<Boolean>): Provider<T> =
+    condition.filter { it }.flatMap { this }
+
+  private fun Project.snapshotDir(testVariant: UnitTest): Provider<Directory> {
+    val sources = testVariant.sources.kotlin?.all
+      ?: testVariant.sources.java?.all
+      ?: error("No Kotlin or Java sources on ${testVariant.name}")
+    val projectDirectory = layout.projectDirectory
+    return sources.map { dirs ->
+      val sourceSetRoot = dirs.firstOrNull()?.asFile?.parentFile
+        ?: error("No source dirs registered for ${testVariant.name}")
+      projectDirectory.dir(sourceSetRoot.path).dir("snapshots")
+    }
   }
 
   private fun Project.isInternal(): Boolean = providers.gradleProperty("app.cash.paparazzi.internal").orNull == "true"
@@ -390,12 +476,38 @@ public class PaparazziPlugin @Inject constructor(
   private fun Project.overwriteOnMaxPercentDifferenceProvider(): Provider<String> =
     providers.gradleProperty("app.cash.paparazzi.overwriteOnMaxPercentDifference")
 
-  private fun Any.targetSdkVersion(): String =
-    ((this as? CommonExtension<*, *, *, *, *, *>)?.testOptions?.targetSdk ?: DEFAULT_COMPILE_SDK_VERSION).toString()
+  /**
+   * Resolves the `targetSdk` Paparazzi writes into the test manifest.
+   *
+   * Prefers `android.testOptions.targetSdk` if set, otherwise the project's `compileSdk`,
+   * otherwise [DEFAULT_COMPILE_SDK_VERSION]. Mirrors AGP 9's planned default behavior
+   * (`BooleanOption.DEFAULT_TARGET_SDK_TO_COMPILE_SDK_IF_UNSET` in AGP sources) of
+   * defaulting test rendering to `compileSdk` rather than the variant's resolved
+   * `targetSdk` — which on AGP 8.x falls through to `minSdk` when
+   * `defaultConfig.targetSdk` is unset, exposing the test render to a lower SDK that
+   * Compose/layoutlib don't cleanly support today.
+   */
+  private fun Project.targetSdk(): Provider<String> =
+    providerFactory.provider {
+      val commonExtension = extensions.findByType(CommonExtension::class.java)
+      val resolved = commonExtension?.testOptions?.targetSdk
+        ?: commonExtension?.compileSdk
+        ?: DEFAULT_COMPILE_SDK_VERSION
+      resolved.toString()
+    }
 
   private fun Provider<List<Directory>>?.relativize(directory: Directory): Provider<List<String>> =
     this?.map { dirs -> dirs.map { directory.relativize(it.asFile) } }
       ?: providerFactory.provider { emptyList() }
+
+  private fun isAgpAtLeast(major: Int): Boolean {
+    val agpMajor = ANDROID_GRADLE_PLUGIN_VERSION
+      .substringBefore('.')
+      .toIntOrNull()
+    return agpMajor != null && agpMajor >= major
+  }
 }
 
 private const val DEFAULT_COMPILE_SDK_VERSION = 36
+private const val ANDROID_KOTLIN_MULTIPLATFORM_LIBRARY_PLUGIN = "com.android.kotlin.multiplatform.library"
+private const val KOTLIN_MULTIPLATFORM_PLUGIN = "org.jetbrains.kotlin.multiplatform"

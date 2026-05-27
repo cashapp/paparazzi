@@ -102,10 +102,9 @@ public class SnapshotVerifier @JvmOverloads constructor(
     /** Directory where to write the thumbnails and deltas. */
     private val failureDir: File
       get() {
-        val buildDirString = System.getProperty("paparazzi.build.dir")
-        val failureDir = File(buildDirString, "paparazzi/failures")
-        failureDir.mkdirs()
-        return failureDir
+        val path = System.getProperty("paparazzi.failures.dir")
+          ?: error("paparazzi.failures.dir system property is required")
+        return File(path).apply { mkdirs() }
       }
   }
 }

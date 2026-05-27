@@ -33,6 +33,42 @@ class LaunchViewTest {
 
 See the [project website][paparazzi] for documentation and APIs.
 
+Using JUnit 5
+-------
+
+```kotlin
+lateinit var paparazzi: Paparazzi
+
+@BeforeEach
+fun setup(testInfo: TestInfo) {
+  paparazzi = Paparazzi().apply {
+    setup(
+      testName = TestName(
+        packageName = testInfo.testClass.get().`package`?.name.orEmpty(),
+        className = testInfo.testClass.get().simpleName,
+        methodName = testInfo.testMethod.get().name
+      )
+    )
+  }
+}
+
+@AfterEach
+fun tearDown() {
+  paparazzi.teardown()
+}
+
+@Test
+fun snapshot_example() {
+  val view = paparazzi.inflate<TextView>(android.R.layout.simple_list_item_1).apply {
+    text = "Hello Paparazzi"
+    textSize = 24f
+    gravity = Gravity.CENTER
+  }
+
+  paparazzi.snapshot(view)
+}
+```
+
 Tasks
 -------
 
@@ -150,7 +186,7 @@ buildscript {
     google()
   }
   dependencies {
-    classpath 'app.cash.paparazzi:paparazzi-gradle-plugin:2.0.0-alpha02'
+    classpath 'app.cash.paparazzi:paparazzi-gradle-plugin:2.0.0-alpha05'
   }
 }
 
@@ -160,7 +196,7 @@ apply plugin: 'app.cash.paparazzi'
 Using the plugins DSL:
 ```groovy
 plugins {
-  id 'app.cash.paparazzi' version '2.0.0-alpha02'
+  id 'app.cash.paparazzi' version '2.0.0-alpha05'
 }
 ```
 

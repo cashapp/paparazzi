@@ -1,6 +1,5 @@
 plugins {
   id 'com.android.library'
-  id 'kotlin-android'
   id 'app.cash.paparazzi'
 }
 
@@ -14,13 +13,10 @@ android {
     sourceCompatibility = libs.versions.javaTarget.get()
     targetCompatibility = libs.versions.javaTarget.get()
   }
-  kotlinOptions {
-    jvmTarget = libs.versions.javaTarget.get()
-  }
 }
 
 dependencies {
-  testImplementation 'androidx.activity:activity-compose:1.12.2'
+  testImplementation 'androidx.activity:activity-compose:1.13.0'
   testImplementation libs.truth
 }
 

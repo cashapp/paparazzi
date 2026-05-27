@@ -1,6 +1,6 @@
 plugins {
-  id 'org.jetbrains.kotlin.multiplatform'
   id 'com.android.library'
+  id 'org.jetbrains.kotlin.plugin.compose'
   id 'app.cash.paparazzi'
 }
 
@@ -13,5 +13,18 @@ android {
   compileOptions {
     sourceCompatibility = libs.versions.javaTarget.get()
     targetCompatibility = libs.versions.javaTarget.get()
+  }
+  buildFeatures {
+    compose = true
+  }
+}
+
+dependencies {
+  implementation libs.composeUi.material
+}
+
+tasks.withType(Test).configureEach {
+  testLogging {
+    showStandardStreams true
   }
 }
