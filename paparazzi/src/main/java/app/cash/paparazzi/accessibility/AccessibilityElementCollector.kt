@@ -304,17 +304,21 @@ internal class AccessibilityElementCollector {
   }
 
   private fun SemanticsNode.accessibilityText(composeView: View): String? {
-    // Prefer AccessibilityNodeInfo.isVisibleToUser, which Compose derives from
-    // semanticsNode.isHidden — covering isTransparent (including graphicsLayer alpha),
-    // InvisibleToUser, and HideFromAccessibility in one reliable check.
+    // AccessibilityNodeInfo.isVisibleToUser is the preferred check: on a real Android device
+    // Compose derives it from semanticsNode.isHidden, covering InvisibleToUser,
+    // HideFromAccessibility, and layer-alpha transparency in one authoritative call.
+    //
+    // Note: in Paparazzi's JVM/layoutlib environment the accessibility layer-alpha path is not
+    // fully wired up, so nodes hidden purely via graphicsLayer/alpha modifiers can still report
+    // isVisibleToUser == true and will appear in the legend. This is a known Paparazzi-specific
+    // limitation; on a real device isVisibleToUser correctly excludes those nodes.
     val isVisibleToUser = ViewCompat.getAccessibilityNodeProvider(composeView)
       ?.createAccessibilityNodeInfo(id)
       ?.isVisibleToUser
     when (isVisibleToUser) {
       false -> return null
       null -> {
-        // Node provider unavailable (e.g. accessibility not initialised in this environment).
-        // Fall back to the semantic properties we can read directly from the config.
+        // Node provider unavailable — fall back to the semantic properties we can read directly.
         val invisibleToUser = config.getOrNull(SemanticsProperties.InvisibleToUser) != null
         val hideFromAccessibility = config.getOrNull(SemanticsProperties.HideFromAccessibility) != null
         if (invisibleToUser || hideFromAccessibility) return null
