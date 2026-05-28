@@ -33,6 +33,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -40,6 +41,7 @@ import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.semantics.invisibleToUser
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.progressBarRangeInfo
@@ -188,12 +190,25 @@ class AccessibilityRenderingTest {
               .semantics {
                 invisibleToUser()
               },
-            text = "Text invisible to user"
+            text = "Text invisible to user via `invisibleToUser`"
+          )
+          Text(
+            modifier = Modifier
+              .semantics {
+                hideFromAccessibility()
+              },
+            text = "Text invisible to user via `hideFromAccessibility`"
           )
           Text(
             modifier = Modifier
               .alpha(0f),
             text = "Text with zero alpha"
+          )
+          Text(
+            modifier = Modifier.graphicsLayer {
+              alpha = 0f
+            },
+            text = "Text with zero alpha via graphicsLayer"
           )
           Text(text = "Text that is visible!")
         }
