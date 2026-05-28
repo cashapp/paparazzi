@@ -16,24 +16,14 @@
 package app.cash.paparazzi.accessibility
 
 import android.graphics.Rect
-import android.os.ext.util.SdkLevel
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Checkable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.platform.ViewRootForTest
-import androidx.compose.ui.semantics.LiveRegionMode.Companion.Assertive
-import androidx.compose.ui.semantics.LiveRegionMode.Companion.Polite
-import androidx.compose.ui.semantics.ProgressBarRangeInfo
-import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsNode
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getAllSemanticsNodes
 import androidx.compose.ui.semantics.getOrNull
-import androidx.compose.ui.state.ToggleableState
-import androidx.compose.ui.text.LinkAnnotation
 import androidx.core.view.isVisible
 
 /**
@@ -58,17 +48,10 @@ internal class AccessibilityElementCollector {
     }
 
   private fun View.processAccessibleChildren(processElement: (AccessibilityElement) -> Unit) {
-    val accessibilityText = this.accessibilityText()
     val bounds = Rect().also(::getBoundsOnScreen)
 
-    if (isImportantForAccessibility && !accessibilityText.isNullOrBlank() && isVisible) {
-      processElement(
-        AccessibilityElement(
-          id = "${this::class.simpleName}($accessibilityText)",
-          displayBounds = bounds,
-          contentDescription = accessibilityText
-        )
-      )
+    if (isImportantForAccessibility && isVisible) {
+      AccessibilityElement.fromView(this, bounds)?.let(processElement)
     }
 
     if (this is AbstractComposeView && isVisible) {
@@ -202,7 +185,7 @@ internal class AccessibilityElementCollector {
     val visited = mutableSetOf<View>()
     val visiting = mutableSetOf<View>()
 
-    fun visit(view: View, orderIndex: Int): Boolean {
+    fun visit(view: View): Boolean {
       if (visited.contains(view)) return true
       if (visiting.contains(view)) {
         // Cycle detected, use layout order
@@ -214,7 +197,7 @@ internal class AccessibilityElementCollector {
       val viewConstraints = constraints[view] ?: TraversalConstraints()
       // Visit all views that should come before this one
       for (beforeView in viewConstraints.before) {
-        if (!visit(beforeView, childViews.indexOf(beforeView))) {
+        if (!visit(beforeView)) {
           // Cycle detected, abort topological sort
           visiting.remove(view)
           return false
@@ -228,12 +211,11 @@ internal class AccessibilityElementCollector {
     }
 
     // Try topological sort with layout order as fallback
-    val viewsWithOrder = childViews.mapIndexed { index, view -> view to index }
     var hasCycle = false
 
-    for ((view, orderIndex) in viewsWithOrder) {
+    for (view in childViews) {
       if (!visited.contains(view)) {
-        if (!visit(view, orderIndex)) {
+        if (!visit(view)) {
           hasCycle = true
           break
         }
@@ -254,267 +236,22 @@ internal class AccessibilityElementCollector {
     viewBounds: Rect,
     unmergedNodes: List<SemanticsNode>?
   ) {
-    val accessibilityText = if (config.isMergingSemanticsOfDescendants) {
-      val unmergedNode = unmergedNodes?.filter { it.id == id }
-      unmergedNode?.firstOrNull()?.let { node ->
-        node.findAllUnmergedNodes()
-          .mapNotNull { it.accessibilityText() }
-          .joinToString(", ")
-          .ifEmpty { null }
-          .takeIf { it != IN_LIST_LABEL }
+    // SemanticsNode.boundsInScreen isn't reported correctly for nodes so boundsInRoot + locationOnScreen used to correctly calculate displayBounds.
+    val displayBounds = with(boundsInRoot) {
+      Rect(left.toInt(), top.toInt(), right.toInt(), bottom.toInt()).run {
+        offset(locationOnScreen[0], locationOnScreen[1])
+        Rect(left, top, right.coerceIn(0, viewBounds.right), bottom.coerceIn(0, viewBounds.bottom))
       }
-    } else {
-      accessibilityText()
     }
 
-    if (accessibilityText != null) {
-      // SemanticsNode.boundsInScreen isn't reported correctly for nodes so boundsInRoot + locationOnScreen used to correctly calculate displayBounds.
-      val displayBounds = with(boundsInRoot) {
-        Rect(left.toInt(), top.toInt(), right.toInt(), bottom.toInt()).run {
-          offset(locationOnScreen[0], locationOnScreen[1])
-          Rect(left, top, right.coerceIn(0, viewBounds.right), bottom.coerceIn(0, viewBounds.bottom))
-        }
-      }
-
-      processElement(
-        AccessibilityElement(
-          // SemanticsNode.id is backed by AtomicInteger and is not guaranteed consistent across runs.
-          id = accessibilityText,
-          displayBounds = displayBounds,
-          contentDescription = accessibilityText
-        )
-      )
-    }
+    AccessibilityElement.fromSemanticsNode(
+      node = this,
+      displayBounds = displayBounds,
+      unmergedNodes = unmergedNodes
+    )?.let(processElement)
   }
-
-  private fun SemanticsNode.findAllUnmergedNodes(): List<SemanticsNode> {
-    // Semantics information is already set on parent semantic node where `clearAndSetSemantics` is called.
-    // No need to iterate through children.
-    if (config.isClearingSemantics) return listOf(this)
-
-    return buildList {
-      addAll(
-        children
-          .filter { !it.config.isMergingSemanticsOfDescendants }
-          .flatMap { it.findAllUnmergedNodes() }
-      )
-      add(this@findAllUnmergedNodes)
-    }
-  }
-
-  private fun SemanticsNode.accessibilityText(): String? {
-    val invisibleToUser = config.getOrNull(SemanticsProperties.InvisibleToUser) != null
-    val hasZeroAlphaModifier = layoutInfo.getModifierInfo().any {
-      // We don't get direct access to an alpha field but we can inspect the modifiers and see if
-      // a modifier of 0f was applied to the node.
-      it.modifier == Modifier.alpha(0f)
-    }
-    if (invisibleToUser || hasZeroAlphaModifier) {
-      return null
-    }
-
-    val stateDescription = config.getOrNull(SemanticsProperties.StateDescription)
-    val selected = if (stateDescription != null) {
-      // The selected state is only read by TalkBack if the state description is not set
-      null
-    } else {
-      config.getOrNull(SemanticsProperties.Selected)
-        ?.let { if (it) SELECTED_LABEL else UNSELECTED_LABEL }
-    }
-    val mainAccessibilityText =
-      config.getOrNull(SemanticsProperties.ContentDescription)?.joinToString(", ")
-        ?: config.getOrNull(SemanticsProperties.Text)?.joinToString(", ")
-        ?: config.getOrNull(SemanticsProperties.EditableText)?.text
-    val role = config.getOrNull(SemanticsProperties.Role)?.toString()
-    val editable = if (config.getOrNull(SemanticsProperties.IsEditable) == true) EDITABLE_LABEL else null
-    val disabled =
-      if (config.getOrNull(SemanticsProperties.Disabled) != null) DISABLED_LABEL else null
-    val onClickLabel = if (disabled != null) {
-      null
-    } else {
-      config.getOrNull(SemanticsActions.OnClick)?.label?.let { "$ON_CLICK_LABEL: $it" }
-    }
-    val heading = if (config.getOrNull(SemanticsProperties.Heading) != null) HEADING_LABEL else null
-    val toggleableState = config.getOrNull(SemanticsProperties.ToggleableState)?.let {
-      buildString {
-        append("$TOGGLEABLE_LABEL: ")
-        append(
-          when (it) {
-            ToggleableState.On -> CHECKED_LABEL
-            ToggleableState.Off -> UNCHECKED_LABEL
-            ToggleableState.Indeterminate -> INDETERMINATE_LABEL
-          }
-        )
-      }
-    }
-    val errorLabel = config.getOrNull(SemanticsProperties.Error)
-    val progressBarRangeInfo = config.getOrNull(SemanticsProperties.ProgressBarRangeInfo)
-    val progressBarRangeInfoLabel = when (progressBarRangeInfo) {
-      ProgressBarRangeInfo.Indeterminate -> "$PROGRESS_LABEL: $INDETERMINATE_LABEL"
-      else -> {
-        progressBarRangeInfo?.let {
-          val progressPercent = (it.current / it.range.endInclusive * 100).toInt()
-          "$PROGRESS_LABEL: $progressPercent%"
-        }
-      }
-    }
-    val setProgress = config.getOrNull(SemanticsActions.SetProgress)?.let {
-      if (it.label != null) {
-        "$SET_PROGRESS_LABEL: ${it.label}"
-      } else {
-        ADJUSTABLE_LABEL
-      }
-    }
-
-    val liveRegionMode = when (config.getOrNull(SemanticsProperties.LiveRegion)) {
-      Assertive -> "$LIVE_REGION_LABEL: $LIVE_REGION_ASSERTIVE_LABEL"
-      Polite -> "$LIVE_REGION_LABEL: $LIVE_REGION_POLITE_LABEL"
-      else -> null
-    }
-
-    val annotatedStringActions = config.getOrNull(SemanticsProperties.Text)?.flatMap { annotatedString ->
-      val annotations = annotatedString.getLinkAnnotations(start = 0, end = annotatedString.text.length)
-
-      if (annotations.isNotEmpty()) {
-        annotations.map {
-          val prefix = if (it.item is LinkAnnotation.Url) {
-            URL_ACTION_LABEL
-          } else {
-            CLICK_ACTION_LABEL
-          }
-
-          "$prefix: ${annotatedString.substring(it.start until it.end)}"
-        }
-      } else {
-        emptyList()
-      }
-    }?.takeIf { it.isNotEmpty() }?.joinToString(", ")
-
-    val customActions = config.getOrNull(SemanticsActions.CustomActions)?.joinToString(", ") { action ->
-      "$CUSTOM_ACTION_LABEL: ${action.label}"
-    }
-
-    val isInList = parent?.config?.getOrNull(SemanticsProperties.CollectionInfo)?.let { IN_LIST_LABEL }
-
-    return constructTextList(
-      isInList = null, // Allows filtering out in list label above since child nodes are joined together
-      stateDescription,
-      selected,
-      toggleableState,
-      progressBarRangeInfoLabel,
-      setProgress,
-      mainAccessibilityText,
-      role,
-      editable,
-      disabled,
-      onClickLabel,
-      heading,
-      errorLabel,
-      liveRegionMode,
-      annotatedStringActions,
-      customActions,
-      isInList
-    )
-  }
-
-  private fun View.accessibilityText(): String? {
-    val nodeInfo = createAccessibilityNodeInfo()
-    onInitializeAccessibilityNodeInfo(nodeInfo)
-
-    val parentView = parent?.let { it as? View }
-    val isInList = if (parentView != null && parentView.isImportantForAccessibility) {
-      val parentNodeInfo = createAccessibilityNodeInfo()
-      parentView.onInitializeAccessibilityNodeInfo(parentNodeInfo)
-
-      parentNodeInfo.collectionInfo?.let { IN_LIST_LABEL }
-    } else {
-      null
-    }
-
-    val stateDescription = if (SdkLevel.isAtLeastR()) stateDescription?.toString() else null
-    val selected = if (isSelected) SELECTED_LABEL else null
-    val toggleableState = if (this is Checkable) {
-      buildString {
-        append("$TOGGLEABLE_LABEL: ")
-        append(if (isChecked) CHECKED_LABEL else UNCHECKED_LABEL)
-      }
-    } else {
-      null
-    }
-    val mainAccessibilityText = iterableTextForAccessibility?.toString() ?: contentDescription?.toString()
-    val editable = if (nodeInfo.isEditable) EDITABLE_LABEL else null
-    val disabled = if (!isEnabled) DISABLED_LABEL else null
-    val heading = if (SdkLevel.isAtLeastR() && isAccessibilityHeading) HEADING_LABEL else null
-    val liveRegionMode = when (accessibilityLiveRegion) {
-      View.ACCESSIBILITY_LIVE_REGION_ASSERTIVE -> "$LIVE_REGION_LABEL: $LIVE_REGION_ASSERTIVE_LABEL"
-      View.ACCESSIBILITY_LIVE_REGION_POLITE -> "$LIVE_REGION_LABEL: $LIVE_REGION_POLITE_LABEL"
-      else -> null
-    }
-    val customActions = computeCustomActions()
-
-    return constructTextList(
-      isInList = isInList,
-      stateDescription,
-      selected,
-      toggleableState,
-      mainAccessibilityText,
-      editable,
-      disabled,
-      heading,
-      liveRegionMode,
-      customActions
-    )
-  }
-
-  private fun View.computeCustomActions(): String? {
-    if (!SdkLevel.isAtLeastR()) return null
-    val nodeInfo = createAccessibilityNodeInfo()
-    accessibilityDelegate?.onInitializeAccessibilityNodeInfo(this, nodeInfo)
-    return nodeInfo.actionList
-      .filter { it.id > 0 && it.label != null }
-      .takeIf { it.isNotEmpty() }
-      ?.joinToString(", ") {
-        "$CUSTOM_ACTION_LABEL: ${it.label}"
-      }
-  }
-
-  private fun constructTextList(isInList: String?, vararg text: String?): String? {
-    val textList = listOfNotNull(*text)
-    return if (textList.isNotEmpty()) {
-      // Escape newline characters to simplify accessibility text.
-      (textList + isInList).filterNotNull().joinToString(", ").replaceLineBreaks()
-    } else {
-      null
-    }
-  }
-
-  private fun String.replaceLineBreaks() =
-    replace("\n", "\\n")
-      .replace("\r", "\\r")
-      .replace("\t", "\\t")
 
   private companion object {
-    private const val ON_CLICK_LABEL = "<on-click>"
-    private const val DISABLED_LABEL = "<disabled>"
-    private const val TOGGLEABLE_LABEL = "<toggleable>"
-    private const val SELECTED_LABEL = "<selected>"
-    private const val UNSELECTED_LABEL = "<unselected>"
-    private const val HEADING_LABEL = "<heading>"
-    private const val CHECKED_LABEL = "checked"
-    private const val UNCHECKED_LABEL = "not checked"
-    private const val INDETERMINATE_LABEL = "indeterminate"
-    private const val PROGRESS_LABEL = "<progress>"
-    private const val SET_PROGRESS_LABEL = "<set-progress>"
-    private const val ADJUSTABLE_LABEL = "<adjustable>"
-    private const val URL_ACTION_LABEL = "<url-action>"
-    private const val CLICK_ACTION_LABEL = "<click-action>"
-    private const val CUSTOM_ACTION_LABEL = "<custom-action>"
-    private const val LIVE_REGION_LABEL = "<live-region>"
-    private const val LIVE_REGION_ASSERTIVE_LABEL = "assertive"
-    private const val LIVE_REGION_POLITE_LABEL = "polite"
-    private const val EDITABLE_LABEL = "<editable>"
-    private const val IN_LIST_LABEL = "<in-list>"
-
     data class SemanticsNodeTraversalEntry(
       val traversalIndex: Float = 0f,
       val nodes: List<SemanticsNode>, // May be 1 node or a whole traversal group
