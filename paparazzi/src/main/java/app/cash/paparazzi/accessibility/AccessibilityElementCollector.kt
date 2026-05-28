@@ -32,7 +32,6 @@ import androidx.compose.ui.semantics.getAllSemanticsNodes
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.LinkAnnotation
-import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
 
 /**
@@ -85,8 +84,7 @@ internal class AccessibilityElementCollector {
           processElement = processElement,
           locationOnScreen = locationOnScreen,
           viewBounds = bounds,
-          unmergedNodes = unmergedNodes,
-          composeView = this
+          unmergedNodes = unmergedNodes
         )
       }
     }
@@ -252,20 +250,19 @@ internal class AccessibilityElementCollector {
     processElement: (AccessibilityElement) -> Unit,
     locationOnScreen: IntArray,
     viewBounds: Rect,
-    unmergedNodes: List<SemanticsNode>?,
-    composeView: View
+    unmergedNodes: List<SemanticsNode>?
   ) {
     val accessibilityText = if (config.isMergingSemanticsOfDescendants) {
       val unmergedNode = unmergedNodes?.filter { it.id == id }
       unmergedNode?.firstOrNull()?.let { node ->
         node.findAllUnmergedNodes()
-          .mapNotNull { it.accessibilityText(composeView) }
+          .mapNotNull { it.accessibilityText() }
           .joinToString(", ")
           .ifEmpty { null }
           .takeIf { it != IN_LIST_LABEL }
       }
     } else {
-      accessibilityText(composeView)
+      accessibilityText()
     }
 
     if (accessibilityText != null) {
@@ -303,28 +300,10 @@ internal class AccessibilityElementCollector {
     }
   }
 
-  private fun SemanticsNode.accessibilityText(composeView: View): String? {
-    // AccessibilityNodeInfo.isVisibleToUser is the preferred check: on a real Android device
-    // Compose derives it from semanticsNode.isHidden, covering InvisibleToUser,
-    // HideFromAccessibility, and layer-alpha transparency in one authoritative call.
-    //
-    // Note: in Paparazzi's JVM/layoutlib environment the accessibility layer-alpha path is not
-    // fully wired up, so nodes hidden purely via graphicsLayer/alpha modifiers can still report
-    // isVisibleToUser == true and will appear in the legend. This is a known Paparazzi-specific
-    // limitation; on a real device isVisibleToUser correctly excludes those nodes.
-    val isVisibleToUser = ViewCompat.getAccessibilityNodeProvider(composeView)
-      ?.createAccessibilityNodeInfo(id)
-      ?.isVisibleToUser
-    when (isVisibleToUser) {
-      false -> return null
-      null -> {
-        // Node provider unavailable — fall back to the semantic properties we can read directly.
-        val invisibleToUser = config.getOrNull(SemanticsProperties.InvisibleToUser) != null
-        val hideFromAccessibility = config.getOrNull(SemanticsProperties.HideFromAccessibility) != null
-        if (invisibleToUser || hideFromAccessibility) return null
-      }
-      true -> { /* visible — continue */ }
-    }
+  private fun SemanticsNode.accessibilityText(): String? {
+    if (config.getOrNull(SemanticsProperties.InvisibleToUser) != null) return null
+    if (config.getOrNull(SemanticsProperties.HideFromAccessibility) != null) return null
+    if (isTransparent()) return null
 
     val stateDescription = config.getOrNull(SemanticsProperties.StateDescription)
     val selected = if (stateDescription != null) {
@@ -499,6 +478,25 @@ internal class AccessibilityElementCollector {
     } else {
       null
     }
+  }
+
+  private fun SemanticsNode.isTransparent(): Boolean {
+    val candidates = arrayOf(
+      "isTransparent",
+      "isTransparent\$ui_release",
+      "getIsTransparent",
+      "getIsTransparent\$ui_release"
+    )
+    for (name in candidates) {
+      try {
+        val method = SemanticsNode::class.java.getDeclaredMethod(name)
+        method.isAccessible = true
+        if (method.invoke(this) as? Boolean == true) return true
+      } catch (_: Exception) {
+        // Try next candidate name.
+      }
+    }
+    return false
   }
 
   private fun String.replaceLineBreaks() =
