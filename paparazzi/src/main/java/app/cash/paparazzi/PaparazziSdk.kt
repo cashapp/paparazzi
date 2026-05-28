@@ -46,6 +46,7 @@ import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import app.cash.paparazzi.accessibility.AccessibilityRenderExtension
 import app.cash.paparazzi.agent.InterceptorRegistrar
+import app.cash.paparazzi.internal.ComposeViewAdapter
 import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.PaparazziCallback
 import app.cash.paparazzi.internal.PaparazziLifecycleOwner
@@ -63,8 +64,6 @@ import com.android.ide.common.rendering.api.SessionParams
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode
 import com.android.internal.lang.System_Delegate
 import com.android.layoutlib.bridge.Bridge
-import com.android.layoutlib.bridge.Bridge.cleanupThread
-import com.android.layoutlib.bridge.Bridge.prepareThread
 import com.android.layoutlib.bridge.BridgeRenderSession
 import com.android.layoutlib.bridge.impl.RenderAction
 import com.android.layoutlib.bridge.impl.RenderSessionImpl
@@ -173,7 +172,6 @@ public class PaparazziSdk @JvmOverloads constructor(
 
     val sessionParams = sessionParamsBuilder.build()
     renderSession = createRenderSession(sessionParams)
-    prepareThread()
     renderSession.init(sessionParams.timeout)
     Bitmap.setDefaultDensity(DisplayMetrics.DENSITY_DEVICE_STABLE)
 
@@ -183,12 +181,13 @@ public class PaparazziSdk @JvmOverloads constructor(
     }
 
     bridgeRenderSession = createBridgeSession(renderSession, renderSession.inflate())
+    AnimationHandler.sAnimatorHandler.set(null)
+    AnimationHandler.sAnimatorHandler.remove()
   }
 
   public fun teardown() {
     renderSession.release()
     bridgeRenderSession.dispose()
-    cleanupThread()
 
     renderer.dumpDelegates()
     logger.assertNoErrors()
@@ -233,7 +232,6 @@ public class PaparazziSdk @JvmOverloads constructor(
     logger.flushErrors()
     renderSession.release()
     bridgeRenderSession.dispose()
-    cleanupThread()
 
     sessionParamsBuilder = sessionParamsBuilder
       .copy(
@@ -257,7 +255,6 @@ public class PaparazziSdk @JvmOverloads constructor(
 
     val sessionParams = sessionParamsBuilder.build()
     renderSession = createRenderSession(sessionParams)
-    prepareThread()
     renderSession.init(sessionParams.timeout)
     Bitmap.setDefaultDensity(DisplayMetrics.DENSITY_DEVICE_STABLE)
     bridgeRenderSession = createBridgeSession(renderSession, renderSession.inflate())
@@ -276,6 +273,7 @@ public class PaparazziSdk @JvmOverloads constructor(
         renderExtension.renderView(currentView)
       }
     }
+    val useFrameTimeSystemClock = hasComposeRuntime && modifiedView.containsComposeHostView()
 
     System_Delegate.setNanosTime(0L)
     System_Delegate.setBootTimeNanos(0L)
@@ -291,7 +289,7 @@ public class PaparazziSdk @JvmOverloads constructor(
     lateinit var lifecycleOwner: PaparazziLifecycleOwner
 
     try {
-      withTime(0L) {
+      withTime(0L, useFrameTimeSystemClock) {
         // Initialize the choreographer at time=0.
       }
 
@@ -330,12 +328,22 @@ public class PaparazziSdk @JvmOverloads constructor(
       }
 
       viewGroup.addView(modifiedView)
+      val composeViewAdapter = viewGroup as? ComposeViewAdapter
+      if (composeViewAdapter?.requiresPreRenderMeasure == true) {
+        withTime(startNanos, useFrameTimeSystemClock) {
+          val result = renderSession.measure()
+          if (result.status == ERROR_UNKNOWN) {
+            throw result.exception
+          }
+        }
+        composeViewAdapter.sizeZeroContentFromPopupRoot(modifiedView)
+      }
       for (frame in 0 until frameCount) {
         val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
 
         // If we have pendingTasks run recomposer to ensure we get the correct frame.
         var hasPendingWork = false
-        withTime(nowNanos) {
+        withTime(nowNanos, useFrameTimeSystemClock) {
           val result = renderSession.render(true)
           if (result.status == ERROR_UNKNOWN) {
             throw result.exception
@@ -349,7 +357,7 @@ public class PaparazziSdk @JvmOverloads constructor(
         }
 
         if (hasPendingWork) {
-          withTime(nowNanos) {
+          withTime(nowNanos, useFrameTimeSystemClock) {
             val result = renderSession.render(true)
             if (result.status == ERROR_UNKNOWN) {
               throw result.exception
@@ -383,40 +391,47 @@ public class PaparazziSdk @JvmOverloads constructor(
       if (modifiedView !== view) {
         (view.parent as ViewGroup).removeView(view)
       }
-      AnimationHandler.sAnimatorHandler.set(null)
       if (hasComposeRuntime) {
         forceReleaseComposeReferenceLeaks()
       }
+      AnimationHandler.sAnimatorHandler.set(null)
+      AnimationHandler.sAnimatorHandler.remove()
 
       // Reset the choreographer to its initial state for last for future test runs as it is a singleton.
       val choreographer = Choreographer.getInstance()
       val mLastFrameTimeNanos = choreographer::class.java.getDeclaredField("mLastFrameTimeNanos")
       mLastFrameTimeNanos.isAccessible = true
       mLastFrameTimeNanos.set(choreographer, 0L)
+      Choreographer_Delegate.sChoreographerTime = 0L
+      AnimationHandler.sAnimatorHandler.set(null)
+      AnimationHandler.sAnimatorHandler.remove()
 
       Thread.setDefaultUncaughtExceptionHandler(previousUncaughtExceptionHandler)
     }
   }
 
-  private fun withTime(timeNanos: Long, block: () -> Unit) {
-    val frameNanos = timeNanos
-
-    // Execute the block at the requested time.
-    System_Delegate.setNanosTime(0L)
-    Choreographer_Delegate.sChoreographerTime = frameNanos
+  private fun withTime(timeNanos: Long, useFrameTimeSystemClock: Boolean, block: () -> Unit) {
+    // layoutlib 16.2.3's HWUI path rejects a frame timestamp of 0ms.
+    // Keep the requested snapshot time visible to SystemClock while ensuring Compose snapshots
+    // always expose a positive frame timestamp to HWUI, input dispatch, and render-thread
+    // animation paths.
+    val frameTimeNanos = if (useFrameTimeSystemClock && timeNanos == 0L) MIN_FRAME_TIME_NANOS else timeNanos
+    System_Delegate.setNanosTime(if (useFrameTimeSystemClock) timeNanos else 0L)
 
     try {
+      if (!useFrameTimeSystemClock) {
+        Choreographer_Delegate.sChoreographerTime = frameTimeNanos
+      }
       executeHandlerCallbacks()
-      val currentTimeNanos = uptimeNanos()
-      /**
-       * The choreographer needs to be manually ticked in order for the frame time to become visible to the native layer
-       * which is necessary in order for ripples to work is compose, as well as view animation classes.
-       *
-       * After frame is run, we have to reset sChoreographerTime since [com.android.layoutlib.bridge.SessionInteractiveData.getNanosTime]
-       * uses sChoreographerTime to calculate nanoTime via [System_Delegate.nanoTime].
-       */
-      Choreographer_Delegate.doFrame(currentTimeNanos)
-
+      if (useFrameTimeSystemClock) {
+        Choreographer_Delegate.doFrame(frameTimeNanos)
+      } else {
+        Choreographer_Delegate.doCallbacks(
+          Choreographer.getInstance(),
+          Choreographer.CALLBACK_ANIMATION,
+          frameTimeNanos
+        )
+      }
       return block()
     } catch (e: Throwable) {
       Bridge.getLog().error("broken", "Failed executing Choreographer#doFrame", e, null, null)
@@ -426,7 +441,7 @@ public class PaparazziSdk @JvmOverloads constructor(
 
   private fun createRenderSession(sessionParams: SessionParams): RenderSessionImpl {
     val renderSession = RenderSessionImpl(sessionParams)
-    renderSession.setElapsedFrameTimeNanos(0L)
+    renderSession.setElapsedFrameTimeNanos(MIN_FRAME_TIME_NANOS)
     return renderSession
   }
 
@@ -618,6 +633,8 @@ public class PaparazziSdk @JvmOverloads constructor(
     }
 
   internal companion object {
+    private val MIN_FRAME_TIME_NANOS = TimeUnit.MILLISECONDS.toNanos(1L)
+
     internal lateinit var renderer: Renderer
     internal val isInitialized get() = ::renderer.isInitialized
 
@@ -649,6 +666,27 @@ public class PaparazziSdk @JvmOverloads constructor(
         |              android:layout_width="${if (renderingMode.horizAction == RenderingMode.SizeAction.SHRINK) "wrap_content" else "match_parent"}"
         |              android:layout_height="${if (renderingMode.vertAction == RenderingMode.SizeAction.SHRINK) "wrap_content" else "match_parent"}"/>
       """.trimMargin()
+
+    private fun View.containsComposeHostView(): Boolean {
+      if (isComposeHostView()) return true
+      if (this !is ViewGroup) return false
+
+      for (index in 0 until childCount) {
+        if (getChildAt(index).containsComposeHostView()) return true
+      }
+      return false
+    }
+
+    private fun View.isComposeHostView(): Boolean {
+      var currentClass: Class<*>? = javaClass
+      while (currentClass != null) {
+        if (currentClass.name == "androidx.compose.ui.platform.AbstractComposeView") {
+          return true
+        }
+        currentClass = currentClass.superclass
+      }
+      return false
+    }
 
     private fun isPresentInClasspath(vararg classNames: String): Boolean {
       return try {
