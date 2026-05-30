@@ -22,6 +22,7 @@ include ':paparazzi-gradle-plugin'
 include ':paparazzi-preview-lints'
 include ':paparazzi-preview-processor'
 include ':paparazzi-preview-runtime'
+include ':paparazzi-preview-test-junit'
 
 include ':sample'
 

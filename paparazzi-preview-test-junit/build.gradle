@@ -3,5 +3,8 @@ apply plugin: 'org.jetbrains.kotlin.plugin.compose'
 apply plugin: 'com.vanniktech.maven.publish'
 
 dependencies {
-  implementation libs.compose.runtime
+  compileOnly libs.compose.runtime
+  implementation projects.paparazzi
+  implementation projects.paparazziPreviewRuntime
+  api libs.testParameterInjector
 }
