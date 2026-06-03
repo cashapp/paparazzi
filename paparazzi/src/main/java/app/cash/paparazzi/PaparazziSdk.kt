@@ -410,26 +410,27 @@ public class PaparazziSdk @JvmOverloads constructor(
     }
   }
 
-  private fun withTime(timeNanos: Long, useFrameTimeSystemClock: Boolean, block: () -> Unit) {
+  private fun withTime(logicalTimeNanos: Long, useFrameTimeSystemClock: Boolean, block: () -> Unit) {
     // layoutlib 16.2.3's HWUI path rejects a frame timestamp of 0ms.
-    // Keep the requested snapshot time visible to SystemClock while ensuring Compose snapshots
-    // always expose a positive frame timestamp to HWUI, input dispatch, and render-thread
-    // animation paths.
-    val frameTimeNanos = if (useFrameTimeSystemClock && timeNanos == 0L) MIN_FRAME_TIME_NANOS else timeNanos
-    System_Delegate.setNanosTime(if (useFrameTimeSystemClock) timeNanos else 0L)
+    // Keep the requested snapshot time visible to SystemClock, but use a small internal render
+    // epoch offset for Compose snapshots so HWUI, input dispatch, and render-thread animation
+    // paths always see positive vsync timestamps with unchanged frame deltas.
+    val renderTimeNanos =
+      if (useFrameTimeSystemClock) logicalTimeNanos + MIN_FRAME_TIME_NANOS else logicalTimeNanos
+    System_Delegate.setNanosTime(if (useFrameTimeSystemClock) logicalTimeNanos else 0L)
 
     try {
       if (!useFrameTimeSystemClock) {
-        Choreographer_Delegate.sChoreographerTime = frameTimeNanos
+        Choreographer_Delegate.sChoreographerTime = renderTimeNanos
       }
       executeHandlerCallbacks()
       if (useFrameTimeSystemClock) {
-        Choreographer_Delegate.doFrame(frameTimeNanos)
+        Choreographer_Delegate.doFrame(renderTimeNanos)
       } else {
         Choreographer_Delegate.doCallbacks(
           Choreographer.getInstance(),
           Choreographer.CALLBACK_ANIMATION,
-          frameTimeNanos
+          renderTimeNanos
         )
       }
       return block()
