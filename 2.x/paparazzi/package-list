@@ -112,6 +112,7 @@ $dokka.location:app.cash.paparazzi/Paparazzi/Paparazzi/#app.cash.paparazzi.Envir
 $dokka.location:app.cash.paparazzi/Paparazzi/apply/#org.junit.runners.model.Statement#org.junit.runner.Description/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/apply.html
 $dokka.location:app.cash.paparazzi/Paparazzi/context/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/context.html
 $dokka.location:app.cash.paparazzi/Paparazzi/gif/#android.view.View#kotlin.String?#kotlin.Long#kotlin.Long#kotlin.Int/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/gif.html
+$dokka.location:app.cash.paparazzi/Paparazzi/gif/#kotlin.String?#kotlin.Long#kotlin.Long#kotlin.Int#kotlin.Function0[kotlin.Unit]/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/gif.html
 $dokka.location:app.cash.paparazzi/Paparazzi/inflate/#kotlin.Int/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/inflate.html
 $dokka.location:app.cash.paparazzi/Paparazzi/layoutInflater/#/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/layout-inflater.html
 $dokka.location:app.cash.paparazzi/Paparazzi/prepare/#org.junit.runner.Description/PointingToDeclaration/paparazzi/app.cash.paparazzi/-paparazzi/prepare.html
