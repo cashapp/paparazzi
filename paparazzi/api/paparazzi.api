@@ -176,7 +176,9 @@ public final class app/cash/paparazzi/Paparazzi : org/junit/rules/TestRule {
 	public final fun gif (Landroid/view/View;Ljava/lang/String;J)V
 	public final fun gif (Landroid/view/View;Ljava/lang/String;JJ)V
 	public final fun gif (Landroid/view/View;Ljava/lang/String;JJI)V
+	public final fun gif (Ljava/lang/String;JJILkotlin/jvm/functions/Function2;)V
 	public static synthetic fun gif$default (Lapp/cash/paparazzi/Paparazzi;Landroid/view/View;Ljava/lang/String;JJIILjava/lang/Object;)V
+	public static synthetic fun gif$default (Lapp/cash/paparazzi/Paparazzi;Ljava/lang/String;JJILkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
 	public final fun inflate (I)Landroid/view/View;
 	public final fun prepare (Lorg/junit/runner/Description;)V
 	public final fun setup (Lapp/cash/paparazzi/TestName;)V

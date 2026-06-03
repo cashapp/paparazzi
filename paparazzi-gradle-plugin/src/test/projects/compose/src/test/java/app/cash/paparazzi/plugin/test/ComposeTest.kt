@@ -6,6 +6,9 @@ import android.graphics.Insets
 import android.graphics.Paint
 import android.graphics.Typeface
 import android.view.View
+import androidx.compose.animation.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
@@ -17,7 +20,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Text
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,6 +47,30 @@ class ComposeTest {
   fun compose() {
     paparazzi.snapshot {
       HelloPaparazzi()
+    }
+  }
+
+  @Test
+  fun gif() {
+    paparazzi.gif(end = 1000L) {
+      val color = remember { Animatable(Color.Cyan) }
+      LaunchedEffect(Unit) {
+        color.animateTo(Color.Magenta, animationSpec = tween(500, easing = LinearEasing))
+        color.animateTo(Color.Cyan, animationSpec = tween(500, easing = LinearEasing))
+      }
+
+      Box(
+        Modifier
+          .fillMaxSize()
+          .background(Color.White)
+      ) {
+        Box(
+          Modifier
+            .align(Alignment.Center)
+            .size(120.dp)
+            .background(color.value, CircleShape)
+        )
+      }
     }
   }
 

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+### New
+* Add `Paparazzi#gif` overloads that accept a `@Composable` directly, mirroring the existing `snapshot` Compose overloads:
+
+```kotlin
+paparazzi.gif {
+  CircularProgressIndicator()
+}
+```
+
 ## [2.0.0-alpha05] - 2026-05-20
 
 This release supports pre-AGP 9.0 consumers.

@@ -19,8 +19,10 @@ import android.content.Context
 import android.content.res.Resources
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup.LayoutParams
 import androidx.annotation.LayoutRes
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.ComposeView
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode
 import org.junit.rules.TestRule
 import org.junit.runner.Description
@@ -152,6 +154,25 @@ public class Paparazzi @JvmOverloads constructor(
       frameHandler = handler
       sdk.snapshot(view, offsetMillis)
     }
+  }
+
+  public fun gif(
+    name: String? = null,
+    start: Long = 0L,
+    end: Long = 500L,
+    fps: Int = 30,
+    composable: @Composable () -> Unit
+  ) {
+    gif(
+      view = ComposeView(context).apply {
+        layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
+        setContent(composable)
+      },
+      name = name,
+      start = start,
+      end = end,
+      fps = fps
+    )
   }
 
   @JvmOverloads
