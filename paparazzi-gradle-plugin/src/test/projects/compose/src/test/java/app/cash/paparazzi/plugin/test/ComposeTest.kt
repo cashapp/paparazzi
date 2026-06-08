@@ -15,13 +15,17 @@ import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.anchoredDraggable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -29,9 +33,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Paparazzi
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode.SHRINK
 import org.junit.Rule
@@ -114,6 +121,54 @@ class ComposeTest {
   }
 
   @Test
+  fun appMessageBottomSheetWithGestureNavigation() {
+    paparazzi.unsafeUpdateConfig(deviceConfig = DeviceConfig.PIXEL_5)
+
+    paparazzi.snapshot {
+      FakeGestureNavigationInsets {
+        BoxWithConstraints(
+          modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black)
+        ) {
+          Box(
+            modifier = Modifier
+              .padding(top = maxHeight * 0.545f)
+              .fillMaxWidth()
+              .fillMaxSize()
+              .background(Color.White)
+              .padding(horizontal = 28.dp, vertical = 32.dp)
+          ) {
+            Column {
+              Text(
+                text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod " +
+                  "tempor incididunt ut labore et dolore magna aliqua.",
+                color = Color.Black
+              )
+              Text(
+                text = "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi " +
+                  "ut aliquip ex ea commodo consequat.",
+                color = Color.Black
+              )
+              Text(
+                text = "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum " +
+                  "dolore eu fugiat nulla pariatur.",
+                color = Color.Black
+              )
+              Text(
+                modifier = Modifier.padding(top = 32.dp),
+                text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod " +
+                  "tempor incididunt ut labore et dolore magna aliqua.",
+                color = Color.Black
+              )
+            }
+          }
+        }
+      }
+    }
+  }
+
+  @Test
   fun anchoredDraggableAnchorsFromSize() {
     paparazzi.unsafeUpdateConfig(renderingMode = SHRINK)
 
@@ -180,6 +235,66 @@ class ComposeTest {
       canvas.drawText("This text should", 28f, baseline, text)
       canvas.drawText("respect synthetic", 28f, baseline + 56f, text)
       canvas.drawText("window insets.", 28f, baseline + 112f, text)
+    }
+  }
+
+  @Composable
+  private fun FakeGestureNavigationInsets(content: @Composable () -> Unit) {
+    val hostView = LocalView.current
+    val density = LocalDensity.current
+    val statusBarHeight = 62.dp
+    val navigationBarHeight = 24.dp
+    val statusBarHeightPx = density.run { statusBarHeight.roundToPx() }
+    val navigationBarHeightPx = density.run { navigationBarHeight.roundToPx() }
+
+    LaunchedEffect(statusBarHeightPx, navigationBarHeightPx) {
+      val statusBarInsets = Insets.of(0, statusBarHeightPx, 0, 0)
+      val navigationBarInsets = Insets.of(0, 0, 0, navigationBarHeightPx)
+      val insets = ViewWindowInsets.Builder()
+        .setInsets(ViewWindowInsets.Type.statusBars(), statusBarInsets)
+        .setInsetsIgnoringVisibility(ViewWindowInsets.Type.statusBars(), statusBarInsets)
+        .setInsets(ViewWindowInsets.Type.navigationBars(), navigationBarInsets)
+        .setInsetsIgnoringVisibility(ViewWindowInsets.Type.navigationBars(), navigationBarInsets)
+        .build()
+      fun View.dispatchSyntheticInsets() {
+        dispatchApplyWindowInsets(insets)
+        dispatchWindowInsetsAnimationProgress(insets, emptyList())
+      }
+
+      with(hostView.rootView) {
+        dispatchSyntheticInsets()
+        lateinit var listener: View.OnLayoutChangeListener
+        listener = View.OnLayoutChangeListener { view, _, _, _, _, _, _, _, _ ->
+          view.removeOnLayoutChangeListener(listener)
+          view.dispatchSyntheticInsets()
+        }
+        addOnLayoutChangeListener(listener)
+      }
+    }
+
+    Box(Modifier.fillMaxSize()) {
+      content()
+      Box(
+        modifier = Modifier
+          .align(Alignment.TopCenter)
+          .fillMaxWidth()
+          .height(statusBarHeight)
+          .background(Color.Black)
+      )
+      Box(
+        modifier = Modifier
+          .align(Alignment.BottomCenter)
+          .fillMaxWidth()
+          .height(navigationBarHeight)
+          .background(Color.White),
+        contentAlignment = Alignment.Center
+      ) {
+        Box(
+          modifier = Modifier
+            .size(width = 118.dp, height = 4.dp)
+            .background(Color.Black)
+        )
+      }
     }
   }
 }
