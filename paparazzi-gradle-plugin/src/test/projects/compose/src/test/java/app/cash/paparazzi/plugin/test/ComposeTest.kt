@@ -35,6 +35,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Popup
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Paparazzi
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode.SHRINK
@@ -102,6 +103,27 @@ class ComposeTest {
           InsetAwareScreen()
           StatusBar(modifier = Modifier.align(Alignment.TopCenter))
           NavigationBar(modifier = Modifier.align(Alignment.BottomCenter))
+        }
+      }
+    }
+  }
+
+  @Test
+  fun syntheticWindowInsetsWithPopupOverlay() {
+    paparazzi.unsafeUpdateConfig(deviceConfig = DeviceConfig.PIXEL_5)
+
+    paparazzi.snapshot {
+      SyntheticSystemBarInsets {
+        Box(Modifier.fillMaxSize()) {
+          InsetAwareScreen()
+        }
+        // Both bars share one Popup: layoutlib drops the first window and NPEs at teardown when
+        // a composition hosts two popup windows.
+        Popup {
+          Box(Modifier.fillMaxSize()) {
+            StatusBar(modifier = Modifier.align(Alignment.TopCenter))
+            NavigationBar(modifier = Modifier.align(Alignment.BottomCenter))
+          }
         }
       }
     }
