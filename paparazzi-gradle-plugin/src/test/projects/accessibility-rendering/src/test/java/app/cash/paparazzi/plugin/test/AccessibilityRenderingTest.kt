@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.progressSemantics
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -29,6 +30,7 @@ import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -128,6 +130,48 @@ class AccessibilityRenderingTest {
         Text(text = "Text 2")
       }
       Text(modifier = Modifier.wrapContentSize(), text = "Text 1")
+    }
+  }
+
+  @Test
+  fun alertDialogMaterial3() {
+    paparazzi.snapshot {
+      // Bright background content makes the dialog's dim scrim visually unmistakable:
+      // if the scrim is dropped, the background renders fully saturated and the
+      // snapshot diff is large.
+      Column(Modifier.fillMaxSize()) {
+        Box(
+          Modifier
+            .weight(1f)
+            .fillMaxSize()
+            .background(Color(0xFFFF9800))
+        ) {
+          Text(modifier = Modifier.wrapContentSize(), text = "Background top")
+        }
+        Box(
+          Modifier
+            .weight(1f)
+            .fillMaxSize()
+            .background(Color(0xFF4CAF50))
+        ) {
+          Text(modifier = Modifier.wrapContentSize(), text = "Background bottom")
+        }
+      }
+      AlertDialog(
+        onDismissRequest = {},
+        title = { Text(text = "Dialog title") },
+        text = { Text(text = "Dialog message over a dimmed background") },
+        confirmButton = {
+          TextButton(onClick = {}) {
+            Text(text = "Confirm")
+          }
+        },
+        dismissButton = {
+          TextButton(onClick = {}) {
+            Text(text = "Dismiss")
+          }
+        }
+      )
     }
   }
 
