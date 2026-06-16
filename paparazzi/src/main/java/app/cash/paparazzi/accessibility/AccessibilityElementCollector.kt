@@ -258,7 +258,7 @@ internal class AccessibilityElementCollector {
       val unmergedNode = unmergedNodes?.filter { it.id == id }
       unmergedNode?.firstOrNull()?.let { node ->
         node.findAllUnmergedNodes()
-          .mapNotNull { it.accessibilityText() }
+          .mapNotNull { it.accessibilityText()?.takeIf { text -> text.isNotBlank() } }
           .joinToString(", ")
           .ifEmpty { null }
           .takeIf { it != IN_LIST_LABEL }
