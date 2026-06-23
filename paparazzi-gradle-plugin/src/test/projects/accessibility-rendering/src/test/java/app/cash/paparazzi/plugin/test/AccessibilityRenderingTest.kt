@@ -572,6 +572,31 @@ class AccessibilityRenderingTest {
     paparazzi.snapshot(view)
   }
 
+  @Test
+  fun `verify blank text excluded from merged accessibility labels`() {
+    paparazzi.snapshot {
+      Column(
+        modifier = Modifier.semantics(mergeDescendants = true) {}
+      ) {
+        Text("$356.21")
+        Text("")
+      }
+    }
+  }
+
+  @Test
+  fun `verify whitespace-only text excluded from merged accessibility labels`() {
+    paparazzi.snapshot {
+      Column(
+        modifier = Modifier.semantics(mergeDescendants = true) {}
+      ) {
+        Text("Balance")
+        Text("   ")
+        Text("$100.00")
+      }
+    }
+  }
+
   private fun buildViewWithCustomActions(context: Context) =
     LinearLayout(context).apply {
       addView(
