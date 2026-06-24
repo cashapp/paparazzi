@@ -330,7 +330,8 @@ public class PaparazziSdk @JvmOverloads constructor(
       viewGroup.addView(modifiedView)
       val composeViewAdapter = viewGroup as? ComposeViewAdapter
       if (composeViewAdapter?.requiresPreRenderMeasure == true) {
-        withTime(startNanos, useFrameTimeSystemClock) {
+        // useFrameTimeSystemClock is false to ensure that the first frame is rendered at time=0, which is required for Compose to measure correctly.
+        withTime(logicalTimeNanos = startNanos, useFrameTimeSystemClock = false) {
           val result = renderSession.measure()
           if (result.status == ERROR_UNKNOWN) {
             throw result.exception
