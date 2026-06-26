@@ -8,7 +8,7 @@ javaTarget = "21"
 junitPlatform = "6.1.3"
 kotlin = "2.3.0"
 ksp = "2.3.12"
-layoutlib = "16.2.1"
+layoutlib = "16.2.3"
 moshi = "1.15.2"
 
 minSdk = "25"
