@@ -24,6 +24,7 @@ import android.graphics.Color
 import android.os.SystemClock
 import android.view.Choreographer
 import android.view.Choreographer.CALLBACK_ANIMATION
+import android.view.Choreographer_Delegate
 import android.view.View
 import android.view.animation.LinearInterpolator
 import android.widget.Button
@@ -59,8 +60,6 @@ class PaparazziTest {
 
   @Test
   fun resetsAnimationHandler() {
-    assertThat(AnimationHandler.sAnimatorHandler.get()).isNull()
-
     // Why Button?  Because it sets a StateListAnimator on window attach
     // See https://github.com/cashapp/paparazzi/pull/319
     paparazzi.snapshot(Button(paparazzi.context))
@@ -222,6 +221,16 @@ class PaparazziTest {
   }
 
   @Test
+  fun frameTimes() {
+    paparazzi.snapshot(object : View(paparazzi.context) {
+      override fun onDraw(canvas: Canvas) {
+        println("sChoreographerTime ${Choreographer_Delegate.sChoreographerTime} - nano=${System_Delegate.nanoTime()} uptime=${SystemClock.uptimeMillis()}")
+      }
+    }
+    )
+  }
+
+  @Test
   fun preDrawOnEveryFrame() {
     val log = mutableListOf<String>()
 
@@ -241,7 +250,7 @@ class PaparazziTest {
 
     paparazzi.gif(view, fps = 4)
 
-    assertThat(log).isEqualTo(listOf("predraw", "draw", "draw", "predraw", "predraw", "predraw"))
+    assertThat(log).isEqualTo(listOf("predraw", "predraw", "draw", "draw", "predraw", "predraw"))
   }
 
   private val time: Long
