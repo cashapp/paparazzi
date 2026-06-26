@@ -20,10 +20,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.WindowManager
+import android.view.WindowManagerGlobal
 import android.view.WindowManagerImpl
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import app.cash.paparazzi.RenderExtension
+import app.cash.paparazzi.getFieldReflectively
 import app.cash.paparazzi.internal.ComposeViewAdapter
 import com.android.internal.view.OneShotPreDrawListener
 
@@ -57,7 +59,7 @@ public class AccessibilityRenderExtension : RenderExtension {
 
         // The root of the view hierarchy is rendered at full width.
         // We need to restrict it when taking accessibility snapshots.
-        val windowManagerRootView = (windowManager as WindowManagerImpl).currentRootView
+        val windowManagerRootView = WindowManagerGlobal.getInstance().findPopupRootView(rootView)
         if (windowManagerRootView != null) {
           windowManagerRootView.layoutParams =
             FrameLayout.LayoutParams(contentView.measuredWidth, MATCH_PARENT, Gravity.START)
@@ -85,4 +87,19 @@ private fun View.findRootView(): View {
     parent = parent.parent
   }
   throw IllegalArgumentException("View hierarchy does not contain a ComposeViewAdapter")
+}
+
+internal fun WindowManagerGlobal.findPopupRootView(excludedView: View): View? {
+  @Suppress("UNCHECKED_CAST")
+  val params = WindowManagerGlobal::class.java
+    .getFieldReflectively("mParams")
+    .get(this) as List<WindowManager.LayoutParams>
+  return windowViews
+    .asSequence()
+    .zip(params.asSequence())
+    .drop(1)
+    .lastOrNull { (view, layoutParams) ->
+      view !== excludedView && layoutParams.token != null
+    }
+    ?.first
 }
