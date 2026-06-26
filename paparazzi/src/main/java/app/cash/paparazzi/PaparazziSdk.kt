@@ -393,7 +393,7 @@ public class PaparazziSdk @JvmOverloads constructor(
       val choreographer = Choreographer.getInstance()
       val mLastFrameTimeNanos = choreographer::class.java.getDeclaredField("mLastFrameTimeNanos")
       mLastFrameTimeNanos.isAccessible = true
-      mLastFrameTimeNanos.set(choreographer, 0L)
+      mLastFrameTimeNanos.set(choreographer, Long.MIN_VALUE)
 
       Thread.setDefaultUncaughtExceptionHandler(previousUncaughtExceptionHandler)
     }
@@ -457,7 +457,7 @@ public class PaparazziSdk @JvmOverloads constructor(
   }
 
   private fun withTime(timeNanos: Long, block: () -> Unit) {
-    val frameNanos = timeNanos
+    val frameNanos = timeNanos.coerceAtLeast(1L)
 
     // Execute the block at the requested time.
     System_Delegate.setNanosTime(0L)
