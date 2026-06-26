@@ -21,6 +21,7 @@ import android.content.res.Resources
 import android.graphics.Bitmap
 import android.os.Handler
 import android.os.Handler_Delegate
+import android.os.Looper_Accessor
 import android.util.AttributeSet
 import android.util.DisplayMetrics
 import android.view.BridgeInflater
@@ -63,8 +64,6 @@ import com.android.ide.common.rendering.api.SessionParams
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode
 import com.android.internal.lang.System_Delegate
 import com.android.layoutlib.bridge.Bridge
-import com.android.layoutlib.bridge.Bridge.cleanupThread
-import com.android.layoutlib.bridge.Bridge.prepareThread
 import com.android.layoutlib.bridge.BridgeRenderSession
 import com.android.layoutlib.bridge.impl.RenderAction
 import com.android.layoutlib.bridge.impl.RenderSessionImpl
@@ -173,7 +172,6 @@ public class PaparazziSdk @JvmOverloads constructor(
 
     val sessionParams = sessionParamsBuilder.build()
     renderSession = createRenderSession(sessionParams)
-    prepareThread()
     renderSession.init(sessionParams.timeout)
     Bitmap.setDefaultDensity(DisplayMetrics.DENSITY_DEVICE_STABLE)
 
@@ -188,7 +186,7 @@ public class PaparazziSdk @JvmOverloads constructor(
   public fun teardown() {
     renderSession.release()
     bridgeRenderSession.dispose()
-    cleanupThread()
+    Looper_Accessor.cleanupThread()
 
     renderer.dumpDelegates()
     logger.assertNoErrors()
@@ -233,7 +231,7 @@ public class PaparazziSdk @JvmOverloads constructor(
     logger.flushErrors()
     renderSession.release()
     bridgeRenderSession.dispose()
-    cleanupThread()
+    Looper_Accessor.cleanupThread()
 
     sessionParamsBuilder = sessionParamsBuilder
       .copy(
@@ -257,7 +255,6 @@ public class PaparazziSdk @JvmOverloads constructor(
 
     val sessionParams = sessionParamsBuilder.build()
     renderSession = createRenderSession(sessionParams)
-    prepareThread()
     renderSession.init(sessionParams.timeout)
     Bitmap.setDefaultDensity(DisplayMetrics.DENSITY_DEVICE_STABLE)
     bridgeRenderSession = createBridgeSession(renderSession, renderSession.inflate())
@@ -392,14 +389,14 @@ public class PaparazziSdk @JvmOverloads constructor(
       val choreographer = Choreographer.getInstance()
       val mLastFrameTimeNanos = choreographer::class.java.getDeclaredField("mLastFrameTimeNanos")
       mLastFrameTimeNanos.isAccessible = true
-      mLastFrameTimeNanos.set(choreographer, 0L)
+      mLastFrameTimeNanos.set(choreographer, Long.MIN_VALUE)
 
       Thread.setDefaultUncaughtExceptionHandler(previousUncaughtExceptionHandler)
     }
   }
 
   private fun withTime(timeNanos: Long, block: () -> Unit) {
-    val frameNanos = timeNanos
+    val frameNanos = timeNanos.coerceAtLeast(1L)
 
     // Execute the block at the requested time.
     System_Delegate.setNanosTime(0L)
@@ -407,15 +404,50 @@ public class PaparazziSdk @JvmOverloads constructor(
 
     try {
       executeHandlerCallbacks()
-      val currentTimeNanos = uptimeNanos()
+
       /**
-       * The choreographer needs to be manually ticked in order for the frame time to become visible to the native layer
-       * which is necessary in order for ripples to work is compose, as well as view animation classes.
+       * Execute choreographer callbacks manually BEFORE [Choreographer_Delegate.doFrame] to guarantee
+       * that Compose's FrameCallback always receives a non-zero frame time. This prevents the
+       * "0 isn't a real frame time!" crash in AndroidUiFrameClock.
        *
-       * After frame is run, we have to reset sChoreographerTime since [com.android.layoutlib.bridge.SessionInteractiveData.getNanosTime]
-       * uses sChoreographerTime to calculate nanoTime via [System_Delegate.nanoTime].
+       * We pass [frameNanos] directly to eliminate any possibility of timing state corruption
+       * from the nanoTime() formula during handler callback execution.
+       *
+       * After consuming callbacks, [Choreographer_Delegate.doFrame] is still called with
+       * [sChoreographerTime] temporarily zeroed so that re-posted callbacks (which have
+       * dueTime = uptimeMillis() > 0) won't fire during doFrame's internal callback execution.
+       * This prevents animation callbacks from being fired multiple times per frame while still
+       * allowing doFrame to signal the native HWUI layer for ripples and view animations.
        */
-      Choreographer_Delegate.doFrame(currentTimeNanos)
+      val choreographerCallbacks = RenderAction.getCurrentContext()
+        .sessionInteractiveData
+        .choreographerCallbacks
+
+      val choreographer = Choreographer.getInstance()
+      val mCallbacksRunning = choreographer::class.java.getDeclaredField("mCallbacksRunning")
+      mCallbacksRunning.isAccessible = true
+      val mLastFrameTimeNanos = choreographer::class.java.getDeclaredField("mLastFrameTimeNanos")
+      mLastFrameTimeNanos.isAccessible = true
+
+      // Set mLastFrameTimeNanos before callbacks run so getFrameTimeNanos() returns the correct value.
+      mLastFrameTimeNanos.set(choreographer, frameNanos)
+      // AnimationHandler.doFrame calls Choreographer.getFrameTimeNanos() which requires mCallbacksRunning.
+      mCallbacksRunning.set(choreographer, true)
+      try {
+        choreographerCallbacks.execute(frameNanos, Bridge.getLog())
+      } finally {
+        mCallbacksRunning.set(choreographer, false)
+      }
+
+      /**
+       * Temporarily zero sChoreographerTime so that during doFrame's internal doCallbacks,
+       * nanoTime() = (0 - 0) + 0 = 0, yielding timeMillis = 0. Re-posted callbacks have
+       * dueTime = uptimeMillis() at posting time (= frameNanos / 1_000_000 > 0 for meaningful frames),
+       * so they won't be eligible (dueTime > 0 > timeMillis). After doFrame returns, it sets
+       * sChoreographerTime = frameNanos, restoring correct time for subsequent operations.
+       */
+      Choreographer_Delegate.sChoreographerTime = 0
+      Choreographer_Delegate.doFrame(frameNanos)
 
       return block()
     } catch (e: Throwable) {
