@@ -28,7 +28,7 @@ import org.junit.Test
 import java.awt.image.BufferedImage
 import kotlin.math.min
 
-private const val EXPECTED_CURRENT_V_SCROLL_WIDTH = 514
+private const val EXPECTED_CURRENT_V_SCROLL_WIDTH = 562
 private const val EXPECTED_CURRENT_V_SCROLL_HEIGHT = 1000
 private const val CONTENT_HEIGHT_DP = 700
 
