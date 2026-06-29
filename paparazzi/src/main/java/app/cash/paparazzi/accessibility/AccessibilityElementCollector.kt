@@ -73,21 +73,23 @@ internal class AccessibilityElementCollector {
 
     if (this is AbstractComposeView && isVisible) {
       // ComposeView creates a child view `AndroidComposeView` for view root for test.
-      val viewRoot = getChildAt(0) as ViewRootForTest
-      val unmergedNodes = viewRoot.semanticsOwner.getAllSemanticsNodes(false)
+      val viewRoot = getChildAt(0) as? ViewRootForTest
+      if (viewRoot != null) {
+        val unmergedNodes = viewRoot.semanticsOwner.getAllSemanticsNodes(false)
 
-      // SemanticsNode.boundsInScreen isn't reported correctly for nodes so locationOnScreen used to correctly calculate displayBounds.
-      val locationOnScreen = arrayOf(bounds.left, bounds.top).toIntArray()
-      locationOnScreen[0] += paddingLeft
-      locationOnScreen[1] += paddingTop
-      val orderedSemanticsNodes = viewRoot.semanticsOwner.rootSemanticsNode.orderSemanticsNodeGroup()
-      orderedSemanticsNodes.forEach {
-        it.processAccessibleChildren(
-          processElement = processElement,
-          locationOnScreen = locationOnScreen,
-          viewBounds = bounds,
-          unmergedNodes = unmergedNodes
-        )
+        // SemanticsNode.boundsInScreen isn't reported correctly for nodes so locationOnScreen used to correctly calculate displayBounds.
+        val locationOnScreen = arrayOf(bounds.left, bounds.top).toIntArray()
+        locationOnScreen[0] += paddingLeft
+        locationOnScreen[1] += paddingTop
+        val orderedSemanticsNodes = viewRoot.semanticsOwner.rootSemanticsNode.orderSemanticsNodeGroup()
+        orderedSemanticsNodes.forEach {
+          it.processAccessibleChildren(
+            processElement = processElement,
+            locationOnScreen = locationOnScreen,
+            viewBounds = bounds,
+            unmergedNodes = unmergedNodes
+          )
+        }
       }
     }
 
