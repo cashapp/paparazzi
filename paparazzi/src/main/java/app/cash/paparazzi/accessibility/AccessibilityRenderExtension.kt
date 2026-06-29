@@ -21,8 +21,6 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.WindowManager
 import android.view.WindowManagerGlobal
-import android.view.WindowManagerImpl
-import android.widget.FrameLayout
 import android.widget.LinearLayout
 import app.cash.paparazzi.RenderExtension
 import app.cash.paparazzi.getFieldReflectively
@@ -39,9 +37,6 @@ public class AccessibilityRenderExtension : RenderExtension {
   private val accessibilityElementCollector = AccessibilityElementCollector()
 
   override fun renderView(contentView: View): View {
-    // WindowManager needed to access accessibility elements for views that draw to other windows.
-    val windowManager = contentView.context.getSystemService(WindowManager::class.java)
-
     return LinearLayout(contentView.context).apply {
       orientation = LinearLayout.HORIZONTAL
       weightSum = 2f
@@ -61,8 +56,11 @@ public class AccessibilityRenderExtension : RenderExtension {
         // We need to restrict it when taking accessibility snapshots.
         val windowManagerRootView = WindowManagerGlobal.getInstance().findPopupRootView(rootView)
         if (windowManagerRootView != null) {
-          windowManagerRootView.layoutParams =
-            FrameLayout.LayoutParams(contentView.measuredWidth, MATCH_PARENT, Gravity.START)
+          (windowManagerRootView.layoutParams as? WindowManager.LayoutParams)?.apply {
+            width = contentView.measuredWidth
+            height = MATCH_PARENT
+            gravity = Gravity.START
+          }
         }
 
         OneShotPreDrawListener.add(this@apply) {
