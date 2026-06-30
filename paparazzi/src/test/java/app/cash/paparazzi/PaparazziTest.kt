@@ -24,7 +24,6 @@ import android.graphics.Color
 import android.os.SystemClock
 import android.view.Choreographer
 import android.view.Choreographer.CALLBACK_ANIMATION
-import android.view.Choreographer_Delegate
 import android.view.View
 import android.view.animation.LinearInterpolator
 import android.widget.Button
@@ -218,19 +217,6 @@ class PaparazziTest {
     }
 
     assertThat(thrown).isTrue()
-  }
-
-  @Test
-  fun frameTimes() {
-    paparazzi.snapshot(object : View(paparazzi.context) {
-      override fun onDraw(canvas: Canvas) {
-        println(
-          "sChoreographerTime ${Choreographer_Delegate.sChoreographerTime} " +
-            "nano=${System_Delegate.nanoTime()} uptime=${SystemClock.uptimeMillis()}"
-        )
-      }
-    }
-    )
   }
 
   @Test
