@@ -3,6 +3,7 @@ package app.cash.paparazzi.internal
 import android.content.Context
 import android.graphics.Color
 import android.util.AttributeSet
+import android.view.WindowManagerGlobal
 import android.widget.FrameLayout
 
 /**
@@ -21,5 +22,36 @@ internal class ComposeViewAdapter(
      * If we set this as transparent, the WindowManagerImpl view will be transparent as well and correctly renders the window above content.
      */
     setBackgroundColor(Color.TRANSPARENT)
+  }
+
+  override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+    super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+
+    // In layoutlib 16.2.3+, popup windows (e.g., Compose dialogs) are added to
+    // WindowManagerGlobal as separate windows rather than being children of this view.
+    // In earlier versions, WindowManagerImpl.addView() physically added popup views as
+    // children of the root view hierarchy, so SHRINK rendering mode could measure their
+    // content. Now the dialog content lives in a separate window, causing this view to
+    // measure as 0×0. To fix this, we detect popup windows and measure them to determine
+    // the appropriate size for this container.
+    if (measuredWidth == 0 && measuredHeight == 0) {
+      val windowViews = WindowManagerGlobal.getInstance()?.windowViews ?: return
+      if (windowViews.size <= 1) return
+
+      var maxWidth = 0
+      var maxHeight = 0
+      for (i in 1 until windowViews.size) {
+        val popupView = windowViews[i]
+        popupView.measure(widthMeasureSpec, heightMeasureSpec)
+        maxWidth = maxOf(maxWidth, popupView.measuredWidth)
+        maxHeight = maxOf(maxHeight, popupView.measuredHeight)
+      }
+      if (maxWidth > 0 || maxHeight > 0) {
+        setMeasuredDimension(
+          maxWidth.coerceAtLeast(1),
+          maxHeight.coerceAtLeast(1)
+        )
+      }
+    }
   }
 }
