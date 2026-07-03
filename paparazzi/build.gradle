@@ -47,6 +47,8 @@ dependencies {
   api libs.tools.sdkCommon
   api libs.kxml2
   api libs.junit
+  compileOnly libs.junit.platform.engine
+  compileOnly libs.junit.vintage.engine
   api libs.androidx.annotations
   api libs.guava
   api libs.kotlinx.coroutines.android

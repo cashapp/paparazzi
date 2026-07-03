@@ -56,6 +56,7 @@ import org.gradle.internal.operations.BuildOperationExecutor
 import org.gradle.internal.operations.BuildOperationRunner
 import org.gradle.internal.os.OperatingSystem
 import org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
+import org.gradle.util.GradleVersion
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import java.util.Locale
 import javax.inject.Inject
@@ -69,6 +70,16 @@ public class PaparazziPlugin @Inject constructor(
   private val buildOperationExecutor: BuildOperationExecutor
 ) : Plugin<Project> {
   override fun apply(project: Project) {
+    if (project.reportType() == ReportType.NATIVE &&
+      GradleVersion.current() < MIN_NATIVE_REPORT_GRADLE_VERSION
+    ) {
+      error(
+        "app.cash.paparazzi.reportType=native requires Gradle " +
+          "${MIN_NATIVE_REPORT_GRADLE_VERSION.version} or later. " +
+          "Current Gradle version: ${GradleVersion.current().version}."
+      )
+    }
+
     val supportedPlugins = listOf(
       "com.android.application",
       "com.android.library",
@@ -224,13 +235,23 @@ public class PaparazziPlugin @Inject constructor(
         val localResourceDirs = sources.localResourceDirs ?: providerFactory.provider { emptyList() }
         val localAssetDirs = sources.localAssetDirs ?: providerFactory.provider { emptyList() }
 
-        test.setTestReporter(
-          PaparazziTestReporter(
-            buildOperationRunner = buildOperationRunner,
-            buildOperationExecutor = buildOperationExecutor,
-            diffRegistryFactory = createDiffRegistryFactory(failureDir, isVerifyRun)
-          )
-        )
+        when (reportType()) {
+          ReportType.LEGACY -> {
+            test.setTestReporter(
+              PaparazziTestReporter(
+                buildOperationRunner = buildOperationRunner,
+                buildOperationExecutor = buildOperationExecutor,
+                diffRegistryFactory = createDiffRegistryFactory(failureDir, isVerifyRun)
+              )
+            )
+          }
+          ReportType.NATIVE -> {
+            test.systemProperties["paparazzi.reportType"] = "native"
+          }
+          ReportType.CUSTOM -> {
+            error("app.cash.paparazzi.reportType=custom is not yet implemented")
+          }
+        }
 
         test.systemProperties["paparazzi.test.resources"] =
           writeResourcesTask.flatMap { it.paparazziResources.asFile }.get().path
@@ -473,6 +494,17 @@ public class PaparazziPlugin @Inject constructor(
 
   private fun Project.isInternal(): Boolean = providers.gradleProperty("app.cash.paparazzi.internal").orNull == "true"
 
+  private fun Project.reportType(): ReportType {
+    return when (val raw = providers.gradleProperty("app.cash.paparazzi.reportType").getOrElse("legacy")) {
+      "legacy" -> ReportType.LEGACY
+      "native" -> ReportType.NATIVE
+      "custom" -> ReportType.CUSTOM
+      else -> error(
+        "Unknown app.cash.paparazzi.reportType: '$raw'. Expected one of: legacy, native, custom."
+      )
+    }
+  }
+
   private fun Project.overwriteOnMaxPercentDifferenceProvider(): Provider<String> =
     providers.gradleProperty("app.cash.paparazzi.overwriteOnMaxPercentDifference")
 
@@ -511,3 +543,6 @@ public class PaparazziPlugin @Inject constructor(
 private const val DEFAULT_COMPILE_SDK_VERSION = 36
 private const val ANDROID_KOTLIN_MULTIPLATFORM_LIBRARY_PLUGIN = "com.android.kotlin.multiplatform.library"
 private const val KOTLIN_MULTIPLATFORM_PLUGIN = "org.jetbrains.kotlin.multiplatform"
+private val MIN_NATIVE_REPORT_GRADLE_VERSION = GradleVersion.version("9.4")
+
+private enum class ReportType { LEGACY, NATIVE, CUSTOM }

@@ -69,6 +69,8 @@ trove4j = { module = "org.jetbrains.intellij.deps:trove4j", version = "1.0.20200
 
 # Test libraries
 junit = { module = "junit:junit", version = "4.13.2" }
+junit-platform-engine = { module = "org.junit.platform:junit-platform-engine", version = "6.0.3" }
+junit-vintage-engine = { module = "org.junit.vintage:junit-vintage-engine", version = "6.0.3" }
 testParameterInjector = { module = "com.google.testparameterinjector:test-parameter-injector", version = "1.22" }
 truth = { module = "com.google.truth:truth", version = "1.4.5" }
 
