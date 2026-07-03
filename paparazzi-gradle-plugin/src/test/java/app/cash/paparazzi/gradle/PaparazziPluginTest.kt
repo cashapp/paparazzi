@@ -908,6 +908,22 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun cleanRecordParallel() {
+    val fixtureRoot = File("src/test/projects/clean-record-parallel")
+    val snapshotsDir = File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
+    val snapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_CleanRecordParallelTest_record.png")
+
+    val result = gradleRunner
+      .withArguments("cleanRecordPaparazziDebug", "--parallel", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":deletePaparazziSnapshots")).isNotNull()
+    assertThat(result.task(":recordPaparazziDebug")).isNotNull()
+
+    assertThat(snapshot.exists()).isTrue()
+  }
+
+  @Test
   fun widgets() {
     val fixtureRoot = File("src/test/projects/widgets")
 
