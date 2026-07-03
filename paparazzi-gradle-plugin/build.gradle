@@ -59,6 +59,8 @@ buildConfig {
   packageName('app.cash.paparazzi.gradle')
   buildConfigField("String", "VERSION", "\"${project.version}\"")
   buildConfigField("String", "NATIVE_LIB_VERSION", "\"${libs.versions.layoutlib.get()}\"")
+  buildConfigField("String", "JUNIT_PLATFORM_LAUNCHER", "\"${libs.junit.platform.launcher.get()}\"")
+  buildConfigField("String", "JUNIT_VINTAGE_ENGINE", "\"${libs.junit.vintage.engine.get()}\"")
 }
 
 tasks.withType(Test).configureEach {

@@ -246,6 +246,12 @@ public class PaparazziPlugin @Inject constructor(
             )
           }
           ReportType.NATIVE -> {
+            // JUnit Platform routes JUnit 4 tests through our wrapped Vintage engine
+            // (PaparazziVintageEngine in the paparazzi runtime artifact). Exclude the
+            // real `junit-vintage` engine so tests don't get discovered/run twice.
+            test.useJUnitPlatform {
+              it.excludeEngines("junit-vintage")
+            }
             test.systemProperties["paparazzi.reportType"] = "native"
           }
           ReportType.CUSTOM -> {
@@ -427,6 +433,16 @@ public class PaparazziPlugin @Inject constructor(
       dependencies.create("app.cash.paparazzi:paparazzi:$VERSION")
     }
 
+    val nativeReportRuntimeDeps: List<org.gradle.api.artifacts.Dependency> =
+      if (reportType() == ReportType.NATIVE) {
+        listOf(
+          dependencies.create(JUNIT_PLATFORM_LAUNCHER),
+          dependencies.create(JUNIT_VINTAGE_ENGINE)
+        )
+      } else {
+        emptyList()
+      }
+
     val allowedConfigs = mutableSetOf<String>()
 
     when {
@@ -435,9 +451,13 @@ public class PaparazziPlugin @Inject constructor(
         kmp.targets.configureEach { target ->
           target.compilations.configureEach { compilation ->
             if (compilation is KotlinMultiplatformAndroidHostTestCompilation) {
-              val configurationName = compilation.defaultSourceSet.implementationConfigurationName
-              allowedConfigs += configurationName
-              configurations.getByName(configurationName).dependencies.add(dependency)
+              val implName = compilation.defaultSourceSet.implementationConfigurationName
+              allowedConfigs += implName
+              configurations.getByName(implName).dependencies.add(dependency)
+              val runtimeOnlyName = compilation.defaultSourceSet.runtimeOnlyConfigurationName
+              nativeReportRuntimeDeps.forEach {
+                configurations.getByName(runtimeOnlyName).dependencies.add(it)
+              }
             }
           }
         }
@@ -446,17 +466,26 @@ public class PaparazziPlugin @Inject constructor(
         val kmp = extensions.getByType(KotlinMultiplatformExtension::class.java)
         with(kmp) {
           sourceSets.androidUnitTest.configure {
-            val configurationName = it.implementationConfigurationName
-            allowedConfigs += configurationName
-            configurations.getByName(configurationName).dependencies.add(dependency)
+            val implName = it.implementationConfigurationName
+            allowedConfigs += implName
+            configurations.getByName(implName).dependencies.add(dependency)
+            val runtimeOnlyName = it.runtimeOnlyConfigurationName
+            nativeReportRuntimeDeps.forEach { dep ->
+              configurations.getByName(runtimeOnlyName).dependencies.add(dep)
+            }
           }
         }
       }
       else -> {
         val android = extensions.getByType(CommonExtension::class.java)
-        val configurationName = android.sourceSets.getByName(TEST_SOURCE_SET_NAME).implementationConfigurationName
-        allowedConfigs += configurationName
-        configurations.getByName(configurationName).dependencies.add(dependency)
+        val testSourceSet = android.sourceSets.getByName(TEST_SOURCE_SET_NAME)
+        val implementationName = testSourceSet.implementationConfigurationName
+        allowedConfigs += implementationName
+        configurations.getByName(implementationName).dependencies.add(dependency)
+        val runtimeOnlyName = testSourceSet.runtimeOnlyConfigurationName
+        nativeReportRuntimeDeps.forEach {
+          configurations.getByName(runtimeOnlyName).dependencies.add(it)
+        }
       }
     }
 
