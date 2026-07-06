@@ -17,6 +17,7 @@ package app.cash.paparazzi.gradle
 
 import app.cash.paparazzi.gradle.instrumentation.ResourcesCompatVisitorFactory
 import app.cash.paparazzi.gradle.reporting.DiffImage
+import app.cash.paparazzi.gradle.reporting.PaparazziCustomReportTask
 import app.cash.paparazzi.gradle.reporting.PaparazziTestReporter
 import app.cash.paparazzi.gradle.utils.artifactViewFor
 import app.cash.paparazzi.gradle.utils.capitalize
@@ -232,6 +233,27 @@ public class PaparazziPlugin @Inject constructor(
       val failureDir = buildDirectory.dir("paparazzi/failures/${variant.name}")
       val attachmentsDir = buildDirectory.dir("paparazzi/attachments/${variant.name}")
       val testTaskProvider = testTasks.withType(Test::class.java)
+      // Option C: register the custom-report task outside the configureEach
+      // block (task registration during graph resolution is illegal). The
+      // wiring inside configureEach can then reference this provider.
+      val customReportTaskProvider = if (reportType() == ReportType.CUSTOM) {
+        project.tasks.register(
+          "paparazziCustomReport$variantSlug",
+          PaparazziCustomReportTask::class.java
+        ) {
+          it.group = VERIFICATION_GROUP
+          it.description = "Generate the Paparazzi custom HTML report from binary test results."
+          it.reportDir.set(reportOutputDir)
+          // Binary results live at Gradle's convention location for the test
+          // task. Phase 3a wires this by path; Phase 3b should switch to a
+          // proper provider chain off the Test task.
+          it.binaryResultsDirectory.set(
+            buildDirectory.dir("test-results/test${testVariantSlug}/binary")
+          )
+        }
+      } else {
+        null
+      }
       testTaskProvider.configureEach { test ->
         val localResourceDirs = sources.localResourceDirs ?: providerFactory.provider { emptyList() }
         val localAssetDirs = sources.localAssetDirs ?: providerFactory.provider { emptyList() }
@@ -256,7 +278,12 @@ public class PaparazziPlugin @Inject constructor(
             test.systemProperties["paparazzi.reportType"] = "native"
           }
           ReportType.CUSTOM -> {
-            error("app.cash.paparazzi.reportType=custom is not yet implemented")
+            // Bypass both the legacy TestReporter shim and Gradle's
+            // GenericHtmlTestReportGenerator. The custom report is produced by
+            // a separate task that reads the binary results store directly.
+            test.reports.html.required.set(false)
+            test.finalizedBy(customReportTaskProvider!!)
+            test.systemProperties["paparazzi.reportType"] = "custom"
           }
         }
 

@@ -795,6 +795,31 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun verifyFailureCustomMode() {
+    // Reuses the legacy verify-mode-failure fixture but runs in Option C
+    // (custom) mode. Today asserts only that the stub renderer task runs and
+    // produces a placeholder index.html. Future phases will replace the stub
+    // body with real TestTreeModel traversal.
+    val fixtureRoot = File("src/test/projects/verify-mode-failure")
+    File(fixtureRoot, "build").registerForDeletionOnExit()
+
+    val result = gradleRunner
+      .withArguments(
+        "verifyPaparazziDebug",
+        "-Papp.cash.paparazzi.reportType=custom",
+        "--stacktrace"
+      )
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    assertThat(result.task(":testDebugUnitTest")).isNotNull()
+    assertThat(result.task(":paparazziCustomReportDebug")).isNotNull()
+
+    val reportIndex = File(fixtureRoot, "build/reports/paparazzi/debug/index.html")
+    assertThat(reportIndex.exists()).isTrue()
+    assertThat(reportIndex.readText()).contains("Paparazzi custom report")
+  }
+
+  @Test
   fun verifySimilar() {
     val fixtureRoot = File("src/test/projects/verify-similar")
 
