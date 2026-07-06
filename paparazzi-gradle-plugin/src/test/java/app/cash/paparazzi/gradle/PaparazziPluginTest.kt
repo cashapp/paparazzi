@@ -797,9 +797,9 @@ class PaparazziPluginTest {
   @Test
   fun verifyFailureCustomMode() {
     // Reuses the legacy verify-mode-failure fixture but runs in Option C
-    // (custom) mode. Today asserts only that the stub renderer task runs and
-    // produces a placeholder index.html. Future phases will replace the stub
-    // body with real TestTreeModel traversal.
+    // (custom) mode. Asserts the custom report task ran and emitted an
+    // index.html populated from the SerializableTestResultStore — i.e. the
+    // failing VerifyTest.verify row is present and marked FAILURE.
     val fixtureRoot = File("src/test/projects/verify-mode-failure")
     File(fixtureRoot, "build").registerForDeletionOnExit()
 
@@ -816,7 +816,11 @@ class PaparazziPluginTest {
 
     val reportIndex = File(fixtureRoot, "build/reports/paparazzi/debug/index.html")
     assertThat(reportIndex.exists()).isTrue()
-    assertThat(reportIndex.readText()).contains("Paparazzi custom report")
+    val html = reportIndex.readText()
+    assertThat(html).contains("Paparazzi test report")
+    assertThat(html).contains("app.cash.paparazzi.plugin.test.VerifyTest")
+    assertThat(html).contains("verify")
+    assertThat(html).contains("FAILURE")
   }
 
   @Test
