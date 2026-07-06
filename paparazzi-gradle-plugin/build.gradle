@@ -60,7 +60,7 @@ buildConfig {
   buildConfigField("String", "VERSION", "\"${project.version}\"")
   buildConfigField("String", "NATIVE_LIB_VERSION", "\"${libs.versions.layoutlib.get()}\"")
   buildConfigField("String", "JUNIT_PLATFORM_LAUNCHER", "\"${libs.junit.platform.launcher.get()}\"")
-  buildConfigField("String", "JUNIT_VINTAGE_ENGINE", "\"${libs.junit.vintage.engine.get()}\"")
+  buildConfigField("String", "PAPARAZZI_JUNIT_PLATFORM_COORDINATES", "\"app.cash.paparazzi:paparazzi-junit-platform:${project.version}\"")
 }
 
 tasks.withType(Test).configureEach {

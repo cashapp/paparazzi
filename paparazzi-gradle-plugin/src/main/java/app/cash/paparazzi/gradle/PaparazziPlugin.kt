@@ -435,9 +435,17 @@ public class PaparazziPlugin @Inject constructor(
 
     val nativeReportRuntimeDeps: List<org.gradle.api.artifacts.Dependency> =
       if (reportType() == ReportType.NATIVE) {
+        val paparazziJunitPlatform = if (isInternal()) {
+          dependencies.project(mapOf("path" to ":paparazzi-junit-platform"))
+        } else {
+          dependencies.create(PAPARAZZI_JUNIT_PLATFORM_COORDINATES)
+        }
         listOf(
-          dependencies.create(JUNIT_PLATFORM_LAUNCHER),
-          dependencies.create(JUNIT_VINTAGE_ENGINE)
+          paparazziJunitPlatform,
+          // paparazzi-junit-platform brings junit-platform-engine and junit-vintage-engine
+          // transitively via implementation. The launcher is needed separately so Gradle
+          // can drive tests through JUnit Platform.
+          dependencies.create(JUNIT_PLATFORM_LAUNCHER)
         )
       } else {
         emptyList()
