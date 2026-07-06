@@ -21,6 +21,7 @@ import android.view.LayoutInflater
 import android.view.View
 import androidx.annotation.LayoutRes
 import androidx.compose.runtime.Composable
+import app.cash.paparazzi.accessibility.AccessibilityAttachmentFrameHandler
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode
 import org.junit.rules.TestRule
 import org.junit.runner.Description
@@ -179,7 +180,9 @@ public class Paparazzi @JvmOverloads constructor(
     fps: Int = -1
   ): SnapshotHandler.FrameHandler {
     val snapshot = Snapshot(name, testName!!, Date())
-    return snapshotHandler.newFrameHandler(snapshot, frameCount, fps)
+    val handler = snapshotHandler.newFrameHandler(snapshot, frameCount, fps)
+    // No-op in legacy mode; emits an a11y SVG attachment per frame in native mode.
+    return AccessibilityAttachmentFrameHandler(handler, snapshot)
   }
 
   private fun Description.toTestName(): TestName {

@@ -37,6 +37,14 @@ public class AccessibilityRenderExtension : RenderExtension {
   private val accessibilityElementCollector = AccessibilityElementCollector()
 
   override fun renderView(contentView: View): View {
+    return if (System.getProperty("paparazzi.reportType") == "native") {
+      renderNative(contentView)
+    } else {
+      renderLegacy(contentView)
+    }
+  }
+
+  private fun renderLegacy(contentView: View): View {
     // WindowManager needed to access accessibility elements for views that draw to other windows.
     val windowManager = contentView.context.getSystemService(WindowManager::class.java)
 
@@ -73,6 +81,27 @@ public class AccessibilityRenderExtension : RenderExtension {
         }
       }
     }
+  }
+
+  /**
+   * Native report mode: no fake hierarchy. Render the contentView as-is and
+   * stash the collected accessibility elements for the FrameHandler decorator
+   * (see [AccessibilityAttachmentFrameHandler]) to compose into a side-car SVG
+   * attached to the JUnit Platform test result.
+   */
+  private fun renderNative(contentView: View): View {
+    val windowManager = contentView.context.getSystemService(WindowManager::class.java)
+    contentView.viewTreeObserver.addOnGlobalLayoutListener {
+      val windowManagerRootView = (windowManager as WindowManagerImpl).currentRootView
+      OneShotPreDrawListener.add(contentView) {
+        val elements = accessibilityElementCollector.collect(
+          rootView = contentView,
+          windowManagerRootView = windowManagerRootView
+        )
+        CollectedAccessibilityElements.stash(elements)
+      }
+    }
+    return contentView
   }
 }
 

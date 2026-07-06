@@ -62,7 +62,7 @@ internal object AccessibilitySvgComposer {
       append("width=\"$screenshotWidth\" height=\"$totalHeight\">")
 
       appendScreenshot(screenshotWidth, screenshotHeight, pngBase64)
-      elements.forEach(::appendOverlayRect)
+      elements.forEach { appendOverlayRect(it) }
       appendLegend(elements, screenshotHeight)
 
       append("</svg>")
