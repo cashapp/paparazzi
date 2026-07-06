@@ -37,12 +37,7 @@ public class PaparazziVintageEngine : TestEngine {
       wrappedListener,
       request.configurationParameters
     )
-    PaparazziSnapshotReporter.setActive(wrappedListener)
-    try {
-      delegate.execute(wrappedRequest)
-    } finally {
-      PaparazziSnapshotReporter.setActive(null)
-    }
+    delegate.execute(wrappedRequest)
   }
 
   internal companion object {

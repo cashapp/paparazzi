@@ -7,9 +7,15 @@ import org.junit.platform.engine.reporting.FileEntry
 import org.junit.platform.engine.reporting.ReportEntry
 
 /**
- * Wraps the [EngineExecutionListener] passed in by JUnit Platform so that
- * [PaparazziSnapshotReporter] can know which test is currently executing.
- * All events are forwarded to the delegate unchanged.
+ * Wraps the [EngineExecutionListener] passed in by JUnit Platform.
+ *
+ * On `executionFinished` for leaf test descriptors, scans Paparazzi's failure
+ * directory for any diff images produced during the test method and emits each
+ * one as a [FileEntry] attachment on that test descriptor. Diff files are
+ * discovered by filesystem convention: Paparazzi writes them to
+ * `paparazzi.failures.dir` with names derived from the test class+method.
+ *
+ * All other events are forwarded to the delegate unchanged.
  */
 internal class PaparazziExecutionListener(
   private val delegate: EngineExecutionListener
@@ -24,9 +30,6 @@ internal class PaparazziExecutionListener(
   }
 
   override fun executionStarted(testDescriptor: TestDescriptor) {
-    if (testDescriptor.isTest) {
-      PaparazziSnapshotReporter.setCurrentTest(testDescriptor)
-    }
     delegate.executionStarted(testDescriptor)
   }
 
@@ -34,10 +37,11 @@ internal class PaparazziExecutionListener(
     testDescriptor: TestDescriptor,
     testExecutionResult: TestExecutionResult
   ) {
-    delegate.executionFinished(testDescriptor, testExecutionResult)
     if (testDescriptor.isTest) {
-      PaparazziSnapshotReporter.setCurrentTest(null)
+      // TODO Phase 2c.2: scan paparazzi.failures.dir for diff files matching this test
+      //  descriptor's class+method, and emit fileEntryPublished for each.
     }
+    delegate.executionFinished(testDescriptor, testExecutionResult)
   }
 
   override fun reportingEntryPublished(testDescriptor: TestDescriptor, entry: ReportEntry) {
