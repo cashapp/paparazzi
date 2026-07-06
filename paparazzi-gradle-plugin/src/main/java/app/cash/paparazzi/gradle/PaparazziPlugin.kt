@@ -230,6 +230,7 @@ public class PaparazziPlugin @Inject constructor(
       val paparazziGradlePropertiesProvider =
         project.providers.gradlePropertiesPrefixedBy("app.cash.paparazzi")
       val failureDir = buildDirectory.dir("paparazzi/failures/${variant.name}")
+      val attachmentsDir = buildDirectory.dir("paparazzi/attachments/${variant.name}")
       val testTaskProvider = testTasks.withType(Test::class.java)
       testTaskProvider.configureEach { test ->
         val localResourceDirs = sources.localResourceDirs ?: providerFactory.provider { emptyList() }
@@ -310,9 +311,18 @@ public class PaparazziPlugin @Inject constructor(
         test.outputs.dir(failureDir)
           .withPropertyName("paparazzi.failures.dir")
           .optional()
+        test.outputs.dir(attachmentsDir)
+          .withPropertyName("paparazzi.attachments.dir")
+          .optional()
 
         test.doFirst {
           if (isVerifyRun.get()) failureDir.get().asFile.deleteRecursively()
+          if (reportType() == ReportType.NATIVE) {
+            attachmentsDir.get().asFile.let { dir ->
+              dir.deleteRecursively()
+              dir.mkdirs()
+            }
+          }
           // Note: these are lazy properties that are not resolvable in the Gradle configuration phase.
           // They need special handling, so they're added as inputs.property above, and systemProperty here.
           test.systemProperties.putAll(paparazziGradlePropertiesProvider.get())
@@ -326,6 +336,9 @@ public class PaparazziPlugin @Inject constructor(
           test.systemProperties["paparazzi.test.verify"] = isVerifyRun.get()
           test.systemProperties["paparazzi.snapshot.dir"] = snapshotOutputDir.get().asFile.absolutePath
           test.systemProperties["paparazzi.failures.dir"] = failureDir.get().asFile.absolutePath
+          if (reportType() == ReportType.NATIVE) {
+            test.systemProperties["paparazzi.attachments.dir"] = attachmentsDir.get().asFile.absolutePath
+          }
         }
 
         test.doLast {

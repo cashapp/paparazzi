@@ -11,14 +11,14 @@ import java.io.File
 /**
  * Wraps the [EngineExecutionListener] passed in by JUnit Platform.
  *
- * On `executionFinished` for leaf test descriptors, scans Paparazzi's failure
- * directory for any diff images produced during the test method and emits each
- * one as a [FileEntry] attachment on that test descriptor. Diff files are
- * discovered by filesystem convention: Paparazzi writes them to
- * `paparazzi.failures.dir` with names of the form
- * `delta-<packageName>_<simpleClassName>_<methodName>[_<label>].png`. The
- * matching test class+method are read from the descriptor's [MethodSource].
+ * On `executionFinished` for leaf test descriptors, scans Paparazzi's
+ * filesystem outputs for artifacts produced during the test method and emits
+ * each one as a [FileEntry] attachment on that test descriptor. Today this
+ * covers two sources:
+ *  - Snapshot diff PNGs in `paparazzi.failures.dir`, prefixed `delta-`
+ *  - Accessibility SVGs in `paparazzi.attachments.dir`, prefixed `a11y-`
  *
+ * Matching is by test class+method derived from the descriptor's [MethodSource].
  * All other events are forwarded to the delegate unchanged.
  */
 internal class PaparazziExecutionListener(
@@ -44,7 +44,7 @@ internal class PaparazziExecutionListener(
     // Emit attachments before forwarding the finished event — Gradle's binary
     // result store associates published events with the still-current test.
     if (testDescriptor.isTest) {
-      emitDiffAttachments(testDescriptor)
+      emitAttachments(testDescriptor)
     }
     delegate.executionFinished(testDescriptor, testExecutionResult)
   }
@@ -57,36 +57,59 @@ internal class PaparazziExecutionListener(
     delegate.fileEntryPublished(testDescriptor, file)
   }
 
-  private fun emitDiffAttachments(testDescriptor: TestDescriptor) {
-    val failureDirPath = System.getProperty(SYSTEM_PROPERTY_FAILURES_DIR) ?: return
-    val failureDir = File(failureDirPath)
-    if (!failureDir.isDirectory) return
-
+  private fun emitAttachments(testDescriptor: TestDescriptor) {
     val source = testDescriptor.source.orElse(null) as? MethodSource ?: return
     val packageName = source.className.substringBeforeLast('.', missingDelimiterValue = "")
     val simpleClassName = source.className.substringAfterLast('.')
     val methodName = source.methodName.replace(Regex("\\s"), "_")
+    val testKey = "${packageName}_${simpleClassName}_${methodName}"
 
-    val prefix = "delta-${packageName}_${simpleClassName}_${methodName}"
+    emitMatching(
+      dirSystemProperty = SYSTEM_PROPERTY_FAILURES_DIR,
+      testDescriptor = testDescriptor,
+      filePrefix = "delta-$testKey",
+      fileExtension = ".png",
+      mediaType = "image/png"
+    )
+    emitMatching(
+      dirSystemProperty = SYSTEM_PROPERTY_ATTACHMENTS_DIR,
+      testDescriptor = testDescriptor,
+      filePrefix = "a11y-$testKey",
+      fileExtension = ".svg",
+      mediaType = "image/svg+xml"
+    )
+  }
 
-    failureDir.listFiles()
+  private fun emitMatching(
+    dirSystemProperty: String,
+    testDescriptor: TestDescriptor,
+    filePrefix: String,
+    fileExtension: String,
+    mediaType: String
+  ) {
+    val dirPath = System.getProperty(dirSystemProperty) ?: return
+    val dir = File(dirPath)
+    if (!dir.isDirectory) return
+
+    dir.listFiles()
       ?.filter { file ->
         val name = file.name
-        if (!name.startsWith(prefix) || !name.endsWith(".png")) return@filter false
+        if (!name.startsWith(filePrefix) || !name.endsWith(fileExtension)) return@filter false
         // Ensure prefix is followed by '.' (no label) or '_' (label suffix) so
         // a method like `testThing` doesn't accidentally match `testThingExtra`.
-        val boundary = name.getOrNull(prefix.length)
+        val boundary = name.getOrNull(filePrefix.length)
         boundary == '.' || boundary == '_'
       }
       ?.forEach { file ->
         delegate.fileEntryPublished(
           testDescriptor,
-          FileEntry.from(file.toPath(), "image/png")
+          FileEntry.from(file.toPath(), mediaType)
         )
       }
   }
 
   private companion object {
     const val SYSTEM_PROPERTY_FAILURES_DIR: String = "paparazzi.failures.dir"
+    const val SYSTEM_PROPERTY_ATTACHMENTS_DIR: String = "paparazzi.attachments.dir"
   }
 }
