@@ -15,8 +15,7 @@
  */
 package app.cash.paparazzi.plugin.test
 
-import android.widget.LinearLayout
-import android.widget.TextView
+import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Paparazzi
 import app.cash.paparazzi.accessibility.AccessibilityRenderExtension
 import org.junit.Rule
@@ -25,19 +24,17 @@ import org.junit.Test
 class VerifyTest {
   @get:Rule
   val paparazzi = Paparazzi(
+    theme = "Theme.AppCompat.Light.NoActionBar",
+    deviceConfig = DeviceConfig.PIXEL,
     renderExtensions = setOf(AccessibilityRenderExtension())
   )
 
   @Test
   fun verify() {
-    val layout = LinearLayout(paparazzi.context).apply {
-      addView(
-        TextView(context).apply {
-          text = "Hello"
-          contentDescription = "Greeting"
-        }
-      )
-    }
-    paparazzi.snapshot(layout)
+    // The committed golden was recorded against a partial MixedView (legacy
+    // views + SimpleComposable, no CompositeComposable). Verifying against the
+    // full MixedView produces a focused diff: just the CompositeComposable
+    // block was added at the bottom.
+    paparazzi.snapshot(MixedView(paparazzi.context))
   }
 }

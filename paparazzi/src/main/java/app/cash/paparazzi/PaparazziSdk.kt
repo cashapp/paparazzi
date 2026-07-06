@@ -604,8 +604,9 @@ public class PaparazziSdk @JvmOverloads constructor(
   // https://android.googlesource.com/platform/frameworks/layoutlib/+/refs/tags/studio-2023.2.1-rc1/bridge/src/android/os/SystemClock_Delegate.java#56
   private fun uptimeNanos() = System_Delegate.nanoTime() - System_Delegate.bootTime()
 
-  private fun DeviceConfig.updateIfAccessibilityTest(): DeviceConfig =
-    if (renderExtensions.any { it is AccessibilityRenderExtension }) {
+  private fun DeviceConfig.updateIfAccessibilityTest(): DeviceConfig {
+    if (System.getProperty("paparazzi.reportType") == "native") return this
+    return if (renderExtensions.any { it is AccessibilityRenderExtension }) {
       val newWidth = screenWidth * 2
       val newOrientation = if (newWidth > screenHeight) ScreenOrientation.LANDSCAPE else ScreenOrientation.PORTRAIT
       copy(
@@ -616,6 +617,7 @@ public class PaparazziSdk @JvmOverloads constructor(
     } else {
       this
     }
+  }
 
   internal companion object {
     internal lateinit var renderer: Renderer

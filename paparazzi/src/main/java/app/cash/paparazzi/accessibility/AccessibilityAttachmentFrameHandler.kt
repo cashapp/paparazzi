@@ -54,10 +54,10 @@ internal class AccessibilityAttachmentFrameHandler(
   private fun writeSvgIfActive(image: BufferedImage) {
     if (System.getProperty(SYSTEM_PROPERTY_REPORT_TYPE) != REPORT_TYPE_NATIVE) return
     val attachmentsDir = System.getProperty(SYSTEM_PROPERTY_ATTACHMENTS_DIR) ?: return
-    val elements = CollectedAccessibilityElements.consume() ?: return
-    if (elements.isEmpty()) return
+    val stashed = CollectedAccessibilityElements.consume() ?: return
+    if (stashed.elements.isEmpty()) return
 
-    val svg = AccessibilitySvgComposer.compose(image, elements)
+    val svg = AccessibilitySvgComposer.compose(image, stashed.elements, stashed.nativeWidth, stashed.nativeHeight)
     val outputDir = File(attachmentsDir).apply { mkdirs() }
     val fileName = "a11y-" + snapshot.toFileName(extension = "svg")
     File(outputDir, fileName).writeText(svg)

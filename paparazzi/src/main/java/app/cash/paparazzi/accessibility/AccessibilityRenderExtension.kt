@@ -98,7 +98,11 @@ public class AccessibilityRenderExtension : RenderExtension {
           rootView = contentView,
           windowManagerRootView = windowManagerRootView
         )
-        CollectedAccessibilityElements.stash(elements)
+        CollectedAccessibilityElements.stash(
+          elements = elements,
+          nativeWidth = contentView.measuredWidth,
+          nativeHeight = contentView.measuredHeight
+        )
       }
     }
     return contentView

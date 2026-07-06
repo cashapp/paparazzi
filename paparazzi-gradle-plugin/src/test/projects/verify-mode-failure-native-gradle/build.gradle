@@ -1,5 +1,6 @@
 plugins {
   id 'com.android.library'
+  id 'org.jetbrains.kotlin.plugin.compose'
   id 'app.cash.paparazzi'
 }
 
@@ -13,12 +14,14 @@ android {
     sourceCompatibility = libs.versions.javaTarget.get()
     targetCompatibility = libs.versions.javaTarget.get()
   }
+  buildFeatures {
+    compose = true
+  }
 }
 
 dependencies {
-  // AccessibilityElementCollector references AbstractComposeView in an `is` check;
-  // without this on the classpath, JVM CNFEs during element collection even when
-  // the test isn't using Compose.
-  implementation libs.androidx.compose.ui.android
+  implementation libs.composeUi.material3.android
+  implementation libs.composeUi.material
+  implementation libs.composeUi.material.icons
+  implementation libs.androidx.appcompat
 }
-

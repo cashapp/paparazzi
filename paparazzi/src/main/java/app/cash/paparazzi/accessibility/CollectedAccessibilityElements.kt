@@ -25,13 +25,21 @@ package app.cash.paparazzi.accessibility
  * dedicated thread, but parallel test forks each see their own value.
  */
 internal object CollectedAccessibilityElements {
-  private val current = ThreadLocal<List<AccessibilityElement>?>()
+  private val current = ThreadLocal<Stashed?>()
 
-  fun stash(elements: Collection<AccessibilityElement>) {
-    current.set(elements.toList())
+  internal data class Stashed(
+    val elements: List<AccessibilityElement>,
+    /** Pre-scale render width. [AccessibilityElement.displayBounds] are in this coordinate space. */
+    val nativeWidth: Int,
+    /** Pre-scale render height. */
+    val nativeHeight: Int
+  )
+
+  fun stash(elements: Collection<AccessibilityElement>, nativeWidth: Int, nativeHeight: Int) {
+    current.set(Stashed(elements.toList(), nativeWidth, nativeHeight))
   }
 
-  fun consume(): List<AccessibilityElement>? {
+  fun consume(): Stashed? {
     val value = current.get()
     current.remove()
     return value
