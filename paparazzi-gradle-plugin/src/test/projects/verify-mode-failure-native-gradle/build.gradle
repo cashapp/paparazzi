@@ -1,0 +1,24 @@
+plugins {
+  id 'com.android.library'
+  id 'app.cash.paparazzi'
+}
+
+android {
+  namespace = 'app.cash.paparazzi.plugin.test'
+  compileSdk = libs.versions.compileSdk.get() as int
+  defaultConfig {
+    minSdk = libs.versions.minSdk.get() as int
+  }
+  compileOptions {
+    sourceCompatibility = libs.versions.javaTarget.get()
+    targetCompatibility = libs.versions.javaTarget.get()
+  }
+}
+
+dependencies {
+  // AccessibilityElementCollector references AbstractComposeView in an `is` check;
+  // without this on the classpath, JVM CNFEs during element collection even when
+  // the test isn't using Compose.
+  implementation libs.androidx.compose.ui.android
+}
+

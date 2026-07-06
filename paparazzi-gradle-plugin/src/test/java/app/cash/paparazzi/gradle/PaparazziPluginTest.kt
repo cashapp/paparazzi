@@ -750,8 +750,8 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun verifyFailureNativeMode() {
-    val fixtureRoot = File("src/test/projects/verify-mode-failure")
+  fun verifyFailureNativeGradle() {
+    val fixtureRoot = File("src/test/projects/verify-mode-failure-native-gradle")
     File(fixtureRoot, "build").registerForDeletionOnExit()
 
     val result = gradleRunner
@@ -771,16 +771,27 @@ class PaparazziPluginTest {
     )
     assertThat(delta.exists()).isTrue()
 
-    // The engine listener must have published the delta PNG as a FileEntry
-    // attachment so Gradle 9.4+ surfaces it in the test report. The binary
-    // output-events.bin embeds the file path as UTF-8.
-    val binaryResults = File(
+    val a11ySvg = File(
       fixtureRoot,
-      "build/test-results/testDebugUnitTest/binary/output-events.bin"
+      "build/paparazzi/attachments/debug/a11y-app.cash.paparazzi.plugin.test_VerifyTest_verify.svg"
     )
-    assertThat(binaryResults.exists()).isTrue()
-    assertThat(String(binaryResults.readBytes(), Charsets.UTF_8))
-      .contains("delta-app.cash.paparazzi.plugin.test_VerifyTest_verify.png")
+    assertThat(a11ySvg.exists()).isTrue()
+
+    // The engine listener must have published both files as FileEntry attachments
+    // so Gradle 9.4+ surfaces them in the test report. The rendered HTML embeds
+    // each attachment by path.
+    val testReportDir = File(fixtureRoot, "build/reports/tests/testDebugUnitTest")
+    val attachmentRefs = testReportDir.walkTopDown()
+      .filter { it.isFile && it.name.endsWith(".html") }
+      .flatMap { it.readText().lineSequence() }
+      .filter { it.contains("delta-app.cash.paparazzi.plugin.test_VerifyTest_verify.png") ||
+        it.contains("a11y-app.cash.paparazzi.plugin.test_VerifyTest_verify.svg") }
+      .toList()
+
+    assertThat(attachmentRefs.any { it.contains("delta-app.cash.paparazzi.plugin.test_VerifyTest_verify.png") })
+      .isTrue()
+    assertThat(attachmentRefs.any { it.contains("a11y-app.cash.paparazzi.plugin.test_VerifyTest_verify.svg") })
+      .isTrue()
   }
 
   @Test
