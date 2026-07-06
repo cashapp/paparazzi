@@ -71,6 +71,7 @@ tasks.withType(Test).configureEach {
   inputs.dir(rootProject.layout.buildDirectory.dir("localMaven"))
     .withPropertyName("localMaven")
   dependsOn(':paparazzi:publishMavenPublicationToProjectLocalMavenRepository')
+  dependsOn(':paparazzi-junit-platform:publishMavenPublicationToProjectLocalMavenRepository')
 }
 
 // When cleaning this project, we also want to clean the test projects.

@@ -750,6 +750,40 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun verifyFailureNativeMode() {
+    val fixtureRoot = File("src/test/projects/verify-mode-failure")
+    File(fixtureRoot, "build").registerForDeletionOnExit()
+
+    val result = gradleRunner
+      .withGradleVersion("9.4.1")
+      .withArguments(
+        "verifyPaparazziDebug",
+        "-Papp.cash.paparazzi.reportType=native",
+        "--stacktrace"
+      )
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    assertThat(result.task(":testDebugUnitTest")).isNotNull()
+
+    val delta = File(
+      fixtureRoot,
+      "build/paparazzi/failures/debug/delta-app.cash.paparazzi.plugin.test_VerifyTest_verify.png"
+    )
+    assertThat(delta.exists()).isTrue()
+
+    // The engine listener must have published the delta PNG as a FileEntry
+    // attachment so Gradle 9.4+ surfaces it in the test report. The binary
+    // output-events.bin embeds the file path as UTF-8.
+    val binaryResults = File(
+      fixtureRoot,
+      "build/test-results/testDebugUnitTest/binary/output-events.bin"
+    )
+    assertThat(binaryResults.exists()).isTrue()
+    assertThat(String(binaryResults.readBytes(), Charsets.UTF_8))
+      .contains("delta-app.cash.paparazzi.plugin.test_VerifyTest_verify.png")
+  }
+
+  @Test
   fun verifySimilar() {
     val fixtureRoot = File("src/test/projects/verify-similar")
 

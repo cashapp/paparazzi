@@ -29,7 +29,7 @@ internal class PaparazziExecutionListener(
     delegate.dynamicTestRegistered(testDescriptor)
   }
 
-  override fun executionSkipped(testDescriptor: TestDescriptor, reason: String?) {
+  override fun executionSkipped(testDescriptor: TestDescriptor, reason: String) {
     delegate.executionSkipped(testDescriptor, reason)
   }
 
