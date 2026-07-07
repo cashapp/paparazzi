@@ -26,17 +26,13 @@ import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.testing.TestResult
+import java.io.File
 
 /**
  * Paparazzi-owned HTML report generated directly from Gradle's binary test
  * results store (`SerializableTestResultStore` / `SerializableTestResult`),
  * bypassing both the deprecated `TestReporter` shim (legacy mode) and Gradle's
  * bundled `GenericHtmlTestReportGenerator` (native mode).
- *
- * Phase 3c: index page with summary + per-class detail pages with each
- * method's failure message and a thumbnail of the snapshot diff (when present
- * in `paparazzi.failures.dir`). stdout/stderr surfacing and visual polish
- * arrive in subsequent phases.
  */
 public abstract class PaparazziCustomReportTask : DefaultTask() {
 
@@ -90,27 +86,22 @@ public abstract class PaparazziCustomReportTask : DefaultTask() {
     failed: Int,
     skipped: Int
   ): String = buildString {
-    appendStart("Paparazzi report")
-    append("<h1>Paparazzi test report</h1>")
+    appendStart("Paparazzi report", crumbs = emptyList())
+    append("<h1 class=\"page-title\">Paparazzi test report</h1>")
     appendSummary(totalCount, passed, failed, skipped)
 
     if (byClass.isNotEmpty()) {
-      append("<table><thead><tr>")
+      append("<table class=\"results\"><thead><tr>")
       append("<th>Class</th><th>Tests</th><th>Failed</th><th>Skipped</th>")
       append("</tr></thead><tbody>")
       byClass.toSortedMap().forEach { (className, classTests) ->
         val classFailed = classTests.count { it.resultType == TestResult.ResultType.FAILURE }
         val classSkipped = classTests.count { it.resultType == TestResult.ResultType.SKIPPED }
-        val rowClass = when {
-          classFailed > 0 -> "fail"
-          classSkipped > 0 -> "skip"
-          else -> "pass"
-        }
         append("<tr>")
         append("<td><a href=\"classes/${escape(className)}.html\">${escape(className)}</a></td>")
         append("<td>${classTests.size}</td>")
-        append("<td class=\"$rowClass\">$classFailed</td>")
-        append("<td>$classSkipped</td>")
+        append("<td>${countBadge(classFailed, "fail")}</td>")
+        append("<td>${countBadge(classSkipped, "skip")}</td>")
         append("</tr>")
       }
       append("</tbody></table>")
@@ -121,11 +112,10 @@ public abstract class PaparazziCustomReportTask : DefaultTask() {
   private fun renderClassPage(
     className: String,
     tests: List<SerializableTestResult>,
-    deltasDir: java.io.File?
+    deltasDir: File?
   ): String = buildString {
-    appendStart(className)
-    append("<p><a href=\"../index.html\">← All classes</a></p>")
-    append("<h1>${escape(className)}</h1>")
+    appendStart(className, crumbs = listOf("../index.html" to "All classes"))
+    append("<h1 class=\"page-title\">${escape(className)}</h1>")
 
     val passed = tests.count { it.resultType == TestResult.ResultType.SUCCESS }
     val failed = tests.count { it.resultType == TestResult.ResultType.FAILURE }
@@ -133,15 +123,12 @@ public abstract class PaparazziCustomReportTask : DefaultTask() {
     appendSummary(tests.size, passed, failed, skipped)
 
     tests.sortedBy { it.name }.forEach { t ->
-      val cssClass = when (t.resultType) {
-        TestResult.ResultType.SUCCESS -> "pass"
-        TestResult.ResultType.FAILURE -> "fail"
-        TestResult.ResultType.SKIPPED -> "skip"
-        else -> ""
-      }
-      append("<section class=\"test\">")
-      append("<h2><span class=\"$cssClass\">${t.resultType.name}</span> ")
-      append("${escape(t.displayName ?: t.name)} <small>(${t.duration} ms)</small></h2>")
+      append("<section class=\"test-card\">")
+      append("<h2>")
+      append(statusBadge(t.resultType))
+      append("<span>${escape(t.displayName ?: t.name)}</span>")
+      append("<span class=\"duration\">${t.duration} ms</span>")
+      append("</h2>")
 
       if (t.resultType == TestResult.ResultType.FAILURE) {
         appendFailures(t)
@@ -163,7 +150,7 @@ public abstract class PaparazziCustomReportTask : DefaultTask() {
   }
 
   private fun StringBuilder.appendDeltaThumbnail(
-    deltasDir: java.io.File?,
+    deltasDir: File?,
     className: String,
     t: SerializableTestResult
   ) {
@@ -174,15 +161,17 @@ public abstract class PaparazziCustomReportTask : DefaultTask() {
       it.name.startsWith(prefix) && it.name.endsWith(".png")
     } ?: return
     val src = match.toURI().toString()
-    append("<p><a href=\"$src\"><img src=\"$src\" alt=\"delta\" ")
-    append("style=\"max-width:100%;border:1px solid #ddd\"/></a></p>")
+    append("<div class=\"delta\">")
+    append("<a href=\"$src\"><img src=\"$src\" alt=\"snapshot delta\"/></a>")
+    append("<div class=\"caption\">${escape(match.name)}</div>")
+    append("</div>")
   }
 
-  // SerializableTestResult.getFailures() returns Gradle's shaded
-  // ImmutableList type at compile time but a different (un-shaded) type at
-  // runtime — direct calls trigger NoSuchMethodError. Reflection sidesteps the
-  // binding, returning a List<*> from which SerializableFailure.getMessage()
-  // (a plain String accessor) is safe to call.
+  // SerializableTestResult.getFailures() returns Gradle's shaded ImmutableList
+  // type at compile time but a different (un-shaded) type at runtime — direct
+  // calls trigger NoSuchMethodError. Reflection sidesteps the binding,
+  // returning a List<*> from which SerializableFailure.getMessage() (a plain
+  // String accessor) is safe to call.
   private fun failuresOf(t: SerializableTestResult): List<String> {
     return try {
       val method = SerializableTestResult::class.java.getMethod("getFailures")
@@ -197,37 +186,49 @@ public abstract class PaparazziCustomReportTask : DefaultTask() {
     }
   }
 
-  private fun StringBuilder.appendStart(title: String) {
+  private fun StringBuilder.appendStart(title: String, crumbs: List<Pair<String, String>>) {
     append("<!DOCTYPE html>")
     append("<html><head><meta charset=\"utf-8\"><title>${escape(title)}</title>")
-    append("<style>")
-    append("body{font-family:sans-serif;margin:24px;color:#222}")
-    append("h1{margin-top:0}")
-    append(".test{margin-top:24px;padding-top:8px;border-top:1px solid #eee}")
-    append(".test h2{font-size:1.05em;margin:8px 0}")
-    append(".test small{color:#888;font-weight:normal}")
-    append("table{border-collapse:collapse;width:100%;margin-top:16px}")
-    append("th,td{text-align:left;padding:6px 10px;border-bottom:1px solid #eee}")
-    append("th{background:#f5f5f5}")
-    append("a{color:#1a5fb4}")
-    append("pre{background:#f8f8f8;padding:12px;overflow:auto;white-space:pre-wrap;word-break:break-word}")
-    append("details summary{cursor:pointer}")
-    append(".pass{color:#1a7f1a}.fail{color:#b00020;font-weight:600}.skip{color:#888}")
-    append(".summary{display:flex;gap:24px;margin-top:8px}")
-    append("</style></head><body>")
+    append("<style>$STYLES</style>")
+    append("</head><body>")
+    append("<header class=\"app\"><div class=\"container\">")
+    append("<h1>Paparazzi</h1>")
+    append("</div></header>")
+    append("<main class=\"container\">")
+    if (crumbs.isNotEmpty()) {
+      append("<nav class=\"breadcrumb\">")
+      crumbs.forEachIndexed { i, (href, label) ->
+        if (i > 0) append(" / ")
+        append("<a href=\"$href\">← ${escape(label)}</a>")
+      }
+      append("</nav>")
+    }
   }
 
   private fun StringBuilder.appendSummary(total: Int, passed: Int, failed: Int, skipped: Int) {
-    append("<div class=\"summary\">")
-    append("<span><strong>$total</strong> tests</span>")
-    append("<span class=\"pass\"><strong>$passed</strong> passed</span>")
-    append("<span class=\"fail\"><strong>$failed</strong> failed</span>")
-    append("<span class=\"skip\"><strong>$skipped</strong> skipped</span>")
+    append("<div class=\"summary-cards\">")
+    append(summaryCard("Total", total, ""))
+    append(summaryCard("Passed", passed, "pass"))
+    append(summaryCard("Failed", failed, "fail"))
+    append(summaryCard("Skipped", skipped, "skip"))
     append("</div>")
   }
 
+  private fun summaryCard(label: String, count: Int, cls: String): String =
+    "<div class=\"summary-card $cls\"><span class=\"count\">$count</span>" +
+      "<span class=\"label\">${escape(label)}</span></div>"
+
+  private fun countBadge(count: Int, cls: String): String =
+    if (count == 0) "$count" else "<span class=\"badge $cls\">$count</span>"
+
+  private fun statusBadge(result: TestResult.ResultType): String = when (result) {
+    TestResult.ResultType.SUCCESS -> "<span class=\"badge pass\">SUCCESS</span>"
+    TestResult.ResultType.FAILURE -> "<span class=\"badge fail\">FAILURE</span>"
+    TestResult.ResultType.SKIPPED -> "<span class=\"badge skip\">SKIPPED</span>"
+  }
+
   private fun StringBuilder.appendEnd() {
-    append("</body></html>")
+    append("</main></body></html>")
   }
 
   private fun escape(text: String): String = buildString(text.length) {
@@ -241,5 +242,59 @@ public abstract class PaparazziCustomReportTask : DefaultTask() {
         else -> append(c)
       }
     }
+  }
+
+  private companion object {
+    private val STYLES = """
+      * { box-sizing: border-box; }
+      body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        margin: 0; background: #fafafa; color: #222; }
+      .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+      header.app { background: #1a5fb4; color: white; }
+      header.app h1 { font-size: 1.05em; margin: 0; padding: 14px 0; letter-spacing: 0.3px; }
+      .breadcrumb { font-size: 0.9em; color: #666; margin-bottom: 12px; }
+      .breadcrumb a { color: #1a5fb4; text-decoration: none; }
+      .breadcrumb a:hover { text-decoration: underline; }
+      h1.page-title { margin: 0 0 16px; font-size: 1.6em; }
+      .summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 12px; margin: 16px 0 24px; }
+      .summary-card { background: white; border: 1px solid #e4e4e7; border-radius: 8px;
+        padding: 14px 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+      .summary-card .count { font-size: 1.8em; font-weight: 700; display: block; line-height: 1; }
+      .summary-card .label { color: #666; font-size: 0.85em; display: block; margin-top: 6px; }
+      .summary-card.pass .count { color: #1a7f1a; }
+      .summary-card.fail .count { color: #b00020; }
+      .summary-card.skip .count { color: #777; }
+      table.results { width: 100%; background: white; border: 1px solid #e4e4e7;
+        border-radius: 8px; border-collapse: separate; border-spacing: 0; overflow: hidden;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+      table.results th, table.results td { text-align: left; padding: 10px 14px;
+        border-bottom: 1px solid #eee; }
+      table.results th { background: #f8f8f8; font-weight: 600; color: #555;
+        font-size: 0.85em; text-transform: uppercase; letter-spacing: 0.3px; }
+      table.results tr:last-child td { border-bottom: none; }
+      table.results a { color: #1a5fb4; text-decoration: none; }
+      table.results a:hover { text-decoration: underline; }
+      .badge { display: inline-block; padding: 2px 10px; border-radius: 12px;
+        font-size: 0.78em; font-weight: 600; letter-spacing: 0.3px; }
+      .badge.pass { background: #d1fadc; color: #0e5a16; }
+      .badge.fail { background: #fce0e3; color: #93001a; }
+      .badge.skip { background: #eaeaea; color: #555; }
+      .test-card { background: white; border: 1px solid #e4e4e7; border-radius: 8px;
+        padding: 14px 18px; margin: 14px 0; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+      .test-card h2 { display: flex; align-items: center; gap: 12px; margin: 0 0 8px;
+        font-size: 1em; font-weight: 600; }
+      .test-card .duration { color: #888; font-weight: normal; font-size: 0.85em;
+        margin-left: auto; }
+      .test-card pre { background: #f8f8f8; border: 1px solid #eee; border-radius: 4px;
+        padding: 12px; overflow: auto; white-space: pre-wrap; word-break: break-word;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.85em; margin: 8px 0; }
+      .test-card details summary { cursor: pointer; font-weight: 600; color: #444;
+        user-select: none; margin: 8px 0; }
+      .test-card .delta { margin-top: 12px; }
+      .test-card .delta img { max-width: 100%; border: 1px solid #ddd; border-radius: 4px; }
+      .test-card .delta .caption { font-size: 0.8em; color: #888; margin-top: 6px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    """.trimIndent()
   }
 }
