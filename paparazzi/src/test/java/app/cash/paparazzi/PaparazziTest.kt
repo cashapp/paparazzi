@@ -224,7 +224,10 @@ class PaparazziTest {
   fun frameTimes() {
     paparazzi.snapshot(object : View(paparazzi.context) {
       override fun onDraw(canvas: Canvas) {
-        println("sChoreographerTime ${Choreographer_Delegate.sChoreographerTime} - nano=${System_Delegate.nanoTime()} uptime=${SystemClock.uptimeMillis()}")
+        println(
+          "sChoreographerTime ${Choreographer_Delegate.sChoreographerTime} " +
+            "nano=${System_Delegate.nanoTime()} uptime=${SystemClock.uptimeMillis()}"
+        )
       }
     }
     )
