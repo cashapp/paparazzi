@@ -251,6 +251,7 @@ public class PaparazziPlugin @Inject constructor(
             buildDirectory.dir("test-results/test${testVariantSlug}/binary")
           )
           it.failuresDirectory.set(failureDir)
+          it.attachmentsDirectory.set(attachmentsDir)
         }
       } else {
         null
@@ -345,7 +346,7 @@ public class PaparazziPlugin @Inject constructor(
 
         test.doFirst {
           if (isVerifyRun.get()) failureDir.get().asFile.deleteRecursively()
-          if (reportType() == ReportType.NATIVE) {
+          if (reportType() in setOf(ReportType.NATIVE, ReportType.CUSTOM)) {
             attachmentsDir.get().asFile.let { dir ->
               dir.deleteRecursively()
               dir.mkdirs()
@@ -364,7 +365,7 @@ public class PaparazziPlugin @Inject constructor(
           test.systemProperties["paparazzi.test.verify"] = isVerifyRun.get()
           test.systemProperties["paparazzi.snapshot.dir"] = snapshotOutputDir.get().asFile.absolutePath
           test.systemProperties["paparazzi.failures.dir"] = failureDir.get().asFile.absolutePath
-          if (reportType() == ReportType.NATIVE) {
+          if (reportType() in setOf(ReportType.NATIVE, ReportType.CUSTOM)) {
             test.systemProperties["paparazzi.attachments.dir"] = attachmentsDir.get().asFile.absolutePath
           }
         }

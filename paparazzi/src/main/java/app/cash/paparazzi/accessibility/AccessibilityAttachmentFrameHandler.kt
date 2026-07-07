@@ -52,7 +52,7 @@ internal class AccessibilityAttachmentFrameHandler(
   }
 
   private fun writeSvgIfActive(image: BufferedImage) {
-    if (System.getProperty(SYSTEM_PROPERTY_REPORT_TYPE) != REPORT_TYPE_NATIVE) return
+    if (System.getProperty(SYSTEM_PROPERTY_REPORT_TYPE) !in NON_LEGACY_REPORT_TYPES) return
     val attachmentsDir = System.getProperty(SYSTEM_PROPERTY_ATTACHMENTS_DIR) ?: return
     val stashed = CollectedAccessibilityElements.consume() ?: return
     if (stashed.elements.isEmpty()) return
@@ -66,6 +66,6 @@ internal class AccessibilityAttachmentFrameHandler(
   private companion object {
     const val SYSTEM_PROPERTY_REPORT_TYPE = "paparazzi.reportType"
     const val SYSTEM_PROPERTY_ATTACHMENTS_DIR = "paparazzi.attachments.dir"
-    const val REPORT_TYPE_NATIVE = "native"
+    val NON_LEGACY_REPORT_TYPES = setOf("native", "custom")
   }
 }

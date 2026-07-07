@@ -45,6 +45,11 @@ public abstract class PaparazziCustomReportTask : DefaultTask() {
   @get:PathSensitive(PathSensitivity.RELATIVE)
   public abstract val failuresDirectory: DirectoryProperty
 
+  @get:InputDirectory
+  @get:Optional
+  @get:PathSensitive(PathSensitivity.RELATIVE)
+  public abstract val attachmentsDirectory: DirectoryProperty
+
   @get:OutputDirectory
   public abstract val reportDir: DirectoryProperty
 
@@ -53,9 +58,16 @@ public abstract class PaparazziCustomReportTask : DefaultTask() {
     val outputDir = reportDir.get().asFile.apply { mkdirs() }
     val classesDir = outputDir.resolve("classes").apply { mkdirs() }
     val deltasDir = failuresDirectory.orNull?.asFile
+    val a11yDir = attachmentsDirectory.orNull?.asFile
 
     val results = loadResults()
-    val tests = results.filter { it.className != null }
+    // SerializableTestResultStore emits both leaf method results and aggregated
+    // class-level nodes. Filter to leaf methods (name != simple class name) so
+    // we don't double-count rows on the index or render a duplicate test card.
+    val tests = results.filter { result ->
+      val cn = result.className ?: return@filter false
+      result.name != cn.substringAfterLast('.')
+    }
     val byClass = tests.groupBy { it.className!! }
 
     val passed = tests.count { it.resultType == TestResult.ResultType.SUCCESS }
@@ -67,7 +79,7 @@ public abstract class PaparazziCustomReportTask : DefaultTask() {
     )
     byClass.forEach { (className, classTests) ->
       classesDir.resolve("$className.html").writeText(
-        renderClassPage(className, classTests, deltasDir)
+        renderClassPage(className, classTests, deltasDir, a11yDir)
       )
     }
   }
@@ -112,7 +124,8 @@ public abstract class PaparazziCustomReportTask : DefaultTask() {
   private fun renderClassPage(
     className: String,
     tests: List<SerializableTestResult>,
-    deltasDir: File?
+    deltasDir: File?,
+    a11yDir: File?
   ): String = buildString {
     appendStart(className, crumbs = listOf("../index.html" to "All classes"))
     append("<h1 class=\"page-title\">${escape(className)}</h1>")
@@ -134,6 +147,7 @@ public abstract class PaparazziCustomReportTask : DefaultTask() {
         appendFailures(t)
         appendDeltaThumbnail(deltasDir, className, t)
       }
+      appendA11yAttachment(a11yDir, className, t)
       append("</section>")
     }
     appendEnd()
@@ -149,14 +163,33 @@ public abstract class PaparazziCustomReportTask : DefaultTask() {
     append("</details>")
   }
 
+  private fun StringBuilder.appendA11yAttachment(
+    a11yDir: File?,
+    className: String,
+    t: SerializableTestResult
+  ) {
+    if (a11yDir == null || !a11yDir.isDirectory) return
+    // Snapshot.toFileName pattern: <package>_<simpleClass>_<method>[_<label>]
+    val prefix = "a11y-${attachmentPrefix(className, t.name)}"
+    val match = a11yDir.listFiles()?.firstOrNull {
+      it.name.startsWith(prefix) && it.name.endsWith(".svg")
+    } ?: return
+    val src = match.toURI().toString()
+    append("<details class=\"a11y\"><summary>Accessibility</summary>")
+    append("<div class=\"delta\">")
+    append("<a href=\"$src\"><img src=\"$src\" alt=\"accessibility overlay\"/></a>")
+    append("<div class=\"caption\">${escape(match.name)}</div>")
+    append("</div>")
+    append("</details>")
+  }
+
   private fun StringBuilder.appendDeltaThumbnail(
     deltasDir: File?,
     className: String,
     t: SerializableTestResult
   ) {
     if (deltasDir == null || !deltasDir.isDirectory) return
-    // Snapshot.toFileName-style: delta-<package>_<class>_<method>.png
-    val prefix = "delta-${className.replace('.', '_')}_${t.name}"
+    val prefix = "delta-${attachmentPrefix(className, t.name)}"
     val match = deltasDir.listFiles()?.firstOrNull {
       it.name.startsWith(prefix) && it.name.endsWith(".png")
     } ?: return
@@ -165,6 +198,15 @@ public abstract class PaparazziCustomReportTask : DefaultTask() {
     append("<a href=\"$src\"><img src=\"$src\" alt=\"snapshot delta\"/></a>")
     append("<div class=\"caption\">${escape(match.name)}</div>")
     append("</div>")
+  }
+
+  // Matches Snapshot.toFileName: `<package>_<simpleClass>_<methodName>` — the
+  // package keeps its dots, class and method are underscore-joined.
+  private fun attachmentPrefix(className: String, methodName: String): String {
+    val pkg = className.substringBeforeLast('.', missingDelimiterValue = "")
+    val simpleClass = className.substringAfterLast('.')
+    val left = if (pkg.isEmpty()) simpleClass else "${pkg}_$simpleClass"
+    return "${left}_$methodName"
   }
 
   // SerializableTestResult.getFailures() returns Gradle's shaded ImmutableList

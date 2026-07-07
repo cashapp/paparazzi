@@ -835,6 +835,42 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun verifyFailureCustomModeWithA11y() {
+    // Runs the verify-mode-failure-native-gradle fixture (MixedView +
+    // AccessibilityRenderExtension) in CUSTOM mode. The same renderNative
+    // path that fires in native mode also fires here, so the a11y SVG side-car
+    // lands in paparazzi.attachments.dir and the custom report embeds it.
+    val fixtureRoot = File("src/test/projects/verify-mode-failure-native-gradle")
+    File(fixtureRoot, "build").registerForDeletionOnExit()
+
+    val result = gradleRunner
+      .withArguments(
+        "verifyPaparazziDebug",
+        "-Papp.cash.paparazzi.reportType=custom",
+        "--stacktrace"
+      )
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    assertThat(result.task(":testDebugUnitTest")).isNotNull()
+    assertThat(result.task(":paparazziCustomReportDebug")).isNotNull()
+
+    val a11ySvg = File(
+      fixtureRoot,
+      "build/paparazzi/attachments/debug/a11y-app.cash.paparazzi.plugin.test_VerifyTest_verify.svg"
+    )
+    assertThat(a11ySvg.exists()).isTrue()
+
+    val classPage = File(
+      fixtureRoot,
+      "build/reports/paparazzi/debug/classes/app.cash.paparazzi.plugin.test.VerifyTest.html"
+    )
+    assertThat(classPage.exists()).isTrue()
+    val classHtml = classPage.readText()
+    assertThat(classHtml).contains("Accessibility")
+    assertThat(classHtml).contains("a11y-app.cash.paparazzi.plugin.test_VerifyTest_verify.svg")
+  }
+
+  @Test
   fun verifySimilar() {
     val fixtureRoot = File("src/test/projects/verify-similar")
 

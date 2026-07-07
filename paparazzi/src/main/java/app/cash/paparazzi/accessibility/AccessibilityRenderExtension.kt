@@ -37,11 +37,15 @@ public class AccessibilityRenderExtension : RenderExtension {
   private val accessibilityElementCollector = AccessibilityElementCollector()
 
   override fun renderView(contentView: View): View {
-    return if (System.getProperty("paparazzi.reportType") == "native") {
+    return if (System.getProperty("paparazzi.reportType") in NON_LEGACY_REPORT_TYPES) {
       renderNative(contentView)
     } else {
       renderLegacy(contentView)
     }
+  }
+
+  private companion object {
+    val NON_LEGACY_REPORT_TYPES = setOf("native", "custom")
   }
 
   private fun renderLegacy(contentView: View): View {

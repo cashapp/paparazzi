@@ -605,7 +605,7 @@ public class PaparazziSdk @JvmOverloads constructor(
   private fun uptimeNanos() = System_Delegate.nanoTime() - System_Delegate.bootTime()
 
   private fun DeviceConfig.updateIfAccessibilityTest(): DeviceConfig {
-    if (System.getProperty("paparazzi.reportType") == "native") return this
+    if (System.getProperty("paparazzi.reportType") in setOf("native", "custom")) return this
     return if (renderExtensions.any { it is AccessibilityRenderExtension }) {
       val newWidth = screenWidth * 2
       val newOrientation = if (newWidth > screenHeight) ScreenOrientation.LANDSCAPE else ScreenOrientation.PORTRAIT
