@@ -250,6 +250,7 @@ public class PaparazziPlugin @Inject constructor(
           it.binaryResultsDirectory.set(
             buildDirectory.dir("test-results/test${testVariantSlug}/binary")
           )
+          it.failuresDirectory.set(failureDir)
         }
       } else {
         null

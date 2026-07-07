@@ -814,13 +814,24 @@ class PaparazziPluginTest {
     assertThat(result.task(":testDebugUnitTest")).isNotNull()
     assertThat(result.task(":paparazziCustomReportDebug")).isNotNull()
 
-    val reportIndex = File(fixtureRoot, "build/reports/paparazzi/debug/index.html")
+    val reportRoot = File(fixtureRoot, "build/reports/paparazzi/debug")
+    val reportIndex = File(reportRoot, "index.html")
     assertThat(reportIndex.exists()).isTrue()
-    val html = reportIndex.readText()
-    assertThat(html).contains("Paparazzi test report")
-    assertThat(html).contains("app.cash.paparazzi.plugin.test.VerifyTest")
-    assertThat(html).contains("verify")
-    assertThat(html).contains("FAILURE")
+    val indexHtml = reportIndex.readText()
+    assertThat(indexHtml).contains("Paparazzi test report")
+    assertThat(indexHtml).contains("app.cash.paparazzi.plugin.test.VerifyTest")
+    // The index links to a per-class detail page.
+    assertThat(indexHtml).contains("classes/app.cash.paparazzi.plugin.test.VerifyTest.html")
+
+    val classPage = File(reportRoot, "classes/app.cash.paparazzi.plugin.test.VerifyTest.html")
+    assertThat(classPage.exists()).isTrue()
+    val classHtml = classPage.readText()
+    assertThat(classHtml).contains("verify")
+    assertThat(classHtml).contains("FAILURE")
+    // The class page surfaces the failure message from the binary results.
+    assertThat(classHtml).contains("Images differ")
+    // And links to the delta thumbnail from paparazzi.failures.dir.
+    assertThat(classHtml).contains("delta-app.cash.paparazzi.plugin.test_VerifyTest_verify.png")
   }
 
   @Test
