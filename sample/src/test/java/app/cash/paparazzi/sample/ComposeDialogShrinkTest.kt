@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Paparazzi
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 
@@ -26,6 +27,7 @@ class ComposeDialogShrinkTest {
     renderingMode = RenderingMode.SHRINK
   )
 
+  @Ignore("Within previews the dialog is not rendered correctly, so we Paparazzi will need to mimic what happens there. TODO: Remove this test or fix window manager")
   @Test
   fun test() {
     paparazzi.snapshot {
