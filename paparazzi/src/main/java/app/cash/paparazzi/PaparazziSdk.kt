@@ -396,11 +396,9 @@ public class PaparazziSdk @JvmOverloads constructor(
   }
 
   private fun withTime(timeNanos: Long, block: () -> Unit) {
-    val frameNanos = timeNanos.coerceAtLeast(1L)
-
     // Execute the block at the requested time.
     System_Delegate.setNanosTime(0L)
-    Choreographer_Delegate.sChoreographerTime = frameNanos
+    Choreographer_Delegate.sChoreographerTime = timeNanos
 
     try {
       executeHandlerCallbacks()
@@ -430,11 +428,11 @@ public class PaparazziSdk @JvmOverloads constructor(
       mLastFrameTimeNanos.isAccessible = true
 
       // Set mLastFrameTimeNanos before callbacks run so getFrameTimeNanos() returns the correct value.
-      mLastFrameTimeNanos.set(choreographer, frameNanos)
+      mLastFrameTimeNanos.set(choreographer, timeNanos)
       // AnimationHandler.doFrame calls Choreographer.getFrameTimeNanos() which requires mCallbacksRunning.
       mCallbacksRunning.set(choreographer, true)
       try {
-        choreographerCallbacks.execute(frameNanos, Bridge.getLog())
+        choreographerCallbacks.execute(timeNanos, Bridge.getLog())
       } finally {
         mCallbacksRunning.set(choreographer, false)
       }
@@ -442,12 +440,12 @@ public class PaparazziSdk @JvmOverloads constructor(
       /**
        * Temporarily zero sChoreographerTime so that during doFrame's internal doCallbacks,
        * nanoTime() = (0 - 0) + 0 = 0, yielding timeMillis = 0. Re-posted callbacks have
-       * dueTime = uptimeMillis() at posting time (= frameNanos / 1_000_000 > 0 for meaningful frames),
+       * dueTime = uptimeMillis() at posting time (= timeNanos / 1_000_000 > 0 for meaningful frames),
        * so they won't be eligible (dueTime > 0 > timeMillis). After doFrame returns, it sets
-       * sChoreographerTime = frameNanos, restoring correct time for subsequent operations.
+       * sChoreographerTime = timeNanos, restoring correct time for subsequent operations.
        */
       Choreographer_Delegate.sChoreographerTime = 0
-      Choreographer_Delegate.doFrame(frameNanos)
+      Choreographer_Delegate.doFrame(timeNanos)
 
       return block()
     } catch (e: Throwable) {
