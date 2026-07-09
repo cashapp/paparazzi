@@ -27,7 +27,10 @@ class ComposeDialogShrinkTest {
     renderingMode = RenderingMode.SHRINK
   )
 
-  @Ignore("Within previews the dialog is not rendered correctly, so we Paparazzi will need to mimic what happens there. TODO: Remove this test or fix window manager")
+  @Ignore(
+    "Within previews the dialog is not rendered correctly, so we " +
+      "Paparazzi will need to mimic what happens there. TODO: Remove this test or fix window manager"
+  )
   @Test
   fun test() {
     paparazzi.snapshot {
