@@ -328,6 +328,14 @@ public class PaparazziSdk @JvmOverloads constructor(
       }
 
       viewGroup.addView(modifiedView)
+
+      // See [sizeShrinkWindowFrameToDevice]. In SHRINK mode layoutlib 16.2.3 leaves the window frame
+      // collapsed to 0x0 after inflating the (empty) content, which corrupts Compose state derived
+      // from the first measured size. Restore a sane window frame before the first frame is rendered.
+      if (sessionParamsBuilder.build().renderingMode == RenderingMode.SHRINK) {
+        sizeShrinkWindowFrameToDevice(viewGroup)
+      }
+
       for (frame in 0 until frameCount) {
         val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
 
@@ -396,6 +404,42 @@ public class PaparazziSdk @JvmOverloads constructor(
     }
   }
 
+  /**
+   * layoutlib 16.2.3's `RenderSessionImpl.inflate()` eagerly measures the content and sizes the
+   * `ViewRootImpl` window frame (`mWinFrame`) to the measured content size. Paparazzi attaches the
+   * test content *after* `inflate()`, so in [RenderingMode.SHRINK] — where the window shrinks to the
+   * content in both dimensions — the window frame collapses to `0x0` (the empty inflate-time size)
+   * and stays that way until the first `render()` re-measures it. (Other rendering modes keep the
+   * device size in at least one dimension, so they never fully collapse.)
+   *
+   * Compose reads that stale `0x0` window frame during the first frame-clock pass, so any state
+   * derived from the measured size (e.g. `AnchoredDraggableState` anchors computed in
+   * `onSizeChanged`) is first resolved at `0x0` and then settles on the wrong value when the real
+   * measure arrives. Resetting the frame to the device size here lets the first frame-clock measure
+   * observe a sane window, matching pre-16.2.3 behavior; the subsequent `render()` re-shrinks the
+   * frame to the true content size for the captured image.
+   *
+   * We set the frame directly rather than calling [RenderSessionImpl.measure] because that would run
+   * an extra traversal/scroll pass whose process-global side effects (shared `Looper`/animation
+   * state) leak into later snapshots on the same thread. No-ops on layoutlib versions that don't
+   * expose `ViewRootImpl_Accessor.updateFrame`.
+   */
+  private fun sizeShrinkWindowFrameToDevice(contentView: View) {
+    try {
+      val viewRootImpl = View::class.java.getMethod("getViewRootImpl").invoke(contentView) ?: return
+      val displayMetrics = contentView.context.resources.displayMetrics
+      Class.forName("android.view.ViewRootImpl_Accessor")
+        .getMethod(
+          "updateFrame",
+          Class.forName("android.view.ViewRootImpl"),
+          Int::class.javaPrimitiveType,
+          Int::class.javaPrimitiveType
+        )
+        .invoke(null, viewRootImpl, displayMetrics.widthPixels, displayMetrics.heightPixels)
+    } catch (ignored: Throwable) {
+      // Older layoutlib versions don't expose ViewRootImpl_Accessor.updateFrame; nothing to reset.
+    }
+  }
 
   /**
    * layoutlib 16.2.3 began hosting inflated content inside a `PhoneWindow` whose `DecorView` fits
