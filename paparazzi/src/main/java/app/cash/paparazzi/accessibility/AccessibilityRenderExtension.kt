@@ -54,7 +54,7 @@ public class AccessibilityRenderExtension : RenderExtension {
 
         // The root of the view hierarchy is rendered at full width.
         // We need to restrict it when taking accessibility snapshots.
-        val windowManagerRootView = WindowManagerGlobal.getInstance().findPopupRootView(rootView)
+        val windowManagerRootView = WindowManagerGlobal.getInstance().windowViews.lastOrNull()
         if (windowManagerRootView != null) {
           (windowManagerRootView.layoutParams as? WindowManager.LayoutParams)?.apply {
             width = contentView.measuredWidth
@@ -85,19 +85,4 @@ private fun View.findRootView(): View {
     parent = parent.parent
   }
   throw IllegalArgumentException("View hierarchy does not contain a ComposeViewAdapter")
-}
-
-internal fun WindowManagerGlobal.findPopupRootView(excludedView: View): View? {
-  @Suppress("UNCHECKED_CAST")
-  val params = WindowManagerGlobal::class.java
-    .getFieldReflectively("mParams")
-    .get(this) as List<WindowManager.LayoutParams>
-  return windowViews
-    .asSequence()
-    .zip(params.asSequence())
-    .drop(1)
-    .lastOrNull { (view, layoutParams) ->
-      view !== excludedView && layoutParams.token != null
-    }
-    ?.first
 }
