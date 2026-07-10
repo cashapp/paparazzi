@@ -15,7 +15,6 @@
  */
 package app.cash.paparazzi.accessibility
 
-import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
@@ -55,13 +54,6 @@ public class AccessibilityRenderExtension : RenderExtension {
         // The root of the view hierarchy is rendered at full width.
         // We need to restrict it when taking accessibility snapshots.
         val windowManagerRootView = WindowManagerGlobal.getInstance().windowViews.drop(1).lastOrNull()
-        if (windowManagerRootView != null) {
-          (windowManagerRootView.layoutParams as? WindowManager.LayoutParams)?.apply {
-            width = contentView.measuredWidth
-            height = MATCH_PARENT
-            gravity = Gravity.START
-          }
-        }
 
         OneShotPreDrawListener.add(this@apply) {
           val elements = accessibilityElementCollector.collect(
