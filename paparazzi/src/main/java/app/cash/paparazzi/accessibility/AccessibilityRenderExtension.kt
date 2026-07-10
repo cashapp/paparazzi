@@ -54,7 +54,7 @@ public class AccessibilityRenderExtension : RenderExtension {
 
         // The root of the view hierarchy is rendered at full width.
         // We need to restrict it when taking accessibility snapshots.
-        val windowManagerRootView = WindowManagerGlobal.getInstance().windowViews.lastOrNull()
+        val windowManagerRootView = WindowManagerGlobal.getInstance().windowViews.drop(1).lastOrNull()
         if (windowManagerRootView != null) {
           (windowManagerRootView.layoutParams as? WindowManager.LayoutParams)?.apply {
             width = contentView.measuredWidth
