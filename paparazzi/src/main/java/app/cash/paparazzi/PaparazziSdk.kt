@@ -33,6 +33,8 @@ import android.view.View
 import android.view.View.NO_ID
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
+import android.view.ViewRootImpl
+import android.view.ViewRootImpl_Accessor
 import androidx.activity.setViewTreeOnBackPressedDispatcherOwner
 import androidx.annotation.LayoutRes
 import androidx.compose.runtime.Composable
@@ -425,20 +427,8 @@ public class PaparazziSdk @JvmOverloads constructor(
    * expose `ViewRootImpl_Accessor.updateFrame`.
    */
   private fun sizeShrinkWindowFrameToDevice(contentView: View) {
-    try {
-      val viewRootImpl = View::class.java.getMethod("getViewRootImpl").invoke(contentView) ?: return
-      val displayMetrics = contentView.context.resources.displayMetrics
-      Class.forName("android.view.ViewRootImpl_Accessor")
-        .getMethod(
-          "updateFrame",
-          Class.forName("android.view.ViewRootImpl"),
-          Int::class.javaPrimitiveType,
-          Int::class.javaPrimitiveType
-        )
-        .invoke(null, viewRootImpl, displayMetrics.widthPixels, displayMetrics.heightPixels)
-    } catch (ignored: Throwable) {
-      // Older layoutlib versions don't expose ViewRootImpl_Accessor.updateFrame; nothing to reset.
-    }
+    val displayMetrics = contentView.context.resources.displayMetrics
+    ViewRootImpl_Accessor.updateFrame(contentView.viewRootImpl, displayMetrics.widthPixels, displayMetrics.heightPixels)
   }
 
   /**
