@@ -47,14 +47,15 @@ public class AccessibilityRenderExtension : RenderExtension {
 
       val overlayDrawables = mutableMapOf<Int, AccessibilityOverlayDrawable>()
       viewTreeObserver.addOnGlobalLayoutListener {
-        val accessibleWindowRoots = WindowManagerGlobal.getInstance().windowViews.associate {
+        val accessibleWindowRoots = WindowManagerGlobal.getInstance().windowViews.reversed().associate {
+          val id = it.hashCode()
           val coreView = it.findComposeViewAdapterChild()
-          overlayDrawables.getOrPut(it.accessibilityViewId) {
+          overlayDrawables.getOrPut(id) {
             AccessibilityOverlayDrawable()
           }.apply {
             coreView.foreground = this
           }
-          it.accessibilityViewId to coreView
+          id to coreView
         }
 
         OneShotPreDrawListener.add(this@apply) {
