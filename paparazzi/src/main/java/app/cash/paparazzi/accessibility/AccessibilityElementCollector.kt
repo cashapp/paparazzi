@@ -47,13 +47,10 @@ import androidx.core.view.isVisible
 internal class AccessibilityElementCollector {
   /**
    * Collects accessibility elements from the provided render roots.
-   *
-   * [windowManagerRootView] is optional and is used for UI that renders in separate windows
-   * (dialogs, popups, etc.). [rootView] is always traversed.
+   * [rootView] is always traversed.
    */
-  fun collect(rootView: View, windowManagerRootView: View?): Set<AccessibilityElement> =
+  fun collect(rootView: View): Set<AccessibilityElement> =
     buildSet {
-      windowManagerRootView?.processAccessibleChildren { add(it) }
       rootView.processAccessibleChildren { add(it) }
     }
 
@@ -61,7 +58,7 @@ internal class AccessibilityElementCollector {
     if (importantForAccessibility == View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS) return
 
     val accessibilityText = this.accessibilityText()
-    val bounds = Rect().also(::getBoundsOnScreen)
+    val bounds = Rect().also { getBoundsInWindow(it, true) }
 
     if (isImportantForAccessibility && !accessibilityText.isNullOrBlank() && isVisible) {
       processElement(
