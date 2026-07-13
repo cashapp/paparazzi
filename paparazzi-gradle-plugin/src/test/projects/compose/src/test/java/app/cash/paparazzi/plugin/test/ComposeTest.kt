@@ -39,6 +39,7 @@ import androidx.compose.ui.window.Popup
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Paparazzi
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode.SHRINK
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import kotlin.math.roundToInt
@@ -93,6 +94,7 @@ class ComposeTest {
     }
   }
 
+  @Ignore("WindowInsets are not supported in Compose previews")
   @Test
   fun syntheticWindowInsets() {
     paparazzi.unsafeUpdateConfig(deviceConfig = DeviceConfig.PIXEL_5)
@@ -108,6 +110,7 @@ class ComposeTest {
     }
   }
 
+  @Ignore("WindowInsets are not supported in Compose previews")
   @Test
   fun syntheticWindowInsetsWithPopupOverlay() {
     paparazzi.unsafeUpdateConfig(deviceConfig = DeviceConfig.PIXEL_5)
