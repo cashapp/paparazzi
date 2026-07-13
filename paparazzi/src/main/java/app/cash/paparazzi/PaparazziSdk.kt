@@ -33,7 +33,6 @@ import android.view.View
 import android.view.View.NO_ID
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
-import android.view.ViewRootImpl
 import android.view.ViewRootImpl_Accessor
 import androidx.activity.setViewTreeOnBackPressedDispatcherOwner
 import androidx.annotation.LayoutRes
@@ -264,7 +263,6 @@ public class PaparazziSdk @JvmOverloads constructor(
 
   private fun takeSnapshots(view: View, startNanos: Long, fps: Int, frameCount: Int) {
     val viewGroup = bridgeRenderSession.rootViews[0].viewObject as ViewGroup
-    disableDecorFitsSystemWindows(viewGroup)
     val modifiedView = renderExtensions.fold(view) { currentView, renderExtension ->
       val currentSessionRenderingMode = sessionParamsBuilder.build().renderingMode
       if (currentSessionRenderingMode == RenderingMode.SHRINK && renderExtension is AccessibilityRenderExtension) {
@@ -429,35 +427,6 @@ public class PaparazziSdk @JvmOverloads constructor(
   private fun sizeShrinkWindowFrameToDevice(contentView: View) {
     val displayMetrics = contentView.context.resources.displayMetrics
     ViewRootImpl_Accessor.updateFrame(contentView.viewRootImpl, displayMetrics.widthPixels, displayMetrics.heightPixels)
-  }
-
-  /**
-   * layoutlib 16.2.3 began hosting inflated content inside a `PhoneWindow` whose `DecorView` fits
-   * system windows by default (`mDecorFitsSystemWindows = true`). When a test dispatches synthetic
-   * [android.view.WindowInsets] to the root view, that `DecorView` consumes the system-bar insets
-   * and offsets the content, so Compose observes zeroed `WindowInsets` and the content is
-   * physically inset.
-   *
-   * Prior layoutlib versions wrapped content in a plain [ViewGroup] that passed insets straight
-   * through to the view tree. Disable decor-fits-system-windows to restore that pass-through
-   * behavior so dispatched insets reach the composition unchanged. No-ops on layoutlib versions
-   * that don't wrap content in a `PhoneWindow`/`DecorView`.
-   */
-  private fun disableDecorFitsSystemWindows(contentView: View) {
-    var current: View? = contentView
-    while (current != null && current.javaClass.name != "com.android.internal.policy.DecorView") {
-      current = current.parent as? View
-    }
-    val decorView = current ?: return
-
-    try {
-      val window = decorView.javaClass.getFieldReflectively("mWindow").get(decorView)
-      window.javaClass
-        .getMethod("setDecorFitsSystemWindows", Boolean::class.javaPrimitiveType)
-        .invoke(window, false)
-    } catch (ignored: Throwable) {
-      // Older layoutlib versions don't wrap content in a PhoneWindow; nothing to disable.
-    }
   }
 
   private fun withTime(timeNanos: Long, block: () -> Unit) {
