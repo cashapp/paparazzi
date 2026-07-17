@@ -430,7 +430,7 @@ public class PaparazziSdk @JvmOverloads constructor(
   }
 
   private fun withTime(timeNanos: Long, block: () -> Unit) {
-    val frameNanos = timeNanos.coerceAtLeast(1L)
+    val frameNanos = timeNanos
 
     // Execute the block at the requested time.
     System_Delegate.setNanosTime(0L)
@@ -438,21 +438,15 @@ public class PaparazziSdk @JvmOverloads constructor(
 
     try {
       executeHandlerCallbacks()
+      val currentTimeNanos = uptimeNanos()
 
-      /**
-       * Execute choreographer callbacks manually BEFORE [Choreographer_Delegate.doFrame] to guarantee
-       * that Compose's FrameCallback always receives a non-zero frame time. This prevents the
-       * "0 isn't a real frame time!" crash in AndroidUiFrameClock.
-       *
-       * We pass [frameNanos] directly to eliminate any possibility of timing state corruption
-       * from the nanoTime() formula during handler callback execution.
-       *
-       * After consuming callbacks, [Choreographer_Delegate.doFrame] is still called with
-       * [sChoreographerTime] temporarily zeroed so that re-posted callbacks (which have
-       * dueTime = uptimeMillis() > 0) won't fire during doFrame's internal callback execution.
-       * This prevents animation callbacks from being fired multiple times per frame while still
-       * allowing doFrame to signal the native HWUI layer for ripples and view animations.
-       */
+      // layoutlib 16.2.3's Choreographer#doFrame dispatches the animation callbacks itself, but a
+      // re-posted callback (dueTime = uptimeMillis()) becomes due again within the same frame and
+      // fires a second time. To keep exactly one dispatch per frame (matching pre-16.2.3 behavior),
+      // run the animation callbacks manually once at [currentTimeNanos] - the same instant doFrame
+      // would have used - then tick doFrame with sChoreographerTime zeroed so its internal dispatch
+      // finds the re-posted callbacks not-yet-due and skips them (while still signalling the native
+      // HWUI layer so ripples and view animations work).
       val choreographerCallbacks = RenderAction.getCurrentContext()
         .sessionInteractiveData
         .choreographerCallbacks
@@ -463,25 +457,16 @@ public class PaparazziSdk @JvmOverloads constructor(
       val mLastFrameTimeNanos = choreographer::class.java.getDeclaredField("mLastFrameTimeNanos")
       mLastFrameTimeNanos.isAccessible = true
 
-      // Set mLastFrameTimeNanos before callbacks run so getFrameTimeNanos() returns the correct value.
-      mLastFrameTimeNanos.set(choreographer, frameNanos)
-      // AnimationHandler.doFrame calls Choreographer.getFrameTimeNanos() which requires mCallbacksRunning.
+      mLastFrameTimeNanos.set(choreographer, currentTimeNanos)
       mCallbacksRunning.set(choreographer, true)
       try {
-        choreographerCallbacks.execute(frameNanos, Bridge.getLog())
+        choreographerCallbacks.execute(currentTimeNanos, Bridge.getLog())
       } finally {
         mCallbacksRunning.set(choreographer, false)
       }
 
-      /**
-       * Temporarily zero sChoreographerTime so that during doFrame's internal doCallbacks,
-       * nanoTime() = (0 - 0) + 0 = 0, yielding timeMillis = 0. Re-posted callbacks have
-       * dueTime = uptimeMillis() at posting time (= frameNanos / 1_000_000 > 0 for meaningful frames),
-       * so they won't be eligible (dueTime > 0 > timeMillis). After doFrame returns, it sets
-       * sChoreographerTime = frameNanos, restoring correct time for subsequent operations.
-       */
       Choreographer_Delegate.sChoreographerTime = 0
-      Choreographer_Delegate.doFrame(frameNanos)
+      Choreographer_Delegate.doFrame(currentTimeNanos)
 
       return block()
     } catch (e: Throwable) {
