@@ -248,6 +248,33 @@ class AccessibilityRenderingTest {
   }
 
   @Test
+  fun `verify no hide descendants prunes accessibility subtree`() {
+    val view = LinearLayout(paparazzi.context).apply {
+      orientation = LinearLayout.VERTICAL
+      addView(
+        LinearLayout(context).apply {
+          orientation = LinearLayout.VERTICAL
+          importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
+          addView(TextView(context).apply { text = "Hidden classic descendant" })
+          addView(
+            ComposeView(context).apply {
+              setContent { Text("Hidden Compose descendant") }
+            }
+          )
+        }
+      )
+      addView(
+        LinearLayout(context).apply {
+          importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+          addView(TextView(context).apply { text = "Visible descendant" })
+        }
+      )
+    }
+
+    paparazzi.snapshot(view)
+  }
+
+  @Test
   fun legendDoesNotScale() {
     paparazzi.unsafeUpdateConfig(deviceConfig = DeviceConfig.PIXEL.copy(fontScale = 2.0f))
     paparazzi.snapshot {
