@@ -50,7 +50,6 @@ dependencies {
   api libs.androidx.annotations
   api libs.guava
   api libs.kotlinx.coroutines.android
-  implementation libs.kotlinx.coroutines.test
   api libs.okio
   api platform(libs.kotlin.bom)
   implementation libs.moshi.core
