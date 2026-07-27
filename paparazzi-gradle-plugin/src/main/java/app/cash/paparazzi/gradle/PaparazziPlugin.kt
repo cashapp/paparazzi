@@ -47,6 +47,7 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.provider.ProviderFactory
 import org.gradle.api.reporting.ReportingExtension
 import org.gradle.api.tasks.Delete
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.SourceSet.TEST_SOURCE_SET_NAME
 import org.gradle.api.tasks.options.Option
@@ -56,6 +57,7 @@ import org.gradle.internal.operations.BuildOperationExecutor
 import org.gradle.internal.operations.BuildOperationRunner
 import org.gradle.internal.os.OperatingSystem
 import org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
+import org.gradle.process.CommandLineArgumentProvider
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import java.util.Locale
 import javax.inject.Inject
@@ -232,12 +234,19 @@ public class PaparazziPlugin @Inject constructor(
           )
         )
 
-        test.systemProperties["paparazzi.test.resources"] =
-          writeResourcesTask.flatMap { it.paparazziResources.asFile }.get().path
-        test.systemProperties["paparazzi.project.dir"] = projectDirectory.toString()
-        test.systemProperties["paparazzi.build.dir"] = buildDirectory.get().toString()
-        test.systemProperties["paparazzi.report.dir"] = reportOutputDir.get().toString()
-        test.systemProperties["paparazzi.artifacts.cache.dir"] = gradleUserHomeDir.path
+        // Absolute paths passed via `systemProperties` (an @Input) would pollute the build-cache
+        // key and break relocatability. Supply them as @Internal JVM args instead (#1874); task
+        // content is tracked separately via the path-sensitive file inputs below.
+        val pathSystemProperties = project.objects.mapProperty(String::class.java, String::class.java)
+        pathSystemProperties.put(
+          "paparazzi.test.resources",
+          writeResourcesTask.flatMap { it.paparazziResources.asFile }.map { it.path }
+        )
+        pathSystemProperties.put("paparazzi.project.dir", projectDirectory.toString())
+        pathSystemProperties.put("paparazzi.build.dir", buildDirectory.map { it.toString() })
+        pathSystemProperties.put("paparazzi.report.dir", reportOutputDir.map { it.toString() })
+        pathSystemProperties.put("paparazzi.artifacts.cache.dir", gradleUserHomeDir.path)
+        test.jvmArgumentProviders.add(PaparazziSystemPropertiesArgumentProvider(pathSystemProperties))
 
         test.inputs.property("paparazzi.test.record", isRecordRun)
         test.inputs.property("paparazzi.test.verify", isVerifyRun)
@@ -506,6 +515,16 @@ public class PaparazziPlugin @Inject constructor(
       .toIntOrNull()
     return agpMajor != null && agpMajor >= major
   }
+}
+
+/** Passes absolute-path system properties as `-D` JVM args without adding them to the cache key (#1874). */
+internal class PaparazziSystemPropertiesArgumentProvider(
+  @get:Internal val systemProperties: Provider<Map<String, String>>
+) : CommandLineArgumentProvider {
+  override fun asArguments(): Iterable<String> =
+    systemProperties.get().entries
+      .sortedBy { it.key }
+      .map { (key, value) -> "-D$key=$value" }
 }
 
 private const val DEFAULT_COMPILE_SDK_VERSION = 36
