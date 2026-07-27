@@ -422,12 +422,14 @@ public class PaparazziSdk @JvmOverloads constructor(
    *
    * We set the frame directly rather than calling [RenderSessionImpl.measure] because that would run
    * an extra traversal/scroll pass whose process-global side effects (shared `Looper`/animation
-   * state) leak into later snapshots on the same thread. No-ops on layoutlib versions that don't
-   * expose `ViewRootImpl_Accessor.updateFrame`.
+   * state) leak into later snapshots on the same thread. This relies on
+   * `ViewRootImpl_Accessor.updateFrame`, which is provided by the pinned layoutlib runtime; no-ops
+   * if the content view is not yet attached to a `ViewRootImpl`.
    */
   private fun sizeShrinkWindowFrameToDevice(contentView: View) {
+    val viewRootImpl = contentView.viewRootImpl ?: return
     val displayMetrics = contentView.context.resources.displayMetrics
-    ViewRootImpl_Accessor.updateFrame(contentView.viewRootImpl, displayMetrics.widthPixels, displayMetrics.heightPixels)
+    ViewRootImpl_Accessor.updateFrame(viewRootImpl, displayMetrics.widthPixels, displayMetrics.heightPixels)
   }
 
   private fun withTime(timeNanos: Long, block: () -> Unit) {
