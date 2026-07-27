@@ -81,12 +81,7 @@ import java.awt.geom.Ellipse2D
 import java.awt.image.BufferedImage
 import java.util.EnumSet
 import java.util.concurrent.TimeUnit
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.android.asCoroutineDispatcher
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.setMain
 
 @OptIn(ExperimentalComposeUiApi::class, InternalComposeUiApi::class)
 public class PaparazziSdk @JvmOverloads constructor(
@@ -138,7 +133,6 @@ public class PaparazziSdk @JvmOverloads constructor(
   private lateinit var sessionParams: SessionParams
   private lateinit var renderSession: RenderSessionImpl
   private lateinit var bridgeRenderSession: RenderSession
-  private var mainDispatcher: CoroutineDispatcher? = null
 
   public val layoutInflater: LayoutInflater
     get() = RenderAction.getCurrentContext().getSystemService("layout_inflater") as BridgeInflater
@@ -201,7 +195,6 @@ public class PaparazziSdk @JvmOverloads constructor(
   }
 
   public fun teardown() {
-    resetMainDispatcher()
     renderSession.release()
     bridgeRenderSession.dispose()
     Looper_Accessor.cleanupThread()
@@ -247,7 +240,6 @@ public class PaparazziSdk @JvmOverloads constructor(
     }
 
     logger.flushErrors()
-    resetMainDispatcher()
     renderSession.release()
     bridgeRenderSession.dispose()
     Looper_Accessor.cleanupThread()
@@ -282,13 +274,7 @@ public class PaparazziSdk @JvmOverloads constructor(
     AnimationHandler.sAnimatorHandler.set(null)
   }
 
-  @OptIn(ExperimentalCoroutinesApi::class)
   private fun takeSnapshots(view: View, startNanos: Long, fps: Int, frameCount: Int) {
-    if (hasComposeRuntime) {
-      val dispatcher = Handler(Looper.getMainLooper()).asCoroutineDispatcher("Paparazzi-Main")
-      Dispatchers.setMain(dispatcher)
-      mainDispatcher = dispatcher
-    }
     val viewGroup = bridgeRenderSession.rootViews[0].viewObject as ViewGroup
     val modifiedView = renderExtensions.fold(view) { currentView, renderExtension ->
       val currentSessionRenderingMode = sessionParams.renderingMode
@@ -335,7 +321,8 @@ public class PaparazziSdk @JvmOverloads constructor(
         // async to our test Handler. By initializing Recomposer with Dispatchers.Main, Delay will now be backed by our test Handler,
         // synchronizing expected behavior.
         WindowRecomposerPolicy.setFactory {
-          val windowRecomposer = it.createLifecycleAwareWindowRecomposer(checkNotNull(mainDispatcher))
+          val dispatcher = Handler(Looper.getMainLooper()).asCoroutineDispatcher("Paparazzi-Main")
+          val windowRecomposer = it.createLifecycleAwareWindowRecomposer(dispatcher)
           recomposer = windowRecomposer
           return@setFactory windowRecomposer
         }
@@ -464,14 +451,6 @@ public class PaparazziSdk @JvmOverloads constructor(
     val renderSession = RenderSessionImpl(sessionParams)
     renderSession.setElapsedFrameTimeNanos(0L)
     return renderSession
-  }
-
-  @OptIn(ExperimentalCoroutinesApi::class)
-  private fun resetMainDispatcher() {
-    if (mainDispatcher != null) {
-      Dispatchers.resetMain()
-      mainDispatcher = null
-    }
   }
 
   private fun createBridgeSession(renderSession: RenderSessionImpl, result: Result): BridgeRenderSession {
