@@ -16,6 +16,11 @@ class InterceptorRegistrarTest {
         "log2" to Interceptor2::class.java
       )
     )
+    InterceptorRegistrar.addAdvice(
+      "app.cash.paparazzi.agent.InterceptorRegistrarTest\$Utils",
+      "log3",
+      NullPointerExceptionSuppressingAdvice::class.java
+    )
 
     ByteBuddyAgent.install()
     InterceptorRegistrar.registerMethodInterceptors()
@@ -25,8 +30,10 @@ class InterceptorRegistrarTest {
   fun test() {
     Utils.log1()
     Utils.log2()
+    // log3 throws a NullPointerException that must be suppressed by the registered advice.
+    Utils.log3()
 
-    assertThat(logs).containsExactly("intercept1", "intercept2").inOrder()
+    assertThat(logs).containsExactly("intercept1", "intercept2", "adviceLog").inOrder()
   }
 
   @After
@@ -41,6 +48,11 @@ class InterceptorRegistrarTest {
 
     fun log2() {
       logs += "original2"
+    }
+
+    fun log3() {
+      logs += "adviceLog"
+      throw NullPointerException("boom")
     }
   }
 

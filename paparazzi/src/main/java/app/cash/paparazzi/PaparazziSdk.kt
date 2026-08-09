@@ -55,6 +55,7 @@ import app.cash.paparazzi.internal.PaparazziSavedStateRegistryOwner
 import app.cash.paparazzi.internal.Renderer
 import app.cash.paparazzi.internal.SessionParamsBuilder
 import app.cash.paparazzi.internal.interceptors.EditModeInterceptor
+import app.cash.paparazzi.internal.interceptors.WindowManagerImplRemoveViewAdvice
 import app.cash.paparazzi.internal.parsers.LayoutPullParser
 import com.android.ide.common.rendering.api.RenderSession
 import com.android.ide.common.rendering.api.Result
@@ -577,6 +578,11 @@ public class PaparazziSdk @JvmOverloads constructor(
       "android.view.View",
       "isInEditMode",
       EditModeInterceptor::class.java
+    )
+    InterceptorRegistrar.addAdvice(
+      "android.view.WindowManagerImpl",
+      "removeView",
+      WindowManagerImplRemoveViewAdvice::class.java
     )
   }
 
