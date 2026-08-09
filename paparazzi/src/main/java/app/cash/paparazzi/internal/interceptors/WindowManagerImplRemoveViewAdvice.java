@@ -34,8 +34,11 @@ import net.bytebuddy.asm.Advice;
  * to delegate to via {@code @SuperCall}.
  *
  * <p>https://github.com/cashapp/paparazzi/issues/2373
+ *
+ * <p>Package-private so it does not become part of the public API surface, mirroring the
+ * Kotlin {@code internal} interceptor classes.
  */
-public class WindowManagerImplRemoveViewAdvice {
+class WindowManagerImplRemoveViewAdvice {
   private WindowManagerImplRemoveViewAdvice() {
     throw new AssertionError();
   }
@@ -46,7 +49,7 @@ public class WindowManagerImplRemoveViewAdvice {
    * teardown completes cleanly.
    */
   @Advice.OnMethodExit(onThrowable = NullPointerException.class)
-  public static void suppressNullPointerException(@Advice.Thrown(readOnly = false) Throwable throwable) {
+  static void suppressNullPointerException(@Advice.Thrown(readOnly = false) Throwable throwable) {
     throwable = null;
   }
 }
