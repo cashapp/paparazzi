@@ -31,7 +31,8 @@ internal object InterceptorRegistrar {
     addMethodInterceptors(receiverClass, setOf(methodName to interceptor))
 
   fun addMethodInterceptors(receiverClass: String, methodNamesToInterceptors: Set<Pair<String, Class<*>>>) {
-    transformations.getOrPut(receiverClass) { Transformation(receiverClass) }.methodInterceptors += methodNamesToInterceptors
+    transformations.getOrPut(receiverClass) { Transformation(receiverClass) }.methodInterceptors +=
+      methodNamesToInterceptors
   }
 
   fun addAdvice(receiverClass: String, methodName: String, adviceClass: Class<*>) {
