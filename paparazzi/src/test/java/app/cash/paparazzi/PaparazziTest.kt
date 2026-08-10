@@ -237,6 +237,9 @@ class PaparazziTest {
 
   @Test
   fun layoutlibAnimatedVectorFrameTimeUsesSnapshotOffset() {
+    // Regression: layoutlib's native AnimatedVectorDrawable animator reads its frame time from
+    // RenderSession#setElapsedFrameTimeNanos. Before per-frame timing, this stayed at 0 for
+    // nonzero snapshot offsets, freezing native vector animations. See spike 001.
     paparazzi.snapshot(View(paparazzi.context), offsetMillis = 300L)
 
     assertThat(AnimatedVectorDrawable_VectorDrawableAnimatorUI_Delegate.sFrameTime).isEqualTo(300L)
