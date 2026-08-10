@@ -21,6 +21,7 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.drawable.AnimatedVectorDrawable_VectorDrawableAnimatorUI_Delegate
 import android.os.SystemClock
 import android.view.Choreographer
 import android.view.Choreographer.CALLBACK_ANIMATION
@@ -232,6 +233,13 @@ class PaparazziTest {
     paparazzi.snapshot(view, offsetMillis = 300L)
 
     assertThat(frameTimes).containsExactly(300_000_000L)
+  }
+
+  @Test
+  fun layoutlibAnimatedVectorFrameTimeUsesSnapshotOffset() {
+    paparazzi.snapshot(View(paparazzi.context), offsetMillis = 300L)
+
+    assertThat(AnimatedVectorDrawable_VectorDrawableAnimatorUI_Delegate.sFrameTime).isEqualTo(300L)
   }
 
   @Test
