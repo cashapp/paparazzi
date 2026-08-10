@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### New
+* Generate one HTML report page per test suite, linked together from the report's `index.html` (#187)
 * Add `Paparazzi#gif` overloads that accept a `@Composable` directly, mirroring the existing `snapshot` Compose overloads:
 
 ```kotlin
