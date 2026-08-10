@@ -342,7 +342,6 @@ public class PaparazziSdk @JvmOverloads constructor(
         // If we have pendingTasks run recomposer to ensure we get the correct frame.
         var hasPendingWork = false
         withTime(nowNanos) {
-          renderSession.setElapsedFrameTimeNanos(nowNanos)
           val result = renderSession.render(true)
           if (result.status == ERROR_UNKNOWN) {
             throw result.exception
@@ -439,6 +438,13 @@ public class PaparazziSdk @JvmOverloads constructor(
     System_Delegate.setNanosTime(0L)
     Choreographer_Delegate.sChoreographerTime = frameNanos
 
+    // Drive Layoutlib's per-frame animation clock the way Google's deviceless harness
+    // (RenderTestBase / standalone-render) does: set the render session's elapsed-frame time before
+    // each render. Layoutlib 16.2.3's RenderSessionImpl#render divides this by 1_000_000 into
+    // AnimatedVectorDrawable's native animator (sFrameTime), so native animated-vector timing
+    // advances in lockstep with the Choreographer clock for nonzero snapshot offsets.
+    renderSession.setElapsedFrameTimeNanos(frameNanos)
+
     try {
       executeHandlerCallbacks()
       val currentTimeNanos = uptimeNanos()
@@ -446,27 +452,17 @@ public class PaparazziSdk @JvmOverloads constructor(
       // layoutlib 16.2.3's Choreographer#doFrame dispatches the animation callbacks itself, but a
       // re-posted callback (dueTime = uptimeMillis()) becomes due again within the same frame and
       // fires a second time. To keep exactly one dispatch per frame (matching pre-16.2.3 behavior),
-      // run the animation callbacks manually once at [currentTimeNanos] - the same instant doFrame
-      // would have used - then tick doFrame with sChoreographerTime zeroed so its internal dispatch
-      // finds the re-posted callbacks not-yet-due and skips them (while still signalling the native
-      // HWUI layer so ripples and view animations work).
-      val choreographerCallbacks = RenderAction.getCurrentContext()
-        .sessionInteractiveData
-        .choreographerCallbacks
-
-      val choreographer = Choreographer.getInstance()
-      val mCallbacksRunning = choreographer::class.java.getDeclaredField("mCallbacksRunning")
-      mCallbacksRunning.isAccessible = true
-      val mLastFrameTimeNanos = choreographer::class.java.getDeclaredField("mLastFrameTimeNanos")
-      mLastFrameTimeNanos.isAccessible = true
-
-      mLastFrameTimeNanos.set(choreographer, currentTimeNanos)
-      mCallbacksRunning.set(choreographer, true)
-      try {
-        choreographerCallbacks.execute(currentTimeNanos, Bridge.getLog())
-      } finally {
-        mCallbacksRunning.set(choreographer, false)
-      }
+      // dispatch the animation callbacks once here via the public Choreographer_Delegate.doCallbacks
+      // (which guards mCallbacksRunning and runs the aggregate ChoreographerCallbacks queue) - the
+      // same work the previous private-field reflection did, without reflection - then tick doFrame
+      // with sChoreographerTime zeroed so its internal dispatch finds the re-posted callbacks
+      // not-yet-due and skips them (while still signalling the native HWUI layer so ripples and view
+      // animations work).
+      Choreographer_Delegate.doCallbacks(
+        Choreographer.getInstance(),
+        Choreographer.CALLBACK_ANIMATION,
+        currentTimeNanos
+      )
 
       Choreographer_Delegate.sChoreographerTime = 0
       Choreographer_Delegate.doFrame(currentTimeNanos)
@@ -480,6 +476,7 @@ public class PaparazziSdk @JvmOverloads constructor(
 
   private fun createRenderSession(sessionParams: SessionParams): RenderSessionImpl {
     val renderSession = RenderSessionImpl(sessionParams)
+    // Initialize to zero; per-frame elapsed time is set in [withTime] before each render.
     renderSession.setElapsedFrameTimeNanos(0L)
     return renderSession
   }
