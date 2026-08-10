@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package app.cash.paparazzi.sample
+package app.cash.paparazzi.plugin.test
 
 import android.graphics.drawable.AnimatedVectorDrawable
 import android.widget.FrameLayout
@@ -23,12 +23,12 @@ import org.junit.Rule
 import org.junit.Test
 
 /**
- * Pixel-level verification for spike 001: native [AnimatedVectorDrawable] timing.
+ * Pixel-level verification for native [AnimatedVectorDrawable] frame timing.
  *
  * The AVD rotates a full turn over one second. Its rotation angle is advanced by layoutlib's native
  * animator, which reads frame time from RenderSession#setElapsedFrameTimeNanos. Capturing a GIF
  * across the animation proves the rendered pixels actually change per frame (rather than freezing at
- * the initial angle), which the delegate-value unit test alone cannot demonstrate.
+ * the initial angle).
  */
 class AnimatedVectorDrawableTest {
   @get:Rule

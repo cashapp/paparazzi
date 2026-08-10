@@ -1438,6 +1438,18 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun verifyAnimationGif() {
+    val fixtureRoot = File("src/test/projects/verify-animation-gif")
+
+    val result = gradleRunner
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
+    assertThat(result.task(":testDebugUnitTest")).isNotNull()
+  }
+
+  @Test
   fun verifyVectorDrawables() {
     val fixtureRoot = File("src/test/projects/verify-svgs")
 
