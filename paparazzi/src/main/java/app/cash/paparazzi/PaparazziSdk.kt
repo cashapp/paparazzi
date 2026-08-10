@@ -342,6 +342,7 @@ public class PaparazziSdk @JvmOverloads constructor(
         // If we have pendingTasks run recomposer to ensure we get the correct frame.
         var hasPendingWork = false
         withTime(nowNanos) {
+          renderSession.setElapsedFrameTimeNanos(nowNanos)
           val result = renderSession.render(true)
           if (result.status == ERROR_UNKNOWN) {
             throw result.exception
