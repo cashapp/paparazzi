@@ -398,7 +398,7 @@ public class PaparazziSdk @JvmOverloads constructor(
       val choreographer = Choreographer.getInstance()
       val mLastFrameTimeNanos = choreographer::class.java.getDeclaredField("mLastFrameTimeNanos")
       mLastFrameTimeNanos.isAccessible = true
-      mLastFrameTimeNanos.set(choreographer, Long.MIN_VALUE)
+      mLastFrameTimeNanos.set(choreographer, 0L)
 
       Thread.setDefaultUncaughtExceptionHandler(previousUncaughtExceptionHandler)
     }
