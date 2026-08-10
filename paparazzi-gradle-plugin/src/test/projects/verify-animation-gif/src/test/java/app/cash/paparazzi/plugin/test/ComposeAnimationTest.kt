@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package app.cash.paparazzi.sample
+package app.cash.paparazzi.plugin.test
 
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateDpAsState
@@ -37,12 +37,11 @@ import org.junit.Rule
 import org.junit.Test
 
 /**
- * Pixel-level verification for the Compose timing path that spike 001 must not disturb.
+ * Pixel-level verification for the Compose animation timing path.
  *
  * A box slides across the screen over one second via [animateDpAsState]. Compose animations are
  * driven by the frame clock that Paparazzi advances each frame; capturing a GIF proves the box
- * occupies a different position per frame, confirming the Choreographer/Compose clock path continues
- * to advance alongside the new per-frame layoutlib elapsed-frame time.
+ * occupies a different position per frame, confirming the Choreographer/Compose clock path advances.
  */
 class ComposeAnimationTest {
   @get:Rule
