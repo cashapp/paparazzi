@@ -220,6 +220,21 @@ class PaparazziTest {
   }
 
   @Test
+  fun choreographerFrameCallbackUsesSnapshotOffset() {
+    val frameTimes = mutableListOf<Long>()
+    val view = object : View(paparazzi.context) {
+      override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        Choreographer.getInstance().postFrameCallback { frameTimes += it }
+      }
+    }
+
+    paparazzi.snapshot(view, offsetMillis = 300L)
+
+    assertThat(frameTimes).containsExactly(300_000_000L)
+  }
+
+  @Test
   fun preDrawOnEveryFrame() {
     val log = mutableListOf<String>()
 
