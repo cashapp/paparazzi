@@ -25,9 +25,11 @@ import app.cash.paparazzi.internal.apng.PngConstants.Header.FDAT
 import app.cash.paparazzi.internal.apng.PngConstants.Header.IDAT
 import app.cash.paparazzi.internal.apng.PngConstants.Header.IEND
 import app.cash.paparazzi.internal.apng.PngConstants.Header.IHDR
+import app.cash.paparazzi.internal.apng.PngConstants.Header.SRGB
 import app.cash.paparazzi.internal.apng.PngConstants.PNG_BITS_PER_PIXEL
 import app.cash.paparazzi.internal.apng.PngConstants.PNG_COLOR_TYPE_RGB
 import app.cash.paparazzi.internal.apng.PngConstants.PNG_COLOR_TYPE_RGBA
+import app.cash.paparazzi.internal.apng.PngConstants.PNG_SRGB_RENDERING_INTENT_PERCEPTUAL
 import okio.Buffer
 import okio.BufferedSink
 import okio.FileSystem
@@ -97,6 +99,7 @@ internal class ApngWriter(
         writeACTL(frameCount, 0)
         writeFCTL(0, Rectangle(maxWidth, maxHeight))
       }
+      writeSRGB()
       writeIDAT(firstFrameResized)
 
       // Copy over the subsequent frames, if we have any.
@@ -136,6 +139,14 @@ internal class ApngWriter(
       writeByte(0) // Compression
       writeByte(0) // Filter
       writeByte(0) // Interlace
+    }
+  }
+
+  private fun BufferedSink.writeSRGB() {
+    // The sRGB chunk declares the color space of the image data. Per the PNG specification
+    // it must appear before the PLTE and IDAT chunks. See https://www.w3.org/TR/png/#11sRGB
+    writeChunk(SRGB) {
+      writeByte(PNG_SRGB_RENDERING_INTENT_PERCEPTUAL.toInt())
     }
   }
 
