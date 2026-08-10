@@ -1,0 +1,35 @@
+<!--
+  ~ Copyright (C) 2026 Square, Inc.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<vector
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+  <!-- Rotates about the center; the shape is intentionally asymmetric so the angle is visible. -->
+  <group
+      android:name="rotationGroup"
+      android:pivotX="24"
+      android:pivotY="24"
+      android:rotation="0">
+    <path
+        android:fillColor="#FF3DDC84"
+        android:pathData="M24,4 L30,24 L24,44 L18,24 Z" />
+    <path
+        android:fillColor="#FF073042"
+        android:pathData="M24,20 m-4,0 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0" />
+  </group>
+</vector>
