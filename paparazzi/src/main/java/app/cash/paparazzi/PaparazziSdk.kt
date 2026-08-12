@@ -453,10 +453,9 @@ public class PaparazziSdk @JvmOverloads constructor(
       // re-posted callback (dueTime = uptimeMillis()) becomes due again within the same frame and
       // fires a second time. To keep exactly one dispatch per frame (matching pre-16.2.3 behavior),
       // dispatch the animation callbacks once here via the public Choreographer_Delegate.doCallbacks
-      // (which guards mCallbacksRunning and runs the aggregate ChoreographerCallbacks queue) - the
-      // same work the previous private-field reflection did, without reflection - then tick doFrame
+      // (which guards mCallbacksRunning and runs the aggregate ChoreographerCallbacks queue) then tick doFrame
       // with sChoreographerTime zeroed so its internal dispatch finds the re-posted callbacks
-      // not-yet-due and skips them (while still signalling the native HWUI layer so ripples and view
+      // not-yet-due and skips them (while still signaling the native HWUI layer so ripples and view
       // animations work).
       Choreographer_Delegate.doCallbacks(
         Choreographer.getInstance(),
@@ -488,14 +487,6 @@ public class PaparazziSdk @JvmOverloads constructor(
         bridgeSessionClass.getDeclaredConstructor(RenderSessionImpl::class.java, Result::class.java)
       constructor.isAccessible = true
       val bridgeSession = constructor.newInstance(renderSession, result) as BridgeRenderSession
-      val viewGroup = bridgeSession.rootViews[0].viewObject as ViewGroup
-      // Workaround since layoutlib's [DisplayManagerGlobal] is missing [registerForRefreshRateChanges].
-      // This method is called by [Display.getRefreshRate] if [mRefreshRateChangesRegistered] is true.
-      // Remove once an updated layoutlib contains this upstream fix: https://android-review.googlesource.com/c/platform/frameworks/layoutlib/+/3876099
-      Display::class.java.getDeclaredField("mRefreshRateChangesRegistered").apply {
-        isAccessible = true
-        set(viewGroup.display, true)
-      }
       return bridgeSession
     } catch (e: Exception) {
       throw RuntimeException(e)
