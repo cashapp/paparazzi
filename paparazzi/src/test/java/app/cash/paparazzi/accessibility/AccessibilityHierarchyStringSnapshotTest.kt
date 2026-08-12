@@ -1,7 +1,11 @@
 package app.cash.paparazzi.accessibility
 
+import android.app.Dialog
+import android.view.Gravity
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.LinearLayout
+import android.widget.PopupWindow
 import android.widget.TextView
 import app.cash.paparazzi.Flags
 import app.cash.paparazzi.Paparazzi
@@ -72,6 +76,88 @@ class AccessibilityHierarchyStringSnapshotTest {
     ).inOrder()
   }
 
+  @Test
+  fun `dialog overlay hierarchy includes each render root in provided order`() {
+    System.setProperty(Flags.ACCESSIBILITY_HIERARCHY_ARTIFACTS_ENABLED, "true")
+    val hierarchies = mutableListOf<List<String>>()
+    paparazzi.onAccessibilityHierarchiesGenerated = hierarchies::add
+    val dialog = Dialog(paparazzi.context).apply {
+      setContentView(TextView(context).apply { text = "Dialog overlay" })
+      show()
+    }
+
+    try {
+      paparazzi.snapshot(TextView(paparazzi.context).apply { text = "Primary content" })
+    } finally {
+      dialog.dismiss()
+    }
+
+    val hierarchy = hierarchies.single().single()
+    assertThat(hierarchy).isEqualTo(
+      """
+      [
+        {
+          "id": "TextView(Dialog overlay)",
+          "beforeElementId": null,
+          "afterElementId": "TextView(Primary content)",
+          "bounds": {
+            "left": 409,
+            "top": 931,
+            "right": 671,
+            "bottom": 988
+          },
+          "legendText": "Dialog overlay"
+        },
+        {
+          "id": "TextView(Primary content)",
+          "beforeElementId": "TextView(Dialog overlay)",
+          "afterElementId": null,
+          "bounds": {
+            "left": 0,
+            "top": 0,
+            "right": 1080,
+            "bottom": 1920
+          },
+          "legendText": "Primary content"
+        }
+      ]
+      """.trimIndent()
+    )
+  }
+
+  @Test
+  fun `popup dialog and primary roots are each included once`() {
+    System.setProperty(Flags.ACCESSIBILITY_HIERARCHY_ARTIFACTS_ENABLED, "true")
+    val hierarchies = mutableListOf<List<String>>()
+    paparazzi.onAccessibilityHierarchiesGenerated = hierarchies::add
+    val dialog = Dialog(paparazzi.context).apply {
+      setContentView(TextView(context).apply { text = "Dialog overlay" })
+      show()
+    }
+    val popup = PopupWindow(
+      TextView(paparazzi.context).apply { text = "Popup overlay" },
+      WRAP_CONTENT,
+      WRAP_CONTENT,
+      true
+    ).apply {
+      showAtLocation(dialog.window!!.decorView, Gravity.CENTER, 0, 0)
+    }
+
+    try {
+      paparazzi.snapshot(TextView(paparazzi.context).apply { text = "Primary content" })
+    } finally {
+      popup.dismiss()
+      dialog.dismiss()
+    }
+
+    val hierarchy = hierarchies.single().single()
+    assertThat(hierarchy.countOccurrences("\"legendText\": \"Popup overlay\"")).isEqualTo(1)
+    assertThat(hierarchy.countOccurrences("\"legendText\": \"Dialog overlay\"")).isEqualTo(1)
+    assertThat(hierarchy.countOccurrences("\"legendText\": \"Primary content\"")).isEqualTo(1)
+    assertThat(hierarchy.indexOf("Dialog overlay")).isLessThan(hierarchy.indexOf("Popup overlay"))
+    assertThat(hierarchy.indexOf("Popup overlay")).isLessThan(hierarchy.indexOf("Primary content"))
+  }
+
   private fun accessibleView() =
     LinearLayout(paparazzi.context).apply {
       layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
@@ -80,6 +166,8 @@ class AccessibilityHierarchyStringSnapshotTest {
       addView(TextView(context).apply { text = "Second" })
     }
 }
+
+private fun String.countOccurrences(value: String): Int = windowed(value.length).count { it == value }
 
 private class InMemorySnapshotHandler(
   private val events: MutableList<String>

@@ -1,23 +1,20 @@
 package app.cash.paparazzi.accessibility
 
 import android.view.View
-import android.view.WindowManager
-import android.view.WindowManagerImpl
 import app.cash.paparazzi.Flags
 
 internal class AccessibilityHierarchyGenerator(
   private val collector: AccessibilityElementCollector = AccessibilityElementCollector()
 ) {
-  fun generate(rootView: View): String? {
+  fun generate(windowRoots: List<View>, width: Int, height: Int): AccessibilityFrame? {
     if (System.getProperty(Flags.ACCESSIBILITY_HIERARCHY_ARTIFACTS_ENABLED)?.toBoolean() != true) {
       return null
     }
 
-    val windowManager = rootView.context.getSystemService(WindowManager::class.java) as WindowManagerImpl
-    val elements = collector.collect(
-      rootView = rootView,
-      windowManagerRootView = windowManager.currentRootView
+    return AccessibilityFrame(
+      elements = collector.collect(windowRoots),
+      width = width,
+      height = height
     )
-    return collector.toHierarchyString(elements)
   }
 }
