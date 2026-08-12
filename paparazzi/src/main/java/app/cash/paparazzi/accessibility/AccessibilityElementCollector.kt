@@ -19,8 +19,8 @@ import android.graphics.Rect
 import android.os.ext.util.SdkLevel
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AbsSeekBar
 import android.widget.Checkable
-import android.widget.SeekBar
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.AbstractComposeView
@@ -55,31 +55,32 @@ internal class AccessibilityElementCollector(
    * (dialogs, popups, etc.). [rootView] is always traversed.
    */
   fun collect(rootView: View, windowManagerRootView: View?): Set<AccessibilityElement> {
-    val density = rootView.resources.displayMetrics.density
-    val minTouchTargetSizePx = minTouchTargetSizeDp * density
+    val touchTargetValidator = TouchTargetValidator(
+      minTouchTargetSizeDp = minTouchTargetSizeDp,
+      density = rootView.resources.displayMetrics.density
+    )
     return buildSet {
-      windowManagerRootView?.processAccessibleChildren({ add(it) }, minTouchTargetSizePx)
-      rootView.processAccessibleChildren({ add(it) }, minTouchTargetSizePx)
+      windowManagerRootView?.processAccessibleChildren({ add(it) }, touchTargetValidator)
+      rootView.processAccessibleChildren({ add(it) }, touchTargetValidator)
     }
   }
 
   private fun View.processAccessibleChildren(
     processElement: (AccessibilityElement) -> Unit,
-    minTouchTargetSizePx: Float
+    touchTargetValidator: TouchTargetValidator
   ) {
     val accessibilityText = this.accessibilityText()
     val bounds = Rect().also(::getBoundsOnScreen)
 
     if (isImportantForAccessibility && !accessibilityText.isNullOrBlank() && isVisible) {
-      val isInteractive = isInteractive()
       processElement(
-        AccessibilityElement(
-          id = "${this::class.simpleName}($accessibilityText)",
-          displayBounds = bounds,
-          contentDescription = accessibilityText,
-          isInteractive = isInteractive,
-          isTouchTargetTooSmall =
-          isInteractive && bounds.isSmallerThan(minTouchTargetSizePx)
+        touchTargetValidator.validate(
+          AccessibilityElement(
+            id = "${this::class.simpleName}($accessibilityText)",
+            displayBounds = bounds,
+            contentDescription = accessibilityText
+          ),
+          isInteractive()
         )
       )
     }
@@ -100,7 +101,7 @@ internal class AccessibilityElementCollector(
           locationOnScreen = locationOnScreen,
           viewBounds = bounds,
           unmergedNodes = unmergedNodes,
-          minTouchTargetSizePx = minTouchTargetSizePx
+          touchTargetValidator = touchTargetValidator
         )
       }
     }
@@ -108,7 +109,7 @@ internal class AccessibilityElementCollector(
     if (this is ViewGroup) {
       val orderedViews = orderViewGroup()
       orderedViews.forEach {
-        it.processAccessibleChildren(processElement, minTouchTargetSizePx)
+        it.processAccessibleChildren(processElement, touchTargetValidator)
       }
     }
   }
@@ -121,7 +122,7 @@ internal class AccessibilityElementCollector(
       nodeInfo.isCheckable ||
       nodeInfo.isEditable ||
       // Adjustable views (SeekBar, RatingBar) are interactive even when not clickable.
-      this is SeekBar ||
+      this is AbsSeekBar ||
       // Custom accessibility actions and link annotations in text views carry labels.
       nodeInfo.actionList.any { it.label != null }
   }
@@ -280,7 +281,7 @@ internal class AccessibilityElementCollector(
     locationOnScreen: IntArray,
     viewBounds: Rect,
     unmergedNodes: List<SemanticsNode>?,
-    minTouchTargetSizePx: Float
+    touchTargetValidator: TouchTargetValidator
   ) {
     val accessibilityText = if (config.isMergingSemanticsOfDescendants) {
       val unmergedNode = unmergedNodes?.filter { it.id == id }
@@ -306,14 +307,14 @@ internal class AccessibilityElementCollector(
       val isInteractive = isInteractive()
 
       processElement(
-        AccessibilityElement(
-          // SemanticsNode.id is backed by AtomicInteger and is not guaranteed consistent across runs.
-          id = accessibilityText,
-          displayBounds = displayBounds,
-          contentDescription = accessibilityText,
-          isInteractive = isInteractive,
-          isTouchTargetTooSmall =
-          isInteractive && displayBounds.isSmallerThan(minTouchTargetSizePx)
+        touchTargetValidator.validate(
+          AccessibilityElement(
+            // SemanticsNode.id is backed by AtomicInteger and is not guaranteed consistent across runs.
+            id = accessibilityText,
+            displayBounds = displayBounds,
+            contentDescription = accessibilityText
+          ),
+          isInteractive
         )
       )
     }
@@ -321,6 +322,7 @@ internal class AccessibilityElementCollector(
 
   private fun SemanticsNode.isInteractive(): Boolean {
     return config.getOrNull(SemanticsActions.OnClick) != null ||
+      config.getOrNull(SemanticsActions.OnLongClick) != null ||
       config.getOrNull(SemanticsProperties.ToggleableState) != null ||
       config.getOrNull(SemanticsProperties.IsEditable) == true ||
       config.getOrNull(SemanticsActions.SetProgress) != null ||
@@ -328,10 +330,6 @@ internal class AccessibilityElementCollector(
       config.getOrNull(SemanticsProperties.Text)?.any { annotatedString ->
         annotatedString.getLinkAnnotations(start = 0, end = annotatedString.text.length).isNotEmpty()
       } == true
-  }
-
-  private fun Rect.isSmallerThan(minTouchTargetSizePx: Float): Boolean {
-    return width() < minTouchTargetSizePx || height() < minTouchTargetSizePx
   }
 
   private fun SemanticsNode.findAllUnmergedNodes(): List<SemanticsNode> {
