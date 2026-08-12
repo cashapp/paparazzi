@@ -46,6 +46,35 @@ class AccessibilityRenderExtensionTest {
     paparazzi.snapshot(view, name = "accessibility-new-view")
   }
 
+  @Test
+  fun `verify touch target size validation`() {
+    // NEXUS_5 density is 3.0, so 60px == 20dp and 180px == 60dp.
+    val view = LinearLayout(paparazzi.context).apply {
+      orientation = LinearLayout.VERTICAL
+      addView(
+        View(context).apply {
+          layoutParams = LinearLayout.LayoutParams(60, 60)
+          isClickable = true
+          contentDescription = "Small Clickable Target"
+        }
+      )
+      addView(
+        View(context).apply {
+          layoutParams = LinearLayout.LayoutParams(180, 180)
+          isClickable = true
+          contentDescription = "Large Clickable Target"
+        }
+      )
+      addView(
+        View(context).apply {
+          layoutParams = LinearLayout.LayoutParams(60, 60)
+          contentDescription = "Small Non-interactive Label"
+        }
+      )
+    }
+    paparazzi.snapshot(view, name = "touch-target-validation")
+  }
+
   private fun buildView(
     context: Context,
     rootLayoutParams: ViewGroup.LayoutParams? = ViewGroup.LayoutParams(

@@ -286,6 +286,8 @@ public final class app/cash/paparazzi/TestName {
 public final class app/cash/paparazzi/accessibility/AccessibilityRenderExtension : app/cash/paparazzi/RenderExtension {
 	public static final field $stable I
 	public fun <init> ()V
+	public fun <init> (F)V
+	public synthetic fun <init> (FILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun renderView (Landroid/view/View;)Landroid/view/View;
 }
 
