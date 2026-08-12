@@ -45,6 +45,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import app.cash.paparazzi.accessibility.AccessibilityHierarchyGenerator
+import app.cash.paparazzi.accessibility.AccessibilityHierarchyJsonSerializer
 import app.cash.paparazzi.accessibility.AccessibilityRenderExtension
 import app.cash.paparazzi.agent.InterceptorRegistrar
 import app.cash.paparazzi.internal.ImageUtils
@@ -97,6 +98,7 @@ public class PaparazziSdk @JvmOverloads constructor(
 ) {
   private var validateAccessibility = false
   private val accessibilityHierarchyGenerator = AccessibilityHierarchyGenerator()
+  private val accessibilityHierarchyJsonSerializer = AccessibilityHierarchyJsonSerializer()
   internal var onAccessibilityHierarchiesGenerated: (List<String>) -> Unit = {}
 
   @Deprecated(
@@ -377,7 +379,16 @@ public class PaparazziSdk @JvmOverloads constructor(
             }
             validateLayoutAccessibility(modifiedView, image)
           }
-          accessibilityHierarchyGenerator.generate(view)?.let(accessibilityHierarchies::add)
+          val windowRoots = bridgeRenderSession.rootViews.map { it.viewObject as View }
+          accessibilityHierarchyGenerator.generate(
+            windowRoots = windowRoots,
+            width = image.width,
+            height = image.height
+          )?.let { accessibilityFrame ->
+            accessibilityHierarchies += accessibilityHierarchyJsonSerializer.toHierarchyString(
+              accessibilityFrame.elements
+            )
+          }
           onNewFrame(scaleImage(frameImage(image)))
         }
       } catch (failure: Throwable) {

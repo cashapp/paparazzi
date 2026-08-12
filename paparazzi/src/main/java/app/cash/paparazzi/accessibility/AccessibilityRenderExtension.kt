@@ -65,8 +65,7 @@ public class AccessibilityRenderExtension : RenderExtension {
 
         OneShotPreDrawListener.add(this@apply) {
           val elements = accessibilityElementCollector.collect(
-            rootView = this@apply,
-            windowManagerRootView = windowManagerRootView
+            listOfNotNull(windowManagerRootView, this@apply)
           )
           overlayDrawable.updateElements(elements)
           overlayDetailsView.updateElements(elements)
