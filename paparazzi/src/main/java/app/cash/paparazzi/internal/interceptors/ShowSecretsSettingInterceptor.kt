@@ -16,10 +16,7 @@ internal object ShowSecretsSettingShouldShowPhysicalInputInterceptor {
 
 internal object ShowSecretsSettingRegisterCallbackInterceptor {
   @JvmStatic
-  fun intercept(
-    @Argument(0) context: Context,
-    @Argument(1) callback: Runnable
-  ): Runnable = Runnable {}
+  fun intercept(@Argument(0) context: Context, @Argument(1) callback: Runnable): Runnable = Runnable {}
 
   @JvmStatic
   fun intercept(
