@@ -21,9 +21,6 @@ internal object ShowSecretsSettingRegisterCallbackInterceptor {
     @Argument(1) callback: Runnable
   ): Runnable = Runnable {}
 
-  // The mockable android.jar used by unit tests also exposes a 3-arg overload
-  // (Context, Executor, Runnable) that Compose doesn't call directly, but ByteBuddy's
-  // name-based matcher intercepts both overloads, so both need a matching delegate.
   @JvmStatic
   fun intercept(
     @Argument(0) context: Context,
