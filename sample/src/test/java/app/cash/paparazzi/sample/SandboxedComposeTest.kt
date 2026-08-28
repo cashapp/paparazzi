@@ -11,9 +11,12 @@ import app.cash.paparazzi.Paparazzi
 import app.cash.paparazzi.PaparazziRunner
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Assume.assumeFalse
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.util.Locale
 
 /**
  * The end-to-end case for [PaparazziRunner]: a real Compose hierarchy rendered inside an isolated
@@ -28,6 +31,16 @@ import org.junit.runner.RunWith
 class SandboxedComposeTest {
   @get:Rule
   val paparazzi = Paparazzi()
+
+  @Before
+  fun assumeSandboxIsSupported() {
+    // Windows resolves DLL imports by base name, so one JVM cannot hold both a sandboxed layoutlib
+    // and the unsandboxed one this module's other tests load.
+    assumeFalse(
+      "layoutlib cannot be sandboxed alongside unsandboxed Paparazzi in one JVM on Windows",
+      System.getProperty("os.name").lowercase(Locale.US).startsWith("windows")
+    )
+  }
 
   @Test
   fun rendersComposeInsideSandbox() {

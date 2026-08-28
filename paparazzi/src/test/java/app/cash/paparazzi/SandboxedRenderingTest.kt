@@ -21,9 +21,12 @@ import android.widget.TextView
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.ComposeView
 import com.google.common.truth.Truth.assertThat
+import org.junit.Assume.assumeFalse
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.util.Locale
 
 /**
  * Renders a real snapshot through [PaparazziRunner], and asserts it happened inside a sandbox.
@@ -37,6 +40,17 @@ class SandboxedRenderingTest {
   val testRule = PaparazziTestRule()
 
   private val paparazzi get() = testRule.paparazzi
+
+  @Before
+  fun assumeSandboxIsSupported() {
+    // Windows resolves DLL imports by base name, so one JVM cannot hold both a sandboxed layoutlib
+    // and the unsandboxed one this module's other tests load. NativeLibraryStaging refuses rather
+    // than crashing; there is nothing to assert here until PE import rewriting exists.
+    assumeFalse(
+      "layoutlib cannot be sandboxed alongside unsandboxed Paparazzi in one JVM on Windows",
+      System.getProperty("os.name").lowercase(Locale.US).startsWith("windows")
+    )
+  }
 
   @Test
   fun testClassItselfIsLoadedBySandbox() {

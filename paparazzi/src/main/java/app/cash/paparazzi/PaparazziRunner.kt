@@ -30,6 +30,7 @@ import org.junit.runner.notification.RunNotifier
 import org.junit.runners.BlockJUnit4ClassRunner
 import java.io.File
 import java.lang.reflect.InvocationTargetException
+import java.util.function.Supplier
 
 /**
  * A JUnit 4 runner that executes a test class inside an isolated layoutlib sandbox.
@@ -157,10 +158,11 @@ public class PaparazziRunner(testClass: Class<*>) : Runner(), Filterable, Sortab
    * and this value is per-sandbox by construction, so it is injected as a static instead.
    */
   private fun installNativeLibDir(sandbox: Sandbox) {
-    val nativeLibDir = sandbox.nativeLibDir ?: return
+    // A supplier, so the ~26 MB copy happens only if the test actually renders.
+    val supplier = Supplier { sandbox.nativeLibDir?.absolutePath }
     sandbox.loadClass("app.cash.paparazzi.internal.SandboxRuntime")
-      .getDeclaredMethod("setNativeLibDir", String::class.java)
-      .invoke(null, nativeLibDir.absolutePath)
+      .getDeclaredMethod("setNativeLibDirSupplier", Supplier::class.java)
+      .invoke(null, supplier)
   }
 
   private fun layoutlibRuntimeRoot(): File? = System.getProperty("paparazzi.layoutlib.runtime.root")?.let(::File)

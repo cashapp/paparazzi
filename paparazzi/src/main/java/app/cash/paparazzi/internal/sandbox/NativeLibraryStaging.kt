@@ -83,6 +83,9 @@ internal object NativeLibraryStaging {
 
   private val counter = AtomicLong()
 
+  /** Windows permits only one layoutlib per process; see [checkWindowsCanIsolate]. */
+  private val stagedOnWindows = java.util.concurrent.atomic.AtomicBoolean(false)
+
   /**
    * A short staging root, so that a staged library's absolute path still fits the install-name pad.
    *
@@ -125,6 +128,7 @@ internal object NativeLibraryStaging {
    */
   fun stage(sourceDir: File, stagingRoot: Path): File {
     require(sourceDir.isDirectory) { "Native library directory does not exist: $sourceDir" }
+    if (platform == Platform.WINDOWS) checkWindowsCanIsolate()
 
     Files.createDirectories(stagingRoot)
     // The staging root is shared, and Gradle may run several test workers at once, so the
@@ -148,11 +152,56 @@ internal object NativeLibraryStaging {
     when (platform) {
       Platform.MAC -> rewriteMachO(target)
       Platform.LINUX -> rewriteElf(target, token)
-      Platform.WINDOWS -> Unit // Windows resolves DLL dependencies by path; the copy is enough.
+      Platform.WINDOWS -> Unit // Guarded above; see checkWindowsCanIsolate.
     }
 
     return target
   }
+
+  /**
+   * Refuses to stage a second copy of layoutlib on Windows.
+   *
+   * Windows has no equivalent of a unique install name or soname. The loader resolves a DLL's
+   * imports by *base name* against the modules already in the process, so a second
+   * `layoutlib_jni.dll` binds to whichever `libandroid_runtime.dll` was loaded first, however
+   * distinct the two files are on disk. Both copies then drive the same native state, and layoutlib
+   * dies part-way through re-initialising it - observed as the process aborting shortly after
+   * `HWUI: can't set an onStartHook after we've started`.
+   *
+   * Isolating properly would mean rewriting the PE import descriptors and renaming the file, which
+   * conflicts with `Bridge.WINDOWS_NATIVE_LIBRARIES` loading `libandroid_runtime.dll` by that exact
+   * name. Until that is built and actually verified on Windows, failing here is better than
+   * crashing the test worker with no explanation.
+   *
+   * A single layoutlib per JVM is unaffected, so Windows projects where *every* test is sandboxed
+   * still work.
+   */
+  private fun checkWindowsCanIsolate() {
+    check(!hostHasLoadedLayoutlib()) {
+      "Cannot sandbox layoutlib on Windows in a JVM that has already loaded it unsandboxed.\n" +
+        "Windows resolves DLL imports by base name, so the sandbox would bind to the native " +
+        "runtime already in this process and abort part-way through re-initialising it.\n" +
+        "Either make every test in this module use PaparazziRunner, or separate the sandboxed " +
+        "tests into their own test task or `forkEvery` boundary."
+    }
+    check(stagedOnWindows.compareAndSet(false, true)) {
+      "Cannot create more than one layoutlib sandbox per JVM on Windows.\n" +
+        "Windows resolves DLL imports by base name, so a second copy would bind to the first " +
+        "sandbox's native runtime rather than its own.\n" +
+        "Use `forkEvery` to isolate with a process boundary instead."
+    }
+  }
+
+  /** True if this process already initialised layoutlib outside a sandbox. */
+  private fun hostHasLoadedLayoutlib(): Boolean =
+    runCatching {
+      // This class is always host-side, so its loader is the one an unsandboxed Paparazzi uses.
+      // Bridge's static initialiser only builds lookup tables; it does not touch JNI.
+      Class.forName("com.android.layoutlib.bridge.Bridge", true, javaClass.classLoader)
+        .getDeclaredField("sJniLibLoaded")
+        .apply { isAccessible = true }
+        .getBoolean(null)
+    }.getOrDefault(false)
 
   private fun rewriteMachO(dir: File) {
     val dylibs = dir.listFiles()?.filter { it.name.endsWith(".dylib") }.orEmpty()

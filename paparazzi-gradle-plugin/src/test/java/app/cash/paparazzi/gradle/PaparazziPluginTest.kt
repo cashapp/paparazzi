@@ -19,6 +19,7 @@ import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
 import java.io.File
+import java.util.Locale
 
 @Suppress("ktlint:standard:max-line-length")
 class PaparazziPluginTest {
@@ -417,8 +418,16 @@ class PaparazziPluginTest {
       .filter { it.name.endsWith(".pid") }
       .associate { it.nameWithoutExtension to it.readText().trim() }
 
-    assertThat(pids.keys)
-      .containsExactly("robolectric", "paparazzi-sandboxed", "paparazzi-host")
+    // On Windows the sandboxed half skips: the loader resolves DLL imports by base name, so one
+    // JVM cannot hold both a sandboxed layoutlib and the unsandboxed one this fixture also uses.
+    val windows = System.getProperty("os.name").lowercase(Locale.US).startsWith("windows")
+    val expectedTags = if (windows) {
+      listOf("robolectric", "paparazzi-host")
+    } else {
+      listOf("robolectric", "paparazzi-sandboxed", "paparazzi-host")
+    }
+
+    assertThat(pids.keys).containsExactlyElementsIn(expectedTags)
     assertWithMessage("Robolectric and Paparazzi must run in a single JVM, but reported PIDs $pids")
       .that(pids.values.toSet())
       .hasSize(1)

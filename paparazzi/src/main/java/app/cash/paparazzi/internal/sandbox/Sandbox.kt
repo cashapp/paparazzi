@@ -35,18 +35,32 @@ import java.nio.file.Path
  */
 internal class Sandbox(
   val configuration: SandboxConfiguration,
-  private val stagedNativeLibDir: File?
+  private val layoutlibRuntimeRoot: File?,
+  private val stagingRoot: Path
 ) : Closeable {
   val classLoader: SandboxClassLoader = SandboxClassLoader(configuration)
 
   private var closed = false
+  private var stagedNativeLibDir: File? = null
 
   /**
    * The directory to pass to `Bridge.init` as `nativeLibPath`, or null if this sandbox was created
    * without a layoutlib runtime root.
+   *
+   * Staged on first access rather than at construction. Copying layoutlib's JNI libraries costs
+   * ~26 MB and a few hundred milliseconds, and a sandbox that never renders never needs them — so
+   * a sandbox used only to reload classes pays nothing. It also means the platform checks in
+   * [NativeLibraryStaging] fire when layoutlib is actually about to be loaded, rather than
+   * pre-emptively.
    */
+  @get:Synchronized
   val nativeLibDir: File?
-    get() = stagedNativeLibDir
+    get() {
+      val root = layoutlibRuntimeRoot ?: return null
+      return stagedNativeLibDir ?: NativeLibraryStaging
+        .stage(NativeLibraryStaging.nativeLibDirIn(root), stagingRoot)
+        .also { stagedNativeLibDir = it }
+    }
 
   /** Loads [name] through this sandbox. Acquired names resolve to this sandbox's copy. */
   fun loadClass(name: String): Class<*> {
@@ -100,19 +114,14 @@ internal class Sandbox(
 
   companion object {
     /**
-     * Creates a sandbox, staging layoutlib's JNI libraries when [layoutlibRuntimeRoot] is provided.
+     * Creates a sandbox that can stage layoutlib's JNI libraries from [layoutlibRuntimeRoot].
      *
-     * Omit the runtime root for sandboxes that never call `Bridge.init` — staging copies ~25 MB.
+     * Nothing is copied until [nativeLibDir] is first read.
      */
     fun create(
       configuration: SandboxConfiguration = SandboxConfiguration.default(),
       layoutlibRuntimeRoot: File? = null,
       stagingRoot: Path
-    ): Sandbox {
-      val staged = layoutlibRuntimeRoot?.let {
-        NativeLibraryStaging.stage(NativeLibraryStaging.nativeLibDirIn(it), stagingRoot)
-      }
-      return Sandbox(configuration, staged)
-    }
+    ): Sandbox = Sandbox(configuration, layoutlibRuntimeRoot, stagingRoot)
   }
 }

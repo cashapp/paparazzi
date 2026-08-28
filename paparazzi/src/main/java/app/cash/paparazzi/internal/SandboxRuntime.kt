@@ -16,6 +16,8 @@
 
 package app.cash.paparazzi.internal
 
+import java.util.function.Supplier
+
 /**
  * Per-sandbox settings injected by the host before any test runs.
  *
@@ -29,9 +31,18 @@ package app.cash.paparazzi.internal
  */
 internal object SandboxRuntime {
   /**
-   * Directory holding this sandbox's private copy of layoutlib's JNI libraries, or null when
-   * running outside a sandbox, in which case `Renderer` falls back to the shared runtime root.
+   * Supplies the directory holding this sandbox's private copy of layoutlib's JNI libraries, or
+   * null when running outside a sandbox, in which case `Renderer` falls back to the shared runtime
+   * root.
+   *
+   * A supplier rather than a plain path so the copy is made when layoutlib is actually about to be
+   * loaded, not when the runner is constructed. `java.util.function.Supplier` is a JDK type, so it
+   * crosses the sandbox boundary unchanged.
    */
   @JvmStatic
-  var nativeLibDir: String? = null
+  var nativeLibDirSupplier: Supplier<String>? = null
+
+  /** The staged native library directory, materialising it on first use. */
+  val nativeLibDir: String?
+    get() = nativeLibDirSupplier?.get()
 }

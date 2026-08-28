@@ -21,8 +21,11 @@ import app.cash.paparazzi.internal.PaparazziLogger
 import com.android.ide.common.rendering.api.ILayoutLog
 import com.google.common.truth.Truth.assertThat
 import org.junit.After
+import org.junit.Assume.assumeFalse
+import org.junit.Before
 import org.junit.Test
 import java.io.File
+import java.util.Locale
 
 /**
  * End-to-end proof that the sandbox actually isolates layoutlib.
@@ -39,6 +42,13 @@ class LayoutlibSandboxTest {
     File(requireNotNull(System.getProperty("paparazzi.layoutlib.runtime.root")))
   private val layoutlibResourcesRoot =
     File(requireNotNull(System.getProperty("paparazzi.layoutlib.resources.root")))
+
+  @Before
+  fun assumeNativeIsolationIsSupported() {
+    // Windows resolves DLL imports by base name, so it cannot host two layoutlib copies at once.
+    // NativeLibraryStaging refuses rather than crashing; these tests need two.
+    assumeFalse("layoutlib cannot be sandboxed twice in one JVM on Windows", isWindows)
+  }
 
   @After
   fun tearDown() {
@@ -58,22 +68,40 @@ class LayoutlibSandboxTest {
 
     assertThat(firstDir.canonicalPath).isNotEqualTo(secondDir.canonicalPath)
 
-    // File names are deliberately preserved - layoutlib_jni resolves some symbols via dlopen by
-    // leaf name, and renaming aborts the process.
-    val names = firstDir.listFiles()!!.map { it.name }
-    assertThat(names).containsExactlyElementsIn(secondDir.listFiles()!!.map { it.name })
-    assertThat(names).contains("layoutlib_jni.dylib")
-    assertThat(names).contains("libandroid_runtime.dylib")
+    // The two platforms make a library unique in opposite ways, so the assertion has to differ.
+    if (isMac) {
+      // File names are preserved: the Mach-O binaries import dlopen/dlsym and break when renamed.
+      // Uniqueness comes from the install name, without which dyld resolves the second sandbox's
+      // @rpath dependency to the first sandbox's already-loaded image.
+      val names = firstDir.listFiles()!!.map { it.name }
+      assertThat(names).containsExactlyElementsIn(secondDir.listFiles()!!.map { it.name })
+      assertThat(names).contains("layoutlib_jni.dylib")
+      assertThat(names).contains("libandroid_runtime.dylib")
 
-    // Uniqueness comes from the install name instead. Without this, dyld would resolve the second
-    // sandbox's @rpath dependency to the first sandbox's already-loaded image.
-    fun installName(dir: File) =
-      ProcessBuilder("otool", "-D", "libandroid_runtime.dylib")
-        .directory(dir)
-        .start()
-        .inputStream.bufferedReader().readText()
+      fun installName(dir: File) =
+        ProcessBuilder("otool", "-D", "libandroid_runtime.dylib")
+          .directory(dir)
+          .start()
+          .inputStream.bufferedReader().readText()
 
-    assertThat(installName(firstDir)).isNotEqualTo(installName(secondDir))
+      assertThat(installName(firstDir)).isNotEqualTo(installName(secondDir))
+    } else {
+      // ELF has no header slack, so no absolute path fits in DT_NEEDED. The library is renamed
+      // instead - the differing file name *is* the isolation, and glibc compares the requested
+      // name against loaded objects' names and DT_SONAME.
+      fun runtimeLibrary(dir: File) = dir.listFiles()!!.single { it.name.startsWith("libandroid_") }
+
+      assertThat(firstDir.listFiles()!!.map { it.name }).contains("layoutlib_jni.so")
+      assertThat(runtimeLibrary(firstDir).name).isNotEqualTo(runtimeLibrary(secondDir).name)
+      assertThat(ElfPatcher.readSoname(runtimeLibrary(firstDir)))
+        .isNotEqualTo(ElfPatcher.readSoname(runtimeLibrary(secondDir)))
+
+      // The dependent has to follow the rename, or it would fall back to a system copy.
+      assertThat(ElfPatcher.readNeeded(File(firstDir, "layoutlib_jni.so")))
+        .contains(runtimeLibrary(firstDir).name)
+      assertThat(ElfPatcher.readNeeded(File(secondDir, "layoutlib_jni.so")))
+        .contains(runtimeLibrary(secondDir).name)
+    }
   }
 
   @Test
@@ -181,5 +209,9 @@ class LayoutlibSandboxTest {
 
   private companion object {
     const val BRIDGE = "com.android.layoutlib.bridge.Bridge"
+
+    private val osName = System.getProperty("os.name").lowercase(Locale.US)
+    val isMac = osName.startsWith("mac")
+    val isWindows = osName.startsWith("windows")
   }
 }
