@@ -1,0 +1,27 @@
+plugins {
+  id 'com.android.library'
+  id 'app.cash.paparazzi'
+}
+
+android {
+  namespace = 'app.cash.paparazzi.plugin.test'
+  compileSdk = libs.versions.compileSdk.get() as int
+  defaultConfig {
+    minSdk = libs.versions.minSdk.get() as int
+  }
+  compileOptions {
+    sourceCompatibility = libs.versions.javaTarget.get()
+    targetCompatibility = libs.versions.javaTarget.get()
+  }
+  testOptions {
+    unitTests {
+      // Robolectric reads the merged manifest and resources through AGP's test_config.properties.
+      includeAndroidResources = true
+    }
+  }
+}
+
+dependencies {
+  testImplementation libs.junit
+  testImplementation libs.robolectric
+}

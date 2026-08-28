@@ -4,6 +4,7 @@ import app.cash.paparazzi.gradle.ImageSubject.Companion.assertThat
 import app.cash.paparazzi.gradle.PrepareResourcesTask.Config
 import com.google.common.truth.Correspondence
 import com.google.common.truth.Truth.assertThat
+import com.google.common.truth.Truth.assertWithMessage
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import okio.buffer
@@ -396,6 +397,31 @@ class PaparazziPluginTest {
     gradleRunner
       .withArguments("testDebug", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
+  }
+
+  @Test
+  fun robolectricInterop() {
+    // Robolectric and Paparazzi each stand up a class loader over their own Android framework jar.
+    // Run in one module, in one JVM, neither may end up holding the other's classes. The fixture
+    // asserts that from the inside, using android.media.AudioManager as the subject.
+    val fixtureRoot = File("src/test/projects/robolectric-interop")
+
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    // Sharing a module would prove little if Gradle forked a JVM per test class; the frameworks
+    // have to collide in one process for the isolation to mean anything.
+    val interopDir = File(fixtureRoot, "build/interop")
+    val pids = interopDir.listFiles().orEmpty()
+      .filter { it.name.endsWith(".pid") }
+      .associate { it.nameWithoutExtension to it.readText().trim() }
+
+    assertThat(pids.keys)
+      .containsExactly("robolectric", "paparazzi-sandboxed", "paparazzi-host")
+    assertWithMessage("Robolectric and Paparazzi must run in a single JVM, but reported PIDs $pids")
+      .that(pids.values.toSet())
+      .hasSize(1)
   }
 
   @Test
