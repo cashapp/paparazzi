@@ -129,6 +129,9 @@ def generateTestConfig = tasks.register("generateTestConfig") {
 
 tasks.withType(Test).configureEach {
   dependsOn(generateTestConfig)
+  // Fixtures for PaparazziRunnerFeaturesTest. They are driven through JUnitCore so their outcomes
+  // can be asserted, and some fail on purpose, so they must not be collected directly.
+  exclude '**/runnerfixtures/**'
   systemProperty(
     "paparazzi.test.resources",
     generateTestConfig.map { it.outputs.files.singleFile }.get().path

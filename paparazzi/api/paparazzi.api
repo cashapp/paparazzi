@@ -194,9 +194,14 @@ public final class app/cash/paparazzi/Paparazzi : org/junit/rules/TestRule {
 	public static synthetic fun unsafeUpdateConfig$default (Lapp/cash/paparazzi/Paparazzi;Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;ILjava/lang/Object;)V
 }
 
-public final class app/cash/paparazzi/PaparazziRunner : org/junit/runners/BlockJUnit4ClassRunner {
+public final class app/cash/paparazzi/PaparazziRunner : org/junit/runner/Runner, org/junit/runner/manipulation/Filterable, org/junit/runner/manipulation/Sortable {
 	public static final field $stable I
 	public fun <init> (Ljava/lang/Class;)V
+	public fun filter (Lorg/junit/runner/manipulation/Filter;)V
+	public fun getDescription ()Lorg/junit/runner/Description;
+	public fun run (Lorg/junit/runner/notification/RunNotifier;)V
+	public fun sort (Lorg/junit/runner/manipulation/Sorter;)V
+	public fun testCount ()I
 }
 
 public final class app/cash/paparazzi/PaparazziSdk {
@@ -236,6 +241,10 @@ public final class app/cash/paparazzi/PaparazziSdk {
 
 public abstract interface class app/cash/paparazzi/RenderExtension {
 	public abstract fun renderView (Landroid/view/View;)Landroid/view/View;
+}
+
+public abstract interface annotation class app/cash/paparazzi/SandboxedRunWith : java/lang/annotation/Annotation {
+	public abstract fun value ()Ljava/lang/Class;
 }
 
 public final class app/cash/paparazzi/Snapshot {

@@ -19,22 +19,20 @@ package app.cash.paparazzi
 import app.cash.paparazzi.internal.sandbox.Sandbox
 import app.cash.paparazzi.internal.sandbox.SandboxConfiguration
 import app.cash.paparazzi.internal.sandbox.SandboxManager
-import org.junit.After
-import org.junit.Before
-import org.junit.Rule
-import org.junit.internal.runners.statements.RunAfters
-import org.junit.internal.runners.statements.RunBefores
-import org.junit.rules.MethodRule
-import org.junit.rules.RunRules
-import org.junit.rules.TestRule
+import org.junit.runner.Description
+import org.junit.runner.Runner
+import org.junit.runner.manipulation.Filter
+import org.junit.runner.manipulation.Filterable
+import org.junit.runner.manipulation.NoTestsRemainException
+import org.junit.runner.manipulation.Sortable
+import org.junit.runner.manipulation.Sorter
+import org.junit.runner.notification.RunNotifier
 import org.junit.runners.BlockJUnit4ClassRunner
-import org.junit.runners.model.FrameworkMethod
-import org.junit.runners.model.Statement
-import org.junit.runners.model.TestClass
 import java.io.File
+import java.lang.reflect.InvocationTargetException
 
 /**
- * A JUnit 4 runner that executes each test inside an isolated layoutlib sandbox.
+ * A JUnit 4 runner that executes a test class inside an isolated layoutlib sandbox.
  *
  * ```kotlin
  * @RunWith(PaparazziRunner::class)
@@ -51,93 +49,96 @@ import java.io.File
  * every lambda in it have already been defined by the application class loader. A `@Composable`
  * lambda captured in a test body holds a reference to *that* loader's `androidx.compose` classes,
  * so handing it to a sandbox with its own copy fails with `ClassCastException`. Only a runner sits
- * early enough to reload the test class itself, which is precisely why Robolectric owns the runner
- * too.
+ * early enough to reload the test class itself.
  *
- * So [methodBlock] rebuilds the entire per-method statement — instance, `@Before`s, `@After`s and
- * rules — against the sandbox's copy of the test class. JUnit's own types are shared with the host
- * (see [SandboxConfiguration.forRunner]), so [Statement], [FrameworkMethod] and `Description` cross
- * the boundary unchanged and reporting works normally.
+ * ### How it works
  *
- * ### What this does and does not buy
+ * This is a *delegating* runner. It reloads the test class in the sandbox, then builds an ordinary
+ * JUnit runner around that reloaded class and forwards to it.
  *
- * All test classes share one sandbox per configuration. It is *not* one sandbox per test class:
- * layoutlib's `JNI_OnLoad` pins its class loader permanently, so every additional sandbox costs
- * roughly 40 MB that is never reclaimed. See [SandboxManager] for the measurements.
+ * The alternative — subclassing [BlockJUnit4ClassRunner] and rewriting `methodBlock` to target the
+ * sandboxed class, as Robolectric does — means reimplementing JUnit's statement assembly, and
+ * everything not reimplemented silently keeps operating on the *host* class. `@BeforeClass` and
+ * `@ClassRule` in particular are assembled by `ParentRunner.classBlock`, so they would run outside
+ * the sandbox. Delegating instead means JUnit assembles everything itself, from the sandboxed
+ * class, and `@Ignore`, `@Test(timeout)`, `@Test(expected)`, `@BeforeClass`, `@AfterClass`,
+ * `@ClassRule`, `@Rule` and assumptions all behave exactly as they normally would.
  *
- * The practical consequence is that this does **not** give each test clean framework statics — the
- * existing per-test resets in `PaparazziSdk` are still doing that job, and still need to. What it
- * does give is a layoutlib instance that is fully separate from the host class loader, and the
- * ability to run more than one layoutlib configuration in a single JVM.
+ * Robolectric needs the subclass approach because it may pick a different sandbox per test method.
+ * Paparazzi keeps one sandbox per configuration, so the whole runner can be hoisted inside.
+ *
+ * ### Other runners
+ *
+ * Because the delegate is chosen by name and built inside the sandbox, runners such as
+ * `TestParameterInjector` or `Parameterized` compose with this one — see [SandboxedRunWith].
  */
-public class PaparazziRunner(testClass: Class<*>) : BlockJUnit4ClassRunner(testClass) {
-  override fun methodBlock(method: FrameworkMethod): Statement {
-    val sandbox = sandbox()
-    val sandboxTestClass = TestClass(sandbox.bootstrappedClass(testClass.javaClass))
+public class PaparazziRunner(testClass: Class<*>) : Runner(), Filterable, Sortable {
+  private val sandbox: Sandbox = sandbox()
 
-    val test = sandboxTestClass.onlyConstructor.newInstance()
-    val sandboxMethod = FrameworkMethod(sandboxTestClass.javaClass.getMethod(method.name))
+  private val delegate: Runner = sandbox.runOnSandbox {
+    val bootstrappedClass = sandbox.bootstrappedClass(testClass)
+    val runnerClass = sandbox.loadClass(delegateRunnerName(testClass))
 
-    var statement: Statement = org.junit.internal.runners.statements.InvokeMethod(sandboxMethod, test)
-    statement = possiblyExpectingExceptions(sandboxMethod, test, statement)
-    statement = withSandboxBefores(sandboxTestClass, test, statement)
-    statement = withSandboxAfters(sandboxTestClass, test, statement)
-    statement = withSandboxRules(sandboxTestClass, method, test, statement)
+    val constructor = try {
+      runnerClass.getConstructor(Class::class.java)
+    } catch (e: NoSuchMethodException) {
+      throw IllegalStateException(
+        "${runnerClass.name} cannot be used with @SandboxedRunWith: a delegate runner needs a " +
+          "public constructor taking a single Class argument.",
+        e
+      )
+    }
 
-    // The context class loader matters for ServiceLoader lookups inside layoutlib and Compose.
-    return object : Statement() {
-      override fun evaluate() {
-        sandbox.runOnSandbox { statement.evaluate() }
-      }
+    try {
+      constructor.newInstance(bootstrappedClass) as Runner
+    } catch (e: InvocationTargetException) {
+      // Unwrap, or the real reason - usually a JUnit InitializationError listing validation
+      // failures - is buried behind a reflection wrapper.
+      throw IllegalStateException(
+        "${runnerClass.name} failed to initialise for ${testClass.name} inside the sandbox: " +
+          "${e.targetException}",
+        e.targetException
+      )
     }
   }
 
-  /**
-   * `BlockJUnit4ClassRunner`'s own `withBefores` resolves `@Before` methods from the *host* test
-   * class, which would then be invoked against a sandbox instance and fail with
-   * "object is not an instance of declaring class". Hence the reimplementation against
-   * [sandboxTestClass].
-   */
-  private fun withSandboxBefores(sandboxTestClass: TestClass, test: Any, statement: Statement): Statement {
-    val befores = sandboxTestClass.getAnnotatedMethods(Before::class.java)
-    return if (befores.isEmpty()) statement else RunBefores(statement, befores, test)
-  }
+  override fun getDescription(): Description = delegate.description
 
-  private fun withSandboxAfters(sandboxTestClass: TestClass, test: Any, statement: Statement): Statement {
-    val afters = sandboxTestClass.getAnnotatedMethods(After::class.java)
-    return if (afters.isEmpty()) statement else RunAfters(statement, afters, test)
-  }
+  override fun testCount(): Int = delegate.testCount()
 
   /**
-   * Collects `@Rule` members from the sandboxed instance.
+   * Runs the delegate with the sandbox's loader installed as the thread context class loader.
    *
-   * The rules are the sandbox's own objects — a sandboxed [Paparazzi] driving a sandboxed
-   * `PaparazziSdk` — but they implement the host's [TestRule], because `org.junit` is delegated.
-   * That shared interface is what lets the two halves cooperate at all.
+   * The whole run is wrapped rather than each test, so `@BeforeClass`, `@ClassRule` and the test
+   * bodies all see the same loader. Threads started underneath inherit it, which matters for
+   * `@Test(timeout)`: JUnit's `FailOnTimeout` moves the test body to a new thread.
    */
-  private fun withSandboxRules(
-    sandboxTestClass: TestClass,
-    method: FrameworkMethod,
-    test: Any,
-    statement: Statement
-  ): Statement {
-    val description = describeChild(method)
+  override fun run(notifier: RunNotifier) {
+    sandbox.runOnSandbox { delegate.run(notifier) }
+  }
 
-    val methodRules = ArrayList<MethodRule>().apply {
-      addAll(sandboxTestClass.getAnnotatedMethodValues(test, Rule::class.java, MethodRule::class.java))
-      addAll(sandboxTestClass.getAnnotatedFieldValues(test, Rule::class.java, MethodRule::class.java))
-    }
-    val testRules = ArrayList<TestRule>().apply {
-      addAll(sandboxTestClass.getAnnotatedMethodValues(test, Rule::class.java, TestRule::class.java))
-      addAll(sandboxTestClass.getAnnotatedFieldValues(test, Rule::class.java, TestRule::class.java))
-    }
+  /**
+   * Forwards Gradle's `--tests` filtering to the delegate.
+   *
+   * Without this every filtered run would report "no tests found", because the host cannot see the
+   * sandboxed runner's children.
+   */
+  @Throws(NoTestsRemainException::class)
+  override fun filter(filter: Filter) {
+    val filterable = delegate as? Filterable ?: throw NoTestsRemainException()
+    sandbox.runOnSandbox { filterable.filter(filter) }
+  }
 
-    var result = statement
-    for (rule in methodRules) {
-      // A member can implement both interfaces; JUnit applies such a rule once, as a TestRule.
-      if (testRules.none { it === rule }) result = rule.apply(result, method, test)
-    }
-    return if (testRules.isEmpty()) result else RunRules(result, testRules, description)
+  override fun sort(sorter: Sorter) {
+    (delegate as? Sortable)?.let { sortable -> sandbox.runOnSandbox { sortable.sort(sorter) } }
+  }
+
+  private fun delegateRunnerName(testClass: Class<*>): String {
+    val annotation = testClass.getAnnotation(SandboxedRunWith::class.java)
+      ?: return BlockJUnit4ClassRunner::class.java.name
+    // Read the name only. The KClass itself belongs to the host loader; the sandbox must resolve
+    // its own copy so the runner's reflection stays on one side of the boundary.
+    return annotation.value.java.name
   }
 
   private fun sandbox(): Sandbox {

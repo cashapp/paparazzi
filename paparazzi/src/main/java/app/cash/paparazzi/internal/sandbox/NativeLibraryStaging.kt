@@ -63,9 +63,13 @@ import java.util.concurrent.atomic.AtomicLong
  * `layoutlib_jni` looks some symbols up through `dlopen` by leaf name, so renaming the files aborts
  * the process with `Failed to find required symbol ANativeWindow_fromSurface`.
  *
- * Both `install_name_tool` and `patchelf` can only rewrite a load command in place, within the pad
- * the linker reserved. For these libraries that is roughly 50 characters, which is why
- * [defaultStagingRoot] is deliberately short rather than the usual deep temp directory.
+ * `install_name_tool` can only rewrite a load command in place, within the pad the linker reserved.
+ * For these libraries that is roughly 50 characters, which is why [defaultStagingRoot] is
+ * deliberately short rather than the usual deep temp directory.
+ *
+ * Linux needs the same uniqueness for a different reason and by a different route; see
+ * [rewriteElf]. It is handled by [ElfPatcher] rather than by shelling out to `patchelf`, which is
+ * absent from most CI images.
  *
  * ### Cost
  *
@@ -74,6 +78,9 @@ import java.util.concurrent.atomic.AtomicLong
  * rather than creating one per test.
  */
 internal object NativeLibraryStaging {
+  /** Libraries layoutlib loads by name, whose file names must therefore survive staging. */
+  private val EXPLICITLY_LOADED = setOf("layoutlib_jni")
+
   private val counter = AtomicLong()
 
   /**
@@ -140,7 +147,7 @@ internal object NativeLibraryStaging {
 
     when (platform) {
       Platform.MAC -> rewriteMachO(target)
-      Platform.LINUX -> rewriteElf(target)
+      Platform.LINUX -> rewriteElf(target, token)
       Platform.WINDOWS -> Unit // Windows resolves DLL dependencies by path; the copy is enough.
     }
 
@@ -168,19 +175,74 @@ internal object NativeLibraryStaging {
     run(dir, "codesign", "-f", "-s", "-", *dylibs.map { it.name }.toTypedArray())
   }
 
-  private fun rewriteElf(dir: File) {
-    val libs = dir.listFiles()?.filter { it.name.endsWith(".so") }.orEmpty()
-    if (libs.isEmpty()) return
+  /**
+   * Gives each staged ELF library a unique `DT_SONAME`, and repoints its dependents.
+   *
+   * glibc resolves a `DT_NEEDED` entry by first scanning already-loaded objects, comparing the
+   * requested name against each object's recorded library names and its `DT_SONAME`. A second
+   * sandbox asking for `libandroid_runtime.so` would therefore be handed the first sandbox's copy,
+   * however distinct the two files are on disk.
+   *
+   * Unlike Mach-O, the fix cannot be "point at an absolute path": `.dynstr` is packed, so a
+   * replacement must be the same length as what it replaces, and no useful absolute path fits in
+   * `libandroid_runtime.so`. The library is therefore renamed instead — both the file and the
+   * strings referring to it — which is safe here in a way it is not on macOS. The macOS binaries
+   * import `dlopen`/`dlsym` and break when their files are renamed; the Linux `layoutlib_jni.so`
+   * imports neither, and each library's name appears exactly once, in its dynamic-linking metadata.
+   *
+   * Libraries layoutlib loads by name keep their file name; only their dependencies are renamed.
+   */
+  private fun rewriteElf(dir: File, token: String) {
+    val libraries = dir.listFiles()?.filter { it.name.endsWith(".so") }.orEmpty()
+    if (libraries.isEmpty()) return
 
-    libs.forEach { checkInstallNameFits(it.absolutePath) }
+    for (library in libraries) {
+      val base = library.name.substringBefore('.')
+      if (base in EXPLICITLY_LOADED) continue
 
-    for (lib in libs) {
-      run(dir, "patchelf", "--set-soname", lib.absolutePath, lib.name)
-      for (sibling in libs) {
-        if (sibling.name == lib.name) continue
-        run(dir, "patchelf", "--replace-needed", sibling.name, sibling.absolutePath, lib.name)
+      val soname = ElfPatcher.readSoname(library) ?: continue
+      val renamed = uniquify(soname, token)
+      if (renamed == soname) continue
+
+      ElfPatcher.replaceDynamicString(library, soname, renamed)
+      val renamedFile = File(dir, renamed)
+      check(library.renameTo(renamedFile)) {
+        "Could not rename ${library.name} to $renamed while isolating native libraries."
       }
+
+      // Every sibling that depended on the old name must now ask for the new one, or the dynamic
+      // loader would fall back to a system copy or fail outright.
+      for (dependent in dir.listFiles()?.filter { it.name.endsWith(".so") }.orEmpty()) {
+        ElfPatcher.replaceDynamicString(dependent, soname, renamed)
+      }
+
+      verifyElfRewrite(renamedFile, renamed)
     }
+  }
+
+  /**
+   * Reads the patched library back.
+   *
+   * Cheap, and the alternative is a corrupted library surfacing much later as an unexplained
+   * dynamic-linker error.
+   */
+  private fun verifyElfRewrite(library: File, expectedSoname: String) {
+    val actual = ElfPatcher.readSoname(library)
+    check(actual == expectedSoname) {
+      "Failed to isolate ${library.name}: DT_SONAME reads '$actual', expected '$expectedSoname'."
+    }
+  }
+
+  /**
+   * Replaces the trailing characters of a library name with [token], preserving overall length.
+   *
+   * Length preservation is not cosmetic: `.dynstr` has no slack, so a name can only be swapped for
+   * one of exactly the same size.
+   */
+  private fun uniquify(fileName: String, token: String): String {
+    val base = fileName.substringBefore('.')
+    val extension = fileName.removePrefix(base)
+    return if (base.length <= token.length) fileName else base.dropLast(token.length) + token + extension
   }
 
   private fun checkInstallNameFits(path: String) {
@@ -208,7 +270,7 @@ internal object NativeLibraryStaging {
           "${process.exitValue()}.\n$output\n" +
           "Sandboxed rendering needs this tool to give each layoutlib copy a unique " +
           "install name; without it the dynamic linker would share one native runtime " +
-          "across every sandbox."
+          "across every sandbox. It ships with the Xcode command line tools."
       )
     }
   }
