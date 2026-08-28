@@ -4,10 +4,12 @@ public object Flags {
   public const val DEBUG_LINKED_OBJECTS: String = "app.cash.paparazzi.debug.linked.objects"
 
   /**
-   * Maximum number of live layoutlib sandboxes (isolated class loaders) kept cached.
+   * Maximum number of distinct layoutlib sandboxes (isolated class loaders) a single JVM may
+   * create.
    *
-   * Each sandbox holds a private copy of layoutlib's JNI libraries, so raising this increases
-   * native memory and metaspace roughly linearly.
+   * This is a leak guard, not a cache size. A sandbox that has loaded layoutlib's JNI libraries can
+   * never be collected, so each one costs roughly 40 MB for the life of the process. Prefer
+   * isolating with `forkEvery` over raising this.
    */
-  public const val SANDBOX_MAX_SIZE: String = "app.cash.paparazzi.sandbox.max.size"
+  public const val SANDBOX_LIMIT: String = "app.cash.paparazzi.sandbox.limit"
 }

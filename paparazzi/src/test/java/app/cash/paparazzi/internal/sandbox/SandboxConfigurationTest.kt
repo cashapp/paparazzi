@@ -37,24 +37,35 @@ class SandboxConfigurationTest {
   }
 
   @Test
+  fun `unlisted packages are acquired, because acquiring is the default`() {
+    // The bugs this prevents: com.android.adservices ships inside layoutlib.jar and calls
+    // android.util.Log, and kotlinx.coroutines.android links android.os.Handler. Neither would
+    // appear on a hand-written list of things to isolate.
+    assertThat(configuration.shouldAcquire("com.android.adservices.LogUtil")).isTrue()
+    assertThat(configuration.shouldAcquire("kotlinx.coroutines.android.HandlerContext")).isTrue()
+    assertThat(configuration.shouldAcquire("com.example.totally.unknown.Thing")).isTrue()
+  }
+
+  @Test
   fun `androidx is acquired because it links against the framework`() {
-    // Compose resolves android.view.View at link time. Sharing androidx with the host would bind
-    // it to the host's framework copy.
     assertThat(configuration.shouldAcquire("androidx.compose.ui.platform.ComposeView")).isTrue()
   }
 
   @Test
-  fun `jdk and kotlin are delegated`() {
+  fun `jdk and kotlin stdlib are delegated`() {
     assertThat(configuration.shouldAcquire("java.lang.String")).isFalse()
     assertThat(configuration.shouldAcquire("javax.imageio.ImageIO")).isFalse()
     assertThat(configuration.shouldAcquire("kotlin.Unit")).isFalse()
   }
 
   @Test
-  fun `layoutlib-api spi is delegated so it can cross the boundary`() {
+  fun `layoutlib-api spi and its signature types are delegated`() {
     assertThat(configuration.shouldAcquire("com.android.ide.common.rendering.api.ILayoutLog")).isFalse()
     assertThat(configuration.shouldAcquire("com.android.ide.common.rendering.api.SessionParams")).isFalse()
     assertThat(configuration.shouldAcquire("com.android.resources.ResourceType")).isFalse()
+    // Exposed by the types above, so they have to cross the boundary too.
+    assertThat(configuration.shouldAcquire("com.google.common.collect.ListMultimap")).isFalse()
+    assertThat(configuration.shouldAcquire("org.xmlpull.v1.XmlPullParser")).isFalse()
   }
 
   @Test
@@ -63,9 +74,42 @@ class SandboxConfigurationTest {
   }
 
   @Test
-  fun `paparazzi host classes are delegated by default`() {
+  fun `longest matching prefix wins`() {
+    // javax. is delegated, but layoutlib ships javax.microedition and must own it.
+    assertThat(configuration.shouldAcquire("javax.imageio.ImageIO")).isFalse()
+    assertThat(configuration.shouldAcquire("javax.microedition.khronos.egl.EGL")).isTrue()
+  }
+
+  @Test
+  fun `default policy keeps paparazzi on the host side`() {
     assertThat(configuration.shouldAcquire("app.cash.paparazzi.Paparazzi")).isFalse()
     assertThat(configuration.shouldAcquire("app.cash.paparazzi.internal.PaparazziCallback")).isFalse()
+  }
+
+  @Test
+  fun `runner policy moves paparazzi into the sandbox`() {
+    val runner = SandboxConfiguration.forRunner()
+
+    assertThat(runner.shouldAcquire("app.cash.paparazzi.Paparazzi")).isTrue()
+    assertThat(runner.shouldAcquire("app.cash.paparazzi.PaparazziSdk")).isTrue()
+    assertThat(runner.shouldAcquire("app.cash.paparazzi.internal.Renderer")).isTrue()
+  }
+
+  @Test
+  fun `runner policy keeps the sandbox machinery on the host side`() {
+    val runner = SandboxConfiguration.forRunner()
+
+    assertThat(runner.shouldAcquire("app.cash.paparazzi.internal.sandbox.SandboxManager")).isFalse()
+    assertThat(runner.shouldAcquire("app.cash.paparazzi.PaparazziRunner")).isFalse()
+  }
+
+  @Test
+  fun `runner is delegated by exact name, not by prefix`() {
+    // A prefix rule would also match test classes named after the runner and silently un-sandbox
+    // them, which is a failure no assertion would catch.
+    val runner = SandboxConfiguration.forRunner()
+
+    assertThat(runner.shouldAcquire("app.cash.paparazzi.PaparazziRunnerTest")).isTrue()
   }
 
   @Test
@@ -74,12 +118,12 @@ class SandboxConfigurationTest {
       .classpath(Classpath.current())
       .withDefaults()
       .delegateClasses("android.util.Log")
-      .acquireClasses("app.cash.paparazzi.internal.Renderer")
+      .acquireClasses("java.util.ArrayList")
       .build()
 
     assertThat(custom.shouldAcquire("android.util.Log")).isFalse()
     assertThat(custom.shouldAcquire("android.util.SparseArray")).isTrue()
-    assertThat(custom.shouldAcquire("app.cash.paparazzi.internal.Renderer")).isTrue()
+    assertThat(custom.shouldAcquire("java.util.ArrayList")).isTrue()
   }
 
   @Test
@@ -91,13 +135,7 @@ class SandboxConfigurationTest {
 
   @Test
   fun `differing policy produces unequal configurations`() {
-    val other = SandboxConfiguration.Builder()
-      .classpath(Classpath.current())
-      .withDefaults()
-      .acquirePackages("app.cash.paparazzi.")
-      .build()
-
-    assertThat(other).isNotEqualTo(SandboxConfiguration.default())
+    assertThat(SandboxConfiguration.forRunner()).isNotEqualTo(SandboxConfiguration.default())
   }
 
   @Test

@@ -9,9 +9,22 @@ import net.bytebuddy.pool.TypePool
 
 internal object InterceptorRegistrar {
   private val byteBuddy = ByteBuddy()
-  private val systemClassFileLocator = ClassFileLocator.ForClassLoader.ofSystemLoader()
-  private val systemTypePool = TypePool.Default.ofSystemLoader()
-  private val systemClassLoader = ClassLoader.getSystemClassLoader()
+
+  /**
+   * The loader that defined *this* registrar.
+   *
+   * Under `PaparazziRunner` that is the sandbox's loader, so the redefinitions land on the
+   * sandbox's `android.view.View` rather than the host's. Resolving against the system loader
+   * instead — as this did originally — silently instruments the wrong copy: the host's `View` gets
+   * the interceptor while the sandbox renders with an untouched one, and `isInEditMode()` starts
+   * answering true again.
+   *
+   * Outside a sandbox this is the application loader, which is the previous behaviour.
+   */
+  private val targetClassLoader: ClassLoader = InterceptorRegistrar::class.java.classLoader
+
+  private val classFileLocator = ClassFileLocator.ForClassLoader.of(targetClassLoader)
+  private val typePool = TypePool.Default.of(targetClassLoader)
 
   private val methodInterceptors = mutableListOf<() -> Unit>()
 
@@ -19,12 +32,12 @@ internal object InterceptorRegistrar {
     addMethodInterceptors(receiverClass, setOf(methodName to interceptor))
 
   fun addMethodInterceptors(receiverClass: String, methodNamesToInterceptors: Set<Pair<String, Class<*>>>) {
-    val typeResolution = systemTypePool.describe(receiverClass)
+    val typeResolution = typePool.describe(receiverClass)
     if (!typeResolution.isResolved) return
 
     methodInterceptors += {
       var builder = byteBuddy
-        .redefine<Any>(typeResolution.resolve(), systemClassFileLocator)
+        .redefine<Any>(typeResolution.resolve(), classFileLocator)
 
       methodNamesToInterceptors.forEach {
         builder = builder
@@ -34,7 +47,7 @@ internal object InterceptorRegistrar {
 
       builder
         .make()
-        .load(systemClassLoader, ClassReloadingStrategy.fromInstalledAgent())
+        .load(targetClassLoader, ClassReloadingStrategy.fromInstalledAgent())
     }
   }
 

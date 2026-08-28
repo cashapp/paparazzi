@@ -35,12 +35,4 @@ internal object Classpath {
       .split(File.pathSeparator)
       .filter { it.isNotBlank() }
       .map { Paths.get(it).toUri().toURL() }
-
-  /**
-   * The jar or directory that defines [className], or null if it cannot be located.
-   *
-   * Useful for asserting that layoutlib really is on the classpath before building a sandbox.
-   */
-  fun locationOf(className: String, classLoader: ClassLoader = Classpath::class.java.classLoader): URL? =
-    runCatching { classLoader.loadClass(className).protectionDomain?.codeSource?.location }.getOrNull()
 }

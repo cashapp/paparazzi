@@ -22,20 +22,29 @@ import java.net.URL
  * Decides, for every class name a [SandboxClassLoader] is asked to load, whether the sandbox
  * defines its own copy ("acquires" it) or delegates to the parent loader.
  *
- * This is the direct analogue of Robolectric's `InstrumentationConfiguration`. The rules matter a
- * great deal:
+ * This is the analogue of Robolectric's `InstrumentationConfiguration`, with one important
+ * difference: **the default is to acquire.** Only the explicitly delegated prefixes are shared with
+ * the host.
  *
- *  * **Acquired** classes get a fresh copy per sandbox, and therefore fresh static state. This is
- *    the entire point of the exercise — `Bridge.sJniLibLoaded`, `Choreographer.mLastFrameTimeNanos`,
- *    `Build.VERSION.SDK_INT` and friends stop leaking between tests.
- *  * **Delegated** classes are shared with the parent loader, so instances can cross the sandbox
- *    boundary without `ClassCastException`. Everything used to *talk to* the sandbox must be
- *    delegated.
+ * ### Why acquire by default
  *
- * The default policy delegates `com.android.ide.common.rendering.api.*` (layoutlib-api), which is a
- * pure-Java SPI shipped in a separate artifact from layoutlib itself and references no `android.*`
- * types. That makes it the natural boundary interface: the host constructs `ILayoutLog`,
- * `LayoutlibCallback` and `SessionParams` instances and hands them to a sandboxed `Bridge`.
+ * The obvious policy — list the packages to isolate — is wrong, and fails in a way that is very
+ * hard to diagnose. Anything that links against `android.*` must live on the same side of the
+ * boundary as the framework, and the set of such libraries is neither small nor guessable:
+ * layoutlib.jar alone ships over a thousand packages including `com.android.adservices`, and
+ * `kotlinx.coroutines.android` links `android.os.Handler` from a completely different artifact.
+ *
+ * Getting that list wrong produces failures far from their cause. A missed package loads in the
+ * host and then calls a framework method whose JNI natives were registered against the sandbox's
+ * copy, yielding `UnsatisfiedLinkError` from unrelated code; or the JVM catches it later as
+ * `LinkageError: loader constraint violation`.
+ *
+ * Inverting the default turns that whole class of bug into its opposite: forgetting to *delegate*
+ * something fails immediately and legibly, with a `ClassCastException` at the exact boundary
+ * crossing. So the delegate list below is short, deliberate, and each entry has a reason.
+ *
+ * Rules are matched longest-prefix-first, so a specific rule refines a general one — `javax.` is
+ * delegated while `javax.microedition.`, which layoutlib ships, is not.
  *
  * Instances are value types so they can key [SandboxManager]'s cache.
  */
@@ -49,14 +58,18 @@ internal class SandboxConfiguration private constructor(
   /**
    * True if the sandbox should define its own copy of [className].
    *
-   * Exact class names win over package prefixes, and delegation wins over acquisition, so a caller
-   * can punch a hole in a broad acquired package without restating the whole policy.
+   * Exact class names win over package prefixes. Among prefixes the longest match wins, so a
+   * narrower rule always refines a broader one regardless of declaration order. Anything unmatched
+   * is acquired.
    */
   fun shouldAcquire(className: String): Boolean {
     if (className in delegatedClasses) return false
     if (className in acquiredClasses) return true
-    if (delegatedPackages.any { className.startsWith(it) }) return false
-    return acquiredPackages.any { className.startsWith(it) }
+
+    val longestDelegated = delegatedPackages.filter { className.startsWith(it) }.maxOfOrNull { it.length } ?: -1
+    val longestAcquired = acquiredPackages.filter { className.startsWith(it) }.maxOfOrNull { it.length } ?: -1
+
+    return longestAcquired >= longestDelegated
   }
 
   override fun equals(other: Any?): Boolean =
@@ -80,7 +93,7 @@ internal class SandboxConfiguration private constructor(
 
   override fun toString(): String =
     "SandboxConfiguration(classpath=${classpath.size} entries, " +
-      "acquired=${acquiredPackages.size} packages, delegated=${delegatedPackages.size} packages)"
+      "delegated=${delegatedPackages.size} prefixes, acquire-by-default)"
 
   class Builder {
     private var classpath: List<URL> = emptyList()
@@ -100,14 +113,14 @@ internal class SandboxConfiguration private constructor(
     fun delegateClasses(vararg names: String) = apply { delegatedClasses += names }
 
     /**
-     * Applies the policy that isolates layoutlib and the Android framework while keeping the JDK,
-     * Kotlin, JUnit and the layoutlib-api SPI shared with the host.
+     * Shares with the host only what has to be shared. Everything else — the Android framework,
+     * layoutlib, AndroidX, and any library that links against them — is acquired.
      */
     fun withDefaults() =
       apply {
-        // Must be shared: the JVM will not tolerate a second java.lang, and everything below is
-        // either part of the host/sandbox conversation or stateless enough not to matter.
         delegatePackages(
+          // The JVM will not tolerate a second java.lang, and the JDK cannot reference android.*
+          // anyway.
           "java.",
           "javax.",
           "jdk.",
@@ -115,57 +128,40 @@ internal class SandboxConfiguration private constructor(
           "com.sun.",
           "org.w3c.dom.",
           "org.xml.sax.",
+          // The Kotlin standard library is framework-independent and appears in signatures that
+          // cross the boundary.
           "kotlin.",
-          "kotlinx.coroutines.",
           "org.jetbrains.annotations.",
+          // JUnit must be shared or the runner could not build Statements for the sandbox, and
+          // failures could not propagate back to the host's reporting.
           "org.junit.",
           "junit.",
           "org.hamcrest.",
-          // layoutlib-api and the AOSP tooling libraries. Pure Java, no android.* references, and
-          // they form the interface the host uses to drive a sandboxed Bridge.
+          // Gradle's test worker infrastructure calls into the runner from the host side.
+          "org.gradle.",
+          "worker.org.gradle.",
+          // ByteBuddy drives redefinition through the JVM-wide instrumentation agent; a second copy
+          // would fight the first over agent installation.
+          "net.bytebuddy.",
+          // layoutlib-api and the AOSP tooling libraries: pure Java, no android.* references, and
+          // the interface through which the host configures a sandboxed Bridge.
           "com.android.ide.common.",
           "com.android.resources.",
           "com.android.utils.",
           "com.android.io.",
           "com.android.sdklib.",
-          "com.android.support.",
           "com.android.ninepatch.",
+          "com.android.annotations.",
           "com.android.SdkConstants",
-          "com.android.annotations."
+          // Appear in the signatures of the layoutlib-api types above, so they cross the boundary
+          // too: ResourceRepository exposes Guava collections and ILayoutPullParser extends
+          // XmlPullParser.
+          "com.google.common.",
+          "org.xmlpull."
         )
 
-        // Everything layoutlib.jar ships, plus AndroidX. AndroidX in particular *must* be isolated:
-        // Compose resolves android.view.View at link time, so a shared androidx would bind to the
-        // host's copy of the framework and fail with NoClassDefFoundError / ClassCastException.
-        acquirePackages(
-          "android.",
-          "androidx.",
-          "com.android.layoutlib.",
-          "com.android.internal.",
-          "com.android.tools.layoutlib.",
-          "com.android.tools.idea.",
-          "com.android.i18n.",
-          "com.android.icu.",
-          "com.android.org.",
-          "com.android.libcore.",
-          "com.android.server.",
-          "com.android.modules.",
-          "com.android.systemui.",
-          "com.android.launcher3.",
-          "com.android.net.",
-          "com.android.os.",
-          "com.android.apex.",
-          "com.android.ims.",
-          "com.android.telephony.",
-          "com.google.android.",
-          "com.google.ux.",
-          "dalvik.",
-          "libcore.",
-          "org.apache.harmony.",
-          "org.ccil.cowan.tagsoup.",
-          "org.json.",
-          "javax.microedition."
-        )
+        // layoutlib ships these under otherwise-delegated prefixes. Longest-match makes them win.
+        acquirePackages("javax.microedition.")
       }
 
     fun build(): SandboxConfiguration {
@@ -181,11 +177,34 @@ internal class SandboxConfiguration private constructor(
   }
 
   companion object {
-    /** The default policy over the current JVM's classpath. */
+    /**
+     * The policy for a host that drives a sandboxed `Bridge` reflectively.
+     *
+     * Paparazzi itself stays on the host side, talking to the sandbox through layoutlib-api.
+     */
     fun default(classpath: List<URL> = Classpath.current()): SandboxConfiguration =
       Builder()
         .classpath(classpath)
         .withDefaults()
+        .delegatePackages("app.cash.paparazzi.")
+        .build()
+
+    /**
+     * The policy used by `PaparazziRunner`, where the relationship inverts.
+     *
+     * The test class is reloaded *inside* the sandbox, so its `@Rule Paparazzi` field, the
+     * `PaparazziSdk` it creates, and that SDK's companion statics must all be the sandbox's own.
+     * Only the sandbox machinery itself stays on the host side — it is what builds sandboxes and
+     * has no business being duplicated inside one.
+     */
+    fun forRunner(classpath: List<URL> = Classpath.current()): SandboxConfiguration =
+      Builder()
+        .classpath(classpath)
+        .withDefaults()
+        .delegatePackages("app.cash.paparazzi.internal.sandbox.")
+        // Exact, not a prefix: a prefix would also delegate any class merely named like the
+        // runner, silently un-sandboxing it.
+        .delegateClasses("app.cash.paparazzi.PaparazziRunner")
         .build()
   }
 }

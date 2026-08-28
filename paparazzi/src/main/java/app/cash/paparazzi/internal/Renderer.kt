@@ -86,7 +86,8 @@ internal class Renderer(
     val fontLocation = File(platformDataDir, "fonts")
     val icuLocation = File(platformDataDir, "icu" + File.separator + "icudt76l.dat")
     val keyboardLocation = File(platformDataDir, "keyboards" + File.separator + "Generic.kcm")
-    val nativeLibLocation = File(platformDataDir, getNativeLibDir())
+    val nativeLibLocation = SandboxRuntime.nativeLibDir?.let(::File)
+      ?: File(platformDataDir, getNativeLibDir())
     val hyphenDataLocation = File(platformDataDir, "hyphen-data")
     val attrs = File(layoutlibResDir, "values" + File.separator + "attrs.xml")
     val systemProperties = DeviceConfig.loadProperties(buildProp) + mapOf(

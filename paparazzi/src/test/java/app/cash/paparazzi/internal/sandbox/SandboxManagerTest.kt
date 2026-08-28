@@ -22,18 +22,14 @@ import org.junit.Test
 
 class SandboxManagerTest {
   private val stagingRoot = NativeLibraryStaging.defaultStagingRoot()
-  private val manager = SandboxManager(maxSize = 2, stagingRoot = stagingRoot)
+  private val manager = SandboxManager(limit = 2, stagingRoot = stagingRoot)
 
   private val defaultConfiguration = SandboxConfiguration.default()
-  private val acquiresPaparazzi = SandboxConfiguration.Builder()
+  private val runnerConfiguration = SandboxConfiguration.forRunner()
+  private val delegatesOkio = SandboxConfiguration.Builder()
     .classpath(Classpath.current())
     .withDefaults()
-    .acquirePackages("app.cash.paparazzi.")
-    .build()
-  private val acquiresOkio = SandboxConfiguration.Builder()
-    .classpath(Classpath.current())
-    .withDefaults()
-    .acquirePackages("okio.")
+    .delegatePackages("okio.")
     .build()
 
   @After
@@ -53,39 +49,36 @@ class SandboxManagerTest {
   @Test
   fun `different configurations get different sandboxes`() {
     val first = manager.getSandbox(defaultConfiguration)
-    val second = manager.getSandbox(acquiresPaparazzi)
+    val second = manager.getSandbox(runnerConfiguration)
 
     assertThat(first).isNotSameInstanceAs(second)
     assertThat(manager.size).isEqualTo(2)
   }
 
   @Test
-  fun `cache is bounded and evicts least recently used`() {
+  fun `sandboxes are never evicted, because eviction would free nothing`() {
     val first = manager.getSandbox(defaultConfiguration)
-    manager.getSandbox(acquiresPaparazzi)
-    manager.getSandbox(acquiresOkio)
+    manager.getSandbox(runnerConfiguration)
 
+    // With an LRU cache `first` would have been evicted here. Its memory would not have come back,
+    // so evicting would only have forced a second allocation later.
     assertThat(manager.size).isEqualTo(2)
-
-    // `first` was the least recently used, so it was evicted and closed.
-    try {
-      first.loadClass("android.view.Choreographer")
-      throw AssertionError("Expected the evicted sandbox to be closed")
-    } catch (expected: IllegalStateException) {
-      assertThat(expected).hasMessageThat().contains("closed")
-    }
+    assertThat(first.loadClass("android.view.Choreographer").name)
+      .isEqualTo("android.view.Choreographer")
   }
 
   @Test
-  fun `access refreshes recency`() {
-    val first = manager.getSandbox(defaultConfiguration)
-    manager.getSandbox(acquiresPaparazzi)
-
-    // Touch `first` so `acquiresPaparazzi` becomes the eviction candidate instead.
+  fun `exceeding the limit fails loudly instead of degrading`() {
     manager.getSandbox(defaultConfiguration)
-    manager.getSandbox(acquiresOkio)
+    manager.getSandbox(runnerConfiguration)
 
-    assertThat(first.loadClass("android.view.Choreographer").name).isEqualTo("android.view.Choreographer")
+    try {
+      manager.getSandbox(delegatesOkio)
+      throw AssertionError("Expected IllegalStateException")
+    } catch (expected: IllegalStateException) {
+      assertThat(expected).hasMessageThat().contains("Refusing to create more than 2")
+      assertThat(expected).hasMessageThat().contains("forkEvery")
+    }
   }
 
   @Test
