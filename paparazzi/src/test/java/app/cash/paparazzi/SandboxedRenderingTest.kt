@@ -22,7 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.ComposeView
 import com.google.common.truth.Truth.assertThat
 import org.junit.Assume.assumeFalse
-import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -40,17 +40,6 @@ class SandboxedRenderingTest {
   val testRule = PaparazziTestRule()
 
   private val paparazzi get() = testRule.paparazzi
-
-  @Before
-  fun assumeSandboxIsSupported() {
-    // Windows resolves DLL imports by base name, so one JVM cannot hold both a sandboxed layoutlib
-    // and the unsandboxed one this module's other tests load. NativeLibraryStaging refuses rather
-    // than crashing; there is nothing to assert here until PE import rewriting exists.
-    assumeFalse(
-      "layoutlib cannot be sandboxed alongside unsandboxed Paparazzi in one JVM on Windows",
-      System.getProperty("os.name").lowercase(Locale.US).startsWith("windows")
-    )
-  }
 
   @Test
   fun testClassItselfIsLoadedBySandbox() {
@@ -135,5 +124,25 @@ class SandboxedRenderingTest {
     assertThat(ComposeView::class.java.classLoader!!.javaClass.name)
       .isEqualTo("app.cash.paparazzi.internal.sandbox.SandboxClassLoader")
     assertThat(View::class.java.isAssignableFrom(ComposeView::class.java)).isTrue()
+  }
+
+  companion object {
+    /**
+     * Skips the whole class on Windows.
+     *
+     * Must be @BeforeClass, not @Before: JUnit rules wrap @Before methods, so the Paparazzi rule
+     * would already have tried to stand up a sandbox - and failed - before the assumption ran.
+     *
+     * Windows resolves DLL imports by base name, so one JVM cannot hold both a sandboxed layoutlib
+     * and the unsandboxed one this module's other tests load.
+     */
+    @JvmStatic
+    @BeforeClass
+    fun assumeSandboxIsSupported() {
+      assumeFalse(
+        "layoutlib cannot be sandboxed alongside unsandboxed Paparazzi in one JVM on Windows",
+        System.getProperty("os.name").lowercase(Locale.US).startsWith("windows")
+      )
+    }
   }
 }
