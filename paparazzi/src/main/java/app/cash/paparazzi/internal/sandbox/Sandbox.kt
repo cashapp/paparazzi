@@ -41,7 +41,7 @@ internal class Sandbox(
   val classLoader: SandboxClassLoader = SandboxClassLoader(configuration)
 
   private var closed = false
-  private var stagedNativeLibDir: File? = null
+  private var staged: NativeLibraryStaging.Staged? = null
 
   /**
    * The directory to pass to `Bridge.init` as `nativeLibPath`, or null if this sandbox was created
@@ -55,12 +55,25 @@ internal class Sandbox(
    */
   @get:Synchronized
   val nativeLibDir: File?
-    get() {
-      val root = layoutlibRuntimeRoot ?: return null
-      return stagedNativeLibDir ?: NativeLibraryStaging
-        .stage(NativeLibraryStaging.nativeLibDirIn(root), stagingRoot)
-        .also { stagedNativeLibDir = it }
-    }
+    get() = stage()?.directory
+
+  /**
+   * Libraries renamed while staging, as original name to staged name.
+   *
+   * Empty unless the platform achieves uniqueness by renaming. `Renderer` maps layoutlib's
+   * hardcoded native library list through this before calling `Bridge.init`, since the files no
+   * longer have the names layoutlib expects.
+   */
+  @get:Synchronized
+  val nativeLibraryRenames: Map<String, String>
+    get() = stage()?.renames.orEmpty()
+
+  private fun stage(): NativeLibraryStaging.Staged? {
+    val root = layoutlibRuntimeRoot ?: return null
+    return staged ?: NativeLibraryStaging
+      .stage(NativeLibraryStaging.nativeLibDirIn(root), stagingRoot)
+      .also { staged = it }
+  }
 
   /** Loads [name] through this sandbox. Acquired names resolve to this sandbox's copy. */
   fun loadClass(name: String): Class<*> {
@@ -107,7 +120,7 @@ internal class Sandbox(
     if (closed) return
     closed = true
     runCatching { classLoader.close() }
-    stagedNativeLibDir?.let(NativeLibraryStaging::unstage)
+    staged?.directory?.let(NativeLibraryStaging::unstage)
   }
 
   override fun toString(): String = "Sandbox($classLoader)"

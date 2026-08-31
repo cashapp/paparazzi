@@ -21,8 +21,6 @@ import app.cash.paparazzi.internal.PaparazziLogger
 import com.android.ide.common.rendering.api.ILayoutLog
 import com.google.common.truth.Truth.assertThat
 import org.junit.After
-import org.junit.Assume.assumeFalse
-import org.junit.Before
 import org.junit.Test
 import java.io.File
 import java.util.Locale
@@ -43,13 +41,6 @@ class LayoutlibSandboxTest {
   private val layoutlibResourcesRoot =
     File(requireNotNull(System.getProperty("paparazzi.layoutlib.resources.root")))
 
-  @Before
-  fun assumeNativeIsolationIsSupported() {
-    // Windows resolves DLL imports by base name, so it cannot host two layoutlib copies at once.
-    // NativeLibraryStaging refuses rather than crashing; these tests need two.
-    assumeFalse("layoutlib cannot be sandboxed twice in one JVM on Windows", isWindows)
-  }
-
   @After
   fun tearDown() {
     sandboxes.forEach { sandbox ->
@@ -68,7 +59,7 @@ class LayoutlibSandboxTest {
 
     assertThat(firstDir.canonicalPath).isNotEqualTo(secondDir.canonicalPath)
 
-    // The two platforms make a library unique in opposite ways, so the assertion has to differ.
+    // Each platform makes a library unique in a different way, so the assertion has to differ.
     if (isMac) {
       // File names are preserved: the Mach-O binaries import dlopen/dlsym and break when renamed.
       // Uniqueness comes from the install name, without which dyld resolves the second sandbox's
@@ -85,6 +76,19 @@ class LayoutlibSandboxTest {
           .inputStream.bufferedReader().readText()
 
       assertThat(installName(firstDir)).isNotEqualTo(installName(secondDir))
+    } else if (isWindows) {
+      // The Windows loader reuses any already-loaded module with a matching name, whatever
+      // directory it came from, so both libraries are renamed and the import repointed.
+      fun runtime(dir: File) = dir.listFiles()!!.single { it.name.startsWith("libandroid_") }
+      fun jni(dir: File) = dir.listFiles()!!.single { it.name.startsWith("layoutlib") }
+
+      assertThat(jni(firstDir).name).isNotEqualTo(jni(secondDir).name)
+      assertThat(runtime(firstDir).name).isNotEqualTo(runtime(secondDir).name)
+
+      // Each library must call itself what it is called on disk, and reach its own sibling.
+      assertThat(PePatcher.readExportName(jni(firstDir))).isEqualTo(jni(firstDir).name)
+      assertThat(PePatcher.readImportedModules(jni(firstDir))).contains(runtime(firstDir).name)
+      assertThat(PePatcher.readImportedModules(jni(secondDir))).contains(runtime(secondDir).name)
     } else {
       // ELF has no header slack, so no absolute path fits in DT_NEEDED. The library is renamed
       // instead - the differing file name *is* the isolation, and glibc compares the requested

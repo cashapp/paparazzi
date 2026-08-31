@@ -83,9 +83,6 @@ internal object NativeLibraryStaging {
 
   private val counter = AtomicLong()
 
-  /** Windows permits only one layoutlib per process; see [checkWindowsCanIsolate]. */
-  private val stagedOnWindows = java.util.concurrent.atomic.AtomicBoolean(false)
-
   /**
    * A short staging root, so that a staged library's absolute path still fits the install-name pad.
    *
@@ -126,9 +123,12 @@ internal object NativeLibraryStaging {
    *
    * @return the staged directory, suitable for passing to `Bridge.init` as `nativeLibPath`.
    */
-  fun stage(sourceDir: File, stagingRoot: Path): File {
+
+  /** A staged copy of layoutlib's native libraries, and any renames applied to make it unique. */
+  class Staged(val directory: File, val renames: Map<String, String>)
+
+  fun stage(sourceDir: File, stagingRoot: Path): Staged {
     require(sourceDir.isDirectory) { "Native library directory does not exist: $sourceDir" }
-    if (platform == Platform.WINDOWS) checkWindowsCanIsolate()
 
     Files.createDirectories(stagingRoot)
     // The staging root is shared, and Gradle may run several test workers at once, so the
@@ -149,59 +149,72 @@ internal object NativeLibraryStaging {
         )
       }
 
-    when (platform) {
-      Platform.MAC -> rewriteMachO(target)
+    val renames = when (platform) {
+      Platform.MAC -> {
+        rewriteMachO(target)
+        emptyMap()
+      }
       Platform.LINUX -> rewriteElf(target, token)
-      Platform.WINDOWS -> Unit // Guarded above; see checkWindowsCanIsolate.
+      Platform.WINDOWS -> rewritePe(target, token)
     }
 
-    return target
+    return Staged(target, renames)
   }
 
   /**
-   * Refuses to stage a second copy of layoutlib on Windows.
+   * Gives each staged DLL a unique module name, and repoints its dependents.
    *
-   * Windows has no equivalent of a unique install name or soname. The loader resolves a DLL's
-   * imports by *base name* against the modules already in the process, so a second
-   * `layoutlib_jni.dll` binds to whichever `libandroid_runtime.dll` was loaded first, however
-   * distinct the two files are on disk. Both copies then drive the same native state, and layoutlib
-   * dies part-way through re-initialising it - observed as the process aborting shortly after
-   * `HWUI: can't set an onStartHook after we've started`.
+   * The Windows loader reuses an already-loaded module whenever the *name* matches, whatever
+   * directory it came from, so a copy alone changes nothing. Both libraries are renamed here, not
+   * just the dependency: `layoutlib_jni.dll` collides on its own name too.
    *
-   * Isolating properly would mean rewriting the PE import descriptors and renaming the file, which
-   * conflicts with `Bridge.WINDOWS_NATIVE_LIBRARIES` loading `libandroid_runtime.dll` by that exact
-   * name. Until that is built and actually verified on Windows, failing here is better than
-   * crashing the test worker with no explanation.
-   *
-   * A single layoutlib per JVM is unaffected, so Windows projects where *every* test is sandboxed
-   * still work.
+   * Renaming the files means `Bridge.WINDOWS_NATIVE_LIBRARIES` no longer matches what is on disk,
+   * which is why the rename map is returned — `Renderer` maps that array through it before calling
+   * `Bridge.init`.
    */
-  private fun checkWindowsCanIsolate() {
-    check(!hostHasLoadedLayoutlib()) {
-      "Cannot sandbox layoutlib on Windows in a JVM that has already loaded it unsandboxed.\n" +
-        "Windows resolves DLL imports by base name, so the sandbox would bind to the native " +
-        "runtime already in this process and abort part-way through re-initialising it.\n" +
-        "Either make every test in this module use PaparazziRunner, or separate the sandboxed " +
-        "tests into their own test task or `forkEvery` boundary."
+  private fun rewritePe(dir: File, token: String): Map<String, String> {
+    val libraries = dir.listFiles()?.filter { it.name.endsWith(".dll", ignoreCase = true) }.orEmpty()
+    if (libraries.isEmpty()) return emptyMap()
+
+    val renames = libraries.associate { it.name to uniquify(it.name, token) }
+      .filter { (from, to) -> from != to }
+    if (renames.isEmpty()) return emptyMap()
+
+    // Rewrite the strings first, while the files are still at their original names.
+    for (library in libraries) {
+      for ((from, to) in renames) PePatcher.replaceModuleName(library, from, to)
     }
-    check(stagedOnWindows.compareAndSet(false, true)) {
-      "Cannot create more than one layoutlib sandbox per JVM on Windows.\n" +
-        "Windows resolves DLL imports by base name, so a second copy would bind to the first " +
-        "sandbox's native runtime rather than its own.\n" +
-        "Use `forkEvery` to isolate with a process boundary instead."
+
+    for (library in libraries) {
+      val renamed = renames[library.name] ?: continue
+      check(library.renameTo(File(dir, renamed))) {
+        "Could not rename ${library.name} to $renamed while isolating native libraries."
+      }
     }
+
+    verifyPeRewrite(dir, renames)
+    return renames
   }
 
-  /** True if this process already initialised layoutlib outside a sandbox. */
-  private fun hostHasLoadedLayoutlib(): Boolean =
-    runCatching {
-      // This class is always host-side, so its loader is the one an unsandboxed Paparazzi uses.
-      // Bridge's static initialiser only builds lookup tables; it does not touch JNI.
-      Class.forName("com.android.layoutlib.bridge.Bridge", true, javaClass.classLoader)
-        .getDeclaredField("sJniLibLoaded")
-        .apply { isAccessible = true }
-        .getBoolean(null)
-    }.getOrDefault(false)
+  /**
+   * Reads the patched libraries back.
+   *
+   * A corrupted import table surfaces as an opaque loader error much later, so it is worth a few
+   * milliseconds to catch it here.
+   */
+  private fun verifyPeRewrite(dir: File, renames: Map<String, String>) {
+    for (renamed in renames.values) {
+      val library = File(dir, renamed)
+      val exportName = PePatcher.readExportName(library)
+      check(exportName == null || exportName == renamed) {
+        "Failed to isolate $renamed: it still calls itself '$exportName'."
+      }
+      val stale = PePatcher.readImportedModules(library).firstOrNull { it in renames.keys }
+      check(stale == null) {
+        "Failed to isolate $renamed: it still imports '$stale', which no longer exists."
+      }
+    }
+  }
 
   private fun rewriteMachO(dir: File) {
     val dylibs = dir.listFiles()?.filter { it.name.endsWith(".dylib") }.orEmpty()
@@ -241,10 +254,11 @@ internal object NativeLibraryStaging {
    *
    * Libraries layoutlib loads by name keep their file name; only their dependencies are renamed.
    */
-  private fun rewriteElf(dir: File, token: String) {
+  private fun rewriteElf(dir: File, token: String): Map<String, String> {
     val libraries = dir.listFiles()?.filter { it.name.endsWith(".so") }.orEmpty()
-    if (libraries.isEmpty()) return
+    if (libraries.isEmpty()) return emptyMap()
 
+    val renames = mutableMapOf<String, String>()
     for (library in libraries) {
       val base = library.name.substringBefore('.')
       if (base in EXPLICITLY_LOADED) continue
@@ -266,7 +280,9 @@ internal object NativeLibraryStaging {
       }
 
       verifyElfRewrite(renamedFile, renamed)
+      renames[library.name] = renamed
     }
+    return renames
   }
 
   /**

@@ -14,12 +14,9 @@ import app.cash.paparazzi.SandboxedRunWith
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
 import org.junit.Assert.assertEquals
-import org.junit.Assume.assumeFalse
-import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.util.Locale
 
 /**
  * A third-party parameterized runner composed with the sandbox.
@@ -59,19 +56,6 @@ class SandboxedTestParameterInjectorTest(
       ) {
         Text("Sandboxed ${config.name}")
       }
-    }
-  }
-
-  companion object {
-    // @BeforeClass, not @Before: rules wrap @Before, so the Paparazzi rule would try to stand up a
-    // sandbox first. Windows resolves DLL imports by base name and cannot hold two layoutlibs.
-    @JvmStatic
-    @BeforeClass
-    fun assumeSandboxIsSupported() {
-      assumeFalse(
-        "layoutlib cannot be sandboxed alongside unsandboxed Paparazzi in one JVM on Windows",
-        System.getProperty("os.name").lowercase(Locale.US).startsWith("windows")
-      )
     }
   }
 }

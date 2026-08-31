@@ -45,4 +45,17 @@ internal object SandboxRuntime {
   /** The staged native library directory, materialising it on first use. */
   val nativeLibDir: String?
     get() = nativeLibDirSupplier?.get()
+
+  /**
+   * Supplies the renames applied while staging, as original name to staged name.
+   *
+   * Only `java.util` types cross the boundary here. A Paparazzi-owned holder class would not: it is
+   * acquired by the sandbox, so the host's copy and the sandbox's would be different types.
+   */
+  @JvmStatic
+  var nativeLibraryRenamesSupplier: Supplier<Map<String, String>>? = null
+
+  /** Libraries renamed while staging, empty when this platform does not rename. */
+  val nativeLibraryRenames: Map<String, String>
+    get() = nativeLibraryRenamesSupplier?.get().orEmpty()
 }

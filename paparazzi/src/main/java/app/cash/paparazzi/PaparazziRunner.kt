@@ -159,10 +159,12 @@ public class PaparazziRunner(testClass: Class<*>) : Runner(), Filterable, Sortab
    */
   private fun installNativeLibDir(sandbox: Sandbox) {
     // A supplier, so the ~26 MB copy happens only if the test actually renders.
-    val supplier = Supplier { sandbox.nativeLibDir?.absolutePath }
-    sandbox.loadClass("app.cash.paparazzi.internal.SandboxRuntime")
-      .getDeclaredMethod("setNativeLibDirSupplier", Supplier::class.java)
-      .invoke(null, supplier)
+    val runtime = sandbox.loadClass("app.cash.paparazzi.internal.SandboxRuntime")
+    runtime.getDeclaredMethod("setNativeLibDirSupplier", Supplier::class.java)
+      .invoke(null, Supplier { sandbox.nativeLibDir?.absolutePath })
+    // Windows renames the DLLs to make them unique, so layoutlib's hardcoded list needs remapping.
+    runtime.getDeclaredMethod("setNativeLibraryRenamesSupplier", Supplier::class.java)
+      .invoke(null, Supplier { sandbox.nativeLibraryRenames })
   }
 
   private fun layoutlibRuntimeRoot(): File? = System.getProperty("paparazzi.layoutlib.runtime.root")?.let(::File)
