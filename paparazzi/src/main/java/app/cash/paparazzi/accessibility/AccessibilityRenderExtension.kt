@@ -18,6 +18,7 @@ package app.cash.paparazzi.accessibility
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.view.WindowManager
 import android.view.WindowManagerGlobal
 import android.widget.LinearLayout
 import app.cash.paparazzi.RenderExtension
