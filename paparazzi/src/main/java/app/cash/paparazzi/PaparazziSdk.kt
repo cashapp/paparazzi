@@ -459,8 +459,7 @@ public class PaparazziSdk @JvmOverloads constructor(
       // animations work).
       Choreographer_Delegate.doCallbacks(
         Choreographer.getInstance(),
-        Choreographer.CALLBACK_ANIMATION,
-        currentTimeNanos
+        Choreographer.CALLBACK_ANIMATION
       )
 
       Choreographer_Delegate.sChoreographerTime = 0
