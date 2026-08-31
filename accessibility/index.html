@@ -1150,7 +1150,7 @@
 <h3 id="role-compose-only">Role (Compose only)<a class="headerlink" href="#role-compose-only" title="Permanent link">&para;</a></h3>
 <p>The semantic role of an element — <code>Button</code>, <code>Checkbox</code>, <code>Image</code>, <code>Switch</code>, <code>Tab</code>, <code>RadioButton</code>, etc. Helps assistive technologies identify the purpose of a UI component.</p>
 <div class="highlight"><pre><span></span><code><span class="n">Box</span><span class="p">(</span><span class="n">modifier</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Modifier</span><span class="p">.</span><span class="na">semantics</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">role</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Role</span><span class="p">.</span><span class="na">Button</span><span class="w"> </span><span class="p">})</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="n">Text</span><span class="p">(</span><span class="s">&quot;Submit&quot;</span><span class="p">)</span>
+<span class="w">  </span><span class="n">Text</span><span class="p">(</span><span class="s">"Submit"</span><span class="p">)</span>
 <span class="p">}</span>
 </code></pre></div>
 <h3 id="selected-state">Selected state<a class="headerlink" href="#selected-state" title="Permanent link">&para;</a></h3>
@@ -1164,8 +1164,8 @@
 </ul>
 <h3 id="on-click-label-compose-only">On-click label (Compose only)<a class="headerlink" href="#on-click-label-compose-only" title="Permanent link">&para;</a></h3>
 <p>Provides context about what happens when an element is activated. Renders as <code>&lt;on-click&gt;: label</code>.</p>
-<div class="highlight"><pre><span></span><code><span class="n">Box</span><span class="p">(</span><span class="n">modifier</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Modifier</span><span class="p">.</span><span class="na">clickable</span><span class="p">(</span><span class="n">onClickLabel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Add to cart&quot;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">})</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="n">Text</span><span class="p">(</span><span class="s">&quot;Product&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="n">Box</span><span class="p">(</span><span class="n">modifier</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Modifier</span><span class="p">.</span><span class="na">clickable</span><span class="p">(</span><span class="n">onClickLabel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Add to cart"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">})</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">Text</span><span class="p">(</span><span class="s">"Product"</span><span class="p">)</span>
 <span class="p">}</span>
 </code></pre></div>
 <h3 id="heading">Heading<a class="headerlink" href="#heading" title="Permanent link">&para;</a></h3>
@@ -1204,7 +1204,7 @@
 <span class="c1">// Adjustable slider with custom label</span>
 <span class="n">Slider</span><span class="p">(</span>
 <span class="w">  </span><span class="n">modifier</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Modifier</span><span class="p">.</span><span class="na">semantics</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="n">setProgress</span><span class="p">(</span><span class="s">&quot;Adjust volume&quot;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="n">setProgress</span><span class="p">(</span><span class="s">"Adjust volume"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">}</span>
 <span class="w">  </span><span class="p">},</span>
 <span class="w">  </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.5f</span><span class="p">,</span>
 <span class="w">  </span><span class="n">onValueChange</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span>
@@ -1215,8 +1215,8 @@
 <p><strong>Compose:</strong>
 <div class="highlight"><pre><span></span><code><span class="n">Box</span><span class="p">(</span><span class="n">modifier</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Modifier</span><span class="p">.</span><span class="na">semantics</span><span class="w"> </span><span class="p">{</span>
 <span class="w">  </span><span class="n">customActions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">listOf</span><span class="p">(</span>
-<span class="w">    </span><span class="n">CustomAccessibilityAction</span><span class="p">(</span><span class="s">&quot;Delete&quot;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="n">CustomAccessibilityAction</span><span class="p">(</span><span class="s">&quot;Archive&quot;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="n">CustomAccessibilityAction</span><span class="p">(</span><span class="s">"Delete"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="n">CustomAccessibilityAction</span><span class="p">(</span><span class="s">"Archive"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">}</span>
 <span class="w">  </span><span class="p">)</span>
 <span class="p">})</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="cm">/* ... */</span><span class="w"> </span><span class="p">}</span>
 </code></pre></div></p>
@@ -1227,7 +1227,7 @@
 <span class="w">    </span><span class="n">info</span><span class="p">.</span><span class="na">addAction</span><span class="p">(</span>
 <span class="w">      </span><span class="n">AccessibilityNodeInfoCompat</span><span class="p">.</span><span class="na">AccessibilityActionCompat</span><span class="p">(</span>
 <span class="w">        </span><span class="n">AccessibilityNodeInfoCompat</span><span class="p">.</span><span class="na">ACTION_CLICK</span><span class="p">,</span>
-<span class="w">        </span><span class="s">&quot;Custom Click Action&quot;</span>
+<span class="w">        </span><span class="s">"Custom Click Action"</span>
 <span class="w">      </span><span class="p">)</span>
 <span class="w">    </span><span class="p">)</span>
 <span class="w">  </span><span class="p">}</span>
@@ -1240,13 +1240,13 @@
 <li><code>LinkAnnotation.Clickable</code> → <code>&lt;click-action&gt;: link text</code></li>
 </ul>
 <div class="highlight"><pre><span></span><code><span class="kd">val</span><span class="w"> </span><span class="nv">annotatedString</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buildAnnotatedString</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="n">append</span><span class="p">(</span><span class="s">&quot;Visit &quot;</span><span class="p">)</span>
-<span class="w">  </span><span class="n">pushLink</span><span class="p">(</span><span class="n">LinkAnnotation</span><span class="p">.</span><span class="na">Url</span><span class="p">(</span><span class="s">&quot;https://example.com&quot;</span><span class="p">))</span>
-<span class="w">  </span><span class="n">append</span><span class="p">(</span><span class="s">&quot;our website&quot;</span><span class="p">)</span>
+<span class="w">  </span><span class="n">append</span><span class="p">(</span><span class="s">"Visit "</span><span class="p">)</span>
+<span class="w">  </span><span class="n">pushLink</span><span class="p">(</span><span class="n">LinkAnnotation</span><span class="p">.</span><span class="na">Url</span><span class="p">(</span><span class="s">"https://example.com"</span><span class="p">))</span>
+<span class="w">  </span><span class="n">append</span><span class="p">(</span><span class="s">"our website"</span><span class="p">)</span>
 <span class="w">  </span><span class="n">pop</span><span class="p">()</span>
 <span class="p">}</span>
 <span class="n">Text</span><span class="p">(</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">annotatedString</span><span class="p">)</span>
-<span class="c1">// Legend: &quot;Visit our website, &lt;url-action&gt;: our website&quot;</span>
+<span class="c1">// Legend: "Visit our website, &lt;url-action&gt;: our website"</span>
 </code></pre></div>
 <h3 id="live-region">Live region<a class="headerlink" href="#live-region" title="Permanent link">&para;</a></h3>
 <p>A section of UI that updates dynamically. Screen readers announce changes automatically. Renders as <code>&lt;live-region&gt;: assertive</code> or <code>&lt;live-region&gt;: polite</code>.</p>
@@ -1277,16 +1277,16 @@
 </ul>
 <div class="highlight"><pre><span></span><code><span class="n">Column</span><span class="w"> </span><span class="p">{</span>
 <span class="w">  </span><span class="c1">// Excluded: invisible to user</span>
-<span class="w">  </span><span class="n">Text</span><span class="p">(</span><span class="n">modifier</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Modifier</span><span class="p">.</span><span class="na">semantics</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">invisibleToUser</span><span class="p">()</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Hidden&quot;</span><span class="p">)</span>
+<span class="w">  </span><span class="n">Text</span><span class="p">(</span><span class="n">modifier</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Modifier</span><span class="p">.</span><span class="na">semantics</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">invisibleToUser</span><span class="p">()</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Hidden"</span><span class="p">)</span>
 
 <span class="w">  </span><span class="c1">// Excluded: zero alpha</span>
-<span class="w">  </span><span class="n">Text</span><span class="p">(</span><span class="n">modifier</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Modifier</span><span class="p">.</span><span class="na">alpha</span><span class="p">(</span><span class="m">0f</span><span class="p">),</span><span class="w"> </span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Transparent&quot;</span><span class="p">)</span>
+<span class="w">  </span><span class="n">Text</span><span class="p">(</span><span class="n">modifier</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Modifier</span><span class="p">.</span><span class="na">alpha</span><span class="p">(</span><span class="m">0f</span><span class="p">),</span><span class="w"> </span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Transparent"</span><span class="p">)</span>
 
 <span class="w">  </span><span class="c1">// Included: overridden semantics</span>
 <span class="w">  </span><span class="n">Column</span><span class="p">(</span><span class="n">modifier</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Modifier</span><span class="p">.</span><span class="na">clearAndSetSemantics</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="n">contentDescription</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Custom description&quot;</span>
+<span class="w">    </span><span class="n">contentDescription</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Custom description"</span>
 <span class="w">  </span><span class="p">})</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="n">Text</span><span class="p">(</span><span class="s">&quot;Child text is not in legend&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="n">Text</span><span class="p">(</span><span class="s">"Child text is not in legend"</span><span class="p">)</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
@@ -1295,9 +1295,9 @@
 <h3 id="compose-traversalindex">Compose: <code>traversalIndex</code><a class="headerlink" href="#compose-traversalindex" title="Permanent link">&para;</a></h3>
 <p>Lower <code>traversalIndex</code> values are traversed first. The default is <code>0f</code>. Elements with the same index use layout order as a tiebreaker.</p>
 <div class="highlight"><pre><span></span><code><span class="n">Column</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="n">Text</span><span class="p">(</span><span class="s">&quot;Third&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">modifier</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Modifier</span><span class="p">.</span><span class="na">semantics</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">traversalIndex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2f</span><span class="w"> </span><span class="p">})</span>
-<span class="w">  </span><span class="n">Text</span><span class="p">(</span><span class="s">&quot;First&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">modifier</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Modifier</span><span class="p">.</span><span class="na">semantics</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">traversalIndex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="m">1f</span><span class="w"> </span><span class="p">})</span>
-<span class="w">  </span><span class="n">Text</span><span class="p">(</span><span class="s">&quot;Second&quot;</span><span class="p">)</span><span class="w"> </span><span class="c1">// Default traversalIndex = 0f</span>
+<span class="w">  </span><span class="n">Text</span><span class="p">(</span><span class="s">"Third"</span><span class="p">,</span><span class="w"> </span><span class="n">modifier</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Modifier</span><span class="p">.</span><span class="na">semantics</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">traversalIndex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2f</span><span class="w"> </span><span class="p">})</span>
+<span class="w">  </span><span class="n">Text</span><span class="p">(</span><span class="s">"First"</span><span class="p">,</span><span class="w"> </span><span class="n">modifier</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Modifier</span><span class="p">.</span><span class="na">semantics</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">traversalIndex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="m">1f</span><span class="w"> </span><span class="p">})</span>
+<span class="w">  </span><span class="n">Text</span><span class="p">(</span><span class="s">"Second"</span><span class="p">)</span><span class="w"> </span><span class="c1">// Default traversalIndex = 0f</span>
 <span class="p">}</span>
 <span class="c1">// Legend order: First, Second, Third</span>
 </code></pre></div>
@@ -1306,16 +1306,16 @@
 <p>These attributes control traversal order via a dependency graph that is resolved with topological sort.</p>
 <div class="highlight"><pre><span></span><code><span class="kd">val</span><span class="w"> </span><span class="nv">first</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TextView</span><span class="p">(</span><span class="n">context</span><span class="p">).</span><span class="na">apply</span><span class="w"> </span><span class="p">{</span>
 <span class="w">  </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">View</span><span class="p">.</span><span class="na">generateViewId</span><span class="p">()</span>
-<span class="w">  </span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;First&quot;</span>
+<span class="w">  </span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"First"</span>
 <span class="p">}</span>
 <span class="kd">val</span><span class="w"> </span><span class="nv">second</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TextView</span><span class="p">(</span><span class="n">context</span><span class="p">).</span><span class="na">apply</span><span class="w"> </span><span class="p">{</span>
 <span class="w">  </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">View</span><span class="p">.</span><span class="na">generateViewId</span><span class="p">()</span>
-<span class="w">  </span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Second&quot;</span>
+<span class="w">  </span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Second"</span>
 <span class="w">  </span><span class="n">accessibilityTraversalAfter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">first</span><span class="p">.</span><span class="na">id</span>
 <span class="p">}</span>
 <span class="kd">val</span><span class="w"> </span><span class="nv">third</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TextView</span><span class="p">(</span><span class="n">context</span><span class="p">).</span><span class="na">apply</span><span class="w"> </span><span class="p">{</span>
 <span class="w">  </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">View</span><span class="p">.</span><span class="na">generateViewId</span><span class="p">()</span>
-<span class="w">  </span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Third&quot;</span>
+<span class="w">  </span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Third"</span>
 <span class="w">  </span><span class="n">accessibilityTraversalAfter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">second</span><span class="p">.</span><span class="na">id</span>
 <span class="p">}</span>
 </code></pre></div>
@@ -1331,8 +1331,8 @@
 <div class="highlight"><pre><span></span><code><span class="n">paparazzi</span><span class="p">.</span><span class="na">snapshot</span><span class="w"> </span><span class="p">{</span>
 <span class="w">  </span><span class="n">Box</span><span class="p">(</span><span class="n">Modifier</span><span class="p">.</span><span class="na">fillMaxSize</span><span class="p">())</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="n">DropdownMenu</span><span class="p">(</span><span class="n">expanded</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="n">onDismissRequest</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{})</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="n">DropdownMenuItem</span><span class="p">(</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">Text</span><span class="p">(</span><span class="s">&quot;Option 1&quot;</span><span class="p">)</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">onClick</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{})</span>
-<span class="w">      </span><span class="n">DropdownMenuItem</span><span class="p">(</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">Text</span><span class="p">(</span><span class="s">&quot;Option 2&quot;</span><span class="p">)</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">onClick</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{})</span>
+<span class="w">      </span><span class="n">DropdownMenuItem</span><span class="p">(</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">Text</span><span class="p">(</span><span class="s">"Option 1"</span><span class="p">)</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">onClick</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{})</span>
+<span class="w">      </span><span class="n">DropdownMenuItem</span><span class="p">(</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">Text</span><span class="p">(</span><span class="s">"Option 2"</span><span class="p">)</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">onClick</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{})</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>

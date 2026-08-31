@@ -642,7 +642,7 @@
 <span class="w">  </span><span class="nd">@get</span><span class="p">:</span><span class="n">Rule</span>
 <span class="w">  </span><span class="kd">val</span><span class="w"> </span><span class="nv">paparazzi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Paparazzi</span><span class="p">(</span>
 <span class="w">    </span><span class="n">deviceConfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PIXEL_5</span><span class="p">,</span>
-<span class="w">    </span><span class="n">theme</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;android:Theme.Material.Light.NoActionBar&quot;</span>
+<span class="w">    </span><span class="n">theme</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"android:Theme.Material.Light.NoActionBar"</span>
 <span class="w">    </span><span class="c1">// ...see docs for more options</span>
 <span class="w">  </span><span class="p">)</span>
 
@@ -652,7 +652,7 @@
 <span class="w">    </span><span class="c1">// or...</span>
 <span class="w">    </span><span class="c1">// val view = LaunchView(paparazzi.context)</span>
 
-<span class="w">    </span><span class="n">view</span><span class="p">.</span><span class="na">setModel</span><span class="p">(</span><span class="n">LaunchModel</span><span class="p">(</span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;paparazzi&quot;</span><span class="p">))</span>
+<span class="w">    </span><span class="n">view</span><span class="p">.</span><span class="na">setModel</span><span class="p">(</span><span class="n">LaunchModel</span><span class="p">(</span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"paparazzi"</span><span class="p">))</span>
 <span class="w">    </span><span class="n">paparazzi</span><span class="p">.</span><span class="na">snapshot</span><span class="p">(</span><span class="n">view</span><span class="p">)</span>
 <span class="w">  </span><span class="p">}</span>
 
@@ -688,7 +688,7 @@
 <span class="nd">@Test</span>
 <span class="kd">fun</span><span class="w"> </span><span class="nf">snapshot_example</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 <span class="w">  </span><span class="kd">val</span><span class="w"> </span><span class="nv">view</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">paparazzi</span><span class="p">.</span><span class="na">inflate</span><span class="o">&lt;</span><span class="n">TextView</span><span class="o">&gt;</span><span class="p">(</span><span class="n">android</span><span class="p">.</span><span class="na">R</span><span class="p">.</span><span class="na">layout</span><span class="p">.</span><span class="na">simple_list_item_1</span><span class="p">).</span><span class="na">apply</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Hello Paparazzi&quot;</span>
+<span class="w">    </span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Hello Paparazzi"</span>
 <span class="w">    </span><span class="n">textSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">24f</span>
 <span class="w">    </span><span class="n">gravity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Gravity</span><span class="p">.</span><span class="na">CENTER</span>
 <span class="w">  </span><span class="p">}</span>
@@ -714,7 +714,7 @@ test runs and snapshots.</p>
 <div class="highlight"><pre><span></span><code>brew<span class="w"> </span>install<span class="w"> </span>git-lfs
 git<span class="w"> </span>config<span class="w"> </span>core.hooksPath<span class="w">  </span><span class="c1"># optional, confirm where your git hooks will be installed</span>
 git<span class="w"> </span>lfs<span class="w"> </span>install<span class="w"> </span>--local
-git<span class="w"> </span>lfs<span class="w"> </span>track<span class="w"> </span><span class="s2">&quot;**/snapshots/**/*.png&quot;</span>
+git<span class="w"> </span>lfs<span class="w"> </span>track<span class="w"> </span><span class="s2">"**/snapshots/**/*.png"</span>
 git<span class="w"> </span>add<span class="w"> </span>.gitattributes
 <span class="c1"># Optional to improve git checkout performance</span>
 git<span class="w"> </span>config<span class="w"> </span>lfs.setlockablereadonly<span class="w"> </span><span class="nb">false</span>
@@ -722,18 +722,18 @@ git<span class="w"> </span>config<span class="w"> </span>lfs.setlockablereadonly
 <p>On CI, you might set up something like:</p>
 <p><code>$HOOKS_DIR/pre-receive</code>
 <div class="highlight"><pre><span></span><code><span class="c1"># compares files that match .gitattributes filter to those actually tracked by git-lfs</span>
-diff<span class="w"> </span>&lt;<span class="o">(</span>git<span class="w"> </span>ls-files<span class="w"> </span><span class="s1">&#39;:(attr:filter=lfs)&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="o">)</span><span class="w"> </span>&lt;<span class="o">(</span>git<span class="w"> </span>lfs<span class="w"> </span>ls-files<span class="w"> </span>-n<span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="o">)</span><span class="w"> </span>&gt;/dev/null
+diff<span class="w"> </span>&lt;<span class="o">(</span>git<span class="w"> </span>ls-files<span class="w"> </span><span class="s1">':(attr:filter=lfs)'</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="o">)</span><span class="w"> </span>&lt;<span class="o">(</span>git<span class="w"> </span>lfs<span class="w"> </span>ls-files<span class="w"> </span>-n<span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="o">)</span><span class="w"> </span>&gt;/dev/null
 
 <span class="nv">ret</span><span class="o">=</span><span class="nv">$?</span>
 <span class="k">if</span><span class="w"> </span><span class="o">[[</span><span class="w"> </span><span class="nv">$ret</span><span class="w"> </span>-ne<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="o">]]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
-<span class="w">  </span><span class="nb">echo</span><span class="w"> </span>&gt;<span class="p">&amp;</span><span class="m">2</span><span class="w"> </span><span class="s2">&quot;This remote has detected files committed without using Git LFS. Run &#39;brew install git-lfs &amp;&amp; git lfs install&#39; to install it and re-commit your files.&quot;</span><span class="p">;</span>
+<span class="w">  </span><span class="nb">echo</span><span class="w"> </span>&gt;<span class="p">&amp;</span><span class="m">2</span><span class="w"> </span><span class="s2">"This remote has detected files committed without using Git LFS. Run 'brew install git-lfs &amp;&amp; git lfs install' to install it and re-commit your files."</span><span class="p">;</span>
 <span class="w">  </span><span class="nb">exit</span><span class="w"> </span><span class="m">1</span><span class="p">;</span>
 <span class="k">fi</span>
 </code></pre></div></p>
 <p><code>your_build_script.sh</code>
 <div class="highlight"><pre><span></span><code><span class="k">if</span><span class="w"> </span><span class="o">[[</span><span class="w"> </span>is<span class="w"> </span>running<span class="w"> </span>snapshot<span class="w"> </span>tests<span class="w"> </span><span class="o">]]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
 <span class="w">  </span><span class="c1"># fail fast if files not checked in using git lfs</span>
-<span class="w">  </span><span class="s2">&quot;</span><span class="nv">$HOOKS_DIR</span><span class="s2">&quot;</span>/pre-receive
+<span class="w">  </span><span class="s2">"</span><span class="nv">$HOOKS_DIR</span><span class="s2">"</span>/pre-receive
 <span class="w">  </span>git<span class="w"> </span>lfs<span class="w"> </span>install<span class="w"> </span>--local
 <span class="w">  </span>git<span class="w"> </span>lfs<span class="w"> </span>pull
 <span class="k">fi</span>
@@ -772,36 +772,36 @@ exclude bundled Android dependencies.</p>
 <span class="w">    </span><span class="n">google</span><span class="o">()</span>
 <span class="w">  </span><span class="o">}</span>
 <span class="w">  </span><span class="n">dependencies</span><span class="w"> </span><span class="o">{</span>
-<span class="w">    </span><span class="n">classpath</span><span class="w"> </span><span class="s1">&#39;app.cash.paparazzi:paparazzi-gradle-plugin:2.0.0-alpha05&#39;</span>
+<span class="w">    </span><span class="n">classpath</span><span class="w"> </span><span class="s1">'app.cash.paparazzi:paparazzi-gradle-plugin:2.0.0-alpha05'</span>
 <span class="w">  </span><span class="o">}</span>
 <span class="o">}</span>
 
-<span class="n">apply</span><span class="w"> </span><span class="nl">plugin:</span><span class="w"> </span><span class="s1">&#39;app.cash.paparazzi&#39;</span>
+<span class="n">apply</span><span class="w"> </span><span class="nl">plugin:</span><span class="w"> </span><span class="s1">'app.cash.paparazzi'</span>
 </code></pre></div></p>
 <p>Using the plugins DSL:
 <div class="highlight"><pre><span></span><code><span class="n">plugins</span><span class="w"> </span><span class="o">{</span>
-<span class="w">  </span><span class="n">id</span><span class="w"> </span><span class="s1">&#39;app.cash.paparazzi&#39;</span><span class="w"> </span><span class="n">version</span><span class="w"> </span><span class="s1">&#39;2.0.0-alpha05&#39;</span>
+<span class="w">  </span><span class="n">id</span><span class="w"> </span><span class="s1">'app.cash.paparazzi'</span><span class="w"> </span><span class="n">version</span><span class="w"> </span><span class="s1">'2.0.0-alpha05'</span>
 <span class="o">}</span>
 </code></pre></div></p>
 <p>Snapshots of the development version are available in <a href="https://central.sonatype.com/service/rest/repository/browse/maven-snapshots/app/cash/paparazzi/">the Central Portal Snapshots repository</a>.</p>
 <div class="highlight"><pre><span></span><code><span class="n">repositories</span><span class="w"> </span><span class="o">{</span>
 <span class="w">  </span><span class="c1">// ...</span>
 <span class="w">  </span><span class="n">maven</span><span class="w"> </span><span class="o">{</span>
-<span class="w">    </span><span class="n">url</span><span class="w"> </span><span class="s1">&#39;https://central.sonatype.com/repository/maven-snapshots/&#39;</span>
+<span class="w">    </span><span class="n">url</span><span class="w"> </span><span class="s1">'https://central.sonatype.com/repository/maven-snapshots/'</span>
 <span class="w">  </span><span class="o">}</span>
 <span class="o">}</span>
 </code></pre></div>
 <h2 id="license">License<a class="headerlink" href="#license" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>Copyright 2019 Square, Inc.
 
-Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
