@@ -16,6 +16,8 @@
 
 package app.cash.paparazzi.internal.sandbox
 
+import app.cash.paparazzi.getFieldReflectively
+import app.cash.paparazzi.setStaticValue
 import java.io.File
 import java.io.IOException
 import java.nio.file.Files
@@ -340,6 +342,33 @@ internal object NativeLibraryStaging {
     }
   }
 
+  /**
+   * Points layoutlib's hardcoded native library names at their staged, renamed copies.
+   *
+   * `Bridge` loads its JNI libraries from `{LINUX,MAC,WINDOWS}_NATIVE_LIBRARIES`, baked in as plain
+   * file names. Where a platform achieves uniqueness by renaming - Windows, whose loader reuses any
+   * already-loaded module with a matching name - those names no longer exist on disk, and
+   * `Bridge.init` cannot find them.
+   *
+   * A no-op when [renames] is empty, which covers macOS and every unsandboxed run.
+   *
+   * @param bridgeClass the sandbox's own `com.android.layoutlib.bridge.Bridge`.
+   */
+  fun remapLibraryNames(bridgeClass: Class<*>, renames: Map<String, String>) {
+    if (renames.isEmpty()) return
+
+    for (fieldName in NATIVE_LIBRARY_FIELDS) {
+      val field = try {
+        bridgeClass.getFieldReflectively(fieldName)
+      } catch (e: RuntimeException) {
+        continue // A given layoutlib build need not declare all three.
+      }
+      val current = field.get(null) as? Array<*> ?: continue
+      val updated = current.map { renames[it] ?: it }.toTypedArray()
+      if (!updated.contentEquals(current)) field.setStaticValue(updated)
+    }
+  }
+
   /** Best-effort recursive delete; a leftover temp directory must never fail a test. */
   fun unstage(directory: File) {
     try {
@@ -375,6 +404,13 @@ internal object NativeLibraryStaging {
       Platform.MAC ->
         if (System.getProperty("os.arch").lowercase(Locale.US).startsWith("x86")) "mac" else "mac-arm"
     }
+
+  /** layoutlib's per-platform lists of JNI libraries to load, by field name. */
+  private val NATIVE_LIBRARY_FIELDS = listOf(
+    "LINUX_NATIVE_LIBRARIES",
+    "MAC_NATIVE_LIBRARIES",
+    "WINDOWS_NATIVE_LIBRARIES"
+  )
 
   private const val STALE_AFTER_MILLIS = 24L * 60 * 60 * 1000
   private const val MAX_INSTALL_NAME_LENGTH = 50

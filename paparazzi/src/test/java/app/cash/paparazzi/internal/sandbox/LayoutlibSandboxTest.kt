@@ -79,8 +79,14 @@ class LayoutlibSandboxTest {
     } else if (isWindows) {
       // The Windows loader reuses any already-loaded module with a matching name, whatever
       // directory it came from, so both libraries are renamed and the import repointed.
-      fun runtime(dir: File) = dir.listFiles()!!.single { it.name.startsWith("libandroid_") }
-      fun jni(dir: File) = dir.listFiles()!!.single { it.name.startsWith("layoutlib") }
+      // Both libraries are renamed, so identify them by role: the JNI library is the one that
+      // imports its sibling.
+      fun dlls(dir: File) = dir.listFiles()!!.filter { it.name.endsWith(".dll", ignoreCase = true) }
+      fun jni(dir: File) =
+        dlls(dir).single { library ->
+          PePatcher.readImportedModules(library).any { it in dlls(dir).map(File::getName) }
+        }
+      fun runtime(dir: File) = dlls(dir).single { it.name != jni(dir).name }
 
       assertThat(jni(firstDir).name).isNotEqualTo(jni(secondDir).name)
       assertThat(runtime(firstDir).name).isNotEqualTo(runtime(secondDir).name)
@@ -172,6 +178,9 @@ class LayoutlibSandboxTest {
   /** Mirrors `Renderer.prepare`, but against a sandboxed `Bridge` reached reflectively. */
   private fun initBridge(sandbox: Sandbox): Boolean {
     val bridgeClass = sandbox.loadClass(BRIDGE)
+    // Renderer does this before init; driving Bridge directly means doing it here too, or the
+    // renamed libraries would be loaded under names that no longer exist on disk.
+    NativeLibraryStaging.remapLibraryNames(bridgeClass, sandbox.nativeLibraryRenames)
     val bridge = bridgeClass.getDeclaredConstructor().newInstance()
 
     val platformDataDir = File(layoutlibRuntimeRoot, "data")

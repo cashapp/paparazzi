@@ -24,6 +24,7 @@ import app.cash.paparazzi.getFieldReflectively
 import app.cash.paparazzi.internal.resources.AarSourceResourceRepository
 import app.cash.paparazzi.internal.resources.AppResourceRepository
 import app.cash.paparazzi.internal.resources.FrameworkResourceRepository
+import app.cash.paparazzi.internal.sandbox.NativeLibraryStaging
 import app.cash.paparazzi.setStaticValue
 import com.android.layoutlib.bridge.Bridge
 import com.android.layoutlib.bridge.android.RenderParamsFlags
@@ -94,7 +95,7 @@ internal class Renderer(
       // We want Choreographer.USE_FRAME_TIME to be false so it uses System_Delegate.nanoTime()
       "debug.choreographer.frametime" to "false"
     )
-    applyNativeLibraryRenames()
+    NativeLibraryStaging.remapLibraryNames(Bridge::class.java, SandboxRuntime.nativeLibraryRenames)
     bridge = Bridge().apply {
       check(
         init(
@@ -120,32 +121,6 @@ internal class Renderer(
     }
 
     return sessionParamsBuilder
-  }
-
-  /**
-   * Points layoutlib's hardcoded native library names at this sandbox's renamed copies.
-   *
-   * `Bridge` loads its JNI libraries from `{LINUX,MAC,WINDOWS}_NATIVE_LIBRARIES`, which are baked in
-   * as plain file names. Where a platform achieves per-sandbox uniqueness by renaming - Windows,
-   * whose loader reuses any module with a matching name regardless of directory - those names no
-   * longer exist on disk, and `Bridge.init` would fail to find them.
-   *
-   * A no-op outside a sandbox, and on platforms that make libraries unique some other way.
-   */
-  private fun applyNativeLibraryRenames() {
-    val renames = SandboxRuntime.nativeLibraryRenames
-    if (renames.isEmpty()) return
-
-    for (fieldName in NATIVE_LIBRARY_FIELDS) {
-      val field = try {
-        Bridge::class.java.getFieldReflectively(fieldName)
-      } catch (e: RuntimeException) {
-        continue // A layoutlib built for other platforms may not declare all three.
-      }
-      val current = field.get(null) as? Array<*> ?: continue
-      val updated = current.map { renames[it] ?: it }.toTypedArray()
-      if (!updated.contentEquals(current)) field.setStaticValue(updated)
-    }
   }
 
   private fun configureBuildProperties() {
@@ -185,15 +160,6 @@ internal class Renderer(
         }
       }
     }
-  }
-
-  private companion object {
-    /** layoutlib's per-platform lists of JNI libraries to load, by field name. */
-    private val NATIVE_LIBRARY_FIELDS = listOf(
-      "LINUX_NATIVE_LIBRARIES",
-      "MAC_NATIVE_LIBRARIES",
-      "WINDOWS_NATIVE_LIBRARIES"
-    )
   }
 
   private fun getNativeLibDir(): String {
