@@ -129,6 +129,10 @@ def generateTestConfig = tasks.register("generateTestConfig") {
 
 tasks.withType(Test).configureEach {
   dependsOn(generateTestConfig)
+  // Each Bridge.init memory-maps the system fonts into direct byte buffers - roughly 65 MB that is
+  // never released, because a sandbox's class loader can never be collected. This module now runs
+  // several layoutlibs in one JVM, which overruns the 512 MB default.
+  jvmArgs '-XX:MaxDirectMemorySize=2g'
   // Fixtures for PaparazziRunnerFeaturesTest. They are driven through JUnitCore so their outcomes
   // can be asserted, and some fail on purpose, so they must not be collected directly.
   exclude '**/runnerfixtures/**'

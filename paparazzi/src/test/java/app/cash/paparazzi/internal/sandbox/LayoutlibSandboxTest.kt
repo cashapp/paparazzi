@@ -20,7 +20,7 @@ import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.internal.PaparazziLogger
 import com.android.ide.common.rendering.api.ILayoutLog
 import com.google.common.truth.Truth.assertThat
-import org.junit.After
+import org.junit.AfterClass
 import org.junit.Test
 import java.io.File
 import java.util.Locale
@@ -34,26 +34,34 @@ import java.util.Locale
  */
 class LayoutlibSandboxTest {
   private val stagingRoot = NativeLibraryStaging.defaultStagingRoot()
-  private val sandboxes = mutableListOf<Sandbox>()
 
   private val layoutlibRuntimeRoot =
     File(requireNotNull(System.getProperty("paparazzi.layoutlib.runtime.root")))
   private val layoutlibResourcesRoot =
     File(requireNotNull(System.getProperty("paparazzi.layoutlib.resources.root")))
 
-  @After
-  fun tearDown() {
-    sandboxes.forEach { sandbox ->
-      runCatching { disposeBridge(sandbox) }
-      sandbox.close()
+  /**
+   * Two sandboxes shared by the whole class, with their bridges initialised once.
+   *
+   * Deliberately not one pair per test. A sandbox can never be reclaimed - layoutlib's JNI_OnLoad
+   * pins its class loader - and each `Bridge.init` memory-maps the system fonts into direct byte
+   * buffers, roughly 65 MB that is never released. Eight bridges in one JVM exhausted the default
+   * 512 MB direct buffer limit on Windows CI. Two is all these assertions need.
+   */
+  private val first get() = sharedSandboxes().first
+  private val second get() = sharedSandboxes().second
+
+  private fun sharedSandboxes(): Pair<Sandbox, Sandbox> =
+    shared ?: run {
+      val a = newSandbox()
+      val b = newSandbox()
+      check(initBridge(a)) { "The first sandbox's Bridge failed to initialise." }
+      check(initBridge(b)) { "The second sandbox's Bridge failed to initialise." }
+      (a to b).also { shared = it }
     }
-  }
 
   @Test
   fun `each sandbox stages its own native libraries`() {
-    val first = newSandbox()
-    val second = newSandbox()
-
     val firstDir = requireNotNull(first.nativeLibDir)
     val secondDir = requireNotNull(second.nativeLibDir)
 
@@ -116,11 +124,6 @@ class LayoutlibSandboxTest {
 
   @Test
   fun `sandboxed bitmap density does not leak between sandboxes`() {
-    val first = newSandbox()
-    val second = newSandbox()
-    assertThat(initBridge(first)).isTrue()
-    assertThat(initBridge(second)).isTrue()
-
     // Bitmap.sDefaultDensity is process-global today: PaparazziSdk.prepare() calls
     // setDefaultDensity on every test and the value leaks into whatever runs next.
     fun bitmapIn(sandbox: Sandbox) = sandbox.loadClass("android.graphics.Bitmap")
@@ -145,21 +148,22 @@ class LayoutlibSandboxTest {
 
   @Test
   fun `two sandboxes each initialise their own bridge`() {
-    val first = newSandbox()
-    val second = newSandbox()
+    fun jniLoaded(sandbox: Sandbox) =
+      sandbox.loadClass(BRIDGE)
+        .getDeclaredField("sJniLibLoaded")
+        .apply { isAccessible = true }
+        .getBoolean(null)
 
-    assertThat(initBridge(first)).isTrue()
-    assertThat(initBridge(second)).isTrue()
-
-    // The proof: distinct Class objects means distinct sJniLibLoaded, distinct Choreographer,
-    // distinct Build.VERSION.SDK_INT.
+    // Distinct Class objects mean distinct sJniLibLoaded, distinct Choreographer, distinct
+    // Build.VERSION.SDK_INT - and both report their own natives loaded, not one shared set.
     assertThat(first.loadClass(BRIDGE)).isNotSameInstanceAs(second.loadClass(BRIDGE))
+    assertThat(jniLoaded(first)).isTrue()
+    assertThat(jniLoaded(second)).isTrue()
   }
 
   @Test
   fun `sandboxed bridge does not disturb host statics`() {
-    val sandbox = newSandbox()
-    assertThat(initBridge(sandbox)).isTrue()
+    val sandbox = first
 
     val sandboxedBuild = sandbox.loadClass("android.os._Original_Build")
     val hostBuild = Class.forName("android.os._Original_Build", false, javaClass.classLoader)
@@ -173,7 +177,7 @@ class LayoutlibSandboxTest {
       configuration = SandboxConfiguration.default(),
       layoutlibRuntimeRoot = layoutlibRuntimeRoot,
       stagingRoot = stagingRoot
-    ).also { sandboxes += it }
+    )
 
   /** Mirrors `Renderer.prepare`, but against a sandboxed `Bridge` reached reflectively. */
   private fun initBridge(sandbox: Sandbox): Boolean {
@@ -214,14 +218,18 @@ class LayoutlibSandboxTest {
     }
   }
 
-  private fun disposeBridge(sandbox: Sandbox) {
-    val bridgeClass = sandbox.classLoader.loadClass(BRIDGE)
-    val bridge = bridgeClass.getDeclaredConstructor().newInstance()
-    bridgeClass.getMethod("dispose").invoke(bridge)
-  }
-
   private companion object {
     const val BRIDGE = "com.android.layoutlib.bridge.Bridge"
+
+    /** Shared for the lifetime of the class; see the note on [first]. */
+    private var shared: Pair<Sandbox, Sandbox>? = null
+
+    @JvmStatic
+    @AfterClass
+    fun releaseSharedSandboxes() {
+      shared?.toList()?.forEach { it.close() }
+      shared = null
+    }
 
     private val osName = System.getProperty("os.name").lowercase(Locale.US)
     val isMac = osName.startsWith("mac")

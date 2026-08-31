@@ -33,7 +33,9 @@ import java.nio.file.Path
  * release them, but it only runs once the loader is collected — a cycle the JVM cannot break.
  * Measured on layoutlib 16.2.x: a bridge-initialised sandbox survives fifteen rounds of full GC
  * with allocation pressure, with or without `Bridge.dispose()`, and costs roughly 40 MB of resident
- * memory that is never returned.
+ * memory that is never returned. On top of that, `Bridge.init` memory-maps the system fonts into
+ * direct byte buffers - a further ~65 MB per sandbox, also never released, which will exhaust the
+ * default `MaxDirectMemorySize` well before metaspace becomes a problem.
  *
  * That makes an LRU cache actively harmful. Evicting a sandbox frees nothing, but it throws away
  * the ability to reuse it, so the next request allocates *another* 40 MB. Reuse is therefore
