@@ -38,6 +38,16 @@ internal val ARTIFACT_TYPE: Attribute<String> = Attribute.of(ARTIFACT_TYPE_ATTRI
 /** AGP's artifact type for the `classes.jar` inside an AAR. */
 internal const val ANDROID_CLASSES_JAR: String = "android-classes-jar"
 
+/** AGP's artifact type for android.jar with real values baked in, rather than stubs. */
+internal const val ANDROID_MOCKABLE_JAR: String = "android-mockable-jar"
+
+/**
+ * AGP registers its mockable-jar transform once per `returnDefaultValues` setting, so this must be
+ * requested alongside [ANDROID_MOCKABLE_JAR] to select one of them unambiguously.
+ */
+internal val MOCKABLE_JAR_RETURN_DEFAULT_VALUES: Attribute<Boolean> =
+  Attribute.of("returnDefaultValues", Boolean::class.javaObjectType)
+
 /** Classes that have been through Paparazzi's own instrumentation. */
 internal const val PAPARAZZI_INSTRUMENTED_CLASSES: String = "paparazzi-instrumented-classes"
 

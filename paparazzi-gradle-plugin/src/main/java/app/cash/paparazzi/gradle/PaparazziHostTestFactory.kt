@@ -7,8 +7,10 @@ import com.android.build.api.variant.Variant
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.Directory
+import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.SourceSet
+import org.gradle.api.tasks.compile.JavaCompile
 import org.jetbrains.kotlin.gradle.plugin.KotlinBaseApiPlugin
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
@@ -78,9 +80,11 @@ internal class PaparazziHostTestFactory(
     val componentSlug = componentName.capitalize()
 
     val sourceDir = project.layout.projectDirectory.dir("src/$sourceSetName")
+    // Java sources are handed to the Kotlin compiler too so it can resolve references into them.
     val kotlinSources = project.fileTree(sourceDir) { tree ->
       tree.include("**/*.kt", "**/*.java")
     }
+    val javaSources = project.fileTree(sourceDir) { tree -> tree.include("**/*.java") }
 
     // The variant's own compiled classes, so tests can see the code they are snapshotting.
     val variantClasses = project.tasks
@@ -118,7 +122,12 @@ internal class PaparazziHostTestFactory(
     // producing task wired as a dependency, so the jar is generated before anything consumes it.
     val stubRClassFiles = project.files(stubRClassJar)
 
-    val bootClasspath = extension.sdkComponents.bootClasspath
+    // The raw android.jar is a stub: `Build.VERSION.SDK_INT` reads 0, which makes androidx pick
+    // pre-API-29 code paths and breaks things like font loading. AGP solves this by running the
+    // jar through its mockable-jar transform, which bakes in the real values; reuse that transform
+    // rather than putting the stub jar on the classpath.
+    val bootClasspath = mockableAndroidJar()
+
     val compileClasspath = project.files(
       variantClassFiles,
       compileClasspathConfiguration.asClassesClasspath(),
@@ -128,6 +137,8 @@ internal class PaparazziHostTestFactory(
 
     val classesDir: Provider<Directory> =
       project.layout.buildDirectory.dir("intermediates/paparazzi/$componentName/classes")
+    val javaClassesDir: Provider<Directory> =
+      project.layout.buildDirectory.dir("intermediates/paparazzi/$componentName/javaClasses")
 
     val compileTask = registerKotlinCompile(
       taskName = "compile${componentSlug}Kotlin",
@@ -145,8 +156,25 @@ internal class PaparazziHostTestFactory(
       stubRClassFiles
     )
 
+    // Java is compiled after Kotlin, against Kotlin's output, matching how AGP orders the two.
+    val javaCompileTask = project.tasks.register(
+      "compile${componentSlug}Java",
+      JavaCompile::class.java
+    ) { task ->
+      task.source(javaSources)
+      task.classpath = project.files(compileClasspath, classesDir)
+      task.destinationDirectory.set(javaClassesDir)
+      task.dependsOn(compileTask)
+      val javaExtension = project.extensions.findByType(JavaPluginExtension::class.java)
+      if (javaExtension != null) {
+        task.sourceCompatibility = javaExtension.sourceCompatibility.toString()
+        task.targetCompatibility = javaExtension.targetCompatibility.toString()
+      }
+    }
+
     val runtimeClasspath = project.files(
       classesDir,
+      javaClassesDir,
       variantClassFiles,
       dependencyClasses,
       bootClasspath
@@ -155,9 +183,9 @@ internal class PaparazziHostTestFactory(
     return PaparazziHostTest(
       name = componentName,
       snapshotDir = project.provider { sourceDir.dir("snapshots") },
-      testClassesDirs = project.files(classesDir),
+      testClassesDirs = project.files(classesDir, javaClassesDir),
       runtimeClasspath = runtimeClasspath,
-      compileTasks = listOf(compileTask, variantClasses)
+      compileTasks = listOf(compileTask, javaCompileTask, variantClasses)
     )
   }
 
@@ -215,8 +243,31 @@ internal class PaparazziHostTestFactory(
     return compileTask
   }
 
+  /**
+   * Resolves the android.jar through AGP's globally-registered mockable-jar transform.
+   */
+  private fun mockableAndroidJar(): org.gradle.api.file.FileCollection {
+    val configuration = project.configurations.maybeCreate(MOCKABLE_ANDROID_JAR_CONFIGURATION)
+    configuration.isCanBeConsumed = false
+    configuration.isCanBeResolved = true
+    if (configuration.dependencies.isEmpty()) {
+      project.dependencies.add(
+        configuration.name,
+        project.files(extension.sdkComponents.bootClasspath)
+      )
+    }
+    val returnDefaultValues = project.extensions
+      .findByType(com.android.build.api.dsl.CommonExtension::class.java)
+      ?.testOptions?.unitTests?.isReturnDefaultValues == true
+    return configuration.incoming.artifactView { view ->
+      view.attributes.attribute(ARTIFACT_TYPE, ANDROID_MOCKABLE_JAR)
+      view.attributes.attribute(MOCKABLE_JAR_RETURN_DEFAULT_VALUES, returnDefaultValues)
+    }.files
+  }
+
   internal companion object {
     const val SCREENSHOT_TEST_SOURCE_SET: String = "screenshotTest"
+    private const val MOCKABLE_ANDROID_JAR_CONFIGURATION = "paparazziMockableAndroidJar"
 
     /** Guard against Paparazzi being declared on a source set it cannot run on. */
     val TEST_SOURCE_SET_NAME: String = SourceSet.TEST_SOURCE_SET_NAME

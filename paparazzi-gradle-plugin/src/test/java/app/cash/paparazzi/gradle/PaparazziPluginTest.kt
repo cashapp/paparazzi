@@ -447,6 +447,41 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun screenshotTestSourceSetSupportsFontsAndJavaSources() {
+    // Fonts exercise two things AGP would normally provide: the ResourcesCompat ASM fix, and a
+    // mockable android.jar (a stub jar reports SDK_INT 0, which sends androidx down pre-API-29
+    // code paths). The Java source proves the source set is not Kotlin-only.
+    val fixtureRoot = File("src/test/projects/screenshot-test-fonts")
+    File(fixtureRoot, "src/screenshotTest/snapshots").registerForDeletionOnExit()
+
+    val result = gradleRunner
+      .withArguments("recordPaparazziDebugScreenshotTest", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":compileDebugScreenshotTestJava")).isNotNull()
+
+    val snapshots = File(fixtureRoot, "src/screenshotTest/snapshots/images").listFiles()
+    assertThat(snapshots).isNotEmpty()
+  }
+
+  @Test
+  fun screenshotTestSourceSetSupportsProductFlavors() {
+    val fixtureRoot = File("src/test/projects/screenshot-test-flavors")
+    File(fixtureRoot, "src/screenshotTest/snapshots").registerForDeletionOnExit()
+
+    val result = gradleRunner
+      .withArguments("recordPaparazziFreeDebugScreenshotTest", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":testFreeDebugScreenshotTest")).isNotNull()
+    // Each variant gets its own component, and must not collide with the others.
+    assertThat(result.task(":testPaidDebugScreenshotTest")).isNull()
+
+    val snapshots = File(fixtureRoot, "src/screenshotTest/snapshots/images").listFiles()
+    assertThat(snapshots).isNotEmpty()
+  }
+
+  @Test
   fun screenshotTestSourceSetDoesNotRequireAgpScreenshotTests() {
     // The source set is compiled by Paparazzi, not by AGP's experimental screenshot-test support,
     // so it must work with that feature switched off.
