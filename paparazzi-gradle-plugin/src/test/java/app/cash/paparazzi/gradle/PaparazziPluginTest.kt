@@ -418,6 +418,53 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun screenshotTestSourceSetIsIsolatedFromUnitTests() {
+    val fixtureRoot = File("src/test/projects/screenshot-test-source-set")
+
+    val result = gradleRunner
+      .withArguments("recordPaparazziDebugScreenshotTest", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    // Runs in its own Test task rather than piggybacking on the unit-test task.
+    assertThat(result.task(":testDebugScreenshotTest")).isNotNull()
+    assertThat(result.task(":testDebugUnitTest")).isNull()
+
+    // Goldens live alongside the source set that produced them, not in src/test.
+    val snapshotsDir = File(fixtureRoot, "src/screenshotTest/snapshots").registerForDeletionOnExit()
+    val snapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_ScreenshotSourceSetTest_record.png")
+    assertThat(snapshot.exists()).isTrue()
+
+    // Standard Gradle JUnit XML reporting is wired up for the new task.
+    val testResults = File(fixtureRoot, "build/test-results/testDebugScreenshotTest")
+      .registerForDeletionOnExit()
+    val junitXml = File(testResults, "TEST-app.cash.paparazzi.plugin.test.ScreenshotSourceSetTest.xml")
+    assertThat(junitXml.exists()).isTrue()
+
+    // ...as is the Paparazzi HTML report, under its own component-scoped directory.
+    val report = File(fixtureRoot, "build/reports/paparazzi/debugScreenshotTest/index.html")
+      .registerForDeletionOnExit()
+    assertThat(report.exists()).isTrue()
+  }
+
+  @Test
+  fun screenshotTestSourceSetDoesNotRequireAgpScreenshotTests() {
+    // The source set is compiled by Paparazzi, not by AGP's experimental screenshot-test support,
+    // so it must work with that feature switched off.
+    val fixtureRoot = File("src/test/projects/screenshot-test-source-set")
+    File(fixtureRoot, "src/screenshotTest/snapshots").registerForDeletionOnExit()
+
+    val result = gradleRunner
+      .withArguments(
+        "recordPaparazziDebugScreenshotTest",
+        "-Pandroid.experimental.enableScreenshotTest=false",
+        "--stacktrace"
+      )
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":testDebugScreenshotTest")).isNotNull()
+  }
+
+  @Test
   fun recordAllVariants() {
     val fixtureRoot = File("src/test/projects/record-mode")
     File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()

@@ -125,6 +125,13 @@ public class PaparazziPlugin @Inject constructor(
       it.description = "Delete all golden images"
     }
 
+    val screenshotSourceSetEnabled = isScreenshotSourceSetEnabled()
+    val hostTestFactory = PaparazziHostTestFactory(
+      project = project,
+      extension = extension,
+      sourceSetName = PaparazziHostTestFactory.SCREENSHOT_TEST_SOURCE_SET
+    )
+
     extension.onVariants { variant ->
       val variantSlug = variant.name.capitalize()
       val testVariant = (variant as? HasUnitTest)?.unitTest ?: return@onVariants
@@ -186,10 +193,44 @@ public class PaparazziPlugin @Inject constructor(
         task.paparazziResources.set(buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.json"))
       }
 
-      val testVariantSlug = testVariant.name.capitalize()
+      /**
+       * Wires Paparazzi into a single host-test component of [variant].
+       *
+       * [taskSuffix] is empty for the unit-test component, preserving the historical
+       * `recordPaparazziDebug` / `verifyPaparazziDebug` task names, and is `ScreenshotTest` for the
+       * isolated `src/screenshotTest` component, yielding `recordPaparazziDebugScreenshotTest` etc.
+       */
+      fun configureHostTest(
+        componentName: String,
+        snapshotOutputDir: Provider<Directory>,
+        taskSuffix: String,
+        testTaskName: String,
+        instrument: () -> Unit
+      ) {
+        val slug = "$variantSlug$taskSuffix"
+        // Keyed on the variant name (plus the source-set suffix) rather than the component name, so
+        // the unit-test component keeps its historical `paparazzi/debug` output locations.
+        val outputName = "${variant.name}$taskSuffix"
+        val reportOutputDir = project.extensions.getByType(ReportingExtension::class.java)
+          .baseDirectory.dir("paparazzi/$outputName")
+        val failureDir = buildDirectory.dir("paparazzi/failures/$outputName")
 
-      val testTasks = project.tasks.named { it == "test$testVariantSlug" }
-      testTasks.configureEach { it.dependsOn(writeResourcesTask) }
+        val deleteVariantSnapshot =
+          project.tasks.register("delete${slug}PaparazziSnapshots", Delete::class.java) {
+            it.group = VERIFICATION_GROUP
+            it.description = "Delete all golden images for variant '$slug'"
+            val files = project.fileTree(snapshotOutputDir) { tree ->
+              tree.include("**/*.png")
+              tree.include("**/*.mov")
+            }
+            it.delete(files)
+          }
+        deleteSnapshots.configure { it.dependsOn(deleteVariantSnapshot) }
+
+        instrument()
+
+        val testTasks = project.tasks.named { it == testTaskName }
+        testTasks.configureEach { it.dependsOn(writeResourcesTask) }
 
       val recordTaskProvider = project.tasks.register("recordPaparazzi$variantSlug", PaparazziTask::class.java) {
         it.group = VERIFICATION_GROUP
@@ -316,10 +357,65 @@ public class PaparazziPlugin @Inject constructor(
         }
       }
 
-      recordTaskProvider.configure { it.dependsOn(testTaskProvider) }
-      verifyTaskProvider.configure { it.dependsOn(testTaskProvider) }
+        recordTaskProvider.configure { it.dependsOn(testTaskProvider) }
+        verifyTaskProvider.configure { it.dependsOn(testTaskProvider) }
+      }
+
+      val unitTest = (variant as? HasUnitTest)?.unitTest
+      if (unitTest != null) {
+        configureHostTest(
+          componentName = unitTest.name,
+          snapshotOutputDir = snapshotDir(unitTest),
+          taskSuffix = "",
+          testTaskName = "test${unitTest.name.capitalize()}",
+          instrument = {
+            // AGP < 9 does not fully initialize ASM instrumentation for Android KMP variants,
+            // causing `lateinit property visitorFactory has not been initialized` during
+            // configuration. This transform is a best-effort fix for ResourcesCompat font loading,
+            // so skip it for KMP projects until AGP 9+.
+            val instrumentation = unitTest.instrumentation
+            instrumentation.transformClassesWith(
+              ResourcesCompatVisitorFactory::class.java,
+              InstrumentationScope.ALL
+            ) { }
+            instrumentation.setAsmFramesComputationMode(
+              FramesComputationMode.COMPUTE_FRAMES_FOR_INSTRUMENTED_METHODS
+            )
+          }
+        )
+      }
+
+      if (screenshotSourceSetEnabled) {
+        val hostTest = hostTestFactory.create(variant)
+        val testTask = registerHostTestTask(hostTest)
+        configureHostTest(
+          componentName = hostTest.name,
+          snapshotOutputDir = hostTest.snapshotDir,
+          taskSuffix = "ScreenshotTest",
+          testTaskName = testTask.name,
+          // Paparazzi owns this compilation, so there is no AGP component to instrument. The
+          // ResourcesCompat font fix is applied to the runtime classpath instead.
+          instrument = {}
+        )
+      }
     }
   }
+
+  /**
+   * Registers the JVM [Test] task that runs a [PaparazziHostTest].
+   *
+   * Wired to the source set's own compiled classes so test discovery cannot pick up anything from
+   * `src/test`, while still producing the standard Gradle JUnit XML and HTML reports.
+   */
+  private fun Project.registerHostTestTask(hostTest: PaparazziHostTest): TaskProvider<Test> =
+    tasks.register("test${hostTest.name.capitalize()}", Test::class.java) { test ->
+      test.group = VERIFICATION_GROUP
+      test.description = "Run Paparazzi tests for '${hostTest.name}'"
+      test.dependsOn(hostTest.compileTasks)
+      test.testClassesDirs = hostTest.testClassesDirs
+      test.classpath = hostTest.runtimeClasspath
+      test.useJUnit()
+    }
 
   private fun createDiffRegistryFactory(
     failureDirProperty: Provider<Directory>,
@@ -445,6 +541,16 @@ public class PaparazziPlugin @Inject constructor(
         val configurationName = android.sourceSets.getByName(TEST_SOURCE_SET_NAME).implementationConfigurationName
         allowedConfigs += configurationName
         configurations.getByName(configurationName).dependencies.add(dependency)
+
+        if (isScreenshotSourceSetEnabled()) {
+          // AGP registers the `screenshotTest` source set lazily, so resolve its configuration by
+          // name rather than reaching through `android.sourceSets` at apply time.
+          val screenshotConfigurationName =
+            "${PaparazziHostTestFactory.SCREENSHOT_TEST_SOURCE_SET}Implementation"
+          allowedConfigs += screenshotConfigurationName
+          configurations.matching { it.name == screenshotConfigurationName }
+            .configureEach { it.dependencies.add(dependency) }
+        }
       }
     }
 
@@ -479,6 +585,15 @@ public class PaparazziPlugin @Inject constructor(
       projectDirectory.dir(sourceSetRoot.path).dir("snapshots")
     }
   }
+
+  /**
+   * Opts in to running Paparazzi tests from an isolated `src/screenshotTest` source set.
+   *
+   * Paparazzi compiles and runs this source set itself, so it works independently of AGP's
+   * experimental screenshot-test support.
+   */
+  private fun Project.isScreenshotSourceSetEnabled(): Boolean =
+    providers.gradleProperty(ENABLE_SCREENSHOT_SOURCE_SET_PROPERTY).orNull?.toBoolean() == true
 
   private fun Project.isInternal(): Boolean = providers.gradleProperty("app.cash.paparazzi.internal").orNull == "true"
 
@@ -528,5 +643,6 @@ internal class PaparazziSystemPropertiesArgumentProvider(
 }
 
 private const val DEFAULT_COMPILE_SDK_VERSION = 36
+private const val ENABLE_SCREENSHOT_SOURCE_SET_PROPERTY = "app.cash.paparazzi.enableScreenshotTestSourceSet"
 private const val ANDROID_KOTLIN_MULTIPLATFORM_LIBRARY_PLUGIN = "com.android.kotlin.multiplatform.library"
 private const val KOTLIN_MULTIPLATFORM_PLUGIN = "org.jetbrains.kotlin.multiplatform"
