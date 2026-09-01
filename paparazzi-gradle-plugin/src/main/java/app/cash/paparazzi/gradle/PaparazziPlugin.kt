@@ -598,7 +598,7 @@ public class PaparazziPlugin @Inject constructor(
   }
 }
 
-private const val DEFAULT_COMPILE_SDK_VERSION = 36
+private const val DEFAULT_COMPILE_SDK_VERSION = 37
 private const val ANDROID_KOTLIN_MULTIPLATFORM_LIBRARY_PLUGIN = "com.android.kotlin.multiplatform.library"
 private const val KOTLIN_MULTIPLATFORM_PLUGIN = "org.jetbrains.kotlin.multiplatform"
 private val MIN_NATIVE_REPORT_GRADLE_VERSION = GradleVersion.version("9.4")
