@@ -43,6 +43,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE
+import org.gradle.api.attributes.Attribute
 import org.gradle.api.file.Directory
 import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.artifacts.transform.UnzipTransform
@@ -411,15 +412,35 @@ public class PaparazziPlugin @Inject constructor(
       test.description = "Run Paparazzi tests for '${component.name}'"
       test.dependsOn(projectClasses, runtimeClasses)
       test.testClassesDirs = files(projectClasses.flatMap { it.dirs })
-      // AGP only puts the Android stubs on the unit-test runtime classpath, so add them here too;
-      // without them layoutlib-adjacent code fails with NoClassDefFoundError on android.* classes.
+      // AGP only puts android.jar on the unit-test runtime classpath, so add it here too, or
+      // layoutlib-adjacent code fails with NoClassDefFoundError on android.* classes. It must be
+      // the mockable jar rather than the raw SDK stub: the stub reports `Build.VERSION.SDK_INT` as
+      // 0, which sends androidx down pre-API-29 code paths and breaks e.g. font loading.
       test.classpath = files(
         runtimeClasses.flatMap { it.jars },
         runtimeClasses.flatMap { it.dirs },
-        extension.sdkComponents.bootClasspath
+        mockableAndroidJar(extension)
       )
       test.useJUnit()
     }
+  }
+
+  /** Resolves android.jar through AGP's globally-registered mockable-jar transform. */
+  private fun Project.mockableAndroidJar(extension: AndroidComponentsExtension<*, *, *>): FileCollection {
+    val configuration = configurations.maybeCreate("paparazziMockableAndroidJar")
+    configuration.isCanBeConsumed = false
+    configuration.isCanBeResolved = true
+    if (configuration.dependencies.isEmpty()) {
+      dependencies.add(configuration.name, files(extension.sdkComponents.bootClasspath))
+    }
+    val returnDefaultValues = extensions
+      .findByType(CommonExtension::class.java)
+      ?.testOptions?.unitTests?.isReturnDefaultValues == true
+    return configuration.incoming.artifactView { view ->
+      view.attributes.attribute(ARTIFACT_TYPE_ATTRIBUTE, ANDROID_MOCKABLE_JAR)
+      // AGP registers the transform once per `returnDefaultValues` value, so this disambiguates.
+      view.attributes.attribute(MOCKABLE_JAR_RETURN_DEFAULT_VALUES, returnDefaultValues)
+    }.files
   }
 
   private fun createDiffRegistryFactory(
@@ -649,6 +670,10 @@ internal class PaparazziSystemPropertiesArgumentProvider(
       .sortedBy { it.key }
       .map { (key, value) -> "-D$key=$value" }
 }
+
+private const val ANDROID_MOCKABLE_JAR = "android-mockable-jar"
+private val MOCKABLE_JAR_RETURN_DEFAULT_VALUES: Attribute<Boolean> =
+  Attribute.of("returnDefaultValues", Boolean::class.javaObjectType)
 
 private const val DEFAULT_COMPILE_SDK_VERSION = 36
 private const val SCREENSHOT_TEST_SOURCE_SET_NAME = "screenshotTest"

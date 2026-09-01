@@ -447,6 +447,21 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun screenshotTestSourceSetSupportsFonts() {
+    // A raw android.jar reports SDK_INT 0, which sends androidx down pre-API-29 code paths and
+    // breaks font loading; this asserts the mockable jar is used instead.
+    val fixtureRoot = File("src/test/projects/screenshot-test-fonts")
+    File(fixtureRoot, "src/screenshotTest/snapshots").registerForDeletionOnExit()
+
+    gradleRunner
+      .withArguments("recordPaparazziDebugScreenshotTest", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshots = File(fixtureRoot, "src/screenshotTest/snapshots/images").listFiles()
+    assertThat(snapshots).isNotEmpty()
+  }
+
+  @Test
   fun screenshotTestSourceSetRequiresAgpFlag() {
     val fixtureRoot = File("src/test/projects/screenshot-test-source-set")
 
