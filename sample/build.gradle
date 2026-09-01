@@ -20,11 +20,6 @@ android {
     viewBinding = true
     resValues = true
   }
-  sourceSets {
-    test {
-      kotlin.srcDir('src/screenshotTest/kotlin')
-    }
-  }
 }
 
 // Disable unnecessary release build type
@@ -56,45 +51,4 @@ tasks.withType(com.diffplug.gradle.spotless.SpotlessTask).configureEach {
 // Verify screenshots as part of the standard check process
 tasks.named("check").configure {
   dependsOn("verifyPaparazzi")
-}
-
-// Prototype B: a standalone Test task for the screenshotTest source set only.
-import org.gradle.api.attributes.Attribute
-
-def artifactType = Attribute.of("artifactType", String)
-def layoutlibRuntimeDirs = configurations.layoutlibRuntime.incoming.artifactView {
-  it.attributes.attribute(artifactType, "directory")
-}.files
-def layoutlibResourceDirs = configurations.layoutlibResources.incoming.artifactView {
-  it.attributes.attribute(artifactType, "directory")
-}.files
-
-def snapshotDir = layout.projectDirectory.dir("src/screenshotTest/snapshots")
-def failureDir = layout.buildDirectory.dir("paparazzi/failures/screenshotTest")
-def reportDir = layout.buildDirectory.dir("reports/paparazzi/screenshotTest")
-def resourcesJson = layout.buildDirectory.file("intermediates/paparazzi/debug/resources.json")
-
-tasks.register("screenshotTest", Test) {
-  def unitTest = tasks.named("testDebugUnitTest", Test).get()
-  dependsOn(unitTest.dependsOn)
-  dependsOn("preparePaparazziDebugResources")
-  testClassesDirs = unitTest.testClassesDirs
-  classpath = unitTest.classpath
-  filter { includeTestsMatching("*SeparateSourceSetTest*") }
-  useJUnit()
-
-  doFirst {
-    systemProperties["paparazzi.test.resources"] = resourcesJson.get().asFile.path
-    systemProperties["paparazzi.project.dir"] = layout.projectDirectory.toString()
-    systemProperties["paparazzi.build.dir"] = layout.buildDirectory.get().toString()
-    systemProperties["paparazzi.report.dir"] = reportDir.get().toString()
-    systemProperties["paparazzi.artifacts.cache.dir"] = gradle.gradleUserHomeDir.path
-    systemProperties["paparazzi.layoutlib.runtime.root"] = layoutlibRuntimeDirs.singleFile.absolutePath
-    systemProperties["paparazzi.layoutlib.resources.root"] = layoutlibResourceDirs.singleFile.absolutePath
-    systemProperties["paparazzi.test.record"] = project.hasProperty("record")
-    systemProperties["paparazzi.test.record.overwriteOnMaxPercentDifference"] = false
-    systemProperties["paparazzi.test.verify"] = !project.hasProperty("record")
-    systemProperties["paparazzi.snapshot.dir"] = snapshotDir.asFile.absolutePath
-    systemProperties["paparazzi.failures.dir"] = failureDir.get().asFile.absolutePath
-  }
 }
