@@ -33,6 +33,7 @@ dependencies {
   compileOnly gradleApi()
   compileOnly libs.plugin.kotlin
   compileOnly libs.plugin.android
+  compileOnly libs.plugin.ksp
 
   implementation platform(libs.kotlin.bom)
   implementation(libs.tools.sdkCommon) {
@@ -48,6 +49,7 @@ dependencies {
   fixtureClasspath libs.plugin.kotlin
   fixtureClasspath libs.plugin.kotlin.compose
   fixtureClasspath libs.plugin.android
+  fixtureClasspath libs.plugin.ksp
 }
 
 buildConfig {
@@ -58,6 +60,7 @@ buildConfig {
 
   packageName('app.cash.paparazzi.gradle')
   buildConfigField("String", "VERSION", "\"${project.version}\"")
+  buildConfigField("String", "KSP_VERSION", "\"${libs.versions.ksp.get()}\"")
   buildConfigField("String", "NATIVE_LIB_VERSION", "\"${libs.versions.layoutlib.get()}\"")
 }
 

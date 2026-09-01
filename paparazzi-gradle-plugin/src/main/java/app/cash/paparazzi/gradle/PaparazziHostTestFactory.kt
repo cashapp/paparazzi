@@ -32,7 +32,7 @@ internal class PaparazziHostTestFactory(
    * These are declarable-only, mirroring how AGP and the Java plugin expose source-set
    * dependencies, and are created once for the project rather than per variant.
    */
-  private val declaredConfigurations: List<Configuration> by lazy {
+  private val declaredConfigurations: List<Configuration> =
     listOf("Implementation", "CompileOnly", "RuntimeOnly").map { suffix ->
       project.configurations.maybeCreate("$sourceSetName$suffix").apply {
         isCanBeConsumed = false
@@ -40,6 +40,12 @@ internal class PaparazziHostTestFactory(
         description = "$suffix dependencies for the '$sourceSetName' Paparazzi source set."
       }
     }
+
+  init {
+    // Created eagerly: build scripts declare dependencies against these during evaluation, which
+    // happens before any variant callback runs.
+    project.kaptConfiguration(sourceSetName)
+    project.kspConfiguration(sourceSetName)
   }
 
   private val implementationConfiguration: Configuration
@@ -156,12 +162,54 @@ internal class PaparazziHostTestFactory(
       stubRClassFiles
     )
 
+    val jvmTarget = project.provider {
+      compileTask.get().compilerOptions.jvmTarget.orNull?.target
+    }
+    val ksp = project.registerKspIfNeeded(
+      componentName = componentName,
+      sourceSetName = sourceSetName,
+      kspVersion = KSP_VERSION,
+      sources = kotlinSources,
+      javaSources = javaSources,
+      compileClasspath = compileClasspath,
+      jvmTarget = jvmTarget,
+      // KSP requires an explicit value; fall back to the Kotlin plugin's own major.minor.
+      languageVersion = project.provider {
+        compileTask.get().compilerOptions.languageVersion.orNull?.version
+          ?: kotlinApiPlugin.pluginVersion.split('.').take(2).joinToString(".")
+      }
+    )
+    if (ksp != null) {
+      compileTask.configure { task ->
+        task.source(ksp.generatedKotlinSources, ksp.generatedJavaSources)
+        task.dependsOn(ksp.task)
+      }
+    }
+
+    val kapt = project.registerKaptIfNeeded(
+      kotlinApiPlugin = kotlinApiPlugin,
+      componentName = componentName,
+      sourceSetName = sourceSetName,
+      kotlinCompileTask = compileTask,
+      sources = kotlinSources,
+      compileClasspath = compileClasspath
+    )
+    if (kapt != null) {
+      // Generated sources feed back into the Kotlin compilation that triggered processing.
+      compileTask.configure { task ->
+        task.source(kapt.generatedKotlinSources, kapt.generatedJavaSources)
+        task.dependsOn(kapt.tasks)
+      }
+    }
+
     // Java is compiled after Kotlin, against Kotlin's output, matching how AGP orders the two.
     val javaCompileTask = project.tasks.register(
       "compile${componentSlug}Java",
       JavaCompile::class.java
     ) { task ->
       task.source(javaSources)
+      if (kapt != null) task.source(kapt.generatedJavaSources)
+      if (ksp != null) task.source(ksp.generatedJavaSources)
       task.classpath = project.files(compileClasspath, classesDir)
       task.destinationDirectory.set(javaClassesDir)
       task.dependsOn(compileTask)
@@ -185,7 +233,8 @@ internal class PaparazziHostTestFactory(
       snapshotDir = project.provider { sourceDir.dir("snapshots") },
       testClassesDirs = project.files(classesDir, javaClassesDir),
       runtimeClasspath = runtimeClasspath,
-      compileTasks = listOf(compileTask, javaCompileTask, variantClasses)
+      compileTasks = listOf(compileTask, javaCompileTask, variantClasses) +
+        (kapt?.tasks ?: emptyList()) + listOfNotNull(ksp?.task)
     )
   }
 
@@ -197,6 +246,10 @@ internal class PaparazziHostTestFactory(
    * and options are inherited from the variant's main compile task so that things like the Compose
    * compiler apply here too.
    */
+  private val kotlinApiPlugin: KotlinBaseApiPlugin by lazy {
+    project.plugins.apply(KotlinBaseApiPlugin::class.java)
+  }
+
   private fun registerKotlinCompile(
     taskName: String,
     moduleName: String,
@@ -205,8 +258,6 @@ internal class PaparazziHostTestFactory(
     classpath: org.gradle.api.file.FileCollection,
     destination: Provider<Directory>
   ): KotlinCompileProvider {
-    val kotlinApiPlugin = project.plugins.apply(KotlinBaseApiPlugin::class.java)
-
     // Resolved lazily: the variant's Kotlin task may not be registered yet when this runs, and it
     // does not exist at all for Java-only projects.
     val mainCompileTasks = project.tasks

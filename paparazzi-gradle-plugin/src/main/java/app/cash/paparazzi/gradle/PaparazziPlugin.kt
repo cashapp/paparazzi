@@ -126,11 +126,15 @@ public class PaparazziPlugin @Inject constructor(
     }
 
     val screenshotSourceSetEnabled = isScreenshotSourceSetEnabled()
-    val hostTestFactory = PaparazziHostTestFactory(
-      project = project,
-      extension = extension,
-      sourceSetName = PaparazziHostTestFactory.SCREENSHOT_TEST_SOURCE_SET
-    )
+    val hostTestFactory = if (screenshotSourceSetEnabled) {
+      PaparazziHostTestFactory(
+        project = project,
+        extension = extension,
+        sourceSetName = PaparazziHostTestFactory.SCREENSHOT_TEST_SOURCE_SET
+      )
+    } else {
+      null
+    }
 
     extension.onVariants { variant ->
       val variantSlug = variant.name.capitalize()
@@ -385,7 +389,7 @@ public class PaparazziPlugin @Inject constructor(
         )
       }
 
-      if (screenshotSourceSetEnabled) {
+      if (hostTestFactory != null) {
         val hostTest = hostTestFactory.create(variant)
         val testTask = registerHostTestTask(hostTest)
         configureHostTest(

@@ -482,6 +482,57 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun screenshotTestSourceSetSupportsKapt() {
+    val fixtureRoot = File("src/test/projects/screenshot-test-kapt")
+
+    val result = gradleRunner
+      .withArguments("library:testDebugScreenshotTest", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":library:kaptDebugScreenshotTestKotlin")).isNotNull()
+
+    // The test asserts against a class the processor generated, so a green run proves generated
+    // sources were compiled into the source set and were present at runtime.
+    val results = File(fixtureRoot, "library/build/test-results/testDebugScreenshotTest")
+      .registerForDeletionOnExit()
+    val xml = File(results, "TEST-app.cash.paparazzi.plugin.test.KaptTest.xml")
+    assertThat(xml.exists()).isTrue()
+    assertThat(xml.readText()).contains("tests=\"1\"")
+  }
+
+  @Test
+  fun screenshotTestSourceSetSupportsKsp() {
+    val fixtureRoot = File("src/test/projects/screenshot-test-ksp")
+
+    val result = gradleRunner
+      .withArguments("library:testDebugScreenshotTest", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":library:kspDebugScreenshotTestKotlin")).isNotNull()
+
+    val results = File(fixtureRoot, "library/build/test-results/testDebugScreenshotTest")
+      .registerForDeletionOnExit()
+    val xml = File(results, "TEST-app.cash.paparazzi.plugin.test.KspTest.xml")
+    assertThat(xml.exists()).isTrue()
+    assertThat(xml.readText()).contains("tests=\"1\"")
+  }
+
+  @Test
+  fun screenshotTestSourceSetSupportsDataBinding() {
+    val fixtureRoot = File("src/test/projects/screenshot-test-databinding")
+    File(fixtureRoot, "src/screenshotTest/snapshots").registerForDeletionOnExit()
+
+    val result = gradleRunner
+      .withArguments("recordPaparazziDebugScreenshotTest", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":testDebugScreenshotTest")).isNotNull()
+
+    val snapshots = File(fixtureRoot, "src/screenshotTest/snapshots/images").listFiles()
+    assertThat(snapshots).isNotEmpty()
+  }
+
+  @Test
   fun screenshotTestSourceSetDoesNotRequireAgpScreenshotTests() {
     // The source set is compiled by Paparazzi, not by AGP's experimental screenshot-test support,
     // so it must work with that feature switched off.
