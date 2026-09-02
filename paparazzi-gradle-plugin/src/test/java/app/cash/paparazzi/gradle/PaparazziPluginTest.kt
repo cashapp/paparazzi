@@ -551,6 +551,38 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun aggregateTasksIncludeScreenshotTestSourceSet() {
+    // The `verifyPaparazzi` / `recordPaparazzi` / `cleanRecordPaparazzi` / `deletePaparazziSnapshots`
+    // anchors must fan out to the screenshotTest component for every variant, not just the
+    // unit-test component.
+    val fixtureRoot = File("src/test/projects/screenshot-test-source-set")
+
+    val result = gradleRunner
+      .withArguments(
+        "verifyPaparazzi",
+        "recordPaparazzi",
+        "cleanRecordPaparazzi",
+        "deletePaparazziSnapshots",
+        "--dry-run",
+        "--stacktrace"
+      )
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.output).contains(":verifyPaparazziDebugScreenshotTest ")
+    assertThat(result.output).contains(":verifyPaparazziReleaseScreenshotTest ")
+    assertThat(result.output).contains(":recordPaparazziDebugScreenshotTest ")
+    assertThat(result.output).contains(":recordPaparazziReleaseScreenshotTest ")
+    assertThat(result.output).contains(":cleanRecordPaparazziDebugScreenshotTest ")
+    assertThat(result.output).contains(":deleteDebugScreenshotTestPaparazziSnapshots ")
+
+    // ...and still cover the unit-test component.
+    assertThat(result.output).contains(":verifyPaparazziDebug ")
+    assertThat(result.output).contains(":recordPaparazziDebug ")
+    assertThat(result.output).contains(":cleanRecordPaparazziDebug ")
+    assertThat(result.output).contains(":deleteDebugPaparazziSnapshots ")
+  }
+
+  @Test
   fun recordAllVariants() {
     val fixtureRoot = File("src/test/projects/record-mode")
     File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()

@@ -1,6 +1,7 @@
 package app.cash.paparazzi.gradle
 
 import app.cash.paparazzi.gradle.utils.capitalize
+import com.google.devtools.ksp.gradle.IsolatedClassLoaderCacheBuildService
 import com.google.devtools.ksp.gradle.KspAATask
 import org.gradle.api.Project
 import org.gradle.api.file.Directory
@@ -50,8 +51,18 @@ internal fun Project.registerKspIfNeeded(
 
   val kspToolClasspath = kspToolConfiguration(kspVersion)
 
+  // KSP 2.3.11+ requires this build service, which its own `registerKspAATask` would normally
+  // supply. Registered under KSP's own key so the classloader cache is shared with any tasks the
+  // KSP plugin registered itself.
+  val isolatedClassLoaderCache = gradle.sharedServices.registerIfAbsent(
+    IsolatedClassLoaderCacheBuildService.KEY,
+    IsolatedClassLoaderCacheBuildService::class.java
+  ) {}
+
   val task = tasks.register("ksp${componentSlug}Kotlin", KspAATask::class.java) { task ->
     task.kspClasspath.from(kspToolClasspath)
+    task.isolatedClassLoaderCacheBuildService.set(isolatedClassLoaderCache)
+    task.usesService(isolatedClassLoaderCache)
     task.kspConfig.let { config ->
       config.processorClasspath.from(processors)
       config.moduleName.set(componentName)

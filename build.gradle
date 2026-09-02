@@ -110,6 +110,8 @@ subprojects {
   spotless {
     kotlin {
       target("src/**/*.kt")
+      // Test fixtures build in-place, and annotation processors emit Kotlin under their build dirs.
+      targetExclude("src/test/projects/**/build/**")
       ktlint(libs.ktlint.core.get().version)
         .setEditorConfigPath(rootProject.file(".editorconfig"))
     }
