@@ -94,7 +94,7 @@ internal class PaparazziHostTestFactory(
 
     // The variant's own compiled classes, so tests can see the code they are snapshotting.
     val variantClasses = project.tasks
-      .register("paparazzi${variantSlug}VariantClasses", ScopedClassesTask::class.java)
+      .register("paparazzi${variantSlug}VariantClasses", ScopedClassesTask::class.java) {}
     // PROJECT scope covers this module's own classes, including generated ones such as the R class
     // that Paparazzi tests resolve resources through.
     variant.artifacts.forScope(com.android.build.api.variant.ScopedArtifacts.Scope.PROJECT)
