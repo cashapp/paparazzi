@@ -576,10 +576,40 @@ class PaparazziPluginTest {
     assertThat(result.output).contains(":deleteDebugScreenshotTestPaparazziSnapshots ")
 
     // ...and still cover the unit-test component.
+    assertThat(result.output).contains(":verifyPaparazziDebugUnitTest ")
+    assertThat(result.output).contains(":recordPaparazziDebugUnitTest ")
+    assertThat(result.output).contains(":cleanRecordPaparazziDebugUnitTest ")
+    assertThat(result.output).contains(":deleteDebugPaparazziSnapshots ")
+
+    // ...via the per-variant anchors.
     assertThat(result.output).contains(":verifyPaparazziDebug ")
     assertThat(result.output).contains(":recordPaparazziDebug ")
     assertThat(result.output).contains(":cleanRecordPaparazziDebug ")
-    assertThat(result.output).contains(":deleteDebugPaparazziSnapshots ")
+  }
+
+  @Test
+  fun variantAnchorTaskFansOutToBothHostTestComponents() {
+    val fixtureRoot = File("src/test/projects/screenshot-test-source-set")
+
+    val result = gradleRunner
+      .withArguments("verifyPaparazziDebug", "--dry-run", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.output).contains(":verifyPaparazziDebugUnitTest ")
+    assertThat(result.output).contains(":verifyPaparazziDebugScreenshotTest ")
+    assertThat(result.output).contains(":verifyPaparazziDebug ")
+  }
+
+  @Test
+  fun variantAnchorTaskOnlyCoversUnitTestWhenSourceSetDisabled() {
+    val fixtureRoot = File("src/test/projects/verify-mode-success")
+
+    val result = gradleRunner
+      .withArguments("verifyPaparazziDebug", "--dry-run", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.output).contains(":verifyPaparazziDebugUnitTest ")
+    assertThat(result.output).doesNotContain(":verifyPaparazziDebugScreenshotTest ")
   }
 
   @Test

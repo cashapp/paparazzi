@@ -169,31 +169,60 @@ public class PaparazziPlugin @Inject constructor(
         task.paparazziResources.set(buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.json"))
       }
 
+      // Per-variant anchor tasks. These aggregate every host-test component Paparazzi wires into
+      // the variant, so `recordPaparazziDebug` keeps working while each component also gets its own
+      // `...UnitTest` / `...ScreenshotTest` task.
+      val recordVariantTask = project.tasks.register("recordPaparazzi$variantSlug", PaparazziTask::class.java) {
+        it.group = VERIFICATION_GROUP
+        it.description = "Record golden images for variant '${variant.name}'"
+        it.mustRunAfter(deleteSnapshots)
+      }
+      recordVariants.configure { it.dependsOn(recordVariantTask) }
+
+      val cleanRecordVariantTask = project.tasks.register("cleanRecordPaparazzi$variantSlug") {
+        it.group = VERIFICATION_GROUP
+        it.description = "Clean and record golden images for variant '${variant.name}'"
+        it.dependsOn(deleteSnapshots, recordVariantTask)
+      }
+      cleanRecordVariants.configure { it.dependsOn(cleanRecordVariantTask) }
+
+      val verifyVariantTask = project.tasks.register("verifyPaparazzi$variantSlug", PaparazziTask::class.java) {
+        it.group = VERIFICATION_GROUP
+        it.description = "Run screenshot tests for variant '${variant.name}'"
+      }
+      verifyVariants.configure { it.dependsOn(verifyVariantTask) }
+
       /**
        * Wires Paparazzi into a single host-test component of [variant].
        *
-       * [taskSuffix] is empty for the unit-test component, preserving the historical
-       * `recordPaparazziDebug` / `verifyPaparazziDebug` task names, and is `ScreenshotTest` for the
-       * isolated `src/screenshotTest` component, yielding `recordPaparazziDebugScreenshotTest` etc.
+       * [taskSuffix] names the component's own tasks: `UnitTest` for the `src/test` component and
+       * `ScreenshotTest` for the isolated `src/screenshotTest` component, yielding
+       * `recordPaparazziDebugUnitTest` / `recordPaparazziDebugScreenshotTest`. Both are aggregated
+       * by the per-variant `recordPaparazziDebug` / `verifyPaparazziDebug` anchors above.
+       *
+       * [outputSuffix] is kept separate and is empty for the unit-test component, preserving its
+       * historical `paparazzi/debug` output and `deleteDebugPaparazziSnapshots` task names.
        */
       fun configureHostTest(
         snapshotOutputDir: Provider<Directory>,
         taskSuffix: String,
+        outputSuffix: String,
         testTaskName: String,
         instrument: () -> Unit
       ) {
         val slug = "$variantSlug$taskSuffix"
         // Keyed on the variant name (plus the source-set suffix) rather than the component name, so
         // the unit-test component keeps its historical `paparazzi/debug` output locations.
-        val outputName = "${variant.name}$taskSuffix"
+        val outputName = "${variant.name}$outputSuffix"
+        val outputSlug = "$variantSlug$outputSuffix"
         val reportOutputDir = project.extensions.getByType(ReportingExtension::class.java)
           .baseDirectory.dir("paparazzi/$outputName")
         val failureDir = buildDirectory.dir("paparazzi/failures/$outputName")
 
         val deleteVariantSnapshot =
-          project.tasks.register("delete${slug}PaparazziSnapshots", Delete::class.java) {
+          project.tasks.register("delete${outputSlug}PaparazziSnapshots", Delete::class.java) {
             it.group = VERIFICATION_GROUP
-            it.description = "Delete all golden images for variant '$slug'"
+            it.description = "Delete all golden images for variant '$outputName'"
             val files = project.fileTree(snapshotOutputDir) { tree ->
               tree.include("**/*.png")
               tree.include("**/*.mov")
@@ -212,18 +241,18 @@ public class PaparazziPlugin @Inject constructor(
           it.description = "Record golden images for variant '$outputName'"
           it.mustRunAfter(deleteSnapshots)
         }
-        recordVariants.configure { it.dependsOn(recordTaskProvider) }
+        recordVariantTask.configure { it.dependsOn(recordTaskProvider) }
         val cleanRecordTaskProvider = project.tasks.register("cleanRecordPaparazzi$slug") {
           it.group = VERIFICATION_GROUP
           it.description = "Clean and record golden images for variant '$outputName'"
           it.dependsOn(deleteSnapshots, recordTaskProvider)
         }
-        cleanRecordVariants.configure { it.dependsOn(cleanRecordTaskProvider) }
+        cleanRecordVariantTask.configure { it.dependsOn(cleanRecordTaskProvider) }
         val verifyTaskProvider = project.tasks.register("verifyPaparazzi$slug", PaparazziTask::class.java) {
           it.group = VERIFICATION_GROUP
           it.description = "Run screenshot tests for variant '$outputName'"
         }
-        verifyVariants.configure { it.dependsOn(verifyTaskProvider) }
+        verifyVariantTask.configure { it.dependsOn(verifyTaskProvider) }
 
         val isRecordRun = project.objects.property(Boolean::class.java)
         val isVerifyRun = project.objects.property(Boolean::class.java)
@@ -339,7 +368,8 @@ public class PaparazziPlugin @Inject constructor(
       if (unitTest != null) {
         configureHostTest(
           snapshotOutputDir = snapshotDir(unitTest),
-          taskSuffix = "",
+          taskSuffix = "UnitTest",
+          outputSuffix = "",
           testTaskName = "test${unitTest.name.capitalize()}",
           instrument = {
             // AGP < 9 does not fully initialize ASM instrumentation for Android KMP variants,
@@ -364,6 +394,7 @@ public class PaparazziPlugin @Inject constructor(
         configureHostTest(
           snapshotOutputDir = hostTest.snapshotDir,
           taskSuffix = "ScreenshotTest",
+          outputSuffix = "ScreenshotTest",
           testTaskName = testTask.name,
           // Paparazzi owns this compilation, so there is no AGP component to instrument. The
           // ResourcesCompat font fix is applied to the runtime classpath instead.
