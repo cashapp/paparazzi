@@ -418,6 +418,35 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun recordVariantTaskDelegatesToUnitTestTask() {
+    val fixtureRoot = File("src/test/projects/record-mode")
+    File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
+
+    val result = gradleRunner
+      .withArguments("recordPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    // The variant task is an anchor; the work happens in the source-set-qualified task.
+    assertThat(result.task(":recordPaparazziDebugUnitTest")).isNotNull()
+    assertThat(result.task(":recordPaparazziDebugScreenshotTest")).isNull()
+  }
+
+  @Test
+  fun recordVariantTaskDelegatesToBothSourceSets() {
+    val fixtureRoot = File("src/test/projects/screenshot-test-source-set")
+    File(fixtureRoot, "src/screenshotTest/snapshots").registerForDeletionOnExit()
+
+    val result = gradleRunner
+      .withArguments("recordPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":recordPaparazziDebugUnitTest")).isNotNull()
+    assertThat(result.task(":recordPaparazziDebugScreenshotTest")).isNotNull()
+    assertThat(result.task(":testDebugUnitTest")).isNotNull()
+    assertThat(result.task(":testDebugScreenshotTest")).isNotNull()
+  }
+
+  @Test
   fun screenshotTestSourceSetIsIsolatedFromUnitTests() {
     val fixtureRoot = File("src/test/projects/screenshot-test-source-set")
 
@@ -1005,7 +1034,7 @@ class PaparazziPluginTest {
       .runFixture(fixtureRoot) { build() }
 
     assertThat(result.task(":deletePaparazziSnapshots")).isNotNull()
-    assertThat(result.task(":recordPaparazziDebug")).isNotNull()
+    assertThat(result.task(":recordPaparazziDebugUnitTest")).isNotNull()
 
     assertThat(snapshotToBeDeleted.exists()).isFalse()
     assertThat(snapshotToBeKept.exists()).isTrue()

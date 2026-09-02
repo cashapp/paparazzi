@@ -41,6 +41,7 @@ import com.android.builder.model.Version.ANDROID_GRADLE_PLUGIN_VERSION
 import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE
 import org.gradle.api.attributes.Attribute
@@ -185,16 +186,22 @@ public class PaparazziPlugin @Inject constructor(
       /**
        * Wires Paparazzi into a single host-test component of [variant].
        *
-       * [taskSuffix] is empty for the unit-test component, preserving the historical
-       * `recordPaparazziDebug` / `verifyPaparazziDebug` task names, and is `ScreenshotTest` for the
-       * isolated `src/screenshotTest` component, yielding `recordPaparazziDebugScreenshotTest` etc.
+       * [taskSuffix] is `UnitTest` for the unit-test component and `ScreenshotTest` for the
+       * isolated `src/screenshotTest` component, yielding `recordPaparazziDebugUnitTest` and
+       * `recordPaparazziDebugScreenshotTest` respectively. The unqualified `recordPaparazziDebug` /
+       * `verifyPaparazziDebug` tasks are registered separately as anchors over both.
+       *
+       * [outputName] keys report and failure directories. It is the bare variant name for the
+       * unit-test component so it keeps its historical `paparazzi/debug` output locations.
        */
-      fun configureHostTest(component: Component, taskSuffix: String, testTaskName: String) {
+      fun configureHostTest(
+        component: Component,
+        taskSuffix: String,
+        outputName: String,
+        testTaskName: String
+      ): HostTestTasks {
         val slug = "$variantSlug$taskSuffix"
         val componentName = component.name
-        // Keyed on the variant name (plus the source-set suffix) rather than the component name, so
-        // the unit-test component keeps its historical `paparazzi/debug` output locations.
-        val outputName = "${variant.name}$taskSuffix"
         val snapshotOutputDir = snapshotDir(component)
         val reportOutputDir = project.extensions.getByType(ReportingExtension::class.java)
           .baseDirectory.dir("paparazzi/$outputName")
@@ -233,18 +240,15 @@ public class PaparazziPlugin @Inject constructor(
           it.description = "Record golden images for '$componentName'"
           it.mustRunAfter(deleteSnapshots)
         }
-        recordVariants.configure { it.dependsOn(recordTaskProvider) }
         val cleanRecordTaskProvider = project.tasks.register("cleanRecordPaparazzi$slug") {
           it.group = VERIFICATION_GROUP
           it.description = "Clean and record golden images for '$componentName'"
           it.dependsOn(deleteSnapshots, recordTaskProvider)
         }
-        cleanRecordVariants.configure { it.dependsOn(cleanRecordTaskProvider) }
         val verifyTaskProvider = project.tasks.register("verifyPaparazzi$slug", PaparazziTask::class.java) {
           it.group = VERIFICATION_GROUP
           it.description = "Run screenshot tests for '$componentName'"
         }
-        verifyVariants.configure { it.dependsOn(verifyTaskProvider) }
 
         val isRecordRun = project.objects.property(Boolean::class.java)
         val isVerifyRun = project.objects.property(Boolean::class.java)
@@ -354,13 +358,23 @@ public class PaparazziPlugin @Inject constructor(
 
         recordTaskProvider.configure { it.dependsOn(testTaskProvider) }
         verifyTaskProvider.configure { it.dependsOn(testTaskProvider) }
+
+        return HostTestTasks(
+          record = recordTaskProvider,
+          cleanRecord = cleanRecordTaskProvider,
+          verify = verifyTaskProvider,
+          delete = deleteVariantSnapshot
+        )
       }
+
+      val hostTestTasks = mutableListOf<HostTestTasks>()
 
       val unitTest = (variant as? HasUnitTest)?.unitTest
       if (unitTest != null) {
-        configureHostTest(
+        hostTestTasks += configureHostTest(
           component = unitTest,
-          taskSuffix = "",
+          taskSuffix = "UnitTest",
+          outputName = variant.name,
           testTaskName = "test${unitTest.name.capitalize()}"
         )
       }
@@ -372,11 +386,45 @@ public class PaparazziPlugin @Inject constructor(
       }
       if (screenshotTest != null) {
         val testTaskName = registerScreenshotTestTask(extension, screenshotTest).name
-        configureHostTest(
+        hostTestTasks += configureHostTest(
           component = screenshotTest,
           taskSuffix = "ScreenshotTest",
+          outputName = "${variant.name}ScreenshotTest",
           testTaskName = testTaskName
         )
+      }
+
+      if (hostTestTasks.isEmpty()) return@onVariants
+
+      // Anchors over every host-test component of the variant: always the unit-test source set,
+      // plus `src/screenshotTest` when that opt-in is enabled. These keep the historical
+      // `recordPaparazziDebug` / `verifyPaparazziDebug` entry points working while the per-source-set
+      // tasks stay individually addressable.
+      val recordVariant = project.tasks.register("recordPaparazzi$variantSlug", PaparazziTask::class.java) {
+        it.group = VERIFICATION_GROUP
+        it.description = "Record golden images for variant '${variant.name}'"
+        it.dependsOn(hostTestTasks.map(HostTestTasks::record))
+      }
+      recordVariants.configure { it.dependsOn(recordVariant) }
+
+      val cleanRecordVariant = project.tasks.register("cleanRecordPaparazzi$variantSlug") {
+        it.group = VERIFICATION_GROUP
+        it.description = "Clean and record golden images for variant '${variant.name}'"
+        it.dependsOn(hostTestTasks.map(HostTestTasks::cleanRecord))
+      }
+      cleanRecordVariants.configure { it.dependsOn(cleanRecordVariant) }
+
+      val verifyVariant = project.tasks.register("verifyPaparazzi$variantSlug", PaparazziTask::class.java) {
+        it.group = VERIFICATION_GROUP
+        it.description = "Run screenshot tests for variant '${variant.name}'"
+        it.dependsOn(hostTestTasks.map(HostTestTasks::verify))
+      }
+      verifyVariants.configure { it.dependsOn(verifyVariant) }
+
+      project.tasks.register("delete${variantSlug}PaparazziSnapshots") {
+        it.group = VERIFICATION_GROUP
+        it.description = "Delete all golden images for variant '${variant.name}'"
+        it.dependsOn(hostTestTasks.map(HostTestTasks::delete))
       }
     }
   }
@@ -670,6 +718,14 @@ internal class PaparazziSystemPropertiesArgumentProvider(
       .sortedBy { it.key }
       .map { (key, value) -> "-D$key=$value" }
 }
+
+/** The record/verify/clean/delete tasks registered for a single host-test component. */
+private class HostTestTasks(
+  val record: TaskProvider<out Task>,
+  val cleanRecord: TaskProvider<out Task>,
+  val verify: TaskProvider<out Task>,
+  val delete: TaskProvider<out Task>
+)
 
 private const val ANDROID_MOCKABLE_JAR = "android-mockable-jar"
 private val MOCKABLE_JAR_RETURN_DEFAULT_VALUES: Attribute<Boolean> =
