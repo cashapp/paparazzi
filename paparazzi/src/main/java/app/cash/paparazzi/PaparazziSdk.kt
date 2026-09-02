@@ -274,6 +274,10 @@ public class PaparazziSdk @JvmOverloads constructor(
         renderExtension.renderView(currentView)
       }
     }
+    val containsComposeHostView = hasComposeRuntime && modifiedView.containsComposeHostView()
+    val composeVerticalScrollView = modifiedView.takeIf {
+      containsComposeHostView && sessionParamsBuilder.build().renderingMode == RenderingMode.V_SCROLL
+    }
 
     System_Delegate.setNanosTime(0L)
     System_Delegate.setBootTimeNanos(0L)
@@ -289,7 +293,7 @@ public class PaparazziSdk @JvmOverloads constructor(
     lateinit var lifecycleOwner: PaparazziLifecycleOwner
 
     try {
-      withTime(0L) {
+      withTime(0L, composeVerticalScrollView) {
         // Initialize the choreographer at time=0.
       }
 
@@ -335,13 +339,12 @@ public class PaparazziSdk @JvmOverloads constructor(
       if (sessionParamsBuilder.build().renderingMode == RenderingMode.SHRINK) {
         sizeShrinkWindowFrameToDevice(viewGroup)
       }
-
       for (frame in 0 until frameCount) {
         val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
 
         // If we have pendingTasks run recomposer to ensure we get the correct frame.
         var hasPendingWork = false
-        withTime(nowNanos) {
+        withTime(nowNanos, composeVerticalScrollView) {
           val result = renderSession.render(true)
           if (result.status == ERROR_UNKNOWN) {
             throw result.exception
@@ -355,7 +358,7 @@ public class PaparazziSdk @JvmOverloads constructor(
         }
 
         if (hasPendingWork) {
-          withTime(nowNanos) {
+          withTime(nowNanos, composeVerticalScrollView) {
             val result = renderSession.render(true)
             if (result.status == ERROR_UNKNOWN) {
               throw result.exception
@@ -399,7 +402,7 @@ public class PaparazziSdk @JvmOverloads constructor(
       val mLastFrameTimeNanos = choreographer::class.java.getDeclaredField("mLastFrameTimeNanos")
       mLastFrameTimeNanos.isAccessible = true
       mLastFrameTimeNanos.set(choreographer, 0L)
-
+      Choreographer_Delegate.sChoreographerTime = 0L
       Thread.setDefaultUncaughtExceptionHandler(previousUncaughtExceptionHandler)
     }
   }
@@ -431,12 +434,15 @@ public class PaparazziSdk @JvmOverloads constructor(
     ViewRootImpl_Accessor.updateFrame(viewRootImpl, displayMetrics.widthPixels, displayMetrics.heightPixels)
   }
 
-  private fun withTime(timeNanos: Long, block: () -> Unit) {
-    val frameNanos = timeNanos
+  private fun withTime(logicalTimeNanos: Long, composeView: View?, block: () -> Unit) {
+    val frameNanos =
+      if (composeView != null) logicalTimeNanos + MIN_FRAME_TIME_NANOS else logicalTimeNanos
 
     // Execute the block at the requested time.
-    System_Delegate.setNanosTime(0L)
-    Choreographer_Delegate.sChoreographerTime = frameNanos
+    System_Delegate.setNanosTime(if (composeView != null) logicalTimeNanos else 0L)
+    if (composeView == null) {
+      Choreographer_Delegate.sChoreographerTime = frameNanos
+    }
 
     // Drive Layoutlib's per-frame animation clock the way Google's deviceless harness
     // (RenderTestBase / standalone-render) does: set the render session's elapsed-frame time before
@@ -447,6 +453,13 @@ public class PaparazziSdk @JvmOverloads constructor(
 
     try {
       executeHandlerCallbacks()
+      if (composeView != null) {
+        block()
+        composeView.requestLayout()
+        Choreographer_Delegate.doFrame(frameNanos)
+        return block()
+      }
+
       val currentTimeNanos = uptimeNanos()
 
       // layoutlib 16.2.3's Choreographer#doFrame dispatches the animation callbacks itself, but a
@@ -660,6 +673,8 @@ public class PaparazziSdk @JvmOverloads constructor(
     }
 
   internal companion object {
+    private val MIN_FRAME_TIME_NANOS = TimeUnit.MILLISECONDS.toNanos(1L)
+
     internal lateinit var renderer: Renderer
     internal val isInitialized get() = ::renderer.isInitialized
 
@@ -691,6 +706,27 @@ public class PaparazziSdk @JvmOverloads constructor(
         |              android:layout_width="${if (renderingMode.horizAction == RenderingMode.SizeAction.SHRINK) "wrap_content" else "match_parent"}"
         |              android:layout_height="${if (renderingMode.vertAction == RenderingMode.SizeAction.SHRINK) "wrap_content" else "match_parent"}"/>
       """.trimMargin()
+
+    private fun View.containsComposeHostView(): Boolean {
+      if (isComposeHostView()) return true
+      if (this !is ViewGroup) return false
+
+      for (index in 0 until childCount) {
+        if (getChildAt(index).containsComposeHostView()) return true
+      }
+      return false
+    }
+
+    private fun View.isComposeHostView(): Boolean {
+      var currentClass: Class<*>? = javaClass
+      while (currentClass != null) {
+        if (currentClass.name == "androidx.compose.ui.platform.AbstractComposeView") {
+          return true
+        }
+        currentClass = currentClass.superclass
+      }
+      return false
+    }
 
     private fun isPresentInClasspath(vararg classNames: String): Boolean {
       return try {

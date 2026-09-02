@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,10 +27,11 @@ import com.android.ide.common.rendering.api.SessionParams.RenderingMode
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
+import java.awt.Color.BLUE
 import java.awt.image.BufferedImage
 import kotlin.math.min
 
-private const val EXPECTED_CURRENT_V_SCROLL_WIDTH = 562
+private const val EXPECTED_V_SCROLL_WIDTH = 514
 private const val EXPECTED_CURRENT_V_SCROLL_HEIGHT = 1000
 private const val CONTENT_HEIGHT_DP = 700
 
@@ -47,7 +50,7 @@ class ComposeRenderingModeSizingTest {
   fun verticalScrollBoundedComposeRootKeepsCurrentSnapshotSize() {
     snapshotHandler.expect(
       name = "compose_v_scroll",
-      width = EXPECTED_CURRENT_V_SCROLL_WIDTH,
+      width = EXPECTED_V_SCROLL_WIDTH,
       height = EXPECTED_CURRENT_V_SCROLL_HEIGHT
     )
 
@@ -60,6 +63,7 @@ class ComposeRenderingModeSizingTest {
             Modifier
               .fillMaxWidth()
               .height(CONTENT_HEIGHT_DP.dp)
+              .verticalScroll(rememberScrollState())
               .background(Color.White),
             horizontalAlignment = Alignment.CenterHorizontally
           ) {
@@ -109,6 +113,11 @@ class ComposeRenderingModeSizingTest {
         override fun handle(image: BufferedImage) {
           assertEquals("Snapshot width for '$name'", expected.first, image.width)
           assertEquals("Snapshot height for '$name'", expected.second, image.height)
+          assertEquals(
+            "Bottom edge for '$name'",
+            BLUE.rgb,
+            image.getRGB(image.width / 2, image.height - 1)
+          )
         }
 
         override fun close() = Unit
