@@ -40,6 +40,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Recomposer
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.InternalComposeUiApi
+import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.WindowRecomposerPolicy
 import androidx.compose.ui.platform.createLifecycleAwareWindowRecomposer
@@ -707,26 +708,10 @@ public class PaparazziSdk @JvmOverloads constructor(
         |              android:layout_height="${if (renderingMode.vertAction == RenderingMode.SizeAction.SHRINK) "wrap_content" else "match_parent"}"/>
       """.trimMargin()
 
-    private fun View.containsComposeHostView(): Boolean {
-      if (isComposeHostView()) return true
-      if (this !is ViewGroup) return false
-
-      for (index in 0 until childCount) {
-        if (getChildAt(index).containsComposeHostView()) return true
-      }
-      return false
-    }
-
-    private fun View.isComposeHostView(): Boolean {
-      var currentClass: Class<*>? = javaClass
-      while (currentClass != null) {
-        if (currentClass.name == "androidx.compose.ui.platform.AbstractComposeView") {
-          return true
-        }
-        currentClass = currentClass.superclass
-      }
-      return false
-    }
+    private fun View.containsComposeHostView(): Boolean =
+      findViewByPredicate<View> {
+        it is AbstractComposeView
+      } != null
 
     private fun isPresentInClasspath(vararg classNames: String): Boolean {
       return try {
