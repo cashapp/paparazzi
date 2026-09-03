@@ -27,7 +27,6 @@ import android.util.DisplayMetrics
 import android.view.BridgeInflater
 import android.view.Choreographer
 import android.view.Choreographer_Delegate
-import android.view.Display
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.NO_ID
@@ -329,11 +328,17 @@ public class PaparazziSdk @JvmOverloads constructor(
 
       viewGroup.addView(modifiedView)
 
-      // See [sizeShrinkWindowFrameToDevice]. In SHRINK mode layoutlib 16.2.3 leaves the window frame
-      // collapsed to 0x0 after inflating the (empty) content, which corrupts Compose state derived
-      // from the first measured size. Restore a sane window frame before the first frame is rendered.
-      if (sessionParamsBuilder.build().renderingMode == RenderingMode.SHRINK) {
-        sizeShrinkWindowFrameToDevice(viewGroup)
+      when (sessionParamsBuilder.build().renderingMode) {
+        // See [sizeShrinkWindowFrameToDevice]. In SHRINK mode layoutlib 16.2.3 leaves the window frame
+        // collapsed to 0x0 after inflating the (empty) content, which corrupts Compose state derived
+        // from the first measured size. Restore a sane window frame before the first frame is rendered.
+        RenderingMode.SHRINK -> sizeShrinkWindowFrameToDevice(viewGroup)
+
+        // Attaching ComposeView synchronously creates its initial composition. Measure that content
+        // before the first Choreographer frame so layoutlib applies the unbounded scroll-axis
+        // constraints before frame callbacks can freeze it at the device viewport height.
+        RenderingMode.V_SCROLL if hasComposeRuntime -> renderSession { measure() }
+        else -> Unit
       }
 
       for (frame in 0 until frameCount) {
@@ -342,10 +347,7 @@ public class PaparazziSdk @JvmOverloads constructor(
         // If we have pendingTasks run recomposer to ensure we get the correct frame.
         var hasPendingWork = false
         withTime(nowNanos) {
-          val result = renderSession.render(true)
-          if (result.status == ERROR_UNKNOWN) {
-            throw result.exception
-          }
+          renderSession { render(true) }
           if (hasComposeRuntime && recomposer != null) {
             // If we have pending tasks, we need to trigger it within the context of the first frame.
             if (frame == 0 && (recomposer as Recomposer).hasPendingWork) {
@@ -356,10 +358,7 @@ public class PaparazziSdk @JvmOverloads constructor(
 
         if (hasPendingWork) {
           withTime(nowNanos) {
-            val result = renderSession.render(true)
-            if (result.status == ERROR_UNKNOWN) {
-              throw result.exception
-            }
+            renderSession { render(true) }
           }
 
           val recomposerInstance = recomposer as Recomposer
@@ -640,6 +639,14 @@ public class PaparazziSdk @JvmOverloads constructor(
       // BridgeRenderSession.executeCallbacks aggressively tears down the main Looper and BridgeContext, so we call the static delegates ourselves.
       Handler_Delegate.executeCallbacks(uptimeNanos)
     }
+  }
+
+  private operator fun RenderSessionImpl.invoke(block: RenderSessionImpl.() -> Result): Result {
+    val result = block()
+    if (result.status == ERROR_UNKNOWN) {
+      throw result.exception
+    }
+    return result
   }
 
   // This is necessary, because SystemClock_Delegate#uptimeNanos() is package-private.
