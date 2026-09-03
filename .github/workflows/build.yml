@@ -27,7 +27,7 @@ jobs:
           java-version: 21
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -74,7 +74,7 @@ jobs:
           java-version: ${{ matrix.java-version }}
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Run All Tests
         run: ./gradlew check
@@ -107,7 +107,7 @@ jobs:
           java-version: 21
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Publish Artifacts
         run: ./gradlew publishMavenPublicationToMavenCentralRepository paparazzi-gradle-plugin:publishAllPublicationsToMavenCentralRepository
