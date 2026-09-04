@@ -30,6 +30,7 @@ import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.attribute.FileTime
 import java.time.Instant
 import java.util.Date
+import javax.imageio.ImageIO
 
 class HtmlReportWriterTest {
   @get:Rule
@@ -592,6 +593,157 @@ class HtmlReportWriterTest {
       // reset record mode
       System.setProperty("paparazzi.test.record", "false")
       System.clearProperty("paparazzi.test.record.overwriteOnMaxPercentDifference")
+    }
+  }
+
+  @Test
+  fun verifyModeReportsFailureWithDiffImages() {
+    val oldVerify = System.getProperty("paparazzi.test.verify")
+    val oldFailureDir = System.getProperty("paparazzi.failures.dir")
+    try {
+      System.setProperty("paparazzi.test.verify", "true")
+      val failureDir = reportRoot.newFolder("failures")
+      System.setProperty("paparazzi.failures.dir", failureDir.path)
+
+      val snapshot = Snapshot(
+        name = "loading",
+        testName = TestName("app.cash.paparazzi", "CelebrityTest", "testSettings"),
+        timestamp = Instant.parse("2019-03-20T10:27:43Z").toDate()
+      )
+      val imageName = snapshot.toFileName("_", "png")
+      val golden = File(snapshotRoot.root, "images/$imageName")
+      golden.parentFile.mkdirs()
+      ImageIO.write(anyImage, "PNG", golden)
+
+      val htmlReportWriter = HtmlReportWriter(
+        runName = "verify_run",
+        rootDirectory = reportRoot.root,
+        maxPercentDifference = 0.0,
+        differ = PixelPerfect,
+        snapshotRootDirectory = snapshotRoot.root
+      )
+      htmlReportWriter.use {
+        assertThrows(AssertionError::class.java) {
+          htmlReportWriter.newFrameHandler(snapshot = snapshot, frameCount = 1, fps = -1).use { frameHandler ->
+            frameHandler.handle(otherImage)
+          }
+        }
+      }
+
+      // The report is generated and includes the expected/actual/delta images for the failed run.
+      assertThat(File(reportRoot.root, "index.html")).exists()
+      assertThat(File(reportRoot.root, "images/expected-$imageName")).exists()
+      assertThat(File(reportRoot.root, "images/actual-$imageName")).exists()
+      assertThat(File(reportRoot.root, "images/delta-$imageName")).exists()
+
+      val runJs = File(reportRoot.root, "runs/verify_run.js").readText()
+      assertThat(runJs).contains("\"file\": \"images/actual-$imageName\"")
+      assertThat(runJs).contains("\"expectedFile\": \"images/expected-$imageName\"")
+      assertThat(runJs).contains("\"deltaFile\": \"images/delta-$imageName\"")
+
+      // The failure delta is still written to the failures dir for the Gradle test report.
+      assertThat(File(failureDir, "delta-$imageName")).exists()
+      assertThat(File(failureDir, imageName)).exists()
+    } finally {
+      System.setProperty("paparazzi.test.verify", oldVerify ?: "false")
+      if (oldFailureDir == null) {
+        System.clearProperty("paparazzi.failures.dir")
+      } else {
+        System.setProperty("paparazzi.failures.dir", oldFailureDir)
+      }
+    }
+  }
+
+  @Test
+  fun verifyModeReportsPassingSnapshot() {
+    val oldVerify = System.getProperty("paparazzi.test.verify")
+    val oldFailureDir = System.getProperty("paparazzi.failures.dir")
+    try {
+      System.setProperty("paparazzi.test.verify", "true")
+      val failureDir = reportRoot.newFolder("failures")
+      System.setProperty("paparazzi.failures.dir", failureDir.path)
+
+      val snapshot = Snapshot(
+        name = "loading",
+        testName = TestName("app.cash.paparazzi", "CelebrityTest", "testSettings"),
+        timestamp = Instant.parse("2019-03-20T10:27:43Z").toDate()
+      )
+      val imageName = snapshot.toFileName("_", "png")
+      val golden = File(snapshotRoot.root, "images/$imageName")
+      golden.parentFile.mkdirs()
+      ImageIO.write(anyImage, "PNG", golden)
+
+      val htmlReportWriter = HtmlReportWriter(
+        runName = "verify_run",
+        rootDirectory = reportRoot.root,
+        maxPercentDifference = 0.0,
+        differ = PixelPerfect,
+        snapshotRootDirectory = snapshotRoot.root
+      )
+      htmlReportWriter.use {
+        htmlReportWriter.newFrameHandler(snapshot = snapshot, frameCount = 1, fps = -1).use { frameHandler ->
+          frameHandler.handle(anyImage)
+        }
+      }
+
+      val runJs = File(reportRoot.root, "runs/verify_run.js").readText()
+      assertThat(runJs).contains("\"file\": \"images/$anyImageHash.png\"")
+      assertThat(runJs).doesNotContain("expectedFile")
+      assertThat(runJs).doesNotContain("deltaFile")
+      assertThat(File(failureDir, "delta-$imageName")).doesNotExist()
+    } finally {
+      System.setProperty("paparazzi.test.verify", oldVerify ?: "false")
+      if (oldFailureDir == null) {
+        System.clearProperty("paparazzi.failures.dir")
+      } else {
+        System.setProperty("paparazzi.failures.dir", oldFailureDir)
+      }
+    }
+  }
+
+  @Test
+  fun verifyModeMissingGoldenFailsAndReports() {
+    val oldVerify = System.getProperty("paparazzi.test.verify")
+    val oldFailureDir = System.getProperty("paparazzi.failures.dir")
+    try {
+      System.setProperty("paparazzi.test.verify", "true")
+      val failureDir = reportRoot.newFolder("failures")
+      System.setProperty("paparazzi.failures.dir", failureDir.path)
+
+      val snapshot = Snapshot(
+        name = "loading",
+        testName = TestName("app.cash.paparazzi", "CelebrityTest", "testSettings"),
+        timestamp = Instant.parse("2019-03-20T10:27:43Z").toDate()
+      )
+      val imageName = snapshot.toFileName("_", "png")
+      val golden = File(snapshotRoot.root, "images/$imageName")
+      assertThat(golden).doesNotExist()
+
+      val htmlReportWriter = HtmlReportWriter(
+        runName = "verify_run",
+        rootDirectory = reportRoot.root,
+        maxPercentDifference = 0.0,
+        differ = PixelPerfect,
+        snapshotRootDirectory = snapshotRoot.root
+      )
+      htmlReportWriter.use {
+        assertThrows(AssertionError::class.java) {
+          htmlReportWriter.newFrameHandler(snapshot = snapshot, frameCount = 1, fps = -1).use { frameHandler ->
+            frameHandler.handle(otherImage)
+          }
+        }
+      }
+
+      val runJs = File(reportRoot.root, "runs/verify_run.js").readText()
+      assertThat(runJs).contains("\"deltaFile\": \"images/delta-$imageName\"")
+      assertThat(File(reportRoot.root, "images/delta-$imageName")).exists()
+    } finally {
+      System.setProperty("paparazzi.test.verify", oldVerify ?: "false")
+      if (oldFailureDir == null) {
+        System.clearProperty("paparazzi.failures.dir")
+      } else {
+        System.setProperty("paparazzi.failures.dir", oldFailureDir)
+      }
     }
   }
 

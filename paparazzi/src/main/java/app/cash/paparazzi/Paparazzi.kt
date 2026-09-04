@@ -211,14 +211,7 @@ public class Paparazzi @JvmOverloads constructor(
   }
 
   private companion object {
-    private val isVerifying: Boolean =
-      System.getProperty("paparazzi.test.verify")?.toBoolean() == true
-
     private fun determineHandler(maxPercentDifference: Double): SnapshotHandler =
-      if (isVerifying) {
-        SnapshotVerifier(maxPercentDifference)
-      } else {
-        HtmlReportWriter(maxPercentDifference = maxPercentDifference)
-      }
+      HtmlReportWriter(maxPercentDifference = maxPercentDifference)
   }
 }
