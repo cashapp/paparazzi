@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### New
+* Note the sRGB color space in PNG and APNG output (#40)
 * Add `Paparazzi#gif` overloads that accept a `@Composable` directly, mirroring the existing `snapshot` Compose overloads:
 
 ```kotlin
