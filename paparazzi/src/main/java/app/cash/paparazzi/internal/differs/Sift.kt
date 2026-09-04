@@ -130,18 +130,24 @@ internal object Sift : Differ {
 
   private fun buildDoGPyramid(gaussians: List<List<Array<DoubleArray>>>): List<List<Array<DoubleArray>>> {
     return gaussians.map { octave ->
-      octave.zipWithNext { a, b -> subtractImages(b, a) }
+      buildList(maxOf(0, octave.size - 1)) {
+        for (i in 0 until octave.size - 1) {
+          add(subtractImagesInPlace(octave[i], octave[i + 1]))
+        }
+      }
     }
   }
 
-  private fun subtractImages(a: Array<DoubleArray>, b: Array<DoubleArray>): Array<DoubleArray> {
+  private fun subtractImagesInPlace(a: Array<DoubleArray>, b: Array<DoubleArray>): Array<DoubleArray> {
     val h = a.size
     val w = a[0].size
-    return Array(h) { y ->
-      DoubleArray(w) { x ->
-        a[y][x] - b[y][x]
+    // Modify 'a' in place
+    for (y in 0 until h) {
+      for (x in 0 until w) {
+        a[y][x] -= b[y][x]
       }
     }
+    return a // Return the modified 'a'
   }
 
   private fun downsample(image: Array<DoubleArray>): Array<DoubleArray> {
