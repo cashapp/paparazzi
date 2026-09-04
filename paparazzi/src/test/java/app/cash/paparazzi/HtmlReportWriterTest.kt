@@ -96,6 +96,76 @@ class HtmlReportWriterTest {
   }
 
   @Test
+  fun reportGeneratesOnePagePerTestSuite() {
+    val htmlReportWriter = HtmlReportWriter(
+      runName = "run_one",
+      rootDirectory = reportRoot.root,
+      maxPercentDifference = 0.0,
+      differ = PixelPerfect,
+      snapshotRootDirectory = snapshotRoot.root
+    )
+    htmlReportWriter.use {
+      val testSettings = Instant.parse("2019-03-20T10:27:43Z").toDate()
+      for ((name, className) in listOf(
+        "loading" to "CelebrityTest",
+        "error" to "HomeViewTest",
+        "loading" to "HomeViewTest"
+      )) {
+        val frameHandler = htmlReportWriter.newFrameHandler(
+          snapshot = Snapshot(
+            name = name,
+            testName = TestName("app.cash.paparazzi", className, "testSettings"),
+            timestamp = testSettings,
+            tags = listOf("redesign")
+          ),
+          frameCount = 1,
+          fps = -1
+        )
+        frameHandler.use {
+          frameHandler.handle(anyImage)
+        }
+      }
+    }
+
+    val celebritySuitePage = File(reportRoot.root, "suites/app.cash.paparazzi.CelebrityTest.html")
+    assertThat(celebritySuitePage).exists()
+    assertThat(celebritySuitePage.readText()).contains(
+      """window.suite = "app.cash.paparazzi.CelebrityTest";"""
+    )
+    assertThat(celebritySuitePage.readText()).contains(
+      """<a href="../index.html">All suites</a>"""
+    )
+    assertThat(File(reportRoot.root, "suites/app.cash.paparazzi.HomeViewTest.html")).exists()
+
+    assertThat(File("${reportRoot.root}/suites.js")).hasContent(
+      """
+        |window.all_suites = [
+        |  "app.cash.paparazzi.CelebrityTest",
+        |  "app.cash.paparazzi.HomeViewTest"
+        |];
+      """.trimMargin()
+    )
+
+    // Each suite page is only written once, even when a later run has shots for the same suite.
+    val firstModified = celebritySuitePage.lastModified()
+    htmlReportWriter.use {
+      val frameHandler = htmlReportWriter.newFrameHandler(
+        snapshot = Snapshot(
+          name = "loading",
+          testName = TestName("app.cash.paparazzi", "CelebrityTest", "testSettings"),
+          timestamp = Instant.parse("2019-03-20T10:27:43Z").toDate()
+        ),
+        frameCount = 1,
+        fps = -1
+      )
+      frameHandler.use {
+        frameHandler.handle(anyImage)
+      }
+    }
+    assertThat(celebritySuitePage.lastModified()).isEqualTo(firstModified)
+  }
+
+  @Test
   fun failureActualImageMatchesRecordedGoldenImageBytes() {
     try {
       System.setProperty("paparazzi.test.record", "true")
@@ -143,6 +213,56 @@ class HtmlReportWriterTest {
     assertThat("0 Dollars".sanitizeForFilename()).isEqualTo("0_dollars")
     assertThat("`!#$%&*+=|\\'\"<>?/".sanitizeForFilename()).isEqualTo("_________________")
     assertThat("~@^()[]{}:;,.".sanitizeForFilename()).isEqualTo("~@^()[]{}:;,.")
+  }
+
+  @Test
+  fun caseVariantSuitesDontCollide() {
+    fun writeSuite(className: String, runName: String) {
+      val htmlReportWriter = HtmlReportWriter(
+        runName = runName,
+        rootDirectory = reportRoot.root,
+        maxPercentDifference = 0.0,
+        differ = PixelPerfect,
+        snapshotRootDirectory = snapshotRoot.root
+      )
+      htmlReportWriter.use {
+        val frameHandler = htmlReportWriter.newFrameHandler(
+          snapshot = Snapshot(
+            name = "loading",
+            testName = TestName("app.cash.paparazzi", className, "testSettings"),
+            timestamp = Instant.parse("2019-03-20T10:27:43Z").toDate()
+          ),
+          frameCount = 1,
+          fps = -1
+        )
+        frameHandler.use {
+          frameHandler.handle(anyImage)
+        }
+      }
+    }
+
+    writeSuite("CelebrityTest", "run_one")
+    writeSuite("CELEBRITYTEST", "run_two")
+
+    // Both suites must end up with their own page, even on case-insensitive file systems where
+    // the second suite's plain name would collide with the first one's page.
+    val suitesJs = File("${reportRoot.root}/suites.js").readText()
+    assertThat(suitesJs).contains("app.cash.paparazzi.CelebrityTest")
+    assertThat(suitesJs).contains("app.cash.paparazzi.CELEBRITYTEST")
+    assertThat(Regex("\"app\\.cash\\.paparazzi\\.").findAll(suitesJs).count()).isEqualTo(2)
+  }
+
+  @Test
+  fun sanitizeForSuiteFilename() {
+    assertThat("app.cash.paparazzi.CelebrityTest".sanitizeForSuiteFilename())
+      .isEqualTo("app.cash.paparazzi.CelebrityTest")
+    assertThat("app.cash.paparazzi.Outer\$InnerTest".sanitizeForSuiteFilename())
+      .isEqualTo("app.cash.paparazzi.Outer\$InnerTest")
+
+    // Names that aren't filename-safe are escaped and hashed so distinct suites never collide.
+    val cafe = "app.CaféTest".sanitizeForSuiteFilename()
+    assertThat(cafe).startsWith("app.Caf_Test-")
+    assertThat("app.CafèTest".sanitizeForSuiteFilename()).isNotEqualTo(cafe)
   }
 
   @Test

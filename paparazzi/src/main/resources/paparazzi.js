@@ -1,5 +1,8 @@
 window.runs = {};
 
+// Suite pages live in the suites/ directory, so their run data and images are one level up.
+const reportBase = window.suite ? '../' : '';
+
 class Run {
   constructor(id, data) {
     this.id = id;
@@ -142,9 +145,9 @@ class PaparazziRenderer {
   }
 
   start() {
-    this.loadRunScript('index.js');
+    this.loadRunScript(`${reportBase}index.js`);
     for (let runId of window.all_runs) {
-      this.loadRunScript(`runs/${runId}.js`);
+      this.loadRunScript(`${reportBase}runs/${runId}.js`);
     }
     setInterval(this.refresh.bind(this), 100);
   }
@@ -159,6 +162,10 @@ class PaparazziRenderer {
     console.log('rendering', run);
 
     for (let datum of run.data) {
+      // When a suite page is open, only render the snapshots belonging to that test suite.
+      if (window.suite && datum.testName.substring(0, datum.testName.lastIndexOf('#')) !== window.suite) {
+        continue;
+      }
       const key = `${datum.testName}${datum.name}`;
       let shot = this.shots[key];
       if (!shot) {
@@ -171,20 +178,20 @@ class PaparazziRenderer {
       }
 
       console.log('Adding run to shot', shot);
-      shot.addRun(run.id, datum.file, datum.timestamp);
+      shot.addRun(run.id, `${reportBase}${datum.file}`, datum.timestamp);
 
       // TODO setup listeners for filters/hovering, etc
     }
   }
 
   renderAll() {
-    this.loadRunScript('index.js');
+    this.loadRunScript(`${reportBase}index.js`);
     for (let runId of window.all_runs) {
       if (this.lockedRunIds.includes(runId)) {
         continue;
       }
       // The js loading is async so the rendering can happen in the next refresh
-      this.loadRunScript(`runs/${runId}.js`);
+      this.loadRunScript(`${reportBase}runs/${runId}.js`);
 
       this.render(new Run(runId, window.runs[runId]));
 
