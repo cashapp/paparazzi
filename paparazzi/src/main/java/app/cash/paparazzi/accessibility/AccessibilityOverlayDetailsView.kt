@@ -70,7 +70,11 @@ internal class AccessibilityOverlayDetailsView(context: Context) : FrameLayout(c
       canvas.drawRoundRect(badge, cornerRadius, cornerRadius, paint)
       canvas.save()
 
-      val text = it.contentDescription
+      val text = if (it.isTouchTargetTooSmall) {
+        "${it.contentDescription} <touch-target>"
+      } else {
+        it.contentDescription
+      }
       val textX = badge.right + innerMargin
       val textY = badge.top
       val textLayoutWidth = (width - textX).toInt()
