@@ -1,5 +1,5 @@
 [versions]
-agp = "9.0.0"
+agp = "9.4.0"
 androidTools = "32.4.0" # == 23.0.0 + agp version
 bytebuddy = "1.18.12"
 compose = "1.11.2"
