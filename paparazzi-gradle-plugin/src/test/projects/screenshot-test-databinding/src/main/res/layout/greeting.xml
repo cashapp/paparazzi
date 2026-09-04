@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+  <data>
+    <variable name="greeting" type="String" />
+  </data>
+  <TextView
+      android:id="@+id/greeting_text"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:background="#FFFFFF"
+      android:textColor="#000000"
+      android:text="@{greeting}" />
+</layout>
