@@ -1192,7 +1192,7 @@ class PaparazziPluginTest {
       .comparingElementsUsing(MATCHES_PATTERN)
       .containsExactly(
         "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/external1/res\$",
-        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/core-1.17.0/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/core-1.19.0/res\$",
         "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/annotation-experimental-1.4.1/res\$",
         "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/core-viewtree-1.0.0/res\$",
         "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/lifecycle-runtime-2.6.2/res\$",
@@ -1221,7 +1221,7 @@ class PaparazziPluginTest {
       .comparingElementsUsing(MATCHES_PATTERN)
       .containsExactly(
         "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/external2/res\$",
-        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/core-1.17.0/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/core-1.19.0/res\$",
         "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/annotation-experimental-1.4.1/res\$",
         "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/core-viewtree-1.0.0/res\$",
         "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/lifecycle-runtime-2.6.2/res\$",
