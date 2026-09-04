@@ -3,6 +3,16 @@
 ## [Unreleased]
 
 ### New
+* Paparazzi tests can now live in their own `src/screenshotTest` source set, isolated from the project's unit tests. Opt in with:
+
+```properties
+# gradle.properties
+android.experimental.enableScreenshotTest=true
+app.cash.paparazzi.enableScreenshotTestSourceSet=true
+```
+
+  Paparazzi then wires a dedicated `test<Variant>ScreenshotTest` task (with standard Gradle JUnit XML/HTML reporting) plus `recordPaparazzi<Variant>ScreenshotTest` and `verifyPaparazzi<Variant>ScreenshotTest`. Goldens are stored in `src/screenshotTest/snapshots`, and dependencies are declared via `screenshotTestImplementation`. Existing `src/test` setups are unaffected.
+
 * Add `Paparazzi#gif` overloads that accept a `@Composable` directly, mirroring the existing `snapshot` Compose overloads:
 
 ```kotlin

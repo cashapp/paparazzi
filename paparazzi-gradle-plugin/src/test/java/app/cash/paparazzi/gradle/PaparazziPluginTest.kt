@@ -418,6 +418,94 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun recordVariantTaskDelegatesToUnitTestTask() {
+    val fixtureRoot = File("src/test/projects/record-mode")
+    File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
+
+    val result = gradleRunner
+      .withArguments("recordPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    // The variant task is an anchor; the work happens in the source-set-qualified task.
+    assertThat(result.task(":recordPaparazziDebugUnitTest")).isNotNull()
+    assertThat(result.task(":recordPaparazziDebugScreenshotTest")).isNull()
+  }
+
+  @Test
+  fun recordVariantTaskDelegatesToBothSourceSets() {
+    val fixtureRoot = File("src/test/projects/screenshot-test-source-set")
+    File(fixtureRoot, "src/screenshotTest/snapshots").registerForDeletionOnExit()
+
+    val result = gradleRunner
+      .withArguments("recordPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":recordPaparazziDebugUnitTest")).isNotNull()
+    assertThat(result.task(":recordPaparazziDebugScreenshotTest")).isNotNull()
+    assertThat(result.task(":testDebugUnitTest")).isNotNull()
+    assertThat(result.task(":testDebugScreenshotTest")).isNotNull()
+  }
+
+  @Test
+  fun screenshotTestSourceSetIsIsolatedFromUnitTests() {
+    val fixtureRoot = File("src/test/projects/screenshot-test-source-set")
+
+    val result = gradleRunner
+      .withArguments("recordPaparazziDebugScreenshotTest", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    // Runs in its own Test task rather than piggybacking on the unit-test task.
+    assertThat(result.task(":testDebugScreenshotTest")).isNotNull()
+    assertThat(result.task(":testDebugUnitTest")).isNull()
+
+    // Goldens live alongside the source set that produced them, not in src/test.
+    val snapshotsDir = File(fixtureRoot, "src/screenshotTest/snapshots").registerForDeletionOnExit()
+    val snapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_ScreenshotSourceSetTest_record.png")
+    assertThat(snapshot.exists()).isTrue()
+
+    // Standard Gradle JUnit XML reporting is wired up for the new task.
+    val testResults = File(fixtureRoot, "build/test-results/testDebugScreenshotTest")
+      .registerForDeletionOnExit()
+    val junitXml = File(testResults, "TEST-app.cash.paparazzi.plugin.test.ScreenshotSourceSetTest.xml")
+    assertThat(junitXml.exists()).isTrue()
+
+    // ...as is the Paparazzi HTML report, under its own component-scoped directory.
+    val report = File(fixtureRoot, "build/reports/paparazzi/debugScreenshotTest/index.html")
+      .registerForDeletionOnExit()
+    assertThat(report.exists()).isTrue()
+  }
+
+  @Test
+  fun screenshotTestSourceSetSupportsFonts() {
+    // A raw android.jar reports SDK_INT 0, which sends androidx down pre-API-29 code paths and
+    // breaks font loading; this asserts the mockable jar is used instead.
+    val fixtureRoot = File("src/test/projects/screenshot-test-fonts")
+    File(fixtureRoot, "src/screenshotTest/snapshots").registerForDeletionOnExit()
+
+    gradleRunner
+      .withArguments("recordPaparazziDebugScreenshotTest", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshots = File(fixtureRoot, "src/screenshotTest/snapshots/images").listFiles()
+    assertThat(snapshots).isNotEmpty()
+  }
+
+  @Test
+  fun screenshotTestSourceSetRequiresAgpFlag() {
+    val fixtureRoot = File("src/test/projects/screenshot-test-source-set")
+
+    val result = gradleRunner
+      .withArguments(
+        "recordPaparazziDebugScreenshotTest",
+        "-Pandroid.experimental.enableScreenshotTest=false",
+        "--stacktrace"
+      )
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    assertThat(result.output).contains("android.experimental.enableScreenshotTest=true")
+  }
+
+  @Test
   fun recordAllVariants() {
     val fixtureRoot = File("src/test/projects/record-mode")
     File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
@@ -946,7 +1034,7 @@ class PaparazziPluginTest {
       .runFixture(fixtureRoot) { build() }
 
     assertThat(result.task(":deletePaparazziSnapshots")).isNotNull()
-    assertThat(result.task(":recordPaparazziDebug")).isNotNull()
+    assertThat(result.task(":recordPaparazziDebugUnitTest")).isNotNull()
 
     assertThat(snapshotToBeDeleted.exists()).isFalse()
     assertThat(snapshotToBeKept.exists()).isTrue()
