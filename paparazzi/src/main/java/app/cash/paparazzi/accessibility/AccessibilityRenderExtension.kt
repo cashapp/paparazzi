@@ -15,13 +15,10 @@
  */
 package app.cash.paparazzi.accessibility
 
-import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
-import android.view.WindowManager
-import android.view.WindowManagerImpl
-import android.widget.FrameLayout
+import android.view.WindowManagerGlobal
 import android.widget.LinearLayout
 import app.cash.paparazzi.RenderExtension
 import app.cash.paparazzi.internal.ComposeViewAdapter
@@ -37,9 +34,6 @@ public class AccessibilityRenderExtension : RenderExtension {
   private val accessibilityElementCollector = AccessibilityElementCollector()
 
   override fun renderView(contentView: View): View {
-    // WindowManager needed to access accessibility elements for views that draw to other windows.
-    val windowManager = contentView.context.getSystemService(WindowManager::class.java)
-
     return LinearLayout(contentView.context).apply {
       orientation = LinearLayout.HORIZONTAL
       weightSum = 2f
@@ -50,39 +44,46 @@ public class AccessibilityRenderExtension : RenderExtension {
       val overlayDetailsView = AccessibilityOverlayDetailsView(context)
       addView(overlayDetailsView, LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, 1f))
 
-      val overlayDrawable = AccessibilityOverlayDrawable()
+      val overlayDrawables = mutableMapOf<Int, AccessibilityOverlayDrawable>()
       viewTreeObserver.addOnGlobalLayoutListener {
-        val rootView = contentView.findRootView()
-        rootView.foreground = overlayDrawable
-
-        // The root of the view hierarchy is rendered at full width.
-        // We need to restrict it when taking accessibility snapshots.
-        val windowManagerRootView = (windowManager as WindowManagerImpl).currentRootView
-        if (windowManagerRootView != null) {
-          windowManagerRootView.layoutParams =
-            FrameLayout.LayoutParams(contentView.measuredWidth, MATCH_PARENT, Gravity.START)
+        val accessibleWindowRoots = WindowManagerGlobal.getInstance().windowViews.reversed().associate {
+          val id = it.hashCode()
+          val coreView = it.findComposeViewAdapterChild()
+          overlayDrawables.getOrPut(id) {
+            AccessibilityOverlayDrawable()
+          }.apply {
+            coreView.foreground = this
+          }
+          id to coreView
         }
 
         OneShotPreDrawListener.add(this@apply) {
-          val elements = accessibilityElementCollector.collect(
-            rootView = this@apply,
-            windowManagerRootView = windowManagerRootView
-          )
-          overlayDrawable.updateElements(elements)
-          overlayDetailsView.updateElements(elements)
+          val totalElements = mutableSetOf<AccessibilityElement>()
+          accessibleWindowRoots.forEach { (id, view) ->
+            val elements = accessibilityElementCollector.collect(
+              rootView = view
+            )
+
+            overlayDrawables[id]?.updateElements(elements)
+            totalElements += elements
+          }
+
+          overlayDetailsView.updateElements(totalElements)
         }
       }
     }
   }
 }
 
-private fun View.findRootView(): View {
-  var parent = parent
-  while (parent != null) {
-    if (parent is ComposeViewAdapter) {
-      return parent
+private fun View.findComposeViewAdapterChild(): View {
+  if (this is ComposeViewAdapter) return this
+
+  if (this is ViewGroup) {
+    (0 until childCount).forEach { index ->
+      val result = getChildAt(index).findComposeViewAdapterChild()
+      if (result is ComposeViewAdapter) return result
     }
-    parent = parent.parent
   }
-  throw IllegalArgumentException("View hierarchy does not contain a ComposeViewAdapter")
+
+  return this
 }
