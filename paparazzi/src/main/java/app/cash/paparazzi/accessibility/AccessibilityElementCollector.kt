@@ -37,20 +37,18 @@ import androidx.core.view.isVisible
 internal class AccessibilityElementCollector {
   /**
    * Collects accessibility elements from the provided render roots.
-   *
-   * [windowManagerRootView] is optional and is used for UI that renders in separate windows
-   * (dialogs, popups, etc.). [rootView] is always traversed.
    */
-  fun collect(rootView: View, windowManagerRootView: View?): Set<AccessibilityElement> {
-    val orderedElements = linkedSetOf<AccessibilityElement>().apply {
-      windowManagerRootView?.processAccessibleChildren { add(it) }
-      rootView.processAccessibleChildren { add(it) }
+  fun collect(windowRoots: List<View>): List<AccessibilityElement> {
+    val orderedElements = buildList {
+      windowRoots.forEach { rootView ->
+        rootView.processAccessibleChildren(::add)
+      }
     }
 
     return withTraversalNeighbors(orderedElements)
   }
 
-  internal fun withTraversalNeighbors(elements: Collection<AccessibilityElement>): Set<AccessibilityElement> {
+  internal fun withTraversalNeighbors(elements: Collection<AccessibilityElement>): List<AccessibilityElement> {
     val duplicateIds = elements
       .groupingBy { it.id }
       .eachCount()
@@ -72,14 +70,12 @@ internal class AccessibilityElementCollector {
       }
     }
 
-    return orderedElements
-      .mapIndexed { index, element ->
-        element.copy(
-          beforeElementId = orderedElements.getOrNull(index - 1)?.id,
-          afterElementId = orderedElements.getOrNull(index + 1)?.id
-        )
-      }
-      .toCollection(linkedSetOf())
+    return orderedElements.mapIndexed { index, element ->
+      element.copy(
+        beforeElementId = orderedElements.getOrNull(index - 1)?.id,
+        afterElementId = orderedElements.getOrNull(index + 1)?.id
+      )
+    }
   }
 
   private fun View.processAccessibleChildren(processElement: (AccessibilityElement) -> Unit) {
