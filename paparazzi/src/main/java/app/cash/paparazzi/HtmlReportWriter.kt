@@ -70,9 +70,11 @@ public class HtmlReportWriter @JvmOverloads constructor(
   private val runsDirectory: File = File(rootDirectory, "runs")
   private val imagesDirectory: File = File(rootDirectory, "images")
   private val videosDirectory: File = File(rootDirectory, "videos")
+  private val reportArtifactsDirectory = File(rootDirectory, ARTIFACTS_DIRECTORY_NAME)
 
   private val goldenImagesDirectory = File(snapshotRootDirectory, "images")
   private val goldenVideosDirectory = File(snapshotRootDirectory, "videos")
+  private val goldenArtifactsDirectory = File(snapshotRootDirectory, ARTIFACTS_DIRECTORY_NAME)
 
   private val shots = mutableListOf<Snapshot>()
 
@@ -85,13 +87,14 @@ public class HtmlReportWriter @JvmOverloads constructor(
     runsDirectory.mkdirs()
     imagesDirectory.mkdirs()
     videosDirectory.mkdirs()
+    reportArtifactsDirectory.mkdirs()
     writeStaticFiles()
     writeRunJs()
     writeIndexJs()
   }
 
   override fun newFrameHandler(snapshot: Snapshot, frameCount: Int, fps: Int): FrameHandler {
-    return object : FrameHandler {
+    return object : FrameHandler, ArtifactFrameHandler {
       val snapshotDir = if (fps == -1) imagesDirectory else videosDirectory
       val goldenDir = if (fps == -1) goldenImagesDirectory else goldenVideosDirectory
       val hashes = mutableListOf<String>()
@@ -101,6 +104,22 @@ public class HtmlReportWriter @JvmOverloads constructor(
       override fun handle(image: BufferedImage) {
         writer.writeImage(image)
         hashes += hash(image)
+      }
+
+      override fun handleArtifact(name: String, content: String) {
+        val artifactFile = snapshot.artifactFile(name, reportArtifactsDirectory)
+        artifactFile.parentFile.mkdirs()
+        artifactFile.writeAtomically {
+          writeUtf8(content)
+        }
+
+        if (isRecording) {
+          val goldenFile = snapshot.artifactFile(name, goldenArtifactsDirectory)
+          goldenFile.parentFile.mkdirs()
+          goldenFile.writeAtomically {
+            writeUtf8(content)
+          }
+        }
       }
 
       override fun close() {
