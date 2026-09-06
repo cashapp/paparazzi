@@ -442,11 +442,7 @@ public class PaparazziSdk @JvmOverloads constructor(
       .filter { it !== contentView.rootView && it.visibility == View.VISIBLE }
       .singleOrNull() ?: return null
     val params = root.layoutParams as? WindowManager.LayoutParams ?: return null
-    if (params.type != WindowManager.LayoutParams.TYPE_APPLICATION ||
-      params.flags and WindowManager.LayoutParams.FLAG_DIM_BEHIND == 0
-    ) {
-      return null
-    }
+    if (params.type != WindowManager.LayoutParams.TYPE_APPLICATION) return null
     contentRoot.minimumWidth = metrics.widthPixels
     contentRoot.minimumHeight = metrics.heightPixels
     return root
