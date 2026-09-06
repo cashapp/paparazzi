@@ -19,6 +19,7 @@ import android.animation.AnimationHandler
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Bitmap
+import android.graphics.Rect
 import android.os.Handler
 import android.os.Handler_Delegate
 import android.os.Looper_Accessor
@@ -33,6 +34,8 @@ import android.view.View.NO_ID
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
 import android.view.ViewRootImpl_Accessor
+import android.view.WindowManager
+import android.view.WindowManagerGlobal
 import androidx.activity.setViewTreeOnBackPressedDispatcherOwner
 import androidx.annotation.LayoutRes
 import androidx.compose.runtime.Composable
@@ -285,6 +288,8 @@ public class PaparazziSdk @JvmOverloads constructor(
       previousUncaughtExceptionHandler?.uncaughtException(thread, throwable)
     }
 
+    val originalMinimumWidth = viewGroup.minimumWidth
+    val originalMinimumHeight = viewGroup.minimumHeight
     lateinit var lifecycleOwner: PaparazziLifecycleOwner
 
     try {
@@ -329,10 +334,7 @@ public class PaparazziSdk @JvmOverloads constructor(
       viewGroup.addView(modifiedView)
 
       when (sessionParamsBuilder.build().renderingMode) {
-        // See [sizeShrinkWindowFrameToDevice]. In SHRINK mode layoutlib 16.2.3 leaves the window frame
-        // collapsed to 0x0 after inflating the (empty) content, which corrupts Compose state derived
-        // from the first measured size. Restore a sane window frame before the first frame is rendered.
-        RenderingMode.SHRINK -> sizeShrinkWindowFrameToDevice(viewGroup)
+        RenderingMode.SHRINK -> prepareShrinkRendering(viewGroup, modifiedView)
 
         // Attaching ComposeView synchronously creates its initial composition. Measure that content
         // before the first Choreographer frame so layoutlib applies the unbounded scroll-axis
@@ -345,8 +347,12 @@ public class PaparazziSdk @JvmOverloads constructor(
         val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
 
         // If we have pendingTasks run recomposer to ensure we get the correct frame.
+        var dialogRoot: View? = null
         var hasPendingWork = false
         withTime(nowNanos) {
+          if (viewGroup.minimumWidth != originalMinimumWidth) viewGroup.minimumWidth = originalMinimumWidth
+          if (viewGroup.minimumHeight != originalMinimumHeight) viewGroup.minimumHeight = originalMinimumHeight
+          dialogRoot = prepareShrinkRendering(viewGroup, modifiedView)
           renderSession { render(true) }
           if (hasComposeRuntime && recomposer != null) {
             // If we have pending tasks, we need to trigger it within the context of the first frame.
@@ -369,7 +375,15 @@ public class PaparazziSdk @JvmOverloads constructor(
           }
         }
 
-        val image = bridgeRenderSession.image
+        val renderedImage = bridgeRenderSession.image
+        val image = dialogRoot?.let { root ->
+          val bounds = Rect(ViewRootImpl_Accessor.getWindowFrame(root.viewRootImpl))
+          if (bounds.intersect(0, 0, renderedImage.width, renderedImage.height)) {
+            renderedImage.getSubimage(bounds.left, bounds.top, bounds.width(), bounds.height())
+          } else {
+            renderedImage
+          }
+        } ?: renderedImage
         if (validateAccessibility) {
           require(renderExtensions.isEmpty()) {
             "Running accessibility validation and render extensions simultaneously is not supported."
@@ -382,6 +396,8 @@ public class PaparazziSdk @JvmOverloads constructor(
       if (hasLifecycleOwnerRuntime) {
         lifecycleOwner.registry.currentState = Lifecycle.State.DESTROYED
       }
+      if (viewGroup.minimumWidth != originalMinimumWidth) viewGroup.minimumWidth = originalMinimumWidth
+      if (viewGroup.minimumHeight != originalMinimumHeight) viewGroup.minimumHeight = originalMinimumHeight
       viewGroup.removeAllViews()
 
       // Remove any applied render extensions
@@ -404,30 +420,36 @@ public class PaparazziSdk @JvmOverloads constructor(
   }
 
   /**
-   * layoutlib 16.2.3's `RenderSessionImpl.inflate()` eagerly measures the content and sizes the
-   * `ViewRootImpl` window frame (`mWinFrame`) to the measured content size. Paparazzi attaches the
-   * test content *after* `inflate()`, so in [RenderingMode.SHRINK] — where the window shrinks to the
-   * content in both dimensions — the window frame collapses to `0x0` (the empty inflate-time size)
-   * and stays that way until the first `render()` re-measures it. (Other rendering modes keep the
-   * device size in at least one dimension, so they never fully collapse.)
+   * Layoutlib 16.2.3 measures the empty host during inflation, collapsing its window frame to 0x0.
+   * Before the content's first layout, restore the device frame so Compose observes valid constraints.
+   * Once laid out, an empty host with a dialog still needs a device-sized render target: SHRINK only
+   * measures the main hierarchy, excluding the separate dialog window. Keep the host large enough
+   * for rendering and return the dialog to crop afterward. Ordinary content remains free to shrink.
    *
-   * Compose reads that stale `0x0` window frame during the first frame-clock pass, so any state
-   * derived from the measured size (e.g. `AnchoredDraggableState` anchors computed in
-   * `onSizeChanged`) is first resolved at `0x0` and then settles on the wrong value when the real
-   * measure arrives. Resetting the frame to the device size here lets the first frame-clock measure
-   * observe a sane window, matching pre-16.2.3 behavior; the subsequent `render()` re-shrinks the
-   * frame to the true content size for the captured image.
-   *
-   * We set the frame directly rather than calling [RenderSessionImpl.measure] because that would run
-   * an extra traversal/scroll pass whose process-global side effects (shared `Looper`/animation
-   * state) leak into later snapshots on the same thread. This relies on
-   * `ViewRootImpl_Accessor.updateFrame`, which is provided by the pinned layoutlib runtime; no-ops
-   * if the content view is not yet attached to a `ViewRootImpl`.
+   * Updating the frame directly avoids an extra measure/traversal and its animation side effects.
    */
-  private fun sizeShrinkWindowFrameToDevice(contentView: View) {
-    val viewRootImpl = contentView.viewRootImpl ?: return
-    val displayMetrics = contentView.context.resources.displayMetrics
-    ViewRootImpl_Accessor.updateFrame(viewRootImpl, displayMetrics.widthPixels, displayMetrics.heightPixels)
+  private fun prepareShrinkRendering(contentRoot: ViewGroup, contentView: View): View? {
+    if (sessionParamsBuilder.build().renderingMode != RenderingMode.SHRINK) return null
+    val metrics = contentRoot.context.resources.displayMetrics
+    if (!contentView.isLaidOut) {
+      contentRoot.viewRootImpl?.let {
+        ViewRootImpl_Accessor.updateFrame(it, metrics.widthPixels, metrics.heightPixels)
+      }
+      return null
+    }
+    if (showSystemUi || contentView.measuredWidth != 0 || contentView.measuredHeight != 0) return null
+    val root = WindowManagerGlobal.getInstance().windowViews
+      .filter { it !== contentView.rootView && it.visibility == View.VISIBLE }
+      .singleOrNull() ?: return null
+    val params = root.layoutParams as? WindowManager.LayoutParams ?: return null
+    if (params.type != WindowManager.LayoutParams.TYPE_APPLICATION ||
+      params.flags and WindowManager.LayoutParams.FLAG_DIM_BEHIND == 0
+    ) {
+      return null
+    }
+    contentRoot.minimumWidth = metrics.widthPixels
+    contentRoot.minimumHeight = metrics.heightPixels
+    return root
   }
 
   private fun withTime(timeNanos: Long, block: () -> Unit) {
