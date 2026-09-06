@@ -286,6 +286,7 @@ public class PaparazziSdk @JvmOverloads constructor(
     }
 
     lateinit var lifecycleOwner: PaparazziLifecycleOwner
+    var originalVScrollLayoutHeight: Int? = null
 
     try {
       withTime(0L) {
@@ -328,17 +329,32 @@ public class PaparazziSdk @JvmOverloads constructor(
 
       viewGroup.addView(modifiedView)
 
-      when (sessionParamsBuilder.build().renderingMode) {
+      val currentRenderingMode = sessionParamsBuilder.build().renderingMode
+      when (currentRenderingMode) {
         // See [sizeShrinkWindowFrameToDevice]. In SHRINK mode layoutlib 16.2.3 leaves the window frame
         // collapsed to 0x0 after inflating the (empty) content, which corrupts Compose state derived
         // from the first measured size. Restore a sane window frame before the first frame is rendered.
         RenderingMode.SHRINK -> sizeShrinkWindowFrameToDevice(viewGroup)
 
-        // Attaching ComposeView synchronously creates its initial composition. Measure that content
-        // before the first Choreographer frame so layoutlib applies the unbounded scroll-axis
-        // constraints before frame callbacks can freeze it at the device viewport height.
-        RenderingMode.V_SCROLL if hasComposeRuntime -> renderSession { measure() }
+        // Layoutlib 16.2.3 measures the hierarchy at device height before its unbounded V_SCROLL
+        // pass on every render. After pre-draw, a bounded root may retain that device height and
+        // clip its Compose content. Measure once while the root still accepts unbounded constraints,
+        // then pin that result while Layoutlib performs its internal measurement passes.
+        RenderingMode.V_SCROLL if hasComposeRuntime -> {
+          renderSession { measure() }
+          modifiedView.layoutParams?.let { layoutParams ->
+            originalVScrollLayoutHeight = layoutParams.height
+            layoutParams.height = modifiedView.measuredHeight
+          }
+        }
         else -> Unit
+      }
+
+      fun prepareVScrollRender() {
+        if (originalVScrollLayoutHeight != null) {
+          // Pinning an already-expanded root can otherwise make Layoutlib add the expansion twice.
+          renderSession.invalidateRenderingSize()
+        }
       }
 
       for (frame in 0 until frameCount) {
@@ -347,6 +363,7 @@ public class PaparazziSdk @JvmOverloads constructor(
         // If we have pendingTasks run recomposer to ensure we get the correct frame.
         var hasPendingWork = false
         withTime(nowNanos) {
+          prepareVScrollRender()
           renderSession { render(true) }
           if (hasComposeRuntime && recomposer != null) {
             // If we have pending tasks, we need to trigger it within the context of the first frame.
@@ -358,6 +375,7 @@ public class PaparazziSdk @JvmOverloads constructor(
 
         if (hasPendingWork) {
           withTime(nowNanos) {
+            prepareVScrollRender()
             renderSession { render(true) }
           }
 
@@ -379,6 +397,7 @@ public class PaparazziSdk @JvmOverloads constructor(
         onNewFrame(scaleImage(frameImage(image)))
       }
     } finally {
+      originalVScrollLayoutHeight?.let { modifiedView.layoutParams?.height = it }
       if (hasLifecycleOwnerRuntime) {
         lifecycleOwner.registry.currentState = Lifecycle.State.DESTROYED
       }
