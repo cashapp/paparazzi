@@ -19,6 +19,7 @@ import android.graphics.Rect
 import android.os.ext.util.SdkLevel
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AbsSeekBar
 import android.widget.Checkable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -44,29 +45,42 @@ import androidx.core.view.isVisible
  * used by accessibility-specific tooling (for example, overlay rendering and future manifest
  * generation).
  */
-internal class AccessibilityElementCollector {
+internal class AccessibilityElementCollector(
+  private val minTouchTargetSizeDp: Float = RenderSettings.TOUCH_TARGET_SIZE_DP
+) {
   /**
    * Collects accessibility elements from the provided render roots.
    *
    * [windowManagerRootView] is optional and is used for UI that renders in separate windows
    * (dialogs, popups, etc.). [rootView] is always traversed.
    */
-  fun collect(rootView: View, windowManagerRootView: View?): Set<AccessibilityElement> =
-    buildSet {
-      windowManagerRootView?.processAccessibleChildren { add(it) }
-      rootView.processAccessibleChildren { add(it) }
+  fun collect(rootView: View, windowManagerRootView: View?): Set<AccessibilityElement> {
+    val touchTargetValidator = TouchTargetValidator(
+      minTouchTargetSizeDp = minTouchTargetSizeDp,
+      density = rootView.resources.displayMetrics.density
+    )
+    return buildSet {
+      windowManagerRootView?.processAccessibleChildren({ add(it) }, touchTargetValidator)
+      rootView.processAccessibleChildren({ add(it) }, touchTargetValidator)
     }
+  }
 
-  private fun View.processAccessibleChildren(processElement: (AccessibilityElement) -> Unit) {
+  private fun View.processAccessibleChildren(
+    processElement: (AccessibilityElement) -> Unit,
+    touchTargetValidator: TouchTargetValidator
+  ) {
     val accessibilityText = this.accessibilityText()
     val bounds = Rect().also(::getBoundsOnScreen)
 
     if (isImportantForAccessibility && !accessibilityText.isNullOrBlank() && isVisible) {
       processElement(
-        AccessibilityElement(
-          id = "${this::class.simpleName}($accessibilityText)",
-          displayBounds = bounds,
-          contentDescription = accessibilityText
+        touchTargetValidator.validate(
+          AccessibilityElement(
+            id = "${this::class.simpleName}($accessibilityText)",
+            displayBounds = bounds,
+            contentDescription = accessibilityText
+          ),
+          isInteractive()
         )
       )
     }
@@ -86,7 +100,8 @@ internal class AccessibilityElementCollector {
           processElement = processElement,
           locationOnScreen = locationOnScreen,
           viewBounds = bounds,
-          unmergedNodes = unmergedNodes
+          unmergedNodes = unmergedNodes,
+          touchTargetValidator = touchTargetValidator
         )
       }
     }
@@ -94,9 +109,22 @@ internal class AccessibilityElementCollector {
     if (this is ViewGroup) {
       val orderedViews = orderViewGroup()
       orderedViews.forEach {
-        it.processAccessibleChildren(processElement)
+        it.processAccessibleChildren(processElement, touchTargetValidator)
       }
     }
+  }
+
+  private fun View.isInteractive(): Boolean {
+    val nodeInfo = createAccessibilityNodeInfo()
+    onInitializeAccessibilityNodeInfo(nodeInfo)
+    return nodeInfo.isClickable ||
+      nodeInfo.isLongClickable ||
+      nodeInfo.isCheckable ||
+      nodeInfo.isEditable ||
+      // Adjustable views (SeekBar, RatingBar) are interactive even when not clickable.
+      this is AbsSeekBar ||
+      // Custom accessibility actions and link annotations in text views carry labels.
+      nodeInfo.actionList.any { it.label != null }
   }
 
   private fun SemanticsNode.orderSemanticsNodeGroup(): List<SemanticsNode> {
@@ -252,7 +280,8 @@ internal class AccessibilityElementCollector {
     processElement: (AccessibilityElement) -> Unit,
     locationOnScreen: IntArray,
     viewBounds: Rect,
-    unmergedNodes: List<SemanticsNode>?
+    unmergedNodes: List<SemanticsNode>?,
+    touchTargetValidator: TouchTargetValidator
   ) {
     val accessibilityText = if (config.isMergingSemanticsOfDescendants) {
       val unmergedNode = unmergedNodes?.filter { it.id == id }
@@ -275,16 +304,32 @@ internal class AccessibilityElementCollector {
           Rect(left, top, right.coerceIn(0, viewBounds.right), bottom.coerceIn(0, viewBounds.bottom))
         }
       }
+      val isInteractive = isInteractive()
 
       processElement(
-        AccessibilityElement(
-          // SemanticsNode.id is backed by AtomicInteger and is not guaranteed consistent across runs.
-          id = accessibilityText,
-          displayBounds = displayBounds,
-          contentDescription = accessibilityText
+        touchTargetValidator.validate(
+          AccessibilityElement(
+            // SemanticsNode.id is backed by AtomicInteger and is not guaranteed consistent across runs.
+            id = accessibilityText,
+            displayBounds = displayBounds,
+            contentDescription = accessibilityText
+          ),
+          isInteractive
         )
       )
     }
+  }
+
+  private fun SemanticsNode.isInteractive(): Boolean {
+    return config.getOrNull(SemanticsActions.OnClick) != null ||
+      config.getOrNull(SemanticsActions.OnLongClick) != null ||
+      config.getOrNull(SemanticsProperties.ToggleableState) != null ||
+      config.getOrNull(SemanticsProperties.IsEditable) == true ||
+      config.getOrNull(SemanticsActions.SetProgress) != null ||
+      !config.getOrNull(SemanticsActions.CustomActions).isNullOrEmpty() ||
+      config.getOrNull(SemanticsProperties.Text)?.any { annotatedString ->
+        annotatedString.getLinkAnnotations(start = 0, end = annotatedString.text.length).isNotEmpty()
+      } == true
   }
 
   private fun SemanticsNode.findAllUnmergedNodes(): List<SemanticsNode> {

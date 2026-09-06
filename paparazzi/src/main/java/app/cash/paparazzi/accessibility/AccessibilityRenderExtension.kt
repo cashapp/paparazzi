@@ -32,9 +32,17 @@ import com.android.internal.view.OneShotPreDrawListener
  *
  * See [Paparazzi's accessibility documentation](https://cashapp.github.io/paparazzi/accessibility/) for usage
  * information and interpretation tips.
+ *
+ * @param minTouchTargetSizeDp The minimum touch target size in dp for interactive elements.
+ *   Interactive elements whose rendered bounds are smaller than this size in either dimension are
+ *   flagged with a red border and a `<touch-target>` legend tag. Defaults to 48dp per Material and
+ *   WCAG guidance.
  */
-public class AccessibilityRenderExtension : RenderExtension {
-  private val accessibilityElementCollector = AccessibilityElementCollector()
+public class AccessibilityRenderExtension(
+  private val minTouchTargetSizeDp: Float = RenderSettings.TOUCH_TARGET_SIZE_DP
+) : RenderExtension {
+  private val accessibilityElementCollector =
+    AccessibilityElementCollector(minTouchTargetSizeDp = minTouchTargetSizeDp)
 
   override fun renderView(contentView: View): View {
     // WindowManager needed to access accessibility elements for views that draw to other windows.

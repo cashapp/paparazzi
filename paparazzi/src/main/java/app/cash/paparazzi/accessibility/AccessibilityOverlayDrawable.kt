@@ -17,6 +17,11 @@ internal class AccessibilityOverlayDrawable : Drawable() {
     strokeWidth = 2f
     style = Paint.Style.STROKE
   }
+  private val warningStrokePaint = Paint().apply {
+    strokeWidth = 4f
+    style = Paint.Style.STROKE
+    color = RenderSettings.WARNING_BORDER_COLOR.toColorInt()
+  }
 
   fun updateElements(elements: Collection<AccessibilityElement>) {
     accessibilityElements.clear()
@@ -33,6 +38,10 @@ internal class AccessibilityOverlayDrawable : Drawable() {
       strokePaint.color = it.color.toColorInt()
       strokePaint.alpha = RenderSettings.DEFAULT_RENDER_ALPHA * 2
       canvas.drawRect(it.displayBounds, strokePaint)
+
+      if (it.isTouchTargetTooSmall) {
+        canvas.drawRect(it.displayBounds, warningStrokePaint)
+      }
     }
   }
 

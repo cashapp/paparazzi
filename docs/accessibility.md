@@ -83,12 +83,28 @@ Each legend entry is a comma-separated string of the accessibility properties fo
 | `<url-action>: text` | URL link annotation |
 | `<click-action>: text` | Clickable link annotation |
 | `<in-list>` | Element is inside a list/collection |
+| `<touch-target>` | Interactive element smaller than the minimum touch target size (48dp by default) |
 | State description text | Custom state description (replaces selected state when set) |
 | Role name (e.g., `Button`, `Checkbox`, `Image`) | Semantic role (Compose only) |
 | Error description text | Validation error message |
 
 Supported Properties
 -------
+
+### Touch target validation
+
+Interactive elements (clickable, toggleable, editable, adjustable, custom actions, link annotations) whose rendered bounds are smaller than the minimum touch target size in either dimension are flagged:
+
+- A **red border** is drawn around the element in the left pane.
+- A **`<touch-target>`** tag is appended to the element's legend entry.
+
+The minimum touch target size defaults to **48dp** per [Material](https://material.io/design/usability/accessibility.html#layout) and WCAG guidance, and can be customized via the `minTouchTargetSizeDp` parameter:
+
+```kotlin
+renderExtensions = setOf(AccessibilityRenderExtension(minTouchTargetSizeDp = 48f)),
+```
+
+Note that components whose touch target is expanded beyond their rendered bounds (e.g., Material 3 `TextButton`s and `Checkbox`es) are still flagged based on their rendered size. Lower `minTouchTargetSizeDp` if your UI intentionally renders below 48dp.
 
 ### Content description
 

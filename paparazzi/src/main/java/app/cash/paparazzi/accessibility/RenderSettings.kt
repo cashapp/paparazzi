@@ -34,6 +34,10 @@ internal object RenderSettings {
   const val DEFAULT_TEXT_SIZE: Float = 10f
   const val DEFAULT_RECT_SIZE: Int = 16
 
+  // Minimum touch target size in dp per Material and WCAG guidance (48x48dp).
+  const val TOUCH_TARGET_SIZE_DP: Float = 48f
+  val WARNING_BORDER_COLOR: Color = Color.RED
+
   private val colorMap = mutableMapOf<Int, Color>()
 
   internal fun getColor(key: String): Color {

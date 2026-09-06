@@ -20,7 +20,11 @@ import android.graphics.Rect
 internal data class AccessibilityElement(
   val id: String,
   val displayBounds: Rect,
-  val contentDescription: String
+  val contentDescription: String,
+  /** Whether the element can be interacted with (clicked, toggled, edited, etc.). */
+  val isInteractive: Boolean = false,
+  /** Whether an interactive element's touch target is smaller than the configured minimum. */
+  val isTouchTargetTooSmall: Boolean = false
 ) {
   val color = RenderSettings.getColor(id)
 }
