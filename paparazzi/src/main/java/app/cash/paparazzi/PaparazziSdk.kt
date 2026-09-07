@@ -28,6 +28,7 @@ import android.util.DisplayMetrics
 import android.view.BridgeInflater
 import android.view.Choreographer
 import android.view.Choreographer_Delegate
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.NO_ID
@@ -295,14 +296,14 @@ public class PaparazziSdk @JvmOverloads constructor(
     fun restoreLayoutParams() {
       originalLayoutParams.forEach { (view, original) ->
         val params = view.layoutParams
-        if (params.width != original.width || params.height != original.height) {
+        if (params is WindowManager.LayoutParams && original is WindowManager.LayoutParams) {
+          if (params.copyFrom(original) != 0 && view.isAttachedToWindow) {
+            view.context.getSystemService(WindowManager::class.java).updateViewLayout(view, params)
+          }
+        } else if (params.width != original.width || params.height != original.height) {
           params.width = original.width
           params.height = original.height
-          if (params is WindowManager.LayoutParams && view.isAttachedToWindow) {
-            view.context.getSystemService(WindowManager::class.java).updateViewLayout(view, params)
-          } else {
-            view.layoutParams = params
-          }
+          view.layoutParams = params
         }
       }
       originalLayoutParams.clear()
@@ -470,10 +471,20 @@ public class PaparazziSdk @JvmOverloads constructor(
       .singleOrNull() ?: return null
     val params = root.layoutParams as? WindowManager.LayoutParams ?: return null
     if (params.type != WindowManager.LayoutParams.TYPE_APPLICATION) return null
-    if (hasComposeRuntime && root is AbstractComposeView) {
-      originalLayoutParams.putIfAbsent(root, LayoutParams(params))
-      params.width = metrics.widthPixels
+    val accessibilityRendering = renderExtensions.any { it is AccessibilityRenderExtension }
+    if (accessibilityRendering || (hasComposeRuntime && root is AbstractComposeView)) {
+      originalLayoutParams.putIfAbsent(
+        root,
+        WindowManager.LayoutParams().apply { copyFrom(params) }
+      )
+      params.width = if (accessibilityRendering) metrics.widthPixels / 2 else metrics.widthPixels
       params.height = metrics.heightPixels
+      if (accessibilityRendering) {
+        // Accessibility rendering doubles the device width to place its details beside the app.
+        // Keep separate application windows within the app's left-hand viewport.
+        params.gravity = (params.gravity and Gravity.VERTICAL_GRAVITY_MASK) or Gravity.START
+        params.x = 0
+      }
       root.context.getSystemService(WindowManager::class.java).updateViewLayout(root, params)
     } else if (mode != RenderingMode.SHRINK) {
       return null
