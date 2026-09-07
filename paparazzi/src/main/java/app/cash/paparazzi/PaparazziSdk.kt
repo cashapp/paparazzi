@@ -42,6 +42,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Recomposer
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.InternalComposeUiApi
+import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.WindowRecomposerPolicy
 import androidx.compose.ui.platform.createLifecycleAwareWindowRecomposer
@@ -290,18 +291,21 @@ public class PaparazziSdk @JvmOverloads constructor(
 
     val originalMinimumWidth = viewGroup.minimumWidth
     val originalMinimumHeight = viewGroup.minimumHeight
-    var originalContentLayoutParams: LayoutParams? = null
-    var contentLayoutParamsOverridden = false
-    fun restoreContentLayoutParams() {
-      if (!contentLayoutParamsOverridden) return
-      val original = originalContentLayoutParams ?: return
-      val params = modifiedView.layoutParams
-      if (params.width != original.width || params.height != original.height) {
-        params.width = original.width
-        params.height = original.height
-        modifiedView.layoutParams = params
+    val originalLayoutParams = mutableMapOf<View, LayoutParams>()
+    fun restoreLayoutParams() {
+      originalLayoutParams.forEach { (view, original) ->
+        val params = view.layoutParams
+        if (params.width != original.width || params.height != original.height) {
+          params.width = original.width
+          params.height = original.height
+          if (params is WindowManager.LayoutParams && view.isAttachedToWindow) {
+            view.context.getSystemService(WindowManager::class.java).updateViewLayout(view, params)
+          } else {
+            view.layoutParams = params
+          }
+        }
       }
-      contentLayoutParamsOverridden = false
+      originalLayoutParams.clear()
     }
     lateinit var lifecycleOwner: PaparazziLifecycleOwner
 
@@ -345,11 +349,10 @@ public class PaparazziSdk @JvmOverloads constructor(
       }
 
       viewGroup.addView(modifiedView)
-      originalContentLayoutParams = LayoutParams(modifiedView.layoutParams)
 
       when (sessionParamsBuilder.build().renderingMode) {
-        RenderingMode.SHRINK -> {
-          contentLayoutParamsOverridden = prepareShrinkRendering(viewGroup, modifiedView) != null
+        RenderingMode.SHRINK, RenderingMode.NORMAL -> {
+          prepareWindowRendering(viewGroup, modifiedView, originalLayoutParams)
         }
 
         // Attaching ComposeView synchronously creates its initial composition. Measure that content
@@ -366,13 +369,13 @@ public class PaparazziSdk @JvmOverloads constructor(
         var windowRoot: View? = null
         var cropToWindow = false
         var hasPendingWork = false
-        restoreContentLayoutParams()
+        if (frame > 0) restoreLayoutParams()
         withTime(nowNanos) {
           if (viewGroup.minimumWidth != originalMinimumWidth) viewGroup.minimumWidth = originalMinimumWidth
           if (viewGroup.minimumHeight != originalMinimumHeight) viewGroup.minimumHeight = originalMinimumHeight
-          cropToWindow = modifiedView.measuredWidth == 0 && modifiedView.measuredHeight == 0
-          windowRoot = prepareShrinkRendering(viewGroup, modifiedView)
-          contentLayoutParamsOverridden = windowRoot != null
+          cropToWindow = sessionParamsBuilder.build().renderingMode == RenderingMode.SHRINK &&
+            modifiedView.measuredWidth == 0 && modifiedView.measuredHeight == 0
+          windowRoot = prepareWindowRendering(viewGroup, modifiedView, originalLayoutParams)
           renderSession { render(true) }
           if (hasComposeRuntime && recomposer != null) {
             // If we have pending tasks, we need to trigger it within the context of the first frame.
@@ -384,6 +387,7 @@ public class PaparazziSdk @JvmOverloads constructor(
 
         if (hasPendingWork) {
           withTime(nowNanos) {
+            windowRoot = prepareWindowRendering(viewGroup, modifiedView, originalLayoutParams)
             renderSession { render(true) }
           }
 
@@ -413,7 +417,7 @@ public class PaparazziSdk @JvmOverloads constructor(
         onNewFrame(scaleImage(frameImage(image)))
       }
     } finally {
-      restoreContentLayoutParams()
+      restoreLayoutParams()
       if (hasLifecycleOwnerRuntime) {
         lifecycleOwner.registry.currentState = Lifecycle.State.DESTROYED
       }
@@ -441,18 +445,20 @@ public class PaparazziSdk @JvmOverloads constructor(
   }
 
   /**
-   * Layoutlib 16.2.3 measures the empty host during inflation, collapsing its window frame to 0x0.
-   * Before the content's first layout, restore the device frame so Compose observes valid constraints.
-   * Once laid out, a host with a separate application window needs a device-sized
-   * render target: SHRINK only measures the main hierarchy, excluding the separate window.
-   * Render the whole scene at device size, cropping to the window only if the main content is empty.
-   *
-   * Updating the frame directly avoids an extra measure/traversal and its animation side effects.
+   * Restore SHRINK's empty inflation-time frame before the first layout, then provide a device-sized
+   * render target for a separate application window. Direct Compose windows can copy a tiny nested
+   * host's bounds even in NORMAL mode. Size those windows directly so the host's wrappers retain
+   * their original bounds and backgrounds. Ordinary dialogs retain their requested window size.
    */
-  private fun prepareShrinkRendering(contentRoot: ViewGroup, contentView: View): View? {
-    if (sessionParamsBuilder.build().renderingMode != RenderingMode.SHRINK) return null
+  private fun prepareWindowRendering(
+    contentRoot: ViewGroup,
+    contentView: View,
+    originalLayoutParams: MutableMap<View, LayoutParams>
+  ): View? {
+    val mode = sessionParamsBuilder.build().renderingMode
+    if (mode != RenderingMode.SHRINK && mode != RenderingMode.NORMAL) return null
     val metrics = contentRoot.context.resources.displayMetrics
-    if (!contentView.isLaidOut) {
+    if (mode == RenderingMode.SHRINK && !contentView.isLaidOut) {
       contentRoot.viewRootImpl?.let {
         ViewRootImpl_Accessor.updateFrame(it, metrics.widthPixels, metrics.heightPixels)
       }
@@ -464,13 +470,22 @@ public class PaparazziSdk @JvmOverloads constructor(
       .singleOrNull() ?: return null
     val params = root.layoutParams as? WindowManager.LayoutParams ?: return null
     if (params.type != WindowManager.LayoutParams.TYPE_APPLICATION) return null
-    contentRoot.minimumWidth = metrics.widthPixels
-    contentRoot.minimumHeight = metrics.heightPixels
-    // A popup can track the Compose host's layout bounds. Give that host the render target's
-    // bounds too, so its layout listener does not resize the popup to the main content size.
-    contentView.layoutParams = contentView.layoutParams.apply {
-      width = metrics.widthPixels
-      height = metrics.heightPixels
+    if (hasComposeRuntime && root is AbstractComposeView) {
+      originalLayoutParams.putIfAbsent(root, LayoutParams(params))
+      params.width = metrics.widthPixels
+      params.height = metrics.heightPixels
+      root.context.getSystemService(WindowManager::class.java).updateViewLayout(root, params)
+    } else if (mode != RenderingMode.SHRINK) {
+      return null
+    }
+    if (mode == RenderingMode.SHRINK) {
+      contentRoot.minimumWidth = metrics.widthPixels
+      contentRoot.minimumHeight = metrics.heightPixels
+      originalLayoutParams.putIfAbsent(contentView, LayoutParams(contentView.layoutParams))
+      contentView.layoutParams = contentView.layoutParams.apply {
+        width = metrics.widthPixels
+        height = metrics.heightPixels
+      }
     }
     return root
   }
