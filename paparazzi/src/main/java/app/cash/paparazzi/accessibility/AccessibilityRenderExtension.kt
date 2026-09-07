@@ -22,6 +22,7 @@ import android.view.WindowManagerGlobal
 import android.widget.LinearLayout
 import app.cash.paparazzi.RenderExtension
 import app.cash.paparazzi.internal.ComposeViewAdapter
+import com.android.internal.view.OneShotPreDrawListener
 
 /**
  * A [RenderExtension] that overlays accessibility property information on top of the rendered view.
@@ -44,9 +45,13 @@ public class AccessibilityRenderExtension : RenderExtension {
       addView(overlayDetailsView, LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, 1f))
 
       val overlayDrawables = mutableMapOf<Int, AccessibilityOverlayDrawable>()
-      // Compose placement changes need not trigger global layout. Invalidate each frame so
-      // the foreground is re-recorded with bounds collected after the content is drawn.
+      // Compose placement changes need not trigger global layout. Re-record existing
+      // foregrounds each frame, but keep window discovery tied to global layout.
       viewTreeObserver.addOnPreDrawListener {
+        overlayDrawables.values.forEach { it.invalidateSelf() }
+        true
+      }
+      viewTreeObserver.addOnGlobalLayoutListener {
         val accessibleWindowRoots = WindowManagerGlobal.getInstance().windowViews.reversed().associate {
           val id = it.hashCode()
           val coreView = it.findComposeViewAdapterChild()
@@ -58,18 +63,19 @@ public class AccessibilityRenderExtension : RenderExtension {
           id to coreView
         }
 
-        val totalElements = mutableSetOf<AccessibilityElement>()
-        accessibleWindowRoots.forEach { (id, view) ->
-          val elements = accessibilityElementCollector.collect(
-            rootView = view
-          )
+        OneShotPreDrawListener.add(this@apply) {
+          val totalElements = mutableSetOf<AccessibilityElement>()
+          accessibleWindowRoots.forEach { (id, view) ->
+            val elements = accessibilityElementCollector.collect(
+              rootView = view
+            )
 
-          overlayDrawables[id]?.invalidateSelf()
-          totalElements += elements
+            overlayDrawables[id]?.invalidateSelf()
+            totalElements += elements
+          }
+
+          overlayDetailsView.updateElements(totalElements)
         }
-
-        overlayDetailsView.updateElements(totalElements)
-        true
       }
     }
   }
