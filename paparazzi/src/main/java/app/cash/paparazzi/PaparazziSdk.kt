@@ -43,7 +43,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Recomposer
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.InternalComposeUiApi
-import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.WindowRecomposerPolicy
 import androidx.compose.ui.platform.createLifecycleAwareWindowRecomposer
@@ -447,9 +446,8 @@ public class PaparazziSdk @JvmOverloads constructor(
 
   /**
    * Restore SHRINK's empty inflation-time frame before the first layout, then provide a device-sized
-   * render target for a separate application window. Direct Compose windows can copy a tiny nested
-   * host's bounds even in NORMAL mode. Size those windows directly so the host's wrappers retain
-   * their original bounds and backgrounds. Ordinary dialogs retain their requested window size.
+   * render target for a separate application window. Explicitly sized windows can copy a tiny nested
+   * host's bounds even in NORMAL mode. Size those windows directly, preserving content-sized dialogs.
    */
   private fun prepareWindowRendering(
     contentRoot: ViewGroup,
@@ -472,11 +470,8 @@ public class PaparazziSdk @JvmOverloads constructor(
     val params = root.layoutParams as? WindowManager.LayoutParams ?: return null
     if (params.type != WindowManager.LayoutParams.TYPE_APPLICATION) return null
     val accessibilityRendering = renderExtensions.any { it is AccessibilityRenderExtension }
-    if (accessibilityRendering || (hasComposeRuntime && root is AbstractComposeView)) {
-      originalLayoutParams.putIfAbsent(
-        root,
-        WindowManager.LayoutParams().apply { copyFrom(params) }
-      )
+    if (accessibilityRendering || (params.width >= 0 && params.height >= 0)) {
+      originalLayoutParams.putIfAbsent(root, WindowManager.LayoutParams().apply { copyFrom(params) })
       params.width = if (accessibilityRendering) metrics.widthPixels / 2 else metrics.widthPixels
       params.height = metrics.heightPixels
       if (accessibilityRendering) {
