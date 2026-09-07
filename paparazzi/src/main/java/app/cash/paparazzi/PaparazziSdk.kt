@@ -290,6 +290,19 @@ public class PaparazziSdk @JvmOverloads constructor(
 
     val originalMinimumWidth = viewGroup.minimumWidth
     val originalMinimumHeight = viewGroup.minimumHeight
+    var originalContentLayoutParams: LayoutParams? = null
+    var contentLayoutParamsOverridden = false
+    fun restoreContentLayoutParams() {
+      if (!contentLayoutParamsOverridden) return
+      val original = originalContentLayoutParams ?: return
+      val params = modifiedView.layoutParams
+      if (params.width != original.width || params.height != original.height) {
+        params.width = original.width
+        params.height = original.height
+        modifiedView.layoutParams = params
+      }
+      contentLayoutParamsOverridden = false
+    }
     lateinit var lifecycleOwner: PaparazziLifecycleOwner
 
     try {
@@ -332,9 +345,12 @@ public class PaparazziSdk @JvmOverloads constructor(
       }
 
       viewGroup.addView(modifiedView)
+      originalContentLayoutParams = LayoutParams(modifiedView.layoutParams)
 
       when (sessionParamsBuilder.build().renderingMode) {
-        RenderingMode.SHRINK -> prepareShrinkRendering(viewGroup, modifiedView)
+        RenderingMode.SHRINK -> {
+          contentLayoutParamsOverridden = prepareShrinkRendering(viewGroup, modifiedView) != null
+        }
 
         // Attaching ComposeView synchronously creates its initial composition. Measure that content
         // before the first Choreographer frame so layoutlib applies the unbounded scroll-axis
@@ -347,12 +363,16 @@ public class PaparazziSdk @JvmOverloads constructor(
         val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
 
         // If we have pendingTasks run recomposer to ensure we get the correct frame.
-        var dialogRoot: View? = null
+        var windowRoot: View? = null
+        var cropToWindow = false
         var hasPendingWork = false
+        restoreContentLayoutParams()
         withTime(nowNanos) {
           if (viewGroup.minimumWidth != originalMinimumWidth) viewGroup.minimumWidth = originalMinimumWidth
           if (viewGroup.minimumHeight != originalMinimumHeight) viewGroup.minimumHeight = originalMinimumHeight
-          dialogRoot = prepareShrinkRendering(viewGroup, modifiedView)
+          cropToWindow = modifiedView.measuredWidth == 0 && modifiedView.measuredHeight == 0
+          windowRoot = prepareShrinkRendering(viewGroup, modifiedView)
+          contentLayoutParamsOverridden = windowRoot != null
           renderSession { render(true) }
           if (hasComposeRuntime && recomposer != null) {
             // If we have pending tasks, we need to trigger it within the context of the first frame.
@@ -376,7 +396,7 @@ public class PaparazziSdk @JvmOverloads constructor(
         }
 
         val renderedImage = bridgeRenderSession.image
-        val image = dialogRoot?.let { root ->
+        val image = windowRoot?.takeIf { cropToWindow }?.let { root ->
           val bounds = Rect(ViewRootImpl_Accessor.getWindowFrame(root.viewRootImpl))
           if (bounds.intersect(0, 0, renderedImage.width, renderedImage.height)) {
             renderedImage.getSubimage(bounds.left, bounds.top, bounds.width(), bounds.height())
@@ -393,6 +413,7 @@ public class PaparazziSdk @JvmOverloads constructor(
         onNewFrame(scaleImage(frameImage(image)))
       }
     } finally {
+      restoreContentLayoutParams()
       if (hasLifecycleOwnerRuntime) {
         lifecycleOwner.registry.currentState = Lifecycle.State.DESTROYED
       }
@@ -422,9 +443,9 @@ public class PaparazziSdk @JvmOverloads constructor(
   /**
    * Layoutlib 16.2.3 measures the empty host during inflation, collapsing its window frame to 0x0.
    * Before the content's first layout, restore the device frame so Compose observes valid constraints.
-   * Once laid out, an empty host with a dialog still needs a device-sized render target: SHRINK only
-   * measures the main hierarchy, excluding the separate dialog window. Keep the host large enough
-   * for rendering and return the dialog to crop afterward. Ordinary content remains free to shrink.
+   * Once laid out, a host with a separate application window needs a device-sized
+   * render target: SHRINK only measures the main hierarchy, excluding the separate window.
+   * Render the whole scene at device size, cropping to the window only if the main content is empty.
    *
    * Updating the frame directly avoids an extra measure/traversal and its animation side effects.
    */
@@ -437,7 +458,7 @@ public class PaparazziSdk @JvmOverloads constructor(
       }
       return null
     }
-    if (showSystemUi || contentView.measuredWidth != 0 || contentView.measuredHeight != 0) return null
+    if (showSystemUi) return null
     val root = WindowManagerGlobal.getInstance().windowViews
       .filter { it !== contentView.rootView && it.visibility == View.VISIBLE }
       .singleOrNull() ?: return null
@@ -445,6 +466,12 @@ public class PaparazziSdk @JvmOverloads constructor(
     if (params.type != WindowManager.LayoutParams.TYPE_APPLICATION) return null
     contentRoot.minimumWidth = metrics.widthPixels
     contentRoot.minimumHeight = metrics.heightPixels
+    // A popup can track the Compose host's layout bounds. Give that host the render target's
+    // bounds too, so its layout listener does not resize the popup to the main content size.
+    contentView.layoutParams = contentView.layoutParams.apply {
+      width = metrics.widthPixels
+      height = metrics.heightPixels
+    }
     return root
   }
 
