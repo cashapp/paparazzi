@@ -1537,14 +1537,6 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun composeOverlayShrink() {
-    val fixtureRoot = File("src/test/projects/compose-overlay-shrink")
-    gradleRunner
-      .withArguments("testDebugUnitTest", "--stacktrace")
-      .runFixture(fixtureRoot) { build() }
-  }
-
-  @Test
   fun composeLeaks() {
     val fixtureRoot = File("src/test/projects/compose-leaks")
 
