@@ -463,6 +463,12 @@ public class PaparazziSdk @JvmOverloads constructor(
       }
       return null
     }
+    if (
+      mode == RenderingMode.SHRINK &&
+      (contentView.measuredWidth != 0 || contentView.measuredHeight != 0)
+    ) {
+      return null
+    }
     if (showSystemUi) return null
     val root = WindowManagerGlobal.getInstance().windowViews
       .filter { it !== contentView.rootView && it.visibility == View.VISIBLE }
