@@ -65,12 +65,11 @@ public class AccessibilityRenderExtension : RenderExtension {
 
         OneShotPreDrawListener.add(this@apply) {
           val totalElements = mutableSetOf<AccessibilityElement>()
-          accessibleWindowRoots.forEach { (id, view) ->
+          accessibleWindowRoots.values.forEach { view ->
             val elements = accessibilityElementCollector.collect(
               rootView = view
             )
 
-            overlayDrawables[id]?.invalidateSelf()
             totalElements += elements
           }
 
