@@ -96,6 +96,12 @@ public class PaparazziSdk @JvmOverloads constructor(
 ) {
   private var validateAccessibility = false
 
+  /** Start of this render session's vsync timeline; see [nextVsyncNanos]. */
+  private var vsyncEpochNanos = 0L
+
+  /** Vsync of the previous tick on this session's timeline; see [nextVsyncNanos]. */
+  private var lastVsyncNanos = 0L
+
   @Deprecated(
     "validateAccessibility is deprecated. " +
       "Use the AccessibilityRenderExtension for accessibility testing instead."
@@ -181,6 +187,7 @@ public class PaparazziSdk @JvmOverloads constructor(
       initializeAppCompatIfPresent()
     }
 
+    startVsyncTimeline()
     bridgeRenderSession = createBridgeSession(renderSession, renderSession.inflate())
   }
 
@@ -258,6 +265,7 @@ public class PaparazziSdk @JvmOverloads constructor(
     renderSession = createRenderSession(sessionParams)
     renderSession.init(sessionParams.timeout)
     Bitmap.setDefaultDensity(DisplayMetrics.DENSITY_DEVICE_STABLE)
+    startVsyncTimeline()
     bridgeRenderSession = createBridgeSession(renderSession, renderSession.inflate())
   }
 
@@ -289,8 +297,9 @@ public class PaparazziSdk @JvmOverloads constructor(
     lateinit var lifecycleOwner: PaparazziLifecycleOwner
 
     try {
-      withTime(0L) {
-        // Initialize the choreographer at time=0.
+      withTime(0L, tickVsync = false) {
+        // Initialize the choreographer at time=0. This tick renders nothing, so it deliberately
+        // does not consume a vsync (see [nextVsyncNanos]).
       }
 
       // The consumer may not have compose runtime on the classpath, so we don't reference the type.
@@ -456,7 +465,7 @@ public class PaparazziSdk @JvmOverloads constructor(
     }
   }
 
-  private fun withTime(timeNanos: Long, block: () -> Unit) {
+  private fun withTime(timeNanos: Long, tickVsync: Boolean = true, block: () -> Unit) {
     val frameNanos = timeNanos
 
     // Execute the block at the requested time.
@@ -488,13 +497,66 @@ public class PaparazziSdk @JvmOverloads constructor(
       )
 
       Choreographer_Delegate.sChoreographerTime = 0
-      Choreographer_Delegate.doFrame(currentTimeNanos)
+      Choreographer_Delegate.doFrame(
+        if (tickVsync) nextVsyncNanos(currentTimeNanos) else currentTimeNanos + vsyncEpochNanos
+      )
+
+      // Choreographer_Delegate#doFrame publishes its argument into sChoreographerTime, which is what
+      // SessionInteractiveData#getNanosTime adds to the simulated clock. Restore this frame's real
+      // time so that the synthetic vsync above is invisible to the render and to test code.
+      Choreographer_Delegate.sChoreographerTime = currentTimeNanos
 
       return block()
     } catch (e: Throwable) {
       Bridge.getLog().error("broken", "Failed executing Choreographer#doFrame", e, null, null)
       throw e
     }
+  }
+
+  /**
+   * Returns a strictly increasing vsync timestamp for the next `Choreographer#doFrame` tick.
+   *
+   * Paparazzi pins the simulated system clock at 0 (see [withTime]) so that snapshots are
+   * deterministic, which means every frame of a session used to be signalled with the same
+   * `frameTimeNanos` of 0. layoutlib 16.2.4 tolerated that: `LayoutlibRenderer#setup` acquired the
+   * `ImageReader`'s image up front and `getBuffer()` handed back that long-lived buffer, so the
+   * copied pixels always reflected whatever HWUI had most recently drawn into it.
+   *
+   * layoutlib 17.0.1 reworked that path — `getBuffer()` now calls `ImageReader#acquireNextImage()`
+   * per frame and `releaseBuffer()` closes it again — so a captured frame only contains new pixels
+   * if HWUI actually *produced* one. HWUI drops a frame whose vsync timestamp has not advanced past
+   * the previous one, so with the clock pinned at 0 only the first `render()` of a session ever
+   * rasterized. Every later snapshot in the same session silently returned the first frame's
+   * pixels, even though the view tree had been re-measured and its display list re-recorded.
+   *
+   * Advancing only the value handed to `Choreographer_Delegate.doFrame` fixes this: the vsync is
+   * captured into `Choreographer#mFrameInfo` during the tick and read back by
+   * `ThreadedRenderer#draw`, so HWUI sees a new frame. `doFrame` also publishes its argument into
+   * the simulated clock, so [withTime] re-pins the clock immediately afterwards, leaving the time
+   * observed from test code during the render unchanged. Animation callbacks are unaffected: they
+   * are dispatched separately against `sChoreographerTime` before the tick.
+   *
+   * The vsync must also keep increasing across render sessions, because `Choreographer` is a
+   * process-wide singleton: a session that restarted its timeline at 0 would hand HWUI vsyncs
+   * behind ones it had already seen from earlier tests in the same JVM, and its frames would be
+   * dropped again. See [startVsyncTimeline].
+   */
+  private fun nextVsyncNanos(frameTimeNanos: Long): Long {
+    val vsyncNanos = maxOf(frameTimeNanos + vsyncEpochNanos, lastVsyncNanos + VSYNC_INTERVAL_NANOS)
+    lastVsyncNanos = vsyncNanos
+    vsyncFloorNanos = maxOf(vsyncFloorNanos, vsyncNanos)
+    return vsyncNanos
+  }
+
+  /**
+   * Starts this render session's vsync timeline above every vsync already handed to the process-wide
+   * `Choreographer`, so that a new session never rewinds the clock HWUI compares frames against.
+   * Frame times are offset by a constant, which keeps every interval within a session — and
+   * therefore all animation timing — exactly as it would be without the offset.
+   */
+  private fun startVsyncTimeline() {
+    vsyncEpochNanos = vsyncFloorNanos + VSYNC_INTERVAL_NANOS
+    lastVsyncNanos = vsyncEpochNanos - VSYNC_INTERVAL_NANOS
   }
 
   private fun createRenderSession(sessionParams: SessionParams): RenderSessionImpl {
@@ -697,6 +759,15 @@ public class PaparazziSdk @JvmOverloads constructor(
     internal val isInitialized get() = ::renderer.isInitialized
 
     internal lateinit var sessionParamsBuilder: SessionParamsBuilder
+
+    /** One 60Hz vsync interval, used as the synthetic step in [nextVsyncNanos]. */
+    private const val VSYNC_INTERVAL_NANOS = 16_666_666L
+
+    /**
+     * Highest vsync handed to `Choreographer_Delegate.doFrame` so far. `Choreographer` is a
+     * process-wide singleton shared by every test in a JVM, so this high-water mark is too.
+     */
+    private var vsyncFloorNanos = -VSYNC_INTERVAL_NANOS
 
     private val MAIN_DISPATCHER by lazy {
       Handler.getMain().asCoroutineDispatcher("Paparazzi-Main")
