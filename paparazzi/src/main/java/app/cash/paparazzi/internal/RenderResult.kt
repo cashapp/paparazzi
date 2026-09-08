@@ -29,5 +29,14 @@ internal data class RenderResult(
 )
 
 internal fun RenderSession.toResult(): RenderResult {
-  return RenderResult(result, systemRootViews.toList(), rootViews.toList(), image)
+  return RenderResult(result, systemRootViews.toList(), rootViews.toList(), copyImage())
+}
+
+internal fun RenderSession.copyImage(): BufferedImage {
+  val recyclableImage = getRecyclableImage() ?: return image
+  return recyclableImage.use {
+    val image = it.getImage()
+    val raster = image.raster.createCompatibleWritableRaster()
+    BufferedImage(image.colorModel, image.copyData(raster), image.isAlphaPremultiplied, null)
+  }
 }
