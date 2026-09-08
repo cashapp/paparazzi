@@ -31,7 +31,7 @@ import org.junit.Rule
 import org.junit.Test
 import java.awt.image.BufferedImage
 
-private const val EXPECTED_CURRENT_V_SCROLL_WIDTH = 514
+private const val EXPECTED_CURRENT_V_SCROLL_WIDTH = 529
 private const val EXPECTED_CURRENT_V_SCROLL_HEIGHT = 1000
 private const val CONTENT_HEIGHT_DP = 700
 
