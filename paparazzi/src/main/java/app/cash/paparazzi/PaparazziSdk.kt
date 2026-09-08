@@ -465,7 +465,8 @@ public class PaparazziSdk @JvmOverloads constructor(
     }
     if (
       mode == RenderingMode.SHRINK &&
-      (contentView.measuredWidth != 0 || contentView.measuredHeight != 0)
+      (contentView.measuredWidth != 0 || contentView.measuredHeight != 0) &&
+      (contentView.measuredWidth != metrics.widthPixels || contentView.measuredHeight != metrics.heightPixels)
     ) {
       return null
     }
