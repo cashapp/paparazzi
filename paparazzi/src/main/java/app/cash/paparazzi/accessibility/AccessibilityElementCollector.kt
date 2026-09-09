@@ -303,13 +303,15 @@ internal class AccessibilityElementCollector {
   }
 
   private fun SemanticsNode.accessibilityText(): String? {
-    val invisibleToUser = config.getOrNull(SemanticsProperties.InvisibleToUser) != null
+    val hiddenFromAccessibility =
+      config.getOrNull(SemanticsProperties.InvisibleToUser) != null ||
+        config.getOrNull(SemanticsProperties.HideFromAccessibility) != null
     val hasZeroAlphaModifier = layoutInfo.getModifierInfo().any {
       // We don't get direct access to an alpha field but we can inspect the modifiers and see if
       // a modifier of 0f was applied to the node.
       it.modifier == Modifier.alpha(0f)
     }
-    if (invisibleToUser || hasZeroAlphaModifier) {
+    if (hiddenFromAccessibility || hasZeroAlphaModifier) {
       return null
     }
 

@@ -42,6 +42,7 @@ import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.semantics.invisibleToUser
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.progressBarRangeInfo
@@ -238,6 +239,14 @@ class AccessibilityRenderingTest {
             modifier = Modifier
               .alpha(0f),
             text = "Text with zero alpha"
+          )
+          Box(
+            modifier = Modifier
+              .size(0.dp)
+              .clickable(enabled = false, onClick = {})
+              .semantics {
+                hideFromAccessibility()
+              }
           )
           Text(text = "Text that is visible!")
         }
