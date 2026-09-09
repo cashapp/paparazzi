@@ -7,8 +7,9 @@ import android.graphics.PixelFormat
 import android.graphics.drawable.Drawable
 import app.cash.paparazzi.accessibility.RenderSettings.toColorInt
 
-internal class AccessibilityOverlayDrawable : Drawable() {
-  private var accessibilityElements = mutableSetOf<AccessibilityElement>()
+internal class AccessibilityOverlayDrawable(
+  private val collectElements: () -> Collection<AccessibilityElement>
+) : Drawable() {
   private val paint = Paint().apply {
     isAntiAlias = true
     style = Paint.Style.FILL
@@ -18,14 +19,10 @@ internal class AccessibilityOverlayDrawable : Drawable() {
     style = Paint.Style.STROKE
   }
 
-  fun updateElements(elements: Collection<AccessibilityElement>) {
-    accessibilityElements.clear()
-    accessibilityElements += elements
-    invalidateSelf()
-  }
-
   override fun draw(canvas: Canvas) {
-    accessibilityElements.forEach {
+    // Compose can perform placement during dispatchDraw, after pre-draw listeners have run.
+    // Read bounds when the foreground is drawn so they describe the rendered content.
+    collectElements().forEach {
       paint.color = it.color.toColorInt()
 
       canvas.drawRect(it.displayBounds, paint)
