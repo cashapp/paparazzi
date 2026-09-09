@@ -18,6 +18,7 @@ package app.cash.paparazzi.accessibility
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.view.WindowManager
 import android.view.WindowManagerGlobal
 import android.widget.LinearLayout
 import app.cash.paparazzi.RenderExtension
@@ -45,12 +46,18 @@ public class AccessibilityRenderExtension : RenderExtension {
       addView(overlayDetailsView, LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, 1f))
 
       val overlayDrawables = mutableMapOf<Int, AccessibilityOverlayDrawable>()
+      // Compose placement changes need not trigger global layout. Re-record existing
+      // foregrounds each frame, but keep window discovery tied to global layout.
+      viewTreeObserver.addOnPreDrawListener {
+        overlayDrawables.values.forEach { it.invalidateSelf() }
+        true
+      }
       viewTreeObserver.addOnGlobalLayoutListener {
         val accessibleWindowRoots = WindowManagerGlobal.getInstance().windowViews.reversed().associate {
           val id = it.hashCode()
           val coreView = it.findComposeViewAdapterChild()
           overlayDrawables.getOrPut(id) {
-            AccessibilityOverlayDrawable()
+            AccessibilityOverlayDrawable { accessibilityElementCollector.collect(coreView) }
           }.apply {
             coreView.foreground = this
           }
@@ -59,12 +66,11 @@ public class AccessibilityRenderExtension : RenderExtension {
 
         OneShotPreDrawListener.add(this@apply) {
           val totalElements = mutableSetOf<AccessibilityElement>()
-          accessibleWindowRoots.forEach { (id, view) ->
+          accessibleWindowRoots.values.forEach { view ->
             val elements = accessibilityElementCollector.collect(
               rootView = view
             )
 
-            overlayDrawables[id]?.updateElements(elements)
             totalElements += elements
           }
 
