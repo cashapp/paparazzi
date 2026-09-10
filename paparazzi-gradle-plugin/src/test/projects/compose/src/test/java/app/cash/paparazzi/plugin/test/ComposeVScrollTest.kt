@@ -63,27 +63,27 @@ class ComposeVScrollTest {
 
               Column(
                 modifier =
-                  Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-                    .verticalScroll(rememberScrollState())
+                Modifier
+                  .fillMaxWidth()
+                  .wrapContentHeight()
+                  .verticalScroll(rememberScrollState())
               ) {
                 repeat(20) { index ->
                   Row(
                     modifier =
-                      Modifier
-                        .fillMaxWidth()
-                        .height(72.dp)
-                        .padding(horizontal = 16.dp),
+                    Modifier
+                      .fillMaxWidth()
+                      .height(72.dp)
+                      .padding(horizontal = 16.dp),
                     verticalAlignment = Alignment.CenterVertically
                   ) {
                     Box(
                       modifier =
-                        Modifier
-                          .size(40.dp)
-                          .background(
-                            if (index % 2 == 0) Color(0xff6c4eff) else Color(0xff00a884)
-                          )
+                      Modifier
+                        .size(40.dp)
+                        .background(
+                          if (index % 2 == 0) Color(0xff6c4eff) else Color(0xff00a884)
+                        )
                     )
                     Spacer(modifier = Modifier.width(16.dp))
                     Text("Scrollable item ${index + 1}")
@@ -92,10 +92,10 @@ class ComposeVScrollTest {
 
                 Box(
                   modifier =
-                    Modifier
-                      .fillMaxWidth()
-                      .height(72.dp)
-                      .background(Color(0xffffc043)),
+                  Modifier
+                    .fillMaxWidth()
+                    .height(72.dp)
+                    .background(Color(0xffffc043)),
                   contentAlignment = Alignment.Center
                 ) {
                   Text("End of scrollable content")

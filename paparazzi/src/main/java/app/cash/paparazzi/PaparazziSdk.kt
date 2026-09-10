@@ -449,9 +449,8 @@ public class PaparazziSdk @JvmOverloads constructor(
    */
   private fun resetExpandBaseline() {
     val renderingMode = sessionParamsBuilder.build().renderingMode
-    val expands = renderingMode.horizAction == RenderingMode.SizeAction.EXPAND ||
-      renderingMode.vertAction == RenderingMode.SizeAction.EXPAND
-    if (expands) {
+    val requiresExpand = renderingMode == RenderingMode.V_SCROLL || renderingMode == RenderingMode.H_SCROLL
+    if (requiresExpand) {
       renderSession.invalidateRenderingSize()
     }
   }
