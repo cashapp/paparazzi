@@ -26,7 +26,6 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import app.cash.paparazzi.Paparazzi
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode.SHRINK
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import kotlin.math.roundToInt
