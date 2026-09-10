@@ -334,10 +334,6 @@ public class PaparazziSdk @JvmOverloads constructor(
         // from the first measured size. Restore a sane window frame before the first frame is rendered.
         RenderingMode.SHRINK -> sizeShrinkWindowFrameToDevice(viewGroup)
 
-        // Attaching ComposeView synchronously creates its initial composition. Measure that content
-        // before the first Choreographer frame so layoutlib applies the unbounded scroll-axis
-        // constraints before frame callbacks can freeze it at the device viewport height.
-        RenderingMode.V_SCROLL if hasComposeRuntime -> renderSession { measure() }
         else -> Unit
       }
 
@@ -428,6 +424,36 @@ public class PaparazziSdk @JvmOverloads constructor(
     val viewRootImpl = contentView.viewRootImpl ?: return
     val displayMetrics = contentView.context.resources.displayMetrics
     ViewRootImpl_Accessor.updateFrame(viewRootImpl, displayMetrics.widthPixels, displayMetrics.heightPixels)
+  }
+
+  /**
+   * layoutlib 16.2.3's `RenderSessionImpl.measureLayout()` grows an expanding axis by a *delta*
+   * rather than recomputing it absolutely:
+   *
+   * ```
+   * exact    = measureView(viewRoot,    child, screenW, EXACTLY, screenH, EXACTLY)
+   * measured = measureView(contentRoot, child, screenW, wMode,   screenH, hMode)  // UNSPECIFIED when EXPAND
+   * // calcSize, EXPAND branch:
+   * if (measured > exact) current += measured - exact
+   * if (current < exact)  current  = exact
+   * ```
+   *
+   * That is only correct when `measureLayout()` runs once. Paparazzi invokes it several times per
+   * frame, so the same `measured - exact` delta is added on top of an already-expanded `current` and
+   * the canvas grows past the content, leaving trailing blank space.
+   *
+   * Clearing the tracked size makes `measureLayout()` reseed `current` from the device size, so the
+   * delta is always applied to a fixed baseline and every pass computes the same absolute result.
+   * Only meaningful for expanding modes; `SHRINK` assigns `measured` absolutely and `NORMAL` never
+   * resizes.
+   */
+  private fun resetExpandBaseline() {
+    val renderingMode = sessionParamsBuilder.build().renderingMode
+    val expands = renderingMode.horizAction == RenderingMode.SizeAction.EXPAND ||
+      renderingMode.vertAction == RenderingMode.SizeAction.EXPAND
+    if (expands) {
+      renderSession.invalidateRenderingSize()
+    }
   }
 
   private fun withTime(timeNanos: Long, block: () -> Unit) {
@@ -642,6 +668,7 @@ public class PaparazziSdk @JvmOverloads constructor(
   }
 
   private operator fun RenderSessionImpl.invoke(block: RenderSessionImpl.() -> Result): Result {
+    resetExpandBaseline()
     val result = block()
     if (result.status == ERROR_UNKNOWN) {
       throw result.exception
