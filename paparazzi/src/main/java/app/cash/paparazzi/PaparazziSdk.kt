@@ -33,6 +33,7 @@ import android.view.View.NO_ID
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
 import android.view.ViewRootImpl_Accessor
+import android.widget.FrameLayout
 import androidx.activity.setViewTreeOnBackPressedDispatcherOwner
 import androidx.annotation.LayoutRes
 import androidx.compose.runtime.Composable
@@ -312,23 +313,37 @@ public class PaparazziSdk @JvmOverloads constructor(
         }
       }
 
+      val sessionParams = sessionParamsBuilder.build()
+      val snapshotView =
+        if (
+          sessionParams.renderingMode == RenderingMode.V_SCROLL &&
+          hasComposeRuntime &&
+          modifiedView.containsComposeView()
+        ) {
+          VScrollViewportLayout(context, sessionParams.hardwareConfig.screenHeight).apply {
+            addView(modifiedView)
+          }
+        } else {
+          modifiedView
+        }
+
       if (hasLifecycleOwnerRuntime) {
         lifecycleOwner = PaparazziLifecycleOwner()
-        modifiedView.setViewTreeLifecycleOwner(lifecycleOwner)
+        snapshotView.setViewTreeLifecycleOwner(lifecycleOwner)
 
         if (hasSavedStateRegistryOwnerRuntime) {
-          modifiedView.setViewTreeSavedStateRegistryOwner(PaparazziSavedStateRegistryOwner(lifecycleOwner))
+          snapshotView.setViewTreeSavedStateRegistryOwner(PaparazziSavedStateRegistryOwner(lifecycleOwner))
         }
         if (hasAndroidxActivityRuntime) {
-          modifiedView.setViewTreeOnBackPressedDispatcherOwner(PaparazziOnBackPressedDispatcherOwner(lifecycleOwner))
+          snapshotView.setViewTreeOnBackPressedDispatcherOwner(PaparazziOnBackPressedDispatcherOwner(lifecycleOwner))
         }
         // Must be changed after the SavedStateRegistryOwner above has finished restoring its state.
         lifecycleOwner.registry.currentState = Lifecycle.State.RESUMED
       }
 
-      viewGroup.addView(modifiedView)
+      viewGroup.addView(snapshotView)
 
-      when (sessionParamsBuilder.build().renderingMode) {
+      when (sessionParams.renderingMode) {
         // See [sizeShrinkWindowFrameToDevice]. In SHRINK mode layoutlib 16.2.3 leaves the window frame
         // collapsed to 0x0 after inflating the (empty) content, which corrupts Compose state derived
         // from the first measured size. Restore a sane window frame before the first frame is rendered.
@@ -379,6 +394,10 @@ public class PaparazziSdk @JvmOverloads constructor(
         lifecycleOwner.registry.currentState = Lifecycle.State.DESTROYED
       }
       viewGroup.removeAllViews()
+
+      if (modifiedView.parent != null) {
+        (modifiedView.parent as ViewGroup).removeView(modifiedView)
+      }
 
       // Remove any applied render extensions
       if (modifiedView !== view) {
@@ -734,6 +753,43 @@ public class PaparazziSdk @JvmOverloads constructor(
       } catch (e: ClassNotFoundException) {
         false
       }
+    }
+  }
+}
+
+/**
+ * Layoutlib probes V_SCROLL content with an unbounded height after measuring the device viewport.
+ * Compose retains that probe's short layout when Android reuses the earlier viewport measure specs.
+ * Force a final exact-height pass so short content fills the viewport and long content keeps its
+ * natural height.
+ */
+private class VScrollViewportLayout(
+  context: Context,
+  private val viewportHeight: Int
+) : FrameLayout(context) {
+  override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+    super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+
+    if (MeasureSpec.getMode(heightMeasureSpec) == MeasureSpec.UNSPECIFIED) {
+      for (index in 0 until childCount) {
+        getChildAt(index).forceLayoutRecursively()
+      }
+      super.onMeasure(
+        widthMeasureSpec,
+        MeasureSpec.makeMeasureSpec(maxOf(measuredHeight, viewportHeight), MeasureSpec.EXACTLY)
+      )
+    }
+  }
+}
+
+private fun View.containsComposeView(): Boolean =
+  this is ComposeView || (this is ViewGroup && (0 until childCount).any { getChildAt(it).containsComposeView() })
+
+private fun View.forceLayoutRecursively() {
+  forceLayout()
+  if (this is ViewGroup) {
+    for (index in 0 until childCount) {
+      getChildAt(index).forceLayoutRecursively()
     }
   }
 }
