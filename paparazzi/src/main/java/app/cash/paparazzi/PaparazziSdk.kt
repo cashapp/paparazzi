@@ -55,6 +55,7 @@ import app.cash.paparazzi.internal.PaparazziOnBackPressedDispatcherOwner
 import app.cash.paparazzi.internal.PaparazziSavedStateRegistryOwner
 import app.cash.paparazzi.internal.Renderer
 import app.cash.paparazzi.internal.SessionParamsBuilder
+import app.cash.paparazzi.internal.copyImage
 import app.cash.paparazzi.internal.interceptors.EditModeInterceptor
 import app.cash.paparazzi.internal.parsers.LayoutPullParser
 import com.android.ide.common.rendering.api.RenderSession
@@ -365,7 +366,7 @@ public class PaparazziSdk @JvmOverloads constructor(
           }
         }
 
-        val image = bridgeRenderSession.image
+        val image = bridgeRenderSession.copyImage()
         if (validateAccessibility) {
           require(renderExtensions.isEmpty()) {
             "Running accessibility validation and render extensions simultaneously is not supported."
@@ -483,8 +484,7 @@ public class PaparazziSdk @JvmOverloads constructor(
       // animations work).
       Choreographer_Delegate.doCallbacks(
         Choreographer.getInstance(),
-        Choreographer.CALLBACK_ANIMATION,
-        currentTimeNanos
+        Choreographer.CALLBACK_ANIMATION
       )
 
       Choreographer_Delegate.sChoreographerTime = 0
