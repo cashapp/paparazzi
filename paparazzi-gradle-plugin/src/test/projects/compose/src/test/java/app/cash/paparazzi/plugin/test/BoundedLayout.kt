@@ -3,7 +3,6 @@ package app.cash.paparazzi.plugin.test
 import android.content.Context
 import android.widget.FrameLayout
 
-
 /**
  * layoutlib measures the content with an UNSPECIFIED height on the V_SCROLL expanding pass, which
  * Compose scroll containers reject outright. Bound it so the content can report its natural
