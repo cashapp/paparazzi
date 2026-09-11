@@ -595,6 +595,68 @@ class HtmlReportWriterTest {
     }
   }
 
+  @Test
+  fun videoOverwritesOnRecordWithFlagWhenOnlyLaterFrameChanges() {
+    try {
+      System.setProperty("paparazzi.test.record", "true")
+      System.setProperty("paparazzi.test.record.overwriteOnMaxPercentDifference", "true")
+
+      val htmlReportWriter = HtmlReportWriter(
+        runName = "record_run",
+        rootDirectory = reportRoot.root,
+        maxPercentDifference = 0.0,
+        differ = PixelPerfect,
+        snapshotRootDirectory = snapshotRoot.root
+      )
+      htmlReportWriter.use {
+        val now = Instant.parse("2021-02-23T10:27:43Z")
+        val snapshot = Snapshot(
+          name = "test",
+          testName = TestName("app.cash.paparazzi", "HomeView", "testSettings"),
+          timestamp = now.toDate()
+        )
+        val golden =
+          File("${snapshotRoot.root}/videos/app.cash.paparazzi_HomeView_testSettings_test.png")
+
+        // precondition
+        assertThat(golden).doesNotExist()
+
+        // take 1: record frame1=anyImage, frame2=anyImage
+        val frameHandler1 = htmlReportWriter.newFrameHandler(
+          snapshot = snapshot,
+          frameCount = 2,
+          fps = 1
+        )
+        frameHandler1.use {
+          frameHandler1.handle(anyImage)
+          frameHandler1.handle(anyImage)
+        }
+        assertThat(golden).exists()
+        val timeFirstWrite = golden.lastModifiedTime()
+
+        Thread.sleep(100)
+
+        // take 2: frame1 unchanged, only frame2 changes — ImageIO.read() misses this
+        val frameHandler2 = htmlReportWriter.newFrameHandler(
+          snapshot = snapshot.copy(timestamp = now.plusSeconds(1).toDate()),
+          frameCount = 2,
+          fps = 1
+        )
+        frameHandler2.use {
+          frameHandler2.handle(anyImage)
+          frameHandler2.handle(otherImage)
+        }
+        assertThat(golden).exists()
+        val timeOverwrite = golden.lastModifiedTime()
+
+        assertThat(timeOverwrite).isGreaterThan(timeFirstWrite)
+      }
+    } finally {
+      System.clearProperty("paparazzi.test.record")
+      System.clearProperty("paparazzi.test.record.overwriteOnMaxPercentDifference")
+    }
+  }
+
   private fun Instant.toDate() = Date(toEpochMilli())
 
   private fun File.lastModifiedTime(): FileTime {
