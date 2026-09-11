@@ -55,9 +55,13 @@ import javax.imageio.ImageIO
  * runs
  *   20190626002322_b9854e.js
  *   20190626002345_b1e882.js
+ * suites
+ *   app.cash.CelebrityTest.html
+ *   app.cash.HomeViewTest.html
  * index.html
  * index.js
  * paparazzi.js
+ * suites.js
  * ```
  */
 public class HtmlReportWriter @JvmOverloads constructor(
@@ -70,6 +74,7 @@ public class HtmlReportWriter @JvmOverloads constructor(
   private val runsDirectory: File = File(rootDirectory, "runs")
   private val imagesDirectory: File = File(rootDirectory, "images")
   private val videosDirectory: File = File(rootDirectory, "videos")
+  private val suitesDirectory: File = File(rootDirectory, "suites")
 
   private val goldenImagesDirectory = File(snapshotRootDirectory, "images")
   private val goldenVideosDirectory = File(snapshotRootDirectory, "videos")
@@ -85,9 +90,11 @@ public class HtmlReportWriter @JvmOverloads constructor(
     runsDirectory.mkdirs()
     imagesDirectory.mkdirs()
     videosDirectory.mkdirs()
+    suitesDirectory.mkdirs()
     writeStaticFiles()
     writeRunJs()
     writeIndexJs()
+    writeSuitesJs()
   }
 
   override fun newFrameHandler(snapshot: Snapshot, frameCount: Int, fps: Int): FrameHandler {
@@ -161,6 +168,8 @@ public class HtmlReportWriter @JvmOverloads constructor(
   /** Release all resources and block until everything has been written to the file system. */
   override fun close() {
     writeRunJs()
+    writeSuites()
+    writeSuitesJs()
   }
 
   /**
@@ -228,15 +237,87 @@ public class HtmlReportWriter @JvmOverloads constructor(
     }
   }
 
+  /**
+   * Emits one HTML page per test suite, so that large reports don't end up as a single cluttered page.
+   *
+   * Each suite page loads the shared renderer and the run data, and only renders the snapshots
+   * belonging to its suite. Pages are written once: their content doesn't depend on the run, so
+   * later runs skip suites that were already emitted.
+   */
+  private fun writeSuites() {
+    val suites = shots.map { it.testName.suiteName() }.distinct().sorted()
+    if (suites.isEmpty()) return
+    val template = HtmlReportWriter::class.java.classLoader
+      .getResourceAsStream("suite.html")
+      .source()
+      .buffer()
+      .readUtf8()
+    for (suite in suites) {
+      var suiteFile = File(suitesDirectory, "${suite.sanitizeForSuiteFilename()}.html")
+      if (suiteFile.exists() && !suiteFile.wasWrittenFor(suite)) {
+        // A different suite already claimed this file name, e.g. two suites differing only by
+        // case on a case-insensitive file system. Disambiguate with a hash of the raw name so
+        // no suite is ever dropped.
+        suiteFile = File(suitesDirectory, "${suiteFile.name.substringBeforeLast('.')}-${hashOf(suite).take(8)}.html")
+      }
+      if (suiteFile.exists()) continue
+      suiteFile.writeAtomically {
+        writeUtf8(template.replace("__SUITE_NAME__", suite))
+      }
+    }
+  }
+
+  private fun File.wasWrittenFor(suite: String): Boolean = readText().contains("""window.suite = "$suite";""")
+
+  /**
+   * Emits the suites index, which reads like JSON with an executable header.
+   *
+   * ```
+   * window.all_suites = [
+   *   "app.cash.CelebrityTest",
+   *   "app.cash.HomeViewTest"
+   * ];
+   * ```
+   */
+  private fun writeSuitesJs() {
+    val suiteNames = mutableListOf<String>()
+    val suites = suitesDirectory.list().sorted()
+    for (suite in suites) {
+      if (suite.endsWith(".html")) {
+        suiteNames += suite.substring(0, suite.length - ".html".length)
+      }
+    }
+
+    File(rootDirectory, "suites.js").writeAtomically {
+      writeUtf8("window.all_suites = ")
+      PaparazziJson.listOfStringsAdapter.toJson(this, suiteNames)
+      writeUtf8(";")
+    }
+  }
+
   private fun File.writeAtomically(writerAction: BufferedSink.() -> Unit) {
-    val tmpFile = File(parentFile, "$name.tmp")
+    // Use a unique temp name and an atomic move so concurrent writers sharing the report
+    // directory never clobber each other's temp files or leave the target missing.
+    val tmpFile = File(parentFile, "$name.${UUID.randomUUID()}.tmp")
     tmpFile.sink()
       .buffer()
       .use { sink ->
         sink.writerAction()
       }
-    delete()
-    tmpFile.renameTo(this)
+    try {
+      java.nio.file.Files.move(
+        tmpFile.toPath(),
+        toPath(),
+        java.nio.file.StandardCopyOption.ATOMIC_MOVE,
+        java.nio.file.StandardCopyOption.REPLACE_EXISTING
+      )
+    } catch (_: java.io.IOException) {
+      java.nio.file.Files.move(
+        tmpFile.toPath(),
+        toPath(),
+        java.nio.file.StandardCopyOption.REPLACE_EXISTING
+      )
+    }
   }
 
   private fun File.toJsonPath(): String = relativeTo(rootDirectory).invariantSeparatorsPath
@@ -255,4 +336,29 @@ internal val filenameSafeChars = CharMatcher.inRange('a', 'z')
 
 internal fun String.sanitizeForFilename(): String {
   return filenameSafeChars.negate().replaceFrom(lowercase(Locale.US), '_')
+}
+
+private fun TestName.suiteName(): String = "$packageName.$className"
+
+/** Characters allowed in a test suite's file name: Java identifiers ('$' included) plus '.'. */
+private val suiteFilenameSafeChars = filenameSafeChars
+  .or(CharMatcher.inRange('A', 'Z'))
+  .or(CharMatcher.anyOf("$"))
+
+/**
+ * Maps a test suite name to a file name. Names made only of filename-safe characters map to
+ * themselves; anything else is escaped and suffixed with a hash of the original name so two
+ * distinct suites are highly unlikely to collide on the same file.
+ */
+internal fun String.sanitizeForSuiteFilename(): String {
+  val sanitized = suiteFilenameSafeChars.negate().replaceFrom(this, '_')
+  return if (sanitized == this) this else "$sanitized-${hashOf(this).take(8)}"
+}
+
+private fun hashOf(value: String): String {
+  val hashingSink = HashingSink.sha1(blackholeSink())
+  hashingSink.buffer().use { sink ->
+    sink.writeUtf8(value)
+  }
+  return hashingSink.hash.hex()
 }
