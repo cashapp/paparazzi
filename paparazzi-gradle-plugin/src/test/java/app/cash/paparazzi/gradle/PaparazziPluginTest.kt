@@ -1628,6 +1628,35 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun verifyReportGeneratedOnFailure() {
+    val fixtureRoot = File("src/test/projects/report-snapshots")
+
+    val result = gradleRunner
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    assertThat(result.task(":testDebugUnitTest")?.outcome).isEqualTo(TaskOutcome.FAILED)
+
+    val reportDir = File(fixtureRoot, "build/reports/paparazzi/debug").registerForDeletionOnExit()
+    assertThat(File(reportDir, "index.html").exists()).isTrue()
+
+    // Each test class writes its own run file, and an earlier test on this fixture may have
+    // left one behind, so pick the newest run that belongs to SimpleTest.
+    val simpleTestRunJs = File(reportDir, "runs").listFiles()!!
+      .filter { it.extension == "js" && it.readText().contains("SimpleTest") }
+      .maxByOrNull { it.lastModified() }
+    assertThat(simpleTestRunJs).isNotNull()
+    val runJsText = simpleTestRunJs!!.readText()
+    assertThat(runJsText).contains("expectedFile")
+    assertThat(runJsText).contains("deltaFile")
+
+    val imageName = "app.cash.paparazzi.plugin.test_SimpleTest_compose.png"
+    assertThat(File(reportDir, "images/expected-$imageName")).exists()
+    assertThat(File(reportDir, "images/actual-$imageName")).exists()
+    assertThat(File(reportDir, "images/delta-$imageName")).exists()
+  }
+
+  @Test
   fun configIsUpdatable() {
     val fixtureRoot = File("src/test/projects/update-paparazzi-config")
 

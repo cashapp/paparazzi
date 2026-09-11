@@ -11,6 +11,9 @@ paparazzi.gif {
 }
 ```
 
+### Fixed
+* Generate the HTML report in verify mode, and include the expected/actual/delta images of failing snapshots in it (#167)
+
 ## [2.0.0-alpha05] - 2026-05-20
 
 This release supports pre-AGP 9.0 consumers.
