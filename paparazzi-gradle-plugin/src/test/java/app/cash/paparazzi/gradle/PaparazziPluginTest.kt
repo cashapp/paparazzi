@@ -418,6 +418,201 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun screenshotTestSourceSetIsIsolatedFromUnitTests() {
+    val fixtureRoot = File("src/test/projects/screenshot-test-source-set")
+
+    val result = gradleRunner
+      .withArguments("recordPaparazziDebugScreenshotTest", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    // Runs in its own Test task rather than piggybacking on the unit-test task.
+    assertThat(result.task(":testDebugScreenshotTest")).isNotNull()
+    assertThat(result.task(":testDebugUnitTest")).isNull()
+
+    // Goldens live alongside the source set that produced them, not in src/test.
+    val snapshotsDir = File(fixtureRoot, "src/screenshotTest/snapshots").registerForDeletionOnExit()
+    val snapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_ScreenshotSourceSetTest_record.png")
+    assertThat(snapshot.exists()).isTrue()
+
+    // Standard Gradle JUnit XML reporting is wired up for the new task.
+    val testResults = File(fixtureRoot, "build/test-results/testDebugScreenshotTest")
+      .registerForDeletionOnExit()
+    val junitXml = File(testResults, "TEST-app.cash.paparazzi.plugin.test.ScreenshotSourceSetTest.xml")
+    assertThat(junitXml.exists()).isTrue()
+
+    // ...as is the Paparazzi HTML report, under its own component-scoped directory.
+    val report = File(fixtureRoot, "build/reports/paparazzi/debugScreenshotTest/index.html")
+      .registerForDeletionOnExit()
+    assertThat(report.exists()).isTrue()
+  }
+
+  @Test
+  fun screenshotTestSourceSetSupportsFontsAndJavaSources() {
+    // Fonts exercise two things AGP would normally provide: the ResourcesCompat ASM fix, and a
+    // mockable android.jar (a stub jar reports SDK_INT 0, which sends androidx down pre-API-29
+    // code paths). The Java source proves the source set is not Kotlin-only.
+    val fixtureRoot = File("src/test/projects/screenshot-test-fonts")
+    File(fixtureRoot, "src/screenshotTest/snapshots").registerForDeletionOnExit()
+
+    val result = gradleRunner
+      .withArguments("recordPaparazziDebugScreenshotTest", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":compileDebugScreenshotTestJava")).isNotNull()
+
+    val snapshots = File(fixtureRoot, "src/screenshotTest/snapshots/images").listFiles()
+    assertThat(snapshots).isNotEmpty()
+  }
+
+  @Test
+  fun screenshotTestSourceSetSupportsProductFlavors() {
+    val fixtureRoot = File("src/test/projects/screenshot-test-flavors")
+    File(fixtureRoot, "src/screenshotTest/snapshots").registerForDeletionOnExit()
+
+    val result = gradleRunner
+      .withArguments("recordPaparazziFreeDebugScreenshotTest", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":testFreeDebugScreenshotTest")).isNotNull()
+    // Each variant gets its own component, and must not collide with the others.
+    assertThat(result.task(":testPaidDebugScreenshotTest")).isNull()
+
+    val snapshots = File(fixtureRoot, "src/screenshotTest/snapshots/images").listFiles()
+    assertThat(snapshots).isNotEmpty()
+  }
+
+  @Test
+  fun screenshotTestSourceSetSupportsKapt() {
+    val fixtureRoot = File("src/test/projects/screenshot-test-kapt")
+
+    val result = gradleRunner
+      .withArguments("library:testDebugScreenshotTest", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":library:kaptDebugScreenshotTestKotlin")).isNotNull()
+
+    // The test asserts against a class the processor generated, so a green run proves generated
+    // sources were compiled into the source set and were present at runtime.
+    val results = File(fixtureRoot, "library/build/test-results/testDebugScreenshotTest")
+      .registerForDeletionOnExit()
+    val xml = File(results, "TEST-app.cash.paparazzi.plugin.test.KaptTest.xml")
+    assertThat(xml.exists()).isTrue()
+    assertThat(xml.readText()).contains("tests=\"1\"")
+  }
+
+  @Test
+  fun screenshotTestSourceSetSupportsKsp() {
+    val fixtureRoot = File("src/test/projects/screenshot-test-ksp")
+
+    val result = gradleRunner
+      .withArguments("library:testDebugScreenshotTest", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":library:kspDebugScreenshotTestKotlin")).isNotNull()
+
+    val results = File(fixtureRoot, "library/build/test-results/testDebugScreenshotTest")
+      .registerForDeletionOnExit()
+    val xml = File(results, "TEST-app.cash.paparazzi.plugin.test.KspTest.xml")
+    assertThat(xml.exists()).isTrue()
+    assertThat(xml.readText()).contains("tests=\"1\"")
+  }
+
+  @Test
+  fun screenshotTestSourceSetSupportsDataBinding() {
+    val fixtureRoot = File("src/test/projects/screenshot-test-databinding")
+    File(fixtureRoot, "src/screenshotTest/snapshots").registerForDeletionOnExit()
+
+    val result = gradleRunner
+      .withArguments("recordPaparazziDebugScreenshotTest", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":testDebugScreenshotTest")).isNotNull()
+
+    val snapshots = File(fixtureRoot, "src/screenshotTest/snapshots/images").listFiles()
+    assertThat(snapshots).isNotEmpty()
+  }
+
+  @Test
+  fun screenshotTestSourceSetDoesNotRequireAgpScreenshotTests() {
+    // The source set is compiled by Paparazzi, not by AGP's experimental screenshot-test support,
+    // so it must work with that feature switched off.
+    val fixtureRoot = File("src/test/projects/screenshot-test-source-set")
+    File(fixtureRoot, "src/screenshotTest/snapshots").registerForDeletionOnExit()
+
+    val result = gradleRunner
+      .withArguments(
+        "recordPaparazziDebugScreenshotTest",
+        "-Pandroid.experimental.enableScreenshotTest=false",
+        "--stacktrace"
+      )
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":testDebugScreenshotTest")).isNotNull()
+  }
+
+  @Test
+  fun aggregateTasksIncludeScreenshotTestSourceSet() {
+    // The `verifyPaparazzi` / `recordPaparazzi` / `cleanRecordPaparazzi` / `deletePaparazziSnapshots`
+    // anchors must fan out to the screenshotTest component for every variant, not just the
+    // unit-test component.
+    val fixtureRoot = File("src/test/projects/screenshot-test-source-set")
+
+    val result = gradleRunner
+      .withArguments(
+        "verifyPaparazzi",
+        "recordPaparazzi",
+        "cleanRecordPaparazzi",
+        "deletePaparazziSnapshots",
+        "--dry-run",
+        "--stacktrace"
+      )
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.output).contains(":verifyPaparazziDebugScreenshotTest ")
+    assertThat(result.output).contains(":verifyPaparazziReleaseScreenshotTest ")
+    assertThat(result.output).contains(":recordPaparazziDebugScreenshotTest ")
+    assertThat(result.output).contains(":recordPaparazziReleaseScreenshotTest ")
+    assertThat(result.output).contains(":cleanRecordPaparazziDebugScreenshotTest ")
+    assertThat(result.output).contains(":deleteDebugScreenshotTestPaparazziSnapshots ")
+
+    // ...and still cover the unit-test component.
+    assertThat(result.output).contains(":verifyPaparazziDebugUnitTest ")
+    assertThat(result.output).contains(":recordPaparazziDebugUnitTest ")
+    assertThat(result.output).contains(":cleanRecordPaparazziDebugUnitTest ")
+    assertThat(result.output).contains(":deleteDebugPaparazziSnapshots ")
+
+    // ...via the per-variant anchors.
+    assertThat(result.output).contains(":verifyPaparazziDebug ")
+    assertThat(result.output).contains(":recordPaparazziDebug ")
+    assertThat(result.output).contains(":cleanRecordPaparazziDebug ")
+  }
+
+  @Test
+  fun variantAnchorTaskFansOutToBothHostTestComponents() {
+    val fixtureRoot = File("src/test/projects/screenshot-test-source-set")
+
+    val result = gradleRunner
+      .withArguments("verifyPaparazziDebug", "--dry-run", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.output).contains(":verifyPaparazziDebugUnitTest ")
+    assertThat(result.output).contains(":verifyPaparazziDebugScreenshotTest ")
+    assertThat(result.output).contains(":verifyPaparazziDebug ")
+  }
+
+  @Test
+  fun variantAnchorTaskOnlyCoversUnitTestWhenSourceSetDisabled() {
+    val fixtureRoot = File("src/test/projects/verify-mode-success")
+
+    val result = gradleRunner
+      .withArguments("verifyPaparazziDebug", "--dry-run", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.output).contains(":verifyPaparazziDebugUnitTest ")
+    assertThat(result.output).doesNotContain(":verifyPaparazziDebugScreenshotTest ")
+  }
+
+  @Test
   fun recordAllVariants() {
     val fixtureRoot = File("src/test/projects/record-mode")
     File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()

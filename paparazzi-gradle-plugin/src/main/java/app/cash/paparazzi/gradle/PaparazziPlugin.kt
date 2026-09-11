@@ -50,6 +50,7 @@ import org.gradle.api.tasks.Delete
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.SourceSet.TEST_SOURCE_SET_NAME
+import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.options.Option
 import org.gradle.api.tasks.testing.AbstractTestTask
 import org.gradle.api.tasks.testing.Test
@@ -125,41 +126,23 @@ public class PaparazziPlugin @Inject constructor(
       it.description = "Delete all golden images"
     }
 
+    val screenshotSourceSetEnabled = isScreenshotSourceSetEnabled()
+    val hostTestFactory = if (screenshotSourceSetEnabled) {
+      PaparazziHostTestFactory(
+        project = project,
+        extension = extension,
+        sourceSetName = PaparazziHostTestFactory.SCREENSHOT_TEST_SOURCE_SET
+      )
+    } else {
+      null
+    }
+
     extension.onVariants { variant ->
       val variantSlug = variant.name.capitalize()
-      val testVariant = (variant as? HasUnitTest)?.unitTest ?: return@onVariants
-      val snapshotOutputDir = snapshotDir(testVariant)
-
-      val deleteVariantSnapshot =
-        project.tasks.register("delete${variantSlug}PaparazziSnapshots", Delete::class.java) {
-          it.group = VERIFICATION_GROUP
-          it.description = "Delete all golden images for variant '$variantSlug'"
-          val files = project.fileTree(snapshotOutputDir) { tree ->
-            tree.include("**/*.png")
-            tree.include("**/*.mov")
-          }
-          it.delete(files)
-        }
-      deleteSnapshots.configure { it.dependsOn(deleteVariantSnapshot) }
 
       val projectDirectory = project.layout.projectDirectory
       val buildDirectory = project.layout.buildDirectory
       val gradleUserHomeDir = project.gradle.gradleUserHomeDir
-      val reportOutputDir =
-        project.extensions.getByType(ReportingExtension::class.java).baseDirectory.dir("paparazzi/${variant.name}")
-
-      // AGP < 9 does not fully initialize ASM instrumentation for Android KMP variants, causing
-      // `lateinit property visitorFactory has not been initialized` during configuration.
-      // This transform is a best-effort fix for ResourcesCompat font loading, so skip it for KMP
-      // projects until AGP 9+.
-      val testInstrumentation = testVariant.instrumentation
-      testInstrumentation.transformClassesWith(
-        ResourcesCompatVisitorFactory::class.java,
-        InstrumentationScope.ALL
-      ) { }
-      testInstrumentation.setAsmFramesComputationMode(
-        FramesComputationMode.COMPUTE_FRAMES_FOR_INSTRUMENTED_METHODS
-      )
 
       val sources = AndroidVariantSources(variant)
 
@@ -186,140 +169,256 @@ public class PaparazziPlugin @Inject constructor(
         task.paparazziResources.set(buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.json"))
       }
 
-      val testVariantSlug = testVariant.name.capitalize()
-
-      val testTasks = project.tasks.named { it == "test$testVariantSlug" }
-      testTasks.configureEach { it.dependsOn(writeResourcesTask) }
-
-      val recordTaskProvider = project.tasks.register("recordPaparazzi$variantSlug", PaparazziTask::class.java) {
+      // Per-variant anchor tasks. These aggregate every host-test component Paparazzi wires into
+      // the variant, so `recordPaparazziDebug` keeps working while each component also gets its own
+      // `...UnitTest` / `...ScreenshotTest` task.
+      val recordVariantTask = project.tasks.register("recordPaparazzi$variantSlug", PaparazziTask::class.java) {
         it.group = VERIFICATION_GROUP
         it.description = "Record golden images for variant '${variant.name}'"
         it.mustRunAfter(deleteSnapshots)
       }
-      recordVariants.configure { it.dependsOn(recordTaskProvider) }
-      val cleanRecordTaskProvider = project.tasks.register("cleanRecordPaparazzi$variantSlug") {
+      recordVariants.configure { it.dependsOn(recordVariantTask) }
+
+      val cleanRecordVariantTask = project.tasks.register("cleanRecordPaparazzi$variantSlug") {
         it.group = VERIFICATION_GROUP
         it.description = "Clean and record golden images for variant '${variant.name}'"
-        it.dependsOn(deleteSnapshots, recordTaskProvider)
+        it.dependsOn(deleteSnapshots, recordVariantTask)
       }
-      cleanRecordVariants.configure { it.dependsOn(cleanRecordTaskProvider) }
-      val verifyTaskProvider = project.tasks.register("verifyPaparazzi$variantSlug", PaparazziTask::class.java) {
+      cleanRecordVariants.configure { it.dependsOn(cleanRecordVariantTask) }
+
+      val verifyVariantTask = project.tasks.register("verifyPaparazzi$variantSlug", PaparazziTask::class.java) {
         it.group = VERIFICATION_GROUP
         it.description = "Run screenshot tests for variant '${variant.name}'"
       }
-      verifyVariants.configure { it.dependsOn(verifyTaskProvider) }
+      verifyVariants.configure { it.dependsOn(verifyVariantTask) }
 
-      val isRecordRun = project.objects.property(Boolean::class.java)
-      val isVerifyRun = project.objects.property(Boolean::class.java)
+      /**
+       * Wires Paparazzi into a single host-test component of [variant].
+       *
+       * [taskSuffix] names the component's own tasks: `UnitTest` for the `src/test` component and
+       * `ScreenshotTest` for the isolated `src/screenshotTest` component, yielding
+       * `recordPaparazziDebugUnitTest` / `recordPaparazziDebugScreenshotTest`. Both are aggregated
+       * by the per-variant `recordPaparazziDebug` / `verifyPaparazziDebug` anchors above.
+       *
+       * [outputSuffix] is kept separate and is empty for the unit-test component, preserving its
+       * historical `paparazzi/debug` output and `deleteDebugPaparazziSnapshots` task names.
+       */
+      fun configureHostTest(
+        snapshotOutputDir: Provider<Directory>,
+        taskSuffix: String,
+        outputSuffix: String,
+        testTaskName: String,
+        instrument: () -> Unit
+      ) {
+        val slug = "$variantSlug$taskSuffix"
+        // Keyed on the variant name (plus the source-set suffix) rather than the component name, so
+        // the unit-test component keeps its historical `paparazzi/debug` output locations.
+        val outputName = "${variant.name}$outputSuffix"
+        val outputSlug = "$variantSlug$outputSuffix"
+        val reportOutputDir = project.extensions.getByType(ReportingExtension::class.java)
+          .baseDirectory.dir("paparazzi/$outputName")
+        val failureDir = buildDirectory.dir("paparazzi/failures/$outputName")
 
-      project.gradle.taskGraph.whenReady { graph ->
-        isRecordRun.set(recordTaskProvider.map { graph.hasTask(it) })
-        isVerifyRun.set(verifyTaskProvider.map { graph.hasTask(it) })
-      }
+        val deleteVariantSnapshot =
+          project.tasks.register("delete${outputSlug}PaparazziSnapshots", Delete::class.java) {
+            it.group = VERIFICATION_GROUP
+            it.description = "Delete all golden images for variant '$outputName'"
+            val files = project.fileTree(snapshotOutputDir) { tree ->
+              tree.include("**/*.png")
+              tree.include("**/*.mov")
+            }
+            it.delete(files)
+          }
+        deleteSnapshots.configure { it.dependsOn(deleteVariantSnapshot) }
 
-      val overwriteOnMaxPercentDifferenceProvider = project.overwriteOnMaxPercentDifferenceProvider()
-      val paparazziGradlePropertiesProvider =
-        project.providers.gradlePropertiesPrefixedBy("app.cash.paparazzi")
-      val failureDir = buildDirectory.dir("paparazzi/failures/${variant.name}")
-      val testTaskProvider = testTasks.withType(Test::class.java)
-      testTaskProvider.configureEach { test ->
-        val localResourceDirs = sources.localResourceDirs ?: providerFactory.provider { emptyList() }
-        val localAssetDirs = sources.localAssetDirs ?: providerFactory.provider { emptyList() }
+        instrument()
 
-        test.setTestReporter(
-          PaparazziTestReporter(
-            buildOperationRunner = buildOperationRunner,
-            buildOperationExecutor = buildOperationExecutor,
-            diffRegistryFactory = createDiffRegistryFactory(failureDir, isVerifyRun)
+        val testTasks = project.tasks.named { it == testTaskName }
+        testTasks.configureEach { it.dependsOn(writeResourcesTask) }
+
+        val recordTaskProvider = project.tasks.register("recordPaparazzi$slug", PaparazziTask::class.java) {
+          it.group = VERIFICATION_GROUP
+          it.description = "Record golden images for variant '$outputName'"
+          it.mustRunAfter(deleteSnapshots)
+        }
+        recordVariantTask.configure { it.dependsOn(recordTaskProvider) }
+        val cleanRecordTaskProvider = project.tasks.register("cleanRecordPaparazzi$slug") {
+          it.group = VERIFICATION_GROUP
+          it.description = "Clean and record golden images for variant '$outputName'"
+          it.dependsOn(deleteSnapshots, recordTaskProvider)
+        }
+        cleanRecordVariantTask.configure { it.dependsOn(cleanRecordTaskProvider) }
+        val verifyTaskProvider = project.tasks.register("verifyPaparazzi$slug", PaparazziTask::class.java) {
+          it.group = VERIFICATION_GROUP
+          it.description = "Run screenshot tests for variant '$outputName'"
+        }
+        verifyVariantTask.configure { it.dependsOn(verifyTaskProvider) }
+
+        val isRecordRun = project.objects.property(Boolean::class.java)
+        val isVerifyRun = project.objects.property(Boolean::class.java)
+
+        project.gradle.taskGraph.whenReady { graph ->
+          isRecordRun.set(recordTaskProvider.map { graph.hasTask(it) })
+          isVerifyRun.set(verifyTaskProvider.map { graph.hasTask(it) })
+        }
+
+        val overwriteOnMaxPercentDifferenceProvider = project.overwriteOnMaxPercentDifferenceProvider()
+        val paparazziGradlePropertiesProvider =
+          project.providers.gradlePropertiesPrefixedBy("app.cash.paparazzi")
+        val testTaskProvider = testTasks.withType(Test::class.java)
+        testTaskProvider.configureEach { test ->
+          val localResourceDirs = sources.localResourceDirs ?: providerFactory.provider { emptyList() }
+          val localAssetDirs = sources.localAssetDirs ?: providerFactory.provider { emptyList() }
+
+          test.setTestReporter(
+            PaparazziTestReporter(
+              buildOperationRunner = buildOperationRunner,
+              buildOperationExecutor = buildOperationExecutor,
+              diffRegistryFactory = createDiffRegistryFactory(failureDir, isVerifyRun)
+            )
           )
-        )
 
-        // Absolute paths passed via `systemProperties` (an @Input) would pollute the build-cache
-        // key and break relocatability. Supply them as @Internal JVM args instead (#1874); task
-        // content is tracked separately via the path-sensitive file inputs below.
-        val pathSystemProperties = project.objects.mapProperty(String::class.java, String::class.java)
-        pathSystemProperties.put(
-          "paparazzi.test.resources",
-          writeResourcesTask.flatMap { it.paparazziResources.asFile }.map { it.path }
-        )
-        pathSystemProperties.put("paparazzi.project.dir", projectDirectory.toString())
-        pathSystemProperties.put("paparazzi.build.dir", buildDirectory.map { it.toString() })
-        pathSystemProperties.put("paparazzi.report.dir", reportOutputDir.map { it.toString() })
-        pathSystemProperties.put("paparazzi.artifacts.cache.dir", gradleUserHomeDir.path)
-        test.jvmArgumentProviders.add(PaparazziSystemPropertiesArgumentProvider(pathSystemProperties))
+          // Absolute paths passed via `systemProperties` (an @Input) would pollute the build-cache
+          // key and break relocatability. Supply them as @Internal JVM args instead (#1874); task
+          // content is tracked separately via the path-sensitive file inputs below.
+          val pathSystemProperties = project.objects.mapProperty(String::class.java, String::class.java)
+          pathSystemProperties.put(
+            "paparazzi.test.resources",
+            writeResourcesTask.flatMap { it.paparazziResources.asFile }.map { it.path }
+          )
+          pathSystemProperties.put("paparazzi.project.dir", projectDirectory.toString())
+          pathSystemProperties.put("paparazzi.build.dir", buildDirectory.map { it.toString() })
+          pathSystemProperties.put("paparazzi.report.dir", reportOutputDir.map { it.toString() })
+          pathSystemProperties.put("paparazzi.artifacts.cache.dir", gradleUserHomeDir.path)
+          test.jvmArgumentProviders.add(PaparazziSystemPropertiesArgumentProvider(pathSystemProperties))
 
-        test.inputs.property("paparazzi.test.record", isRecordRun)
-        test.inputs.property("paparazzi.test.verify", isVerifyRun)
-        test.inputs.property("paparazzi.gradleProperties", paparazziGradlePropertiesProvider)
-        test.inputs.property("paparazzi.layoutlib.version", NATIVE_LIB_VERSION)
+          test.inputs.property("paparazzi.test.record", isRecordRun)
+          test.inputs.property("paparazzi.test.verify", isVerifyRun)
+          test.inputs.property("paparazzi.gradleProperties", paparazziGradlePropertiesProvider)
+          test.inputs.property("paparazzi.layoutlib.version", NATIVE_LIB_VERSION)
 
-        // Source dirs catch in-place content edits. PrepareResourcesTask tracks paths only and
-        // its JSON output is byte-identical when contents change, so it can't invalidate the test.
-        test.inputs.files(localResourceDirs)
-          .withPropertyName("paparazzi.localResourceDirs")
-          .withPathSensitivity(PathSensitivity.RELATIVE)
-        test.inputs.files(sources.moduleResourceDirs)
-          .withPropertyName("paparazzi.moduleResourceDirs")
-          .withPathSensitivity(PathSensitivity.RELATIVE)
-        test.inputs.files(sources.aarExplodedDirs)
-          .withPropertyName("paparazzi.aarResourceDirs")
-          .withPathSensitivity(PathSensitivity.RELATIVE)
-        test.inputs.files(localAssetDirs)
-          .withPropertyName("paparazzi.localAssetDirs")
-          .withPathSensitivity(PathSensitivity.RELATIVE)
-        test.inputs.files(sources.moduleAssetDirs)
-          .withPropertyName("paparazzi.moduleAssetDirs")
-          .withPathSensitivity(PathSensitivity.RELATIVE)
-        test.inputs.files(sources.aarAssetDirs)
-          .withPropertyName("paparazzi.aarAssetDirs")
-          .withPathSensitivity(PathSensitivity.RELATIVE)
+          // Source dirs catch in-place content edits. PrepareResourcesTask tracks paths only and
+          // its JSON output is byte-identical when contents change, so it can't invalidate the test.
+          test.inputs.files(localResourceDirs)
+            .withPropertyName("paparazzi.localResourceDirs")
+            .withPathSensitivity(PathSensitivity.RELATIVE)
+          test.inputs.files(sources.moduleResourceDirs)
+            .withPropertyName("paparazzi.moduleResourceDirs")
+            .withPathSensitivity(PathSensitivity.RELATIVE)
+          test.inputs.files(sources.aarExplodedDirs)
+            .withPropertyName("paparazzi.aarResourceDirs")
+            .withPathSensitivity(PathSensitivity.RELATIVE)
+          test.inputs.files(localAssetDirs)
+            .withPropertyName("paparazzi.localAssetDirs")
+            .withPathSensitivity(PathSensitivity.RELATIVE)
+          test.inputs.files(sources.moduleAssetDirs)
+            .withPropertyName("paparazzi.moduleAssetDirs")
+            .withPathSensitivity(PathSensitivity.RELATIVE)
+          test.inputs.files(sources.aarAssetDirs)
+            .withPropertyName("paparazzi.aarAssetDirs")
+            .withPathSensitivity(PathSensitivity.RELATIVE)
 
-        // Declared so Test Distribution ships the file (#1790); also catches path-structure changes.
-        test.inputs.file(writeResourcesTask.flatMap { it.paparazziResources })
-          .withPropertyName("paparazzi.test.resources")
-          .withPathSensitivity(PathSensitivity.NONE)
+          // Declared so Test Distribution ships the file (#1790); also catches path-structure changes.
+          test.inputs.file(writeResourcesTask.flatMap { it.paparazziResources })
+            .withPropertyName("paparazzi.test.resources")
+            .withPathSensitivity(PathSensitivity.NONE)
 
-        test.inputs.dir(snapshotOutputDir.presentWhen(isVerifyRun))
-          .withPropertyName("paparazzi.snapshot.input.dir")
-          .withPathSensitivity(PathSensitivity.RELATIVE)
-          .optional()
+          test.inputs.dir(snapshotOutputDir.presentWhen(isVerifyRun))
+            .withPropertyName("paparazzi.snapshot.input.dir")
+            .withPathSensitivity(PathSensitivity.RELATIVE)
+            .optional()
 
-        test.outputs.dir(snapshotOutputDir.presentWhen(isRecordRun))
-          .withPropertyName("paparazzi.snapshots.output.dir")
-          .optional()
+          test.outputs.dir(snapshotOutputDir.presentWhen(isRecordRun))
+            .withPropertyName("paparazzi.snapshots.output.dir")
+            .optional()
 
-        test.outputs.dir(reportOutputDir).withPropertyName("paparazzi.report.dir")
-        test.outputs.dir(failureDir)
-          .withPropertyName("paparazzi.failures.dir")
-          .optional()
+          test.outputs.dir(reportOutputDir).withPropertyName("paparazzi.report.dir")
+          test.outputs.dir(failureDir)
+            .withPropertyName("paparazzi.failures.dir")
+            .optional()
 
-        test.doFirst {
-          if (isVerifyRun.get()) failureDir.get().asFile.deleteRecursively()
-          // Note: these are lazy properties that are not resolvable in the Gradle configuration phase.
-          // They need special handling, so they're added as inputs.property above, and systemProperty here.
-          test.systemProperties.putAll(paparazziGradlePropertiesProvider.get())
-          test.systemProperties["paparazzi.layoutlib.runtime.root"] =
-            layoutlibNativeRuntimeFileCollection.singleFile.absolutePath
-          test.systemProperties["paparazzi.layoutlib.resources.root"] =
-            layoutlibResourcesFileCollection.singleFile.absolutePath
-          test.systemProperties["paparazzi.test.record"] = isRecordRun.get()
-          test.systemProperties["paparazzi.test.record.overwriteOnMaxPercentDifference"] =
-            overwriteOnMaxPercentDifferenceProvider.orNull == "true"
-          test.systemProperties["paparazzi.test.verify"] = isVerifyRun.get()
-          test.systemProperties["paparazzi.snapshot.dir"] = snapshotOutputDir.get().asFile.absolutePath
-          test.systemProperties["paparazzi.failures.dir"] = failureDir.get().asFile.absolutePath
+          test.doFirst {
+            if (isVerifyRun.get()) failureDir.get().asFile.deleteRecursively()
+            // Note: these are lazy properties that are not resolvable in the Gradle configuration phase.
+            // They need special handling, so they're added as inputs.property above, and systemProperty here.
+            test.systemProperties.putAll(paparazziGradlePropertiesProvider.get())
+            test.systemProperties["paparazzi.layoutlib.runtime.root"] =
+              layoutlibNativeRuntimeFileCollection.singleFile.absolutePath
+            test.systemProperties["paparazzi.layoutlib.resources.root"] =
+              layoutlibResourcesFileCollection.singleFile.absolutePath
+            test.systemProperties["paparazzi.test.record"] = isRecordRun.get()
+            test.systemProperties["paparazzi.test.record.overwriteOnMaxPercentDifference"] =
+              overwriteOnMaxPercentDifferenceProvider.orNull == "true"
+            test.systemProperties["paparazzi.test.verify"] = isVerifyRun.get()
+            test.systemProperties["paparazzi.snapshot.dir"] = snapshotOutputDir.get().asFile.absolutePath
+            test.systemProperties["paparazzi.failures.dir"] = failureDir.get().asFile.absolutePath
+          }
+
+          test.doLast {
+            val uri = reportOutputDir.get().asFile.toPath().resolve("index.html").toUri()
+            test.logger.log(LIFECYCLE, "See the Paparazzi report at: $uri")
+          }
         }
 
-        test.doLast {
-          val uri = reportOutputDir.get().asFile.toPath().resolve("index.html").toUri()
-          test.logger.log(LIFECYCLE, "See the Paparazzi report at: $uri")
-        }
+        recordTaskProvider.configure { it.dependsOn(testTaskProvider) }
+        verifyTaskProvider.configure { it.dependsOn(testTaskProvider) }
       }
 
-      recordTaskProvider.configure { it.dependsOn(testTaskProvider) }
-      verifyTaskProvider.configure { it.dependsOn(testTaskProvider) }
+      val unitTest = (variant as? HasUnitTest)?.unitTest
+      if (unitTest != null) {
+        configureHostTest(
+          snapshotOutputDir = snapshotDir(unitTest),
+          taskSuffix = "UnitTest",
+          outputSuffix = "",
+          testTaskName = "test${unitTest.name.capitalize()}",
+          instrument = {
+            // AGP < 9 does not fully initialize ASM instrumentation for Android KMP variants,
+            // causing `lateinit property visitorFactory has not been initialized` during
+            // configuration. This transform is a best-effort fix for ResourcesCompat font loading,
+            // so skip it for KMP projects until AGP 9+.
+            val instrumentation = unitTest.instrumentation
+            instrumentation.transformClassesWith(
+              ResourcesCompatVisitorFactory::class.java,
+              InstrumentationScope.ALL
+            ) { }
+            instrumentation.setAsmFramesComputationMode(
+              FramesComputationMode.COMPUTE_FRAMES_FOR_INSTRUMENTED_METHODS
+            )
+          }
+        )
+      }
+
+      if (hostTestFactory != null) {
+        val hostTest = hostTestFactory.create(variant)
+        val testTask = registerHostTestTask(hostTest)
+        configureHostTest(
+          snapshotOutputDir = hostTest.snapshotDir,
+          taskSuffix = "ScreenshotTest",
+          outputSuffix = "ScreenshotTest",
+          testTaskName = testTask.name,
+          // Paparazzi owns this compilation, so there is no AGP component to instrument. The
+          // ResourcesCompat font fix is applied to the runtime classpath instead.
+          instrument = {}
+        )
+      }
     }
   }
+
+  /**
+   * Registers the JVM [Test] task that runs a [PaparazziHostTest].
+   *
+   * Wired to the source set's own compiled classes so test discovery cannot pick up anything from
+   * `src/test`, while still producing the standard Gradle JUnit XML and HTML reports.
+   */
+  private fun Project.registerHostTestTask(hostTest: PaparazziHostTest): TaskProvider<Test> =
+    tasks.register("test${hostTest.name.capitalize()}", Test::class.java) { test ->
+      test.group = VERIFICATION_GROUP
+      test.description = "Run Paparazzi tests for '${hostTest.name}'"
+      test.dependsOn(hostTest.compileTasks)
+      test.testClassesDirs = hostTest.testClassesDirs
+      test.classpath = hostTest.runtimeClasspath
+      test.useJUnit()
+    }
 
   private fun createDiffRegistryFactory(
     failureDirProperty: Provider<Directory>,
@@ -430,6 +529,7 @@ public class PaparazziPlugin @Inject constructor(
           }
         }
       }
+
       plugins.hasPlugin(KOTLIN_MULTIPLATFORM_PLUGIN) -> {
         val kmp = extensions.getByType(KotlinMultiplatformExtension::class.java)
         with(kmp) {
@@ -440,11 +540,22 @@ public class PaparazziPlugin @Inject constructor(
           }
         }
       }
+
       else -> {
         val android = extensions.getByType(CommonExtension::class.java)
         val configurationName = android.sourceSets.getByName(TEST_SOURCE_SET_NAME).implementationConfigurationName
         allowedConfigs += configurationName
         configurations.getByName(configurationName).dependencies.add(dependency)
+
+        if (isScreenshotSourceSetEnabled()) {
+          // AGP registers the `screenshotTest` source set lazily, so resolve its configuration by
+          // name rather than reaching through `android.sourceSets` at apply time.
+          val screenshotConfigurationName =
+            "${PaparazziHostTestFactory.SCREENSHOT_TEST_SOURCE_SET}Implementation"
+          allowedConfigs += screenshotConfigurationName
+          configurations.matching { it.name == screenshotConfigurationName }
+            .configureEach { it.dependencies.add(dependency) }
+        }
       }
     }
 
@@ -479,6 +590,15 @@ public class PaparazziPlugin @Inject constructor(
       projectDirectory.dir(sourceSetRoot.path).dir("snapshots")
     }
   }
+
+  /**
+   * Opts in to running Paparazzi tests from an isolated `src/screenshotTest` source set.
+   *
+   * Paparazzi compiles and runs this source set itself, so it works independently of AGP's
+   * experimental screenshot-test support.
+   */
+  private fun Project.isScreenshotSourceSetEnabled(): Boolean =
+    providers.gradleProperty(ENABLE_SCREENSHOT_SOURCE_SET_PROPERTY).orNull?.toBoolean() == true
 
   private fun Project.isInternal(): Boolean = providers.gradleProperty("app.cash.paparazzi.internal").orNull == "true"
 
@@ -528,5 +648,6 @@ internal class PaparazziSystemPropertiesArgumentProvider(
 }
 
 private const val DEFAULT_COMPILE_SDK_VERSION = 36
+private const val ENABLE_SCREENSHOT_SOURCE_SET_PROPERTY = "app.cash.paparazzi.enableScreenshotTestSourceSet"
 private const val ANDROID_KOTLIN_MULTIPLATFORM_LIBRARY_PLUGIN = "com.android.kotlin.multiplatform.library"
 private const val KOTLIN_MULTIPLATFORM_PLUGIN = "org.jetbrains.kotlin.multiplatform"
