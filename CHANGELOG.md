@@ -11,6 +11,21 @@ paparazzi.gif {
 }
 ```
 
+* Add `Paparazzi.Config` for configuring record/verify mode and snapshot paths in code, so a full set of screenshots can be re-recorded after a style change without Gradle or IDE configuration (#78):
+
+```kotlin
+val PAPARAZZI_CONFIG = Paparazzi.Config(
+  mode = Paparazzi.Mode.RECORD, // or Paparazzi.Mode.VERIFY
+  screenshotsPath = "src/test/screenshots",
+)
+
+class MyTextViewTest {
+  val paparazzi = Paparazzi(PAPARAZZI_CONFIG)
+}
+```
+
+Values left unset in `Paparazzi.Config` fall back to the existing `paparazzi.*` system properties, so existing usage is unchanged.
+
 ## [2.0.0-alpha05] - 2026-05-20
 
 This release supports pre-AGP 9.0 consumers.

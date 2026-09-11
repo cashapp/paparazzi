@@ -65,7 +65,8 @@ public class HtmlReportWriter @JvmOverloads constructor(
   private val rootDirectory: File = File(System.getProperty("paparazzi.report.dir")),
   private val maxPercentDifference: Double,
   private val differ: Differ = determineDiffer(),
-  snapshotRootDirectory: File = File(System.getProperty("paparazzi.snapshot.dir"))
+  snapshotRootDirectory: File = File(System.getProperty("paparazzi.snapshot.dir")),
+  record: Boolean? = null
 ) : SnapshotHandler {
   private val runsDirectory: File = File(rootDirectory, "runs")
   private val imagesDirectory: File = File(rootDirectory, "images")
@@ -77,7 +78,7 @@ public class HtmlReportWriter @JvmOverloads constructor(
   private val shots = mutableListOf<Snapshot>()
 
   private val isRecording: Boolean =
-    System.getProperty("paparazzi.test.record")?.toBoolean() == true
+    record ?: (System.getProperty("paparazzi.test.record")?.toBoolean() == true)
   private val overwriteOnMaxPercentDifference: Boolean =
     System.getProperty("paparazzi.test.record.overwriteOnMaxPercentDifference")?.toBoolean() == true
 
