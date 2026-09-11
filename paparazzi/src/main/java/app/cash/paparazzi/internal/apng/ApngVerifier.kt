@@ -39,6 +39,7 @@ internal class ApngVerifier(
   private val blankFrame by lazy { createBlankFrame(pngReader.width, pngReader.height) }
 
   private var deltaWriter: ApngWriter? = null
+  private var goldenFps: Int = -1
   private var commonFrameRate: Int = -1
   private var actualDeltasPerFrame: Int = 1
   private var expectedDeltasPerFrame: Int = 1
@@ -46,11 +47,17 @@ internal class ApngVerifier(
   private var invalidFrames = 0
 
   init {
+    require(fps > 0) { "fps must be positive, was: $fps" }
     currentGoldenFrame = pngReader.readNextFrame()
-    commonFrameRate = leastCommonMultiple(fps, pngReader.getFps())
+    // A single-frame golden is written as a still PNG with no animation chunks, dropping the fps
+    // it was recorded with, so ApngReader reports an fps of 0. Fall back to the actual fps: any
+    // fps describes the same single-frame file, and 0 would make the frame-rate math below loop
+    // forever or divide by zero.
+    goldenFps = pngReader.getFps().takeIf { it > 0 } ?: fps
+    commonFrameRate = leastCommonMultiple(fps, goldenFps)
     actualDeltasPerFrame = commonFrameRate / fps
-    expectedDeltasPerFrame = commonFrameRate / pngReader.getFps()
-    if (frameCount != pngReader.frameCount || fps != pngReader.getFps()) {
+    expectedDeltasPerFrame = commonFrameRate / goldenFps
+    if (frameCount != pngReader.frameCount || fps != goldenFps) {
       deltaWriter = ApngWriter(deltaFilePath, commonFrameRate, fileSystem)
     }
   }
@@ -113,8 +120,8 @@ internal class ApngVerifier(
           "$invalidFrames frames differed by more than %f%%".format(maxPercentDifference)
         )
       }
-      if (pngReader.getFps() != fps) {
-        appendLine("Mismatched video fps expected: ${pngReader.getFps()} actual: $fps")
+      if (goldenFps != fps) {
+        appendLine("Mismatched video fps expected: $goldenFps actual: $fps")
       }
       if (pngReader.frameCount != frameCount) {
         appendLine("Mismatched frame count expected: ${pngReader.frameCount} actual: $frameCount")
@@ -192,17 +199,8 @@ internal class ApngVerifier(
     return (first * second) / greatestCommonDenominator(first, second)
   }
 
-  private fun greatestCommonDenominator(first: Int, second: Int): Int {
-    var first = first
-    var second = second
-    while (first != second) {
-      if (first > second) {
-        first -= second
-      } else {
-        second -= first
-      }
-    }
-    return first
+  private tailrec fun greatestCommonDenominator(first: Int, second: Int): Int {
+    return if (second == 0) first else greatestCommonDenominator(second, first % second)
   }
 
   private fun BufferedImage.updateSize(targetWidth: Int, targetHeight: Int) =
