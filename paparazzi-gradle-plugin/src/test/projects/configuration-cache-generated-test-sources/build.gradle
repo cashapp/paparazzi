@@ -1,0 +1,37 @@
+plugins {
+  id 'com.android.library'
+  id 'app.cash.paparazzi'
+}
+
+android {
+  namespace = 'app.cash.paparazzi.plugin.test'
+  compileSdk = libs.versions.compileSdk.get() as int
+  defaultConfig {
+    minSdk = libs.versions.minSdk.get() as int
+  }
+  compileOptions {
+    sourceCompatibility = libs.versions.javaTarget.get()
+    targetCompatibility = libs.versions.javaTarget.get()
+  }
+}
+
+androidComponents {
+  onVariants(selector().all()) { variant ->
+    // Generated unit test sources, like the ones KSP adds, give the test source set a producer task.
+    def sourceGen = project.tasks.register("do${variant.name.capitalize()}UnitTestSourceGen", SourceGenTask) {
+      outputDirectory = project.layout.buildDirectory.dir("generated/sourceGen/${variant.name}UnitTest")
+    }
+    variant.unitTest?.sources?.kotlin?.addGeneratedSourceDirectory(
+      sourceGen,
+      { task -> task.outputDirectory }
+    )
+  }
+}
+
+abstract class SourceGenTask extends DefaultTask {
+  @OutputDirectory
+  abstract DirectoryProperty getOutputDirectory()
+
+  @TaskAction
+  void generate() {}
+}
