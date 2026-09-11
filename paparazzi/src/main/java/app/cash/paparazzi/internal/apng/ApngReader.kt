@@ -23,6 +23,7 @@ import app.cash.paparazzi.internal.apng.PngConstants.Header.FDAT
 import app.cash.paparazzi.internal.apng.PngConstants.Header.IDAT
 import app.cash.paparazzi.internal.apng.PngConstants.Header.IEND
 import app.cash.paparazzi.internal.apng.PngConstants.Header.IHDR
+import app.cash.paparazzi.internal.apng.PngConstants.Header.SRGB
 import app.cash.paparazzi.internal.apng.PngConstants.PNG_COLOR_TYPE_RGB
 import app.cash.paparazzi.internal.apng.PngConstants.PNG_COLOR_TYPE_RGBA
 import app.cash.paparazzi.internal.apng.PngConstants.PNG_SIG
@@ -120,6 +121,7 @@ internal class ApngReader(
         IHDR -> data.readIHDR()
         ACTL -> data.readACTL()
         FCTL -> data.readFCTL()
+        SRGB -> {} // Color space declaration, no action needed
         IDAT -> data.readIDAT()
         FDAT -> data.readFDAT()
         IEND -> throw IOException("PNG ended while processing to $header")

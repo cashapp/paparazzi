@@ -23,9 +23,11 @@ import app.cash.paparazzi.internal.apng.PngConstants.Header.FCTL
 import app.cash.paparazzi.internal.apng.PngConstants.Header.FDAT
 import app.cash.paparazzi.internal.apng.PngConstants.Header.IDAT
 import app.cash.paparazzi.internal.apng.PngConstants.Header.IHDR
+import app.cash.paparazzi.internal.apng.PngConstants.Header.SRGB
 import app.cash.paparazzi.internal.apng.PngConstants.PNG_BITS_PER_PIXEL
 import app.cash.paparazzi.internal.apng.PngConstants.PNG_COLOR_TYPE_RGBA
 import app.cash.paparazzi.internal.apng.PngConstants.PNG_SIG
+import app.cash.paparazzi.internal.apng.PngConstants.PNG_SRGB_RENDERING_INTENT_PERCEPTUAL
 import app.cash.paparazzi.internal.apng.PngTestUtils.BACKGROUND_COLOR
 import app.cash.paparazzi.internal.apng.PngTestUtils.DEFAULT_SIZE
 import app.cash.paparazzi.internal.apng.PngTestUtils.createImage
@@ -91,11 +93,34 @@ class ApngWriterTest {
       testHandle.source(0L).buffer().use { buffer ->
         buffer.skip(PNG_SIG.size.toLong()) // Header
         assertThat(buffer.assertNextChunk().first).isEqualTo(IHDR)
+        assertThat(buffer.assertNextChunk().first).isEqualTo(SRGB)
 
         val (idat, idatData) = buffer.assertNextChunk()
         assertThat(idat).isEqualTo(IDAT)
         val imageData = idatData.decompress()
         assertThat(imageData.size).isEqualTo((DEFAULT_SIZE * DEFAULT_SIZE * 4L) + DEFAULT_SIZE)
+      }
+    }
+  }
+
+  @Test
+  fun writesSRGBColorSpaceChunkAfterIHDR() {
+    val testPath = tempFolderRule.newFile("writesSRGBColorSpaceChunkAfterIHDR.png").path.toPath()
+    ApngWriter(testPath, 1).use { writer ->
+      writer.writeImage(createImage(squareOffset = Point(5, 5)))
+    }
+
+    FileSystem.SYSTEM.openReadOnly(testPath).use { testHandle ->
+      testHandle.source(0L).buffer().use { buffer ->
+        buffer.skip(PNG_SIG.size.toLong()) // Header
+        assertThat(buffer.assertNextChunk().first).isEqualTo(IHDR)
+
+        val (sRGB, sRGBData) = buffer.assertNextChunk()
+        assertThat(sRGB).isEqualTo(SRGB)
+        assertThat(sRGBData.readByte()).isEqualTo(PNG_SRGB_RENDERING_INTENT_PERCEPTUAL)
+        assertThat(sRGBData.exhausted()).isTrue()
+
+        assertThat(buffer.assertNextChunk().first).isEqualTo(IDAT)
       }
     }
   }
@@ -163,6 +188,7 @@ class ApngWriterTest {
         assertThat(buffer.assertNextChunk().first).isEqualTo(IHDR)
         assertThat(buffer.assertNextChunk().first).isEqualTo(ACTL)
         assertThat(buffer.assertNextChunk().first).isEqualTo(FCTL)
+        assertThat(buffer.assertNextChunk().first).isEqualTo(SRGB)
         assertThat(buffer.assertNextChunk().first).isEqualTo(IDAT)
 
         val (header, data) = buffer.assertNextChunk()
@@ -191,6 +217,7 @@ class ApngWriterTest {
         assertThat(buffer.assertNextChunk().first).isEqualTo(IHDR)
         assertThat(buffer.assertNextChunk().first).isEqualTo(ACTL)
         assertThat(buffer.assertNextChunk().first).isEqualTo(FCTL)
+        assertThat(buffer.assertNextChunk().first).isEqualTo(SRGB)
         assertThat(buffer.assertNextChunk().first).isEqualTo(IDAT)
 
         val (header, data) = buffer.assertNextChunk()
@@ -232,6 +259,7 @@ class ApngWriterTest {
 
         assertThat(buffer.assertNextChunk().first).isEqualTo(ACTL)
         assertThat(buffer.assertNextChunk().first).isEqualTo(FCTL)
+        assertThat(buffer.assertNextChunk().first).isEqualTo(SRGB)
 
         val (idat, idatData) = buffer.assertNextChunk()
         assertThat(idat).isEqualTo(IDAT)

@@ -17,6 +17,8 @@
 package app.cash.paparazzi.internal.apng
 
 import app.cash.paparazzi.internal.ImageUtils
+import app.cash.paparazzi.internal.apng.PngTestUtils.DEFAULT_SIZE
+import app.cash.paparazzi.internal.apng.PngTestUtils.createImage
 import app.cash.paparazzi.internal.differs.OffByTwo
 import com.google.common.truth.Truth.assertThat
 import okio.FileSystem
@@ -25,6 +27,7 @@ import org.junit.Assert.fail
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import java.awt.Point
 import java.io.File
 import java.io.IOException
 import javax.imageio.ImageIO
@@ -83,6 +86,22 @@ class ApngReaderTest {
       fail("File has invalid CRC, should fail")
     } catch (e: IOException) {
       assertThat(e).hasMessageThat().isEqualTo("CRC Mismatch decoding IHDR, invalid data")
+    }
+  }
+
+  @Test
+  fun decodesPNGWithSRGBColorSpaceChunk() {
+    val testPath = tempDir.newFile("decodesPNGWithSRGBColorSpaceChunk.png").path.toPath()
+    ApngWriter(testPath, 1).use { writer ->
+      writer.writeImage(createImage(squareOffset = Point(5, 5)))
+    }
+
+    ApngReader(FileSystem.SYSTEM.openReadOnly(testPath)).use { reader ->
+      val image = requireNotNull(reader.readNextFrame())
+      assertThat(image.width).isEqualTo(DEFAULT_SIZE)
+      assertThat(image.height).isEqualTo(DEFAULT_SIZE)
+      assertThat(reader.isFinished()).isTrue()
+      assertThat(reader.frameCount).isEqualTo(reader.frameNumber)
     }
   }
 
