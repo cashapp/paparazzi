@@ -24,6 +24,10 @@ import java.util.logging.Level
 import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
 
+private const val IMAGE_READER_JNI = "ImageReader_JNI"
+private const val IMAGE_READER_MAX_IMAGES_MESSAGE =
+  "Unable to acquire a buffer item, very likely client tried to acquire more than maxImages buffers"
+
 /**
  * This logger delegates to java.util.Logging.
  */
@@ -70,6 +74,10 @@ internal class PaparazziLogger : ILayoutLog, ILogger {
   }
 
   override fun logAndroidFramework(priority: Int, tag: String?, message: String?) {
+    if (tag == IMAGE_READER_JNI && message == IMAGE_READER_MAX_IMAGES_MESSAGE) {
+      return
+    }
+
     logger.log(Level.INFO, "$tag [$priority]: $message")
   }
 
