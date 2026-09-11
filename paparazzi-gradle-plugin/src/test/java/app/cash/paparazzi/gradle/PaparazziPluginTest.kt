@@ -390,6 +390,28 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun configurationCacheWorksWhenRecordingWithGeneratedTestSources() {
+    val fixtureRoot = File("src/test/projects/configuration-cache-generated-test-sources")
+    fixtureRoot.resolve("src/test/snapshots").registerForDeletionOnExit()
+
+    // Generated test sources (eg. from KSP) must not be resolved when storing the record task's
+    // outputs in the configuration cache. https://github.com/cashapp/paparazzi/issues/2374
+    gradleRunner
+      .withArguments("recordPaparazziDebug", "--configuration-cache", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+  }
+
+  @Test
+  fun configurationCacheWorksWhenRecordingWithGeneratedTestSourcesInMultiplatform() {
+    val fixtureRoot = File("src/test/projects/configuration-cache-generated-test-sources-multiplatform")
+    fixtureRoot.resolve("src/androidHostTest/snapshots").registerForDeletionOnExit()
+
+    gradleRunner
+      .withArguments("recordPaparazziAndroidMain", "--configuration-cache", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+  }
+
+  @Test
   fun interceptViewEditMode() {
     val fixtureRoot = File("src/test/projects/edit-mode-intercept")
 

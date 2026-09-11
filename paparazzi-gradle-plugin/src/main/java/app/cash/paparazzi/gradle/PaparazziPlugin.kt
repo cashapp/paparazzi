@@ -472,10 +472,14 @@ public class PaparazziPlugin @Inject constructor(
     val sources = testVariant.sources.kotlin?.all
       ?: testVariant.sources.java?.all
       ?: error("No Kotlin or Java sources on ${testVariant.name}")
+    val testVariantName = testVariant.name
     val projectDirectory = layout.projectDirectory
-    return sources.map { dirs ->
-      val sourceSetRoot = dirs.firstOrNull()?.asFile?.parentFile
-        ?: error("No source dirs registered for ${testVariant.name}")
+    // Only the location of the source directories matters here. Mapping `sources` would also carry
+    // the tasks that produce generated source directories (eg. KSP) into the record task's outputs,
+    // which can't be resolved when the configuration cache entry is stored.
+    return providerFactory.provider {
+      val sourceSetRoot = sources.get().firstOrNull()?.asFile?.parentFile
+        ?: error("No source dirs registered for $testVariantName")
       projectDirectory.dir(sourceSetRoot.path).dir("snapshots")
     }
   }

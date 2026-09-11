@@ -1,0 +1,50 @@
+plugins {
+  id 'org.jetbrains.kotlin.multiplatform'
+  id 'com.android.kotlin.multiplatform.library'
+  id 'app.cash.paparazzi'
+}
+
+kotlin {
+  androidLibrary {
+    namespace = 'app.cash.paparazzi.plugin.test'
+    compileSdk = libs.versions.compileSdk.get() as int
+    minSdk = libs.versions.minSdk.get() as int
+
+    withHostTest { hostTest ->
+      hostTest.targetSdk {
+        version = release(libs.versions.compileSdk.get() as int)
+      }
+      hostTest.includeAndroidResources = true
+    }
+    androidResources.enable = true
+  }
+
+  sourceSets {
+    named("androidHostTest") {
+      dependencies {
+        implementation libs.junit
+      }
+    }
+  }
+}
+
+androidComponents {
+  onVariants(selector().all()) { variant ->
+    // Generated host test sources, like the ones KSP adds, give the test source set a producer task.
+    def sourceGen = project.tasks.register("sourceGen${variant.name.capitalize()}HostTest", SourceGenTask) {
+      outputDirectory = project.layout.buildDirectory.dir("generated/sourceGen/${variant.name}HostTest")
+    }
+    variant.unitTest?.sources?.kotlin?.addGeneratedSourceDirectory(
+      sourceGen,
+      { task -> task.outputDirectory }
+    )
+  }
+}
+
+abstract class SourceGenTask extends DefaultTask {
+  @OutputDirectory
+  abstract DirectoryProperty getOutputDirectory()
+
+  @TaskAction
+  void generate() {}
+}
