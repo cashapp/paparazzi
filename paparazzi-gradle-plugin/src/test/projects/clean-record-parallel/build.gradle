@@ -1,0 +1,24 @@
+plugins {
+  id 'com.android.library'
+  id 'app.cash.paparazzi'
+}
+
+android {
+  namespace = 'app.cash.paparazzi.plugin.test'
+  compileSdk = libs.versions.compileSdk.get() as int
+  defaultConfig {
+    minSdk = libs.versions.minSdk.get() as int
+  }
+  compileOptions {
+    sourceCompatibility = libs.versions.javaTarget.get()
+    targetCompatibility = libs.versions.javaTarget.get()
+  }
+}
+
+/**
+ * Makes the racing condition deterministic.
+ * `shouldRunAfter` is a soft ordering that is ignored by gradle when `mustRunAfter` is specified.
+ */
+tasks.matching { it.name == "deleteDebugPaparazziSnapshots" }.configureEach {
+  shouldRunAfter("testDebugUnitTest")
+}
