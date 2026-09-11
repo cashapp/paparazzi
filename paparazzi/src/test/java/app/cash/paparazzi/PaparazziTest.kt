@@ -25,7 +25,6 @@ import android.graphics.drawable.AnimatedVectorDrawable_VectorDrawableAnimatorUI
 import android.os.SystemClock
 import android.view.Choreographer
 import android.view.Choreographer.CALLBACK_ANIMATION
-import android.view.Choreographer_Delegate
 import android.view.View
 import android.view.animation.LinearInterpolator
 import android.widget.Button
