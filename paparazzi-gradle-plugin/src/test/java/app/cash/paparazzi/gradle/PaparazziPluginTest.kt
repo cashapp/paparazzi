@@ -1045,6 +1045,24 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun verifyResValuesIncludedInResourcesWhenConfigured() {
+    val fixtureRoot = File("src/test/projects/verify-resources-with-res-values")
+    fixtureRoot.resolve("build").registerForDeletionOnExit()
+
+    val result = gradleRunner
+      .withArguments("preparePaparazziDebugResources", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
+
+    val resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/debug/resources.json")
+    assertThat(resourcesFile.exists()).isTrue()
+
+    val config = resourcesFile.loadConfig()
+    assertThat(config.projectResourceDirs).contains("build/generated/res/resValues/debug")
+  }
+
+  @Test
   fun verifyResourcesUpdatedWhenLocalResourceChanges() {
     val fixtureRoot = File("src/test/projects/verify-update-local-resources-change")
     val buildDir = fixtureRoot.resolve("build").registerForDeletionOnExit()
@@ -1785,8 +1803,10 @@ class PaparazziPluginTest {
   private fun GradleRunner.runFixture(projectRoot: File, action: GradleRunner.() -> BuildResult): BuildResult {
     val settings = File(projectRoot, "settings.gradle")
     val gradleProperties = File(projectRoot, "gradle.properties")
+    val localProperties = File(projectRoot, "local.properties")
     var generatedSettings = false
     var generatedGradleProperties = false
+    var generatedLocalProperties = false
 
     return try {
       if (!settings.exists()) {
@@ -1800,15 +1820,31 @@ class PaparazziPluginTest {
         gradleProperties.writeText(
           """
             |android.dependencyResolutionAtConfigurationTime.disallow=true
+            |android.onlyEnableUnitTestForTheTestedBuildType=false
           """.trimMargin()
         )
         generatedGradleProperties = true
+      }
+
+      if (!localProperties.exists()) {
+        val sdkDir = System.getenv("ANDROID_HOME") ?: run {
+          val rootLocalProps = java.util.Properties()
+          val rootLocalPropsFile = File("../local.properties")
+          if (rootLocalPropsFile.exists()) rootLocalProps.load(rootLocalPropsFile.inputStream())
+          rootLocalProps.getProperty("sdk.dir")
+        }
+        if (sdkDir != null) {
+          localProperties.createNewFile()
+          localProperties.writeText("sdk.dir=${sdkDir.replace("\\", "/")}\n")
+          generatedLocalProperties = true
+        }
       }
 
       withProjectDir(projectRoot).action()
     } finally {
       if (generatedSettings) settings.delete()
       if (generatedGradleProperties) gradleProperties.delete()
+      if (generatedLocalProperties) localProperties.delete()
     }
   }
 
