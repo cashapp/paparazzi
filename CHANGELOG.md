@@ -3,6 +3,8 @@
 ## [Unreleased]
 
 ### New
+* [Gradle Plugin] Android Gradle Plugin 9.1.0
+* [Gradle Plugin] Android Tools 32.1.0
 * Add `Paparazzi#gif` overloads that accept a `@Composable` directly, mirroring the existing `snapshot` Compose overloads:
 
 ```kotlin
