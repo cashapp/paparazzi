@@ -428,7 +428,7 @@ public class PaparazziSdk @JvmOverloads constructor(
 
   /**
    * layoutlib 16.2.3's `RenderSessionImpl.measureLayout()` grows an expanding axis by a *delta*
-   * rather than recomputing it absolutely:
+   * rather than recomputing it absolutely (In Compose):
    *
    * ```
    * exact    = measureView(viewRoot,    child, screenW, EXACTLY, screenH, EXACTLY)
@@ -439,8 +439,9 @@ public class PaparazziSdk @JvmOverloads constructor(
    * ```
    *
    * That is only correct when `measureLayout()` runs once. Paparazzi invokes it several times per
-   * frame, so the same `measured - exact` delta is added on top of an already-expanded `current` and
-   * the canvas grows past the content, leaving trailing blank space.
+   * frame (due to layoutlib measurement when adding view to viewgroup), so the same `measured - exact`
+   * delta is added on top of an already-expanded `current` and the canvas grows past the content,
+   * leaving trailing blank space.
    *
    * Clearing the tracked size makes `measureLayout()` reseed `current` from the device size, so the
    * delta is always applied to a fixed baseline and every pass computes the same absolute result.
@@ -450,7 +451,7 @@ public class PaparazziSdk @JvmOverloads constructor(
   private fun resetExpandBaseline() {
     val renderingMode = sessionParamsBuilder.build().renderingMode
     val requiresExpand = renderingMode == RenderingMode.V_SCROLL || renderingMode == RenderingMode.H_SCROLL
-    if (requiresExpand) {
+    if (requiresExpand && hasComposeRuntime) {
       renderSession.invalidateRenderingSize()
     }
   }
