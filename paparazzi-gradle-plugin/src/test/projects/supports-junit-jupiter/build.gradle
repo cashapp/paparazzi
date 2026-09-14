@@ -24,6 +24,8 @@ dependencies {
   testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.3")
 }
 
-tasks.withType(Test).configureEach {
-  useJUnitPlatform()
+afterEvaluate {
+  tasks.named('testDebugUnitTest', Test) {
+    useJUnitPlatform()
+  }
 }

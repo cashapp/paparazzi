@@ -1,0 +1,27 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
+plugins {
+  id 'com.android.library'
+}
+
+android {
+  namespace = 'app.cash.paparazzi.plugin.test.base'
+  compileSdk = libs.versions.compileSdk.get() as int
+  defaultConfig {
+    minSdk = libs.versions.minSdk.get() as int
+  }
+  compileOptions {
+    sourceCompatibility = libs.versions.javaTarget.get()
+    targetCompatibility = libs.versions.javaTarget.get()
+  }
+  kotlin {
+    compilerOptions {
+      jvmTarget = JvmTarget.fromTarget(libs.versions.javaTarget.get())
+    }
+  }
+}
+
+dependencies {
+  api "app.cash.paparazzi:paparazzi:2.0.0-SNAPSHOT"
+  api libs.junit
+}
