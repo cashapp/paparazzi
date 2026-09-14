@@ -59,6 +59,8 @@ buildConfig {
   packageName('app.cash.paparazzi.gradle')
   buildConfigField("String", "VERSION", "\"${project.version}\"")
   buildConfigField("String", "NATIVE_LIB_VERSION", "\"${libs.versions.layoutlib.get()}\"")
+  buildConfigField("String", "JUNIT_PLATFORM_LAUNCHER", "\"${libs.junit.platform.launcher.get()}\"")
+  buildConfigField("String", "PAPARAZZI_JUNIT_PLATFORM_COORDINATES", "\"app.cash.paparazzi:paparazzi-junit-platform:${project.version}\"")
 }
 
 tasks.withType(Test).configureEach {
@@ -69,6 +71,7 @@ tasks.withType(Test).configureEach {
   inputs.dir(rootProject.layout.buildDirectory.dir("localMaven"))
     .withPropertyName("localMaven")
   dependsOn(':paparazzi:publishMavenPublicationToProjectLocalMavenRepository')
+  dependsOn(':paparazzi-junit-platform:publishMavenPublicationToProjectLocalMavenRepository')
 }
 
 // When cleaning this project, we also want to clean the test projects.

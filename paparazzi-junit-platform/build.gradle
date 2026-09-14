@@ -1,0 +1,7 @@
+apply plugin: 'org.jetbrains.kotlin.jvm'
+apply plugin: 'com.vanniktech.maven.publish'
+
+dependencies {
+  implementation libs.junit.platform.engine
+  implementation libs.junit.vintage.engine
+}

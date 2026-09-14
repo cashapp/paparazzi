@@ -795,6 +795,65 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun verifyFailureNativeReport() {
+    val fixtureRoot = File("src/test/projects/verify-mode-failure")
+    File(fixtureRoot, "build").registerForDeletionOnExit()
+
+    val result = gradleRunner
+      .withGradleVersion("9.4.1")
+      .withArguments(
+        "verifyPaparazziDebug",
+        "-Papp.cash.paparazzi.reportType=native",
+        "--stacktrace"
+      )
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    assertThat(result.task(":testDebugUnitTest")).isNotNull()
+
+    val deltaName = "delta-app.cash.paparazzi.plugin.test_VerifyTest_verify.png"
+    val delta = File(fixtureRoot, "build/paparazzi/failures/debug/$deltaName")
+    assertThat(delta.exists()).isTrue()
+
+    // Match an attachments <img>, not the bare filename: the failure message embeds the path
+    // too. Report pages sit under opaque hashed directories, deeper for parameterized tests,
+    // so there is no fixed path to read.
+    val attachmentImage = Regex("""<img src="[^"]*${Regex.escape(deltaName)}"""")
+    val reportHtml = File(fixtureRoot, "build/reports/tests/testDebugUnitTest")
+      .walkTopDown()
+      .filter { it.isFile && it.extension == "html" }
+      .joinToString("\n") { it.readText() }
+    assertThat(attachmentImage.containsMatchIn(reportHtml)).isTrue()
+  }
+
+  @Test
+  fun verifyFailureNativeReportParameterized() {
+    val fixtureRoot = File("src/test/projects/verify-mode-failure-parameterized")
+    File(fixtureRoot, "build").registerForDeletionOnExit()
+    File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
+
+    gradleRunner
+      .withGradleVersion("9.4.1")
+      .withArguments("recordPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    gradleRunner
+      .withGradleVersion("9.4.1")
+      .withArguments("verifyPaparazziDebug", "-Papp.cash.paparazzi.reportType=native", "--stacktrace")
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    // The file carries Parameterized's `[0]`; MethodSource reports the bare `verify`.
+    val deltaName = "delta-app.cash.paparazzi.plugin.test_ParameterizedVerifyTest_verify[0].png"
+    assertThat(File(fixtureRoot, "build/paparazzi/failures/debug/$deltaName").exists()).isTrue()
+
+    val attachmentImage = Regex("""<img src="[^"]*${Regex.escape(deltaName)}"""")
+    val reportHtml = File(fixtureRoot, "build/reports/tests/testDebugUnitTest")
+      .walkTopDown()
+      .filter { it.isFile && it.extension == "html" }
+      .joinToString("\n") { it.readText() }
+    assertThat(attachmentImage.containsMatchIn(reportHtml)).isTrue()
+  }
+
+  @Test
   fun verifySimilar() {
     val fixtureRoot = File("src/test/projects/verify-similar")
 
