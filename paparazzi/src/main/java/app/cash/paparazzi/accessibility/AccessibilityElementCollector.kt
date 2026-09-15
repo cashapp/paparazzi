@@ -58,6 +58,8 @@ internal class AccessibilityElementCollector {
     }
 
   private fun View.processAccessibleChildren(processElement: (AccessibilityElement) -> Unit) {
+    if (importantForAccessibility == View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS) return
+
     val accessibilityText = this.accessibilityText()
     val bounds = Rect().also(::getBoundsOnScreen)
 
@@ -258,7 +260,7 @@ internal class AccessibilityElementCollector {
       val unmergedNode = unmergedNodes?.filter { it.id == id }
       unmergedNode?.firstOrNull()?.let { node ->
         node.findAllUnmergedNodes()
-          .mapNotNull { it.accessibilityText() }
+          .mapNotNull { it.accessibilityText()?.takeIf { text -> text.isNotBlank() } }
           .joinToString(", ")
           .ifEmpty { null }
           .takeIf { it != IN_LIST_LABEL }
@@ -303,13 +305,15 @@ internal class AccessibilityElementCollector {
   }
 
   private fun SemanticsNode.accessibilityText(): String? {
-    val invisibleToUser = config.getOrNull(SemanticsProperties.InvisibleToUser) != null
+    val hiddenFromAccessibility =
+      config.getOrNull(SemanticsProperties.InvisibleToUser) != null ||
+        config.getOrNull(SemanticsProperties.HideFromAccessibility) != null
     val hasZeroAlphaModifier = layoutInfo.getModifierInfo().any {
       // We don't get direct access to an alpha field but we can inspect the modifiers and see if
       // a modifier of 0f was applied to the node.
       it.modifier == Modifier.alpha(0f)
     }
-    if (invisibleToUser || hasZeroAlphaModifier) {
+    if (hiddenFromAccessibility || hasZeroAlphaModifier) {
       return null
     }
 

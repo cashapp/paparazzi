@@ -15,13 +15,10 @@ android {
   }
 }
 
-dependencies {
-  def isFirstRun = System.getProperty("isFirstRun", "false").toBoolean()
-  if (isFirstRun) {
-    implementation files('libs/external1.aar')
-    implementation 'androidx.core:core:1.19.0'
-  } else {
-    implementation files('libs/external2.aar')
-    implementation 'androidx.core:core:1.19.0'
-  }
+/**
+ * Makes the racing condition deterministic.
+ * `shouldRunAfter` is a soft ordering that is ignored by gradle when `mustRunAfter` is specified.
+ */
+tasks.matching { it.name == "deleteDebugPaparazziSnapshots" }.configureEach {
+  shouldRunAfter("testDebugUnitTest")
 }

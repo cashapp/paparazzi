@@ -323,6 +323,51 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun cacheableRelocatable() {
+    val fixtureRoot = File("src/test/projects/cacheable")
+    fixtureRoot.resolve("build").registerForDeletionOnExit()
+    fixtureRoot.resolve("build-cache").registerForDeletionOnExit()
+
+    val firstRun = gradleRunner
+      .withArguments("testDebug", "--build-cache", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    with(firstRun.task(":preparePaparazziDebugResources")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isNotEqualTo(FROM_CACHE)
+    }
+    with(firstRun.task(":testDebugUnitTest")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isNotEqualTo(FROM_CACHE)
+    }
+
+    // Rebuild the same project (with its populated cache) from a different directory, as CI and a
+    // local clone would. Absolute paths in the cache key would make these entries unreachable here.
+    val relocatedRoot = fixtureRoot.parentFile.resolve("cacheable-relocated").registerForDeletionOnExit()
+    relocatedRoot.deleteRecursively()
+    fixtureRoot.copyRecursively(relocatedRoot)
+    relocatedRoot.resolve("build").deleteRecursively()
+    // Pin the project name (fed into the Kotlin module name embedded in compiled classes) so it
+    // stays constant across dirs; real CI-vs-local checkouts share the same leaf directory name.
+    relocatedRoot.resolve("settings.gradle").let {
+      it.writeText("rootProject.name = 'cacheable'\n${it.readText()}")
+    }
+
+    val secondRun = gradleRunner
+      .withArguments("testDebug", "--build-cache", "--stacktrace")
+      .runFixture(relocatedRoot) { build() }
+
+    with(secondRun.task(":preparePaparazziDebugResources")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(FROM_CACHE)
+    }
+    with(secondRun.task(":testDebugUnitTest")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(FROM_CACHE)
+    }
+  }
+
+  @Test
   fun configurationCache() {
     val fixtureRoot = File("src/test/projects/configuration-cache")
 
@@ -908,6 +953,22 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun cleanRecordParallel() {
+    val fixtureRoot = File("src/test/projects/clean-record-parallel")
+    val snapshotsDir = File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
+    val snapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_CleanRecordParallelTest_record.png")
+
+    val result = gradleRunner
+      .withArguments("cleanRecordPaparazziDebug", "--parallel", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":deletePaparazziSnapshots")).isNotNull()
+    assertThat(result.task(":recordPaparazziDebug")).isNotNull()
+
+    assertThat(snapshot.exists()).isTrue()
+  }
+
+  @Test
   fun widgets() {
     val fixtureRoot = File("src/test/projects/widgets")
 
@@ -1155,7 +1216,7 @@ class PaparazziPluginTest {
       .comparingElementsUsing(MATCHES_PATTERN)
       .containsExactly(
         "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/external1/res\$",
-        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/core-1.17.0/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/core-1.19.0/res\$",
         "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/annotation-experimental-1.4.1/res\$",
         "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/core-viewtree-1.0.0/res\$",
         "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/lifecycle-runtime-2.6.2/res\$",
@@ -1184,7 +1245,7 @@ class PaparazziPluginTest {
       .comparingElementsUsing(MATCHES_PATTERN)
       .containsExactly(
         "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/external2/res\$",
-        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/core-1.17.0/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/core-1.19.0/res\$",
         "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/annotation-experimental-1.4.1/res\$",
         "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/core-viewtree-1.0.0/res\$",
         "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/lifecycle-runtime-2.6.2/res\$",
