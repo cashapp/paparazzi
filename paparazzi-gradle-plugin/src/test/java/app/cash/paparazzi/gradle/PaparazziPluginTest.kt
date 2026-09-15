@@ -390,6 +390,51 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun configurationCacheWorksWhenRecordingWithGeneratedTestSources() {
+    val fixtureRoot = File("src/test/projects/configuration-cache-generated-test-sources")
+    fixtureRoot.resolve(".gradle/configuration-cache").registerForDeletionOnExit()
+    fixtureRoot.resolve("src/test/snapshots").registerForDeletionOnExit()
+
+    // Generated test sources (eg. from KSP) must not be resolved when storing the record task's
+    // outputs in the configuration cache. https://github.com/cashapp/paparazzi/issues/2374
+    val firstRun = gradleRunner
+      .withArguments("recordPaparazziDebug", "--configuration-cache", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+    assertThat(firstRun.output).contains("Configuration cache entry stored.")
+
+    val snapshot = File(fixtureRoot, "src/test/snapshots/images/app.cash.paparazzi.plugin.test_RecordTest_record.png")
+    assertThat(snapshot.exists()).isTrue()
+
+    val secondRun = gradleRunner
+      .withArguments("recordPaparazziDebug", "--configuration-cache", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+    assertThat(secondRun.output).contains("Configuration cache entry reused.")
+  }
+
+  @Test
+  fun configurationCacheWorksWhenRecordingWithGeneratedTestSourcesInMultiplatform() {
+    val fixtureRoot = File("src/test/projects/configuration-cache-generated-test-sources-multiplatform")
+    fixtureRoot.resolve(".gradle/configuration-cache").registerForDeletionOnExit()
+    fixtureRoot.resolve("src/androidHostTest/snapshots").registerForDeletionOnExit()
+    fixtureRoot.resolve("build/generated/sourceGen/snapshots").registerForDeletionOnExit()
+
+    val firstRun = gradleRunner
+      .withArguments("recordPaparazziAndroidMain", "--configuration-cache", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+    assertThat(firstRun.output).contains("Configuration cache entry stored.")
+
+    // Snapshots belong next to the checked-in sources, not in a generated source directory.
+    val snapshot =
+      File(fixtureRoot, "src/androidHostTest/snapshots/images/app.cash.paparazzi.plugin.test_RecordTest_record.png")
+    assertThat(snapshot.exists()).isTrue()
+
+    val secondRun = gradleRunner
+      .withArguments("recordPaparazziAndroidMain", "--configuration-cache", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+    assertThat(secondRun.output).contains("Configuration cache entry reused.")
+  }
+
+  @Test
   fun interceptViewEditMode() {
     val fixtureRoot = File("src/test/projects/edit-mode-intercept")
 
