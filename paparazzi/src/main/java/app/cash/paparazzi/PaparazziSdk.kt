@@ -19,6 +19,8 @@ import android.animation.AnimationHandler
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Bitmap
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Handler
 import android.os.Handler_Delegate
 import android.util.AttributeSet
@@ -32,6 +34,10 @@ import android.view.View
 import android.view.View.NO_ID
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
+import android.view.Window
+import android.view.WindowManager
+import android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND
+import android.view.WindowManagerImpl
 import androidx.activity.setViewTreeOnBackPressedDispatcherOwner
 import androidx.annotation.LayoutRes
 import androidx.compose.runtime.Composable
@@ -335,11 +341,7 @@ public class PaparazziSdk @JvmOverloads constructor(
 
         // If we have pendingTasks run recomposer to ensure we get the correct frame.
         var hasPendingWork = false
-        withTime(nowNanos) {
-          val result = renderSession.render(true)
-          if (result.status == ERROR_UNKNOWN) {
-            throw result.exception
-          }
+        renderFrame(nowNanos) {
           if (hasComposeRuntime && recomposer != null) {
             // If we have pending tasks, we need to trigger it within the context of the first frame.
             if (frame == 0 && (recomposer as Recomposer).hasPendingWork) {
@@ -349,12 +351,7 @@ public class PaparazziSdk @JvmOverloads constructor(
         }
 
         if (hasPendingWork) {
-          withTime(nowNanos) {
-            val result = renderSession.render(true)
-            if (result.status == ERROR_UNKNOWN) {
-              throw result.exception
-            }
-          }
+          renderFrame(nowNanos)
 
           val recomposerInstance = recomposer as Recomposer
           if (recomposerInstance.hasPendingWork) {
@@ -362,6 +359,10 @@ public class PaparazziSdk @JvmOverloads constructor(
               "Pending work detected. This may cause unexpected results in your generated snapshots. ${recomposerInstance.changeCount}"
             )
           }
+        }
+
+        if (syncLayoutlibWindowManagerRootViewBackground()) {
+          renderFrame(nowNanos)
         }
 
         val image = bridgeRenderSession.image
@@ -396,6 +397,63 @@ public class PaparazziSdk @JvmOverloads constructor(
 
       Thread.setDefaultUncaughtExceptionHandler(previousUncaughtExceptionHandler)
     }
+  }
+
+  private fun renderFrame(timeNanos: Long, block: () -> Unit = {}) {
+    withTime(timeNanos) {
+      val result = renderSession.render(true)
+      if (result.status == ERROR_UNKNOWN) {
+        throw result.exception
+      }
+      block()
+    }
+  }
+
+  private fun syncLayoutlibWindowManagerRootViewBackground(): Boolean {
+    val windowManager = context.getSystemService(WindowManager::class.java)
+    if (windowManager !is WindowManagerImpl) return false
+
+    val currentRootView = windowManager.currentRootView ?: return false
+    val windowAttributes = currentRootView.topWindowAttributes() ?: return false
+    val backgroundColor = if (windowAttributes.flags and FLAG_DIM_BEHIND != 0) {
+      Color.argb(windowAttributes.dimAmount, 0f, 0f, 0f)
+    } else {
+      Color.TRANSPARENT
+    }
+
+    val currentBackgroundColor = (currentRootView.background as? ColorDrawable)?.color
+    if (currentBackgroundColor == backgroundColor) return false
+
+    currentRootView.setBackgroundColor(backgroundColor)
+    return true
+  }
+
+  private fun ViewGroup.topWindowAttributes(): WindowManager.LayoutParams? {
+    for (index in childCount - 1 downTo 0) {
+      val childWindow = getChildAt(index).window()
+      if (childWindow != null) {
+        return childWindow.attributes
+      }
+    }
+    return null
+  }
+
+  private fun View.window(): Window? {
+    var currentClass: Class<*>? = javaClass
+    while (currentClass != null) {
+      val field = try {
+        currentClass.getDeclaredField("mWindow")
+      } catch (_: NoSuchFieldException) {
+        null
+      }
+
+      if (field != null) {
+        field.isAccessible = true
+        return field.get(this) as? Window
+      }
+      currentClass = currentClass.superclass
+    }
+    return null
   }
 
   private fun withTime(timeNanos: Long, block: () -> Unit) {
