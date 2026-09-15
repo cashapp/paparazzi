@@ -65,6 +65,84 @@ class ApngVerifierTest {
   }
 
   @Test
+  fun validatesSingleFrameGoldenSuccessfully() {
+    // A single-frame golden is written as a still PNG with no animation chunks, so its recorded
+    // fps is lost and ApngReader reports 0. Verification used to loop forever computing a common
+    // frame rate with 0; it should pass regardless of the requested fps.
+    val goldenFile = File(tempDir.newFolder(), "golden.png")
+    ApngWriter(goldenFile.toOkioPath(), fps = 1).use { it.writeImage(firstFrame) }
+    val deltaFile = File(tempDir.newFolder(), "delta.png")
+
+    ApngVerifier(
+      goldenFilePath = goldenFile.toOkioPath(),
+      deltaFilePath = deltaFile.toOkioPath(),
+      fps = 1,
+      frameCount = 1,
+      maxPercentDifference = 0.01,
+      withErrorText = false,
+      differ = OffByTwo
+    ).use {
+      it.verifyFrame(firstFrame)
+
+      it.assertFinished()
+    }
+    assertThat(deltaFile.exists()).isFalse()
+  }
+
+  @Test
+  fun rejectsNonPositiveFpsBeforeOpeningGoldenFile() {
+    // The golden file does not exist. If the constructor opened it before the fps check,
+    // this would throw a FileNotFoundException instead of an IllegalArgumentException.
+    val missingGoldenFile = File(tempDir.newFolder(), "missing.png")
+    val deltaFile = File(tempDir.newFolder(), "delta.png")
+
+    try {
+      ApngVerifier(
+        goldenFilePath = missingGoldenFile.toOkioPath(),
+        deltaFilePath = deltaFile.toOkioPath(),
+        fps = 0,
+        frameCount = 1,
+        maxPercentDifference = 0.01,
+        withErrorText = false,
+        differ = OffByTwo
+      )
+      fail("Should have already failed")
+    } catch (e: IllegalArgumentException) {
+      assertThat(e).hasMessageThat().isEqualTo("fps must be positive, was: 0")
+    }
+  }
+
+  @Test
+  fun failsWhenSingleFrameGoldenDiffers() {
+    val goldenFile = File(tempDir.newFolder(), "golden.png")
+    ApngWriter(goldenFile.toOkioPath(), fps = 1).use { it.writeImage(firstFrame) }
+    val deltaFile = File(tempDir.newFolder(), "delta.png")
+
+    ApngVerifier(
+      goldenFilePath = goldenFile.toOkioPath(),
+      deltaFilePath = deltaFile.toOkioPath(),
+      fps = 1,
+      frameCount = 1,
+      maxPercentDifference = 0.01,
+      withErrorText = false,
+      differ = OffByTwo
+    ).use {
+      it.verifyFrame(secondFrame)
+
+      try {
+        it.assertFinished()
+        fail("Should have already failed")
+      } catch (e: AssertionError) {
+        assertThat(e.message).isEqualTo(
+          "1 frames differed by more than 0.010000%\n" +
+            " - see details in file://${deltaFile.path}\n\n"
+        )
+      }
+    }
+    assertThat(deltaFile.exists()).isTrue()
+  }
+
+  @Test
   fun failsWhenFpsDoesNotMatch() {
     val file = javaClass.classLoader.getResource("simple_animation.png")
     val deltaFolder = tempDir.newFolder()
