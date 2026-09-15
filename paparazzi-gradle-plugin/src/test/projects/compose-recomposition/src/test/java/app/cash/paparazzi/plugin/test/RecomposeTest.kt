@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.LaunchedEffect
@@ -18,9 +19,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import app.cash.paparazzi.Paparazzi
+import com.android.ide.common.rendering.api.SessionParams
 import org.junit.Rule
 import org.junit.Test
 
@@ -86,6 +93,24 @@ class RecomposeTest {
               }
           )
         }
+      }
+    }
+  }
+
+  @Test fun imageHasCorrectSizeAfterRecomposition() {
+    paparazzi.unsafeUpdateConfig(renderingMode = SessionParams.RenderingMode.FULL_EXPAND)
+    paparazzi.snapshot {
+      var size by remember { mutableStateOf(IntSize.Zero) }
+      Box(
+        modifier = Modifier
+          .size(with(LocalDensity.current) { 3000.toDp() })
+          .background(Color.White)
+          .onSizeChanged { size = it }
+      ) {
+        BasicText(
+          text = "Size: $size",
+          modifier = Modifier.align(Alignment.Center)
+        )
       }
     }
   }
