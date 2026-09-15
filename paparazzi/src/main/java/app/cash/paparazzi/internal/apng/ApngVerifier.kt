@@ -35,6 +35,12 @@ internal class ApngVerifier(
   private val withErrorText: Boolean = true,
   private val differ: Differ
 ) : Closeable {
+  init {
+    // Validate before the pngReader initializer below opens the golden file, so a bad fps
+    // does not leak an open file handle.
+    require(fps > 0) { "fps must be positive, was: $fps" }
+  }
+
   private val pngReader = ApngReader(fileSystem.openReadOnly(goldenFilePath))
   private val blankFrame by lazy { createBlankFrame(pngReader.width, pngReader.height) }
 
@@ -47,7 +53,6 @@ internal class ApngVerifier(
   private var invalidFrames = 0
 
   init {
-    require(fps > 0) { "fps must be positive, was: $fps" }
     currentGoldenFrame = pngReader.readNextFrame()
     // A single-frame golden is written as a still PNG with no animation chunks, dropping the fps
     // it was recorded with, so ApngReader reports an fps of 0. Fall back to the actual fps: any
