@@ -26,15 +26,19 @@ public class Snapshot(
   public val testName: TestName,
   public val timestamp: Date,
   public val tags: List<String> = listOf(),
-  public val file: String? = null
+  public val file: String? = null,
+  public val expectedFile: String? = null,
+  public val deltaFile: String? = null
 ) {
   public fun copy(
     name: String? = this.name,
     testName: TestName = this.testName,
     timestamp: Date = this.timestamp,
     tags: List<String> = this.tags,
-    file: String? = this.file
-  ): Snapshot = Snapshot(name, testName, timestamp, tags, file)
+    file: String? = this.file,
+    expectedFile: String? = this.expectedFile,
+    deltaFile: String? = this.deltaFile
+  ): Snapshot = Snapshot(name, testName, timestamp, tags, file, expectedFile, deltaFile)
 }
 
 internal val invalidPrintableChars = CharMatcher.anyOf("<>:\"/\\|?*")

@@ -18,17 +18,20 @@ package app.cash.paparazzi
 import app.cash.paparazzi.SnapshotHandler.FrameHandler
 import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.PaparazziJson
+import app.cash.paparazzi.internal.apng.ApngVerifier
 import app.cash.paparazzi.internal.apng.ApngWriter
 import com.google.common.base.CharMatcher
 import com.google.common.io.Files
 import okio.BufferedSink
 import okio.HashingSink
+import okio.Path.Companion.toOkioPath
 import okio.Path.Companion.toPath
 import okio.blackholeSink
 import okio.buffer
 import okio.sink
 import okio.source
 import java.awt.image.BufferedImage
+import java.awt.image.BufferedImage.TYPE_INT_ARGB
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -43,6 +46,11 @@ import javax.imageio.ImageIO
  * contents. Note that the images/ directory includes the individual frames of each video.
  *
  * Runs are named by their date.
+ *
+ * When `paparazzi.test.verify` is set, snapshots are compared against their golden instead of being recorded.
+ * The report is still generated for the run: failed snapshots write expected/actual/delta images into the report's
+ * images/ directory (referenced from the run data) and the failure delta into the failures directory, and the test
+ * fails with an [AssertionError].
  *
  * ```
  * images
@@ -78,6 +86,8 @@ public class HtmlReportWriter @JvmOverloads constructor(
 
   private val isRecording: Boolean =
     System.getProperty("paparazzi.test.record")?.toBoolean() == true
+  private val isVerifying: Boolean =
+    System.getProperty("paparazzi.test.verify")?.toBoolean() == true
   private val overwriteOnMaxPercentDifference: Boolean =
     System.getProperty("paparazzi.test.record.overwriteOnMaxPercentDifference")?.toBoolean() == true
 
@@ -97,37 +107,137 @@ public class HtmlReportWriter @JvmOverloads constructor(
       val hashes = mutableListOf<String>()
       val snapshotTmpFile = File(snapshotDir, snapshot.toFileName(extension = "temp.png"))
       val writer = ApngWriter(snapshotTmpFile.path.toPath(), fps)
+      var stillImage: BufferedImage? = null
+      val pngVerifier: ApngVerifier? = if (isVerifying && fps != -1) {
+        val fileName = snapshot.toFileName("_", "png")
+        ApngVerifier(
+          goldenFilePath = File(goldenDir, fileName).toOkioPath(),
+          deltaFilePath = File(failureDir, "delta-$fileName").toOkioPath(),
+          fps = fps,
+          frameCount = frameCount,
+          maxPercentDifference = maxPercentDifference,
+          differ = differ
+        )
+      } else {
+        null
+      }
 
       override fun handle(image: BufferedImage) {
         writer.writeImage(image)
+        pngVerifier?.verifyFrame(image)
         hashes += hash(image)
+        if (fps == -1) {
+          stillImage = image
+        }
       }
 
       override fun close() {
         if (hashes.isEmpty()) return
-        writer.close()
-        val snapshotFile = File(snapshotDir, "${hash(hashes)}.png")
-        Files.move(snapshotTmpFile, snapshotFile)
-        snapshotTmpFile.delete()
+        var verifyError: AssertionError? = null
+        try {
+          pngVerifier?.assertFinished()
+        } catch (error: AssertionError) {
+          verifyError = error
+        } finally {
+          pngVerifier?.close()
+          writer.close()
+          val snapshotFile = File(snapshotDir, "${hash(hashes)}.png")
+          Files.move(snapshotTmpFile, snapshotFile)
+          snapshotTmpFile.delete()
 
-        if (isRecording) {
-          val goldenFile = File(goldenDir, snapshot.toFileName("_", "png"))
-          if (!overwriteOnMaxPercentDifference || !goldenFile.exists()) {
-            snapshotFile.copyTo(target = goldenFile, overwrite = true)
-          } else {
-            val result = ImageUtils.compareImages(
-              goldenImage = ImageIO.read(goldenFile),
-              image = ImageIO.read(snapshotFile),
-              differ = differ
-            )
-            if (result.second > maxPercentDifference) {
+          if (isRecording) {
+            val goldenFile = File(goldenDir, snapshot.toFileName("_", "png"))
+            if (!overwriteOnMaxPercentDifference || !goldenFile.exists()) {
               snapshotFile.copyTo(target = goldenFile, overwrite = true)
+            } else {
+              val result = ImageUtils.compareImages(
+                goldenImage = ImageIO.read(goldenFile),
+                image = ImageIO.read(snapshotFile),
+                differ = differ
+              )
+              if (result.second > maxPercentDifference) {
+                snapshotFile.copyTo(target = goldenFile, overwrite = true)
+              }
             }
           }
-        }
 
-        shots += snapshot.copy(file = snapshotFile.toJsonPath())
+          if (isVerifying && fps == -1) {
+            verifyStillSnapshot(snapshot, snapshotFile, checkNotNull(stillImage))
+          } else if (verifyError != null) {
+            // Failed video: surface the expected/actual/delta in the report like stills do.
+            val imageName = snapshot.toFileName("_", "png")
+            val expectedFile = File(imagesDirectory, "expected-$imageName")
+            val actualFile = File(imagesDirectory, "actual-$imageName")
+            val deltaFile = File(imagesDirectory, "delta-$imageName")
+            File(goldenDir, imageName).copyTo(expectedFile, overwrite = true)
+            snapshotFile.copyTo(actualFile, overwrite = true)
+            File(failureDir, "delta-$imageName").copyTo(deltaFile, overwrite = true)
+            shots += snapshot.copy(
+              file = actualFile.toJsonPath(),
+              expectedFile = expectedFile.toJsonPath(),
+              deltaFile = deltaFile.toJsonPath()
+            )
+          } else {
+            shots += snapshot.copy(file = snapshotFile.toJsonPath())
+          }
+
+          verifyError?.let { throw it }
+        }
       }
+    }
+  }
+
+  /**
+   * Compares a still snapshot against its golden and records the outcome in the report.
+   *
+   * On failure the expected, actual and delta images are written into the report's images/
+   * directory and referenced from the run data, so failed runs can be reviewed from the HTML
+   * report. The delta and actual images are also written to the failures directory (as
+   * [ImageUtils.assertImageSimilar] does) for the Gradle test report, and an [AssertionError]
+   * is thrown to fail the test, mirroring [SnapshotVerifier].
+   */
+  private fun verifyStillSnapshot(snapshot: Snapshot, snapshotFile: File, image: BufferedImage) {
+    val goldenFile = File(goldenImagesDirectory, snapshot.toFileName("_", "png"))
+    val goldenImage = if (!goldenFile.exists()) {
+      // No golden recorded yet: compare against a blank canvas so the run is reported as a failure.
+      BufferedImage(image.width, image.height, TYPE_INT_ARGB)
+    } else {
+      ImageIO.read(goldenFile)
+    } ?: throw NullPointerException(
+      """
+      Failed to read the snapshot file from the file system.
+
+      If your project uses git LFS, it's possible that it's misconfigured on your machine and
+      Paparazzi has just loaded a pointer file instead of the real snapshot file. Follow git
+      LFS troubleshooting instructions and try again.
+
+      """.trimIndent()
+    )
+
+    try {
+      ImageUtils.assertImageSimilar(
+        relativePath = goldenFile.path,
+        image = image,
+        goldenImage = goldenImage,
+        maxPercentDifferent = maxPercentDifference,
+        failureDir = failureDir,
+        differ = differ
+      )
+      shots += snapshot.copy(file = snapshotFile.toJsonPath())
+    } catch (error: AssertionError) {
+      val imageName = snapshot.toFileName("_", "png")
+      val expectedFile = File(imagesDirectory, "expected-$imageName")
+      val actualFile = File(imagesDirectory, "actual-$imageName")
+      val deltaFile = File(imagesDirectory, "delta-$imageName")
+      ImageIO.write(goldenImage, "PNG", expectedFile)
+      snapshotFile.copyTo(actualFile, overwrite = true)
+      File(failureDir, "delta-$imageName").copyTo(deltaFile, overwrite = true)
+      shots += snapshot.copy(
+        file = actualFile.toJsonPath(),
+        expectedFile = expectedFile.toJsonPath(),
+        deltaFile = deltaFile.toJsonPath()
+      )
+      throw error
     }
   }
 
@@ -240,6 +350,16 @@ public class HtmlReportWriter @JvmOverloads constructor(
   }
 
   private fun File.toJsonPath(): String = relativeTo(rootDirectory).invariantSeparatorsPath
+
+  private companion object {
+    /** Directory where failure deltas and actual images are written, for the Gradle test report. */
+    private val failureDir: File
+      get() {
+        val path = System.getProperty("paparazzi.failures.dir")
+          ?: error("paparazzi.failures.dir system property is required in verify mode")
+        return File(path).apply { mkdirs() }
+      }
+  }
 }
 
 internal fun defaultRunName(): String {

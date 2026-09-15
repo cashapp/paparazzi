@@ -18,6 +18,44 @@
       width: 300px;
     }
 
+    .test__details__selector--failed {
+      background-color: #e53935;
+    }
+
+    .screen--failed {
+      border: 2px solid #e53935;
+    }
+
+    .screen--failed::after {
+      content: "FAILED";
+      position: absolute;
+      top: 0;
+      left: 0;
+      background: #e53935;
+      color: #fff;
+      padding: 2px 6px;
+      font-size: 11px;
+    }
+
+    .shot__diff {
+      display: none;
+      justify-content: center;
+    }
+
+    .shot__diff figure {
+      margin: 0 0.2em;
+    }
+
+    .shot__diff img {
+      width: 120px;
+    }
+
+    .shot__diff figcaption {
+      color: #fff;
+      font-size: 11px;
+      text-align: center;
+    }
+
     div.overlay__hovered {
         display: block;
     }
