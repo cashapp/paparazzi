@@ -11,6 +11,8 @@ paparazzi.gif {
 }
 ```
 
+* Add `app.cash.paparazzi.reportType=native`, which publishes snapshot diffs as attachments on Gradle's test report rather than replacing Gradle's test reporter with Paparazzi's. Requires Gradle 9.4 or later, and pulls in the new `paparazzi-junit-platform` artifact. `legacy` will be removed in an upcoming release, once `native` is stable and accessibility artifacts have been migrated to it.
+
 ## [2.0.0-alpha05] - 2026-05-20
 
 This release supports pre-AGP 9.0 consumers.

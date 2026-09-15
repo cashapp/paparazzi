@@ -21,6 +21,7 @@ import app.cash.paparazzi.gradle.reporting.PaparazziTestReporter
 import app.cash.paparazzi.gradle.utils.artifactViewFor
 import app.cash.paparazzi.gradle.utils.capitalize
 import app.cash.paparazzi.gradle.utils.relativize
+import com.android.build.api.dsl.AndroidSourceSet
 import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.dsl.KotlinMultiplatformAndroidHostTestCompilation
 import com.android.build.api.instrumentation.FramesComputationMode
@@ -36,6 +37,7 @@ import com.android.builder.model.Version.ANDROID_GRADLE_PLUGIN_VERSION
 import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE
 import org.gradle.api.file.Directory
@@ -58,7 +60,9 @@ import org.gradle.internal.operations.BuildOperationRunner
 import org.gradle.internal.os.OperatingSystem
 import org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
 import org.gradle.process.CommandLineArgumentProvider
+import org.gradle.util.GradleVersion
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import java.util.Locale
 import javax.inject.Inject
 import kotlin.io.encoding.Base64
@@ -71,6 +75,16 @@ public class PaparazziPlugin @Inject constructor(
   private val buildOperationExecutor: BuildOperationExecutor
 ) : Plugin<Project> {
   override fun apply(project: Project) {
+    if (project.reportType() == ReportType.NATIVE &&
+      GradleVersion.current() < MIN_NATIVE_REPORT_GRADLE_VERSION
+    ) {
+      error(
+        "app.cash.paparazzi.reportType=native requires Gradle " +
+          "${MIN_NATIVE_REPORT_GRADLE_VERSION.version} or later. " +
+          "Current Gradle version: ${GradleVersion.current().version}."
+      )
+    }
+
     val supportedPlugins = listOf(
       "com.android.application",
       "com.android.library",
@@ -226,13 +240,26 @@ public class PaparazziPlugin @Inject constructor(
         val localResourceDirs = sources.localResourceDirs ?: providerFactory.provider { emptyList() }
         val localAssetDirs = sources.localAssetDirs ?: providerFactory.provider { emptyList() }
 
-        test.setTestReporter(
-          PaparazziTestReporter(
-            buildOperationRunner = buildOperationRunner,
-            buildOperationExecutor = buildOperationExecutor,
-            diffRegistryFactory = createDiffRegistryFactory(failureDir, isVerifyRun)
-          )
-        )
+        when (reportType()) {
+          ReportType.LEGACY -> {
+            test.setTestReporter(
+              PaparazziTestReporter(
+                buildOperationRunner = buildOperationRunner,
+                buildOperationExecutor = buildOperationExecutor,
+                diffRegistryFactory = createDiffRegistryFactory(failureDir, isVerifyRun)
+              )
+            )
+            test.systemProperties["paparazzi.reportType"] = "legacy"
+          }
+          ReportType.NATIVE -> {
+            // PaparazziVintageEngine wraps the Vintage engine to publish snapshot diffs as
+            // attachments; excluding the real one keeps tests from being discovered twice.
+            test.useJUnitPlatform {
+              it.excludeEngines("junit-vintage")
+            }
+            test.systemProperties["paparazzi.reportType"] = "native"
+          }
+        }
 
         // Absolute paths passed via `systemProperties` (an @Input) would pollute the build-cache
         // key and break relocatability. Supply them as @Internal JVM args instead (#1874); task
@@ -419,7 +446,32 @@ public class PaparazziPlugin @Inject constructor(
       dependencies.create("app.cash.paparazzi:paparazzi:$VERSION")
     }
 
+    val nativeReportRuntimeDeps: List<Dependency> =
+      if (reportType() == ReportType.NATIVE) {
+        val paparazziJunitPlatform = if (isInternal()) {
+          dependencies.project(mapOf("path" to ":paparazzi-junit-platform"))
+        } else {
+          dependencies.create(PAPARAZZI_JUNIT_PLATFORM_COORDINATES)
+        }
+        listOf(
+          paparazziJunitPlatform,
+          // The engines arrive transitively with paparazzi-junit-platform; the launcher
+          // does not, and Gradle needs it to drive tests through JUnit Platform.
+          dependencies.create(JUNIT_PLATFORM_LAUNCHER)
+        )
+      } else {
+        emptyList()
+      }
+
     val allowedConfigs = mutableSetOf<String>()
+
+    fun TestConfigurations.addDependencies() {
+      allowedConfigs += implementation
+      this@addTestDependency.configurations.getByName(implementation).dependencies.add(dependency)
+      nativeReportRuntimeDeps.forEach {
+        this@addTestDependency.configurations.getByName(runtimeOnly).dependencies.add(it)
+      }
+    }
 
     when {
       plugins.hasPlugin(ANDROID_KOTLIN_MULTIPLATFORM_LIBRARY_PLUGIN) -> {
@@ -427,9 +479,7 @@ public class PaparazziPlugin @Inject constructor(
         kmp.targets.configureEach { target ->
           target.compilations.configureEach { compilation ->
             if (compilation is KotlinMultiplatformAndroidHostTestCompilation) {
-              val configurationName = compilation.defaultSourceSet.implementationConfigurationName
-              allowedConfigs += configurationName
-              configurations.getByName(configurationName).dependencies.add(dependency)
+              compilation.defaultSourceSet.testConfigurations.addDependencies()
             }
           }
         }
@@ -438,17 +488,13 @@ public class PaparazziPlugin @Inject constructor(
         val kmp = extensions.getByType(KotlinMultiplatformExtension::class.java)
         with(kmp) {
           sourceSets.androidUnitTest.configure {
-            val configurationName = it.implementationConfigurationName
-            allowedConfigs += configurationName
-            configurations.getByName(configurationName).dependencies.add(dependency)
+            it.testConfigurations.addDependencies()
           }
         }
       }
       else -> {
         val android = extensions.getByType(CommonExtension::class.java)
-        val configurationName = android.sourceSets.getByName(TEST_SOURCE_SET_NAME).implementationConfigurationName
-        allowedConfigs += configurationName
-        configurations.getByName(configurationName).dependencies.add(dependency)
+        android.sourceSets.getByName(TEST_SOURCE_SET_NAME).testConfigurations.addDependencies()
       }
     }
 
@@ -485,6 +531,18 @@ public class PaparazziPlugin @Inject constructor(
   }
 
   private fun Project.isInternal(): Boolean = providers.gradleProperty("app.cash.paparazzi.internal").orNull == "true"
+
+  private fun Project.reportType(): ReportType {
+    return when (val raw = providers.gradleProperty("app.cash.paparazzi.reportType").getOrElse("legacy")) {
+      "legacy" -> ReportType.LEGACY
+      "native" -> ReportType.NATIVE
+      else -> error(
+        "Unknown app.cash.paparazzi.reportType: '$raw'. Expected one of: legacy, native."
+      )
+    }
+  }
+
+  private enum class ReportType { LEGACY, NATIVE }
 
   private fun Project.overwriteOnMaxPercentDifferenceProvider(): Provider<String> =
     providers.gradleProperty("app.cash.paparazzi.overwriteOnMaxPercentDifference")
@@ -534,3 +592,12 @@ internal class PaparazziSystemPropertiesArgumentProvider(
 private const val DEFAULT_COMPILE_SDK_VERSION = 36
 private const val ANDROID_KOTLIN_MULTIPLATFORM_LIBRARY_PLUGIN = "com.android.kotlin.multiplatform.library"
 private const val KOTLIN_MULTIPLATFORM_PLUGIN = "org.jetbrains.kotlin.multiplatform"
+private val MIN_NATIVE_REPORT_GRADLE_VERSION = GradleVersion.version("9.4")
+
+private class TestConfigurations(val implementation: String, val runtimeOnly: String)
+
+private val KotlinSourceSet.testConfigurations: TestConfigurations
+  get() = TestConfigurations(implementationConfigurationName, runtimeOnlyConfigurationName)
+
+private val AndroidSourceSet.testConfigurations: TestConfigurations
+  get() = TestConfigurations(implementationConfigurationName, runtimeOnlyConfigurationName)
