@@ -23,12 +23,11 @@ import org.junit.platform.engine.UniqueId
 import org.junit.vintage.engine.VintageTestEngine
 
 /**
- * JUnit Platform [TestEngine] that wraps [VintageTestEngine] so Paparazzi can intercept the
- * test lifecycle and emit snapshot diffs as JUnit Platform metadata (`fileEntryPublished`).
- * Those events surface in the `attachments` tab of Gradle 9.4+ test reports.
+ * Delegates to [VintageTestEngine], publishing Paparazzi's snapshot diffs as JUnit Platform
+ * `FileEntry` attachments so they appear in the attachments tab of Gradle 9.4+ test reports.
  *
- * Only active when the `paparazzi.reportType` system property is `native`. Otherwise
- * execution falls through to the delegate as a pass-through.
+ * The plugin adds this artifact and excludes the `junit-vintage` engine when
+ * `app.cash.paparazzi.reportType=native` and JUnit 4 support is requested.
  */
 public class PaparazziVintageEngine : TestEngine {
   private val delegate = VintageTestEngine()
@@ -38,24 +37,7 @@ public class PaparazziVintageEngine : TestEngine {
   override fun discover(request: EngineDiscoveryRequest, uniqueId: UniqueId): TestDescriptor =
     delegate.discover(request, uniqueId)
 
-  override fun execute(request: ExecutionRequest) {
-    if (System.getProperty(SYSTEM_PROPERTY_REPORT_TYPE) != REPORT_TYPE_NATIVE) {
-      delegate.execute(request)
-      return
-    }
-
-    val wrappedListener = PaparazziExecutionListener(request.engineExecutionListener)
-    val wrappedRequest = ExecutionRequest.create(
-      request.rootTestDescriptor,
-      wrappedListener,
-      request.configurationParameters
-    )
-    delegate.execute(wrappedRequest)
-  }
+  override fun execute(request: ExecutionRequest): Unit = delegate.execute(paparazziAttachmentRequest(request))
 }
 
-// Declared at file scope rather than in a companion: `const val` in an `internal companion
-// object` still emits public static fields onto the enclosing class's ABI.
 private const val ID: String = "app.cash.paparazzi.vintage"
-private const val SYSTEM_PROPERTY_REPORT_TYPE: String = "paparazzi.reportType"
-private const val REPORT_TYPE_NATIVE: String = "native"

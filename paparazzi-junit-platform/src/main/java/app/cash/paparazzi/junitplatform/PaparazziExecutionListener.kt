@@ -53,8 +53,8 @@ internal class PaparazziExecutionListener(
   }
 
   override fun executionFinished(testDescriptor: TestDescriptor, testExecutionResult: TestExecutionResult) {
-    // Emit attachments before forwarding the finished event — Gradle's binary
-    // result store associates published events with the still-current test.
+    // Emit attachments before forwarding the finished event, because Gradle's binary result
+    // store ties published events to whichever test is still current.
     if (testDescriptor.isTest) {
       emitDiffAttachments(testDescriptor)
     }

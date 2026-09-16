@@ -795,7 +795,7 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun verifyFailureNativeReport() {
+  fun verifyFailureNativeReportVintage() {
     val fixtureRoot = File("src/test/projects/verify-mode-failure")
     File(fixtureRoot, "build").registerForDeletionOnExit()
 
@@ -851,6 +851,79 @@ class PaparazziPluginTest {
       .filter { it.isFile && it.extension == "html" }
       .joinToString("\n") { it.readText() }
     assertThat(attachmentImage.containsMatchIn(reportHtml)).isTrue()
+  }
+
+  @Test
+  fun verifyFailureNativeReportJupiter() {
+    val fixtureRoot = File("src/test/projects/verify-mode-failure-jupiter")
+    File(fixtureRoot, "build").registerForDeletionOnExit()
+    File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
+
+    gradleRunner
+      .withGradleVersion("9.4.1")
+      .withArguments("recordPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    gradleRunner
+      .withGradleVersion("9.4.1")
+      .withArguments(
+        "verifyPaparazziDebug",
+        "-Papp.cash.paparazzi.reportType=native",
+        "-Papp.cash.paparazzi.nativeReportFrameworks=junit5",
+        "--stacktrace"
+      )
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    // Jupiter needs no name mapping: MethodSource reports the same method name the SDK used.
+    val deltaName = "delta-app.cash.paparazzi.plugin.test_JupiterVerifyTest_verify.png"
+    assertThat(File(fixtureRoot, "build/paparazzi/failures/debug/$deltaName").exists()).isTrue()
+
+    val attachmentImage = Regex("""<img src="[^"]*${Regex.escape(deltaName)}"""")
+    val reportHtml = File(fixtureRoot, "build/reports/tests/testDebugUnitTest")
+      .walkTopDown()
+      .filter { it.isFile && it.extension == "html" }
+      .joinToString("\n") { it.readText() }
+    assertThat(attachmentImage.containsMatchIn(reportHtml)).isTrue()
+  }
+
+  @Test
+  fun verifyFailureNativeReportMixedFrameworks() {
+    val fixtureRoot = File("src/test/projects/verify-mode-failure-mixed-frameworks")
+    File(fixtureRoot, "build").registerForDeletionOnExit()
+    File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
+
+    gradleRunner
+      .withGradleVersion("9.4.1")
+      .withArguments("recordPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    gradleRunner
+      .withGradleVersion("9.4.1")
+      .withArguments(
+        "verifyPaparazziDebug",
+        "-Papp.cash.paparazzi.reportType=native",
+        "-Papp.cash.paparazzi.nativeReportFrameworks=junit4,junit5",
+        "--stacktrace"
+      )
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    // Both wrappers publish into the same launcher session. Check per page rather than across
+    // the whole report, so a diff attached to the other framework's test would fail here.
+    val pages = File(fixtureRoot, "build/reports/tests/testDebugUnitTest")
+      .walkTopDown()
+      .filter { it.isFile && it.extension == "html" }
+      .map { it.readText() }
+      .toList()
+
+    for (className in listOf("MixedRuleTest", "MixedJupiterTest")) {
+      val deltaName = "delta-app.cash.paparazzi.plugin.test_${className}_verify.png"
+      assertThat(File(fixtureRoot, "build/paparazzi/failures/debug/$deltaName").exists()).isTrue()
+
+      val attachmentImage = Regex("""<img src="[^"]*${Regex.escape(deltaName)}"""")
+      val carrying = pages.filter { attachmentImage.containsMatchIn(it) }
+      assertThat(carrying).hasSize(1)
+      assertThat(carrying.single()).contains(className)
+    }
   }
 
   @Test
