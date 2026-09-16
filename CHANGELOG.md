@@ -11,7 +11,8 @@ paparazzi.gif {
 }
 ```
 
-* Add `app.cash.paparazzi.reportType=native`, which publishes snapshot diffs as attachments on Gradle's test report rather than replacing Gradle's test reporter with Paparazzi's. Requires Gradle 9.4 or later, and pulls in the new `paparazzi-junit-platform` artifact. `legacy` will be removed in an upcoming release, once `native` is stable and accessibility artifacts have been migrated to it.
+* Add `app.cash.paparazzi.reportType=native`, which publishes snapshot diffs as attachments on Gradle's test report rather than replacing Gradle's test reporter with Paparazzi's. Requires Gradle 9.4 or later. `legacy` stays the default for now, but it will be removed in an upcoming release once `native` is stable and accessibility artifacts have moved over to it.
+* Add `app.cash.paparazzi.nativeReportFrameworks` to pick which test frameworks native mode supports: `junit4` (the default), `junit5`, or both, comma-separated, if one test task runs a mix. Each adds its own artifact, `paparazzi-junit-vintage` or `paparazzi-junit-jupiter`, so a JUnit 4 project never pulls in the Jupiter engine.
 
 ## [2.0.0-alpha05] - 2026-05-20
 

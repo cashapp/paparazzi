@@ -1,0 +1,28 @@
+plugins {
+  id 'com.android.library'
+  id 'app.cash.paparazzi'
+}
+
+android {
+  namespace = 'app.cash.paparazzi.plugin.test'
+  compileSdk = libs.versions.compileSdk.get() as int
+  defaultConfig {
+    minSdk = libs.versions.minSdk.get() as int
+  }
+  compileOptions {
+    sourceCompatibility = libs.versions.javaTarget.get()
+    targetCompatibility = libs.versions.javaTarget.get()
+  }
+}
+
+dependencies {
+  testImplementation libs.junit.jupiter
+  // A mixed project supplies both engines plus the launcher itself; in native mode the plugin
+  // excludes the real engines and routes both through its wrappers.
+  testRuntimeOnly libs.junit.vintage.engine
+  testRuntimeOnly libs.junit.platform.launcher
+}
+
+tasks.withType(Test).configureEach {
+  useJUnitPlatform()
+}
