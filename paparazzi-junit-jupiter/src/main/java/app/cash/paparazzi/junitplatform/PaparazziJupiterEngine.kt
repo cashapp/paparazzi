@@ -37,7 +37,9 @@ public class PaparazziJupiterEngine : TestEngine {
   override fun discover(request: EngineDiscoveryRequest, uniqueId: UniqueId): TestDescriptor =
     delegate.discover(request, uniqueId)
 
-  override fun execute(request: ExecutionRequest): Unit = delegate.execute(paparazziAttachmentRequest(request))
+  // Jupiter display names are author-controlled via @DisplayName; the reflective name is stable.
+  override fun execute(request: ExecutionRequest): Unit =
+    delegate.execute(paparazziAttachmentRequest(request) { _, source -> source.methodName })
 }
 
 private const val ID: String = "app.cash.paparazzi.jupiter"

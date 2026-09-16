@@ -1,4 +1,4 @@
 public final class app/cash/paparazzi/junitplatform/PaparazziAttachmentsKt {
-	public static final fun paparazziAttachmentRequest (Lorg/junit/platform/engine/ExecutionRequest;)Lorg/junit/platform/engine/ExecutionRequest;
+	public static final fun paparazziAttachmentRequest (Lorg/junit/platform/engine/ExecutionRequest;Lkotlin/jvm/functions/Function2;)Lorg/junit/platform/engine/ExecutionRequest;
 }
 

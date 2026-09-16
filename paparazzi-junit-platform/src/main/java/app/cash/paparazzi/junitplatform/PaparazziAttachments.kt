@@ -16,22 +16,24 @@
 package app.cash.paparazzi.junitplatform
 
 import org.junit.platform.engine.ExecutionRequest
+import org.junit.platform.engine.TestDescriptor
+import org.junit.platform.engine.support.descriptor.MethodSource
 
 /**
- * Returns [request] rewired so that Paparazzi's snapshot diffs are published as attachments on the
- * tests that produced them.
+ * Returns [request] rewired so Paparazzi's snapshot diffs are published as attachments on the tests
+ * that produced them. [methodNameOf] returns the method name Paparazzi used when naming the file.
  *
- * Called by the engine wrappers in `paparazzi-junit-vintage` and `paparazzi-junit-jupiter`; not
- * intended for use outside them. The plugin only puts those artifacts on the test runtime
- * classpath when `app.cash.paparazzi.reportType=native`, so reaching here already means native
- * mode.
+ * Only the engine wrappers call this, and only native mode puts them on the classpath.
  */
-public fun paparazziAttachmentRequest(request: ExecutionRequest): ExecutionRequest =
+public fun paparazziAttachmentRequest(
+  request: ExecutionRequest,
+  methodNameOf: (TestDescriptor, MethodSource) -> String
+): ExecutionRequest =
   // Forward the whole request: the 3-arg factory substitutes a disabled CancellationToken and an
   // absent store. Deliberately INTERNAL API, so a JUnit bump breaks loudly, not silently.
   ExecutionRequest.create(
     request.rootTestDescriptor,
-    PaparazziExecutionListener(request.engineExecutionListener),
+    PaparazziExecutionListener(request.engineExecutionListener, methodNameOf),
     request.configurationParameters,
     request.outputDirectoryCreator,
     request.store,

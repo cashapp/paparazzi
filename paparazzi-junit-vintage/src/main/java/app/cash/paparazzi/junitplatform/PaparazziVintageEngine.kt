@@ -37,7 +37,9 @@ public class PaparazziVintageEngine : TestEngine {
   override fun discover(request: EngineDiscoveryRequest, uniqueId: UniqueId): TestDescriptor =
     delegate.discover(request, uniqueId)
 
-  override fun execute(request: ExecutionRequest): Unit = delegate.execute(paparazziAttachmentRequest(request))
+  // Vintage's display name is the JUnit 4 Description's, including Parameterized's suffix.
+  override fun execute(request: ExecutionRequest): Unit =
+    delegate.execute(paparazziAttachmentRequest(request) { descriptor, _ -> descriptor.displayName })
 }
 
 private const val ID: String = "app.cash.paparazzi.vintage"
