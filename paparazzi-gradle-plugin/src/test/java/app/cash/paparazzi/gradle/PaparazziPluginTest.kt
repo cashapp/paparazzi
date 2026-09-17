@@ -1678,6 +1678,15 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun composeSecureTextField() {
+    val fixtureRoot = File("src/test/projects/secure-text-field")
+
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+  }
+
+  @Test
   fun similarImagesProduceUniqueSnapshots() {
     val fixtureRoot = File("src/test/projects/similar-images")
 
