@@ -795,7 +795,7 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun verifyFailureNativeReport() {
+  fun verifyFailureNativeReportVintage() {
     val fixtureRoot = File("src/test/projects/verify-mode-failure")
     File(fixtureRoot, "build").registerForDeletionOnExit()
 
@@ -810,19 +810,11 @@ class PaparazziPluginTest {
 
     assertThat(result.task(":testDebugUnitTest")).isNotNull()
 
-    val deltaName = "delta-app.cash.paparazzi.plugin.test_VerifyTest_verify.png"
-    val delta = File(fixtureRoot, "build/paparazzi/failures/debug/$deltaName")
-    assertThat(delta.exists()).isTrue()
-
-    // Match an attachments <img>, not the bare filename: the failure message embeds the path
-    // too. Report pages sit under opaque hashed directories, deeper for parameterized tests,
-    // so there is no fixed path to read.
-    val attachmentImage = Regex("""<img src="[^"]*${Regex.escape(deltaName)}"""")
-    val reportHtml = File(fixtureRoot, "build/reports/tests/testDebugUnitTest")
-      .walkTopDown()
-      .filter { it.isFile && it.extension == "html" }
-      .joinToString("\n") { it.readText() }
-    assertThat(attachmentImage.containsMatchIn(reportHtml)).isTrue()
+    assertAttachmentPublished(
+      fixtureRoot,
+      "VerifyTest",
+      "delta-app.cash.paparazzi.plugin.test_VerifyTest_verify.png"
+    )
   }
 
   @Test
@@ -841,16 +833,72 @@ class PaparazziPluginTest {
       .withArguments("verifyPaparazziDebug", "-Papp.cash.paparazzi.reportType=native", "--stacktrace")
       .runFixture(fixtureRoot) { buildAndFail() }
 
-    // The file carries Parameterized's `[0]`; MethodSource reports the bare `verify`.
-    val deltaName = "delta-app.cash.paparazzi.plugin.test_ParameterizedVerifyTest_verify[0].png"
-    assertThat(File(fixtureRoot, "build/paparazzi/failures/debug/$deltaName").exists()).isTrue()
+    // The file carries Parameterized's `[0]`, which only the descriptor's display name has.
+    assertAttachmentPublished(
+      fixtureRoot,
+      "ParameterizedVerifyTest",
+      "delta-app.cash.paparazzi.plugin.test_ParameterizedVerifyTest_verify[0].png"
+    )
+  }
 
-    val attachmentImage = Regex("""<img src="[^"]*${Regex.escape(deltaName)}"""")
-    val reportHtml = File(fixtureRoot, "build/reports/tests/testDebugUnitTest")
-      .walkTopDown()
-      .filter { it.isFile && it.extension == "html" }
-      .joinToString("\n") { it.readText() }
-    assertThat(attachmentImage.containsMatchIn(reportHtml)).isTrue()
+  @Test
+  fun verifyFailureNativeReportJupiter() {
+    val fixtureRoot = File("src/test/projects/verify-mode-failure-jupiter")
+    File(fixtureRoot, "build").registerForDeletionOnExit()
+    File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
+
+    gradleRunner
+      .withGradleVersion("9.4.1")
+      .withArguments("recordPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    gradleRunner
+      .withGradleVersion("9.4.1")
+      .withArguments(
+        "verifyPaparazziDebug",
+        "-Papp.cash.paparazzi.reportType=native",
+        "-Papp.cash.paparazzi.nativeReportFrameworks=junit5",
+        "--stacktrace"
+      )
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    // Jupiter needs no name mapping: MethodSource reports the same name the SDK used.
+    assertAttachmentPublished(
+      fixtureRoot,
+      "JupiterVerifyTest",
+      "delta-app.cash.paparazzi.plugin.test_JupiterVerifyTest_verify.png"
+    )
+  }
+
+  @Test
+  fun verifyFailureNativeReportMixedFrameworks() {
+    val fixtureRoot = File("src/test/projects/verify-mode-failure-mixed-frameworks")
+    File(fixtureRoot, "build").registerForDeletionOnExit()
+    File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
+
+    gradleRunner
+      .withGradleVersion("9.4.1")
+      .withArguments("recordPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    gradleRunner
+      .withGradleVersion("9.4.1")
+      .withArguments(
+        "verifyPaparazziDebug",
+        "-Papp.cash.paparazzi.reportType=native",
+        "-Papp.cash.paparazzi.nativeReportFrameworks=junit4,junit5",
+        "--stacktrace"
+      )
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    // Both wrappers publish into the same launcher session, so neither may claim the other's diff.
+    for (className in listOf("MixedRuleTest", "MixedJupiterTest")) {
+      assertAttachmentPublished(
+        fixtureRoot,
+        className,
+        "delta-app.cash.paparazzi.plugin.test_${className}_verify.png"
+      )
+    }
   }
 
   @Test
@@ -1890,6 +1938,27 @@ class PaparazziPluginTest {
   private fun File.registerForDeletionOnExit() = apply { filesToDelete += this }
 
   private fun File.listFilesSorted() = listFiles()?.sortedBy { it.lastModified() }
+
+  /**
+   * Asserts that [deltaName] was both written by Paparazzi and published as an attachment on
+   * [className]'s own report page. Checking per page rather than across the whole report means an
+   * attachment landing on another test fails here; the report's own filenames are opaque hashes at
+   * a depth that varies by test shape, so its pages have to be discovered rather than addressed.
+   */
+  private fun assertAttachmentPublished(fixtureRoot: File, className: String, deltaName: String) {
+    assertThat(File(fixtureRoot, "build/paparazzi/failures/debug/$deltaName").exists()).isTrue()
+
+    val attachmentImage = Regex("""<img src="[^"]*${Regex.escape(deltaName)}"""")
+    val carrying = File(fixtureRoot, "build/reports/tests/testDebugUnitTest")
+      .walkTopDown()
+      .filter { it.isFile && it.extension == "html" }
+      .map { it.readText() }
+      .filter { attachmentImage.containsMatchIn(it) }
+      .toList()
+
+    assertThat(carrying).hasSize(1)
+    assertThat(carrying.single()).contains(className)
+  }
 
   companion object {
     private const val GRADLE_CACHE_TRANSFORMS_PATH_REGEX = "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?(-rc-[0-9]{1,2})?/transforms/[0-9a-f]{32}/(workspace/)?transformed"

@@ -31,13 +31,14 @@ import java.io.File
  * one as a [FileEntry] attachment on that test descriptor. Diff files are
  * discovered by filesystem convention: Paparazzi writes them to
  * `paparazzi.failures.dir` with names of the form
- * `delta-<packageName>_<simpleClassName>_<methodName>[_<label>].png`. The
- * matching test class+method are read from the descriptor's [MethodSource].
+ * `delta-<packageName>_<simpleClassName>_<methodName>[_<label>].png`. The class comes from the
+ * descriptor's [MethodSource], the method name from [methodNameOf].
  *
  * All other events are forwarded to the delegate unchanged.
  */
 internal class PaparazziExecutionListener(
-  private val delegate: EngineExecutionListener
+  private val delegate: EngineExecutionListener,
+  private val methodNameOf: (TestDescriptor, MethodSource) -> String
 ) : EngineExecutionListener {
 
   override fun dynamicTestRegistered(testDescriptor: TestDescriptor) {
@@ -53,8 +54,8 @@ internal class PaparazziExecutionListener(
   }
 
   override fun executionFinished(testDescriptor: TestDescriptor, testExecutionResult: TestExecutionResult) {
-    // Emit attachments before forwarding the finished event — Gradle's binary
-    // result store associates published events with the still-current test.
+    // Emit attachments before forwarding the finished event, because Gradle's binary result
+    // store ties published events to whichever test is still current.
     if (testDescriptor.isTest) {
       emitDiffAttachments(testDescriptor)
     }
@@ -77,7 +78,7 @@ internal class PaparazziExecutionListener(
     val source = testDescriptor.source.orElse(null) as? MethodSource ?: return
     val packageName = source.className.substringBeforeLast('.', missingDelimiterValue = "")
     val simpleClassName = source.className.substringAfterLast('.')
-    val methodName = source.methodName.replace(WHITESPACE, "_")
+    val methodName = methodNameOf(testDescriptor, source).replace(WHITESPACE, "_")
 
     val prefix = "delta-${packageName}_${simpleClassName}_$methodName"
 
@@ -85,10 +86,9 @@ internal class PaparazziExecutionListener(
       ?.filter { file ->
         val name = file.name
         if (!name.startsWith(prefix) || !name.endsWith(".png")) return@filter false
-        // '.' unlabelled, '_' before a label, '[' before a parameterized suffix that
-        // MethodSource omits. A '_' in the method name reads as a label, so it over-matches.
+        // '.' when unlabelled, '_' before a label; a '_' inside the method name over-matches.
         val boundary = name.getOrNull(prefix.length)
-        boundary == '.' || boundary == '_' || boundary == '['
+        boundary == '.' || boundary == '_'
       }
       ?.forEach { file ->
         delegate.fileEntryPublished(

@@ -75,7 +75,7 @@ public class PaparazziPlugin @Inject constructor(
   private val buildOperationExecutor: BuildOperationExecutor
 ) : Plugin<Project> {
   override fun apply(project: Project) {
-    if (project.reportType() == ReportType.NATIVE &&
+    if (reportType == ReportType.NATIVE &&
       GradleVersion.current() < MIN_NATIVE_REPORT_GRADLE_VERSION
     ) {
       error(
@@ -240,7 +240,7 @@ public class PaparazziPlugin @Inject constructor(
         val localResourceDirs = sources.localResourceDirs ?: providerFactory.provider { emptyList() }
         val localAssetDirs = sources.localAssetDirs ?: providerFactory.provider { emptyList() }
 
-        when (reportType()) {
+        when (reportType) {
           ReportType.LEGACY -> {
             test.setTestReporter(
               PaparazziTestReporter(
@@ -252,11 +252,10 @@ public class PaparazziPlugin @Inject constructor(
             test.systemProperties["paparazzi.reportType"] = "legacy"
           }
           ReportType.NATIVE -> {
-            // PaparazziVintageEngine wraps the Vintage engine to publish snapshot diffs as
-            // attachments; excluding the real one keeps tests from being discovered twice.
-            test.useJUnitPlatform {
-              it.excludeEngines("junit-vintage")
-            }
+            // Paparazzi's wrappers delegate to these engines, so excluding the real ones keeps
+            // tests from being discovered twice.
+            val engineIds = nativeReportFrameworks.map { it.engineId }.toTypedArray()
+            test.useJUnitPlatform { it.excludeEngines(*engineIds) }
             test.systemProperties["paparazzi.reportType"] = "native"
           }
         }
@@ -447,18 +446,21 @@ public class PaparazziPlugin @Inject constructor(
     }
 
     val nativeReportRuntimeDeps: List<Dependency> =
-      if (reportType() == ReportType.NATIVE) {
-        val paparazziJunitPlatform = if (isInternal()) {
-          dependencies.project(mapOf("path" to ":paparazzi-junit-platform"))
-        } else {
-          dependencies.create(PAPARAZZI_JUNIT_PLATFORM_COORDINATES)
+      if (reportType == ReportType.NATIVE) {
+        buildList {
+          nativeReportFrameworks.forEach { framework ->
+            add(
+              if (isInternal()) {
+                dependencies.project(mapOf("path" to ":${framework.moduleName}"))
+              } else {
+                dependencies.create(framework.coordinates)
+              }
+            )
+          }
+          // The engines arrive transitively with the wrapper artifacts; the launcher does not,
+          // and Gradle needs it to drive tests through JUnit Platform.
+          add(dependencies.create(JUNIT_PLATFORM_LAUNCHER))
         }
-        listOf(
-          paparazziJunitPlatform,
-          // The engines arrive transitively with paparazzi-junit-platform; the launcher
-          // does not, and Gradle needs it to drive tests through JUnit Platform.
-          dependencies.create(JUNIT_PLATFORM_LAUNCHER)
-        )
       } else {
         emptyList()
       }
@@ -532,8 +534,8 @@ public class PaparazziPlugin @Inject constructor(
 
   private fun Project.isInternal(): Boolean = providers.gradleProperty("app.cash.paparazzi.internal").orNull == "true"
 
-  private fun Project.reportType(): ReportType {
-    return when (val raw = providers.gradleProperty("app.cash.paparazzi.reportType").getOrElse("legacy")) {
+  private val reportType: ReportType by lazy {
+    when (val raw = providerFactory.gradleProperty("app.cash.paparazzi.reportType").getOrElse("legacy")) {
       "legacy" -> ReportType.LEGACY
       "native" -> ReportType.NATIVE
       else -> error(
@@ -542,7 +544,34 @@ public class PaparazziPlugin @Inject constructor(
     }
   }
 
+  private val nativeReportFrameworks: Set<TestFramework> by lazy {
+    providerFactory.gradleProperty("app.cash.paparazzi.nativeReportFrameworks")
+      .getOrElse("junit4")
+      .split(',')
+      .map { TestFramework.named(it.trim()) }
+      .toSet()
+  }
+
   private enum class ReportType { LEGACY, NATIVE }
+
+  private enum class TestFramework(
+    val propertyValue: String,
+    val engineId: String,
+    val moduleName: String,
+    val coordinates: String
+  ) {
+    JUNIT4("junit4", "junit-vintage", "paparazzi-junit-vintage", PAPARAZZI_JUNIT_VINTAGE_COORDINATES),
+    JUNIT5("junit5", "junit-jupiter", "paparazzi-junit-jupiter", PAPARAZZI_JUNIT_JUPITER_COORDINATES);
+
+    companion object {
+      fun named(value: String): TestFramework =
+        entries.firstOrNull { it.propertyValue == value }
+          ?: error(
+            "Unknown app.cash.paparazzi.nativeReportFrameworks value: '$value'. Expected a " +
+              "comma-separated subset of: ${entries.joinToString(", ") { it.propertyValue }}."
+          )
+    }
+  }
 
   private fun Project.overwriteOnMaxPercentDifferenceProvider(): Provider<String> =
     providers.gradleProperty("app.cash.paparazzi.overwriteOnMaxPercentDifference")
