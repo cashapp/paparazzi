@@ -2023,7 +2023,8 @@
 <span class="p">}</span>
 </code></pre></div>
 <ul>
-<li>Add <code>app.cash.paparazzi.reportType=native</code>, which publishes snapshot diffs as attachments on Gradle&rsquo;s test report rather than replacing Gradle&rsquo;s test reporter with Paparazzi&rsquo;s. Requires Gradle 9.4 or later, and pulls in the new <code>paparazzi-junit-platform</code> artifact. <code>legacy</code> will be removed in an upcoming release, once <code>native</code> is stable and accessibility artifacts have been migrated to it.</li>
+<li>Add <code>app.cash.paparazzi.reportType=native</code>, which publishes snapshot diffs as attachments on Gradle&rsquo;s test report rather than replacing Gradle&rsquo;s test reporter with Paparazzi&rsquo;s. Requires Gradle 9.4 or later. <code>legacy</code> stays the default for now, but it will be removed in an upcoming release once <code>native</code> is stable and accessibility artifacts have moved over to it.</li>
+<li>Add <code>app.cash.paparazzi.nativeReportFrameworks</code> to pick which test frameworks native mode supports: <code>junit4</code> (the default), <code>junit5</code>, or both, comma-separated, if one test task runs a mix. Each adds its own artifact, <code>paparazzi-junit-vintage</code> or <code>paparazzi-junit-jupiter</code>, so a JUnit 4 project never pulls in the Jupiter engine.</li>
 </ul>
 <h2 id="200-alpha05-2026-05-20"><a href="https://github.com/cashapp/paparazzi/releases/tag/2.0.0-alpha05">2.0.0-alpha05</a> - 2026-05-20<a class="headerlink" href="#200-alpha05-2026-05-20" title="Permanent link">&para;</a></h2>
 <p>This release supports pre-AGP 9.0 consumers.</p>
