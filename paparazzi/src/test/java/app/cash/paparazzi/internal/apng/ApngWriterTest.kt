@@ -35,7 +35,6 @@ import okio.BufferedSource
 import okio.FileSystem
 import okio.Path.Companion.toPath
 import okio.buffer
-import okio.internal.commonToUtf8String
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -259,7 +258,7 @@ class ApngWriterTest {
 
     assertThat(crcEngine.value.toInt()).isEqualTo(crc)
 
-    return Header.valueOf(chunkId.commonToUtf8String().uppercase()) to dataBuffer
+    return Header.valueOf(chunkId.decodeToString().uppercase()) to dataBuffer
   }
 
   private fun BufferedSource.decompress(): Buffer {
