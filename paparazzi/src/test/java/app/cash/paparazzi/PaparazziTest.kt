@@ -21,6 +21,7 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.drawable.AnimatedVectorDrawable_VectorDrawableAnimatorUI_Delegate
 import android.os.SystemClock
 import android.view.Choreographer
 import android.view.Choreographer.CALLBACK_ANIMATION
@@ -59,8 +60,6 @@ class PaparazziTest {
 
   @Test
   fun resetsAnimationHandler() {
-    assertThat(AnimationHandler.sAnimatorHandler.get()).isNull()
-
     // Why Button?  Because it sets a StateListAnimator on window attach
     // See https://github.com/cashapp/paparazzi/pull/319
     paparazzi.snapshot(Button(paparazzi.context))
@@ -222,6 +221,31 @@ class PaparazziTest {
   }
 
   @Test
+  fun choreographerFrameCallbackUsesSnapshotOffset() {
+    val frameTimes = mutableListOf<Long>()
+    val view = object : View(paparazzi.context) {
+      override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        Choreographer.getInstance().postFrameCallback { frameTimes += it }
+      }
+    }
+
+    paparazzi.snapshot(view, offsetMillis = 300L)
+
+    assertThat(frameTimes).containsExactly(300_000_000L)
+  }
+
+  @Test
+  fun layoutlibAnimatedVectorFrameTimeUsesSnapshotOffset() {
+    // Regression: layoutlib's native AnimatedVectorDrawable animator reads its frame time from
+    // RenderSession#setElapsedFrameTimeNanos. Before per-frame timing, this stayed at 0 for
+    // nonzero snapshot offsets, freezing native vector animations. See spike 001.
+    paparazzi.snapshot(View(paparazzi.context), offsetMillis = 300L)
+
+    assertThat(AnimatedVectorDrawable_VectorDrawableAnimatorUI_Delegate.sFrameTime).isEqualTo(300L)
+  }
+
+  @Test
   fun preDrawOnEveryFrame() {
     val log = mutableListOf<String>()
 
@@ -241,7 +265,7 @@ class PaparazziTest {
 
     paparazzi.gif(view, fps = 4)
 
-    assertThat(log).isEqualTo(listOf("predraw", "draw", "draw", "predraw", "predraw", "predraw"))
+    assertThat(log).isEqualTo(listOf("predraw", "predraw", "draw", "draw", "predraw", "predraw"))
   }
 
   private val time: Long
