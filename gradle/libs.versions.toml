@@ -75,7 +75,7 @@ junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", vers
 junit-platform-engine = { module = "org.junit.platform:junit-platform-engine", version.ref = "junitPlatform" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junitPlatform" }
 junit-vintage-engine = { module = "org.junit.vintage:junit-vintage-engine", version.ref = "junitPlatform" }
-testParameterInjector = { module = "com.google.testparameterinjector:test-parameter-injector", version = "1.22" }
+testParameterInjector = { module = "com.google.testparameterinjector:test-parameter-injector", version = "1.23" }
 truth = { module = "com.google.truth:truth", version = "1.4.5" }
 
 # Plugins
