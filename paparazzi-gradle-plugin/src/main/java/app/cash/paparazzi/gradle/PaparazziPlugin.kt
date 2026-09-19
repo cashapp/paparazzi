@@ -173,7 +173,7 @@ public class PaparazziPlugin @Inject constructor(
         FramesComputationMode.COMPUTE_FRAMES_FOR_INSTRUMENTED_METHODS
       )
 
-      val sources = AndroidVariantSources(variant)
+      val sources = AndroidVariantSources(variant, unitTest = testVariant, project)
 
       val writeResourcesTask = project.tasks.register(
         "preparePaparazzi${variantSlug}Resources",
