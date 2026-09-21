@@ -1052,7 +1052,7 @@ class PaparazziPluginTest {
       .withArguments("cleanRecordPaparazziDebug", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
 
-    assertThat(result.task(":deletePaparazziSnapshots")).isNotNull()
+    assertThat(result.task(":deleteDebugPaparazziSnapshots")).isNotNull()
     assertThat(result.task(":recordPaparazziDebug")).isNotNull()
 
     assertThat(snapshotToBeDeleted.exists()).isFalse()
@@ -1069,7 +1069,7 @@ class PaparazziPluginTest {
       .withArguments("cleanRecordPaparazziDebug", "--parallel", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
 
-    assertThat(result.task(":deletePaparazziSnapshots")).isNotNull()
+    assertThat(result.task(":deleteDebugPaparazziSnapshots")).isNotNull()
     assertThat(result.task(":recordPaparazziDebug")).isNotNull()
 
     assertThat(snapshot.exists()).isTrue()
