@@ -108,7 +108,7 @@ class ApngVerifierTest {
       )
       fail("Should have already failed")
     } catch (e: IllegalArgumentException) {
-      assertThat(e).hasMessageThat().isEqualTo("fps must be positive, was: 0")
+      assertThat(e.message).isEqualTo("fps must be positive, was: 0")
     }
   }
 

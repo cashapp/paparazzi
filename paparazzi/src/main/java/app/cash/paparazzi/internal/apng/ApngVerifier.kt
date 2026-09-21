@@ -45,19 +45,17 @@ internal class ApngVerifier(
   private val blankFrame by lazy { createBlankFrame(pngReader.width, pngReader.height) }
 
   private var deltaWriter: ApngWriter? = null
-  private var goldenFps: Int = -1
-  private var commonFrameRate: Int = -1
-  private var actualDeltasPerFrame: Int = 1
-  private var expectedDeltasPerFrame: Int = 1
+  private val goldenFps: Int
+  private val commonFrameRate: Int
+  private val actualDeltasPerFrame: Int
+  private val expectedDeltasPerFrame: Int
   private var currentGoldenFrame: BufferedImage?
   private var invalidFrames = 0
 
   init {
     currentGoldenFrame = pngReader.readNextFrame()
-    // A single-frame golden is written as a still PNG with no animation chunks, dropping the fps
-    // it was recorded with, so ApngReader reports an fps of 0. Fall back to the actual fps: any
-    // fps describes the same single-frame file, and 0 would make the frame-rate math below loop
-    // forever or divide by zero.
+    // A still golden has no animation chunks, so it records no fps. Any fps describes the same
+    // single frame, and 0 would divide by zero below.
     goldenFps = pngReader.getFps().takeIf { it > 0 } ?: fps
     commonFrameRate = leastCommonMultiple(fps, goldenFps)
     actualDeltasPerFrame = commonFrameRate / fps
@@ -201,7 +199,7 @@ internal class ApngVerifier(
   }
 
   private fun leastCommonMultiple(first: Int, second: Int): Int {
-    return (first * second) / greatestCommonDenominator(first, second)
+    return first / greatestCommonDenominator(first, second) * second
   }
 
   private tailrec fun greatestCommonDenominator(first: Int, second: Int): Int {
