@@ -324,47 +324,64 @@ class PaparazziPluginTest {
 
   @Test
   fun cacheableRelocatable() {
-    val fixtureRoot = File("src/test/projects/cacheable")
-    fixtureRoot.resolve("build").registerForDeletionOnExit()
-    fixtureRoot.resolve("build-cache").registerForDeletionOnExit()
+    // Absolute paths in the cache key would strand the first checkout's entries.
+    val ciCheckout = File("src/test/projects/cacheable")
+    ciCheckout.resolve("build").registerForDeletionOnExit()
+    // A sibling: the fixture's settings.gradle finds the shared test settings by relative path.
+    val localCheckout = ciCheckout.parentFile.resolve("cacheable-relocated").registerForDeletionOnExit()
+    localCheckout.deleteRecursively()
+    ciCheckout.walkTopDown()
+      .onEnter { it.name !in setOf("build", "build-cache", ".gradle") }
+      .filter { it.isFile }
+      .forEach { it.copyTo(localCheckout.resolve(it.toRelativeString(ciCheckout))) }
 
-    val firstRun = gradleRunner
-      .withArguments("testDebug", "--build-cache", "--stacktrace")
-      .runFixture(fixtureRoot) { build() }
+    val sharedCache = File("build/tmp/cacheableRelocatable").registerForDeletionOnExit()
+    sharedCache.deleteRecursively()
+    val arguments = arrayOf(
+      "testDebug",
+      "--build-cache",
+      "-Dpaparazzi.test.buildCacheDir=${sharedCache.absolutePath}",
+      "--stacktrace"
+    )
 
-    with(firstRun.task(":preparePaparazziDebugResources")) {
+    val ciRun = gradleRunner
+      .withArguments(*arguments)
+      .runFixture(ciCheckout) { build() }
+
+    with(ciRun.task(":preparePaparazziDebugResources")) {
       assertThat(this).isNotNull()
       assertThat(this!!.outcome).isNotEqualTo(FROM_CACHE)
     }
-    with(firstRun.task(":testDebugUnitTest")) {
+    with(ciRun.task(":testDebugUnitTest")) {
       assertThat(this).isNotNull()
       assertThat(this!!.outcome).isNotEqualTo(FROM_CACHE)
     }
 
-    // Rebuild the same project (with its populated cache) from a different directory, as CI and a
-    // local clone would. Absolute paths in the cache key would make these entries unreachable here.
-    val relocatedRoot = fixtureRoot.parentFile.resolve("cacheable-relocated").registerForDeletionOnExit()
-    relocatedRoot.deleteRecursively()
-    fixtureRoot.copyRecursively(relocatedRoot)
-    relocatedRoot.resolve("build").deleteRecursively()
-    // Pin the project name (fed into the Kotlin module name embedded in compiled classes) so it
-    // stays constant across dirs; real CI-vs-local checkouts share the same leaf directory name.
-    relocatedRoot.resolve("settings.gradle").let {
-      it.writeText("rootProject.name = 'cacheable'\n${it.readText()}")
-    }
+    val localRun = gradleRunner
+      .withArguments(*arguments)
+      .runFixture(localCheckout) { build() }
 
-    val secondRun = gradleRunner
-      .withArguments("testDebug", "--build-cache", "--stacktrace")
-      .runFixture(relocatedRoot) { build() }
-
-    with(secondRun.task(":preparePaparazziDebugResources")) {
+    with(localRun.task(":preparePaparazziDebugResources")) {
       assertThat(this).isNotNull()
       assertThat(this!!.outcome).isEqualTo(FROM_CACHE)
     }
-    with(secondRun.task(":testDebugUnitTest")) {
+    with(localRun.task(":testDebugUnitTest")) {
       assertThat(this).isNotNull()
       assertThat(this!!.outcome).isEqualTo(FROM_CACHE)
     }
+
+    // Restored outputs must not carry ciCheckout's path. The trailing separator matters:
+    // 'cacheable' is a prefix of 'cacheable-relocated'.
+    val restored = listOf("build/intermediates/paparazzi", "build/reports/paparazzi", "build/paparazzi")
+      .flatMap { localCheckout.resolve(it).walkTopDown() }
+      .filter { it.isFile }
+    // Keeps the check below from going vacuous if these paths move.
+    assertThat(restored).isNotEmpty()
+
+    val leaked = restored
+      .filter { it.readText().contains("${ciCheckout.absolutePath}${File.separator}") }
+      .map { it.toRelativeString(localCheckout) }
+    assertThat(leaked).isEmpty()
   }
 
   @Test

@@ -1,7 +1,11 @@
 apply from: '../test.settings.gradle'
 
+// Pinned: the directory name would otherwise become the Kotlin module name.
+rootProject.name = 'cacheable'
+
 buildCache {
   local {
-    directory = new File(rootDir, 'build-cache')
+    // cacheableRelocatable overrides this to share one cache between checkouts.
+    directory = new File(System.getProperty('paparazzi.test.buildCacheDir') ?: new File(rootDir, 'build-cache').path)
   }
 }
