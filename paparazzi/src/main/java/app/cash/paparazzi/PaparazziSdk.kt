@@ -46,6 +46,7 @@ import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import app.cash.paparazzi.accessibility.AccessibilityRenderExtension
 import app.cash.paparazzi.agent.InterceptorRegistrar
+import app.cash.paparazzi.agent.ResourcesCompatTransform
 import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.PaparazziCallback
 import app.cash.paparazzi.internal.PaparazziLifecycleOwner
@@ -142,6 +143,10 @@ public class PaparazziSdk @JvmOverloads constructor(
   public fun setup() {
     if (!isInitialized) {
       registerViewEditModeInterception()
+      InterceptorRegistrar.addTransform(
+        ResourcesCompatTransform.RESOURCES_COMPAT_CLASS_NAME,
+        ::ResourcesCompatTransform
+      )
 
       InterceptorRegistrar.registerMethodInterceptors()
     }

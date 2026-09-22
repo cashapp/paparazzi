@@ -15,7 +15,6 @@
  */
 package app.cash.paparazzi.gradle
 
-import app.cash.paparazzi.gradle.instrumentation.ResourcesCompatVisitorFactory
 import app.cash.paparazzi.gradle.reporting.DiffImage
 import app.cash.paparazzi.gradle.reporting.PaparazziTestReporter
 import app.cash.paparazzi.gradle.utils.artifactViewFor
@@ -24,8 +23,6 @@ import app.cash.paparazzi.gradle.utils.relativize
 import com.android.build.api.dsl.AndroidSourceSet
 import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.dsl.KotlinMultiplatformAndroidHostTestCompilation
-import com.android.build.api.instrumentation.FramesComputationMode
-import com.android.build.api.instrumentation.InstrumentationScope
 import com.android.build.api.variant.AndroidComponentsExtension
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension
 import com.android.build.api.variant.DynamicFeatureAndroidComponentsExtension
@@ -159,19 +156,6 @@ public class PaparazziPlugin @Inject constructor(
       val gradleUserHomeDir = project.gradle.gradleUserHomeDir
       val reportOutputDir =
         project.extensions.getByType(ReportingExtension::class.java).baseDirectory.dir("paparazzi/${variant.name}")
-
-      // AGP < 9 does not fully initialize ASM instrumentation for Android KMP variants, causing
-      // `lateinit property visitorFactory has not been initialized` during configuration.
-      // This transform is a best-effort fix for ResourcesCompat font loading, so skip it for KMP
-      // projects until AGP 9+.
-      val testInstrumentation = testVariant.instrumentation
-      testInstrumentation.transformClassesWith(
-        ResourcesCompatVisitorFactory::class.java,
-        InstrumentationScope.ALL
-      ) { }
-      testInstrumentation.setAsmFramesComputationMode(
-        FramesComputationMode.COMPUTE_FRAMES_FOR_INSTRUMENTED_METHODS
-      )
 
       val sources = AndroidVariantSources(variant)
 
