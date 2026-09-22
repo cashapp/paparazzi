@@ -1940,6 +1940,7 @@ class PaparazziPluginTest {
         gradleProperties.writeText(
           """
             |android.dependencyResolutionAtConfigurationTime.disallow=true
+            |android.suppressUnsupportedOptionWarnings=android.dependencyResolutionAtConfigurationTime.disallow
           """.trimMargin()
         )
         generatedGradleProperties = true
