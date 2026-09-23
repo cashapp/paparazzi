@@ -97,7 +97,7 @@ jobs:
       - name: Export verified entry
         run: |
           mkdir -p entry
-          grep -E "^${{ matrix.version }}\.(icu|minLayoutlibApi)=" gradle/layoutlib-compat.properties > entry/entry.properties
+          grep -E "^${{ matrix.version }}\.(icu|sdk|minLayoutlibApi)=" gradle/layoutlib-compat.properties > entry/entry.properties
           cat entry/entry.properties
 
       - name: Upload verified entry

@@ -52,6 +52,17 @@ class LayoutlibCompatibilityTest(private val version: String) {
     assertThat(dependencies("layoutlibResources")).containsMatch("$LAYOUTLIB:layoutlib-resources:$escaped\\b")
   }
 
+  /** compileSdk newer than layoutlib's bundled framework is capped to it; older is kept. */
+  @Test
+  fun defaultTargetSdkIsCappedAtBundledSdk() {
+    val bundled = LayoutlibVersions.bundledSdkFor(version)
+    for (compileSdk in listOf(37, 35)) {
+      runner("preparePaparazziDebugResources", "-PtestCompileSdk=$compileSdk", "--rerun").build()
+      val config = File(FIXTURE, "build/intermediates/paparazzi/debug/resources.json").readText()
+      assertThat(config).contains("\"targetSdkVersion\": \"${minOf(compileSdk, bundled)}\"")
+    }
+  }
+
   /** Static, SHRINK and multi-frame gif snapshots (see LayoutlibVersionTest in the fixture). */
   @Test
   fun renders() {

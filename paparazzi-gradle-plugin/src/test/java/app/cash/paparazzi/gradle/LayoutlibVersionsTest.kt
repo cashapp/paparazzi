@@ -45,4 +45,35 @@ class LayoutlibVersionsTest {
     assertThat(LayoutlibVersions.upgradeTo("32.4.1", "32.3.0")).isNull()
     assertThat(LayoutlibVersions.upgradeTo("32.0.1", null)).isNull()
   }
+
+  @Test
+  fun bundledSdk() {
+    assertThat(LayoutlibVersions.bundledSdkFor("16.2.3")).isEqualTo(36)
+    assertThat(LayoutlibVersions.bundledSdkFor("17.0.3")).isEqualTo(37)
+    // Unknown versions assume the closest known version at or below, else the oldest known.
+    assertThat(LayoutlibVersions.bundledSdkFor("16.2.9")).isEqualTo(36)
+    assertThat(LayoutlibVersions.bundledSdkFor("18.0.0")).isEqualTo(37)
+    assertThat(LayoutlibVersions.bundledSdkFor("15.1.2")).isEqualTo(36)
+    assertThat(LayoutlibVersions.bundledSdkFor("not-a-version")).isEqualTo(36)
+  }
+
+  @Test
+  fun everyKnownVersionHasBundledSdk() {
+    assertThat(LayoutlibVersions.bundledSdk.keys).containsExactlyElementsIn(LayoutlibVersions.knownVersions)
+  }
+
+  @Test
+  fun resolveTargetSdk() {
+    // compileSdk is capped at the bundled framework level.
+    assertThat(resolve(explicit = null, compileSdk = 37, bundled = 36)).isEqualTo(36)
+    assertThat(resolve(explicit = null, compileSdk = 35, bundled = 36)).isEqualTo(35)
+    // No compileSdk: the bundled level.
+    assertThat(resolve(explicit = null, compileSdk = null, bundled = 37)).isEqualTo(37)
+    // An explicit testOptions.targetSdk is honored even above the bundled level.
+    assertThat(resolve(explicit = 37, compileSdk = 37, bundled = 36)).isEqualTo(37)
+    assertThat(resolve(explicit = 30, compileSdk = 37, bundled = 36)).isEqualTo(30)
+  }
+
+  private fun resolve(explicit: Int?, compileSdk: Int?, bundled: Int) =
+    LayoutlibVersions.resolveTargetSdk(explicit, compileSdk, bundled)
 }

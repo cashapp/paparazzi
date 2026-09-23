@@ -21,6 +21,7 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Opcodes
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
@@ -44,27 +45,55 @@ class LayoutlibVerifierTest {
       |# more header
       |
       |17.0.1.icu=icudt78l.dat
+      |17.0.1.sdk=37
       |17.0.1.minLayoutlibApi=32.3.0
       |16.2.3.icu=icudt76l.dat
+      |16.2.3.sdk=36
       |
     """.trimMargin()
     val compat = CompatFile.parse(text)
     assertThat(compat.entries).containsExactly(
-      "16.2.3", CompatEntry("icudt76l.dat"),
-      "17.0.1", CompatEntry("icudt78l.dat", "32.3.0")
+      "16.2.3", CompatEntry("icudt76l.dat", 36),
+      "17.0.1", CompatEntry("icudt78l.dat", 37, "32.3.0")
     )
-    assertThat(compat.with("16.1.0-jdk17", CompatEntry("icudt76l.dat")).render()).isEqualTo(
+    assertThat(compat.with("16.1.0-jdk17", CompatEntry("icudt76l.dat", 36)).render()).isEqualTo(
       """
         |# header
         |# more header
         |
         |16.1.0-jdk17.icu=icudt76l.dat
+        |16.1.0-jdk17.sdk=36
         |16.2.3.icu=icudt76l.dat
+        |16.2.3.sdk=36
         |17.0.1.icu=icudt78l.dat
+        |17.0.1.sdk=37
         |17.0.1.minLayoutlibApi=32.3.0
         |
       """.trimMargin()
     )
+  }
+
+  @Test
+  fun compatFileRequiresSdk() {
+    val error = runCatching { CompatFile.parse("16.2.3.icu=icudt76l.dat\n") }.exceptionOrNull()
+    assertThat(error).isInstanceOf(VerificationException::class.java)
+    assertThat(error).hasMessageThat().contains(".sdk")
+  }
+
+  @Test
+  fun readsZipEntryFromCentralDirectoryAndLocalHeader() {
+    val bytes = ByteArrayOutputStream().also { out ->
+      ZipOutputStream(out).use { zip ->
+        zip.putNextEntry(ZipEntry("data/other.bin"))
+        zip.write(ByteArray(4096) { it.toByte() })
+        zip.putNextEntry(ZipEntry("build.prop"))
+        zip.write("ro.build.version.sdk=37\n".repeat(20).toByteArray())
+      }
+    }.toByteArray()
+    val record = ZipRecords.centralDirectoryEntry(bytes, "build.prop")!!
+    val local = bytes.copyOfRange(record.localHeaderOffset.toInt(), bytes.size)
+    assertThat(String(ZipRecords.readLocalEntry(local, record))).isEqualTo("ro.build.version.sdk=37\n".repeat(20))
+    assertThat(ZipRecords.centralDirectoryEntry(bytes, "missing")).isNull()
   }
 
   @Test

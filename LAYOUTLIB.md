@@ -15,7 +15,7 @@ source of truth:
 
 | Consumer | Uses |
 |---|---|
-| Gradle plugin (`LayoutlibVersions`, generated) | minimum `layoutlib-api` per version, "not verified" warning |
+| Gradle plugin (`LayoutlibVersions`, generated) | minimum `layoutlib-api` per version, bundled SDK (caps the default targetSdk), "not verified" warning |
 | Runtime (`LayoutlibCompat`, bundled resource) | ICU data file per version, default version |
 | `LayoutlibCompatibilityTest` | the versions to render against |
 | Build | fails if the default version isn't recorded |
@@ -41,12 +41,26 @@ in `paparazzi/src/main/java/app/cash/paparazzi/internal/LayoutlibCompat.kt`.
 |---|---|
 | artifacts | `layoutlib`, `layoutlib-resources` and `layoutlib-runtime` for linux, win, mac and mac-arm exist |
 | icu | exactly one `icudt*l.dat` in `layoutlib-runtime/data/icu`, identical across classifiers |
+| sdk | `ro.build.version.sdk` from `layoutlib-runtime`'s `build.prop`, identical across classifiers (read with HTTP range requests, not a full download) |
 | api | minimum `layoutlib-api` satisfying every API class/method/field the layoutlib jar references |
 | linkage | every layoutlib class/member Paparazzi references *directly* still exists (reflective access via `LayoutlibCompat` isn't covered) |
 | resources | `res/` resource types and value tags match the default version and `values/attrs.xml` exists; new types or tags fail and need review before adding a resource hook |
 
 Without `--write`, an already-recorded version must match what's computed, so CI catches stale entries
 (for example after bumping the pinned `layoutlib-api`).
+
+### Bundled SDK and targetSdk
+
+Each layoutlib bundles one framework API level (16.x: 36, 17.x: 37). Paparazzi sets
+`Build.VERSION.SDK_INT` to the targetSdk it resolves, so reporting a level newer than the bundled
+framework makes SDK-gated code (app, AndroidX, Compose) call APIs that don't exist at render time.
+The plugin resolves targetSdk as:
+
+1. `android.testOptions.targetSdk`, if set, as-is (warns if newer than the bundled SDK);
+2. otherwise `compileSdk`, capped at the bundled SDK;
+3. otherwise the bundled SDK.
+
+Unrecorded layoutlib versions use the bundled SDK of the closest recorded version at or below them.
 
 Rendering is a separate step on purpose: static checks can't see behavioral changes. For example,
 17.0.3 dropped `BridgeRenderSession.getImage()` while the `layoutlib-api` default still exists, so it

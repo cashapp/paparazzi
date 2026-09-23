@@ -68,6 +68,13 @@ def kotlinString = { "\"" + it + "\"" }
 def layoutlibMinApiEntries = layoutlibKnownVersions
   .findAll { layoutlibCompat.getProperty("${it}.minLayoutlibApi") != null }
   .collect { "${kotlinString(it)} to ${kotlinString(layoutlibCompat.getProperty("${it}.minLayoutlibApi"))}" }
+def layoutlibBundledSdkEntries = layoutlibKnownVersions.collect { version ->
+  def sdk = layoutlibCompat.getProperty("${version}.sdk")
+  if (sdk == null) {
+    throw new GradleException("$version has no .sdk entry in ${layoutlibCompatFile.asFile}. Run ./gradlew verifyLayoutlibVersion --layoutlib-version=$version --write")
+  }
+  "${kotlinString(version)} to ${sdk as int}"
+}
 
 buildConfig {
   useKotlinOutput {
@@ -87,6 +94,11 @@ buildConfig {
     "kotlin.collections.Map<kotlin.String, kotlin.String>",
     "LAYOUTLIB_MIN_API",
     expression("mapOf(${layoutlibMinApiEntries.join(", ")})".toString())
+  )
+  buildConfigField(
+    "kotlin.collections.Map<kotlin.String, kotlin.Int>",
+    "LAYOUTLIB_BUNDLED_SDK",
+    expression("mapOf(${layoutlibBundledSdkEntries.join(", ")})".toString())
   )
   buildConfigField("String", "JUNIT_PLATFORM_LAUNCHER", "\"${libs.junit.platform.launcher.get()}\"")
   buildConfigField("String", "PAPARAZZI_JUNIT_VINTAGE_COORDINATES", "\"app.cash.paparazzi:paparazzi-junit-vintage:${project.version}\"")

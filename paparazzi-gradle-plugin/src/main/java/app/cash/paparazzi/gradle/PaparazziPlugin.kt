@@ -202,7 +202,7 @@ public class PaparazziPlugin @Inject constructor(
         task.packageName.set(variant.namespace)
         task.artifactFiles.from(sources.packageAwareArtifactFiles)
         task.nonTransitiveRClassEnabled.set(nonTransitiveRClassEnabled)
-        task.targetSdkVersion.set(targetSdk())
+        task.targetSdkVersion.set(targetSdk(layoutlibVersion))
         task.projectResourceDirs.set(sources.localResourceDirs.relativize(projectDirectory))
         task.moduleResourceDirs.set(sources.moduleResourceDirs.relativize(projectDirectory))
         task.aarExplodedDirs.set(sources.aarExplodedDirs.relativize(gradleHomeDir))
@@ -618,22 +618,31 @@ public class PaparazziPlugin @Inject constructor(
     providers.gradleProperty("app.cash.paparazzi.overwriteOnMaxPercentDifference")
 
   /**
-   * Resolves the `targetSdk` Paparazzi writes into the test manifest.
+   * Resolves the `targetSdk` Paparazzi writes into the test manifest (and `Build.VERSION.SDK_INT`).
    *
-   * Prefers `android.testOptions.targetSdk` if set, otherwise the project's `compileSdk`,
-   * otherwise [DEFAULT_COMPILE_SDK_VERSION]. Mirrors AGP 9's planned default behavior
-   * (`BooleanOption.DEFAULT_TARGET_SDK_TO_COMPILE_SDK_IF_UNSET` in AGP sources) of
-   * defaulting test rendering to `compileSdk` rather than the variant's resolved
-   * `targetSdk` — which on AGP 8.x falls through to `minSdk` when
-   * `defaultConfig.targetSdk` is unset, exposing the test render to a lower SDK that
-   * Compose/layoutlib don't cleanly support today.
+   * Prefers `android.testOptions.targetSdk` if set, otherwise the project's `compileSdk` capped at
+   * the API level the chosen layoutlib bundles, otherwise that bundled level. See
+   * [LayoutlibVersions.resolveTargetSdk]. Defaulting to `compileSdk` mirrors AGP 9's planned default
+   * (`BooleanOption.DEFAULT_TARGET_SDK_TO_COMPILE_SDK_IF_UNSET` in AGP sources) rather than the
+   * variant's resolved `targetSdk`, which on AGP 8.x falls through to `minSdk` when
+   * `defaultConfig.targetSdk` is unset — a lower SDK Compose/layoutlib don't cleanly support.
    */
-  private fun Project.targetSdk(): Provider<String> =
-    providerFactory.provider {
+  private fun Project.targetSdk(layoutlibVersion: Provider<String>): Provider<String> =
+    layoutlibVersion.map { version ->
       val commonExtension = extensions.findByType(CommonExtension::class.java)
-      val resolved = commonExtension?.testOptions?.targetSdk
-        ?: commonExtension?.compileSdk
-        ?: DEFAULT_COMPILE_SDK_VERSION
+      val explicit = commonExtension?.testOptions?.targetSdk
+      val compileSdk = commonExtension?.compileSdk
+      val bundled = LayoutlibVersions.bundledSdkFor(version)
+      val resolved = LayoutlibVersions.resolveTargetSdk(explicit, compileSdk, bundled)
+      when {
+        explicit != null && explicit > bundled -> logger.warn(
+          "Paparazzi: testOptions.targetSdk $explicit is newer than the API $bundled framework bundled by " +
+            "layoutlib $version; SDK-gated code may call APIs missing at render time."
+        )
+        compileSdk != null && compileSdk > resolved -> logger.info(
+          "Paparazzi: rendering with targetSdk $resolved (layoutlib $version bundles API $bundled; compileSdk is $compileSdk)"
+        )
+      }
       resolved.toString()
     }
 
@@ -649,7 +658,6 @@ public class PaparazziPlugin @Inject constructor(
   }
 }
 
-private const val DEFAULT_COMPILE_SDK_VERSION = 36
 private const val LAYOUTLIB_GROUP = "com.android.tools.layoutlib"
 private const val ANDROID_KOTLIN_MULTIPLATFORM_LIBRARY_PLUGIN = "com.android.kotlin.multiplatform.library"
 private const val KOTLIN_MULTIPLATFORM_PLUGIN = "org.jetbrains.kotlin.multiplatform"

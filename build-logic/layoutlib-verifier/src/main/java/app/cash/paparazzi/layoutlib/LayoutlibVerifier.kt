@@ -36,11 +36,12 @@ internal class LayoutlibVerifier(
   fun verify(version: String): CompatEntry {
     checkArtifacts(version)
     val icu = icuDataFile(version)
+    val sdk = bundledSdk(version)
     val layoutlibJar = maven.download(maven.url("layoutlib", version))
     val minApi = minimumApi(version, layoutlibJar)
     checkLinkage(version, layoutlibJar, minApi ?: pinnedApiVersion)
     checkResources(version)
-    return CompatEntry(icu, minApi)
+    return CompatEntry(icu, sdk, minApi)
   }
 
   private fun checkArtifacts(version: String) {
@@ -64,6 +65,20 @@ internal class LayoutlibVerifier(
       names.singleOrNull() ?: throw VerificationException("ICU data file differs across classifiers: $byClassifier")
     log("icu", "$icu (all classifiers)")
     return icu
+  }
+
+  /** The framework API level layoutlib bundles (`ro.build.version.sdk` in layoutlib-runtime's build.prop). */
+  private fun bundledSdk(version: String): Int {
+    val byClassifier = CLASSIFIERS.associateWith { classifier ->
+      val prop = maven.readEntry(maven.url("layoutlib-runtime", version, classifier), "build.prop")
+        ?: throw VerificationException("layoutlib-runtime $classifier has no build.prop")
+      SDK_PROPERTY.find(String(prop, Charsets.UTF_8))?.groupValues?.get(1)?.toInt()
+        ?: throw VerificationException("layoutlib-runtime $classifier build.prop has no ro.build.version.sdk")
+    }
+    val sdk = byClassifier.values.toSet().singleOrNull()
+      ?: throw VerificationException("bundled SDK differs across classifiers: $byClassifier")
+    log("sdk", "API $sdk (all classifiers)")
+    return sdk
   }
 
   /** Returns the minimum layoutlib-api, or `null` when [pinnedApiVersion] already suffices. */
@@ -171,6 +186,7 @@ internal class LayoutlibVerifier(
   companion object {
     val CLASSIFIERS = listOf("linux", "win", "mac", "mac-arm")
     private val API_PACKAGES = listOf("com/android/ide/common/rendering/api/", "com/android/resources/")
+    private val SDK_PROPERTY = Regex("""(?m)^ro\.build\.version\.sdk=(\d+)$""")
     private val ICU_ENTRY = Regex("""data/icu/(icudt\d+l\.dat)""")
     private val XML_COMMENT = Regex("<!--.*?-->", RegexOption.DOT_MATCHES_ALL)
     private val TAG = Regex("""<([A-Za-z][\w-]*)[\s>/]""")

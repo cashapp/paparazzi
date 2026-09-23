@@ -18,7 +18,7 @@ package app.cash.paparazzi.layoutlib
 import java.io.File
 
 /** One verified layoutlib version in `gradle/layoutlib-compat.properties`. */
-internal data class CompatEntry(val icu: String, val minLayoutlibApi: String? = null)
+internal data class CompatEntry(val icu: String, val sdk: Int, val minLayoutlibApi: String? = null)
 
 /**
  * Reads and writes `gradle/layoutlib-compat.properties`, preserving its leading comment block and
@@ -34,6 +34,7 @@ internal class CompatFile(private val header: List<String>, val entries: Map<Str
       entries.keys.sortedWith(VersionOrder).forEach { version ->
         val entry = entries.getValue(version)
         appendLine("$version.$ICU=${entry.icu}")
+        appendLine("$version.$SDK=${entry.sdk}")
         entry.minLayoutlibApi?.let { appendLine("$version.$MIN_API=$it") }
       }
     }
@@ -42,8 +43,9 @@ internal class CompatFile(private val header: List<String>, val entries: Map<Str
 
   companion object {
     private const val ICU = "icu"
+    private const val SDK = "sdk"
     private const val MIN_API = "minLayoutlibApi"
-    private val ENTRY = Regex("""^(.+)\.($ICU|$MIN_API)=(.*)$""")
+    private val ENTRY = Regex("""^(.+)\.($ICU|$SDK|$MIN_API)=(.*)$""")
 
     fun parse(text: String): CompatFile {
       val lines = text.lines()
@@ -58,6 +60,7 @@ internal class CompatFile(private val header: List<String>, val entries: Map<Str
       val entries = values.mapValues { (version, keys) ->
         CompatEntry(
           icu = keys[ICU] ?: throw VerificationException("$version has no .$ICU entry"),
+          sdk = keys[SDK]?.toIntOrNull() ?: throw VerificationException("$version has no numeric .$SDK entry"),
           minLayoutlibApi = keys[MIN_API]
         )
       }

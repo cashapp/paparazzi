@@ -35,6 +35,9 @@ internal object LayoutlibVersions {
    */
   val minLayoutlibApi: Map<String, String> = LAYOUTLIB_MIN_API
 
+  /** Framework API level each known layoutlib bundles (`ro.build.version.sdk` in its runtime). */
+  val bundledSdk: Map<String, Int> = LAYOUTLIB_BUNDLED_SDK
+
   fun isKnown(layoutlibVersion: String): Boolean = layoutlibVersion in knownVersions
 
   /**
@@ -50,6 +53,27 @@ internal object LayoutlibVersions {
       .mapNotNull { minLayoutlibApi[it] }
       .maxWithOrNull { a, b -> compare(parse(a)!!, parse(b)!!) }
   }
+
+  /**
+   * Framework API level bundled by [layoutlibVersion]. Unknown versions assume the closest known
+   * version at or below them (conservative: never newer than what's been verified), or the oldest
+   * known version if older than all of them.
+   */
+  fun bundledSdkFor(layoutlibVersion: String): Int {
+    bundledSdk[layoutlibVersion]?.let { return it }
+    val requested = parse(layoutlibVersion)
+    val closest = requested?.let { req -> knownVersions.lastOrNull { compare(parse(it)!!, req) <= 0 } }
+    return bundledSdk.getValue(closest ?: knownVersions.first())
+  }
+
+  /**
+   * The targetSdk Paparazzi renders with. An explicit `testOptions.targetSdk` is honored as-is;
+   * otherwise `compileSdk` capped at [bundledSdk], since `Build.VERSION.SDK_INT` reporting a level
+   * newer than layoutlib's framework makes SDK-gated code call APIs that don't exist; otherwise
+   * [bundledSdk].
+   */
+  fun resolveTargetSdk(explicitTargetSdk: Int?, compileSdk: Int?, bundledSdk: Int): Int =
+    explicitTargetSdk ?: compileSdk?.coerceAtMost(bundledSdk) ?: bundledSdk
 
   /** Returns [required] if it's newer than [requested], otherwise `null` (never downgrade). */
   fun upgradeTo(requested: String?, required: String?): String? {

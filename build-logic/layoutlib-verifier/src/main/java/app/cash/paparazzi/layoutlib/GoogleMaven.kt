@@ -55,6 +55,24 @@ internal class GoogleMaven(
   fun tail(url: String, bytes: Int): File =
     cached(url, suffix = ".tail$bytes") { request -> request.header("Range", "bytes=-$bytes") }
 
+  /** Downloads [length] bytes of [url] starting at [offset] (cached). */
+  fun range(url: String, offset: Long, length: Int): File =
+    cached(url, suffix = ".range$offset-$length") { request ->
+      request.header("Range", "bytes=$offset-${offset + length - 1}")
+    }
+
+  /**
+   * Reads the zip entry [name] from the archive at [url] without downloading the whole archive:
+   * locates it via the central directory in the last [tailBytes], then range-requests just its data.
+   * Returns `null` if the entry isn't listed.
+   */
+  fun readEntry(url: String, name: String, tailBytes: Int = 1_000_000): ByteArray? {
+    val tail = tail(url, tailBytes).readBytes()
+    val record = ZipRecords.centralDirectoryEntry(tail, name) ?: return null
+    val local = range(url, record.localHeaderOffset, ZipRecords.LOCAL_HEADER_SLACK + record.compressedSize)
+    return ZipRecords.readLocalEntry(local.readBytes(), record)
+  }
+
   /** Published versions of [artifact] in the layoutlib group, in ascending order. */
   fun versions(artifact: String): List<String> {
     val metadata = download("$baseUrl/$GROUP_PATH/$artifact/maven-metadata.xml").readText()
