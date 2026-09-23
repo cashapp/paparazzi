@@ -322,6 +322,7 @@ public class PaparazziPlugin @Inject constructor(
             layoutlibNativeRuntimeFileCollection.singleFile.absolutePath
           test.systemProperties["paparazzi.layoutlib.resources.root"] =
             layoutlibResourcesFileCollection.singleFile.absolutePath
+          test.systemProperties["paparazzi.layoutlib.version"] = layoutlibVersion.get()
           test.systemProperties["paparazzi.test.record"] = isRecordRun.get()
           test.systemProperties["paparazzi.test.record.overwriteOnMaxPercentDifference"] =
             overwriteOnMaxPercentDifferenceProvider.orNull == "true"

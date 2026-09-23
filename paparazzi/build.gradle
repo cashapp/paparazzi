@@ -161,6 +161,7 @@ tasks.withType(Test).configureEach {
     "paparazzi.layoutlib.runtime.root",
     configurations.layoutlibRuntime.singleFile.absolutePath
   )
+  systemProperty("paparazzi.layoutlib.version", libs.versions.layoutlib.get())
   systemProperty(
     "paparazzi.layoutlib.resources.root",
     configurations.layoutlibResources.singleFile.absolutePath
