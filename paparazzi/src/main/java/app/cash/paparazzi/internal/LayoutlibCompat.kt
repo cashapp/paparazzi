@@ -215,10 +215,7 @@ internal object LayoutlibCompat {
     }
   }
 
-  fun createBridgeRenderSession(
-    renderSession: RenderSessionImpl,
-    result: Result
-  ): BridgeRenderSession {
+  fun createBridgeRenderSession(renderSession: RenderSessionImpl, result: Result): BridgeRenderSession {
     try {
       val bridgeSessionClass = Class.forName("com.android.layoutlib.bridge.BridgeRenderSession")
       val constructor =
