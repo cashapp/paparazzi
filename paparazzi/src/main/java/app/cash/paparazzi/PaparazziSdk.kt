@@ -171,6 +171,8 @@ public class PaparazziSdk @JvmOverloads constructor(
 
     val sessionParams = sessionParamsBuilder.build()
     renderSession = createRenderSession(sessionParams)
+    // Layoutlib < 16.2.3 needs the main Looper prepared before init; later versions do it in RenderAction.
+    LayoutlibCompat.prepareThread()
     renderSession.init(sessionParams.timeout)
     Bitmap.setDefaultDensity(DisplayMetrics.DENSITY_DEVICE_STABLE)
 
@@ -254,9 +256,11 @@ public class PaparazziSdk @JvmOverloads constructor(
 
     val sessionParams = sessionParamsBuilder.build()
     renderSession = createRenderSession(sessionParams)
+    // Layoutlib < 16.2.3 needs the main Looper prepared before init; later versions do it in RenderAction.
+    LayoutlibCompat.prepareThread()
     renderSession.init(sessionParams.timeout)
     Bitmap.setDefaultDensity(DisplayMetrics.DENSITY_DEVICE_STABLE)
-    bridgeRenderSession = createBridgeSession(renderSession, renderSession.inflate())
+    bridgeRenderSession = LayoutlibCompat.createBridgeRenderSession(renderSession, renderSession.inflate())
   }
 
   private fun takeSnapshots(view: View, startNanos: Long, fps: Int, frameCount: Int) {

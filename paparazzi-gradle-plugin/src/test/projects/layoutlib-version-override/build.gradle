@@ -16,7 +16,7 @@ android {
 }
 
 paparazzi {
-  layoutlibVersion = "16.2.4"
+  layoutlibVersion = providers.gradleProperty("testLayoutlibVersion").get()
 }
 
 dependencies {

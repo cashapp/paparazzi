@@ -256,25 +256,37 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun layoutlibVersionOverride() {
+  fun layoutlibVersionOverride16_2_1() = assertLayoutlibVersionOverride("16.2.1")
+
+  @Test
+  fun layoutlibVersionOverride16_2_4() = assertLayoutlibVersionOverride("16.2.4")
+
+  @Test
+  fun layoutlibVersionOverride17_0_0() = assertLayoutlibVersionOverride("17.0.0")
+
+  @Test
+  fun layoutlibVersionOverride17_0_1() = assertLayoutlibVersionOverride("17.0.1")
+
+  private fun assertLayoutlibVersionOverride(version: String) {
     val fixtureRoot = File("src/test/projects/layoutlib-version-override")
+    val versionArg = "-PtestLayoutlibVersion=$version"
 
     fun dependencies(configuration: String): String =
       gradleRunner
-        .withArguments("dependencies", "--configuration", configuration, "--stacktrace")
+        .withArguments("dependencies", "--configuration", configuration, versionArg, "--stacktrace")
         .runFixture(fixtureRoot) { build() }
         .output
 
     assertThat(dependencies("debugUnitTestRuntimeClasspath"))
-      .contains("com.android.tools.layoutlib:layoutlib:$NATIVE_LIB_VERSION -> 16.2.4")
+      .contains("com.android.tools.layoutlib:layoutlib:$NATIVE_LIB_VERSION -> $version")
     assertThat(dependencies("layoutlibRuntime"))
-      .contains("com.android.tools.layoutlib:layoutlib-runtime:16.2.4")
+      .contains("com.android.tools.layoutlib:layoutlib-runtime:$version")
     assertThat(dependencies("layoutlibResources"))
-      .contains("com.android.tools.layoutlib:layoutlib-resources:16.2.4")
+      .contains("com.android.tools.layoutlib:layoutlib-resources:$version")
 
-    // Renders successfully against the overridden layoutlib.
+    // Renders (static, SHRINK, and multi-frame gif) against the overridden layoutlib.
     gradleRunner
-      .withArguments("testDebug", "--stacktrace")
+      .withArguments("testDebug", versionArg, "--stacktrace")
       .runFixture(fixtureRoot) { build() }
   }
 

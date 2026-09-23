@@ -22,10 +22,13 @@ import android.view.View
 import android.view.ViewRootImpl
 import android.view.ViewRootImpl_Accessor
 import android.view.WindowManagerGlobal
+import com.android.ide.common.rendering.api.Result
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode
 import com.android.internal.lang.System_Delegate
 import com.android.layoutlib.bridge.Bridge
+import com.android.layoutlib.bridge.BridgeRenderSession
 import com.android.layoutlib.bridge.impl.RenderSessionImpl
+import java.io.File
 import java.lang.reflect.Method
 
 /**
@@ -70,6 +73,7 @@ internal object LayoutlibCompat {
   )
 
   private val handlerLock = Any()
+  private val ICU_DATA_FILE = Regex("""icudt\d+l\.dat""")
 
   fun prepareThread() {
     prepareThread?.invoke(null)
@@ -77,6 +81,17 @@ internal object LayoutlibCompat {
 
   fun cleanupThread() {
     cleanupThread?.invoke(null)
+  }
+
+  /**
+   * The ICU data file shipped in `layoutlib-runtime`. Its name encodes the ICU version
+   * (`icudt76l.dat` through 16.x, `icudt78l.dat` in 17.x), so locate it rather than hardcoding.
+   */
+  fun icuDataFile(platformDataDir: File): File {
+    val icuDir = File(platformDataDir, "icu")
+    return icuDir.listFiles { file -> ICU_DATA_FILE.matches(file.name) }
+      ?.maxByOrNull { it.name }
+      ?: File(icuDir, "icudt76l.dat")
   }
 
   /** Root views of every window currently attached (main content, dialogs, popups). */

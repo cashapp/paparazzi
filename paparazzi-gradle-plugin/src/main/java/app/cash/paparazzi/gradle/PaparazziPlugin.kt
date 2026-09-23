@@ -413,6 +413,13 @@ public class PaparazziPlugin @Inject constructor(
             details.because("Paparazzi layoutlibVersion override")
           }
         }
+        if (requested.group == LAYOUTLIB_GROUP && requested.name == "layoutlib-api") {
+          val apiVersion = requiredLayoutlibApiVersion(layoutlibVersion.get())
+          if (apiVersion != null && requested.version != apiVersion) {
+            details.useVersion(apiVersion)
+            details.because("layoutlib ${layoutlibVersion.get()} requires layoutlib-api $apiVersion")
+          }
+        }
       }
     }
   }
@@ -634,6 +641,19 @@ public class PaparazziPlugin @Inject constructor(
 
 private const val DEFAULT_COMPILE_SDK_VERSION = 36
 private const val LAYOUTLIB_GROUP = "com.android.tools.layoutlib"
+
+/**
+ * layoutlib's POM doesn't declare its `layoutlib-api` dependency, so newer layoutlib majors can
+ * reference API classes (e.g. `RecyclableImage` in 17.x) missing from the version Paparazzi pins.
+ * Returns the minimum `layoutlib-api` required, or `null` to keep Paparazzi's default.
+ */
+internal fun requiredLayoutlibApiVersion(layoutlibVersion: String): String? {
+  val major = layoutlibVersion.substringBefore('.').toIntOrNull() ?: return null
+  return when {
+    major >= 17 -> "32.4.1"
+    else -> null
+  }
+}
 private const val ANDROID_KOTLIN_MULTIPLATFORM_LIBRARY_PLUGIN = "com.android.kotlin.multiplatform.library"
 private const val KOTLIN_MULTIPLATFORM_PLUGIN = "org.jetbrains.kotlin.multiplatform"
 private val MIN_NATIVE_REPORT_GRADLE_VERSION = GradleVersion.version("9.4")
