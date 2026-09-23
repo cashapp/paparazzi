@@ -38,6 +38,21 @@ tasks.named('verifyLayoutlibVersion').configure {
   paparazziJar = project(':paparazzi').tasks.named('jar', Jar).flatMap { it.archiveFile }
 }
 
+// Format build-logic along with the rest of the repo.
+def buildLogicSpotless = ['aar2jar', 'layoutlib-verifier']
+tasks.register('spotlessCheck') {
+  group = 'verification'
+  dependsOn buildLogicSpotless.collect { gradle.includedBuild('build-logic').task(":$it:spotlessCheck") }
+}
+tasks.register('spotlessApply') {
+  group = 'formatting'
+  dependsOn buildLogicSpotless.collect { gradle.includedBuild('build-logic').task(":$it:spotlessApply") }
+}
+tasks.register('check') {
+  group = 'verification'
+  dependsOn 'spotlessCheck'
+}
+
 tasks.register('checkLayoutlibVerifier') {
   group = 'verification'
   description = 'Unit tests for the build-logic layoutlib verifier'

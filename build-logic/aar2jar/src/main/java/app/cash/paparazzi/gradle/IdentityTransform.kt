@@ -42,4 +42,3 @@ abstract class IdentityTransform : TransformAction<TransformParameters.None> {
     }
   }
 }
-

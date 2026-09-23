@@ -38,7 +38,7 @@ abstract class ExtractClassesJarTransform : TransformAction<TransformParameters.
     val aarFileName = inputFile.nameWithoutExtension
 
     ZipInputStream(inputFile.inputStream().buffered()).use { input ->
-      while(true) {
+      while (true) {
         val entry = input.nextEntry ?: break
         if (entry.name != "classes.jar") continue
         Files.copy(input, outputs.file("$aarFileName-${entry.name}").toPath())
