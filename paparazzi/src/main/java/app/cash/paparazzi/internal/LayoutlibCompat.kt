@@ -84,14 +84,36 @@ internal object LayoutlibCompat {
   }
 
   /**
-   * The ICU data file shipped in `layoutlib-runtime`. Its name encodes the ICU version
-   * (`icudt76l.dat` through 16.x, `icudt78l.dat` in 17.x), so locate it rather than hardcoding.
+   * ICU data file shipped in `layoutlib-runtime/data/icu`, per layoutlib version. Identical across
+   * the linux, win, mac and mac-arm classifiers. Build-time counterpart (minimum `layoutlib-api`)
+   * lives in the Gradle plugin's `LayoutlibVersions`; keep both in sync when adding a version.
+   *
+   * Framework resources (`layoutlib-resources`) need no per-version handling: every known version
+   * ships the same `res/` layout, `values/attrs.xml`, resource types and value tags, and loads
+   * cleanly through `FrameworkResourceRepository`.
    */
-  fun icuDataFile(platformDataDir: File): File {
+  internal val ICU_DATA_FILES: Map<String, String> = linkedMapOf(
+    "16.2.1" to "icudt76l.dat",
+    "16.2.3" to "icudt76l.dat",
+    "16.2.4" to "icudt76l.dat",
+    "17.0.0" to "icudt78l.dat",
+    "17.0.1" to "icudt78l.dat"
+  )
+
+  /**
+   * Resolves the ICU data file for the current layoutlib [version]. Unknown versions (or a table
+   * entry whose file is absent) fall back to the single `icudt*l.dat` present in the runtime.
+   */
+  fun icuDataFile(platformDataDir: File, version: LayoutlibVersion? = this.version): File {
     val icuDir = File(platformDataDir, "icu")
-    return icuDir.listFiles { file -> ICU_DATA_FILE.matches(file.name) }
-      ?.maxByOrNull { it.name }
-      ?: File(icuDir, "icudt76l.dat")
+    ICU_DATA_FILES[version?.toString()]
+      ?.let { File(icuDir, it) }
+      ?.takeIf { it.isFile }
+      ?.let { return it }
+
+    val candidates = icuDir.listFiles { file -> ICU_DATA_FILE.matches(file.name) }.orEmpty()
+    return candidates.maxByOrNull { it.name }
+      ?: error("No ICU data file (icudt*l.dat) found in $icuDir for layoutlib ${version ?: "<unknown>"}")
   }
 
   /** Root views of every window currently attached (main content, dialogs, popups). */

@@ -277,8 +277,19 @@ class PaparazziPluginTest {
         .runFixture(fixtureRoot) { build() }
         .output
 
-    assertThat(dependencies("debugUnitTestRuntimeClasspath"))
+    val runtimeClasspath = dependencies("debugUnitTestRuntimeClasspath")
+    assertThat(runtimeClasspath)
       .contains("com.android.tools.layoutlib:layoutlib:$NATIVE_LIB_VERSION -> $version")
+    val minApi = LayoutlibVersions.minLayoutlibApiFor(version)
+    if (minApi != null) {
+      assertThat(runtimeClasspath).containsMatch("com\\.android\\.tools\\.layoutlib:layoutlib-api:[\\d.]+ -> $minApi")
+    } else {
+      // Normal conflict resolution may still apply; just ensure no table-driven upgrade happened.
+      val tableMinimums = LayoutlibVersions.minLayoutlibApi.values.filterNotNull().toSet()
+      tableMinimums.forEach {
+        assertThat(runtimeClasspath).doesNotContainMatch("layoutlib-api:[\\d.]+ -> ${Regex.escape(it)}\\b")
+      }
+    }
     assertThat(dependencies("layoutlibRuntime"))
       .contains("com.android.tools.layoutlib:layoutlib-runtime:$version")
     assertThat(dependencies("layoutlibResources"))

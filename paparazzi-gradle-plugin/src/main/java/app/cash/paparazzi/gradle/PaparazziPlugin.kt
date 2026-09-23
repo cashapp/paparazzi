@@ -122,6 +122,15 @@ public class PaparazziPlugin @Inject constructor(
     )
     val layoutlibVersion = paparazziExtension.layoutlibVersion
     alignLayoutlibVersion(layoutlibVersion)
+    afterEvaluate {
+      val version = layoutlibVersion.get()
+      if (!LayoutlibVersions.isKnown(version)) {
+        logger.warn(
+          "Paparazzi has not been verified against layoutlib $version " +
+            "(known: ${LayoutlibVersions.knownVersions.joinToString()}). Rendering may fail or differ."
+        )
+      }
+    }
 
     val layoutlibNativeRuntimeFileCollection = project.setupLayoutlibRuntimeDependency(layoutlibVersion)
     val layoutlibResourcesFileCollection = project.setupLayoutlibResourcesDependency(layoutlibVersion)
@@ -414,10 +423,11 @@ public class PaparazziPlugin @Inject constructor(
           }
         }
         if (requested.group == LAYOUTLIB_GROUP && requested.name == "layoutlib-api") {
-          val apiVersion = requiredLayoutlibApiVersion(layoutlibVersion.get())
-          if (apiVersion != null && requested.version != apiVersion) {
+          val version = layoutlibVersion.get()
+          val apiVersion = LayoutlibVersions.upgradeTo(requested.version, LayoutlibVersions.minLayoutlibApiFor(version))
+          if (apiVersion != null) {
             details.useVersion(apiVersion)
-            details.because("layoutlib ${layoutlibVersion.get()} requires layoutlib-api $apiVersion")
+            details.because("layoutlib $version requires layoutlib-api >= $apiVersion")
           }
         }
       }
@@ -641,19 +651,6 @@ public class PaparazziPlugin @Inject constructor(
 
 private const val DEFAULT_COMPILE_SDK_VERSION = 36
 private const val LAYOUTLIB_GROUP = "com.android.tools.layoutlib"
-
-/**
- * layoutlib's POM doesn't declare its `layoutlib-api` dependency, so newer layoutlib majors can
- * reference API classes (e.g. `RecyclableImage` in 17.x) missing from the version Paparazzi pins.
- * Returns the minimum `layoutlib-api` required, or `null` to keep Paparazzi's default.
- */
-internal fun requiredLayoutlibApiVersion(layoutlibVersion: String): String? {
-  val major = layoutlibVersion.substringBefore('.').toIntOrNull() ?: return null
-  return when {
-    major >= 17 -> "32.4.1"
-    else -> null
-  }
-}
 private const val ANDROID_KOTLIN_MULTIPLATFORM_LIBRARY_PLUGIN = "com.android.kotlin.multiplatform.library"
 private const val KOTLIN_MULTIPLATFORM_PLUGIN = "org.jetbrains.kotlin.multiplatform"
 private val MIN_NATIVE_REPORT_GRADLE_VERSION = GradleVersion.version("9.4")
