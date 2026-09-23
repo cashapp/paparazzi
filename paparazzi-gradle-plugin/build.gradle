@@ -61,7 +61,7 @@ def layoutlibDefault = libs.versions.layoutlib.get()
 if (!layoutlibKnownVersions.contains(layoutlibDefault)) {
   throw new GradleException(
     "Default layoutlib $layoutlibDefault (libs.versions.toml) is not listed in ${layoutlibCompatFile.asFile}. " +
-      "Run scripts/verify-layoutlib-version $layoutlibDefault --write"
+      "Run ./gradlew verifyLayoutlibVersion --layoutlib-version=$layoutlibDefault --write (see LAYOUTLIB.md)"
   )
 }
 def kotlinString = { "\"" + it + "\"" }

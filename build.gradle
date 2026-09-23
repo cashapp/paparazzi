@@ -24,10 +24,25 @@ buildscript {
     // settings.gradle to use the version built from inside the repo.
     classpath 'app.cash.paparazzi:paparazzi-gradle-plugin'
     classpath 'app.cash.paparazzi:aar2jar'
+    classpath 'app.cash.paparazzi:layoutlib-verifier'
   }
 }
 
 apply plugin: 'binary-compatibility-validator'
+apply plugin: 'app.cash.paparazzi.layoutlib-verifier'
+
+// See LAYOUTLIB.md.
+tasks.named('verifyLayoutlibVersion').configure {
+  defaultLayoutlibVersion = libs.versions.layoutlib
+  pinnedLayoutlibApiVersion = libs.tools.layoutlib.api.map { it.version }
+  paparazziJar = project(':paparazzi').tasks.named('jar', Jar).flatMap { it.archiveFile }
+}
+
+tasks.register('checkLayoutlibVerifier') {
+  group = 'verification'
+  description = 'Unit tests for the build-logic layoutlib verifier'
+  dependsOn gradle.includedBuild('build-logic').task(':layoutlib-verifier:test')
+}
 
 def testProjectProp = System.getProperty("app.cash.paparazzi.testProjectNames")
 apiValidation {

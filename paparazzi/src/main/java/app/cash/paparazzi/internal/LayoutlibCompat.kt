@@ -98,7 +98,7 @@ internal object LayoutlibCompat {
    *
    * Framework resources (`layoutlib-resources`) need no per-version handling: every verified version
    * ships the same `res/` layout, `values/attrs.xml`, resource types and value tags, and loads
-   * cleanly through `FrameworkResourceRepository`. `scripts/verify-layoutlib-version` re-checks this.
+   * cleanly through `FrameworkResourceRepository`. `./gradlew verifyLayoutlibVersion` re-checks this.
    */
   val icuDataFiles: Map<String, String> =
     compat.stringPropertyNames()

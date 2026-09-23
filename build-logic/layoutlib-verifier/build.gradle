@@ -1,0 +1,19 @@
+apply plugin: 'org.jetbrains.kotlin.jvm'
+apply plugin: 'java-gradle-plugin'
+
+dependencies {
+  compileOnly gradleApi()
+  implementation libs.asm
+
+  testImplementation libs.junit
+  testImplementation libs.truth
+}
+
+gradlePlugin {
+  plugins {
+    layoutlibVerifier {
+      id = 'app.cash.paparazzi.layoutlib-verifier'
+      implementationClass = 'app.cash.paparazzi.layoutlib.LayoutlibVerifierPlugin'
+    }
+  }
+}

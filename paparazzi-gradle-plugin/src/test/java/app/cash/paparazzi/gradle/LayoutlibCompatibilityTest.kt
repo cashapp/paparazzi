@@ -24,11 +24,11 @@ import org.junit.runners.Parameterized.Parameters
 import java.io.File
 
 /**
- * Renders against every layoutlib version listed in `gradle/layoutlib-compat.properties`, so any
- * version added by `scripts/verify-layoutlib-version` is covered from then on.
+ * Renders against layoutlib versions from `gradle/layoutlib-compat.properties`.
  *
- * Restrict to specific versions with `-Dpaparazzi.layoutlib.versionsUnderTest=17.0.3,16.2.4`
- * (forwarded by the plugin module's Test task).
+ * By default only the default version (`libs.versions.layoutlib`) runs, keeping `check` fast. Select
+ * versions with `-Ppaparazzi.layoutlib.versionsUnderTest=all` or `=17.0.3,16.2.4` (forwarded by the
+ * plugin module's Test task); the `layoutlib-compat` CI workflow runs every recorded version.
  */
 @RunWith(Parameterized::class)
 class LayoutlibCompatibilityTest(private val version: String) {
@@ -77,11 +77,14 @@ class LayoutlibCompatibilityTest(private val version: String) {
     @JvmStatic
     @Parameters(name = "layoutlib {0}")
     fun versions(): List<String> {
-      val filter = System.getProperty("paparazzi.layoutlib.versionsUnderTest")
-        ?.split(',')?.map(String::trim)?.filter(String::isNotEmpty)
-      if (!filter.isNullOrEmpty()) return filter
       check(COMPAT_FILE.isFile) { "Missing $COMPAT_FILE" }
-      return LayoutlibVersions.knownVersions
+      val requested = System.getProperty("paparazzi.layoutlib.versionsUnderTest")
+        ?.split(',')?.map(String::trim)?.filter(String::isNotEmpty)
+      return when {
+        requested.isNullOrEmpty() -> listOf(NATIVE_LIB_VERSION)
+        requested == listOf("all") -> LayoutlibVersions.knownVersions
+        else -> requested
+      }
     }
 
     private fun ensureFixtureFiles() {

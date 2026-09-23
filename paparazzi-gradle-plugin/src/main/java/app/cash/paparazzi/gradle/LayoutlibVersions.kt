@@ -17,7 +17,7 @@ package app.cash.paparazzi.gradle
 
 /**
  * Build-time facts about each layoutlib release Paparazzi has been verified against, generated
- * from `gradle/layoutlib-compat.properties` (maintained by `scripts/verify-layoutlib-version`).
+ * from `gradle/layoutlib-compat.properties` (maintained by `./gradlew verifyLayoutlibVersion`, see LAYOUTLIB.md).
  * The runtime reads the same file for per-version ICU data (see `LayoutlibCompat`).
  */
 internal object LayoutlibVersions {

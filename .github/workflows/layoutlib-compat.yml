@@ -1,0 +1,136 @@
+name: layoutlib-compat
+
+# Renders Paparazzi against every layoutlib version recorded in gradle/layoutlib-compat.properties
+# and re-runs the static verifier to catch drift in the recorded entries. The main `build`
+# workflow only exercises the default layoutlib (libs.versions.layoutlib).
+#
+# See LAYOUTLIB.md.
+
+on:
+  pull_request:
+    paths:
+      - 'gradle/layoutlib-compat.properties'
+      - 'gradle/libs.versions.toml'
+      - 'paparazzi/src/main/**'
+      - 'paparazzi/build.gradle'
+      - 'paparazzi-gradle-plugin/src/main/**'
+      - 'paparazzi-gradle-plugin/build.gradle'
+      - 'paparazzi-gradle-plugin/src/test/java/app/cash/paparazzi/gradle/LayoutlibCompatibilityTest.kt'
+      - 'paparazzi-gradle-plugin/src/test/projects/layoutlib-version-override/**'
+      - 'build-logic/layoutlib-verifier/**'
+      - '.github/workflows/layoutlib-compat.yml'
+
+  push:
+    branches:
+      - master
+    paths:
+      - 'gradle/layoutlib-compat.properties'
+      - 'gradle/libs.versions.toml'
+      - 'paparazzi/src/main/**'
+      - 'paparazzi-gradle-plugin/src/main/**'
+      - 'build-logic/layoutlib-verifier/**'
+
+  schedule:
+    # Weekly, so regressions from unrelated changes (e.g. Compose/AGP bumps) surface on every version.
+    - cron: '0 6 * * 1'
+
+  workflow_dispatch:
+    inputs:
+      versions:
+        description: 'Comma-separated layoutlib versions (blank = all recorded)'
+        required: false
+        default: ''
+
+concurrency:
+  group: layoutlib-compat-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false -Dkotlin.incremental=false"
+
+jobs:
+  versions:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.versions.outputs.matrix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Collect versions
+        id: versions
+        env:
+          REQUESTED: ${{ github.event.inputs.versions }}
+        run: |
+          if [ -n "$REQUESTED" ]; then
+            matrix=$(echo "$REQUESTED" | tr ',' '\n' | sed 's/ //g' | grep -v '^$' | jq -R . | jq -sc .)
+          else
+            matrix=$(grep -oE '^[^#=[:space:]]+\.icu=' gradle/layoutlib-compat.properties \
+              | sed 's/\.icu=$//' | jq -R . | jq -sc .)
+          fi
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+          echo "Versions: $matrix"
+
+  verifier-unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Configure JDK
+        uses: actions/setup-java@v6
+        with:
+          distribution: 'zulu'
+          java-version: 21
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6
+        with:
+          cache-disabled: true
+
+      - name: Verifier unit tests
+        run: ./gradlew checkLayoutlibVerifier
+
+  render:
+    needs: versions
+    name: layoutlib ${{ matrix.version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        version: ${{ fromJson(needs.versions.outputs.matrix) }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Configure JDK
+        uses: actions/setup-java@v6
+        with:
+          distribution: 'zulu'
+          java-version: 21
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6
+        with:
+          cache-disabled: true
+
+      - name: Static verification (fails if the recorded entry drifted)
+        run: ./gradlew verifyLayoutlibVersion --layoutlib-version=${{ matrix.version }}
+
+      - name: Render
+        run: >
+          ./gradlew :paparazzi-gradle-plugin:test
+          --tests app.cash.paparazzi.gradle.LayoutlibCompatibilityTest
+          -Ppaparazzi.layoutlib.versionsUnderTest=${{ matrix.version }}
+
+      - name: Upload Test Failures
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: layoutlib-${{ matrix.version }}-failures
+          path: |
+            paparazzi-gradle-plugin/build/reports/tests/
+            paparazzi-gradle-plugin/src/test/projects/layoutlib-version-override/build/reports/
+            paparazzi-gradle-plugin/src/test/projects/layoutlib-version-override/build/test-results/
