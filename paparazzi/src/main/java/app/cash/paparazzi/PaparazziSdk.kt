@@ -362,7 +362,7 @@ public class PaparazziSdk @JvmOverloads constructor(
           }
         }
 
-        val image = bridgeRenderSession.image
+        val image = LayoutlibCompat.renderedImage(bridgeRenderSession)
         if (validateAccessibility) {
           require(renderExtensions.isEmpty()) {
             "Running accessibility validation and render extensions simultaneously is not supported."

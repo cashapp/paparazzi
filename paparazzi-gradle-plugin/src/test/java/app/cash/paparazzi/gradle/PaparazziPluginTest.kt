@@ -256,52 +256,6 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun layoutlibVersionOverride16_2_1() = assertLayoutlibVersionOverride("16.2.1")
-
-  @Test
-  fun layoutlibVersionOverride16_2_4() = assertLayoutlibVersionOverride("16.2.4")
-
-  @Test
-  fun layoutlibVersionOverride17_0_0() = assertLayoutlibVersionOverride("17.0.0")
-
-  @Test
-  fun layoutlibVersionOverride17_0_1() = assertLayoutlibVersionOverride("17.0.1")
-
-  private fun assertLayoutlibVersionOverride(version: String) {
-    val fixtureRoot = File("src/test/projects/layoutlib-version-override")
-    val versionArg = "-PtestLayoutlibVersion=$version"
-
-    fun dependencies(configuration: String): String =
-      gradleRunner
-        .withArguments("dependencies", "--configuration", configuration, versionArg, "--stacktrace")
-        .runFixture(fixtureRoot) { build() }
-        .output
-
-    val runtimeClasspath = dependencies("debugUnitTestRuntimeClasspath")
-    assertThat(runtimeClasspath)
-      .contains("com.android.tools.layoutlib:layoutlib:$NATIVE_LIB_VERSION -> $version")
-    val minApi = LayoutlibVersions.minLayoutlibApiFor(version)
-    if (minApi != null) {
-      assertThat(runtimeClasspath).containsMatch("com\\.android\\.tools\\.layoutlib:layoutlib-api:[\\d.]+ -> $minApi")
-    } else {
-      // Normal conflict resolution may still apply; just ensure no table-driven upgrade happened.
-      val tableMinimums = LayoutlibVersions.minLayoutlibApi.values.filterNotNull().toSet()
-      tableMinimums.forEach {
-        assertThat(runtimeClasspath).doesNotContainMatch("layoutlib-api:[\\d.]+ -> ${Regex.escape(it)}\\b")
-      }
-    }
-    assertThat(dependencies("layoutlibRuntime"))
-      .contains("com.android.tools.layoutlib:layoutlib-runtime:$version")
-    assertThat(dependencies("layoutlibResources"))
-      .contains("com.android.tools.layoutlib:layoutlib-resources:$version")
-
-    // Renders (static, SHRINK, and multi-frame gif) against the overridden layoutlib.
-    gradleRunner
-      .withArguments("testDebug", versionArg, "--stacktrace")
-      .runFixture(fixtureRoot) { build() }
-  }
-
-  @Test
   fun flagDebugLinkedObjectsIsOff() {
     val fixtureRoot = File("src/test/projects/flag-debug-linked-objects-off")
 

@@ -50,6 +50,25 @@ dependencies {
   fixtureClasspath libs.plugin.android
 }
 
+def layoutlibCompatFile = layout.projectDirectory.file("../gradle/layoutlib-compat.properties")
+def layoutlibCompat = new Properties()
+layoutlibCompatFile.asFile.withInputStream { layoutlibCompat.load(it) }
+def layoutlibKnownVersions = layoutlibCompat.stringPropertyNames()
+  .findAll { it.endsWith(".icu") }
+  .collect { it.substring(0, it.length() - ".icu".length()) }
+  .sort(false)
+def layoutlibDefault = libs.versions.layoutlib.get()
+if (!layoutlibKnownVersions.contains(layoutlibDefault)) {
+  throw new GradleException(
+    "Default layoutlib $layoutlibDefault (libs.versions.toml) is not listed in ${layoutlibCompatFile.asFile}. " +
+      "Run scripts/verify-layoutlib-version $layoutlibDefault --write"
+  )
+}
+def kotlinString = { "\"" + it + "\"" }
+def layoutlibMinApiEntries = layoutlibKnownVersions
+  .findAll { layoutlibCompat.getProperty("${it}.minLayoutlibApi") != null }
+  .collect { "${kotlinString(it)} to ${kotlinString(layoutlibCompat.getProperty("${it}.minLayoutlibApi"))}" }
+
 buildConfig {
   useKotlinOutput {
     internalVisibility = true
@@ -59,6 +78,16 @@ buildConfig {
   packageName('app.cash.paparazzi.gradle')
   buildConfigField("String", "VERSION", "\"${project.version}\"")
   buildConfigField("String", "NATIVE_LIB_VERSION", "\"${libs.versions.layoutlib.get()}\"")
+  buildConfigField(
+    "kotlin.collections.List<kotlin.String>",
+    "LAYOUTLIB_KNOWN_VERSIONS",
+    expression("listOf(${layoutlibKnownVersions.collect(kotlinString).join(", ")})".toString())
+  )
+  buildConfigField(
+    "kotlin.collections.Map<kotlin.String, kotlin.String>",
+    "LAYOUTLIB_MIN_API",
+    expression("mapOf(${layoutlibMinApiEntries.join(", ")})".toString())
+  )
   buildConfigField("String", "JUNIT_PLATFORM_LAUNCHER", "\"${libs.junit.platform.launcher.get()}\"")
   buildConfigField("String", "PAPARAZZI_JUNIT_VINTAGE_COORDINATES", "\"app.cash.paparazzi:paparazzi-junit-vintage:${project.version}\"")
   buildConfigField("String", "PAPARAZZI_JUNIT_JUPITER_COORDINATES", "\"app.cash.paparazzi:paparazzi-junit-jupiter:${project.version}\"")
@@ -72,6 +101,11 @@ tasks.withType(Test).configureEach {
   inputs.dir(rootProject.layout.buildDirectory.dir("localMaven"))
     .withPropertyName("localMaven")
   dependsOn(':paparazzi:publishMavenPublicationToProjectLocalMavenRepository')
+  inputs.file(layoutlibCompatFile).withPropertyName("layoutlibCompat").withPathSensitivity(PathSensitivity.NONE)
+  def versionsUnderTest = providers.gradleProperty("paparazzi.layoutlib.versionsUnderTest")
+  if (versionsUnderTest.present) {
+    systemProperty("paparazzi.layoutlib.versionsUnderTest", versionsUnderTest.get())
+  }
   dependsOn(':paparazzi-junit-platform:publishMavenPublicationToProjectLocalMavenRepository')
   dependsOn(':paparazzi-junit-vintage:publishMavenPublicationToProjectLocalMavenRepository')
   dependsOn(':paparazzi-junit-jupiter:publishMavenPublicationToProjectLocalMavenRepository')

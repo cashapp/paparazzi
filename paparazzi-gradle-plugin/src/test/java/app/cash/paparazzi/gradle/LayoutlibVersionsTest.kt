@@ -34,7 +34,8 @@ class LayoutlibVersionsTest {
   @Test
   fun unknownVersionsInheritClosestLowerRequirement() {
     assertThat(LayoutlibVersions.minLayoutlibApiFor("17.0.2")).isEqualTo("32.3.0")
-    assertThat(LayoutlibVersions.minLayoutlibApiFor("16.2.2")).isNull()
+    assertThat(LayoutlibVersions.minLayoutlibApiFor("18.0.0")).isEqualTo("32.3.0")
+    assertThat(LayoutlibVersions.minLayoutlibApiFor("16.2.9")).isNull()
     assertThat(LayoutlibVersions.minLayoutlibApiFor("15.1.2")).isNull()
   }
 

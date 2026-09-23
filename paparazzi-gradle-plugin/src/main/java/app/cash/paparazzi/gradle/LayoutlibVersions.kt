@@ -16,37 +16,26 @@
 package app.cash.paparazzi.gradle
 
 /**
- * Build-time facts about each layoutlib release Paparazzi has been verified against.
- *
- * The runtime-side counterpart (ICU data file, behavioral shims) lives in
- * `app.cash.paparazzi.internal.LayoutlibCompat`. Keep both in sync when adding a version.
+ * Build-time facts about each layoutlib release Paparazzi has been verified against, generated
+ * from `gradle/layoutlib-compat.properties` (maintained by `scripts/verify-layoutlib-version`).
+ * The runtime reads the same file for per-version ICU data (see `LayoutlibCompat`).
  */
 internal object LayoutlibVersions {
+  /** Every layoutlib version with a verified entry, in ascending order. */
+  val knownVersions: List<String> = LAYOUTLIB_KNOWN_VERSIONS
+
   /**
    * layoutlib's POM doesn't declare a `layoutlib-api` dependency, so its bytecode can reference API
-   * classes missing from the version Paparazzi pins.
-   *
-   * Values are the *minimum* `layoutlib-api` satisfying every `com.android.ide.common.rendering.api`
-   * and `com.android.resources` class/method/field reference in that layoutlib jar, computed by
-   * scanning its constant pool against each `layoutlib-api` release. `null` means Paparazzi's pinned
-   * version already suffices.
+   * classes missing from the version Paparazzi pins. Maps a layoutlib version to the *minimum*
+   * `layoutlib-api` satisfying every reference in its jar; absent means Paparazzi's pin suffices.
    *
    * Paparazzi's own references (and the abstract surface of `LayoutlibCallback`, `ILayoutLog`, etc.
    * it implements) are satisfied by every `layoutlib-api` from 31.0.0 through 32.4.1, so raising it
    * is safe.
    */
-  val minLayoutlibApi: Map<String, String?> = linkedMapOf(
-    "16.2.1" to null,
-    "16.2.3" to null,
-    "16.2.4" to null,
-    "17.0.0" to null,
-    // RecyclableImage, RenderSizeProvider, SessionParams.getSizeProvider()
-    "17.0.1" to "32.3.0"
-  )
+  val minLayoutlibApi: Map<String, String> = LAYOUTLIB_MIN_API
 
-  val knownVersions: Set<String> get() = minLayoutlibApi.keys
-
-  fun isKnown(layoutlibVersion: String): Boolean = layoutlibVersion in minLayoutlibApi
+  fun isKnown(layoutlibVersion: String): Boolean = layoutlibVersion in knownVersions
 
   /**
    * Minimum `layoutlib-api` for [layoutlibVersion]. Unknown versions inherit the requirement of the
@@ -54,12 +43,11 @@ internal object LayoutlibVersions {
    * every known version.
    */
   fun minLayoutlibApiFor(layoutlibVersion: String): String? {
-    minLayoutlibApi[layoutlibVersion]?.let { return it }
-    if (isKnown(layoutlibVersion)) return null
+    if (isKnown(layoutlibVersion)) return minLayoutlibApi[layoutlibVersion]
     val requested = parse(layoutlibVersion) ?: return null
-    return minLayoutlibApi.entries
-      .filter { (known, _) -> compare(parse(known)!!, requested) <= 0 }
-      .mapNotNull { it.value }
+    return knownVersions
+      .filter { compare(parse(it)!!, requested) <= 0 }
+      .mapNotNull { minLayoutlibApi[it] }
       .maxWithOrNull { a, b -> compare(parse(a)!!, parse(b)!!) }
   }
 
