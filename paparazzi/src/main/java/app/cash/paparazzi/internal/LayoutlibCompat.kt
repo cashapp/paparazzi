@@ -19,9 +19,14 @@ import android.os.Handler_Delegate
 import android.view.Choreographer
 import android.view.Choreographer_Delegate
 import android.view.View
-import android.view.ViewRootImpl
-import android.view.ViewRootImpl_Accessor
 import android.view.WindowManagerGlobal
+import app.cash.paparazzi.internal.compat.BridgeRenderSessionAccessor
+import app.cash.paparazzi.internal.compat.BridgeThreadAccessor
+import app.cash.paparazzi.internal.compat.ChoreographerDelegateAccessor
+import app.cash.paparazzi.internal.compat.CompatRegistry
+import app.cash.paparazzi.internal.compat.RecyclableImageAccessor
+import app.cash.paparazzi.internal.compat.ViewRootImplAccessorCompat
+import app.cash.paparazzi.internal.compat.compatHook
 import com.android.ide.common.rendering.api.RenderSession
 import com.android.ide.common.rendering.api.Result
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode
@@ -31,7 +36,6 @@ import com.android.layoutlib.bridge.BridgeRenderSession
 import com.android.layoutlib.bridge.impl.RenderSessionImpl
 import java.awt.image.BufferedImage
 import java.io.File
-import java.lang.reflect.Method
 import java.util.Properties
 
 /**
@@ -56,41 +60,77 @@ internal object LayoutlibCompat {
 
   val version: LayoutlibVersion? = versionName?.let(LayoutlibVersion::parse)
 
-  // Removed in layoutlib 16.2.4; RenderAction now prepares/cleans up the main Looper itself.
-  private val prepareThread: Method? = Bridge::class.java.methodOrNull("prepareThread")
-  private val cleanupThread: Method? = Bridge::class.java.methodOrNull("cleanupThread")
+  private val registry = CompatRegistry { version }
 
-  // (Choreographer, int, long) up to 16.x; (Choreographer, int) from 17.0.
-  private val doCallbacksWithTime: Method? = Choreographer_Delegate::class.java.methodOrNull(
-    "doCallbacks",
-    Choreographer::class.java,
-    Int::class.javaPrimitiveType!!,
-    Long::class.javaPrimitiveType!!
-  )
-  private val doCallbacks: Method? = Choreographer_Delegate::class.java.methodOrNull(
-    "doCallbacks",
-    Choreographer::class.java,
-    Int::class.javaPrimitiveType!!
+  private val threadSetup: Lazy<ThreadSetup> = registry.register(
+    compatHook("threadSetup") {
+      variant(
+        "Bridge.prepareThread/cleanupThread",
+        available = { BridgeThreadAccessor.available },
+        impl = ThreadSetup(BridgeThreadAccessor::prepareThread, BridgeThreadAccessor::cleanupThread)
+      )
+      // Absent in 16.2.3+ (probe-only; exact removal version unverified): RenderAction prepares/cleans up the main Looper itself.
+      variant("RenderAction-managed", impl = ThreadSetup({}, {}))
+    }
   )
 
-  // Added in layoutlib 16.2.3.
-  private val updateFrame: Method? = ViewRootImpl_Accessor::class.java.methodOrNull(
-    "updateFrame",
-    ViewRootImpl::class.java,
-    Int::class.javaPrimitiveType!!,
-    Int::class.javaPrimitiveType!!
+  private val animationDispatch: Lazy<(Choreographer, Long) -> Unit> = registry.register(
+    compatHook("animationDispatch") {
+      variant(
+        "doCallbacks(Choreographer, int)",
+        since = "17.0.0",
+        available = { ChoreographerDelegateAccessor.hasUntimedDoCallbacks }
+      ) { choreographer, _ ->
+        ChoreographerDelegateAccessor.doCallbacks(choreographer, Choreographer.CALLBACK_ANIMATION)
+      }
+      variant(
+        "doCallbacks(Choreographer, int, long)",
+        available = { ChoreographerDelegateAccessor.hasTimedDoCallbacks }
+      ) { choreographer, frameTimeNanos ->
+        ChoreographerDelegateAccessor.doCallbacks(choreographer, Choreographer.CALLBACK_ANIMATION, frameTimeNanos)
+      }
+      // Unknown/newer layoutlib that kept the 17.x signature.
+      variant(
+        "doCallbacks(Choreographer, int) [detected]",
+        available = { ChoreographerDelegateAccessor.hasUntimedDoCallbacks }
+      ) { choreographer, _ ->
+        ChoreographerDelegateAccessor.doCallbacks(choreographer, Choreographer.CALLBACK_ANIMATION)
+      }
+    }
   )
+
+  private val shrinkWindowFrame: Lazy<(View) -> Unit> = registry.register(
+    compatHook("shrinkWindowFrame") {
+      variant(
+        "size SHRINK frame to device",
+        since = "16.2.3",
+        available = { ViewRootImplAccessorCompat.available },
+        impl = ::sizeShrinkWindowFrameToDevice
+      )
+      variant("none", impl = {})
+    }
+  )
+
+  private val imageCapture: Lazy<(RenderSession) -> BufferedImage?> = registry.register(
+    compatHook("imageCapture") {
+      variant("RecyclableImage", since = "17.0.3", impl = { session ->
+        if (RecyclableImageAccessor.supports(session)) RecyclableImageAccessor.copyImage(session) else session.image
+      })
+      variant("RenderSession.getImage", impl = { session ->
+        session.image ?: RecyclableImageAccessor.copyImage(session)
+      })
+    }
+  )
+
+  /** Chosen variant per compat hook, for diagnostics. */
+  fun describe(): Map<String, String> = registry.describe()
 
   private val handlerLock = Any()
   private val ICU_DATA_FILE = Regex("""icudt\d+l\.dat""")
 
-  fun prepareThread() {
-    prepareThread?.invoke(null)
-  }
+  fun prepareThread() = threadSetup.value.prepare()
 
-  fun cleanupThread() {
-    cleanupThread?.invoke(null)
-  }
+  fun cleanupThread() = threadSetup.value.cleanup()
 
   /**
    * ICU data file shipped in `layoutlib-runtime/data/icu`, per verified layoutlib version (identical
@@ -126,30 +166,9 @@ internal object LayoutlibCompat {
    * `getRecyclableImage()` (so the `RenderSession.getImage()` default returns `null`). The
    * recyclable buffer may be reused by layoutlib once closed, so copy it before closing.
    */
-  fun renderedImage(session: RenderSession): BufferedImage {
-    session.image?.let { return it }
-    val recyclable = session.javaClass.methodOrNull("getRecyclableImage")?.invoke(session)
+  fun renderedImage(session: RenderSession): BufferedImage =
+    imageCapture.value(session)
       ?: error("layoutlib ${versionName ?: "<unknown>"} produced no rendered image")
-    val recyclableImageClass = Class.forName("com.android.ide.common.rendering.api.RecyclableImage")
-    return try {
-      val image = recyclableImageClass.getMethod("getImage").invoke(recyclable) as BufferedImage
-      image.copy()
-    } finally {
-      (recyclable as AutoCloseable).close()
-    }
-  }
-
-  private fun BufferedImage.copy(): BufferedImage {
-    val copyType = if (type == BufferedImage.TYPE_CUSTOM) BufferedImage.TYPE_INT_ARGB else type
-    val copy = BufferedImage(width, height, copyType)
-    val g = copy.createGraphics()
-    try {
-      g.drawImage(this, 0, 0, null)
-    } finally {
-      g.dispose()
-    }
-    return copy
-  }
 
   /** Root views of every window currently attached (main content, dialogs, popups). */
   fun windowViews(): List<View> = WindowManagerGlobal.getInstance().windowViews
@@ -160,8 +179,8 @@ internal object LayoutlibCompat {
    */
   fun beforeRender(contentView: View, sessionParamsBuilder: SessionParamsBuilder) {
     val renderingMode = sessionParamsBuilder.build().renderingMode
-    if (renderingMode == RenderingMode.SHRINK && isAtLeast(16, 2, 3)) {
-      sizeShrinkWindowFrameToDevice(contentView)
+    if (renderingMode == RenderingMode.SHRINK) {
+      shrinkWindowFrame.value(contentView)
     }
   }
 
@@ -191,7 +210,7 @@ internal object LayoutlibCompat {
       // mCallbacksRunning) then tick doFrame with sChoreographerTime zeroed so its internal
       // dispatch finds the re-posted callbacks not-yet-due and skips them (while still signaling
       // the native HWUI layer so ripples and view animations work).
-      dispatchAnimationCallbacks(currentTimeNanos)
+      animationDispatch.value(Choreographer.getInstance(), currentTimeNanos)
 
       Choreographer_Delegate.sChoreographerTime = 0
       Choreographer_Delegate.doFrame(currentTimeNanos)
@@ -215,35 +234,12 @@ internal object LayoutlibCompat {
     }
   }
 
-  fun createBridgeRenderSession(renderSession: RenderSessionImpl, result: Result): BridgeRenderSession {
-    try {
-      val bridgeSessionClass = Class.forName("com.android.layoutlib.bridge.BridgeRenderSession")
-      val constructor =
-        bridgeSessionClass.getDeclaredConstructor(RenderSessionImpl::class.java, Result::class.java)
-      constructor.isAccessible = true
-      val bridgeSession = constructor.newInstance(renderSession, result) as BridgeRenderSession
-      return bridgeSession
-    } catch (e: Exception) {
-      throw RuntimeException(e)
-    }
-  }
+  fun createBridgeRenderSession(renderSession: RenderSessionImpl, result: Result): BridgeRenderSession =
+    BridgeRenderSessionAccessor.create(renderSession, result)
 
   // SystemClock_Delegate#uptimeNanos() is package-private.
   // https://android.googlesource.com/platform/frameworks/layoutlib/+/refs/tags/studio-2023.2.1-rc1/bridge/src/android/os/SystemClock_Delegate.java#56
   private fun uptimeNanos() = System_Delegate.nanoTime() - System_Delegate.bootTime()
-
-  private fun dispatchAnimationCallbacks(frameTimeNanos: Long) {
-    val choreographer = Choreographer.getInstance()
-    when {
-      doCallbacksWithTime != null ->
-        doCallbacksWithTime.invoke(null, choreographer, Choreographer.CALLBACK_ANIMATION, frameTimeNanos)
-
-      doCallbacks != null ->
-        doCallbacks.invoke(null, choreographer, Choreographer.CALLBACK_ANIMATION)
-
-      else -> error("Unsupported layoutlib: no Choreographer_Delegate.doCallbacks")
-    }
-  }
 
   /**
    * layoutlib 16.2.3's `RenderSessionImpl.inflate()` eagerly measures the content and sizes the
@@ -266,23 +262,14 @@ internal object LayoutlibCompat {
    * attached to a `ViewRootImpl`, or `ViewRootImpl_Accessor.updateFrame` is unavailable.
    */
   private fun sizeShrinkWindowFrameToDevice(contentView: View) {
-    val updateFrame = updateFrame ?: return
     val viewRootImpl = contentView.viewRootImpl ?: return
     val displayMetrics = contentView.context.resources.displayMetrics
-    updateFrame.invoke(null, viewRootImpl, displayMetrics.widthPixels, displayMetrics.heightPixels)
+    ViewRootImplAccessorCompat.updateFrame(viewRootImpl, displayMetrics.widthPixels, displayMetrics.heightPixels)
   }
-
-  /** Unknown versions are treated as the latest, i.e. feature detection decides. */
-  private fun isAtLeast(major: Int, minor: Int, patch: Int): Boolean =
-    version == null || version >= LayoutlibVersion(major, minor, patch)
-
-  private fun Class<*>.methodOrNull(name: String, vararg parameterTypes: Class<*>): Method? =
-    try {
-      getMethod(name, *parameterTypes)
-    } catch (_: NoSuchMethodException) {
-      null
-    }
 }
+
+/** Paired Looper setup/teardown around a render action. */
+internal class ThreadSetup(val prepare: () -> Unit, val cleanup: () -> Unit)
 
 internal data class LayoutlibVersion(
   val major: Int,
