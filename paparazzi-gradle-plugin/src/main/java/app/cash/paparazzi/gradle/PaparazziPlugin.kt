@@ -72,6 +72,7 @@ public class PaparazziPlugin @Inject constructor(
   private val buildOperationRunner: BuildOperationRunner,
   private val buildOperationExecutor: BuildOperationExecutor
 ) : Plugin<Project> {
+
   override fun apply(project: Project) {
     if (reportType == ReportType.NATIVE &&
       GradleVersion.current() < MIN_NATIVE_REPORT_GRADLE_VERSION
