@@ -1,0 +1,8 @@
+apply plugin: 'org.jetbrains.kotlin.jvm'
+apply plugin: 'com.vanniktech.maven.publish'
+
+dependencies {
+  // Only types that are stable across every supported layoutlib (View, Choreographer, RenderSession).
+  compileOnly libs.tools.layoutlib
+  compileOnly libs.tools.layoutlib.api
+}

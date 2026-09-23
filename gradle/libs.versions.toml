@@ -65,6 +65,12 @@ tools-layoutlib = { module = "com.android.tools.layoutlib:layoutlib", version.re
 tools-layoutlib-api = { module = "com.android.tools.layoutlib:layoutlib-api", version = "32.0.1" }
 tools-layoutlib-resources = { module = "com.android.tools.layoutlib:layoutlib-resources", version.ref = "layoutlib" }
 tools-layoutlib-runtime = { module = "com.android.tools.layoutlib:layoutlib-runtime", version.ref = "layoutlib" }
+# Representative jars each layoutlib shim module compiles against (one per behavior era). Pinned on
+# purpose: a shim must compile against a version inside its supported range, not the default.
+tools-layoutlib-shimV160 = { module = "com.android.tools.layoutlib:layoutlib", version = "16.2.1" }
+tools-layoutlib-shimV162 = { module = "com.android.tools.layoutlib:layoutlib", version = "16.2.3" }
+tools-layoutlib-shimV17 = { module = "com.android.tools.layoutlib:layoutlib", version = "17.0.3" }
+tools-layoutlibApi-shimV17 = { module = "com.android.tools.layoutlib:layoutlib-api", version = "32.3.0" }
 tools-ninepatch = { module = "com.android.tools:ninepatch", version.ref = "androidTools" }
 tools-sdkCommon = { module = "com.android.tools:sdk-common", version.ref = "androidTools" }
 

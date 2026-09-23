@@ -21,12 +21,10 @@ import android.view.Choreographer_Delegate
 import android.view.View
 import android.view.WindowManagerGlobal
 import app.cash.paparazzi.internal.compat.BridgeRenderSessionAccessor
-import app.cash.paparazzi.internal.compat.BridgeThreadAccessor
-import app.cash.paparazzi.internal.compat.ChoreographerDelegateAccessor
 import app.cash.paparazzi.internal.compat.CompatRegistry
-import app.cash.paparazzi.internal.compat.RecyclableImageAccessor
-import app.cash.paparazzi.internal.compat.ViewRootImplAccessorCompat
 import app.cash.paparazzi.internal.compat.compatHook
+import app.cash.paparazzi.layoutlib.shim.LayoutlibShim
+import app.cash.paparazzi.layoutlib.shim.LayoutlibShimProvider
 import com.android.ide.common.rendering.api.RenderSession
 import com.android.ide.common.rendering.api.Result
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode
@@ -37,6 +35,7 @@ import com.android.layoutlib.bridge.impl.RenderSessionImpl
 import java.awt.image.BufferedImage
 import java.io.File
 import java.util.Properties
+import java.util.ServiceLoader
 
 /**
  * Bridges layoutlib internal API and behavior differences so Paparazzi can run against layoutlib
@@ -62,65 +61,23 @@ internal object LayoutlibCompat {
 
   private val registry = CompatRegistry { version }
 
-  private val threadSetup: Lazy<ThreadSetup> = registry.register(
-    compatHook("threadSetup") {
-      variant(
-        "Bridge.prepareThread/cleanupThread",
-        available = { BridgeThreadAccessor.available },
-        impl = ThreadSetup(BridgeThreadAccessor::prepareThread, BridgeThreadAccessor::cleanupThread)
-      )
-      // Absent in 16.2.3+ (probe-only; exact removal version unverified): RenderAction prepares/cleans up the main Looper itself.
-      variant("RenderAction-managed", impl = ThreadSetup({}, {}))
-    }
-  )
+  /** Every [LayoutlibShimProvider] on the classpath, as ServiceLoader found them. */
+  val shimProviders: List<LayoutlibShimProvider> =
+    ServiceLoader.load(LayoutlibShimProvider::class.java, LayoutlibCompat::class.java.classLoader).toList()
 
-  private val animationDispatch: Lazy<(Choreographer, Long) -> Unit> = registry.register(
-    compatHook("animationDispatch") {
-      variant(
-        "doCallbacks(Choreographer, int)",
-        since = "17.0.0",
-        available = { ChoreographerDelegateAccessor.hasUntimedDoCallbacks }
-      ) { choreographer, _ ->
-        ChoreographerDelegateAccessor.doCallbacks(choreographer, Choreographer.CALLBACK_ANIMATION)
-      }
-      variant(
-        "doCallbacks(Choreographer, int, long)",
-        available = { ChoreographerDelegateAccessor.hasTimedDoCallbacks }
-      ) { choreographer, frameTimeNanos ->
-        ChoreographerDelegateAccessor.doCallbacks(choreographer, Choreographer.CALLBACK_ANIMATION, frameTimeNanos)
-      }
-      // Unknown/newer layoutlib that kept the 17.x signature.
-      variant(
-        "doCallbacks(Choreographer, int) [detected]",
-        available = { ChoreographerDelegateAccessor.hasUntimedDoCallbacks }
-      ) { choreographer, _ ->
-        ChoreographerDelegateAccessor.doCallbacks(choreographer, Choreographer.CALLBACK_ANIMATION)
-      }
+  /**
+   * The shim for the running layoutlib: newest range first, so an unknown version gets the newest
+   * shim whose probe passes.
+   */
+  private val shim: Lazy<LayoutlibShim> = registry.register(
+    compatHook<Lazy<LayoutlibShim>>("shim") {
+      shimProviders
+        .sortedByDescending { it.since?.let(LayoutlibVersion::parse) ?: LayoutlibVersion(0, 0, 0) }
+        .forEach { provider ->
+          variant(provider.name, provider.since, provider.until, provider::isCompatible, lazy(provider::create))
+        }
     }
-  )
-
-  private val shrinkWindowFrame: Lazy<(View) -> Unit> = registry.register(
-    compatHook("shrinkWindowFrame") {
-      variant(
-        "size SHRINK frame to device",
-        since = "16.2.3",
-        available = { ViewRootImplAccessorCompat.available },
-        impl = ::sizeShrinkWindowFrameToDevice
-      )
-      variant("none", impl = {})
-    }
-  )
-
-  private val imageCapture: Lazy<(RenderSession) -> BufferedImage?> = registry.register(
-    compatHook("imageCapture") {
-      variant("RecyclableImage", since = "17.0.3", impl = { session ->
-        if (RecyclableImageAccessor.supports(session)) RecyclableImageAccessor.copyImage(session) else session.image
-      })
-      variant("RenderSession.getImage", impl = { session ->
-        session.image ?: RecyclableImageAccessor.copyImage(session)
-      })
-    }
-  )
+  ).let { lazy { it.value.value } }
 
   /** Chosen variant per compat hook, for diagnostics. */
   fun describe(): Map<String, String> = registry.describe()
@@ -128,9 +85,9 @@ internal object LayoutlibCompat {
   private val handlerLock = Any()
   private val ICU_DATA_FILE = Regex("""icudt\d+l\.dat""")
 
-  fun prepareThread() = threadSetup.value.prepare()
+  fun prepareThread() = shim.value.prepareThread()
 
-  fun cleanupThread() = threadSetup.value.cleanup()
+  fun cleanupThread() = shim.value.cleanupThread()
 
   /**
    * ICU data file shipped in `layoutlib-runtime/data/icu`, per verified layoutlib version (identical
@@ -167,7 +124,7 @@ internal object LayoutlibCompat {
    * recyclable buffer may be reused by layoutlib once closed, so copy it before closing.
    */
   fun renderedImage(session: RenderSession): BufferedImage =
-    imageCapture.value(session)
+    shim.value.renderedImage(session)
       ?: error("layoutlib ${versionName ?: "<unknown>"} produced no rendered image")
 
   /** Root views of every window currently attached (main content, dialogs, popups). */
@@ -180,7 +137,7 @@ internal object LayoutlibCompat {
   fun beforeRender(contentView: View, sessionParamsBuilder: SessionParamsBuilder) {
     val renderingMode = sessionParamsBuilder.build().renderingMode
     if (renderingMode == RenderingMode.SHRINK) {
-      shrinkWindowFrame.value(contentView)
+      sizeShrinkWindowFrameToDevice(contentView)
     }
   }
 
@@ -210,7 +167,7 @@ internal object LayoutlibCompat {
       // mCallbacksRunning) then tick doFrame with sChoreographerTime zeroed so its internal
       // dispatch finds the re-posted callbacks not-yet-due and skips them (while still signaling
       // the native HWUI layer so ripples and view animations work).
-      animationDispatch.value(Choreographer.getInstance(), currentTimeNanos)
+      shim.value.dispatchAnimationCallbacks(Choreographer.getInstance(), currentTimeNanos)
 
       Choreographer_Delegate.sChoreographerTime = 0
       Choreographer_Delegate.doFrame(currentTimeNanos)
@@ -259,17 +216,14 @@ internal object LayoutlibCompat {
    * We set the frame directly rather than calling [RenderSessionImpl.measure] because that would run
    * an extra traversal/scroll pass whose process-global side effects (shared `Looper`/animation
    * state) leak into later snapshots on the same thread. No-ops if the content view is not yet
-   * attached to a `ViewRootImpl`, or `ViewRootImpl_Accessor.updateFrame` is unavailable.
+   * attached to a `ViewRootImpl`, or the shim doesn't reset frames (pre-16.2.3).
    */
   private fun sizeShrinkWindowFrameToDevice(contentView: View) {
     val viewRootImpl = contentView.viewRootImpl ?: return
     val displayMetrics = contentView.context.resources.displayMetrics
-    ViewRootImplAccessorCompat.updateFrame(viewRootImpl, displayMetrics.widthPixels, displayMetrics.heightPixels)
+    shim.value.resetWindowFrame(viewRootImpl, displayMetrics.widthPixels, displayMetrics.heightPixels)
   }
 }
-
-/** Paired Looper setup/teardown around a render action. */
-internal class ThreadSetup(val prepare: () -> Unit, val cleanup: () -> Unit)
 
 internal data class LayoutlibVersion(
   val major: Int,

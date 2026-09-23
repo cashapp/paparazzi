@@ -1,0 +1,26 @@
+public abstract interface class app/cash/paparazzi/layoutlib/shim/LayoutlibShim {
+	public fun cleanupThread ()V
+	public abstract fun dispatchAnimationCallbacks (Landroid/view/Choreographer;J)V
+	public fun prepareThread ()V
+	public abstract fun renderedImage (Lcom/android/ide/common/rendering/api/RenderSession;)Ljava/awt/image/BufferedImage;
+	public fun resetWindowFrame (Landroid/view/ViewRootImpl;II)V
+}
+
+public final class app/cash/paparazzi/layoutlib/shim/LayoutlibShim$DefaultImpls {
+	public static fun cleanupThread (Lapp/cash/paparazzi/layoutlib/shim/LayoutlibShim;)V
+	public static fun prepareThread (Lapp/cash/paparazzi/layoutlib/shim/LayoutlibShim;)V
+	public static fun resetWindowFrame (Lapp/cash/paparazzi/layoutlib/shim/LayoutlibShim;Landroid/view/ViewRootImpl;II)V
+}
+
+public final class app/cash/paparazzi/layoutlib/shim/LayoutlibShimKt {
+	public static final fun hasMethod (Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Class;)Z
+}
+
+public abstract interface class app/cash/paparazzi/layoutlib/shim/LayoutlibShimProvider {
+	public abstract fun create ()Lapp/cash/paparazzi/layoutlib/shim/LayoutlibShim;
+	public abstract fun getName ()Ljava/lang/String;
+	public abstract fun getSince ()Ljava/lang/String;
+	public abstract fun getUntil ()Ljava/lang/String;
+	public abstract fun isCompatible ()Z
+}
+

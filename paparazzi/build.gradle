@@ -37,6 +37,11 @@ dependencies {
   compileOnlyAarAsJar libs.androidx.lifecycle.runtime // Needed for setViewTreeLifecycleOwner
   compileOnlyAarAsJar libs.androidx.savedstate // Needed for setViewTreeSavedStateRegistryOwner
 
+  implementation projects.paparazziLayoutlibShimApi
+  // One shim per layoutlib behavior era, discovered via ServiceLoader; see LayoutlibCompat.
+  runtimeOnly projects.paparazziLayoutlibShim160
+  runtimeOnly projects.paparazziLayoutlibShim162
+  runtimeOnly projects.paparazziLayoutlibShim17
   implementation libs.bytebuddy.agent
   implementation libs.bytebuddy.core
   implementation libs.trove4j

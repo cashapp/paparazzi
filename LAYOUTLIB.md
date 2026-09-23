@@ -21,7 +21,18 @@ source of truth:
 | Build | fails if the default version isn't recorded |
 
 Behavioral differences between versions (APIs removed or changed in layoutlib internals) are handled
-in `paparazzi/src/main/java/app/cash/paparazzi/internal/LayoutlibCompat.kt`.
+by `LayoutlibShim` implementations, one module per behavior era, each compiled against a layoutlib
+inside its range (pinned in `libs.versions.toml` as `tools-layoutlib-shimV*`):
+
+| Module | Range | Compiled against |
+|---|---|---|
+| `paparazzi-layoutlib-shim-16-0` | [16.0.0, 16.2.3) | 16.2.1 |
+| `paparazzi-layoutlib-shim-16-2` | [16.2.3, 17.0.0) | 16.2.3 |
+| `paparazzi-layoutlib-shim-17` | 17.0.0+ | 17.0.3 |
+
+`LayoutlibCompat` discovers them via `ServiceLoader` and picks the one whose range contains the
+running version and whose `isCompatible()` probe passes (unknown versions: newest passing shim).
+A new behavior difference inside a range means splitting that module at the new version.
 
 ## Verifying a version
 

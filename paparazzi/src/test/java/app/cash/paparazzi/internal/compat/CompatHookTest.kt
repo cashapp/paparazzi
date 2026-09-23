@@ -71,14 +71,27 @@ class CompatHookTest {
   }
 
   @Test
-  fun currentLayoutlibResolvesEveryHook() {
-    // Default build pins 16.2.3: Bridge.prepareThread is gone, (int, long) doCallbacks, SHRINK fix on.
-    assertThat(LayoutlibCompat.describe()).containsExactly(
-      "threadSetup", "RenderAction-managed",
-      "animationDispatch", "doCallbacks(Choreographer, int, long)",
-      "shrinkWindowFrame", "size SHRINK frame to device",
-      "imageCapture", "RenderSession.getImage"
-    ).inOrder()
+  fun discoversEveryShim() {
+    assertThat(LayoutlibCompat.shimProviders.map { it.name }).containsExactly(
+      "layoutlib-shim-16.0",
+      "layoutlib-shim-16.2",
+      "layoutlib-shim-17"
+    )
+  }
+
+  @Test
+  fun currentLayoutlibSelectsShim() {
+    // Default build pins 16.2.3.
+    assertThat(LayoutlibCompat.describe()).containsExactly("shim", "layoutlib-shim-16.2")
+  }
+
+  @Test
+  fun providerRangesDoNotOverlap() {
+    val ranges = LayoutlibCompat.shimProviders
+      .map { (it.since?.let(LayoutlibVersion::parse) ?: v("0.0.0")) to it.until?.let(LayoutlibVersion::parse) }
+      .sortedBy { it.first }
+    ranges.zipWithNext().forEach { (a, b) -> assertThat(a.second).isEqualTo(b.first) }
+    assertThat(ranges.last().second).isNull()
   }
 
   private fun v(value: String) = LayoutlibVersion.parse(value)!!
