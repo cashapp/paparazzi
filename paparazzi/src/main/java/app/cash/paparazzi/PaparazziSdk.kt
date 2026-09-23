@@ -46,8 +46,6 @@ import app.cash.paparazzi.accessibility.AccessibilityRenderExtension
 import app.cash.paparazzi.agent.InterceptorRegistrar
 import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.LayoutlibCompat
-import app.cash.paparazzi.internal.LayoutlibCompat.cleanupThread
-import app.cash.paparazzi.internal.LayoutlibCompat.prepareThread
 import app.cash.paparazzi.internal.PaparazziCallback
 import app.cash.paparazzi.internal.PaparazziLifecycleOwner
 import app.cash.paparazzi.internal.PaparazziLogger
@@ -63,7 +61,6 @@ import com.android.ide.common.rendering.api.Result.Status.ERROR_UNKNOWN
 import com.android.ide.common.rendering.api.SessionParams
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode
 import com.android.internal.lang.System_Delegate
-import com.android.layoutlib.bridge.BridgeRenderSession
 import com.android.layoutlib.bridge.impl.RenderAction
 import com.android.layoutlib.bridge.impl.RenderSessionImpl
 import com.android.resources.ScreenOrientation
@@ -181,7 +178,7 @@ public class PaparazziSdk @JvmOverloads constructor(
       initializeAppCompatIfPresent()
     }
 
-    bridgeRenderSession = createBridgeSession(renderSession, renderSession.inflate())
+    bridgeRenderSession = LayoutlibCompat.createBridgeRenderSession(renderSession, renderSession.inflate())
   }
 
   public fun teardown() {
@@ -332,7 +329,7 @@ public class PaparazziSdk @JvmOverloads constructor(
       viewGroup.addView(modifiedView)
 
       // Per-layoutlib-version render configuration fixes, applied before the first frame renders.
-      LayoutlibCompat.beforeFirstFrame(viewGroup, sessionParamsBuilder.build().renderingMode)
+      LayoutlibCompat.beforeRender(viewGroup, sessionParamsBuilder)
 
       for (frame in 0 until frameCount) {
         val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
@@ -435,19 +432,6 @@ public class PaparazziSdk @JvmOverloads constructor(
     // Initialize to zero; per-frame elapsed time is set in [withTime] before each render.
     renderSession.setElapsedFrameTimeNanos(0L)
     return renderSession
-  }
-
-  private fun createBridgeSession(renderSession: RenderSessionImpl, result: Result): BridgeRenderSession {
-    try {
-      val bridgeSessionClass = Class.forName("com.android.layoutlib.bridge.BridgeRenderSession")
-      val constructor =
-        bridgeSessionClass.getDeclaredConstructor(RenderSessionImpl::class.java, Result::class.java)
-      constructor.isAccessible = true
-      val bridgeSession = constructor.newInstance(renderSession, result) as BridgeRenderSession
-      return bridgeSession
-    } catch (e: Exception) {
-      throw RuntimeException(e)
-    }
   }
 
   private fun frameImage(image: BufferedImage): BufferedImage {

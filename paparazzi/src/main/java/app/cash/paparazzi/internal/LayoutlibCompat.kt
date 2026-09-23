@@ -158,7 +158,8 @@ internal object LayoutlibCompat {
    * Hook invoked after the content is attached and before the first frame is rendered. Applies
    * per-version render-configuration fixes.
    */
-  fun beforeFirstFrame(contentView: View, renderingMode: RenderingMode) {
+  fun beforeRender(contentView: View, sessionParamsBuilder: SessionParamsBuilder) {
+    val renderingMode = sessionParamsBuilder.build().renderingMode
     if (renderingMode == RenderingMode.SHRINK && isAtLeast(16, 2, 3)) {
       sizeShrinkWindowFrameToDevice(contentView)
     }
@@ -214,6 +215,22 @@ internal object LayoutlibCompat {
     }
   }
 
+  fun createBridgeRenderSession(
+    renderSession: RenderSessionImpl,
+    result: Result
+  ): BridgeRenderSession {
+    try {
+      val bridgeSessionClass = Class.forName("com.android.layoutlib.bridge.BridgeRenderSession")
+      val constructor =
+        bridgeSessionClass.getDeclaredConstructor(RenderSessionImpl::class.java, Result::class.java)
+      constructor.isAccessible = true
+      val bridgeSession = constructor.newInstance(renderSession, result) as BridgeRenderSession
+      return bridgeSession
+    } catch (e: Exception) {
+      throw RuntimeException(e)
+    }
+  }
+
   // SystemClock_Delegate#uptimeNanos() is package-private.
   // https://android.googlesource.com/platform/frameworks/layoutlib/+/refs/tags/studio-2023.2.1-rc1/bridge/src/android/os/SystemClock_Delegate.java#56
   private fun uptimeNanos() = System_Delegate.nanoTime() - System_Delegate.bootTime()
@@ -223,8 +240,10 @@ internal object LayoutlibCompat {
     when {
       doCallbacksWithTime != null ->
         doCallbacksWithTime.invoke(null, choreographer, Choreographer.CALLBACK_ANIMATION, frameTimeNanos)
+
       doCallbacks != null ->
         doCallbacks.invoke(null, choreographer, Choreographer.CALLBACK_ANIMATION)
+
       else -> error("Unsupported layoutlib: no Choreographer_Delegate.doCallbacks")
     }
   }
