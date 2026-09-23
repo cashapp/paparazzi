@@ -584,10 +584,15 @@ class PaparazziPluginTest {
   fun rerunOnAssetChange() {
     val fixtureRoot = File("src/test/projects/rerun-asset-change")
 
+    val buildDir = File(fixtureRoot, "build").registerForDeletionOnExit()
+    buildDir.deleteRecursively()
+
     val snapshotsDir = File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
+    snapshotsDir.deleteRecursively()
     val snapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_RecordTest_record.png")
 
     val assetsDir = File(fixtureRoot, "src/main/assets").registerForDeletionOnExit()
+    assetsDir.deleteRecursively()
     val destAssetFile = File(assetsDir, "secret.txt")
     val firstAssetFile = File(fixtureRoot, "src/test/resources/secret1.txt")
     val secondAssetFile = File(fixtureRoot, "src/test/resources/secret2.txt")
@@ -597,7 +602,9 @@ class PaparazziPluginTest {
 
     // Take 1
     val firstRunResult = gradleRunner
-      .withArguments("recordPaparazziDebug", "--stacktrace")
+      // The asset is changed by this test process between builds. Disable Gradle's cross-build VFS
+      // retention so input snapshotting cannot race the daemon's asynchronous file-system watcher.
+      .withArguments("recordPaparazziDebug", "--stacktrace", "--no-watch-fs")
       .runFixture(fixtureRoot) { build() }
 
     with(firstRunResult.task(":testDebugUnitTest")) {
@@ -613,7 +620,7 @@ class PaparazziPluginTest {
 
     // Take 2
     val secondRunResult = gradleRunner
-      .withArguments("recordPaparazziDebug", "--stacktrace")
+      .withArguments("recordPaparazziDebug", "--stacktrace", "--no-watch-fs")
       .runFixture(fixtureRoot) { build() }
 
     with(secondRunResult.task(":testDebugUnitTest")) {
