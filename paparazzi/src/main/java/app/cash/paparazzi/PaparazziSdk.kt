@@ -48,6 +48,8 @@ import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import app.cash.paparazzi.accessibility.AccessibilityRenderExtension
 import app.cash.paparazzi.agent.InterceptorRegistrar
 import app.cash.paparazzi.internal.ImageUtils
+import app.cash.paparazzi.internal.LayoutlibCompat.cleanupThread
+import app.cash.paparazzi.internal.LayoutlibCompat.prepareThread
 import app.cash.paparazzi.internal.PaparazziCallback
 import app.cash.paparazzi.internal.PaparazziLifecycleOwner
 import app.cash.paparazzi.internal.PaparazziLogger

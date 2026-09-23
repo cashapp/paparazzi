@@ -116,8 +116,15 @@ public class PaparazziPlugin @Inject constructor(
       project.plugins.hasPlugin(KOTLIN_MULTIPLATFORM_PLUGIN)
     addTestDependency()
 
-    val layoutlibNativeRuntimeFileCollection = project.setupLayoutlibRuntimeDependency()
-    val layoutlibResourcesFileCollection = project.setupLayoutlibResourcesDependency()
+    val paparazziExtension = extensions.create("paparazzi", PaparazziExtension::class.java)
+    paparazziExtension.layoutlibVersion.convention(
+      providers.gradleProperty("app.cash.paparazzi.layoutlibVersion").orElse(NATIVE_LIB_VERSION)
+    )
+    val layoutlibVersion = paparazziExtension.layoutlibVersion
+    alignLayoutlibVersion(layoutlibVersion)
+
+    val layoutlibNativeRuntimeFileCollection = project.setupLayoutlibRuntimeDependency(layoutlibVersion)
+    val layoutlibResourcesFileCollection = project.setupLayoutlibResourcesDependency(layoutlibVersion)
 
     // Create anchor tasks for all variants.
     val verifyVariants = project.tasks.register("verifyPaparazzi") {
@@ -261,7 +268,7 @@ public class PaparazziPlugin @Inject constructor(
         test.inputs.property("paparazzi.test.record", isRecordRun)
         test.inputs.property("paparazzi.test.verify", isVerifyRun)
         test.inputs.property("paparazzi.gradleProperties", paparazziGradlePropertiesProvider)
-        test.inputs.property("paparazzi.layoutlib.version", NATIVE_LIB_VERSION)
+        test.inputs.property("paparazzi.layoutlib.version", layoutlibVersion)
 
         // Source dirs catch in-place content edits. PrepareResourcesTask tracks paths only and
         // its JSON output is byte-identical when contents change, so it can't invalidate the test.
@@ -389,7 +396,27 @@ public class PaparazziPlugin @Inject constructor(
       }
   }
 
-  private fun Project.setupLayoutlibRuntimeDependency(): FileCollection {
+  /**
+   * Paparazzi's POM pins `com.android.tools.layoutlib:layoutlib` to [NATIVE_LIB_VERSION]. When the
+   * user overrides the version, force the jar on every classpath to match the native runtime and
+   * framework resources so the Java bridge and native libs stay in sync.
+   */
+  private fun Project.alignLayoutlibVersion(layoutlibVersion: Provider<String>) {
+    configurations.configureEach { configuration ->
+      configuration.resolutionStrategy.eachDependency { details ->
+        val requested = details.requested
+        if (requested.group == LAYOUTLIB_GROUP && requested.name == "layoutlib") {
+          val version = layoutlibVersion.get()
+          if (requested.version != version) {
+            details.useVersion(version)
+            details.because("Paparazzi layoutlibVersion override")
+          }
+        }
+      }
+    }
+  }
+
+  private fun Project.setupLayoutlibRuntimeDependency(layoutlibVersion: Provider<String>): FileCollection {
     val operatingSystem = OperatingSystem.current()
     val nativeLibraryArtifactId = when {
       operatingSystem.isMacOsX -> {
@@ -402,8 +429,10 @@ public class PaparazziPlugin @Inject constructor(
     }
 
     val nativeRuntimeConfiguration = configurations.create("layoutlibRuntime")
-    nativeRuntimeConfiguration.dependencies.add(
-      dependencies.create("com.android.tools.layoutlib:layoutlib-runtime:$NATIVE_LIB_VERSION:$nativeLibraryArtifactId")
+    nativeRuntimeConfiguration.dependencies.addLater(
+      layoutlibVersion.map { version ->
+        dependencies.create("$LAYOUTLIB_GROUP:layoutlib-runtime:$version:$nativeLibraryArtifactId")
+      }
     )
     dependencies.registerTransform(UnzipTransform::class.java) { transform ->
       transform.from.attribute(ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.JAR_TYPE)
@@ -415,10 +444,12 @@ public class PaparazziPlugin @Inject constructor(
       .files
   }
 
-  private fun Project.setupLayoutlibResourcesDependency(): FileCollection {
+  private fun Project.setupLayoutlibResourcesDependency(layoutlibVersion: Provider<String>): FileCollection {
     val layoutlibResourcesConfiguration = configurations.create("layoutlibResources")
-    layoutlibResourcesConfiguration.dependencies.add(
-      dependencies.create("com.android.tools.layoutlib:layoutlib-resources:$NATIVE_LIB_VERSION")
+    layoutlibResourcesConfiguration.dependencies.addLater(
+      layoutlibVersion.map { version ->
+        dependencies.create("$LAYOUTLIB_GROUP:layoutlib-resources:$version")
+      }
     )
     dependencies.registerTransform(UnzipTransform::class.java) { transform ->
       transform.from.attribute(ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.JAR_TYPE)
@@ -601,6 +632,7 @@ public class PaparazziPlugin @Inject constructor(
 }
 
 private const val DEFAULT_COMPILE_SDK_VERSION = 36
+private const val LAYOUTLIB_GROUP = "com.android.tools.layoutlib"
 private const val ANDROID_KOTLIN_MULTIPLATFORM_LIBRARY_PLUGIN = "com.android.kotlin.multiplatform.library"
 private const val KOTLIN_MULTIPLATFORM_PLUGIN = "org.jetbrains.kotlin.multiplatform"
 private val MIN_NATIVE_REPORT_GRADLE_VERSION = GradleVersion.version("9.4")

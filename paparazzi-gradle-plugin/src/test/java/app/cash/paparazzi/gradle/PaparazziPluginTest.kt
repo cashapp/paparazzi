@@ -256,6 +256,29 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun layoutlibVersionOverride() {
+    val fixtureRoot = File("src/test/projects/layoutlib-version-override")
+
+    fun dependencies(configuration: String): String =
+      gradleRunner
+        .withArguments("dependencies", "--configuration", configuration, "--stacktrace")
+        .runFixture(fixtureRoot) { build() }
+        .output
+
+    assertThat(dependencies("debugUnitTestRuntimeClasspath"))
+      .contains("com.android.tools.layoutlib:layoutlib:$NATIVE_LIB_VERSION -> 16.2.4")
+    assertThat(dependencies("layoutlibRuntime"))
+      .contains("com.android.tools.layoutlib:layoutlib-runtime:16.2.4")
+    assertThat(dependencies("layoutlibResources"))
+      .contains("com.android.tools.layoutlib:layoutlib-resources:16.2.4")
+
+    // Renders successfully against the overridden layoutlib.
+    gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+  }
+
+  @Test
   fun flagDebugLinkedObjectsIsOff() {
     val fixtureRoot = File("src/test/projects/flag-debug-linked-objects-off")
 
