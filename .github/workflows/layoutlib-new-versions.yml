@@ -53,8 +53,10 @@ jobs:
 
       - name: List unverified releases
         id: list
+        env:
+          FLOOR: ${{ github.event.inputs.floor || '16.0.1' }}
         run: |
-          ./gradlew listUnverifiedLayoutlibVersions --floor=${{ github.event.inputs.floor || '16.0.1' }}
+          ./gradlew listUnverifiedLayoutlibVersions --floor="$FLOOR"
           echo "versions=$(cat build/layoutlib-verifier/unverified.json)" >> "$GITHUB_OUTPUT"
 
   verify:
@@ -83,21 +85,27 @@ jobs:
           cache-disabled: true
 
       - name: Static verification and record
+        env:
+          VERSION: ${{ matrix.version }}
         run: |
           set -o pipefail
-          ./gradlew verifyLayoutlibVersion --layoutlib-version=${{ matrix.version }} --write 2>&1 | tee verify.log
+          ./gradlew verifyLayoutlibVersion --layoutlib-version="$VERSION" --write 2>&1 | tee verify.log
 
       - name: Render
+        env:
+          VERSION: ${{ matrix.version }}
         run: |
           set -o pipefail
           ./gradlew :paparazzi-gradle-plugin:test \
             --tests app.cash.paparazzi.gradle.LayoutlibCompatibilityTest \
-            -Ppaparazzi.layoutlib.versionsUnderTest=${{ matrix.version }} 2>&1 | tee render.log
+            -Ppaparazzi.layoutlib.versionsUnderTest="$VERSION" 2>&1 | tee render.log
 
       - name: Export verified entry
+        env:
+          VERSION: ${{ matrix.version }}
         run: |
           mkdir -p entry
-          grep -E "^${{ matrix.version }}\.(icu|sdk|minLayoutlibApi)=" gradle/layoutlib-compat.properties > entry/entry.properties
+          grep -E "^${VERSION//./\\.}\.(icu|sdk|minLayoutlibApi)=" gradle/layoutlib-compat.properties > entry/entry.properties
           cat entry/entry.properties
 
       - name: Upload verified entry
@@ -183,7 +191,7 @@ jobs:
 
       - name: Open pull request
         if: steps.merge.outputs.versions != ''
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676 # v7
         with:
           token: ${{ secrets.LAYOUTLIB_BOT_TOKEN || secrets.GITHUB_TOKEN }}
           branch: layoutlib-compat/new-versions
