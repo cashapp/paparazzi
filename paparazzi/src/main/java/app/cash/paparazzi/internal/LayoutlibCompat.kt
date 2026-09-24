@@ -25,7 +25,6 @@ import app.cash.paparazzi.internal.compat.CompatRegistry
 import app.cash.paparazzi.internal.compat.compatHook
 import app.cash.paparazzi.layoutlib.shim.LayoutlibShim
 import app.cash.paparazzi.layoutlib.shim.LayoutlibShimProvider
-import com.android.ide.common.rendering.api.RenderSession
 import com.android.ide.common.rendering.api.Result
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode
 import com.android.internal.lang.System_Delegate
@@ -119,12 +118,11 @@ internal object LayoutlibCompat {
   }
 
   /**
-   * The last rendered frame. layoutlib 17.0.3 dropped `BridgeRenderSession.getImage()` in favor of
-   * `getRecyclableImage()` (so the `RenderSession.getImage()` default returns `null`). The
-   * recyclable buffer may be reused by layoutlib once closed, so copy it before closing.
+   * The last frame rendered by [renderSession], read through the version's shim:
+   * `RenderSessionImpl.getImage()` up to 16.x, `getRecyclableImage()` (copied) from 17.0.
    */
-  fun renderedImage(session: RenderSession): BufferedImage =
-    shim.value.renderedImage(session)
+  fun renderedImage(renderSession: RenderSessionImpl): BufferedImage =
+    shim.value.renderedImage(renderSession)
       ?: error("layoutlib ${versionName ?: "<unknown>"} produced no rendered image")
 
   /** Root views of every window currently attached (main content, dialogs, popups). */

@@ -34,7 +34,6 @@ import androidx.activity.setViewTreeOnBackPressedDispatcherOwner
 import androidx.annotation.LayoutRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Recomposer
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.InternalComposeUiApi
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.WindowRecomposerPolicy
@@ -76,7 +75,7 @@ import java.util.EnumSet
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.android.asCoroutineDispatcher
 
-@OptIn(ExperimentalComposeUiApi::class, InternalComposeUiApi::class)
+@OptIn(InternalComposeUiApi::class)
 public class PaparazziSdk @JvmOverloads constructor(
   private val environment: Environment = detectEnvironment(),
   private val deviceConfig: DeviceConfig = DeviceConfig.NEXUS_5,
@@ -359,7 +358,7 @@ public class PaparazziSdk @JvmOverloads constructor(
           }
         }
 
-        val image = LayoutlibCompat.renderedImage(bridgeRenderSession)
+        val image = LayoutlibCompat.renderedImage(renderSession)
         if (validateAccessibility) {
           require(renderExtensions.isEmpty()) {
             "Running accessibility validation and render extensions simultaneously is not supported."

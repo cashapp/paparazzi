@@ -69,6 +69,7 @@ tools-layoutlib-runtime = { module = "com.android.tools.layoutlib:layoutlib-runt
 # purpose: a shim must compile against a version inside its supported range, not the default.
 tools-layoutlib-shimV160 = { module = "com.android.tools.layoutlib:layoutlib", version = "16.2.1" }
 tools-layoutlib-shimV162 = { module = "com.android.tools.layoutlib:layoutlib", version = "16.2.3" }
+tools-layoutlib-shimV170 = { module = "com.android.tools.layoutlib:layoutlib", version = "17.0.0" }
 tools-layoutlib-shimV17 = { module = "com.android.tools.layoutlib:layoutlib", version = "17.0.3" }
 tools-layoutlibApi-shimV17 = { module = "com.android.tools.layoutlib:layoutlib-api", version = "32.3.0" }
 tools-ninepatch = { module = "com.android.tools:ninepatch", version.ref = "androidTools" }

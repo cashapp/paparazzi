@@ -75,6 +75,7 @@ class CompatHookTest {
     assertThat(LayoutlibCompat.shimProviders.map { it.name }).containsExactly(
       "layoutlib-shim-16.0",
       "layoutlib-shim-16.2",
+      "layoutlib-shim-17.0",
       "layoutlib-shim-17"
     )
   }

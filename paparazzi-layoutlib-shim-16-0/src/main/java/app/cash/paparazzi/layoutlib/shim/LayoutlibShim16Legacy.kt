@@ -17,8 +17,8 @@ package app.cash.paparazzi.layoutlib.shim
 
 import android.view.Choreographer
 import android.view.Choreographer_Delegate
-import com.android.ide.common.rendering.api.RenderSession
 import com.android.layoutlib.bridge.Bridge
+import com.android.layoutlib.bridge.impl.RenderSessionImpl
 import java.awt.image.BufferedImage
 
 /** layoutlib [16.0.0, 16.2.3): Paparazzi owns Looper setup; no inflate-time window sizing. */
@@ -30,7 +30,7 @@ internal class LayoutlibShim16Legacy : LayoutlibShim {
   override fun dispatchAnimationCallbacks(choreographer: Choreographer, frameTimeNanos: Long) =
     Choreographer_Delegate.doCallbacks(choreographer, Choreographer.CALLBACK_ANIMATION, frameTimeNanos)
 
-  override fun renderedImage(session: RenderSession): BufferedImage? = session.image
+  override fun renderedImage(renderSession: RenderSessionImpl): BufferedImage? = renderSession.image
 }
 
 public class LayoutlibShim16LegacyProvider : LayoutlibShimProvider {

@@ -19,7 +19,7 @@ import android.view.Choreographer
 import android.view.Choreographer_Delegate
 import android.view.ViewRootImpl
 import android.view.ViewRootImpl_Accessor
-import com.android.ide.common.rendering.api.RenderSession
+import com.android.layoutlib.bridge.impl.RenderSessionImpl
 import java.awt.image.BufferedImage
 
 /**
@@ -33,7 +33,7 @@ internal class LayoutlibShim16 : LayoutlibShim {
   override fun resetWindowFrame(viewRootImpl: ViewRootImpl, width: Int, height: Int) =
     ViewRootImpl_Accessor.updateFrame(viewRootImpl, width, height)
 
-  override fun renderedImage(session: RenderSession): BufferedImage? = session.image
+  override fun renderedImage(renderSession: RenderSessionImpl): BufferedImage? = renderSession.image
 }
 
 public class LayoutlibShim16Provider : LayoutlibShimProvider {

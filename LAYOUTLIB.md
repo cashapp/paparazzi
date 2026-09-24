@@ -28,7 +28,8 @@ inside its range (pinned in `libs.versions.toml` as `tools-layoutlib-shimV*`):
 |---|---|---|
 | `paparazzi-layoutlib-shim-16-0` | [16.0.0, 16.2.3) | 16.2.1 |
 | `paparazzi-layoutlib-shim-16-2` | [16.2.3, 17.0.0) | 16.2.3 |
-| `paparazzi-layoutlib-shim-17` | 17.0.0+ | 17.0.3 |
+| `paparazzi-layoutlib-shim-17-0` | [17.0.0, 17.0.1) | 17.0.0 |
+| `paparazzi-layoutlib-shim-17` | 17.0.1+ (`getRecyclableImage()`) | 17.0.3 |
 
 `LayoutlibCompat` discovers them via `ServiceLoader` and picks the one whose range contains the
 running version and whose `isCompatible()` probe passes (unknown versions: newest passing shim).

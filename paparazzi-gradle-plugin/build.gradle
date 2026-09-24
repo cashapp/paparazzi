@@ -116,6 +116,7 @@ tasks.withType(Test).configureEach {
   dependsOn(':paparazzi-layoutlib-shim-api:publishMavenPublicationToProjectLocalMavenRepository')
   dependsOn(':paparazzi-layoutlib-shim-16-0:publishMavenPublicationToProjectLocalMavenRepository')
   dependsOn(':paparazzi-layoutlib-shim-16-2:publishMavenPublicationToProjectLocalMavenRepository')
+  dependsOn(':paparazzi-layoutlib-shim-17-0:publishMavenPublicationToProjectLocalMavenRepository')
   dependsOn(':paparazzi-layoutlib-shim-17:publishMavenPublicationToProjectLocalMavenRepository')
   inputs.file(layoutlibCompatFile).withPropertyName("layoutlibCompat").withPathSensitivity(PathSensitivity.NONE)
   def versionsUnderTest = providers.gradleProperty("paparazzi.layoutlib.versionsUnderTest")

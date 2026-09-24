@@ -23,39 +23,23 @@ import com.android.layoutlib.bridge.impl.RenderSessionImpl
 import java.awt.image.BufferedImage
 
 /**
- * layoutlib 17.0.1+: `doCallbacks` has no frame-time argument, and frames are read via
- * `getRecyclableImage()` (added in 17.0.1; 17.0.3 drops
- * `RenderSessionImpl.getImage()` entirely).
+ * layoutlib [17.0.0, 17.0.1): 17.x `doCallbacks` (no frame time), but frames still come from
+ * `RenderSessionImpl.getImage()`; `getRecyclableImage()` only arrives in 17.0.1.
  */
-internal class LayoutlibShim17 : LayoutlibShim {
+internal class LayoutlibShim170 : LayoutlibShim {
   override fun dispatchAnimationCallbacks(choreographer: Choreographer, frameTimeNanos: Long) =
     Choreographer_Delegate.doCallbacks(choreographer, Choreographer.CALLBACK_ANIMATION)
 
   override fun resetWindowFrame(viewRootImpl: ViewRootImpl, width: Int, height: Int) =
     ViewRootImpl_Accessor.updateFrame(viewRootImpl, width, height)
 
-  // getImage() is gone from RenderSessionImpl in 17.0.3 (and not the supported path in 17.0.x), so
-  // always go through the recyclable buffer. It may be reused once closed, so copy it first.
-  override fun renderedImage(renderSession: RenderSessionImpl): BufferedImage? =
-    renderSession.recyclableImage?.use { recyclable -> recyclable.image.copy() }
+  override fun renderedImage(renderSession: RenderSessionImpl): BufferedImage? = renderSession.image
 }
 
-private fun BufferedImage.copy(): BufferedImage {
-  val copyType = if (type == BufferedImage.TYPE_CUSTOM) BufferedImage.TYPE_INT_ARGB else type
-  return BufferedImage(width, height, copyType).also { copy ->
-    val g = copy.createGraphics()
-    try {
-      g.drawImage(this, 0, 0, null)
-    } finally {
-      g.dispose()
-    }
-  }
-}
-
-public class LayoutlibShim17Provider : LayoutlibShimProvider {
-  override val name: String = "layoutlib-shim-17"
-  override val since: String = "17.0.1"
-  override val until: String? = null
+public class LayoutlibShim170Provider : LayoutlibShimProvider {
+  override val name: String = "layoutlib-shim-17.0"
+  override val since: String = "17.0.0"
+  override val until: String = "17.0.1"
 
   override fun isCompatible(): Boolean =
     hasMethod(
@@ -64,7 +48,7 @@ public class LayoutlibShim17Provider : LayoutlibShimProvider {
       Choreographer::class.java,
       Int::class.javaPrimitiveType!!
     ) &&
-      hasMethod("com.android.layoutlib.bridge.impl.RenderSessionImpl", "getRecyclableImage")
+      hasMethod("com.android.layoutlib.bridge.impl.RenderSessionImpl", "getImage")
 
-  override fun create(): LayoutlibShim = LayoutlibShim17()
+  override fun create(): LayoutlibShim = LayoutlibShim170()
 }

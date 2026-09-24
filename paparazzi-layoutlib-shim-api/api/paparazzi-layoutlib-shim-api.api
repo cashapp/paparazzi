@@ -2,7 +2,7 @@ public abstract interface class app/cash/paparazzi/layoutlib/shim/LayoutlibShim 
 	public fun cleanupThread ()V
 	public abstract fun dispatchAnimationCallbacks (Landroid/view/Choreographer;J)V
 	public fun prepareThread ()V
-	public abstract fun renderedImage (Lcom/android/ide/common/rendering/api/RenderSession;)Ljava/awt/image/BufferedImage;
+	public abstract fun renderedImage (Lcom/android/layoutlib/bridge/impl/RenderSessionImpl;)Ljava/awt/image/BufferedImage;
 	public fun resetWindowFrame (Landroid/view/ViewRootImpl;II)V
 }
 

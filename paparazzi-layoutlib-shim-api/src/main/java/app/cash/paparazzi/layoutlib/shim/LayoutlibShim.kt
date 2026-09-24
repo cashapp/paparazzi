@@ -17,7 +17,7 @@ package app.cash.paparazzi.layoutlib.shim
 
 import android.view.Choreographer
 import android.view.ViewRootImpl
-import com.android.ide.common.rendering.api.RenderSession
+import com.android.layoutlib.bridge.impl.RenderSessionImpl
 import java.awt.image.BufferedImage
 
 /**
@@ -42,8 +42,11 @@ public interface LayoutlibShim {
    */
   public fun resetWindowFrame(viewRootImpl: ViewRootImpl, width: Int, height: Int) {}
 
-  /** The last rendered frame, owned by the caller (safe to keep after the next render). */
-  public fun renderedImage(session: RenderSession): BufferedImage?
+  /**
+   * The last frame rendered by [renderSession], owned by the caller (safe to keep after the next
+   * render). `RenderSessionImpl.getImage()` up to 16.x; `getRecyclableImage()` from 17.0.
+   */
+  public fun renderedImage(renderSession: RenderSessionImpl): BufferedImage?
 }
 
 /**

@@ -1,0 +1,9 @@
+apply plugin: 'org.jetbrains.kotlin.jvm'
+apply plugin: 'com.vanniktech.maven.publish'
+
+dependencies {
+  implementation projects.paparazziLayoutlibShimApi
+  // Compiled against a layoutlib inside this shim's range so version-specific members link directly.
+  compileOnly libs.tools.layoutlib.shimV170
+  compileOnly libs.tools.layoutlib.api
+}
