@@ -1334,9 +1334,17 @@ class PaparazziPluginTest {
       }
 
     val firstAarResourceDirs = aarResourceDirs()
-    assertThat(firstAarResourceDirs).contains("external1/res")
-    assertThat(firstAarResourceDirs).doesNotContain("external2/res")
-    assertThat(firstAarResourceDirs.size).isGreaterThan(1)
+    assertThat(firstAarResourceDirs).containsExactly(
+      "external1/res",
+      "core-1.19.1/res",
+      "annotation-experimental-1.4.1/res",
+      "core-viewtree-1.0.0/res",
+      "lifecycle-runtime/res",
+      "profileinstaller-1.4.0/res",
+      "startup-runtime-1.1.1/res",
+      "tracing-1.2.0/res",
+      "core-runtime-2.2.0/res"
+    )
 
     buildDir.deleteRecursively()
 
