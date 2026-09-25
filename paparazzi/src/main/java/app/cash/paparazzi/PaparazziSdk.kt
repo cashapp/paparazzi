@@ -180,6 +180,9 @@ public class PaparazziSdk @JvmOverloads constructor(
     }
 
     bridgeRenderSession = createBridgeSession(renderSession, renderSession.inflate())
+    // inflate() runs a real ViewRootImpl traversal, which instantiates the AnimationHandler
+    // before any test code runs. Keep the "no handler outside a snapshot" invariant.
+    AnimationHandler.sAnimatorHandler.set(null)
   }
 
   public fun teardown() {
@@ -257,6 +260,9 @@ public class PaparazziSdk @JvmOverloads constructor(
     renderSession.init(sessionParams.timeout)
     Bitmap.setDefaultDensity(DisplayMetrics.DENSITY_DEVICE_STABLE)
     bridgeRenderSession = createBridgeSession(renderSession, renderSession.inflate())
+    // inflate() runs a real ViewRootImpl traversal, which instantiates the AnimationHandler
+    // before any test code runs. Keep the "no handler outside a snapshot" invariant.
+    AnimationHandler.sAnimatorHandler.set(null)
   }
 
   private fun takeSnapshots(view: View, startNanos: Long, fps: Int, frameCount: Int) {
