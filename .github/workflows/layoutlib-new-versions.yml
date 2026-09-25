@@ -1,0 +1,210 @@
+name: layoutlib-new-versions
+
+# Daily: find layoutlib releases (>= 16.0.1) not yet in gradle/layoutlib-compat.properties, verify and
+# render each, then open a PR recording the ones that pass and an issue for each that fails.
+#
+# PRs opened with the default GITHUB_TOKEN don't trigger other workflows. Set the optional
+# LAYOUTLIB_BOT_TOKEN secret (a fine-grained PAT or GitHub App token with contents, pull-requests and
+# issues write) so the resulting PR runs `build` and `layoutlib-compat`.
+#
+# See LAYOUTLIB.md.
+
+on:
+  schedule:
+    - cron: '0 7 * * *'
+  workflow_dispatch:
+    inputs:
+      floor:
+        description: 'Oldest layoutlib version to consider'
+        required: false
+        default: '16.0.1'
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: layoutlib-new-versions
+  cancel-in-progress: false
+
+env:
+  GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false -Dkotlin.incremental=false"
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    outputs:
+      versions: ${{ steps.list.outputs.versions }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Configure JDK
+        uses: actions/setup-java@v6
+        with:
+          distribution: 'zulu'
+          java-version: 21
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6
+        with:
+          cache-disabled: true
+
+      - name: List unverified releases
+        id: list
+        env:
+          FLOOR: ${{ github.event.inputs.floor || '16.0.1' }}
+        run: |
+          ./gradlew listUnverifiedLayoutlibVersions --floor="$FLOOR"
+          echo "versions=$(cat build/layoutlib-verifier/unverified.json)" >> "$GITHUB_OUTPUT"
+
+  verify:
+    needs: discover
+    if: needs.discover.outputs.versions != '[]'
+    name: verify layoutlib ${{ matrix.version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ${{ fromJson(needs.discover.outputs.versions) }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Configure JDK
+        uses: actions/setup-java@v6
+        with:
+          distribution: 'zulu'
+          java-version: 21
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6
+        with:
+          cache-disabled: true
+
+      - name: Static verification and record
+        env:
+          VERSION: ${{ matrix.version }}
+        run: |
+          set -o pipefail
+          ./gradlew verifyLayoutlibVersion --layoutlib-version="$VERSION" --write 2>&1 | tee verify.log
+
+      - name: Render
+        env:
+          VERSION: ${{ matrix.version }}
+        run: |
+          set -o pipefail
+          ./gradlew :paparazzi-gradle-plugin:test \
+            --tests app.cash.paparazzi.gradle.LayoutlibCompatibilityTest \
+            -Ppaparazzi.layoutlib.versionsUnderTest="$VERSION" 2>&1 | tee render.log
+
+      - name: Export verified entry
+        env:
+          VERSION: ${{ matrix.version }}
+        run: |
+          mkdir -p entry
+          grep -E "^${VERSION//./\\.}\.(icu|sdk|minLayoutlibApi)=" gradle/layoutlib-compat.properties > entry/entry.properties
+          cat entry/entry.properties
+
+      - name: Upload verified entry
+        uses: actions/upload-artifact@v7
+        with:
+          name: verified-${{ matrix.version }}
+          path: entry/entry.properties
+
+      - name: Report failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.LAYOUTLIB_BOT_TOKEN || secrets.GITHUB_TOKEN }}
+          VERSION: ${{ matrix.version }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          title="layoutlib $VERSION fails Paparazzi compatibility verification"
+          {
+            echo "The scheduled \`layoutlib-new-versions\` run could not verify layoutlib \`$VERSION\`."
+            echo
+            echo "Run: $RUN_URL"
+            echo
+            echo "Reproduce locally:"
+            echo '```'
+            echo "./gradlew verifyLayoutlibVersion --layoutlib-version=$VERSION --write"
+            echo "./gradlew :paparazzi-gradle-plugin:test --tests app.cash.paparazzi.gradle.LayoutlibCompatibilityTest -Ppaparazzi.layoutlib.versionsUnderTest=$VERSION"
+            echo '```'
+            for log in verify.log render.log; do
+              if [ -f "$log" ]; then
+                echo
+                echo "<details><summary>$log (tail)</summary>"
+                echo
+                echo '```'
+                tail -n 80 "$log"
+                echo '```'
+                echo "</details>"
+              fi
+            done
+          } > body.md
+          existing=$(gh issue list --state open --search "\"$title\" in:title" --json number --jq '.[0].number')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body-file body.md
+          else
+            gh issue create --title "$title" --body-file body.md --label layoutlib || \
+              gh issue create --title "$title" --body-file body.md
+          fi
+
+  open-pr:
+    needs: verify
+    # Run when at least one version verified, even if others failed.
+    if: always() && needs.verify.result != 'skipped' && needs.verify.result != 'cancelled'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Download verified entries
+        uses: actions/download-artifact@v7
+        with:
+          pattern: verified-*
+          path: entries
+
+      - name: Configure JDK
+        uses: actions/setup-java@v6
+        with:
+          distribution: 'zulu'
+          java-version: 21
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6
+        with:
+          cache-disabled: true
+
+      - name: Merge entries
+        id: merge
+        run: |
+          if [ ! -d entries ] || [ -z "$(ls -A entries)" ]; then
+            echo "versions=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          ./gradlew mergeLayoutlibEntries --entries-dir=entries
+          echo "versions=$(find entries -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sed 's/^verified-//' | sort -V | paste -sd ',' - | sed 's/,/, /g')" >> "$GITHUB_OUTPUT"
+          git diff
+
+      - name: Open pull request
+        if: steps.merge.outputs.versions != ''
+        uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676 # v7
+        with:
+          token: ${{ secrets.LAYOUTLIB_BOT_TOKEN || secrets.GITHUB_TOKEN }}
+          branch: layoutlib-compat/new-versions
+          delete-branch: true
+          commit-message: "chore: record verified layoutlib ${{ steps.merge.outputs.versions }}"
+          title: "Record verified layoutlib ${{ steps.merge.outputs.versions }}"
+          labels: layoutlib
+          body: |
+            The scheduled `layoutlib-new-versions` workflow verified and rendered Paparazzi against
+            layoutlib ${{ steps.merge.outputs.versions }} and recorded them in
+            `gradle/layoutlib-compat.properties`, so `layoutlib-compat` covers them from now on.
+
+            This does not change Paparazzi's default layoutlib (`libs.versions.layoutlib`); Renovate
+            proposes that bump separately (see LAYOUTLIB.md).
+
+            Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}

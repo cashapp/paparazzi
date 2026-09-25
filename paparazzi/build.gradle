@@ -76,6 +76,23 @@ dependencies {
   testImplementation libs.truth
 }
 
+// Ships gradle/layoutlib-compat.properties (plus the default layoutlib version from
+// libs.versions.toml) so LayoutlibCompat can resolve per-version runtime details.
+def layoutlibCompatFile = file("../gradle/layoutlib-compat.properties")
+def layoutlibDefaultVersion = libs.versions.layoutlib.get()
+def generateLayoutlibCompatResource = tasks.register("generateLayoutlibCompatResource") {
+  def outputDir = layout.buildDirectory.dir("generated/layoutlibCompat")
+  inputs.file(layoutlibCompatFile).withPropertyName("layoutlibCompat").withPathSensitivity(PathSensitivity.NONE)
+  inputs.property("layoutlibDefaultVersion", layoutlibDefaultVersion)
+  outputs.dir(outputDir)
+  doLast {
+    def out = outputDir.get().file("app/cash/paparazzi/internal/layoutlib-compat.properties").asFile
+    out.parentFile.mkdirs()
+    out.text = layoutlibCompatFile.text + "\ndefault=${layoutlibDefaultVersion}\n"
+  }
+}
+sourceSets.main.resources.srcDir(generateLayoutlibCompatResource)
+
 dokka {
   dokkaPublications.html {
     outputDirectory.set(rootProject.file("docs/2.x"))
@@ -161,6 +178,7 @@ tasks.withType(Test).configureEach {
     "paparazzi.layoutlib.runtime.root",
     configurations.layoutlibRuntime.singleFile.absolutePath
   )
+  systemProperty("paparazzi.layoutlib.version", libs.versions.layoutlib.get())
   systemProperty(
     "paparazzi.layoutlib.resources.root",
     configurations.layoutlibResources.singleFile.absolutePath

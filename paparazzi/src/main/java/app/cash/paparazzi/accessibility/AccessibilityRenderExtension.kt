@@ -18,10 +18,10 @@ package app.cash.paparazzi.accessibility
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
-import android.view.WindowManagerGlobal
 import android.widget.LinearLayout
 import app.cash.paparazzi.RenderExtension
 import app.cash.paparazzi.internal.ComposeViewAdapter
+import app.cash.paparazzi.internal.LayoutlibCompat
 import com.android.internal.view.OneShotPreDrawListener
 
 /**
@@ -52,7 +52,7 @@ public class AccessibilityRenderExtension : RenderExtension {
         true
       }
       viewTreeObserver.addOnGlobalLayoutListener {
-        val accessibleWindowRoots = WindowManagerGlobal.getInstance().windowViews.reversed().associate {
+        val accessibleWindowRoots = LayoutlibCompat.windowViews().reversed().associate {
           val id = it.hashCode()
           val coreView = it.findComposeViewAdapterChild()
           overlayDrawables.getOrPut(id) {

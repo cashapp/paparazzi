@@ -20,19 +20,16 @@ import android.content.Context
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.os.Handler
-import android.os.Handler_Delegate
 import android.os.Looper_Accessor
 import android.util.AttributeSet
 import android.util.DisplayMetrics
 import android.view.BridgeInflater
 import android.view.Choreographer
-import android.view.Choreographer_Delegate
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.NO_ID
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
-import android.view.ViewRootImpl_Accessor
 import androidx.activity.setViewTreeOnBackPressedDispatcherOwner
 import androidx.annotation.LayoutRes
 import androidx.compose.runtime.Composable
@@ -48,6 +45,7 @@ import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import app.cash.paparazzi.accessibility.AccessibilityRenderExtension
 import app.cash.paparazzi.agent.InterceptorRegistrar
 import app.cash.paparazzi.internal.ImageUtils
+import app.cash.paparazzi.internal.LayoutlibCompat
 import app.cash.paparazzi.internal.PaparazziCallback
 import app.cash.paparazzi.internal.PaparazziLifecycleOwner
 import app.cash.paparazzi.internal.PaparazziLogger
@@ -63,8 +61,6 @@ import com.android.ide.common.rendering.api.Result.Status.ERROR_UNKNOWN
 import com.android.ide.common.rendering.api.SessionParams
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode
 import com.android.internal.lang.System_Delegate
-import com.android.layoutlib.bridge.Bridge
-import com.android.layoutlib.bridge.BridgeRenderSession
 import com.android.layoutlib.bridge.impl.RenderAction
 import com.android.layoutlib.bridge.impl.RenderSessionImpl
 import com.android.resources.ScreenOrientation
@@ -172,6 +168,8 @@ public class PaparazziSdk @JvmOverloads constructor(
 
     val sessionParams = sessionParamsBuilder.build()
     renderSession = createRenderSession(sessionParams)
+    // Layoutlib < 16.2.3 needs the main Looper prepared before init; later versions do it in RenderAction.
+    LayoutlibCompat.prepareThread()
     renderSession.init(sessionParams.timeout)
     Bitmap.setDefaultDensity(DisplayMetrics.DENSITY_DEVICE_STABLE)
 
@@ -180,7 +178,7 @@ public class PaparazziSdk @JvmOverloads constructor(
       initializeAppCompatIfPresent()
     }
 
-    bridgeRenderSession = createBridgeSession(renderSession, renderSession.inflate())
+    bridgeRenderSession = LayoutlibCompat.createBridgeRenderSession(renderSession, renderSession.inflate())
   }
 
   public fun teardown() {
@@ -255,9 +253,11 @@ public class PaparazziSdk @JvmOverloads constructor(
 
     val sessionParams = sessionParamsBuilder.build()
     renderSession = createRenderSession(sessionParams)
+    // Layoutlib < 16.2.3 needs the main Looper prepared before init; later versions do it in RenderAction.
+    LayoutlibCompat.prepareThread()
     renderSession.init(sessionParams.timeout)
     Bitmap.setDefaultDensity(DisplayMetrics.DENSITY_DEVICE_STABLE)
-    bridgeRenderSession = createBridgeSession(renderSession, renderSession.inflate())
+    bridgeRenderSession = LayoutlibCompat.createBridgeRenderSession(renderSession, renderSession.inflate())
   }
 
   private fun takeSnapshots(view: View, startNanos: Long, fps: Int, frameCount: Int) {
@@ -328,14 +328,8 @@ public class PaparazziSdk @JvmOverloads constructor(
 
       viewGroup.addView(modifiedView)
 
-      when (sessionParamsBuilder.build().renderingMode) {
-        // See [sizeShrinkWindowFrameToDevice]. In SHRINK mode layoutlib 16.2.3 leaves the window frame
-        // collapsed to 0x0 after inflating the (empty) content, which corrupts Compose state derived
-        // from the first measured size. Restore a sane window frame before the first frame is rendered.
-        RenderingMode.SHRINK -> sizeShrinkWindowFrameToDevice(viewGroup)
-
-        else -> Unit
-      }
+      // Per-layoutlib-version render configuration fixes, applied before the first frame renders.
+      LayoutlibCompat.beforeRender(viewGroup, sessionParamsBuilder)
 
       for (frame in 0 until frameCount) {
         val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
@@ -365,7 +359,7 @@ public class PaparazziSdk @JvmOverloads constructor(
           }
         }
 
-        val image = bridgeRenderSession.image
+        val image = LayoutlibCompat.renderedImage(bridgeRenderSession)
         if (validateAccessibility) {
           require(renderExtensions.isEmpty()) {
             "Running accessibility validation and render extensions simultaneously is not supported."
@@ -400,33 +394,6 @@ public class PaparazziSdk @JvmOverloads constructor(
   }
 
   /**
-   * layoutlib 16.2.3's `RenderSessionImpl.inflate()` eagerly measures the content and sizes the
-   * `ViewRootImpl` window frame (`mWinFrame`) to the measured content size. Paparazzi attaches the
-   * test content *after* `inflate()`, so in [RenderingMode.SHRINK] — where the window shrinks to the
-   * content in both dimensions — the window frame collapses to `0x0` (the empty inflate-time size)
-   * and stays that way until the first `render()` re-measures it. (Other rendering modes keep the
-   * device size in at least one dimension, so they never fully collapse.)
-   *
-   * Compose reads that stale `0x0` window frame during the first frame-clock pass, so any state
-   * derived from the measured size (e.g. `AnchoredDraggableState` anchors computed in
-   * `onSizeChanged`) is first resolved at `0x0` and then settles on the wrong value when the real
-   * measure arrives. Resetting the frame to the device size here lets the first frame-clock measure
-   * observe a sane window, matching pre-16.2.3 behavior; the subsequent `render()` re-shrinks the
-   * frame to the true content size for the captured image.
-   *
-   * We set the frame directly rather than calling [RenderSessionImpl.measure] because that would run
-   * an extra traversal/scroll pass whose process-global side effects (shared `Looper`/animation
-   * state) leak into later snapshots on the same thread. This relies on
-   * `ViewRootImpl_Accessor.updateFrame`, which is provided by the pinned layoutlib runtime; no-ops
-   * if the content view is not yet attached to a `ViewRootImpl`.
-   */
-  private fun sizeShrinkWindowFrameToDevice(contentView: View) {
-    val viewRootImpl = contentView.viewRootImpl ?: return
-    val displayMetrics = contentView.context.resources.displayMetrics
-    ViewRootImpl_Accessor.updateFrame(viewRootImpl, displayMetrics.widthPixels, displayMetrics.heightPixels)
-  }
-
-  /**
    * layoutlib 16.2.3's `RenderSessionImpl.measureLayout()` grows an expanding axis by a *delta*
    * rather than recomputing it absolutely (In Compose):
    *
@@ -457,45 +424,7 @@ public class PaparazziSdk @JvmOverloads constructor(
   }
 
   private fun withTime(timeNanos: Long, block: () -> Unit) {
-    val frameNanos = timeNanos
-
-    // Execute the block at the requested time.
-    System_Delegate.setNanosTime(0L)
-    Choreographer_Delegate.sChoreographerTime = frameNanos
-
-    // Drive Layoutlib's per-frame animation clock the way Google's deviceless harness
-    // (RenderTestBase / standalone-render) does: set the render session's elapsed-frame time before
-    // each render. Layoutlib 16.2.3's RenderSessionImpl#render divides this by 1_000_000 into
-    // AnimatedVectorDrawable's native animator (sFrameTime), so native animated-vector timing
-    // advances in lockstep with the Choreographer clock for nonzero snapshot offsets.
-    renderSession.setElapsedFrameTimeNanos(frameNanos)
-
-    try {
-      executeHandlerCallbacks()
-      val currentTimeNanos = uptimeNanos()
-
-      // layoutlib 16.2.3's Choreographer#doFrame dispatches the animation callbacks itself, but a
-      // re-posted callback (dueTime = uptimeMillis()) becomes due again within the same frame and
-      // fires a second time. To keep exactly one dispatch per frame (matching pre-16.2.3 behavior),
-      // dispatch the animation callbacks once here via the public Choreographer_Delegate.doCallbacks
-      // (which guards mCallbacksRunning and runs the aggregate ChoreographerCallbacks queue) then tick doFrame
-      // with sChoreographerTime zeroed so its internal dispatch finds the re-posted callbacks
-      // not-yet-due and skips them (while still signaling the native HWUI layer so ripples and view
-      // animations work).
-      Choreographer_Delegate.doCallbacks(
-        Choreographer.getInstance(),
-        Choreographer.CALLBACK_ANIMATION,
-        currentTimeNanos
-      )
-
-      Choreographer_Delegate.sChoreographerTime = 0
-      Choreographer_Delegate.doFrame(currentTimeNanos)
-
-      return block()
-    } catch (e: Throwable) {
-      Bridge.getLog().error("broken", "Failed executing Choreographer#doFrame", e, null, null)
-      throw e
-    }
+    LayoutlibCompat.withTime(renderSession, timeNanos, block)
   }
 
   private fun createRenderSession(sessionParams: SessionParams): RenderSessionImpl {
@@ -503,19 +432,6 @@ public class PaparazziSdk @JvmOverloads constructor(
     // Initialize to zero; per-frame elapsed time is set in [withTime] before each render.
     renderSession.setElapsedFrameTimeNanos(0L)
     return renderSession
-  }
-
-  private fun createBridgeSession(renderSession: RenderSessionImpl, result: Result): BridgeRenderSession {
-    try {
-      val bridgeSessionClass = Class.forName("com.android.layoutlib.bridge.BridgeRenderSession")
-      val constructor =
-        bridgeSessionClass.getDeclaredConstructor(RenderSessionImpl::class.java, Result::class.java)
-      constructor.isAccessible = true
-      val bridgeSession = constructor.newInstance(renderSession, result) as BridgeRenderSession
-      return bridgeSession
-    } catch (e: Exception) {
-      throw RuntimeException(e)
-    }
   }
 
   private fun frameImage(image: BufferedImage): BufferedImage {
@@ -650,21 +566,7 @@ public class PaparazziSdk @JvmOverloads constructor(
   private fun forceReleaseComposeReferenceLeaks() {
     // AndroidUiDispatcher is backed by a Handler, by executing one last time
     // we give the dispatcher the ability to clean-up / release its callbacks.
-    executeHandlerCallbacks()
-  }
-
-  private fun executeHandlerCallbacks() {
-    // Avoid ConcurrentModificationException in
-    // RenderAction.currentContext.sessionInteractiveData.handlerMessageQueue.runnablesMap which is a WeakHashMap
-    // https://android.googlesource.com/platform/tools/adt/idea/+/c331c9b2f4334748c55c29adec3ad1cd67e45df2/designer/src/com/android/tools/idea/uibuilder/scene/LayoutlibSceneManager.java#1558
-    synchronized(this) {
-      // https://android.googlesource.com/platform/frameworks/layoutlib/+/ebdd83e4be7e8d89a38e3f316b2e15112f61ca30%5E%21/#F1
-      val uptimeNanos = uptimeNanos()
-
-      // https://android.googlesource.com/platform/frameworks/layoutlib/+/d58aa4703369e109b24419548f38b422d5a44738/bridge/src/com/android/layoutlib/bridge/BridgeRenderSession.java#171
-      // BridgeRenderSession.executeCallbacks aggressively tears down the main Looper and BridgeContext, so we call the static delegates ourselves.
-      Handler_Delegate.executeCallbacks(uptimeNanos)
-    }
+    LayoutlibCompat.executeHandlerCallbacks()
   }
 
   private operator fun RenderSessionImpl.invoke(block: RenderSessionImpl.() -> Result): Result {
@@ -675,10 +577,6 @@ public class PaparazziSdk @JvmOverloads constructor(
     }
     return result
   }
-
-  // This is necessary, because SystemClock_Delegate#uptimeNanos() is package-private.
-  // https://android.googlesource.com/platform/frameworks/layoutlib/+/refs/tags/studio-2023.2.1-rc1/bridge/src/android/os/SystemClock_Delegate.java#56
-  private fun uptimeNanos() = System_Delegate.nanoTime() - System_Delegate.bootTime()
 
   private fun DeviceConfig.updateIfAccessibilityTest(): DeviceConfig =
     if (renderExtensions.any { it is AccessibilityRenderExtension }) {

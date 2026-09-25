@@ -268,6 +268,31 @@ class PaparazziTest {
     assertThat(log).isEqualTo(listOf("predraw", "predraw", "draw", "draw", "predraw", "predraw"))
   }
 
+  @Test
+  fun gifExecutesHandlerCallbacksOncePerFrame() {
+    val log = mutableListOf<Long>()
+
+    val view = object : View(paparazzi.context) {
+      val tick = object : Runnable {
+        override fun run() {
+          log += time
+          // Re-posting while Handler callbacks are being drained mutates the queue mid-iteration.
+          // Also post siblings to grow the queue across frames.
+          post { }
+          postDelayed(this, 250L)
+        }
+      }
+
+      override fun onAttachedToWindow() {
+        post(tick)
+      }
+    }
+
+    paparazzi.gif(view, start = 0L, end = 1_000L, fps = 4)
+
+    assertThat(log).isEqualTo(listOf(0L, 250L, 500L, 750L, 1_000L))
+  }
+
   private val time: Long
     get() {
       return TimeUnit.NANOSECONDS.toMillis(System_Delegate.nanoTime())

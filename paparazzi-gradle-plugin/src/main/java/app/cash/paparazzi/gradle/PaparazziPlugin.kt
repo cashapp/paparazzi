@@ -116,8 +116,24 @@ public class PaparazziPlugin @Inject constructor(
       project.plugins.hasPlugin(KOTLIN_MULTIPLATFORM_PLUGIN)
     addTestDependency()
 
-    val layoutlibNativeRuntimeFileCollection = project.setupLayoutlibRuntimeDependency()
-    val layoutlibResourcesFileCollection = project.setupLayoutlibResourcesDependency()
+    val paparazziExtension = extensions.create("paparazzi", PaparazziExtension::class.java)
+    paparazziExtension.layoutlibVersion.convention(
+      providers.gradleProperty("app.cash.paparazzi.layoutlibVersion").orElse(NATIVE_LIB_VERSION)
+    )
+    val layoutlibVersion = paparazziExtension.layoutlibVersion
+    alignLayoutlibVersion(layoutlibVersion)
+    afterEvaluate {
+      val version = layoutlibVersion.get()
+      if (!LayoutlibVersions.isKnown(version)) {
+        logger.warn(
+          "Paparazzi has not been verified against layoutlib $version " +
+            "(known: ${LayoutlibVersions.knownVersions.joinToString()}). Rendering may fail or differ."
+        )
+      }
+    }
+
+    val layoutlibNativeRuntimeFileCollection = project.setupLayoutlibRuntimeDependency(layoutlibVersion)
+    val layoutlibResourcesFileCollection = project.setupLayoutlibResourcesDependency(layoutlibVersion)
 
     // Create anchor tasks for all variants.
     val verifyVariants = project.tasks.register("verifyPaparazzi") {
@@ -186,7 +202,7 @@ public class PaparazziPlugin @Inject constructor(
         task.packageName.set(variant.namespace)
         task.artifactFiles.from(sources.packageAwareArtifactFiles)
         task.nonTransitiveRClassEnabled.set(nonTransitiveRClassEnabled)
-        task.targetSdkVersion.set(targetSdk())
+        task.targetSdkVersion.set(targetSdk(layoutlibVersion))
         task.projectResourceDirs.set(sources.localResourceDirs.relativize(projectDirectory))
         task.moduleResourceDirs.set(sources.moduleResourceDirs.relativize(projectDirectory))
         task.aarExplodedDirs.set(sources.aarExplodedDirs.relativize(gradleHomeDir))
@@ -261,7 +277,7 @@ public class PaparazziPlugin @Inject constructor(
         test.inputs.property("paparazzi.test.record", isRecordRun)
         test.inputs.property("paparazzi.test.verify", isVerifyRun)
         test.inputs.property("paparazzi.gradleProperties", paparazziGradlePropertiesProvider)
-        test.inputs.property("paparazzi.layoutlib.version", NATIVE_LIB_VERSION)
+        test.inputs.property("paparazzi.layoutlib.version", layoutlibVersion)
 
         // Source dirs catch in-place content edits. PrepareResourcesTask tracks paths only and
         // its JSON output is byte-identical when contents change, so it can't invalidate the test.
@@ -315,6 +331,7 @@ public class PaparazziPlugin @Inject constructor(
             layoutlibNativeRuntimeFileCollection.singleFile.absolutePath
           test.systemProperties["paparazzi.layoutlib.resources.root"] =
             layoutlibResourcesFileCollection.singleFile.absolutePath
+          test.systemProperties["paparazzi.layoutlib.version"] = layoutlibVersion.get()
           test.systemProperties["paparazzi.test.record"] = isRecordRun.get()
           test.systemProperties["paparazzi.test.record.overwriteOnMaxPercentDifference"] =
             overwriteOnMaxPercentDifferenceProvider.orNull == "true"
@@ -389,7 +406,35 @@ public class PaparazziPlugin @Inject constructor(
       }
   }
 
-  private fun Project.setupLayoutlibRuntimeDependency(): FileCollection {
+  /**
+   * Paparazzi's POM pins `com.android.tools.layoutlib:layoutlib` to [NATIVE_LIB_VERSION]. When the
+   * user overrides the version, force the jar on every classpath to match the native runtime and
+   * framework resources so the Java bridge and native libs stay in sync.
+   */
+  private fun Project.alignLayoutlibVersion(layoutlibVersion: Provider<String>) {
+    configurations.configureEach { configuration ->
+      configuration.resolutionStrategy.eachDependency { details ->
+        val requested = details.requested
+        if (requested.group == LAYOUTLIB_GROUP && requested.name == "layoutlib") {
+          val version = layoutlibVersion.get()
+          if (requested.version != version) {
+            details.useVersion(version)
+            details.because("Paparazzi layoutlibVersion override")
+          }
+        }
+        if (requested.group == LAYOUTLIB_GROUP && requested.name == "layoutlib-api") {
+          val version = layoutlibVersion.get()
+          val apiVersion = LayoutlibVersions.upgradeTo(requested.version, LayoutlibVersions.minLayoutlibApiFor(version))
+          if (apiVersion != null) {
+            details.useVersion(apiVersion)
+            details.because("layoutlib $version requires layoutlib-api >= $apiVersion")
+          }
+        }
+      }
+    }
+  }
+
+  private fun Project.setupLayoutlibRuntimeDependency(layoutlibVersion: Provider<String>): FileCollection {
     val operatingSystem = OperatingSystem.current()
     val nativeLibraryArtifactId = when {
       operatingSystem.isMacOsX -> {
@@ -402,8 +447,10 @@ public class PaparazziPlugin @Inject constructor(
     }
 
     val nativeRuntimeConfiguration = configurations.create("layoutlibRuntime")
-    nativeRuntimeConfiguration.dependencies.add(
-      dependencies.create("com.android.tools.layoutlib:layoutlib-runtime:$NATIVE_LIB_VERSION:$nativeLibraryArtifactId")
+    nativeRuntimeConfiguration.dependencies.addLater(
+      layoutlibVersion.map { version ->
+        dependencies.create("$LAYOUTLIB_GROUP:layoutlib-runtime:$version:$nativeLibraryArtifactId")
+      }
     )
     dependencies.registerTransform(UnzipTransform::class.java) { transform ->
       transform.from.attribute(ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.JAR_TYPE)
@@ -415,10 +462,12 @@ public class PaparazziPlugin @Inject constructor(
       .files
   }
 
-  private fun Project.setupLayoutlibResourcesDependency(): FileCollection {
+  private fun Project.setupLayoutlibResourcesDependency(layoutlibVersion: Provider<String>): FileCollection {
     val layoutlibResourcesConfiguration = configurations.create("layoutlibResources")
-    layoutlibResourcesConfiguration.dependencies.add(
-      dependencies.create("com.android.tools.layoutlib:layoutlib-resources:$NATIVE_LIB_VERSION")
+    layoutlibResourcesConfiguration.dependencies.addLater(
+      layoutlibVersion.map { version ->
+        dependencies.create("$LAYOUTLIB_GROUP:layoutlib-resources:$version")
+      }
     )
     dependencies.registerTransform(UnzipTransform::class.java) { transform ->
       transform.from.attribute(ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.JAR_TYPE)
@@ -569,22 +618,31 @@ public class PaparazziPlugin @Inject constructor(
     providers.gradleProperty("app.cash.paparazzi.overwriteOnMaxPercentDifference")
 
   /**
-   * Resolves the `targetSdk` Paparazzi writes into the test manifest.
+   * Resolves the `targetSdk` Paparazzi writes into the test manifest (and `Build.VERSION.SDK_INT`).
    *
-   * Prefers `android.testOptions.targetSdk` if set, otherwise the project's `compileSdk`,
-   * otherwise [DEFAULT_COMPILE_SDK_VERSION]. Mirrors AGP 9's planned default behavior
-   * (`BooleanOption.DEFAULT_TARGET_SDK_TO_COMPILE_SDK_IF_UNSET` in AGP sources) of
-   * defaulting test rendering to `compileSdk` rather than the variant's resolved
-   * `targetSdk` — which on AGP 8.x falls through to `minSdk` when
-   * `defaultConfig.targetSdk` is unset, exposing the test render to a lower SDK that
-   * Compose/layoutlib don't cleanly support today.
+   * Prefers `android.testOptions.targetSdk` if set, otherwise the project's `compileSdk` capped at
+   * the API level the chosen layoutlib bundles, otherwise that bundled level. See
+   * [LayoutlibVersions.resolveTargetSdk]. Defaulting to `compileSdk` mirrors AGP 9's planned default
+   * (`BooleanOption.DEFAULT_TARGET_SDK_TO_COMPILE_SDK_IF_UNSET` in AGP sources) rather than the
+   * variant's resolved `targetSdk`, which on AGP 8.x falls through to `minSdk` when
+   * `defaultConfig.targetSdk` is unset — a lower SDK Compose/layoutlib don't cleanly support.
    */
-  private fun Project.targetSdk(): Provider<String> =
-    providerFactory.provider {
+  private fun Project.targetSdk(layoutlibVersion: Provider<String>): Provider<String> =
+    layoutlibVersion.map { version ->
       val commonExtension = extensions.findByType(CommonExtension::class.java)
-      val resolved = commonExtension?.testOptions?.targetSdk
-        ?: commonExtension?.compileSdk
-        ?: DEFAULT_COMPILE_SDK_VERSION
+      val explicit = commonExtension?.testOptions?.targetSdk
+      val compileSdk = commonExtension?.compileSdk
+      val bundled = LayoutlibVersions.bundledSdkFor(version)
+      val resolved = LayoutlibVersions.resolveTargetSdk(explicit, compileSdk, bundled)
+      when {
+        explicit != null && explicit > bundled -> logger.warn(
+          "Paparazzi: testOptions.targetSdk $explicit is newer than the API $bundled framework bundled by " +
+            "layoutlib $version; SDK-gated code may call APIs missing at render time."
+        )
+        compileSdk != null && compileSdk > resolved -> logger.info(
+          "Paparazzi: rendering with targetSdk $resolved (layoutlib $version bundles API $bundled; compileSdk is $compileSdk)"
+        )
+      }
       resolved.toString()
     }
 
@@ -600,7 +658,7 @@ public class PaparazziPlugin @Inject constructor(
   }
 }
 
-private const val DEFAULT_COMPILE_SDK_VERSION = 36
+private const val LAYOUTLIB_GROUP = "com.android.tools.layoutlib"
 private const val ANDROID_KOTLIN_MULTIPLATFORM_LIBRARY_PLUGIN = "com.android.kotlin.multiplatform.library"
 private const val KOTLIN_MULTIPLATFORM_PLUGIN = "org.jetbrains.kotlin.multiplatform"
 private val MIN_NATIVE_REPORT_GRADLE_VERSION = GradleVersion.version("9.4")
