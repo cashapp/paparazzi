@@ -15,17 +15,19 @@
  */
 package app.cash.paparazzi.accessibility
 
+import android.content.Context
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.WindowManager
-import android.view.WindowManagerImpl
-import android.widget.FrameLayout
+import android.view.WindowManagerGlobal
 import android.widget.LinearLayout
+import androidx.core.view.isVisible
 import app.cash.paparazzi.RenderExtension
 import app.cash.paparazzi.internal.ComposeViewAdapter
 import com.android.internal.view.OneShotPreDrawListener
+import com.android.layoutlib.bridge.android.BridgeContext
 
 /**
  * A [RenderExtension] that overlays accessibility property information on top of the rendered view.
@@ -37,9 +39,6 @@ public class AccessibilityRenderExtension : RenderExtension {
   private val accessibilityElementCollector = AccessibilityElementCollector()
 
   override fun renderView(contentView: View): View {
-    // WindowManager needed to access accessibility elements for views that draw to other windows.
-    val windowManager = contentView.context.getSystemService(WindowManager::class.java)
-
     return LinearLayout(contentView.context).apply {
       orientation = LinearLayout.HORIZONTAL
       weightSum = 2f
@@ -57,10 +56,16 @@ public class AccessibilityRenderExtension : RenderExtension {
 
         // The root of the view hierarchy is rendered at full width.
         // We need to restrict it when taking accessibility snapshots.
-        val windowManagerRootView = (windowManager as WindowManagerImpl).currentRootView
+        val views = contentView.context.getWindowViews()
+        val baseRoot = contentView.rootView
+        val windowManagerRootView = views.lastOrNull { it !== baseRoot && it.isVisible } as ViewGroup?
+
         if (windowManagerRootView != null) {
-          windowManagerRootView.layoutParams =
-            FrameLayout.LayoutParams(contentView.measuredWidth, MATCH_PARENT, Gravity.START)
+          val wmLp = windowManagerRootView.layoutParams as WindowManager.LayoutParams
+          wmLp.width = contentView.measuredWidth
+          wmLp.gravity = Gravity.START or (wmLp.gravity and Gravity.VERTICAL_GRAVITY_MASK)
+          val windowManager = contentView.context.getSystemService(WindowManager::class.java)
+          windowManager.updateViewLayout(windowManagerRootView, wmLp)
         }
 
         OneShotPreDrawListener.add(this@apply) {
@@ -73,6 +78,18 @@ public class AccessibilityRenderExtension : RenderExtension {
         }
       }
     }
+  }
+
+  /**
+   * The window root views belonging to this render session, sorted by window type, which is the
+   * order layoutlib composites them in.
+   */
+  private fun Context.getWindowViews(): List<View> {
+    val session = BridgeContext.getBaseContext(this)
+    return WindowManagerGlobal.getInstance()
+      .windowViews
+      .filter { BridgeContext.getBaseContext(it.context) == session }
+      .sortedBy { (it.layoutParams as? WindowManager.LayoutParams)?.type ?: Int.MIN_VALUE }
   }
 }
 
