@@ -293,6 +293,7 @@ public class PaparazziSdk @JvmOverloads constructor(
     lateinit var lifecycleOwner: PaparazziLifecycleOwner
 
     try {
+      AnimationHandler.getInstance().setProvider(SingleDispatchFrameCallbackProvider)
       withTime(0L) {
         // Initialize the choreographer at time=0.
       }
@@ -610,6 +611,31 @@ public class PaparazziSdk @JvmOverloads constructor(
     } else {
       this
     }
+
+  /**
+   * layoutlib drains a single type-blind Choreographer queue twice per `doFrame`
+   * (CALLBACK_ANIMATION then CALLBACK_TRAVERSAL) against one frozen time threshold, so a callback
+   * re-posted with zero delay is already due in the second drain and runs twice in one frame.
+   * [AnimationHandler]'s frame callback re-posts itself with zero delay, so it is dispatched twice.
+   * A 1ms delay makes the re-post due only on the following frame, restoring one dispatch per frame
+   * without touching the clock or deferring any other queued work.
+   */
+  private object SingleDispatchFrameCallbackProvider :
+    AnimationHandler.AnimationFrameCallbackProvider {
+    override fun postFrameCallback(callback: Choreographer.FrameCallback) {
+      Choreographer.getInstance().postFrameCallbackDelayed(callback, 1L)
+    }
+
+    override fun postCommitCallback(runnable: Runnable) {
+      Choreographer.getInstance().postCallback(Choreographer.CALLBACK_COMMIT, runnable, null)
+    }
+
+    override fun getFrameTime(): Long = Choreographer.getInstance().frameTime
+
+    override fun getFrameDelay(): Long = 1L
+
+    override fun setFrameDelay(delay: Long) = Unit
+  }
 
   internal companion object {
     internal lateinit var renderer: Renderer
