@@ -42,16 +42,48 @@ final class RenderSizingAdvice {
 
   /**
    * Inlined at the tail of
-   * {@code com.android.layoutlib.bridge.impl.RenderSessionImpl#measureLayout(SessionParams)}, the
-   * point at which the canvas size has been derived from the current content. Any traversal from
-   * here on is no longer premature.
+   * {@code com.android.layoutlib.bridge.impl.RenderSessionImpl#measureLayout(SessionParams)},
+   * which is where the canvas size is decided. See
+   * {@link WindowSizingSupport#sizeCanvasForWindows}.
    */
   static final class MeasureLayoutComplete {
     private MeasureLayoutComplete() {}
 
     @Advice.OnMethodExit
-    static void exit() {
+    static void exit(
+        @Advice.Argument(0) com.android.ide.common.rendering.api.SessionParams params,
+        @Advice.FieldValue("mViewRoot") android.view.ViewGroup viewRoot,
+        @Advice.FieldValue(value = "mMeasuredScreenWidth", readOnly = false) int width,
+        @Advice.FieldValue(value = "mMeasuredScreenHeight", readOnly = false) int height,
+        @Advice.FieldValue(value = "mNewRenderSize", readOnly = false) boolean newRenderSize) {
+      // measureLayout has just derived the canvas from the current content, so any traversal from
+      // here on is no longer premature.
       RenderSizingState.canvasSizedForContent = true;
+      long size = WindowSizingSupport.sizeCanvasForWindows(params, viewRoot, width, height);
+      int sizedWidth = (int) (size >> 32);
+      int sizedHeight = (int) size;
+      // measureLayout derives mNewRenderSize from the size it computed, before this runs.
+      newRenderSize = newRenderSize || sizedWidth != width || sizedHeight != height;
+      width = sizedWidth;
+      height = sizedHeight;
+    }
+  }
+
+  /**
+   * Inlined at the tail of
+   * {@code com.android.layoutlib.bridge.impl.BridgeWindowSession#relayout}. See
+   * {@link WindowSizingSupport#positionWindowInCanvas}.
+   */
+  static final class WindowRelayout {
+    private WindowRelayout() {}
+
+    @Advice.OnMethodExit
+    static void exit(
+        @Advice.Argument(1) android.view.WindowManager.LayoutParams attrs,
+        @Advice.Argument(2) int requestedWidth,
+        @Advice.Argument(3) int requestedHeight,
+        @Advice.Argument(8) android.view.WindowRelayoutResult result) {
+      WindowSizingSupport.positionWindowInCanvas(attrs, requestedWidth, requestedHeight, result);
     }
   }
 }

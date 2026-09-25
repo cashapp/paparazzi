@@ -17,7 +17,19 @@ internal object RenderSizingState {
   @JvmField
   var canvasSizedForContent: Boolean = true
 
+  /**
+   * The canvas size `RenderSessionImpl.measureLayout` last settled on, or 0 before the first one.
+   * Windows are positioned inside this rather than inside the device display.
+   */
+  @JvmField
+  var canvasWidth: Int = 0
+
+  @JvmField
+  var canvasHeight: Int = 0
+
   fun reset() {
     canvasSizedForContent = true
+    canvasWidth = 0
+    canvasHeight = 0
   }
 }

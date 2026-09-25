@@ -59,6 +59,14 @@ internal object LayoutlibPatch {
       methodName = "measureLayout",
       descriptor = "(Lcom/android/ide/common/rendering/api/SessionParams;)V",
       advice = RenderSizingAdvice.MeasureLayoutComplete::class.java
+    ),
+    Target(
+      binaryName = "com.android.layoutlib.bridge.impl.BridgeWindowSession",
+      methodName = "relayout",
+      descriptor = "(Landroid/view/IWindow;" +
+        "Landroid/view/WindowManager${'$'}LayoutParams;IIIIII" +
+        "Landroid/view/WindowRelayoutResult;Landroid/view/SurfaceControl;)I",
+      advice = RenderSizingAdvice.WindowRelayout::class.java
     )
   )
 
@@ -84,9 +92,10 @@ internal object LayoutlibPatch {
     throw IllegalStateException(
       buildString {
         append("Paparazzi could not patch layoutlib's canvas-sizing path. ")
-        append("This layoutlib is not the shape Paparazzi was built against, and ")
+        append("This layoutlib is not the shape Paparazzi was built against. ")
         append("RenderingMode.V_SCROLL/H_SCROLL/FULL_EXPAND would silently produce an unexpanded ")
-        append("canvas. Unpatched targets:")
+        append("canvas, and RenderingMode.SHRINK would size the canvas from the base window ")
+        append("alone - rendering a dialog-only layout at 0x0. Unpatched targets:")
         broken.forEach {
           append("\n  - ${it.binaryName}#${it.methodName}${it.descriptor}: ${it.status}")
         }
