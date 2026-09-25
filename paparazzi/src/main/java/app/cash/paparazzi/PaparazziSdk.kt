@@ -55,6 +55,8 @@ import app.cash.paparazzi.internal.PaparazziSavedStateRegistryOwner
 import app.cash.paparazzi.internal.Renderer
 import app.cash.paparazzi.internal.SessionParamsBuilder
 import app.cash.paparazzi.internal.interceptors.EditModeInterceptor
+import app.cash.paparazzi.internal.layoutlib.LayoutlibPatch
+import app.cash.paparazzi.internal.layoutlib.RenderSizingState
 import app.cash.paparazzi.internal.parsers.LayoutPullParser
 import com.android.ide.common.rendering.api.RenderSession
 import com.android.ide.common.rendering.api.Result
@@ -142,12 +144,14 @@ public class PaparazziSdk @JvmOverloads constructor(
     if (!isInitialized) {
       registerViewEditModeInterception()
 
-      ByteBuddyAgent.install()
+      LayoutlibPatch.install(ByteBuddyAgent.install())
       InterceptorRegistrar.registerMethodInterceptors()
     }
   }
 
   public fun prepare() {
+    RenderSizingState.reset()
+
     val layoutlibCallback =
       PaparazziCallback(logger, environment.packageName, environment.resourcePackageNames)
     layoutlibCallback.initResources()
@@ -180,6 +184,8 @@ public class PaparazziSdk @JvmOverloads constructor(
     }
 
     bridgeRenderSession = createBridgeSession(renderSession, renderSession.inflate())
+    // inflate() has now loaded every class the patch targets.
+    LayoutlibPatch.verifyApplied()
     // inflate() runs a real ViewRootImpl traversal, which instantiates the AnimationHandler
     // before any test code runs. Keep the "no handler outside a snapshot" invariant.
     AnimationHandler.sAnimatorHandler.set(null)
@@ -333,6 +339,9 @@ public class PaparazziSdk @JvmOverloads constructor(
       }
 
       viewGroup.addView(modifiedView)
+      // measureLayout has not seen this content yet, so the canvas size is stale until the next
+      // measureLayout returns.
+      RenderSizingState.canvasSizedForContent = false
       for (frame in 0 until frameCount) {
         val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
 

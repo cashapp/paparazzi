@@ -241,7 +241,10 @@ class PaparazziTest {
 
     paparazzi.gif(view, fps = 4)
 
-    assertThat(log).isEqualTo(listOf("predraw", "draw", "draw", "predraw", "predraw", "predraw"))
+    // One pre-draw per frame, and a pre-draw before the first draw. Both draws belong to frame 0:
+    // RenderSessionImpl.renderAndBuildResult draws once into a NopCanvas to prime animations and once
+    // for real, and later frames reuse the display list because this view never invalidates.
+    assertThat(log).isEqualTo(listOf("predraw", "draw", "draw", "predraw", "predraw"))
   }
 
   private val time: Long
