@@ -1327,24 +1327,22 @@ class PaparazziPluginTest {
 
     val resourcesFile = File(fixtureRoot, "build/intermediates/paparazzi/debug/resources.json")
 
-    fun aarResourceDirs(): List<String> =
-      resourcesFile.loadConfig().aarExplodedDirs.map { path ->
-        assertThat(path).matches("$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/[^/]+/res\$")
-        path.substringAfterLast("/transformed/")
-      }
-
-    val firstAarResourceDirs = aarResourceDirs()
-    assertThat(firstAarResourceDirs).containsExactly(
-      "external1/res",
-      "core-1.19.1/res",
-      "annotation-experimental-1.4.1/res",
-      "core-viewtree-1.0.0/res",
-      "lifecycle-runtime/res",
-      "profileinstaller-1.4.0/res",
-      "startup-runtime-1.1.1/res",
-      "tracing-1.2.0/res",
-      "core-runtime-2.2.0/res"
-    )
+    var config = resourcesFile.loadConfig()
+    assertThat(config.aarExplodedDirs)
+      .comparingElementsUsing(MATCHES_PATTERN)
+      .containsExactly(
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/external1/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/core-1.19.1/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/annotation-experimental-1.4.1/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/core-viewtree-1.0.0/res\$",
+        // lifecycle-runtime is multiplatform as of 2.10.0, and its Android artifact
+        // publishes as lifecycle-runtime.aar, so the transformed directory has no version.
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/lifecycle-runtime/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/profileinstaller-1.4.0/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/startup-runtime-1.1.1/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/tracing-1.2.0/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/core-runtime-2.2.0/res\$"
+      )
 
     buildDir.deleteRecursively()
 
@@ -1360,8 +1358,20 @@ class PaparazziPluginTest {
       assertThat(this!!.outcome).isEqualTo(SUCCESS)
     }
 
-    assertThat(aarResourceDirs())
-      .containsExactlyElementsIn(firstAarResourceDirs - "external1/res" + "external2/res")
+    config = resourcesFile.loadConfig()
+    assertThat(config.aarExplodedDirs)
+      .comparingElementsUsing(MATCHES_PATTERN)
+      .containsExactly(
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/external2/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/core-1.19.1/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/annotation-experimental-1.4.1/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/core-viewtree-1.0.0/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/lifecycle-runtime/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/profileinstaller-1.4.0/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/startup-runtime-1.1.1/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/tracing-1.2.0/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/core-runtime-2.2.0/res\$"
+      )
   }
 
   @Test
