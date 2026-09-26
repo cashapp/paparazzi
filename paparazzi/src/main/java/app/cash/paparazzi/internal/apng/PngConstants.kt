@@ -25,11 +25,13 @@ internal object PngConstants {
   const val PNG_COLOR_TYPE_RGB: Byte = 2
   const val PNG_COLOR_TYPE_RGBA: Byte = 6
   const val PNG_BITS_PER_PIXEL: Byte = 8
+  const val PNG_SRGB_RENDERING_INTENT_PERCEPTUAL: Byte = 0
 
   enum class Header(val bytes: ByteArray) {
     IHDR("IHDR".toByteArray()),
     ACTL("acTL".toByteArray()),
     FCTL("fcTL".toByteArray()),
+    SRGB("sRGB".toByteArray()),
     IDAT("IDAT".toByteArray()),
     FDAT("fdAT".toByteArray()),
     IEND("IEND".toByteArray())
