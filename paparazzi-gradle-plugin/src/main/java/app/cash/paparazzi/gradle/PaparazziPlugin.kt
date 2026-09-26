@@ -132,7 +132,7 @@ public class PaparazziPlugin @Inject constructor(
       it.group = VERIFICATION_GROUP
       it.description = "Clean and record golden images for all variants"
     }
-    val deleteSnapshots = project.tasks.register("deletePaparazziSnapshots") {
+    val deleteVariants = project.tasks.register("deletePaparazziSnapshots") {
       it.group = VERIFICATION_GROUP
       it.description = "Delete all golden images"
     }
@@ -142,7 +142,7 @@ public class PaparazziPlugin @Inject constructor(
       val testVariant = (variant as? HasUnitTest)?.unitTest ?: return@onVariants
       val snapshotOutputDir = snapshotDir(testVariant)
 
-      val deleteVariantSnapshot =
+      val deleteVariant =
         project.tasks.register("delete${variantSlug}PaparazziSnapshots", Delete::class.java) {
           it.group = VERIFICATION_GROUP
           it.description = "Delete all golden images for variant '$variantSlug'"
@@ -152,7 +152,7 @@ public class PaparazziPlugin @Inject constructor(
           }
           it.delete(files)
         }
-      deleteSnapshots.configure { it.dependsOn(deleteVariantSnapshot) }
+      deleteVariants.configure { it.dependsOn(deleteVariant) }
 
       val projectDirectory = project.layout.projectDirectory
       val buildDirectory = project.layout.buildDirectory
@@ -201,32 +201,34 @@ public class PaparazziPlugin @Inject constructor(
       val testVariantSlug = testVariant.name.capitalize()
 
       val testTasks = project.tasks.named { it == "test$testVariantSlug" }
-      testTasks.configureEach { it.dependsOn(writeResourcesTask) }
+      testTasks.configureEach {
+        it.dependsOn(writeResourcesTask)
+        it.mustRunAfter(deleteVariant)
+      }
 
-      val recordTaskProvider = project.tasks.register("recordPaparazzi$variantSlug", PaparazziTask::class.java) {
+      val recordVariant = project.tasks.register("recordPaparazzi$variantSlug", PaparazziTask::class.java) {
         it.group = VERIFICATION_GROUP
         it.description = "Record golden images for variant '${variant.name}'"
-        it.mustRunAfter(deleteSnapshots)
       }
-      recordVariants.configure { it.dependsOn(recordTaskProvider) }
-      val cleanRecordTaskProvider = project.tasks.register("cleanRecordPaparazzi$variantSlug") {
+      recordVariants.configure { it.dependsOn(recordVariant) }
+      val cleanRecordVariant = project.tasks.register("cleanRecordPaparazzi$variantSlug") {
         it.group = VERIFICATION_GROUP
         it.description = "Clean and record golden images for variant '${variant.name}'"
-        it.dependsOn(deleteSnapshots, recordTaskProvider)
+        it.dependsOn(deleteVariant, recordVariant)
       }
-      cleanRecordVariants.configure { it.dependsOn(cleanRecordTaskProvider) }
-      val verifyTaskProvider = project.tasks.register("verifyPaparazzi$variantSlug", PaparazziTask::class.java) {
+      cleanRecordVariants.configure { it.dependsOn(cleanRecordVariant) }
+      val verifyVariant = project.tasks.register("verifyPaparazzi$variantSlug", PaparazziTask::class.java) {
         it.group = VERIFICATION_GROUP
         it.description = "Run screenshot tests for variant '${variant.name}'"
       }
-      verifyVariants.configure { it.dependsOn(verifyTaskProvider) }
+      verifyVariants.configure { it.dependsOn(verifyVariant) }
 
       val isRecordRun = project.objects.property(Boolean::class.java)
       val isVerifyRun = project.objects.property(Boolean::class.java)
 
       project.gradle.taskGraph.whenReady { graph ->
-        isRecordRun.set(recordTaskProvider.map { graph.hasTask(it) })
-        isVerifyRun.set(verifyTaskProvider.map { graph.hasTask(it) })
+        isRecordRun.set(recordVariant.map { graph.hasTask(it) })
+        isVerifyRun.set(verifyVariant.map { graph.hasTask(it) })
       }
 
       val overwriteOnMaxPercentDifferenceProvider = project.overwriteOnMaxPercentDifferenceProvider()
@@ -334,12 +336,8 @@ public class PaparazziPlugin @Inject constructor(
         }
       }
 
-      recordTaskProvider.configure { it.dependsOn(testTaskProvider) }
-      verifyTaskProvider.configure { it.dependsOn(testTaskProvider) }
-      // Order the real writer after the real deleter when running with --parallel.
-      // The mustRunAfter between recordPaparazzi<Variant> and deletePaparazziSnapshots does not
-      // propagate to their dependencies, so without this we could erase freshly recorded snapshots.
-      testTaskProvider.configureEach { it.mustRunAfter(deleteVariantSnapshot) }
+      recordVariant.configure { it.dependsOn(testTaskProvider) }
+      verifyVariant.configure { it.dependsOn(testTaskProvider) }
     }
   }
 
