@@ -21,6 +21,7 @@ import android.content.res.Resources
 import android.graphics.Bitmap
 import android.os.Handler
 import android.os.Handler_Delegate
+import android.os.Looper_Accessor
 import android.util.AttributeSet
 import android.util.DisplayMetrics
 import android.view.BridgeInflater
@@ -54,6 +55,8 @@ import app.cash.paparazzi.internal.PaparazziSavedStateRegistryOwner
 import app.cash.paparazzi.internal.Renderer
 import app.cash.paparazzi.internal.SessionParamsBuilder
 import app.cash.paparazzi.internal.interceptors.EditModeInterceptor
+import app.cash.paparazzi.internal.layoutlib.LayoutlibPatch
+import app.cash.paparazzi.internal.layoutlib.RenderSizingState
 import app.cash.paparazzi.internal.parsers.LayoutPullParser
 import com.android.ide.common.rendering.api.RenderSession
 import com.android.ide.common.rendering.api.Result
@@ -62,8 +65,6 @@ import com.android.ide.common.rendering.api.SessionParams
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode
 import com.android.internal.lang.System_Delegate
 import com.android.layoutlib.bridge.Bridge
-import com.android.layoutlib.bridge.Bridge.cleanupThread
-import com.android.layoutlib.bridge.Bridge.prepareThread
 import com.android.layoutlib.bridge.BridgeRenderSession
 import com.android.layoutlib.bridge.impl.RenderAction
 import com.android.layoutlib.bridge.impl.RenderSessionImpl
@@ -143,12 +144,14 @@ public class PaparazziSdk @JvmOverloads constructor(
     if (!isInitialized) {
       registerViewEditModeInterception()
 
-      ByteBuddyAgent.install()
+      LayoutlibPatch.install(ByteBuddyAgent.install())
       InterceptorRegistrar.registerMethodInterceptors()
     }
   }
 
   public fun prepare() {
+    RenderSizingState.reset()
+
     val layoutlibCallback =
       PaparazziCallback(logger, environment.packageName, environment.resourcePackageNames)
     layoutlibCallback.initResources()
@@ -172,7 +175,6 @@ public class PaparazziSdk @JvmOverloads constructor(
 
     val sessionParams = sessionParamsBuilder.build()
     renderSession = createRenderSession(sessionParams)
-    prepareThread()
     renderSession.init(sessionParams.timeout)
     Bitmap.setDefaultDensity(DisplayMetrics.DENSITY_DEVICE_STABLE)
 
@@ -182,12 +184,17 @@ public class PaparazziSdk @JvmOverloads constructor(
     }
 
     bridgeRenderSession = createBridgeSession(renderSession, renderSession.inflate())
+    // inflate() has now loaded every class the patch targets.
+    LayoutlibPatch.verifyApplied()
+    // inflate() runs a real ViewRootImpl traversal, which instantiates the AnimationHandler
+    // before any test code runs. Keep the "no handler outside a snapshot" invariant.
+    AnimationHandler.sAnimatorHandler.set(null)
   }
 
   public fun teardown() {
     renderSession.release()
     bridgeRenderSession.dispose()
-    cleanupThread()
+    Looper_Accessor.cleanupThread()
 
     renderer.dumpDelegates()
     logger.assertNoErrors()
@@ -232,7 +239,7 @@ public class PaparazziSdk @JvmOverloads constructor(
     logger.flushErrors()
     renderSession.release()
     bridgeRenderSession.dispose()
-    cleanupThread()
+    Looper_Accessor.cleanupThread()
 
     sessionParamsBuilder = sessionParamsBuilder
       .copy(
@@ -256,10 +263,12 @@ public class PaparazziSdk @JvmOverloads constructor(
 
     val sessionParams = sessionParamsBuilder.build()
     renderSession = createRenderSession(sessionParams)
-    prepareThread()
     renderSession.init(sessionParams.timeout)
     Bitmap.setDefaultDensity(DisplayMetrics.DENSITY_DEVICE_STABLE)
     bridgeRenderSession = createBridgeSession(renderSession, renderSession.inflate())
+    // inflate() runs a real ViewRootImpl traversal, which instantiates the AnimationHandler
+    // before any test code runs. Keep the "no handler outside a snapshot" invariant.
+    AnimationHandler.sAnimatorHandler.set(null)
   }
 
   private fun takeSnapshots(view: View, startNanos: Long, fps: Int, frameCount: Int) {
@@ -290,6 +299,7 @@ public class PaparazziSdk @JvmOverloads constructor(
     lateinit var lifecycleOwner: PaparazziLifecycleOwner
 
     try {
+      AnimationHandler.getInstance().setProvider(SingleDispatchFrameCallbackProvider)
       withTime(0L) {
         // Initialize the choreographer at time=0.
       }
@@ -329,6 +339,9 @@ public class PaparazziSdk @JvmOverloads constructor(
       }
 
       viewGroup.addView(modifiedView)
+      // measureLayout has not seen this content yet, so the canvas size is stale until the next
+      // measureLayout returns.
+      RenderSizingState.canvasSizedForContent = false
       for (frame in 0 until frameCount) {
         val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
 
@@ -607,6 +620,31 @@ public class PaparazziSdk @JvmOverloads constructor(
     } else {
       this
     }
+
+  /**
+   * layoutlib drains a single type-blind Choreographer queue twice per `doFrame`
+   * (CALLBACK_ANIMATION then CALLBACK_TRAVERSAL) against one frozen time threshold, so a callback
+   * re-posted with zero delay is already due in the second drain and runs twice in one frame.
+   * [AnimationHandler]'s frame callback re-posts itself with zero delay, so it is dispatched twice.
+   * A 1ms delay makes the re-post due only on the following frame, restoring one dispatch per frame
+   * without touching the clock or deferring any other queued work.
+   */
+  private object SingleDispatchFrameCallbackProvider :
+    AnimationHandler.AnimationFrameCallbackProvider {
+    override fun postFrameCallback(callback: Choreographer.FrameCallback) {
+      Choreographer.getInstance().postFrameCallbackDelayed(callback, 1L)
+    }
+
+    override fun postCommitCallback(runnable: Runnable) {
+      Choreographer.getInstance().postCallback(Choreographer.CALLBACK_COMMIT, runnable, null)
+    }
+
+    override fun getFrameTime(): Long = Choreographer.getInstance().frameTime
+
+    override fun getFrameDelay(): Long = 1L
+
+    override fun setFrameDelay(delay: Long) = Unit
+  }
 
   internal companion object {
     internal lateinit var renderer: Renderer
