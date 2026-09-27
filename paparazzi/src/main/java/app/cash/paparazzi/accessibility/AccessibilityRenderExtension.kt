@@ -30,7 +30,6 @@ import android.widget.FrameLayout
 import android.widget.LinearLayout
 import androidx.core.view.isVisible
 import app.cash.paparazzi.RenderExtension
-import com.android.internal.view.OneShotPreDrawListener
 import com.android.layoutlib.bridge.android.BridgeContext
 
 /**
@@ -73,7 +72,6 @@ public class AccessibilityRenderExtension : RenderExtension {
       val overlayDetailsView = AccessibilityOverlayDetailsView(context)
       addView(overlayDetailsView, LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, 1f))
 
-      var requestedSettledLayoutPass = false
       viewTreeObserver.addOnGlobalLayoutListener {
         // The root of the view hierarchy is rendered at full width.
         // We need to restrict it when taking accessibility snapshots.
@@ -95,16 +93,12 @@ public class AccessibilityRenderExtension : RenderExtension {
           windowManager.updateViewLayout(windowManagerRootView, wmLp)
         }
 
-        if (!requestedSettledLayoutPass) {
-          requestedSettledLayoutPass = true
-          // Since 36ccd15b44 a dialog or popup is a real window with its own ViewRootImpl, laid
-          // out after the base window and only on its own traversal, so its frame is still
-          // unresolved while this first pass collects bounds. Ask for one more layout pass; the
-          // collection it dispatches sees the settled geometry.
-          requestLayout()
-        }
-
-        OneShotPreDrawListener.add(this@apply) {
+        // Collect on every pre-draw so the last pass before capture wins. Until 6551ba39cf
+        // layoutlib dispatched pre-draw from inside the draw, so a draw-time transform, a Compose
+        // `graphicsLayer` set from a `SideEffect`, was already applied when bounds were read.
+        // `ViewRootImpl` now dispatches during the traversal, which is earlier. Collecting on each
+        // pass also covers a sub-window whose frame is unresolved on the first one.
+        viewTreeObserver.addOnPreDrawListener {
           val windowElements = windowManagerRootView?.let {
             accessibilityElementCollector.collect(rootView = it, windowManagerRootView = null)
           } ?: emptySet()
@@ -116,6 +110,7 @@ public class AccessibilityRenderExtension : RenderExtension {
           baseOverlayDrawable.updateElements(baseElements)
           // The legend lists every element, in the order the two-root collection produced them.
           overlayDetailsView.updateElements(windowElements + baseElements)
+          true
         }
       }
     }
