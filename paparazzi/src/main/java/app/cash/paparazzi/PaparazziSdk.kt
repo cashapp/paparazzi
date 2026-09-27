@@ -403,6 +403,9 @@ public class PaparazziSdk @JvmOverloads constructor(
     // Execute the block at the requested time.
     System_Delegate.setNanosTime(0L)
     Choreographer_Delegate.sChoreographerTime = frameNanos
+    // layoutlib divides this into AnimatedVectorDrawable's native animator clock, so without a
+    // per-frame value every animated vector renders at t=0 regardless of the snapshot offset.
+    renderSession.setElapsedFrameTimeNanos(frameNanos)
 
     try {
       executeHandlerCallbacks()

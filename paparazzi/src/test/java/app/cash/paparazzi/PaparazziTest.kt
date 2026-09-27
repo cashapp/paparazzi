@@ -21,6 +21,7 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.drawable.AnimatedVectorDrawable_VectorDrawableAnimatorUI_Delegate
 import android.os.SystemClock
 import android.view.Choreographer
 import android.view.Choreographer.CALLBACK_ANIMATION
@@ -219,6 +220,16 @@ class PaparazziTest {
     }
 
     assertThat(thrown).isTrue()
+  }
+
+  @Test
+  fun animatedVectorClockFollowsSnapshotOffset() {
+    // Reading layoutlib's clock back asserts the wiring without an animated vector fixture.
+    paparazzi.snapshot(View(paparazzi.context), name = "offset0", offsetMillis = 0L)
+    assertThat(AnimatedVectorDrawable_VectorDrawableAnimatorUI_Delegate.sFrameTime).isEqualTo(0L)
+
+    paparazzi.snapshot(View(paparazzi.context), name = "offset500", offsetMillis = 500L)
+    assertThat(AnimatedVectorDrawable_VectorDrawableAnimatorUI_Delegate.sFrameTime).isEqualTo(500L)
   }
 
   @Test
