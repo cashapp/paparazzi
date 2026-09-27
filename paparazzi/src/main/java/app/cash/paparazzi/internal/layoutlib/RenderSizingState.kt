@@ -12,7 +12,8 @@ internal object RenderSizingState {
   /**
    * False between the moment new content is attached to the content root and the moment
    * `RenderSessionImpl.measureLayout` next returns, i.e. while
-   * `mMeasuredScreenWidth`/`mMeasuredScreenHeight` are stale with respect to the content.
+   * `mMeasuredScreenWidth`/`mMeasuredScreenHeight` are stale with respect to the content. Only the
+   * modes that derive a canvas from the content ever set it false.
    */
   @JvmField
   var canvasSizedForContent: Boolean = true

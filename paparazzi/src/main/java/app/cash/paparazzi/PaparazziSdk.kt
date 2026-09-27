@@ -339,9 +339,11 @@ public class PaparazziSdk @JvmOverloads constructor(
       }
 
       viewGroup.addView(modifiedView)
-      // measureLayout has not seen this content yet, so the canvas size is stale until the next
-      // measureLayout returns.
-      RenderSizingState.canvasSizedForContent = false
+      // Only the non-NORMAL modes derive the canvas from the content, so only those can present a
+      // stale canvas to a traversal. Suppressing in NORMAL would skip a measure pass that content
+      // subcomposed during measure, such as a Dialog inside a Scaffold, depends on to exist at all.
+      RenderSizingState.canvasSizedForContent =
+        sessionParamsBuilder.build().renderingMode == RenderingMode.NORMAL
       for (frame in 0 until frameCount) {
         val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
 

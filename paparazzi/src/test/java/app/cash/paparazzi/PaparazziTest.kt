@@ -241,10 +241,12 @@ class PaparazziTest {
 
     paparazzi.gif(view, fps = 4)
 
-    // One pre-draw per frame, and a pre-draw before the first draw. Both draws belong to frame 0:
+    // Two traversals precede the first draw, each dispatching a pre-draw: the Choreographer drains
+    // the one addView scheduled, then renderAndBuildResult performs its own. Both draws belong to
+    // frame 0:
     // RenderSessionImpl.renderAndBuildResult draws once into a NopCanvas to prime animations and once
     // for real, and later frames reuse the display list because this view never invalidates.
-    assertThat(log).isEqualTo(listOf("predraw", "draw", "draw", "predraw", "predraw"))
+    assertThat(log).isEqualTo(listOf("predraw", "predraw", "draw", "draw", "predraw", "predraw"))
   }
 
   private val time: Long

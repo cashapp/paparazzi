@@ -25,11 +25,16 @@ final class RenderSizingAdvice {
    * whatever {@code mWinFrame} happens to hold, and dispatches {@code onPreDraw} at that size. In
    * the expanding rendering modes that is observable: {@code measureLayout}'s {@code UNSPECIFIED}
    * probe is meant to discover the content's natural size, and by then the content has already been
-   * told its size is the stale one. Skipping the body is safe because {@code renderAndBuildResult}
-   * performs the traversal itself immediately after {@code measureLayout} + {@code updateFrame};
-   * {@code doTraversal} has already cleared {@code mTraversalScheduled} and removed the sync
-   * barrier by the time this runs, and {@code mLayoutRequested} / {@code mFullRedrawNeeded} are
-   * left set for that traversal.
+   * told its size is the stale one.
+   *
+   * <p>Skipping loses only the pass, not the traversal: {@code doTraversal} has already cleared
+   * {@code mTraversalScheduled} and removed the sync barrier by the time this runs, and
+   * {@code mLayoutRequested} / {@code mFullRedrawNeeded} are left set, so the traversal
+   * {@code renderAndBuildResult} performs after {@code measureLayout} + {@code updateFrame} does
+   * the layout instead. What it cannot recover is what the skipped measure would have built:
+   * content Compose subcomposes during measure never composes, and a window it would have added
+   * never exists. Only the modes that derive a canvas from the content set the flag, so only those
+   * skip.
    */
   static final class SuppressPrematureTraversal {
     private SuppressPrematureTraversal() {}
