@@ -63,6 +63,7 @@ import com.android.ide.common.rendering.api.Result
 import com.android.ide.common.rendering.api.Result.Status.ERROR_UNKNOWN
 import com.android.ide.common.rendering.api.SessionParams
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode
+import com.android.ide.common.rendering.api.SessionParams.RenderingMode.SizeAction
 import com.android.internal.lang.System_Delegate
 import com.android.layoutlib.bridge.Bridge
 import com.android.layoutlib.bridge.BridgeRenderSession
@@ -350,6 +351,7 @@ public class PaparazziSdk @JvmOverloads constructor(
         // If we have pendingTasks run recomposer to ensure we get the correct frame.
         var hasPendingWork = false
         withTime(nowNanos) {
+          resetExpandBaseline()
           val result = renderSession.render(true)
           if (result.status == ERROR_UNKNOWN) {
             throw result.exception
@@ -364,6 +366,7 @@ public class PaparazziSdk @JvmOverloads constructor(
 
         if (hasPendingWork) {
           withTime(nowNanos) {
+            resetExpandBaseline()
             val result = renderSession.render(true)
             if (result.status == ERROR_UNKNOWN) {
               throw result.exception
@@ -590,6 +593,22 @@ public class PaparazziSdk @JvmOverloads constructor(
     // AndroidUiDispatcher is backed by a Handler, by executing one last time
     // we give the dispatcher the ability to clean-up / release its callbacks.
     executeHandlerCallbacks()
+  }
+
+  /**
+   * An expanding axis grows the canvas by the difference between the content's natural size and its
+   * measured size, added to the size the canvas already had. That is only correct once. layoutlib
+   * keeps the measured size across renders and Paparazzi renders repeatedly, so the difference is
+   * added again on top of an already-expanded canvas and it outgrows the content. Clearing the
+   * measured size gives every render the same device-sized starting point.
+   */
+  private fun resetExpandBaseline() {
+    val renderingMode = sessionParamsBuilder.build().renderingMode
+    if (renderingMode.horizAction == SizeAction.EXPAND ||
+      renderingMode.vertAction == SizeAction.EXPAND
+    ) {
+      renderSession.invalidateRenderingSize()
+    }
   }
 
   private fun executeHandlerCallbacks() {
