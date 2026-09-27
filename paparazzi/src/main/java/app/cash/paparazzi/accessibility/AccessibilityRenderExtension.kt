@@ -77,10 +77,14 @@ public class AccessibilityRenderExtension : RenderExtension {
       viewTreeObserver.addOnGlobalLayoutListener {
         // The root of the view hierarchy is rendered at full width.
         // We need to restrict it when taking accessibility snapshots.
+        //
+        // `rootView` is only the base window's DecorView while the content is attached; detached it
+        // is the content's own topmost ancestor, which would leave the base window eligible below
+        // and shrink it to the content width.
         val views = contentView.context.getWindowViews()
-        val baseRoot = contentView.rootView
+        val baseRoot = if (contentView.isAttachedToWindow) contentView.rootView else null
         val windowManagerRootView = views.lastOrNull {
-          it !== baseRoot && it !== windowOverlayRoot && it.isVisible
+          baseRoot != null && it !== baseRoot && it !== windowOverlayRoot && it.isVisible
         } as ViewGroup?
 
         if (windowManagerRootView != null) {
