@@ -28,8 +28,6 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6
-        with:
-          cache-disabled: true
 
       - name: Set up Python
         uses: actions/setup-python@v7
@@ -77,8 +75,6 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6
-        with:
-          cache-disabled: true
 
       - name: Run All Tests
         run: ./gradlew check
@@ -112,8 +108,6 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6
-        with:
-          cache-disabled: true
 
       - name: Publish Artifacts
         run: ./gradlew publishMavenPublicationToMavenCentralRepository paparazzi-gradle-plugin:publishAllPublicationsToMavenCentralRepository
