@@ -73,15 +73,16 @@ internal class AccessibilityElementCollector {
       )
     }
 
-    if (this is AbstractComposeView && isVisible) {
+    val composeViewRoot = (this as? AbstractComposeView)?.getChildAt(0) as? ViewRootForTest
+    if (composeViewRoot != null && isVisible) {
       // ComposeView creates a child view `AndroidComposeView` for view root for test.
-      val viewRoot = getChildAt(0) as ViewRootForTest
+      val viewRoot = composeViewRoot
       val unmergedNodes = viewRoot.semanticsOwner.getAllSemanticsNodes(false)
 
-      // SemanticsNode.boundsInScreen isn't reported correctly for nodes so locationOnScreen used to correctly calculate displayBounds.
-      val locationOnScreen = arrayOf(bounds.left, bounds.top).toIntArray()
-      locationOnScreen[0] += paddingLeft
-      locationOnScreen[1] += paddingTop
+      // SemanticsNode.boundsInRoot is relative to the AndroidComposeView, not to the
+      // AbstractComposeView hosting it, so the origin has to come from that same view. Taking it
+      // from the host drops the offset between the two, which is zero only when they coincide.
+      val locationOnScreen = IntArray(2).also { (composeViewRoot as View).getLocationOnScreen(it) }
       val orderedSemanticsNodes = viewRoot.semanticsOwner.rootSemanticsNode.orderSemanticsNodeGroup()
       orderedSemanticsNodes.forEach {
         it.processAccessibleChildren(

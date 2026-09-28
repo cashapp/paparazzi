@@ -15,17 +15,24 @@
  */
 package app.cash.paparazzi.accessibility
 
+import android.content.Context
+import android.graphics.PixelFormat
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.WindowManager
-import android.view.WindowManagerImpl
+import android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+import android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+import android.view.WindowManager.LayoutParams.TYPE_APPLICATION_ABOVE_SUB_PANEL
+import android.view.WindowManagerGlobal
 import android.widget.FrameLayout
 import android.widget.LinearLayout
+import androidx.core.view.isVisible
 import app.cash.paparazzi.RenderExtension
-import app.cash.paparazzi.internal.ComposeViewAdapter
-import com.android.internal.view.OneShotPreDrawListener
+import app.cash.paparazzi.accessibility.RenderSettings.DEFAULT_DESCRIPTION_BACKGROUND_COLOR
+import app.cash.paparazzi.accessibility.RenderSettings.toColorInt
+import com.android.layoutlib.bridge.android.BridgeContext
 
 /**
  * A [RenderExtension] that overlays accessibility property information on top of the rendered view.
@@ -36,53 +43,145 @@ import com.android.internal.view.OneShotPreDrawListener
 public class AccessibilityRenderExtension : RenderExtension {
   private val accessibilityElementCollector = AccessibilityElementCollector()
 
+  /**
+   * The overlay for the elements of a sub-window - a dialog, popup or sheet - and the window it is
+   * painted into. Both persist across renders: the window has to be added before the first one, and
+   * the drawable is attached to it. Lazy because its [android.graphics.Paint]s need layoutlib's
+   * native library, which is only loaded once a test runs.
+   */
+  private val windowOverlayDrawable by lazy { AccessibilityOverlayDrawable() }
+  private var overlay: Overlay? = null
+
   override fun renderView(contentView: View): View {
-    // WindowManager needed to access accessibility elements for views that draw to other windows.
-    val windowManager = contentView.context.getSystemService(WindowManager::class.java)
+    // Only a sub-window's own elements need a window of their own. layoutlib composites windows in
+    // the order `getWindowViews()` returns them - window type ascending - so a window typed above
+    // every sub-window is drawn above every sub-window, which is where those highlights belong. The
+    // base window's elements need no window at all; see `foreground` below.
+    val overlay = installOverlayWindow(contentView.context)
 
     return LinearLayout(contentView.context).apply {
       orientation = LinearLayout.HORIZONTAL
       weightSum = 2f
       layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
 
+      // The base window's own foreground is drawn after its content and before layoutlib
+      // composites any sub-window, which is exactly where a base element's highlight belongs.
+      val baseOverlayDrawable = AccessibilityOverlayDrawable()
+      foreground = baseOverlayDrawable
+
       addView(contentView, LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, 1f))
 
-      val overlayDetailsView = AccessibilityOverlayDetailsView(context)
-      addView(overlayDetailsView, LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, 1f))
+      // The legend renders in the overlay window, above any sub-window's dim scrim, so only its
+      // half of the split is reserved here. The placeholder carries the legend's own background so
+      // the seam between the two halves composites to the same colour from either window.
+      addView(
+        View(context).apply { setBackgroundColor(DEFAULT_DESCRIPTION_BACKGROUND_COLOR.toColorInt()) },
+        LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, 1f)
+      )
 
-      val overlayDrawable = AccessibilityOverlayDrawable()
       viewTreeObserver.addOnGlobalLayoutListener {
-        val rootView = contentView.findRootView()
-        rootView.foreground = overlayDrawable
-
         // The root of the view hierarchy is rendered at full width.
         // We need to restrict it when taking accessibility snapshots.
-        val windowManagerRootView = (windowManager as WindowManagerImpl).currentRootView
+        //
+        // `rootView` is only the base window's DecorView while the content is attached; detached it
+        // is the content's own topmost ancestor, which would leave the base window eligible below
+        // and shrink it to the content width.
+        val views = contentView.context.getWindowViews()
+        val baseRoot = if (contentView.isAttachedToWindow) contentView.rootView else null
+        val windowManagerRootView = views.lastOrNull {
+          baseRoot != null && it !== baseRoot && it !== overlay.window && it.isVisible
+        } as ViewGroup?
+
         if (windowManagerRootView != null) {
-          windowManagerRootView.layoutParams =
-            FrameLayout.LayoutParams(contentView.measuredWidth, MATCH_PARENT, Gravity.START)
+          val wmLp = windowManagerRootView.layoutParams as WindowManager.LayoutParams
+          wmLp.width = contentView.measuredWidth
+          wmLp.gravity = Gravity.START or (wmLp.gravity and Gravity.VERTICAL_GRAVITY_MASK)
+          val windowManager = contentView.context.getSystemService(WindowManager::class.java)
+          windowManager.updateViewLayout(windowManagerRootView, wmLp)
         }
 
-        OneShotPreDrawListener.add(this@apply) {
-          val elements = accessibilityElementCollector.collect(
+        // Collect on every pre-draw so the last pass before capture wins. Until 6551ba39cf
+        // layoutlib dispatched pre-draw from inside the draw, so a draw-time transform, a Compose
+        // `graphicsLayer` set from a `SideEffect`, was already applied when bounds were read.
+        // `ViewRootImpl` now dispatches during the traversal, which is earlier. Collecting on each
+        // pass also covers a sub-window whose frame is unresolved on the first one.
+        viewTreeObserver.addOnPreDrawListener {
+          val windowElements = windowManagerRootView?.let {
+            accessibilityElementCollector.collect(rootView = it, windowManagerRootView = null)
+          } ?: emptySet()
+          val baseElements = accessibilityElementCollector.collect(
             rootView = this@apply,
-            windowManagerRootView = windowManagerRootView
+            windowManagerRootView = null
           )
-          overlayDrawable.updateElements(elements)
-          overlayDetailsView.updateElements(elements)
+          windowOverlayDrawable.updateElements(windowElements)
+          baseOverlayDrawable.updateElements(baseElements)
+          // The legend lists every element, in the order the two-root collection produced them.
+          overlay.details.updateElements(windowElements + baseElements)
+          true
         }
       }
     }
   }
-}
 
-private fun View.findRootView(): View {
-  var parent = parent
-  while (parent != null) {
-    if (parent is ComposeViewAdapter) {
-      return parent
+  /**
+   * Returns an overlay window, adding it if the current render session does not have it yet.
+   *
+   * It has to be added before the first render: the renderer captures the window list up front, so
+   * a window added during a layout pass would be missing from the frame that pass belongs to.
+   */
+  private fun installOverlayWindow(context: Context): Overlay {
+    overlay?.let { if (it.window.isAttachedToWindow) return it }
+
+    val details = AccessibilityOverlayDetailsView(context)
+    val window = FrameLayout(context).apply {
+      // A foreground both opts a ViewGroup back into drawing itself and is painted after its
+      // children, which is all the highlight drawable needs.
+      foreground = windowOverlayDrawable
+      // `FLAG_DIM_BEHIND` is composited as an unclipped fill of the whole canvas, so anything in
+      // the base window is dimmed, legend included. Mirroring the split here keeps the legend in
+      // its own half and above the scrim.
+      addView(
+        LinearLayout(context).apply {
+          orientation = LinearLayout.HORIZONTAL
+          weightSum = 2f
+          addView(View(context), LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, 1f))
+          addView(details, LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, 1f))
+        },
+        FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+      )
     }
-    parent = parent.parent
+    val layoutParams = WindowManager.LayoutParams(
+      MATCH_PARENT,
+      MATCH_PARENT,
+      TYPE_APPLICATION_ABOVE_SUB_PANEL,
+      FLAG_NOT_TOUCHABLE or FLAG_NOT_FOCUSABLE,
+      PixelFormat.TRANSLUCENT
+    ).apply {
+      // Full-canvas and at the origin, so the overlay shares the coordinate space the element
+      // bounds are collected in and nothing is clipped away.
+      gravity = Gravity.TOP or Gravity.START
+      x = 0
+      y = 0
+    }
+    context.getSystemService(WindowManager::class.java).addView(window, layoutParams)
+    return Overlay(window, details).also { overlay = it }
   }
-  throw IllegalArgumentException("View hierarchy does not contain a ComposeViewAdapter")
+
+  /** The overlay window and the legend it hosts, created and cached as a unit. */
+  private class Overlay(
+    val window: FrameLayout,
+    val details: AccessibilityOverlayDetailsView
+  )
+
+  /**
+   * The window root views belonging to this render session, sorted by window type, which is the
+   * order layoutlib composites them in.
+   */
+  private fun Context.getWindowViews(): List<View> {
+    val session = BridgeContext.getBaseContext(this)
+    return WindowManagerGlobal.getInstance()
+      .windowViews
+      .filter { BridgeContext.getBaseContext(it.context) == session }
+      .sortedBy { (it.layoutParams as? WindowManager.LayoutParams)?.type ?: Int.MIN_VALUE }
+  }
 }
