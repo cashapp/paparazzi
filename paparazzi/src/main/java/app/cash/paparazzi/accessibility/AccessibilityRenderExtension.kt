@@ -30,6 +30,8 @@ import android.widget.FrameLayout
 import android.widget.LinearLayout
 import androidx.core.view.isVisible
 import app.cash.paparazzi.RenderExtension
+import app.cash.paparazzi.accessibility.RenderSettings.DEFAULT_DESCRIPTION_BACKGROUND_COLOR
+import app.cash.paparazzi.accessibility.RenderSettings.toColorInt
 import com.android.layoutlib.bridge.android.BridgeContext
 
 /**
@@ -48,14 +50,14 @@ public class AccessibilityRenderExtension : RenderExtension {
    * native library, which is only loaded once a test runs.
    */
   private val windowOverlayDrawable by lazy { AccessibilityOverlayDrawable() }
-  private var windowOverlayWindow: FrameLayout? = null
+  private var overlay: Overlay? = null
 
   override fun renderView(contentView: View): View {
     // Only a sub-window's own elements need a window of their own. layoutlib composites windows in
     // the order `getWindowViews()` returns them - window type ascending - so a window typed above
     // every sub-window is drawn above every sub-window, which is where those highlights belong. The
     // base window's elements need no window at all; see `foreground` below.
-    val windowOverlayRoot = installOverlayWindow(contentView.context)
+    val overlay = installOverlayWindow(contentView.context)
 
     return LinearLayout(contentView.context).apply {
       orientation = LinearLayout.HORIZONTAL
@@ -69,8 +71,13 @@ public class AccessibilityRenderExtension : RenderExtension {
 
       addView(contentView, LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, 1f))
 
-      val overlayDetailsView = AccessibilityOverlayDetailsView(context)
-      addView(overlayDetailsView, LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, 1f))
+      // The legend renders in the overlay window, above any sub-window's dim scrim, so only its
+      // half of the split is reserved here. The placeholder carries the legend's own background so
+      // the seam between the two halves composites to the same colour from either window.
+      addView(
+        View(context).apply { setBackgroundColor(DEFAULT_DESCRIPTION_BACKGROUND_COLOR.toColorInt()) },
+        LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, 1f)
+      )
 
       viewTreeObserver.addOnGlobalLayoutListener {
         // The root of the view hierarchy is rendered at full width.
@@ -82,7 +89,7 @@ public class AccessibilityRenderExtension : RenderExtension {
         val views = contentView.context.getWindowViews()
         val baseRoot = if (contentView.isAttachedToWindow) contentView.rootView else null
         val windowManagerRootView = views.lastOrNull {
-          baseRoot != null && it !== baseRoot && it !== windowOverlayRoot && it.isVisible
+          baseRoot != null && it !== baseRoot && it !== overlay.window && it.isVisible
         } as ViewGroup?
 
         if (windowManagerRootView != null) {
@@ -109,7 +116,7 @@ public class AccessibilityRenderExtension : RenderExtension {
           windowOverlayDrawable.updateElements(windowElements)
           baseOverlayDrawable.updateElements(baseElements)
           // The legend lists every element, in the order the two-root collection produced them.
-          overlayDetailsView.updateElements(windowElements + baseElements)
+          overlay.details.updateElements(windowElements + baseElements)
           true
         }
       }
@@ -122,13 +129,26 @@ public class AccessibilityRenderExtension : RenderExtension {
    * It has to be added before the first render: the renderer captures the window list up front, so
    * a window added during a layout pass would be missing from the frame that pass belongs to.
    */
-  private fun installOverlayWindow(context: Context): FrameLayout {
-    windowOverlayWindow?.let { if (it.isAttachedToWindow) return it }
+  private fun installOverlayWindow(context: Context): Overlay {
+    overlay?.let { if (it.window.isAttachedToWindow) return it }
 
+    val details = AccessibilityOverlayDetailsView(context)
     val window = FrameLayout(context).apply {
       // A foreground both opts a ViewGroup back into drawing itself and is painted after its
-      // children, which is all the overlay needs; the window has no children of its own.
+      // children, which is all the highlight drawable needs.
       foreground = windowOverlayDrawable
+      // `FLAG_DIM_BEHIND` is composited as an unclipped fill of the whole canvas, so anything in
+      // the base window is dimmed, legend included. Mirroring the split here keeps the legend in
+      // its own half and above the scrim.
+      addView(
+        LinearLayout(context).apply {
+          orientation = LinearLayout.HORIZONTAL
+          weightSum = 2f
+          addView(View(context), LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, 1f))
+          addView(details, LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, 1f))
+        },
+        FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+      )
     }
     val layoutParams = WindowManager.LayoutParams(
       MATCH_PARENT,
@@ -144,9 +164,14 @@ public class AccessibilityRenderExtension : RenderExtension {
       y = 0
     }
     context.getSystemService(WindowManager::class.java).addView(window, layoutParams)
-    windowOverlayWindow = window
-    return window
+    return Overlay(window, details).also { overlay = it }
   }
+
+  /** The overlay window and the legend it hosts, created and cached as a unit. */
+  private class Overlay(
+    val window: FrameLayout,
+    val details: AccessibilityOverlayDetailsView
+  )
 
   /**
    * The window root views belonging to this render session, sorted by window type, which is the
