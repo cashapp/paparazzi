@@ -381,7 +381,7 @@ public class PaparazziSdk @JvmOverloads constructor(
           }
         }
 
-        val image = bridgeRenderSession.image
+        val image = bridgeRenderSession.readLogicalImage()
         if (validateAccessibility) {
           require(renderExtensions.isEmpty()) {
             "Running accessibility validation and render extensions simultaneously is not supported."
@@ -414,6 +414,14 @@ public class PaparazziSdk @JvmOverloads constructor(
       Thread.setDefaultUncaughtExceptionHandler(previousUncaughtExceptionHandler)
     }
   }
+
+  /**
+   * Since layoutlib 17.0.1 `image` is the pooled buffer backing the frame, padded to the next
+   * multiple of 128 in each dimension, and `recyclableImage` is the only route to the logical
+   * sub-image. It also transfers ownership of the buffer, so copy before closing.
+   */
+  private fun RenderSession.readLogicalImage(): BufferedImage =
+    checkNotNull(recyclableImage) { "Render session produced no image" }.use { it.copy }
 
   private fun withTime(timeNanos: Long, block: () -> Unit) {
     val frameNanos = timeNanos
