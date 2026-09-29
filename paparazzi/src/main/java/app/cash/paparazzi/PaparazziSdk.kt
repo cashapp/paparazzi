@@ -380,7 +380,9 @@ public class PaparazziSdk @JvmOverloads constructor(
           }
         }
 
-        val image = bridgeRenderSession.copyImage()
+        // BridgeRenderSession.image is marked deprecated, but bridgeRenderSession.recyclableImage is not available in layoutlib-api 32.4.1.
+        // We might need to wait for a new version of layoutlib that supports 32.4.1 or later.
+        @Suppress("DEPRECATION") val image = bridgeRenderSession.recyclableImage.use { it.copy }
         if (validateAccessibility) {
           require(renderExtensions.isEmpty()) {
             "Running accessibility validation and render extensions simultaneously is not supported."
@@ -657,12 +659,6 @@ public class PaparazziSdk @JvmOverloads constructor(
     override fun postFrameCallback(callback: Choreographer.FrameCallback) {
       Choreographer.getInstance().postFrameCallbackDelayed(callback, 1L)
     }
-
-    override fun postCommitCallback(runnable: Runnable) {
-      Choreographer.getInstance().postCallback(Choreographer.CALLBACK_COMMIT, runnable, null)
-    }
-
-    override fun getFrameTime(): Long = Choreographer.getInstance().frameTime
 
     override fun getFrameDelay(): Long = 1L
 

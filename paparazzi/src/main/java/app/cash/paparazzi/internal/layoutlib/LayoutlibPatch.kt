@@ -1,5 +1,6 @@
 package app.cash.paparazzi.internal.layoutlib
 
+import android.view.ViewRootImpl
 import net.bytebuddy.ByteBuddy
 import net.bytebuddy.asm.Advice
 import net.bytebuddy.description.method.MethodDescription
@@ -50,7 +51,7 @@ internal object LayoutlibPatch {
     Target(
       binaryName = "android.view.ViewRootImpl",
       methodName = "performTraversals",
-      descriptor = "()V",
+      descriptor = "(J)V",
       advice = RenderSizingAdvice.SuppressPrematureTraversal::class.java
     ),
 
