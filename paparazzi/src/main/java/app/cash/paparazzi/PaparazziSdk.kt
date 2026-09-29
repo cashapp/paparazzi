@@ -301,7 +301,7 @@ public class PaparazziSdk @JvmOverloads constructor(
 
     try {
       AnimationHandler.getInstance().setProvider(SingleDispatchFrameCallbackProvider)
-      withTime(0L) {
+      withTime(0L, tickVsync = false) {
         // Initialize the choreographer at time=0.
       }
 
@@ -416,14 +416,14 @@ public class PaparazziSdk @JvmOverloads constructor(
   }
 
   /**
-   * Since layoutlib 17.0.1 `image` is the pooled buffer backing the frame, padded to the next
+   * Since layoutlib 17.0.3 `image` is the pooled buffer backing the frame, padded to the next
    * multiple of 128 in each dimension, and `recyclableImage` is the only route to the logical
    * sub-image. It also transfers ownership of the buffer, so copy before closing.
    */
   private fun RenderSession.readLogicalImage(): BufferedImage =
     checkNotNull(recyclableImage) { "Render session produced no image" }.use { it.copy }
 
-  private fun withTime(timeNanos: Long, block: () -> Unit) {
+  private fun withTime(timeNanos: Long, tickVsync: Boolean = true, block: () -> Unit) {
     val frameNanos = timeNanos
 
     // Execute the block at the requested time.
@@ -439,11 +439,19 @@ public class PaparazziSdk @JvmOverloads constructor(
       /**
        * The choreographer needs to be manually ticked in order for the frame time to become visible to the native layer
        * which is necessary in order for ripples to work is compose, as well as view animation classes.
-       *
-       * After frame is run, we have to reset sChoreographerTime since [com.android.layoutlib.bridge.SessionInteractiveData.getNanosTime]
-       * uses sChoreographerTime to calculate nanoTime via [System_Delegate.nanoTime].
        */
-      Choreographer_Delegate.doFrame(currentTimeNanos)
+      if (tickVsync) {
+        // HWUI paces render-thread animations off this value, so the caller's own interval has
+        // to reach it. Between snapshots the frame time restarts and supplies none.
+        val elapsed = (currentTimeNanos - lastFrameTimeNanos).takeIf { it > 0L }
+        lastFrameTimeNanos = currentTimeNanos
+        vsyncNanos += elapsed ?: VSYNC_INTERVAL_NANOS
+      }
+      Choreographer_Delegate.doFrame(vsyncNanos)
+      // `doFrame` publishes its argument into `sChoreographerTime`, which
+      // [com.android.layoutlib.bridge.SessionInteractiveData.getNanosTime] folds into the clock
+      // [System_Delegate.nanoTime] reports.
+      Choreographer_Delegate.sChoreographerTime = currentTimeNanos
 
       return block()
     } catch (e: Throwable) {
@@ -673,6 +681,21 @@ public class PaparazziSdk @JvmOverloads constructor(
   }
 
   internal companion object {
+    /**
+     * The vsync handed to `Choreographer#doFrame`, which has to keep advancing: since layoutlib
+     * 17.0.1 `LayoutlibRenderer#getBuffer` acquires a new image per frame, and HWUI produces none
+     * for a vsync that has not moved. Paparazzi's simulated clock does not advance on its own.
+     *
+     * Process-wide because `Choreographer` is: it keeps `mLastFrameTimeNanos` across sessions and
+     * drops a frame whose time regresses, so a per-[PaparazziSdk] counter would be rewinding it.
+     */
+    private var vsyncNanos = 0L
+
+    private var lastFrameTimeNanos = 0L
+
+    /** Assumed where the frame time supplies no interval of its own. */
+    private const val VSYNC_INTERVAL_NANOS = 16_666_667L
+
     internal lateinit var renderer: Renderer
     internal val isInitialized get() = ::renderer.isInitialized
 
