@@ -50,7 +50,8 @@ internal object LayoutlibPatch {
     Target(
       binaryName = "android.view.ViewRootImpl",
       methodName = "performTraversals",
-      descriptor = "()V",
+      // layoutlib 17 threads the frame time through as a parameter.
+      descriptor = "(J)V",
       advice = RenderSizingAdvice.SuppressPrematureTraversal::class.java
     ),
 
