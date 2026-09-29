@@ -3,19 +3,19 @@
   extends: [
     'config:recommended',
   ],
-  "constraints": {
-    "python": "=3.14.7"
+  constraints: {
+    python: '=3.14.7',
   },
-  "ignorePaths": [
-    ".github/workflows/requirements.in",
+  ignorePaths: [
+    '.github/workflows/requirements.in',
   ],
-  "pip-compile": {
-    "fileMatch": [
-      ".github/workflows/requirements.in"
-    ]
+  'pip-compile': {
+    managerFilePatterns: [
+      '/.github/workflows/requirements.txt/',
+    ],
   },
-  "gradle-wrapper": {
-    description: "Update Gradle wrapper to non-stable versions",
+  'gradle-wrapper': {
+    description: 'Update Gradle wrapper to non-stable versions',
     ignoreUnstable: false,
   },
   packageRules: [
@@ -47,11 +47,11 @@
       ],
     },
     {
-      description: "Disable Gradle wrapper milestone releases, only interested stables and RCs for now.",
+      description: 'Disable Gradle wrapper milestone releases, only interested stables and RCs for now.',
       matchPackageNames: [
-        "gradle",
+        'gradle',
       ],
-      allowedVersions: "!/-milestone-\\d+$/",
+      allowedVersions: '!/-milestone-\\d+$/',
     },
     {
       description: "LayoutLib shouldn't auto-merge",
