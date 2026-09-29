@@ -659,12 +659,6 @@ public class PaparazziSdk @JvmOverloads constructor(
       Choreographer.getInstance().postFrameCallbackDelayed(callback, 1L)
     }
 
-    override fun postCommitCallback(runnable: Runnable) {
-      Choreographer.getInstance().postCallback(Choreographer.CALLBACK_COMMIT, runnable, null)
-    }
-
-    override fun getFrameTime(): Long = Choreographer.getInstance().frameTime
-
     override fun getFrameDelay(): Long = 1L
 
     override fun setFrameDelay(delay: Long) = Unit
