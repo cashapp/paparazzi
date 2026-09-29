@@ -817,7 +817,6 @@ class PaparazziPluginTest {
     File(fixtureRoot, "build").registerForDeletionOnExit()
 
     val result = gradleRunner
-      .withGradleVersion("9.4.1")
       .withArguments(
         "verifyPaparazziDebug",
         "-Papp.cash.paparazzi.reportType=native",
@@ -841,12 +840,10 @@ class PaparazziPluginTest {
     File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
 
     gradleRunner
-      .withGradleVersion("9.4.1")
       .withArguments("recordPaparazziDebug", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
 
     gradleRunner
-      .withGradleVersion("9.4.1")
       .withArguments("verifyPaparazziDebug", "-Papp.cash.paparazzi.reportType=native", "--stacktrace")
       .runFixture(fixtureRoot) { buildAndFail() }
 
@@ -865,12 +862,10 @@ class PaparazziPluginTest {
     File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
 
     gradleRunner
-      .withGradleVersion("9.4.1")
       .withArguments("recordPaparazziDebug", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
 
     gradleRunner
-      .withGradleVersion("9.4.1")
       .withArguments(
         "verifyPaparazziDebug",
         "-Papp.cash.paparazzi.reportType=native",
@@ -894,12 +889,10 @@ class PaparazziPluginTest {
     File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
 
     gradleRunner
-      .withGradleVersion("9.4.1")
       .withArguments("recordPaparazziDebug", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
 
     gradleRunner
-      .withGradleVersion("9.4.1")
       .withArguments(
         "verifyPaparazziDebug",
         "-Papp.cash.paparazzi.reportType=native",
