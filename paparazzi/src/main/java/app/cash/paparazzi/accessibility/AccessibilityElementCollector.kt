@@ -74,7 +74,9 @@ internal class AccessibilityElementCollector {
     }
 
     val composeViewRoot = (this as? AbstractComposeView)?.getChildAt(0) as? ViewRootForTest
-    if (composeViewRoot != null && isVisible) {
+    // Another window can trigger collection before this Compose root is attached. Its merged
+    // semantics root is not ready yet; leave it for a subsequent collection after attachment.
+    if (composeViewRoot != null && isVisible && composeViewRoot.view.isAttachedToWindow) {
       // ComposeView creates a child view `AndroidComposeView` for view root for test.
       val viewRoot = composeViewRoot
       val unmergedNodes = viewRoot.semanticsOwner.getAllSemanticsNodes(false)
