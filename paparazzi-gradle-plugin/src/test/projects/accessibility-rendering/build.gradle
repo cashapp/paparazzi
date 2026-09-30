@@ -20,6 +20,8 @@ android {
 }
 
 dependencies {
+  // Exercise the current Compose UI rather than an older version selected transitively.
+  implementation libs.androidx.compose.ui.android
   implementation libs.composeUi.material3.android
   implementation libs.composeUi.material
   implementation libs.composeUi.material.icons
