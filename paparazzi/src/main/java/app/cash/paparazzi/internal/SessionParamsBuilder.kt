@@ -42,7 +42,7 @@ internal data class SessionParamsBuilder(
   private val assetRepository: AssetRepository,
   private val projectResources: ResourceRepository,
   private val deviceConfig: DeviceConfig = DeviceConfig.NEXUS_5,
-  private val renderingMode: RenderingMode = RenderingMode.NORMAL,
+  val renderingMode: RenderingMode = RenderingMode.NORMAL,
   private val targetSdk: Int = 22,
   private val flags: Map<Key<*>, Any> = mapOf(),
   private val themeName: String? = null,

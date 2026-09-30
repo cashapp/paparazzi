@@ -275,7 +275,7 @@ public class PaparazziSdk @JvmOverloads constructor(
   private fun takeSnapshots(view: View, startNanos: Long, fps: Int, frameCount: Int) {
     val viewGroup = bridgeRenderSession.rootViews[0].viewObject as ViewGroup
     val modifiedView = renderExtensions.fold(view) { currentView, renderExtension ->
-      val currentSessionRenderingMode = sessionParamsBuilder.build().renderingMode
+      val currentSessionRenderingMode = sessionParamsBuilder.renderingMode
       if (currentSessionRenderingMode == RenderingMode.SHRINK && renderExtension is AccessibilityRenderExtension) {
         throw IllegalStateException(
           "AccessibilityRenderExtension cannot be used with the SHRINK rendering mode. " +
@@ -344,7 +344,7 @@ public class PaparazziSdk @JvmOverloads constructor(
       // stale canvas to a traversal. Suppressing in NORMAL would skip a measure pass that content
       // subcomposed during measure, such as a Dialog inside a Scaffold, depends on to exist at all.
       RenderSizingState.canvasSizedForContent =
-        sessionParamsBuilder.build().renderingMode == RenderingMode.NORMAL
+        sessionParamsBuilder.renderingMode == RenderingMode.NORMAL
       for (frame in 0 until frameCount) {
         val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
 
@@ -606,7 +606,7 @@ public class PaparazziSdk @JvmOverloads constructor(
    * measured size gives every render the same device-sized starting point.
    */
   private fun resetExpandBaseline() {
-    val renderingMode = sessionParamsBuilder.build().renderingMode
+    val renderingMode = sessionParamsBuilder.renderingMode
     if (renderingMode.horizAction == SizeAction.EXPAND ||
       renderingMode.vertAction == SizeAction.EXPAND
     ) {
