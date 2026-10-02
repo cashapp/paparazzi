@@ -16,6 +16,7 @@
 
 package app.cash.paparazzi.internal
 
+import com.android.ide.common.rendering.api.RecyclableImage
 import com.android.ide.common.rendering.api.RenderSession
 import com.android.ide.common.rendering.api.Result
 import com.android.ide.common.rendering.api.ViewInfo
@@ -29,5 +30,20 @@ internal data class RenderResult(
 )
 
 internal fun RenderSession.toResult(): RenderResult {
-  return RenderResult(result, systemRootViews.toList(), rootViews.toList(), image)
+  return RenderResult(result, systemRootViews.toList(), rootViews.toList(), copyImage())
+}
+
+/**
+ * Copies the logical render bounds before returning Layoutlib's backing buffer to its reuse pool.
+ *
+ * Layoutlib transfers ownership of a recyclable image to the caller, which must close it after
+ * displaying or copying its pixels. [RecyclableImage.getCopy] copies only the logical bounds, so
+ * pooled allocation padding does not become part of the snapshot.
+ *
+ * @see <a href="https://android.googlesource.com/platform/tools/base/+/mirror-goog-studio-main/layoutlib-api/src/main/java/com/android/ide/common/rendering/api/RecyclableImage.java">RecyclableImage</a>
+ * @see <a href="https://android.googlesource.com/platform/tools/base/+/mirror-goog-studio-main/layoutlib-api/src/main/java/com/android/ide/common/rendering/api/StandaloneRecyclableImage.java">StandaloneRecyclableImage</a>
+ */
+internal fun RenderSession.copyImage(): BufferedImage {
+  val recyclableImage = getRecyclableImage() ?: return image
+  return recyclableImage.use { it.copy }
 }

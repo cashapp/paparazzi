@@ -18,7 +18,7 @@ final class RenderSizingAdvice {
   private RenderSizingAdvice() {}
 
   /**
-   * Inlined at the head of {@code android.view.ViewRootImpl#performTraversals()}.
+   * Inlined at the head of {@code android.view.ViewRootImpl#performTraversals(long)}.
    *
    * <p>{@code RenderSessionImpl} establishes the canvas size in {@code measureLayout} and only then
    * runs a traversal. A traversal driven from the {@code Choreographer} instead runs against
