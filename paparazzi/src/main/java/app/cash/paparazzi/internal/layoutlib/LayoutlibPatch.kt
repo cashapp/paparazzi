@@ -23,7 +23,8 @@ import java.security.ProtectionDomain
  *    ([RenderSizingAdvice.MeasureLayoutComplete], [RenderSizingAdvice.WindowRelayout]).
  *
  * Every layoutlib class is offered to the transformer at first load through the ordinary
- * application class loader, so `Advice` can wrap existing methods without adding members.
+ * application class loader, so `Advice` can wrap existing methods without adding members. Targets
+ * that were already loaded when the patch is installed are retransformed instead.
  *
  * Do not replace `Advice` with hand-written ASM: conditionally skipping a method body introduces
  * branches, so stack map frames have to be recomputed, and ASM's `COMPUTE_FRAMES` would need a
@@ -75,7 +76,21 @@ internal object LayoutlibPatch {
   fun install(instrumentation: Instrumentation) {
     if (installed) return
     installed = true
-    instrumentation.addTransformer(Transformer(), false)
+    instrumentation.addTransformer(Transformer(), true)
+
+    // Paparazzi installs this on its first render, but another test in the same JVM can already
+    // have loaded a target (for example `ViewRootImpl`, which reflecting over an Activity pulls in).
+    // A load-time transformer never sees those, so retransform them. `Advice` only rewrites method
+    // bodies, which retransformation allows.
+    val loader = LayoutlibPatch::class.java.classLoader
+    val preloaded = instrumentation.allLoadedClasses.filter { loaded ->
+      loaded.classLoader === loader &&
+        targets.any { it.binaryName == loaded.name } &&
+        instrumentation.isModifiableClass(loaded)
+    }
+    if (preloaded.isNotEmpty()) {
+      instrumentation.retransformClasses(*preloaded.toTypedArray())
+    }
   }
 
   /**
