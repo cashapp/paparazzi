@@ -38,5 +38,8 @@ class MssimTest {
     val actual = createImage(width = 1, height = 1)
     val result = Mssim.compare(expected, actual)
     assertThat(result).isInstanceOf(Differ.DiffResult.Different::class.java)
+    with(result as Differ.DiffResult.Different) {
+      assertThat(percentDifference).isEqualTo(99.99f)
+    }
   }
 }
