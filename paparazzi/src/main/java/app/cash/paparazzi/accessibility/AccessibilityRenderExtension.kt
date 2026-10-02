@@ -61,6 +61,7 @@ public class AccessibilityRenderExtension : RenderExtension {
 
     return LinearLayout(contentView.context).apply {
       orientation = LinearLayout.HORIZONTAL
+      isBaselineAligned = false
       weightSum = 2f
       layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
 
@@ -69,14 +70,16 @@ public class AccessibilityRenderExtension : RenderExtension {
       val baseOverlayDrawable = AccessibilityOverlayDrawable()
       foreground = baseOverlayDrawable
 
-      addView(contentView, LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, 1f))
+      // Measure weighted children only at their final width. A full-width first pass can make
+      // wrapping Compose content shorter and clamp its ScrollState before the half-width pass.
+      addView(contentView, LinearLayout.LayoutParams(0, MATCH_PARENT, 1f))
 
       // The legend renders in the overlay window, above any sub-window's dim scrim, so only its
       // half of the split is reserved here. The placeholder carries the legend's own background so
       // the seam between the two halves composites to the same colour from either window.
       addView(
         View(context).apply { setBackgroundColor(DEFAULT_DESCRIPTION_BACKGROUND_COLOR.toColorInt()) },
-        LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, 1f)
+        LinearLayout.LayoutParams(0, MATCH_PARENT, 1f)
       )
 
       viewTreeObserver.addOnGlobalLayoutListener {
@@ -143,9 +146,10 @@ public class AccessibilityRenderExtension : RenderExtension {
       addView(
         LinearLayout(context).apply {
           orientation = LinearLayout.HORIZONTAL
+          isBaselineAligned = false
           weightSum = 2f
-          addView(View(context), LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, 1f))
-          addView(details, LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, 1f))
+          addView(View(context), LinearLayout.LayoutParams(0, MATCH_PARENT, 1f))
+          addView(details, LinearLayout.LayoutParams(0, MATCH_PARENT, 1f))
         },
         FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
       )
