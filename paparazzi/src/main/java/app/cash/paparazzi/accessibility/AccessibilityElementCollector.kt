@@ -295,18 +295,10 @@ internal class AccessibilityElementCollector {
       }
     }
 
-    if (accessibilityText != null && hasDescriptiveContent(unmergedNodes)) {
+    if (accessibilityText != null) {
       processElement(
         AccessibilityElement(
           // SemanticsNode.id is backed by AtomicInteger and is not guaranteed consistent across runs.
-          id = accessibilityText,
-          displayBounds = displayBounds,
-          contentDescription = accessibilityText
-        )
-      )
-    } else if (accessibilityText != null && !isInteractive()) {
-      processElement(
-        AccessibilityElement(
           id = accessibilityText,
           displayBounds = displayBounds,
           contentDescription = accessibilityText
@@ -578,23 +570,6 @@ internal class AccessibilityElementCollector {
     val role = config.getOrNull(SemanticsProperties.Role)?.toString()
     if (role in INTERACTIVE_ROLES) return true
     return false
-  }
-
-  private fun SemanticsNode.hasDescriptiveContent(unmergedNodes: List<SemanticsNode>?): Boolean {
-    val nodesToCheck = if (config.isMergingSemanticsOfDescendants) {
-      val unmergedNode = unmergedNodes?.filter { it.id == id }?.firstOrNull()
-      unmergedNode?.findAllUnmergedNodes() ?: listOf(this)
-    } else {
-      listOf(this)
-    }
-
-    return nodesToCheck.any { node ->
-      val contentDesc = node.config.getOrNull(SemanticsProperties.ContentDescription)
-      val text = node.config.getOrNull(SemanticsProperties.Text)
-      val editableText = node.config.getOrNull(SemanticsProperties.EditableText)
-      !contentDesc.isNullOrEmpty() || (!text.isNullOrEmpty() && text.any { it.text.isNotBlank() }) ||
-        !editableText?.text.isNullOrBlank()
-    }
   }
 
   private companion object {
