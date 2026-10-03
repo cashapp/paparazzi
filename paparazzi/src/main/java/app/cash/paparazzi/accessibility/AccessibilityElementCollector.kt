@@ -65,7 +65,9 @@ internal class AccessibilityElementCollector {
     val accessibilityText = this.accessibilityText()
     val bounds = Rect().also(::getBoundsOnScreen)
 
-    if (isImportantForAccessibility && accessibilityText != null && hasAccessibleDescription(accessibilityText) && isVisible) {
+    if (isImportantForAccessibility && accessibilityText != null && hasAccessibleDescription(accessibilityText) &&
+      isVisible
+    ) {
       processElement(
         AccessibilityElement(
           id = "${this::class.simpleName}($accessibilityText)",
@@ -590,7 +592,8 @@ internal class AccessibilityElementCollector {
       val contentDesc = node.config.getOrNull(SemanticsProperties.ContentDescription)
       val text = node.config.getOrNull(SemanticsProperties.Text)
       val editableText = node.config.getOrNull(SemanticsProperties.EditableText)
-      !contentDesc.isNullOrEmpty() || (!text.isNullOrEmpty() && text.any { it.text.isNotBlank() }) || !editableText?.text.isNullOrBlank()
+      !contentDesc.isNullOrEmpty() || (!text.isNullOrEmpty() && text.any { it.text.isNotBlank() }) ||
+        !editableText?.text.isNullOrBlank()
     }
   }
 
