@@ -19,7 +19,9 @@ import android.graphics.Rect
 import android.os.ext.util.SdkLevel
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.Checkable
+import android.widget.ImageView
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.AbstractComposeView
@@ -63,12 +65,21 @@ internal class AccessibilityElementCollector {
     val accessibilityText = this.accessibilityText()
     val bounds = Rect().also(::getBoundsOnScreen)
 
-    if (isImportantForAccessibility && !accessibilityText.isNullOrBlank() && isVisible) {
+    if (isImportantForAccessibility && accessibilityText != null && hasAccessibleDescription(accessibilityText) && isVisible) {
       processElement(
         AccessibilityElement(
           id = "${this::class.simpleName}($accessibilityText)",
           displayBounds = bounds,
           contentDescription = accessibilityText
+        )
+      )
+    } else if (isMissingAccessibilityDescription(accessibilityText)) {
+      processElement(
+        AccessibilityElement(
+          id = "${this::class.simpleName}($MISSING_DESCRIPTION_LABEL)",
+          displayBounds = bounds,
+          contentDescription = MISSING_DESCRIPTION_LABEL,
+          isMissingDescription = true
         )
       )
     }
@@ -259,6 +270,8 @@ internal class AccessibilityElementCollector {
     viewBounds: Rect,
     unmergedNodes: List<SemanticsNode>?
   ) {
+    if (isHiddenFromAccessibility()) return
+
     val accessibilityText = if (config.isMergingSemanticsOfDescendants) {
       val unmergedNode = unmergedNodes?.filter { it.id == id }
       unmergedNode?.firstOrNull()?.let { node ->
@@ -272,21 +285,38 @@ internal class AccessibilityElementCollector {
       accessibilityText()
     }
 
-    if (accessibilityText != null) {
-      // SemanticsNode.boundsInScreen isn't reported correctly for nodes so boundsInRoot + locationOnScreen used to correctly calculate displayBounds.
-      val displayBounds = with(boundsInRoot) {
-        Rect(left.toInt(), top.toInt(), right.toInt(), bottom.toInt()).run {
-          offset(locationOnScreen[0], locationOnScreen[1])
-          Rect(left, top, right.coerceIn(0, viewBounds.right), bottom.coerceIn(0, viewBounds.bottom))
-        }
+    // SemanticsNode.boundsInScreen isn't reported correctly for nodes so boundsInRoot + locationOnScreen used to correctly calculate displayBounds.
+    val displayBounds = with(boundsInRoot) {
+      Rect(left.toInt(), top.toInt(), right.toInt(), bottom.toInt()).run {
+        offset(locationOnScreen[0], locationOnScreen[1])
+        Rect(left, top, right.coerceIn(0, viewBounds.right), bottom.coerceIn(0, viewBounds.bottom))
       }
+    }
 
+    if (accessibilityText != null && hasDescriptiveContent(unmergedNodes)) {
       processElement(
         AccessibilityElement(
           // SemanticsNode.id is backed by AtomicInteger and is not guaranteed consistent across runs.
           id = accessibilityText,
           displayBounds = displayBounds,
           contentDescription = accessibilityText
+        )
+      )
+    } else if (accessibilityText != null && !isInteractive()) {
+      processElement(
+        AccessibilityElement(
+          id = accessibilityText,
+          displayBounds = displayBounds,
+          contentDescription = accessibilityText
+        )
+      )
+    } else if (isInteractive()) {
+      processElement(
+        AccessibilityElement(
+          id = MISSING_DESCRIPTION_LABEL,
+          displayBounds = displayBounds,
+          contentDescription = MISSING_DESCRIPTION_LABEL,
+          isMissingDescription = true
         )
       )
     }
@@ -308,15 +338,7 @@ internal class AccessibilityElementCollector {
   }
 
   private fun SemanticsNode.accessibilityText(): String? {
-    val hiddenFromAccessibility =
-      config.getOrNull(SemanticsProperties.InvisibleToUser) != null ||
-        config.getOrNull(SemanticsProperties.HideFromAccessibility) != null
-    val hasZeroAlphaModifier = layoutInfo.getModifierInfo().any {
-      // We don't get direct access to an alpha field but we can inspect the modifiers and see if
-      // a modifier of 0f was applied to the node.
-      it.modifier == Modifier.alpha(0f)
-    }
-    if (hiddenFromAccessibility || hasZeroAlphaModifier) {
+    if (isHiddenFromAccessibility()) {
       return null
     }
 
@@ -500,7 +522,80 @@ internal class AccessibilityElementCollector {
       .replace("\r", "\\r")
       .replace("\t", "\\t")
 
+  private fun View.hasAccessibleDescription(accessibilityText: String?): Boolean {
+    if (accessibilityText.isNullOrBlank()) return false
+    if (this is Checkable) {
+      val mainText = iterableTextForAccessibility?.toString() ?: contentDescription?.toString()
+      return !mainText.isNullOrBlank()
+    }
+    return true
+  }
+
+  private fun View.isMissingAccessibilityDescription(accessibilityText: String?): Boolean {
+    if (!isVisible) return false
+    if (importantForAccessibility == View.IMPORTANT_FOR_ACCESSIBILITY_NO ||
+      importantForAccessibility == View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
+    ) {
+      return false
+    }
+
+    if (this is AbstractComposeView || this is ViewRootForTest || this.javaClass.simpleName == "AndroidComposeView") {
+      return false
+    }
+
+    if (this is ViewGroup && childCount > 0) {
+      return false
+    }
+
+    if (hasAccessibleDescription(accessibilityText)) return false
+
+    if (this is ImageView) {
+      val isInteractive = isClickable || isLongClickable || this is Checkable || this is Button
+      return isInteractive || importantForAccessibility == View.IMPORTANT_FOR_ACCESSIBILITY_YES
+    }
+
+    return isClickable || isLongClickable || this is Checkable || this is Button || (isFocusable && this !is ViewGroup)
+  }
+
+  private fun SemanticsNode.isHiddenFromAccessibility(): Boolean {
+    val hiddenFromAccessibility =
+      config.getOrNull(SemanticsProperties.InvisibleToUser) != null ||
+        config.getOrNull(SemanticsProperties.HideFromAccessibility) != null
+    val hasZeroAlphaModifier = layoutInfo.getModifierInfo().any {
+      it.modifier == Modifier.alpha(0f)
+    }
+    return hiddenFromAccessibility || hasZeroAlphaModifier
+  }
+
+  private fun SemanticsNode.isInteractive(): Boolean {
+    if (config.getOrNull(SemanticsActions.OnClick) != null) return true
+    if (config.getOrNull(SemanticsActions.OnLongClick) != null) return true
+    if (config.getOrNull(SemanticsProperties.ToggleableState) != null) return true
+    if (config.getOrNull(SemanticsProperties.Selected) != null) return true
+    if (config.getOrNull(SemanticsActions.SetProgress) != null) return true
+    val role = config.getOrNull(SemanticsProperties.Role)?.toString()
+    if (role in INTERACTIVE_ROLES) return true
+    return false
+  }
+
+  private fun SemanticsNode.hasDescriptiveContent(unmergedNodes: List<SemanticsNode>?): Boolean {
+    val nodesToCheck = if (config.isMergingSemanticsOfDescendants) {
+      val unmergedNode = unmergedNodes?.filter { it.id == id }?.firstOrNull()
+      unmergedNode?.findAllUnmergedNodes() ?: listOf(this)
+    } else {
+      listOf(this)
+    }
+
+    return nodesToCheck.any { node ->
+      val contentDesc = node.config.getOrNull(SemanticsProperties.ContentDescription)
+      val text = node.config.getOrNull(SemanticsProperties.Text)
+      val editableText = node.config.getOrNull(SemanticsProperties.EditableText)
+      !contentDesc.isNullOrEmpty() || (!text.isNullOrEmpty() && text.any { it.text.isNotBlank() }) || !editableText?.text.isNullOrBlank()
+    }
+  }
+
   private companion object {
+    private val INTERACTIVE_ROLES = setOf("Button", "Checkbox", "Switch", "RadioButton", "Tab")
     private const val ON_CLICK_LABEL = "<on-click>"
     private const val DISABLED_LABEL = "<disabled>"
     private const val TOGGLEABLE_LABEL = "<toggleable>"

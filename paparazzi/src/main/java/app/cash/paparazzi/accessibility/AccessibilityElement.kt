@@ -17,10 +17,17 @@ package app.cash.paparazzi.accessibility
 
 import android.graphics.Rect
 
+internal const val MISSING_DESCRIPTION_LABEL = "<missing-description>"
+
 internal data class AccessibilityElement(
   val id: String,
   val displayBounds: Rect,
-  val contentDescription: String
+  val contentDescription: String,
+  val isMissingDescription: Boolean = contentDescription == MISSING_DESCRIPTION_LABEL
 ) {
-  val color = RenderSettings.getColor(id)
+  val color = if (isMissingDescription) {
+    RenderSettings.WARNING_COLOR
+  } else {
+    RenderSettings.getColor(id)
+  }
 }
