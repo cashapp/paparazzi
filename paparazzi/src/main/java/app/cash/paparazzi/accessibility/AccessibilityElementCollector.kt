@@ -562,13 +562,11 @@ internal class AccessibilityElementCollector {
   }
 
   private fun SemanticsNode.isInteractive(): Boolean {
-    if (config.getOrNull(SemanticsActions.OnClick) != null) return true
-    if (config.getOrNull(SemanticsActions.OnLongClick) != null) return true
+    val role = config.getOrNull(SemanticsProperties.Role)?.toString()
+    if (role in INTERACTIVE_ROLES) return true
     if (config.getOrNull(SemanticsProperties.ToggleableState) != null) return true
     if (config.getOrNull(SemanticsProperties.Selected) != null) return true
     if (config.getOrNull(SemanticsActions.SetProgress) != null) return true
-    val role = config.getOrNull(SemanticsProperties.Role)?.toString()
-    if (role in INTERACTIVE_ROLES) return true
     return false
   }
 
