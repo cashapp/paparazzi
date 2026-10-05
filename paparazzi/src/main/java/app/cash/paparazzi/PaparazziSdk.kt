@@ -19,7 +19,6 @@ import android.animation.AnimationHandler
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Bitmap
-import android.graphics.Rect
 import android.os.Handler
 import android.os.Handler_Delegate
 import android.os.Looper_Accessor
@@ -35,25 +34,19 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
 import androidx.activity.setViewTreeOnBackPressedDispatcherOwner
 import androidx.annotation.LayoutRes
-import androidx.compose.animation.core.AnimationConstants
-import androidx.compose.runtime.BroadcastFrameClock
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MonotonicFrameClock
 import androidx.compose.runtime.Recomposer
-import androidx.compose.runtime.monotonicFrameClock
-import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.InternalComposeUiApi
-import androidx.compose.ui.platform.AndroidUiDispatcher
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.WindowRecomposerPolicy
 import androidx.compose.ui.platform.createLifecycleAwareWindowRecomposer
-import androidx.core.view.doOnAttach
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import app.cash.paparazzi.accessibility.AccessibilityRenderExtension
 import app.cash.paparazzi.agent.InterceptorRegistrar
+import app.cash.paparazzi.internal.AnimationSeeker
 import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.PaparazziCallback
 import app.cash.paparazzi.internal.PaparazziLifecycleOwner
@@ -73,7 +66,6 @@ import com.android.ide.common.rendering.api.SessionParams
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode.SizeAction
 import com.android.internal.lang.System_Delegate
-import com.android.internal.view.OneShotPreDrawListener
 import com.android.layoutlib.bridge.Bridge
 import com.android.layoutlib.bridge.BridgeRenderSession
 import com.android.layoutlib.bridge.impl.RenderAction
@@ -89,14 +81,7 @@ import java.awt.geom.Ellipse2D
 import java.awt.image.BufferedImage
 import java.util.EnumSet
 import java.util.concurrent.TimeUnit
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.android.asCoroutineDispatcher
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 @OptIn(ExperimentalComposeUiApi::class, InternalComposeUiApi::class)
 public class PaparazziSdk @JvmOverloads constructor(
@@ -145,6 +130,9 @@ public class PaparazziSdk @JvmOverloads constructor(
   }
 
   private val logger = PaparazziLogger()
+
+  /** The time of the last frame [withTime] ran, so it can tell when a new snapshot rewinds the clock. */
+  private var lastFrameNanos = 0L
   private lateinit var sessionParams: SessionParams
   private lateinit var renderSession: RenderSessionImpl
   private lateinit var bridgeRenderSession: RenderSession
@@ -161,7 +149,6 @@ public class PaparazziSdk @JvmOverloads constructor(
   public fun setup() {
     if (!isInitialized) {
       registerViewEditModeInterception()
-      InterceptorRegistrar.registerResourcesCompatFontLoadFix()
 
       LayoutlibPatch.install(ByteBuddyAgent.install())
       InterceptorRegistrar.registerMethodInterceptors()
@@ -230,6 +217,54 @@ public class PaparazziSdk @JvmOverloads constructor(
     snapshot(hostView)
   }
 
+  /**
+   * Snapshots [composable] at [offsetMillis].
+   *
+   * With [seekAnimations], supported Compose animations are seeked to [offsetMillis] the way Android
+   * Studio's Animation Preview does, instead of being advanced by the frame clock. This requires
+   * `androidx.compose.ui:ui-tooling` and `androidx.compose.animation:animation-tooling-internal` on
+   * the test classpath, and composes with `LocalInspectionMode` set to true. Animations that cannot
+   * be seeked, such as `Animatable`, stay at time 0.
+   */
+  @JvmOverloads
+  public fun snapshot(offsetMillis: Long, seekAnimations: Boolean = false, composable: @Composable () -> Unit) {
+    val nanos = TimeUnit.MILLISECONDS.toNanos(offsetMillis)
+    withComposeHost(seekAnimations, composable) { hostView, seeker ->
+      takeSnapshots(hostView, nanos, -1, 1, seeker)
+    }
+  }
+
+  /** Records [composable] from [start] to [end]. See [snapshot] for [seekAnimations]. */
+  @JvmOverloads
+  public fun gif(
+    start: Long = 0L,
+    end: Long = 500L,
+    fps: Int = 30,
+    seekAnimations: Boolean = false,
+    composable: @Composable () -> Unit
+  ) {
+    withComposeHost(seekAnimations, composable) { hostView, seeker ->
+      takeSnapshots(hostView, TimeUnit.MILLISECONDS.toNanos(start), fps, frameCount(start, end, fps), seeker)
+    }
+  }
+
+  private fun withComposeHost(
+    seekAnimations: Boolean,
+    composable: @Composable () -> Unit,
+    block: (View, AnimationSeeker?) -> Unit
+  ) {
+    val seeker = if (seekAnimations) AnimationSeeker() else null
+    val hostView = ComposeView(context).apply {
+      layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
+      if (seeker != null) setContent { seeker.Content(composable) } else setContent(composable)
+    }
+    try {
+      block(hostView, seeker)
+    } finally {
+      seeker?.dispose()
+    }
+  }
+
   @JvmOverloads
   public fun snapshot(view: View, offsetMillis: Long = 0L) {
     takeSnapshots(view, TimeUnit.MILLISECONDS.toNanos(offsetMillis), -1, 1)
@@ -237,14 +272,13 @@ public class PaparazziSdk @JvmOverloads constructor(
 
   @JvmOverloads
   public fun gif(view: View, start: Long = 0L, end: Long = 500L, fps: Int = 30) {
-    // Add one to the frame count so we get the last frame. Otherwise a 1 second, 60 FPS animation
-    // our 60th frame will be at time 983 ms, and we want our last frame to be 1,000 ms. This gets
-    // us 61 frames for a 1 second animation, 121 frames for a 2 second animation, etc.
-    val durationMillis = (end - start).toInt()
-    val frameCount = (durationMillis * fps) / 1000 + 1
-    val startNanos = TimeUnit.MILLISECONDS.toNanos(start)
-    takeSnapshots(view, startNanos, fps, frameCount)
+    takeSnapshots(view, TimeUnit.MILLISECONDS.toNanos(start), fps, frameCount(start, end, fps))
   }
+
+  // Add one to the frame count so we get the last frame. Otherwise a 1 second, 60 FPS animation
+  // our 60th frame will be at time 983 ms, and we want our last frame to be 1,000 ms. This gets
+  // us 61 frames for a 1 second animation, 121 frames for a 2 second animation, etc.
+  private fun frameCount(start: Long, end: Long, fps: Int): Int = ((end - start).toInt() * fps) / 1000 + 1
 
   public fun unsafeUpdateConfig(
     deviceConfig: DeviceConfig? = null,
@@ -290,7 +324,7 @@ public class PaparazziSdk @JvmOverloads constructor(
     AnimationHandler.sAnimatorHandler.set(null)
   }
 
-  private fun takeSnapshots(view: View, startNanos: Long, fps: Int, frameCount: Int) {
+  private fun takeSnapshots(view: View, startNanos: Long, fps: Int, frameCount: Int, seeker: AnimationSeeker? = null) {
     val viewGroup = bridgeRenderSession.rootViews[0].viewObject as ViewGroup
     val modifiedView = renderExtensions.fold(view) { currentView, renderExtension ->
       val currentSessionRenderingMode = sessionParams.renderingMode
@@ -319,10 +353,8 @@ public class PaparazziSdk @JvmOverloads constructor(
 
     try {
       AnimationHandler.getInstance().setProvider(SingleDispatchFrameCallbackProvider)
-      if (startNanos == 0L) {
-        withTime(0L) {
-          // Initialize the choreographer at time=0.
-        }
+      withTime(0L) {
+        // Initialize the choreographer at time=0.
       }
 
       // The consumer may not have compose runtime on the classpath, so we don't reference the type.
@@ -340,13 +372,6 @@ public class PaparazziSdk @JvmOverloads constructor(
         // synchronizing expected behavior.
         WindowRecomposerPolicy.setFactory {
           val windowRecomposer = it.createLifecycleAwareWindowRecomposer(MAIN_DISPATCHER)
-
-          CoroutineScope(EmptyCoroutineContext).launch {
-            windowRecomposer.currentState.collectLatest { state ->
-              println("Recomposer changed: $state - ${windowRecomposer.changeCount}")
-            }
-          }
-
           recomposer = windowRecomposer
           return@setFactory windowRecomposer
         }
@@ -372,71 +397,37 @@ public class PaparazziSdk @JvmOverloads constructor(
       // subcomposed during measure, such as a Dialog inside a Scaffold, depends on to exist at all.
       RenderSizingState.canvasSizedForContent =
         sessionParams.renderingMode == RenderingMode.NORMAL
-
-      /**
-       * Compose animation tracks a startTime to ensure animations run correctly.
-       * We need to ensure the startTime is 0 so when we using the startNanos for animation position works correctly.
-       *
-       * Multiple render calls needed for [androidx.compose.animation.core.Transition] like the one used by [androidx.compose.animation.AnimatedVisibility] to work properly.
-       */
-      val frameClock = (recomposer as? Recomposer)?.effectCoroutineContext[MonotonicFrameClock]
-      val broadcastFrameClock = frameClock as? BroadcastFrameClock
-      val recomposerI = (recomposer as Recomposer)
-//      if (recomposer != null && startNanos > 0) {
-      if (startNanos > 0) {
-        withTime(0) {
-          println("Prerender 1")
-          renderSession.render(false)
-          println("Recomposer hasPendingWork= ${recomposer.hasPendingWork()} - ${recomposerI.currentState.value}")
-        }
-        withTime(0) {
-          println("Prerender 2")
-          renderSession.render(false)
-          println("Recomposer hasPendingWork= ${recomposer.hasPendingWork()} - ${recomposerI.currentState.value}")
-        }
+      // Only Compose content needs this: Views start animations from the frame they are drawn in.
+      if (recomposer != null && (startNanos > 0L || seeker != null)) {
+        settleAtTimeZero(recomposer)
       }
 
       for (frame in 0 until frameCount) {
         val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
+        // When seeking, animations are positioned by the seeker and the frame clock stays at the
+        // time every animation started at.
+        val frameTimeNanos = if (seeker != null) 0L else nowNanos
 
         // If we have pendingTasks run recomposer to ensure we get the correct frame.
         var hasPendingWork = false
-        withTime(nowNanos) {
+        withTime(frameTimeNanos) {
+          seeker?.seek(modifiedView, TimeUnit.NANOSECONDS.toMillis(nowNanos))
           resetExpandBaseline()
-          println("Render")
           renderForResult()
-
-          // If we have pending tasks, we need to trigger it within the context of the first frame.
-          if (frame == 0 && recomposer.hasPendingWork()) {
-            hasPendingWork = true
-          }
+          // A seek lands in a snapshot apply, so like Studio it always needs a second render to
+          // show the recomposed state. Otherwise, pending tasks only need it on the first frame.
+          hasPendingWork = seeker != null || (frame == 0 && recomposer.hasPendingWork())
         }
 
         if (hasPendingWork) {
-          /**
-           * Compose animation tracks a startTime to ensure animations run correctly.
-           * We need to ensure the startTime is (0 for single frame snapshots, or the start time for animations) so when we use the withTime function,
-           * the startTime for animation position works correctly.
-           *
-           * Frame clock needs to report (timeNanos = 0) for [androidx.compose.animation.core.Transition] like the one used by [androidx.compose.animation.AnimatedVisibility] to work properly.
-           */
-          val recomposerInstance = recomposer as Recomposer
-          val frameClock = recomposerInstance.effectCoroutineContext[MonotonicFrameClock]
-          val broadcastFrameClock = frameClock as? BroadcastFrameClock
-          println("hasAwaiters = ${broadcastFrameClock?.hasAwaiters} - changeCount=${recomposerInstance.changeCount} currentState=${recomposerInstance.currentState.value} hasPendingWork=${recomposerInstance.hasPendingWork}")
-          if (recomposerInstance.hasPendingWork || broadcastFrameClock?.hasAwaiters == true) {
-//            broadcastFrameClock?.sendFrame(0)
-          }
-
-          withTime(nowNanos) {
+          withTime(frameTimeNanos) {
             resetExpandBaseline()
-            println("Pending Result re-render")
             renderForResult()
           }
 
-          if (recomposerInstance.hasPendingWork) {
+          if (recomposer.hasPendingWork()) {
             logger.warning(
-              "Pending work detected. This may cause unexpected results in your generated snapshots. ${recomposerInstance.changeCount}"
+              "Pending work detected. This may cause unexpected results in your generated snapshots. ${(recomposer as Recomposer).changeCount}"
             )
           }
         }
@@ -475,9 +466,23 @@ public class PaparazziSdk @JvmOverloads constructor(
     }
   }
 
-  private fun Any?.hasPendingWork(): Boolean {
-    return this != null && hasComposeRuntime && (this as Recomposer).hasPendingWork
+  /**
+   * Compose animations measure play time from the frame they first receive. Rendering at t=0 until
+   * the composition is idle lets effects launch and each animation receive its first frame at 0, so
+   * a later offset is measured from 0 rather than from whenever the first render happened. Two
+   * renders are always needed: one to compose and launch effects, one to deliver the first frame.
+   */
+  private fun settleAtTimeZero(recomposer: Any?) {
+    for (render in 0 until MAX_SETTLE_RENDERS) {
+      withTime(0L) {
+        resetExpandBaseline()
+        renderForResult()
+      }
+      if (render >= 1 && !recomposer.hasPendingWork()) return
+    }
   }
+
+  private fun Any?.hasPendingWork(): Boolean = hasComposeRuntime && this != null && (this as Recomposer).hasPendingWork
 
   private fun renderForResult() {
     val result = renderSession.render(true)
@@ -488,6 +493,10 @@ public class PaparazziSdk @JvmOverloads constructor(
 
   private fun withTime(timeNanos: Long, block: () -> Unit) {
     val frameNanos = timeNanos
+    if (frameNanos < lastFrameNanos) {
+      runStaleFrameCallbacks()
+    }
+    lastFrameNanos = frameNanos
 
     // Execute the block at the requested time.
     System_Delegate.setNanosTime(0L)
@@ -513,6 +522,19 @@ public class PaparazziSdk @JvmOverloads constructor(
       Bridge.getLog().error("broken", "Failed executing Choreographer#doFrame", e, null, null)
       throw e
     }
+  }
+
+  /**
+   * Each snapshot rewinds the clock to 0, but layoutlib queues Choreographer callbacks with a due
+   * time on that clock. A callback left over from the previous snapshot would not be due again until
+   * this snapshot reached the same time. Compose's frame dispatcher is shared by every snapshot on the
+   * thread and keeps at most one callback queued, holding every later frame request behind it, so
+   * this snapshot's animations would get no frames before then. Running the leftovers at the time
+   * they were queued for, before the clock moves back, clears them out.
+   */
+  private fun runStaleFrameCallbacks() {
+    RenderAction.getCurrentContext()?.sessionInteractiveData?.choreographerCallbacks
+      ?.execute(lastFrameNanos, Bridge.getLog())
   }
 
   private fun createRenderSession(sessionParams: SessionParams): RenderSessionImpl {
@@ -744,6 +766,8 @@ public class PaparazziSdk @JvmOverloads constructor(
   internal companion object {
     internal lateinit var renderer: Renderer
     internal val isInitialized get() = ::renderer.isInitialized
+
+    private const val MAX_SETTLE_RENDERS = 5
 
     internal lateinit var sessionParamsBuilder: SessionParamsBuilder
 

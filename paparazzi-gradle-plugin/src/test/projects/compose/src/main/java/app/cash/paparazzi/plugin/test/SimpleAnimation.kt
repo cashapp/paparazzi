@@ -51,7 +51,6 @@ fun SimpleAnimation() {
       enter = fadeIn(tween(delayMillis = 200)),
       exit = fadeOut(tween(delayMillis = 100))
     ) {
-      println("PLAY TIME isRunning=${this.transition.isRunning} - totalDurationNanos=${transition.totalDurationNanos} ${transition.currentState})")
       Box(
         Modifier
           .size(100.dp)

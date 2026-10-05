@@ -31,8 +31,6 @@ dependencies {
 }
 
 dependencies {
-  compileOnlyAarAsJar libs.compose.animation.core
-  testImplementationAarAsJar libs.compose.animation.core
   testImplementationAarAsJar libs.androidx.compose.ui.android
   compileOnlyAarAsJar libs.androidx.compose.ui.android
   compileOnlyAarAsJar libs.androidx.activity

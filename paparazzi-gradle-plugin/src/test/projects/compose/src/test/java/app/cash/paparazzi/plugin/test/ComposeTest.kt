@@ -22,10 +22,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.platform.createLifecycleAwareWindowRecomposer
 import app.cash.paparazzi.Paparazzi
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode.SHRINK
 import org.junit.Rule
@@ -125,18 +123,21 @@ class ComposeTest {
 
   @Test
   fun animation() {
-    val view = ComposeView(paparazzi.context).apply {
-      setContent { SimpleAnimation() }
+    paparazzi.gif(fps = 120) { SimpleAnimation() }
+    paparazzi.gif(name = "start-end", fps = 2, end = 500) { SimpleAnimation() }
+    paparazzi.gif(name = "middle-anim", start = 200, fps = 60) { SimpleAnimation() }
+    for (offsetMillis in listOf(1L, 100L, 200L, 300L, 400L, 500L)) {
+      paparazzi.snapshot(name = "${offsetMillis}ms", offsetMillis = offsetMillis) { SimpleAnimation() }
     }
+  }
 
-//    paparazzi.gif(view, fps = 120)
-//    paparazzi.gif(view, name = "start-end", fps = 2, end = 500)
-//    paparazzi.gif(view, name = "middle-anim", start = 200, fps = 60)
-//    paparazzi.snapshot(view = view, offsetMillis = 1, name = "1ms")
-//    paparazzi.snapshot(view = view, offsetMillis = 100, name = "100ms")
-//    paparazzi.snapshot(view = view, offsetMillis = 200, name = "200ms")
-    paparazzi.snapshot(view = view, offsetMillis = 300, name = "300ms")
-//    paparazzi.snapshot(view = view, offsetMillis = 400, name = "400ms")
-//    paparazzi.snapshot(view = view, offsetMillis = 500, name = "500ms")
+  @Test
+  fun animationSeek() {
+    paparazzi.gif(fps = 120, seekAnimations = true) { SimpleAnimation() }
+    for (offsetMillis in listOf(1L, 100L, 200L, 300L, 400L, 500L)) {
+      paparazzi.snapshot(name = "${offsetMillis}ms", offsetMillis = offsetMillis, seekAnimations = true) {
+        SimpleAnimation()
+      }
+    }
   }
 }

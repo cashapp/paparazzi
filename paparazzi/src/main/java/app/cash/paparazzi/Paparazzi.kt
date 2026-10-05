@@ -19,10 +19,8 @@ import android.content.Context
 import android.content.res.Resources
 import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup.LayoutParams
 import androidx.annotation.LayoutRes
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.ComposeView
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode
 import org.junit.rules.TestRule
 import org.junit.runner.Description
@@ -156,6 +154,24 @@ public class Paparazzi @JvmOverloads constructor(
     }
   }
 
+  /**
+   * Snapshots [composable] at [offsetMillis]. With [seekAnimations], supported Compose animations are
+   * seeked to [offsetMillis] the way Android Studio's Animation Preview does. Seeking requires
+   * `androidx.compose.ui:ui-tooling` and `androidx.compose.animation:animation-tooling-internal`
+   * on the test classpath.
+   */
+  public fun snapshot(
+    name: String? = null,
+    offsetMillis: Long,
+    seekAnimations: Boolean = false,
+    composable: @Composable () -> Unit
+  ) {
+    createFrameHandler(name).use { handler ->
+      frameHandler = handler
+      sdk.snapshot(offsetMillis, seekAnimations, composable)
+    }
+  }
+
   public fun gif(
     name: String? = null,
     start: Long = 0L,
@@ -163,26 +179,27 @@ public class Paparazzi @JvmOverloads constructor(
     fps: Int = 30,
     composable: @Composable () -> Unit
   ) {
-    gif(
-      view = ComposeView(context).apply {
-        layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
-        setContent(composable)
-      },
-      name = name,
-      start = start,
-      end = end,
-      fps = fps
-    )
+    gif(name, start, end, fps, seekAnimations = false, composable = composable)
+  }
+
+  /** Records [composable]. See the `snapshot` overload taking `seekAnimations`. */
+  public fun gif(
+    name: String? = null,
+    start: Long = 0L,
+    end: Long = 500L,
+    fps: Int = 30,
+    seekAnimations: Boolean,
+    composable: @Composable () -> Unit
+  ) {
+    createFrameHandler(name, frameCount(start, end, fps), fps).use { handler ->
+      frameHandler = handler
+      sdk.gif(start, end, fps, seekAnimations, composable)
+    }
   }
 
   @JvmOverloads
   public fun gif(view: View, name: String? = null, start: Long = 0L, end: Long = 500L, fps: Int = 30) {
-    // Add one to the frame count so we get the last frame. Otherwise a 1 second, 60 FPS animation
-    // our 60th frame will be at time 983 ms, and we want our last frame to be 1,000 ms. This gets
-    // us 61 frames for a 1 second animation, 121 frames for a 2 second animation, etc.
-    val durationMillis = (end - start).toInt()
-    val frameCount = (durationMillis * fps) / 1000 + 1
-    createFrameHandler(name, frameCount, fps).use { handler ->
+    createFrameHandler(name, frameCount(start, end, fps), fps).use { handler ->
       frameHandler = handler
       sdk.gif(view, start, end, fps)
     }
@@ -193,6 +210,11 @@ public class Paparazzi @JvmOverloads constructor(
     theme: String? = null,
     renderingMode: RenderingMode? = null
   ): Unit = sdk.unsafeUpdateConfig(deviceConfig, theme, renderingMode)
+
+  // Add one to the frame count so we get the last frame. Otherwise a 1 second, 60 FPS animation
+  // our 60th frame will be at time 983 ms, and we want our last frame to be 1,000 ms. This gets
+  // us 61 frames for a 1 second animation, 121 frames for a 2 second animation, etc.
+  private fun frameCount(start: Long, end: Long, fps: Int): Int = ((end - start).toInt() * fps) / 1000 + 1
 
   private fun createFrameHandler(
     name: String? = null,

@@ -22,4 +22,6 @@ android {
 dependencies {
   implementation libs.composeUi.material
   implementation libs.composeUi.uiTooling
+  // Needed by seekAnimations, alongside ui-tooling.
+  testImplementation libs.compose.animation.toolingInternal
 }
