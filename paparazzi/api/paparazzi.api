@@ -177,20 +177,18 @@ public final class app/cash/paparazzi/Paparazzi : org/junit/rules/TestRule {
 	public final fun gif (Landroid/view/View;Ljava/lang/String;JJ)V
 	public final fun gif (Landroid/view/View;Ljava/lang/String;JJI)V
 	public final fun gif (Ljava/lang/String;JJILkotlin/jvm/functions/Function2;)V
-	public final fun gif (Ljava/lang/String;JJIZLkotlin/jvm/functions/Function2;)V
 	public static synthetic fun gif$default (Lapp/cash/paparazzi/Paparazzi;Landroid/view/View;Ljava/lang/String;JJIILjava/lang/Object;)V
 	public static synthetic fun gif$default (Lapp/cash/paparazzi/Paparazzi;Ljava/lang/String;JJILkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
-	public static synthetic fun gif$default (Lapp/cash/paparazzi/Paparazzi;Ljava/lang/String;JJIZLkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
 	public final fun inflate (I)Landroid/view/View;
 	public final fun prepare (Lorg/junit/runner/Description;)V
 	public final fun setup (Lapp/cash/paparazzi/TestName;)V
 	public final fun snapshot (Landroid/view/View;)V
 	public final fun snapshot (Landroid/view/View;Ljava/lang/String;)V
 	public final fun snapshot (Landroid/view/View;Ljava/lang/String;J)V
-	public final fun snapshot (Ljava/lang/String;JZLkotlin/jvm/functions/Function2;)V
+	public final fun snapshot (Ljava/lang/String;JLkotlin/jvm/functions/Function2;)V
 	public final fun snapshot (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
 	public static synthetic fun snapshot$default (Lapp/cash/paparazzi/Paparazzi;Landroid/view/View;Ljava/lang/String;JILjava/lang/Object;)V
-	public static synthetic fun snapshot$default (Lapp/cash/paparazzi/Paparazzi;Ljava/lang/String;JZLkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
+	public static synthetic fun snapshot$default (Lapp/cash/paparazzi/Paparazzi;Ljava/lang/String;JLkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
 	public static synthetic fun snapshot$default (Lapp/cash/paparazzi/Paparazzi;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
 	public final fun teardown ()V
 	public final fun unsafeUpdateConfig (Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;)V
@@ -216,7 +214,6 @@ public final class app/cash/paparazzi/PaparazziSdk {
 	public final fun getLayoutInflater ()Landroid/view/LayoutInflater;
 	public final fun getResources ()Landroid/content/res/Resources;
 	public final fun gif (JJILkotlin/jvm/functions/Function2;)V
-	public final fun gif (JJIZLkotlin/jvm/functions/Function2;)V
 	public final fun gif (JJLkotlin/jvm/functions/Function2;)V
 	public final fun gif (JLkotlin/jvm/functions/Function2;)V
 	public final fun gif (Landroid/view/View;)V
@@ -224,17 +221,15 @@ public final class app/cash/paparazzi/PaparazziSdk {
 	public final fun gif (Landroid/view/View;JJ)V
 	public final fun gif (Landroid/view/View;JJI)V
 	public final fun gif (Lkotlin/jvm/functions/Function2;)V
-	public static synthetic fun gif$default (Lapp/cash/paparazzi/PaparazziSdk;JJIZLkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
+	public static synthetic fun gif$default (Lapp/cash/paparazzi/PaparazziSdk;JJILkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
 	public static synthetic fun gif$default (Lapp/cash/paparazzi/PaparazziSdk;Landroid/view/View;JJIILjava/lang/Object;)V
 	public final fun inflate (I)Landroid/view/View;
 	public final fun prepare ()V
 	public final fun setup ()V
 	public final fun snapshot (JLkotlin/jvm/functions/Function2;)V
-	public final fun snapshot (JZLkotlin/jvm/functions/Function2;)V
 	public final fun snapshot (Landroid/view/View;)V
 	public final fun snapshot (Landroid/view/View;J)V
 	public final fun snapshot (Lkotlin/jvm/functions/Function2;)V
-	public static synthetic fun snapshot$default (Lapp/cash/paparazzi/PaparazziSdk;JZLkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
 	public static synthetic fun snapshot$default (Lapp/cash/paparazzi/PaparazziSdk;Landroid/view/View;JILjava/lang/Object;)V
 	public final fun teardown ()V
 	public final fun unsafeUpdateConfig (Lapp/cash/paparazzi/DeviceConfig;Ljava/lang/String;Lcom/android/ide/common/rendering/api/SessionParams$RenderingMode;)V

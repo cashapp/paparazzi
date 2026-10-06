@@ -154,21 +154,11 @@ public class Paparazzi @JvmOverloads constructor(
     }
   }
 
-  /**
-   * Snapshots [composable] at [offsetMillis]. With [seekAnimations], supported Compose animations are
-   * seeked to [offsetMillis] the way Android Studio's Animation Preview does. Seeking requires
-   * `androidx.compose.ui:ui-tooling` and `androidx.compose.animation:animation-tooling-internal`
-   * on the test classpath.
-   */
-  public fun snapshot(
-    name: String? = null,
-    offsetMillis: Long,
-    seekAnimations: Boolean = false,
-    composable: @Composable () -> Unit
-  ) {
+  /** Snapshots [composable] at [offsetMillis]. */
+  public fun snapshot(name: String? = null, offsetMillis: Long, composable: @Composable () -> Unit) {
     createFrameHandler(name).use { handler ->
       frameHandler = handler
-      sdk.snapshot(offsetMillis, seekAnimations, composable)
+      sdk.snapshot(offsetMillis, composable)
     }
   }
 
@@ -179,21 +169,9 @@ public class Paparazzi @JvmOverloads constructor(
     fps: Int = 30,
     composable: @Composable () -> Unit
   ) {
-    gif(name, start, end, fps, seekAnimations = false, composable = composable)
-  }
-
-  /** Records [composable]. See the `snapshot` overload taking `seekAnimations`. */
-  public fun gif(
-    name: String? = null,
-    start: Long = 0L,
-    end: Long = 500L,
-    fps: Int = 30,
-    seekAnimations: Boolean,
-    composable: @Composable () -> Unit
-  ) {
     createFrameHandler(name, frameCount(start, end, fps), fps).use { handler ->
       frameHandler = handler
-      sdk.gif(start, end, fps, seekAnimations, composable)
+      sdk.gif(start, end, fps, composable)
     }
   }
 

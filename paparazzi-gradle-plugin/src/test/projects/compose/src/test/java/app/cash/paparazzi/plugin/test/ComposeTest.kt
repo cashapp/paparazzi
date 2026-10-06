@@ -138,35 +138,15 @@ class ComposeTest {
     }
   }
 
-  @Test
-  fun animationSeek() {
-    paparazzi.gif(fps = 120, seekAnimations = true) { SimpleAnimation() }
-    for (offsetMillis in listOf(1L, 100L, 200L, 300L, 400L, 500L)) {
-      paparazzi.snapshot(name = "${offsetMillis}ms", offsetMillis = offsetMillis, seekAnimations = true) {
-        SimpleAnimation()
-      }
-    }
-  }
-
   /**
-   * Starts its animation 150ms after composition. The frame clock renders it relative to when it
-   * started; seeking sets its play time to the absolute offset. Compare against [delayedAnimationSeek].
+   * Starts its animation after a 150ms `delay`. Offset snapshots must run the delay when it is due,
+   * not at the snapshot time, or the animation would always render at play time 0.
    */
   @Test
   fun delayedAnimation() {
     paparazzi.gif(fps = 60) { DelayedAnimation() }
     for (offsetMillis in listOf(100L, 200L, 300L, 400L, 500L)) {
       paparazzi.snapshot(name = "${offsetMillis}ms", offsetMillis = offsetMillis) { DelayedAnimation() }
-    }
-  }
-
-  @Test
-  fun delayedAnimationSeek() {
-    paparazzi.gif(fps = 60, seekAnimations = true) { DelayedAnimation() }
-    for (offsetMillis in listOf(100L, 200L, 300L, 400L, 500L)) {
-      paparazzi.snapshot(name = "${offsetMillis}ms", offsetMillis = offsetMillis, seekAnimations = true) {
-        DelayedAnimation()
-      }
     }
   }
 }

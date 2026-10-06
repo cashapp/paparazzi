@@ -46,7 +46,6 @@ import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import app.cash.paparazzi.accessibility.AccessibilityRenderExtension
 import app.cash.paparazzi.agent.InterceptorRegistrar
-import app.cash.paparazzi.internal.AnimationSeeker
 import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.PaparazziCallback
 import app.cash.paparazzi.internal.PaparazziLifecycleOwner
@@ -217,53 +216,27 @@ public class PaparazziSdk @JvmOverloads constructor(
     snapshot(hostView)
   }
 
-  /**
-   * Snapshots [composable] at [offsetMillis].
-   *
-   * With [seekAnimations], supported Compose animations are seeked to [offsetMillis] the way Android
-   * Studio's Animation Preview does, instead of being advanced by the frame clock. This requires
-   * `androidx.compose.ui:ui-tooling` and `androidx.compose.animation:animation-tooling-internal` on
-   * the test classpath, and composes with `LocalInspectionMode` set to true. Animations that cannot
-   * be seeked, such as `Animatable`, stay at time 0.
-   */
-  @JvmOverloads
-  public fun snapshot(offsetMillis: Long, seekAnimations: Boolean = false, composable: @Composable () -> Unit) {
-    val nanos = TimeUnit.MILLISECONDS.toNanos(offsetMillis)
-    withComposeHost(seekAnimations, composable) { hostView, seeker ->
-      takeSnapshots(hostView, nanos, -1, 1, seeker)
-    }
+  /** Snapshots [composable] at [offsetMillis]. */
+  public fun snapshot(offsetMillis: Long, composable: @Composable () -> Unit) {
+    takeSnapshots(composeHost(composable), TimeUnit.MILLISECONDS.toNanos(offsetMillis), -1, 1)
   }
 
-  /** Records [composable] from [start] to [end]. See [snapshot] for [seekAnimations]. */
+  /** Records [composable] from [start] to [end]. */
   @JvmOverloads
   public fun gif(
     start: Long = 0L,
     end: Long = 500L,
     fps: Int = 30,
-    seekAnimations: Boolean = false,
     composable: @Composable () -> Unit
   ) {
-    withComposeHost(seekAnimations, composable) { hostView, seeker ->
-      takeSnapshots(hostView, TimeUnit.MILLISECONDS.toNanos(start), fps, frameCount(start, end, fps), seeker)
-    }
+    takeSnapshots(composeHost(composable), TimeUnit.MILLISECONDS.toNanos(start), fps, frameCount(start, end, fps))
   }
 
-  private fun withComposeHost(
-    seekAnimations: Boolean,
-    composable: @Composable () -> Unit,
-    block: (View, AnimationSeeker?) -> Unit
-  ) {
-    val seeker = if (seekAnimations) AnimationSeeker() else null
-    val hostView = ComposeView(context).apply {
+  private fun composeHost(composable: @Composable () -> Unit): View =
+    ComposeView(context).apply {
       layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
-      if (seeker != null) setContent { seeker.Content(composable) } else setContent(composable)
+      setContent(composable)
     }
-    try {
-      block(hostView, seeker)
-    } finally {
-      seeker?.dispose()
-    }
-  }
 
   @JvmOverloads
   public fun snapshot(view: View, offsetMillis: Long = 0L) {
@@ -324,7 +297,7 @@ public class PaparazziSdk @JvmOverloads constructor(
     AnimationHandler.sAnimatorHandler.set(null)
   }
 
-  private fun takeSnapshots(view: View, startNanos: Long, fps: Int, frameCount: Int, seeker: AnimationSeeker? = null) {
+  private fun takeSnapshots(view: View, startNanos: Long, fps: Int, frameCount: Int) {
     val viewGroup = bridgeRenderSession.rootViews[0].viewObject as ViewGroup
     val modifiedView = renderExtensions.fold(view) { currentView, renderExtension ->
       val currentSessionRenderingMode = sessionParams.renderingMode
@@ -398,31 +371,24 @@ public class PaparazziSdk @JvmOverloads constructor(
       RenderSizingState.canvasSizedForContent =
         sessionParams.renderingMode == RenderingMode.NORMAL
       // Only Compose content needs this: Views start animations from the frame they are drawn in.
-      if (recomposer != null && (startNanos > 0L || seeker != null)) {
+      if (recomposer != null && startNanos > 0L) {
         settleAtTimeZero(recomposer)
       }
 
       for (frame in 0 until frameCount) {
         val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
-        // When seeking, animations are positioned by the seeker and the frame clock stays at the
-        // time every animation started at.
-        val frameTimeNanos = if (seeker != null) 0L else nowNanos
-
-        if (recomposer != null && seeker == null) advanceFramesTo(frameTimeNanos)
+        if (recomposer != null) advanceFramesTo(nowNanos)
 
         // If we have pendingTasks run recomposer to ensure we get the correct frame.
         var hasPendingWork = false
-        withTime(frameTimeNanos) {
-          seeker?.seek(modifiedView, TimeUnit.NANOSECONDS.toMillis(nowNanos))
+        withTime(nowNanos) {
           resetExpandBaseline()
           renderForResult()
-          // A seek lands in a snapshot apply, so like Studio it always needs a second render to
-          // show the recomposed state. Otherwise, pending tasks only need it on the first frame.
-          hasPendingWork = seeker != null || (frame == 0 && recomposer.hasPendingWork())
+          hasPendingWork = frame == 0 && recomposer.hasPendingWork()
         }
 
         if (hasPendingWork) {
-          withTime(frameTimeNanos) {
+          withTime(nowNanos) {
             resetExpandBaseline()
             renderForResult()
           }
