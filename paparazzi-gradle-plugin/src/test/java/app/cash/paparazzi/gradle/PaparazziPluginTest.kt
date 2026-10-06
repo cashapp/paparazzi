@@ -1489,6 +1489,28 @@ class PaparazziPluginTest {
       .runFixture(fixtureRoot) { build() }
   }
 
+  /** Regression test for https://github.com/cashapp/paparazzi/issues/1968 */
+  @Test
+  fun runtimeConfigurationVariant() {
+    val fixtureRoot = File("src/test/projects/runtimeConfigurationVariant")
+
+    gradleRunner
+      .withArguments("app:preparePaparazziDebugResources", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val resourcesFile = File(fixtureRoot, "app/build/intermediates/paparazzi/debug/resources.json")
+    val config = resourcesFile.loadConfig()
+    // unitTest.runtimeConfiguration resolves work-runtime-ktx:2.11.2 (testImplementation wins over the transitive 2.10.0 from :lib),
+    // which drops the room-ktx anchor AAR that caused ClassNotFoundException
+    assertThat(config.aarExplodedDirs)
+      .comparingElementsUsing(MATCHES_PATTERN)
+      .contains("$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/work-runtime-ktx-2\\.11\\.2/res\$")
+
+    gradleRunner
+      .withArguments("app:verifyPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+  }
+
   @Test
   @Ignore
   fun withMaterialComponents() {
