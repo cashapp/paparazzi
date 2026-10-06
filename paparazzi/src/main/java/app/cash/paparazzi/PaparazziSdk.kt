@@ -397,7 +397,14 @@ public class PaparazziSdk @JvmOverloads constructor(
             }
             validateLayoutAccessibility(modifiedView, image)
           }
-          val windowRoots = bridgeRenderSession.rootViews.map { it.viewObject as View }
+          // rootViews contains only the primary content on current Layoutlib. The system roots
+          // include attached windows; normalize their children to window roots and collect each
+          // window once, keeping the primary content after the overlays.
+          val primaryRoot = view.rootView
+          val windowRoots = bridgeRenderSession.systemRootViews
+            .map { (it.viewObject as View).rootView }
+            .distinct()
+            .filterNot { it === primaryRoot } + primaryRoot
           accessibilityHierarchyGenerator.generate(
             windowRoots = windowRoots,
             width = image.width,
