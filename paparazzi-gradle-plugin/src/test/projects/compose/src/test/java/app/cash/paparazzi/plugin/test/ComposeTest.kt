@@ -2,7 +2,9 @@ package app.cash.paparazzi.plugin.test
 
 import androidx.compose.animation.Animatable
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
@@ -16,8 +18,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,6 +32,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import app.cash.paparazzi.Paparazzi
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode.SHRINK
+import kotlinx.coroutines.delay
 import org.junit.Rule
 import org.junit.Test
 import kotlin.math.roundToInt
@@ -139,5 +146,54 @@ class ComposeTest {
         SimpleAnimation()
       }
     }
+  }
+
+  /**
+   * Starts its animation 150ms after composition. The frame clock renders it relative to when it
+   * started; seeking sets its play time to the absolute offset. Compare against [delayedAnimationSeek].
+   */
+  @Test
+  fun delayedAnimation() {
+    paparazzi.gif(fps = 60) { DelayedAnimation() }
+    for (offsetMillis in listOf(100L, 200L, 300L, 400L, 500L)) {
+      paparazzi.snapshot(name = "${offsetMillis}ms", offsetMillis = offsetMillis) { DelayedAnimation() }
+    }
+  }
+
+  @Test
+  fun delayedAnimationSeek() {
+    paparazzi.gif(fps = 60, seekAnimations = true) { DelayedAnimation() }
+    for (offsetMillis in listOf(100L, 200L, 300L, 400L, 500L)) {
+      paparazzi.snapshot(name = "${offsetMillis}ms", offsetMillis = offsetMillis, seekAnimations = true) {
+        DelayedAnimation()
+      }
+    }
+  }
+}
+
+@Composable
+private fun DelayedAnimation() {
+  var expanded by remember { mutableStateOf(false) }
+  LaunchedEffect(Unit) {
+    delay(150)
+    expanded = true
+  }
+
+  val transition = updateTransition(expanded, label = "delayed")
+  val width by transition.animateDp(
+    transitionSpec = { tween(300, easing = LinearEasing) },
+    label = "width"
+  ) { if (it) 300.dp else 20.dp }
+
+  Box(
+    Modifier
+      .fillMaxSize()
+      .background(Color.White)
+  ) {
+    Box(
+      Modifier
+        .size(width = width, height = 60.dp)
+        .background(Color(0xFF2C6BED))
+    )
   }
 }

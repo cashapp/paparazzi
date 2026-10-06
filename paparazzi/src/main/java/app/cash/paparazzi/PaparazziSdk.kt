@@ -408,6 +408,8 @@ public class PaparazziSdk @JvmOverloads constructor(
         // time every animation started at.
         val frameTimeNanos = if (seeker != null) 0L else nowNanos
 
+        if (recomposer != null && seeker == null) advanceFramesTo(frameTimeNanos)
+
         // If we have pendingTasks run recomposer to ensure we get the correct frame.
         var hasPendingWork = false
         withTime(frameTimeNanos) {
@@ -479,6 +481,20 @@ public class PaparazziSdk @JvmOverloads constructor(
         renderForResult()
       }
       if (render >= 1 && !recomposer.hasPendingWork()) return
+    }
+  }
+
+  /**
+   * Ticks the clock through every frame between the last frame and [targetNanos], without drawing.
+   * Handler messages (such as a coroutine `delay`) and the state changes they make then run at the
+   * frame they are due in, so animations they start measure their play time from then rather than
+   * from [targetNanos]. Jumping straight to [targetNanos] would start them all at play time 0.
+   */
+  private fun advanceFramesTo(targetNanos: Long) {
+    var nanos = lastFrameNanos + FRAME_INTERVAL_NANOS
+    while (nanos < targetNanos) {
+      withTime(nanos) {}
+      nanos += FRAME_INTERVAL_NANOS
     }
   }
 
@@ -768,6 +784,9 @@ public class PaparazziSdk @JvmOverloads constructor(
     internal val isInitialized get() = ::renderer.isInitialized
 
     private const val MAX_SETTLE_RENDERS = 5
+
+    /** A 60Hz frame, the cadence frames are stepped at between snapshot times. */
+    private const val FRAME_INTERVAL_NANOS = 1_000_000_000L / 60
 
     internal lateinit var sessionParamsBuilder: SessionParamsBuilder
 
