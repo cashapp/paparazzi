@@ -21,6 +21,7 @@ import app.cash.paparazzi.Differ.DiffResult.Different
 import app.cash.paparazzi.Differ.DiffResult.Identical
 import app.cash.paparazzi.Differ.DiffResult.Similar
 import app.cash.paparazzi.internal.apng.ApngWriter
+import app.cash.paparazzi.internal.differs.OffByTwo
 import okio.Path.Companion.toPath
 import java.awt.AlphaComposite
 import java.awt.Color
@@ -56,7 +57,9 @@ internal object ImageUtils {
     failureDir: File,
     differ: Differ
   ) {
-    val (deltaImage, percentDifference) = compareImages(goldenImage, image, differ)
+    val normalizedGolden = normalizeGoldenImage(goldenImage)
+    if (maxPercentDifferent >= 0 && imagesMatch(normalizedGolden, image, differ)) return
+    val (deltaImage, percentDifference) = compareImages(normalizedGolden, image, differ)
 
     val goldenImageWidth = goldenImage.width
     val goldenImageHeight = goldenImage.height
@@ -131,15 +134,7 @@ internal object ImageUtils {
 
   @Throws(IOException::class)
   fun compareImages(goldenImage: BufferedImage, image: BufferedImage, differ: Differ): Pair<BufferedImage, Float> {
-    var goldenImage = goldenImage
-    if (goldenImage.type != TYPE_INT_ARGB) {
-      val temp = BufferedImage(goldenImage.width, goldenImage.height, TYPE_INT_ARGB)
-      temp.graphics.drawImage(goldenImage, 0, 0, null)
-      goldenImage = temp
-    }
-    if (TYPE_INT_ARGB != goldenImage.type) {
-      throw IllegalStateException("expected:<$TYPE_INT_ARGB> but was:<${goldenImage.type}>")
-    }
+    val goldenImage = normalizeGoldenImage(goldenImage)
 
     differ.compare(goldenImage, image).let { result ->
       return when (result) {
@@ -147,6 +142,19 @@ internal object ImageUtils {
         is Similar -> result.delta to 0f
         is Different -> result.delta to result.percentDifference
       }
+    }
+  }
+
+  // Only the built-in differ can use this shortcut: custom differs must always be invoked.
+  fun imagesMatch(goldenImage: BufferedImage, image: BufferedImage, differ: Differ): Boolean =
+    differ === OffByTwo && OffByTwo.isSimilar(goldenImage, image)
+
+  private fun normalizeGoldenImage(image: BufferedImage): BufferedImage {
+    if (image.type == TYPE_INT_ARGB) return image
+    return BufferedImage(image.width, image.height, TYPE_INT_ARGB).apply {
+      val g = createGraphics()
+      g.drawImage(image, 0, 0, null)
+      g.dispose()
     }
   }
 
