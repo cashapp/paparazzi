@@ -26,5 +26,17 @@ dependencies {
   implementation libs.composeUi.material
   implementation libs.composeUi.material.icons
   implementation libs.androidx.appcompat
+
+  testImplementation libs.truth
 }
 
+// Inspect the collector's internal model in the Android fixture, where Compose's
+// generated resource classes are available.
+tasks.matching { it.name == "compileDebugUnitTestKotlin" }.configureEach {
+  compilerOptions.freeCompilerArgs.add(provider {
+    def paparazziJar = libraries.files.find {
+      it.name.startsWith("paparazzi-") && it.name.endsWith(".jar")
+    }
+    "-Xfriend-paths=${paparazziJar.absolutePath}"
+  })
+}
