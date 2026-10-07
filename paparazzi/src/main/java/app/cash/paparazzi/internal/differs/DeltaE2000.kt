@@ -15,6 +15,9 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 internal object DeltaE2000 : Differ {
+
+  private const val THRESHOLD = 2.3 // JND threshold for perceptible difference
+
   override fun compare(expected: BufferedImage, actual: BufferedImage): DiffResult {
     require(expected.width == actual.width && expected.height == actual.height)
 
@@ -31,17 +34,17 @@ internal object DeltaE2000 : Differ {
         val rgb1 = Color(expected.getRGB(x, y))
         val rgb2 = Color(actual.getRGB(x, y))
 
-        val lab1 = rgbToLab(rgb1)
-        val lab2 = rgbToLab(rgb2)
-
-        val deltaE = deltaE2000(lab1, lab2)
-
-        val isDifferent = deltaE > 2.3 // JND (just noticeable difference) threshold
-
-        if (isDifferent) {
-          numDifferent++
+        val deltaE = if (rgb1 != rgb2) {
+          val lab1 = rgbToLab(rgb1)
+          val lab2 = rgbToLab(rgb2)
+          deltaE2000(lab1, lab2)
         } else {
-          numSimilar++
+          0.0
+        }
+
+        when {
+          deltaE > THRESHOLD -> numDifferent++
+          deltaE > 0.0 -> numSimilar++ // Imperceptibly different but not identical
         }
 
         // Encode delta visually as grayscale based on magnitude
@@ -57,9 +60,13 @@ internal object DeltaE2000 : Differ {
     val percentDifference = numDifferent.toFloat() / totalPixels * 100f
 
     return when {
-      percentDifference == 0f -> DiffResult.Identical(deltaImage)
-      percentDifference < 5f -> DiffResult.Similar(deltaImage, numSimilar)
-      else -> DiffResult.Different(deltaImage, percentDifference, numDifferent)
+      numDifferent + numSimilar == 0L -> DiffResult.Identical(delta = deltaImage)
+      numDifferent == 0L -> DiffResult.Similar(delta = deltaImage, numSimilarPixels = numSimilar)
+      else -> DiffResult.Different(
+        delta = deltaImage,
+        percentDifference = percentDifference,
+        numDifferentPixels = numDifferent
+      )
     }
   }
 
