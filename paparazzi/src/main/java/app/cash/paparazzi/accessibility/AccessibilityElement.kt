@@ -25,8 +25,10 @@ import androidx.compose.ui.semantics.LiveRegionMode.Companion.Assertive
 import androidx.compose.ui.semantics.LiveRegionMode.Companion.Polite
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.semantics.SemanticsConfiguration
 import androidx.compose.ui.semantics.SemanticsNode
 import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.SemanticsPropertyKey
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.LinkAnnotation
@@ -49,10 +51,16 @@ internal data class AccessibilityElement(
   val liveRegionMode: String? = null,
   val annotatedStringActions: String? = null,
   val customActions: String? = null,
-  val isInList: String? = null
+  val isInList: String? = null,
+  // Keep the unmerged sources so the legend retains its descendant-first ordering.
+  val unmergedElements: List<AccessibilityElement> = emptyList()
 ) {
   val legendText: String
     get() {
+      if (unmergedElements.isNotEmpty()) {
+        return unmergedElements.joinToString(", ") { it.legendText }
+      }
+
       val textList = listOfNotNull(
         stateDescription,
         selected,
@@ -90,23 +98,38 @@ internal data class AccessibilityElement(
       displayBounds: Rect,
       unmergedNodes: List<SemanticsNode>?
     ): AccessibilityElement? {
-      val mergedAccessibilityText = if (node.config.isMergingSemanticsOfDescendants) {
-        val unmergedNode = unmergedNodes?.firstOrNull { it.id == node.id }
-        unmergedNode?.findAllUnmergedNodes()
-          ?.mapNotNull { it.toSemanticsLegendText()?.takeIf { text -> text.isNotBlank() } }
-          ?.joinToString(", ")
-          ?.ifEmpty { null }
-          ?.takeIf { it != IN_LIST_LABEL }
+      val unmergedNode = if (node.config.isMergingSemanticsOfDescendants) {
+        unmergedNodes?.firstOrNull { it.id == node.id }
       } else {
         null
       }
 
-      if (mergedAccessibilityText != null) {
-        return AccessibilityElement(
+      if (unmergedNode != null) {
+        val elementsByNodeId = mutableMapOf<Int, AccessibilityElement>()
+        val filteredNodes = unmergedNode.findAllUnmergedNodes(parentFirst = true).filter {
+          val element = it.toSemanticsElement(displayBounds) ?: return@filter false
+          elementsByNodeId[it.id] = element
+          true
+        }
+        if (filteredNodes.isEmpty()) return null
+
+        // Apply Compose's merge policies only to the sources retained by the legend.
+        // The parent's own properties are copied directly; descendant properties may
+        // have different merge policies (for example, a child's role is not inherited).
+        val mergedConfig = if (unmergedNode.id in elementsByNodeId) {
+          unmergedNode.config.copy()
+        } else {
+          SemanticsConfiguration()
+        }
+        filteredNodes.filter { it.id != unmergedNode.id }.forEach { descendant ->
+          descendant.config.forEach { (key, value) -> mergedConfig.mergeProperty(key, value) }
+        }
+        val unmergedElements = unmergedNode.findAllUnmergedNodes().mapNotNull { elementsByNodeId[it.id] }
+        val element = (node.toSemanticsElement(displayBounds, mergedConfig) ?: AccessibilityElement("", displayBounds))
+          .copy(unmergedElements = unmergedElements)
+        return element.copy(
           // SemanticsNode.id is backed by AtomicInteger and is not guaranteed consistent across runs.
-          id = mergedAccessibilityText,
-          displayBounds = displayBounds,
-          mainAccessibilityText = mergedAccessibilityText
+          id = element.legendText
         )
       }
 
@@ -182,7 +205,10 @@ internal data class AccessibilityElement(
       return element.takeIf { it.legendText.isNotBlank() }
     }
 
-    private fun SemanticsNode.toSemanticsElement(displayBounds: Rect): AccessibilityElement? {
+    private fun SemanticsNode.toSemanticsElement(
+      displayBounds: Rect,
+      config: SemanticsConfiguration = this.config
+    ): AccessibilityElement? {
       val hiddenFromAccessibility =
         config.getOrNull(SemanticsProperties.InvisibleToUser) != null ||
           config.getOrNull(SemanticsProperties.HideFromAccessibility) != null
@@ -297,9 +323,14 @@ internal data class AccessibilityElement(
       return element.takeIf { it.legendText.isNotBlank() }
     }
 
-    private fun SemanticsNode.toSemanticsLegendText(): String? = toSemanticsElement(Rect())?.legendText
+    private fun SemanticsConfiguration.mergeProperty(key: SemanticsPropertyKey<*>, value: Any?) {
+      @Suppress("UNCHECKED_CAST")
+      val typedKey = key as SemanticsPropertyKey<Any?>
+      val mergedValue = typedKey.merge(getOrNull(typedKey), value) ?: return
+      this[typedKey] = mergedValue
+    }
 
-    private fun SemanticsNode.findAllUnmergedNodes(): List<SemanticsNode> {
+    private fun SemanticsNode.findAllUnmergedNodes(parentFirst: Boolean = false): List<SemanticsNode> {
       if (config.isClearingSemantics) {
         // Semantics information is already set on parent semantic node where `clearAndSetSemantics` is called.
         // No need to iterate through children.
@@ -307,12 +338,13 @@ internal data class AccessibilityElement(
       }
 
       return buildList {
+        if (parentFirst) add(this@findAllUnmergedNodes)
         addAll(
           children
             .filter { !it.config.isMergingSemanticsOfDescendants }
-            .flatMap { it.findAllUnmergedNodes() }
+            .flatMap { it.findAllUnmergedNodes(parentFirst) }
         )
-        add(this@findAllUnmergedNodes)
+        if (!parentFirst) add(this@findAllUnmergedNodes)
       }
     }
 

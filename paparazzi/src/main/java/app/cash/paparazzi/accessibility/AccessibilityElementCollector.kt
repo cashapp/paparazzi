@@ -87,7 +87,7 @@ internal class AccessibilityElementCollector {
     }
   }
 
-  private fun SemanticsNode.orderSemanticsNodeGroup(): List<SemanticsNode> {
+  internal fun SemanticsNode.orderSemanticsNodeGroup(): List<SemanticsNode> {
     val topLevelNodes = mutableListOf<SemanticsNodeTraversalEntry>()
 
     val currentNodeTraversalIndex = config.getOrNull(SemanticsProperties.TraversalIndex)
