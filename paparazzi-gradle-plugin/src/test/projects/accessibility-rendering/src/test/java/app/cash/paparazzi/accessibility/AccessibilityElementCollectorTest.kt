@@ -1,6 +1,9 @@
 package app.cash.paparazzi.accessibility
 
 import android.graphics.Rect
+import android.view.View
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -22,6 +25,7 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.toggleableState
 import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.state.ToggleableState
+import androidx.compose.ui.unit.dp
 import app.cash.paparazzi.Paparazzi
 import app.cash.paparazzi.Snapshot
 import app.cash.paparazzi.SnapshotHandler
@@ -42,6 +46,8 @@ class AccessibilityElementCollectorTest {
       override fun close() = Unit
     }
   )
+
+  private val collector = AccessibilityElementCollector()
 
   @Test
   fun `merged controls retain structured metadata and legend order`() {
@@ -149,6 +155,114 @@ class AccessibilityElementCollectorTest {
 
     assertThat(requireNotNull(labels)).containsExactly("First", "Second", "Third", "Last").inOrder()
     assertThat(requireNotNull(nodeIds)).containsNoDuplicates()
+  }
+
+  @Test
+  fun `non-merging parent with content description does not suppress missing description on child`() {
+    var elements: Set<AccessibilityElement>? = null
+    paparazzi.snapshot {
+      val root = LocalView.current as ViewRootForTest
+      SemanticsLayout(
+        Modifier
+          .drawWithContent {
+            drawContent()
+            elements = collector.collect((root.view.parent as? View) ?: root.view, null)
+          }
+          .semantics { contentDescription = "Container description" }
+      ) {
+        SemanticsLayout(
+          Modifier
+            .size(48.dp)
+            .clickable(role = Role.Button) {}
+        )
+      }
+    }
+
+    val collected = requireNotNull(elements)
+    val buttonElement = collected.firstOrNull { it.role == "Button" || it.id.contains("Button") }
+    assertThat(buttonElement).isNotNull()
+    assertThat(buttonElement!!.isMissingDescription).isTrue()
+    assertThat(buttonElement.id).contains(MISSING_DESCRIPTION_LABEL)
+  }
+
+  @Test
+  fun `merging parent with content description suppresses missing description on child`() {
+    var elements: Set<AccessibilityElement>? = null
+    paparazzi.snapshot {
+      val root = LocalView.current as ViewRootForTest
+      SemanticsLayout(
+        Modifier
+          .drawWithContent {
+            drawContent()
+            elements = collector.collect((root.view.parent as? View) ?: root.view, null)
+          }
+          .semantics(mergeDescendants = true) { contentDescription = "Container description" }
+      ) {
+        SemanticsLayout(
+          Modifier
+            .size(48.dp)
+            .clickable(role = Role.Button) {}
+        )
+      }
+    }
+
+    val collected = requireNotNull(elements)
+    assertThat(collected).isNotEmpty()
+    assertThat(collected.none { it.isMissingDescription }).isTrue()
+  }
+
+  @Test
+  fun `merging parent with grandchild label suppresses missing description on child`() {
+    var elements: Set<AccessibilityElement>? = null
+    paparazzi.snapshot {
+      val root = LocalView.current as ViewRootForTest
+      SemanticsLayout(
+        Modifier
+          .drawWithContent {
+            drawContent()
+            elements = collector.collect((root.view.parent as? View) ?: root.view, null)
+          }
+          .semantics(mergeDescendants = true) {}
+      ) {
+        SemanticsLayout {
+          SemanticsLayout(Modifier.semantics { contentDescription = "Descendant label" })
+        }
+        SemanticsLayout(
+          Modifier
+            .size(48.dp)
+            .clickable(role = Role.Button) {}
+        )
+      }
+    }
+
+    val collected = requireNotNull(elements)
+    assertThat(collected).isNotEmpty()
+    assertThat(collected.none { it.isMissingDescription }).isTrue()
+  }
+
+  @Test
+  fun `merging parent without label does not suppress missing description on child`() {
+    var elements: Set<AccessibilityElement>? = null
+    paparazzi.snapshot {
+      val root = LocalView.current as ViewRootForTest
+      SemanticsLayout(
+        Modifier
+          .drawWithContent {
+            drawContent()
+            elements = collector.collect((root.view.parent as? View) ?: root.view, null)
+          }
+          .semantics(mergeDescendants = true) {}
+      ) {
+        SemanticsLayout(
+          Modifier
+            .size(48.dp)
+            .clickable(role = Role.Button) {}
+        )
+      }
+    }
+
+    val collected = requireNotNull(elements)
+    assertThat(collected.any { it.isMissingDescription }).isTrue()
   }
 
   @Composable

@@ -19,6 +19,7 @@ import java.awt.Color
 
 internal object RenderSettings {
   const val DEFAULT_RENDER_ALPHA = 40
+  val WARNING_COLOR: Color = Color(Color.RED.red, Color.RED.green, Color.RED.blue, DEFAULT_RENDER_ALPHA)
   private val DEFAULT_RENDER_COLORS = listOf(
     Color.RED,
     Color.GREEN,

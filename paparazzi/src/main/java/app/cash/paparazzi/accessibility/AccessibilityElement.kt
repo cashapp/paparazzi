@@ -33,6 +33,8 @@ import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.LinkAnnotation
 
+internal const val MISSING_DESCRIPTION_LABEL = "<missing-description>"
+
 internal data class AccessibilityElement(
   val id: String,
   val displayBounds: Rect,
@@ -55,10 +57,15 @@ internal data class AccessibilityElement(
   val customActions: String? = null,
   val isInList: String? = null,
   // Keep the unmerged sources so the legend retains its descendant-first ordering.
-  val unmergedElements: List<AccessibilityElement> = emptyList()
+  val unmergedElements: List<AccessibilityElement> = emptyList(),
+  val isMissingDescription: Boolean = false
 ) {
   val legendText: String
     get() {
+      if (mainAccessibilityText == MISSING_DESCRIPTION_LABEL && unmergedElements.isEmpty() && role == null) {
+        return MISSING_DESCRIPTION_LABEL
+      }
+
       if (unmergedElements.isNotEmpty()) {
         return unmergedElements.joinToString(", ") { it.legendText }
       }
@@ -87,7 +94,14 @@ internal data class AccessibilityElement(
       }
     }
 
-  val color = RenderSettings.getColor(id)
+  val contentDescription: String
+    get() = legendText
+
+  val color = if (isMissingDescription) {
+    RenderSettings.WARNING_COLOR
+  } else {
+    RenderSettings.getColor(id)
+  }
 
   companion object {
     fun fromView(view: View, displayBounds: Rect): AccessibilityElement? {
@@ -332,7 +346,7 @@ internal data class AccessibilityElement(
       this[typedKey] = mergedValue
     }
 
-    private fun SemanticsNode.findAllUnmergedNodes(parentFirst: Boolean = false): List<SemanticsNode> {
+    internal fun SemanticsNode.findAllUnmergedNodes(parentFirst: Boolean = false): List<SemanticsNode> {
       if (config.isClearingSemantics) {
         // Semantics information is already set on parent semantic node where `clearAndSetSemantics` is called.
         // No need to iterate through children.
