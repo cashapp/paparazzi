@@ -51,7 +51,8 @@ internal data class SessionParamsBuilder(
   private val projectKey: Any? = null,
   private val minSdk: Int = 0,
   private val decor: Boolean = true,
-  private val supportsRtl: Boolean = false
+  private val supportsRtl: Boolean = false,
+  private val frameworkResourceCache: FrameworkResourceCache = FrameworkResourceCache()
 ) {
   fun withTheme(themeName: String, isProjectTheme: Boolean): SessionParamsBuilder {
     return copy(themeName = themeName, isProjectTheme = isProjectTheme)
@@ -75,9 +76,7 @@ internal data class SessionParamsBuilder(
     val resourceResolver = ResourceResolver.create(
       mapOf<ResourceNamespace, Map<ResourceType, ResourceValueMap>>(
         ResourceNamespace.ANDROID to
-          frameworkResources.getConfiguredResources(folderConfiguration)
-            .pseudolocalizeIfNeeded(folderConfiguration.localeQualifier)
-            .row(ResourceNamespace.ANDROID),
+          frameworkResourceCache.get(frameworkResources, folderConfiguration),
         *projectResources.getConfiguredResources(folderConfiguration)
           .pseudolocalizeIfNeeded(folderConfiguration.localeQualifier)
           .rowMap()
