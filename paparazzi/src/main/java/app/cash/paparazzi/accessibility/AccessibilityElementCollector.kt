@@ -118,7 +118,7 @@ internal class AccessibilityElementCollector {
     }
 
     val composeViewRoot = (this as? AbstractComposeView)?.getChildAt(0) as? ViewRootForTest
-      ?: this as? ViewRootForTest
+      ?: (this as? ViewRootForTest)?.takeIf { (it as? View)?.parent !is AbstractComposeView }
     // Another window can trigger collection before this Compose root is attached. Its merged
     // semantics root is not ready yet; leave it for a subsequent collection after attachment.
     if (composeViewRoot != null && isVisible && composeViewRoot.view.isAttachedToWindow) {
@@ -331,20 +331,19 @@ internal class AccessibilityElementCollector {
     val hasArea = boundsInRoot.width > 0f && boundsInRoot.height > 0f
 
     if (isInteractive() && !hasLabel && !coveredByParent && hasArea) {
-      // Keep whatever else is announced (role, state, actions) so the legend still says what the element is.
-      val description = listOfNotNull(MISSING_DESCRIPTION_LABEL, element?.legendText)
-        .filter { it.isNotBlank() }
-        .joinToString(", ")
-        .ifEmpty { MISSING_DESCRIPTION_LABEL }
-      processElement(
-        (element ?: AccessibilityElement(id = description, displayBounds = displayBounds)).copy(
-          id = description,
-          displayBounds = displayBounds,
-          mainAccessibilityText = description,
-          unmergedElements = emptyList(),
-          isMissingDescription = true
+      val missingElement = (
+        element ?: AccessibilityElement(
+          id = MISSING_DESCRIPTION_LABEL,
+          displayBounds = displayBounds
         )
+        ).copy(
+        displayBounds = displayBounds,
+        mainAccessibilityText = element?.mainAccessibilityText,
+        unmergedElements = emptyList(),
+        isMissingDescription = true
       )
+      val id = missingElement.legendText.ifEmpty { MISSING_DESCRIPTION_LABEL }
+      processElement(missingElement.copy(id = id))
     } else if (element != null) {
       processElement(element)
     }
@@ -367,8 +366,12 @@ internal class AccessibilityElementCollector {
       return false
     }
 
+    if (this is AdapterView<*>) {
+      return false
+    }
+
     val isInteractive = isClickable || isLongClickable || this is Checkable || this is Button ||
-      (isFocusable && this !is AdapterView<*> && this !is ScrollView && this !is HorizontalScrollView)
+      (isFocusable && this !is ScrollView && this !is HorizontalScrollView)
 
     if (this is ViewGroup && childCount > 0 && !isInteractive) {
       return false
@@ -426,9 +429,7 @@ internal class AccessibilityElementCollector {
       if (current.config.isMergingSemanticsOfDescendants) {
         return current.findAllUnmergedNodes().any { it.hasLabel() }
       }
-      if (current == parent &&
-        current.config.getOrNull(SemanticsProperties.Text).orEmpty().any { it.text.isNotBlank() }
-      ) {
+      if (current.config.getOrNull(SemanticsProperties.Text).orEmpty().any { it.text.isNotBlank() }) {
         return true
       }
       current = current.parent

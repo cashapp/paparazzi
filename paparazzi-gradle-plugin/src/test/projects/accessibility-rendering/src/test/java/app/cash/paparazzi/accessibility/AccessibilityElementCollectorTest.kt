@@ -265,6 +265,33 @@ class AccessibilityElementCollectorTest {
     assertThat(collected.any { it.isMissingDescription }).isTrue()
   }
 
+  @Test
+  fun `unlabeled interactive node retains role and state in legend without duplication`() {
+    var elements: Set<AccessibilityElement>? = null
+    paparazzi.snapshot {
+      val root = LocalView.current as ViewRootForTest
+      SemanticsLayout(
+        Modifier
+          .drawWithContent {
+            drawContent()
+            elements = collector.collect((root.view.parent as? View) ?: root.view, null)
+          }
+          .semantics {
+            role = Role.Checkbox
+            toggleableState = ToggleableState.On
+            stateDescription = "Unavailable"
+          }
+      )
+    }
+
+    val collected = requireNotNull(elements)
+    assertThat(collected).hasSize(1)
+    val element = collected.first()
+    assertThat(element.isMissingDescription).isTrue()
+    assertThat(element.legendText)
+      .isEqualTo("<missing-description>, Unavailable, <toggleable>: checked, Checkbox")
+  }
+
   @Composable
   private fun SemanticsLayout(modifier: Modifier = Modifier, content: @Composable () -> Unit = {}) {
     Layout(content = content, modifier = modifier) { measurables, constraints ->

@@ -9,6 +9,7 @@ import android.widget.HorizontalScrollView
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.ListView
 import android.widget.ScrollView
 import android.widget.TextView
 import app.cash.paparazzi.DeviceConfig
@@ -361,5 +362,31 @@ class AccessibilityElementCollectorTest {
     assertThat(element.contentDescription).isEqualTo(MISSING_DESCRIPTION_LABEL)
     assertThat(element.isMissingDescription).isTrue()
     assertThat(element.color).isEqualTo(RenderSettings.WARNING_COLOR)
+  }
+
+  @Test
+  fun `adapter view container does not flag missing description for itself`() {
+    val listView = ListView(paparazzi.context).apply {
+      isClickable = true
+      isFocusable = true
+      isLongClickable = true
+    }
+    val elements = collector.collect(listView, null)
+
+    assertThat(elements).isEmpty()
+  }
+
+  @Test
+  fun `labeled adapter view container has label and does not flag missing description`() {
+    val listView = ListView(paparazzi.context).apply {
+      isClickable = true
+      contentDescription = "List Label"
+    }
+    val elements = collector.collect(listView, null)
+
+    assertThat(elements).hasSize(1)
+    val element = elements.first()
+    assertThat(element.contentDescription).isEqualTo("List Label")
+    assertThat(element.isMissingDescription).isFalse()
   }
 }

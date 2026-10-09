@@ -62,21 +62,18 @@ internal data class AccessibilityElement(
 ) {
   val legendText: String
     get() {
-      if (mainAccessibilityText == MISSING_DESCRIPTION_LABEL && unmergedElements.isEmpty() && role == null) {
-        return MISSING_DESCRIPTION_LABEL
-      }
-
       if (unmergedElements.isNotEmpty()) {
         return unmergedElements.joinToString(", ") { it.legendText }
       }
 
       val textList = listOfNotNull(
+        if (isMissingDescription) MISSING_DESCRIPTION_LABEL else null,
         stateDescription,
         selected,
         toggleableState,
         progress,
         setProgress,
-        mainAccessibilityText,
+        mainAccessibilityText.takeUnless { isMissingDescription && it == MISSING_DESCRIPTION_LABEL },
         role,
         editable,
         disabled,
