@@ -67,9 +67,8 @@ public fun detectEnvironment(): Environment {
   val artifactsCacheDir = Paths.get(System.getProperty("paparazzi.artifacts.cache.dir"))
 
   val resourcesFile = File(System.getProperty("paparazzi.test.resources"))
-  val moshi = Moshi.Builder().addLast(KotlinJsonAdapterFactory()).build()!!
   val config =
-    resourcesFile.source().buffer().use { moshi.adapter(Config::class.java).fromJson(it)!! }
+    resourcesFile.source().buffer().use { configAdapter.fromJson(it)!! }
 
   return Environment(
     appTestDir = appTestDir.toString(),
@@ -82,6 +81,10 @@ public fun detectEnvironment(): Environment {
     allModuleAssetDirs = config.projectAssetDirs.map { projectDir.resolve(it).toString() },
     libraryAssetDirs = config.aarAssetDirs.map { artifactsCacheDir.resolve(it).toString() }
   )
+}
+
+private val configAdapter by lazy {
+  Moshi.Builder().addLast(KotlinJsonAdapterFactory()).build().adapter(Config::class.java)
 }
 
 internal data class Config(
