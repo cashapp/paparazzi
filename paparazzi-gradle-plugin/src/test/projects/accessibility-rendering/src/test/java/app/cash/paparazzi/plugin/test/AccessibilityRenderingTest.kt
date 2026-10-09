@@ -20,11 +20,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.progressSemantics
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
@@ -39,6 +44,7 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
@@ -629,6 +635,31 @@ class AccessibilityRenderingTest {
         Text("Balance")
         Text("   ")
         Text("$100.00")
+      }
+    }
+  }
+
+  @Test
+  fun `verify missing descriptions are flagged`() {
+    paparazzi.snapshot {
+      Column {
+        // Flagged: an icon-only button whose icon has no description.
+        IconButton(onClick = {}) {
+          Icon(Icons.Default.Favorite, contentDescription = null)
+        }
+        // Flagged: clickable with no other semantics.
+        Box(modifier = Modifier.size(48.dp).background(Color.LightGray).clickable {})
+        // Flagged: a role alone is not a description.
+        Box(modifier = Modifier.size(48.dp).background(Color.Gray).clickable(role = Role.Button) {})
+        // Flagged: a checkbox with no label.
+        Checkbox(checked = true, onCheckedChange = {})
+        // Not flagged: labelled by its icon's description or its text.
+        IconButton(onClick = {}) {
+          Icon(Icons.Default.Favorite, contentDescription = "Favorite")
+        }
+        TextButton(onClick = {}) {
+          Text(text = "Save")
+        }
       }
     }
   }
