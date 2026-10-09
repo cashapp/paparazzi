@@ -127,6 +127,25 @@ def generateTestConfig = tasks.register("generateTestConfig") {
   }
 }
 
+def preloadedTargetsTest = "app.cash.paparazzi.internal.layoutlib.PreloadedLayoutlibTargetsTest"
+
+tasks.named("test", Test) {
+  filter { excludeTestsMatching(preloadedTargetsTest) }
+}
+
+// Runs alone in a fresh JVM so its preloaded class is loaded before Paparazzi's first render.
+def testPreloadedLayoutlibTargets = tasks.register("testPreloadedLayoutlibTargets", Test) {
+  description = "Verifies the layoutlib patch applies to targets loaded before Paparazzi renders."
+  group = "verification"
+  testClassesDirs = sourceSets.test.output.classesDirs
+  classpath = sourceSets.test.runtimeClasspath
+  filter { includeTestsMatching(preloadedTargetsTest) }
+}
+
+tasks.named("check") {
+  dependsOn(testPreloadedLayoutlibTargets)
+}
+
 tasks.withType(Test).configureEach {
   dependsOn(generateTestConfig)
   systemProperty(
