@@ -44,6 +44,8 @@ import androidx.compose.ui.platform.createLifecycleAwareWindowRecomposer
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import app.cash.paparazzi.accessibility.AccessibilityHierarchyGenerator
+import app.cash.paparazzi.accessibility.AccessibilityHierarchyJsonSerializer
 import app.cash.paparazzi.accessibility.AccessibilityRenderExtension
 import app.cash.paparazzi.agent.InterceptorRegistrar
 import app.cash.paparazzi.internal.ImageUtils
@@ -96,6 +98,9 @@ public class PaparazziSdk @JvmOverloads constructor(
   private val onNewFrame: (BufferedImage) -> Unit
 ) {
   private var validateAccessibility = false
+  private val accessibilityHierarchyGenerator = AccessibilityHierarchyGenerator()
+  private val accessibilityHierarchyJsonSerializer = AccessibilityHierarchyJsonSerializer()
+  internal var onAccessibilityHierarchiesGenerated: (List<String>) -> Unit = {}
 
   @Deprecated(
     "validateAccessibility is deprecated. " +
@@ -346,50 +351,82 @@ public class PaparazziSdk @JvmOverloads constructor(
       // subcomposed during measure, such as a Dialog inside a Scaffold, depends on to exist at all.
       RenderSizingState.canvasSizedForContent =
         sessionParams.renderingMode == RenderingMode.NORMAL
-      for (frame in 0 until frameCount) {
-        val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
+      val accessibilityHierarchies = mutableListOf<String>()
+      var renderingFailure: Throwable? = null
+      try {
+        for (frame in 0 until frameCount) {
+          val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
 
-        // If we have pendingTasks run recomposer to ensure we get the correct frame.
-        var hasPendingWork = false
-        withTime(nowNanos) {
-          resetExpandBaseline()
-          val result = renderSession.render(true)
-          if (result.status == ERROR_UNKNOWN) {
-            throw result.exception
-          }
-          if (hasComposeRuntime && recomposer != null) {
-            // If we have pending tasks, we need to trigger it within the context of the first frame.
-            if (frame == 0 && (recomposer as Recomposer).hasPendingWork) {
-              hasPendingWork = true
-            }
-          }
-        }
-
-        if (hasPendingWork) {
+          // If we have pendingTasks run recomposer to ensure we get the correct frame.
+          var hasPendingWork = false
           withTime(nowNanos) {
             resetExpandBaseline()
             val result = renderSession.render(true)
             if (result.status == ERROR_UNKNOWN) {
               throw result.exception
             }
+            if (hasComposeRuntime && recomposer != null) {
+              // If we have pending tasks, we need to trigger it within the context of the first frame.
+              if (frame == 0 && (recomposer as Recomposer).hasPendingWork) {
+                hasPendingWork = true
+              }
+            }
           }
 
-          val recomposerInstance = recomposer as Recomposer
-          if (recomposerInstance.hasPendingWork) {
-            logger.warning(
-              "Pending work detected. This may cause unexpected results in your generated snapshots. ${recomposerInstance.changeCount}"
+          if (hasPendingWork) {
+            withTime(nowNanos) {
+              resetExpandBaseline()
+              val result = renderSession.render(true)
+              if (result.status == ERROR_UNKNOWN) {
+                throw result.exception
+              }
+            }
+
+            val recomposerInstance = recomposer as Recomposer
+            if (recomposerInstance.hasPendingWork) {
+              logger.warning(
+                "Pending work detected. This may cause unexpected results in your generated snapshots. ${recomposerInstance.changeCount}"
+              )
+            }
+          }
+
+          val image = bridgeRenderSession.image
+          if (validateAccessibility) {
+            require(renderExtensions.isEmpty()) {
+              "Running accessibility validation and render extensions simultaneously is not supported."
+            }
+            validateLayoutAccessibility(modifiedView, image)
+          }
+          // rootViews contains only the primary content on current Layoutlib. The system roots
+          // include attached windows; normalize their children to window roots and collect each
+          // window once, keeping the primary content after the overlays.
+          val primaryRoot = view.rootView
+          val windowRoots = bridgeRenderSession.systemRootViews
+            .map { (it.viewObject as View).rootView }
+            .distinct()
+            .filterNot { it === primaryRoot } + primaryRoot
+          accessibilityHierarchyGenerator.generate(
+            windowRoots = windowRoots,
+            width = image.width,
+            height = image.height
+          )?.let { accessibilityFrame ->
+            accessibilityHierarchies += accessibilityHierarchyJsonSerializer.toHierarchyString(
+              accessibilityFrame.elements
             )
           }
+          onNewFrame(scaleImage(frameImage(image)))
         }
-
-        val image = bridgeRenderSession.image
-        if (validateAccessibility) {
-          require(renderExtensions.isEmpty()) {
-            "Running accessibility validation and render extensions simultaneously is not supported."
+      } catch (failure: Throwable) {
+        renderingFailure = failure
+        throw failure
+      } finally {
+        if (accessibilityHierarchies.isNotEmpty()) {
+          try {
+            onAccessibilityHierarchiesGenerated(accessibilityHierarchies)
+          } catch (completionFailure: Throwable) {
+            renderingFailure?.addSuppressed(completionFailure) ?: throw completionFailure
           }
-          validateLayoutAccessibility(modifiedView, image)
         }
-        onNewFrame(scaleImage(frameImage(image)))
       }
     } finally {
       if (hasLifecycleOwnerRuntime) {
