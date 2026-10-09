@@ -25,7 +25,11 @@ class PreloadedLayoutlibTargetsTest {
     @JvmStatic
     @BeforeClass
     fun preload() {
-      Class.forName("android.view.ViewRootImpl", false, PreloadedLayoutlibTargetsTest::class.java.classLoader)
+      listOf(
+        "android.view.ViewRootImpl",
+        "com.android.layoutlib.bridge.impl.RenderSessionImpl",
+        "com.android.layoutlib.bridge.impl.BridgeWindowSession"
+      ).forEach { Class.forName(it, false, PreloadedLayoutlibTargetsTest::class.java.classLoader) }
     }
   }
 }
