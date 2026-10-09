@@ -171,8 +171,10 @@ class AccessibilityElementCollectorTest {
 
     assertThat(elements).hasSize(1)
     val element = elements.first()
-    assertThat(element.id).isEqualTo("CheckBox($MISSING_DESCRIPTION_LABEL)")
-    assertThat(element.contentDescription).isEqualTo(MISSING_DESCRIPTION_LABEL)
+    assertThat(element.id)
+      .isEqualTo("CheckBox($MISSING_DESCRIPTION_LABEL, not checked, <toggleable>: not checked)")
+    assertThat(element.contentDescription)
+      .isEqualTo("$MISSING_DESCRIPTION_LABEL, not checked, <toggleable>: not checked")
     assertThat(element.isMissingDescription).isTrue()
     assertThat(element.color).isEqualTo(RenderSettings.WARNING_COLOR)
   }
@@ -328,8 +330,8 @@ class AccessibilityElementCollectorTest {
 
     assertThat(elements).hasSize(1)
     val element = elements.first()
-    assertThat(element.id).isEqualTo("Button($MISSING_DESCRIPTION_LABEL)")
-    assertThat(element.contentDescription).isEqualTo(MISSING_DESCRIPTION_LABEL)
+    assertThat(element.id).isEqualTo("Button($MISSING_DESCRIPTION_LABEL, <disabled>)")
+    assertThat(element.contentDescription).isEqualTo("$MISSING_DESCRIPTION_LABEL, <disabled>")
     assertThat(element.isMissingDescription).isTrue()
     assertThat(element.color).isEqualTo(RenderSettings.WARNING_COLOR)
   }
@@ -358,8 +360,45 @@ class AccessibilityElementCollectorTest {
 
     assertThat(elements).hasSize(1)
     val element = elements.first()
-    assertThat(element.id).isEqualTo("View($MISSING_DESCRIPTION_LABEL)")
-    assertThat(element.contentDescription).isEqualTo(MISSING_DESCRIPTION_LABEL)
+    assertThat(element.id).isEqualTo("View($MISSING_DESCRIPTION_LABEL, <selected>)")
+    assertThat(element.contentDescription).isEqualTo("$MISSING_DESCRIPTION_LABEL, <selected>")
+    assertThat(element.isMissingDescription).isTrue()
+    assertThat(element.color).isEqualTo(RenderSettings.WARNING_COLOR)
+  }
+
+  @Test
+  fun `unlabeled checked and disabled check box flags missing description and retains metadata`() {
+    val checkBox = CheckBox(paparazzi.context).apply {
+      isChecked = true
+      isEnabled = false
+    }
+    val elements = collector.collect(checkBox, null)
+
+    assertThat(elements).hasSize(1)
+    val element = elements.first()
+    assertThat(element.id)
+      .isEqualTo("CheckBox($MISSING_DESCRIPTION_LABEL, checked, <toggleable>: checked, <disabled>)")
+    assertThat(element.contentDescription)
+      .isEqualTo("$MISSING_DESCRIPTION_LABEL, checked, <toggleable>: checked, <disabled>")
+    assertThat(element.legendText)
+      .isEqualTo("$MISSING_DESCRIPTION_LABEL, checked, <toggleable>: checked, <disabled>")
+    assertThat(element.isMissingDescription).isTrue()
+    assertThat(element.color).isEqualTo(RenderSettings.WARNING_COLOR)
+  }
+
+  @Test
+  fun `unlabeled view with stateDescription flags missing description and retains metadata`() {
+    val customView = View(paparazzi.context).apply {
+      isClickable = true
+      stateDescription = "Expanded"
+    }
+    val elements = collector.collect(customView, null)
+
+    assertThat(elements).hasSize(1)
+    val element = elements.first()
+    assertThat(element.id).isEqualTo("View($MISSING_DESCRIPTION_LABEL, Expanded)")
+    assertThat(element.contentDescription).isEqualTo("$MISSING_DESCRIPTION_LABEL, Expanded")
+    assertThat(element.legendText).isEqualTo("$MISSING_DESCRIPTION_LABEL, Expanded")
     assertThat(element.isMissingDescription).isTrue()
     assertThat(element.color).isEqualTo(RenderSettings.WARNING_COLOR)
   }

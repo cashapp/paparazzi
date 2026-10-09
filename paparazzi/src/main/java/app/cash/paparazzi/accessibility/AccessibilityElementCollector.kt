@@ -105,14 +105,18 @@ internal class AccessibilityElementCollector {
     }
 
     if (isMissingAccessibilityDescription()) {
-      processElement(
-        AccessibilityElement(
-          id = "${this::class.simpleName}($MISSING_DESCRIPTION_LABEL)",
-          displayBounds = bounds,
-          mainAccessibilityText = MISSING_DESCRIPTION_LABEL,
-          isMissingDescription = true
+      val missingElement = (
+        accessibilityElement ?: AccessibilityElement(
+          id = MISSING_DESCRIPTION_LABEL,
+          displayBounds = bounds
         )
+        ).copy(
+        displayBounds = bounds,
+        mainAccessibilityText = accessibilityElement?.mainAccessibilityText,
+        isMissingDescription = true
       )
+      val id = "${this::class.simpleName}(${missingElement.legendText.ifEmpty { MISSING_DESCRIPTION_LABEL }})"
+      processElement(missingElement.copy(id = id))
     } else if (accessibilityElement != null) {
       processElement(accessibilityElement)
     }

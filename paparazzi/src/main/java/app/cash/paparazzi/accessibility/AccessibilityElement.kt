@@ -73,7 +73,10 @@ internal data class AccessibilityElement(
         toggleableState,
         progress,
         setProgress,
-        mainAccessibilityText.takeUnless { isMissingDescription && it == MISSING_DESCRIPTION_LABEL },
+        mainAccessibilityText.takeUnless {
+          (isMissingDescription && it == MISSING_DESCRIPTION_LABEL) ||
+            it.isNullOrBlank()
+        },
         role,
         editable,
         disabled,
@@ -85,7 +88,7 @@ internal data class AccessibilityElement(
         customActions
       )
       return if (textList.isNotEmpty()) {
-        (textList + isInList).filterNotNull().joinToString(", ").replaceLineBreaks()
+        (textList + isInList).filterNotNull().filter { it.isNotBlank() }.joinToString(", ").replaceLineBreaks()
       } else {
         ""
       }
@@ -177,7 +180,8 @@ internal data class AccessibilityElement(
       } else {
         null
       }
-      val mainAccessibilityText = iterableTextForAccessibility?.toString() ?: contentDescription?.toString()
+      val mainAccessibilityText = (iterableTextForAccessibility?.toString() ?: contentDescription?.toString())
+        ?.takeUnless { it.isBlank() }
       val editable = if (nodeInfo.isEditable) EDITABLE_LABEL else null
       val disabled = if (!isEnabled) DISABLED_LABEL else null
       val heading = if (SdkLevel.isAtLeastR() && isAccessibilityHeading) HEADING_LABEL else null
