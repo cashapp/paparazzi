@@ -129,6 +129,9 @@ public class PaparazziSdk @JvmOverloads constructor(
   }
 
   private val logger = PaparazziLogger()
+
+  /** The time of the last frame [withTime] ran, so it can tell when a new snapshot rewinds the clock. */
+  private var lastFrameNanos = 0L
   private lateinit var sessionParams: SessionParams
   private lateinit var renderSession: RenderSessionImpl
   private lateinit var bridgeRenderSession: RenderSession
@@ -213,6 +216,28 @@ public class PaparazziSdk @JvmOverloads constructor(
     snapshot(hostView)
   }
 
+  /** Snapshots [composable] at [offsetMillis]. */
+  public fun snapshot(offsetMillis: Long, composable: @Composable () -> Unit) {
+    takeSnapshots(composeHost(composable), TimeUnit.MILLISECONDS.toNanos(offsetMillis), -1, 1)
+  }
+
+  /** Records [composable] from [start] to [end]. */
+  @JvmOverloads
+  public fun gif(
+    start: Long = 0L,
+    end: Long = 500L,
+    fps: Int = 30,
+    composable: @Composable () -> Unit
+  ) {
+    takeSnapshots(composeHost(composable), TimeUnit.MILLISECONDS.toNanos(start), fps, frameCount(start, end, fps))
+  }
+
+  private fun composeHost(composable: @Composable () -> Unit): View =
+    ComposeView(context).apply {
+      layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
+      setContent(composable)
+    }
+
   @JvmOverloads
   public fun snapshot(view: View, offsetMillis: Long = 0L) {
     takeSnapshots(view, TimeUnit.MILLISECONDS.toNanos(offsetMillis), -1, 1)
@@ -220,14 +245,13 @@ public class PaparazziSdk @JvmOverloads constructor(
 
   @JvmOverloads
   public fun gif(view: View, start: Long = 0L, end: Long = 500L, fps: Int = 30) {
-    // Add one to the frame count so we get the last frame. Otherwise a 1 second, 60 FPS animation
-    // our 60th frame will be at time 983 ms, and we want our last frame to be 1,000 ms. This gets
-    // us 61 frames for a 1 second animation, 121 frames for a 2 second animation, etc.
-    val durationMillis = (end - start).toInt()
-    val frameCount = (durationMillis * fps) / 1000 + 1
-    val startNanos = TimeUnit.MILLISECONDS.toNanos(start)
-    takeSnapshots(view, startNanos, fps, frameCount)
+    takeSnapshots(view, TimeUnit.MILLISECONDS.toNanos(start), fps, frameCount(start, end, fps))
   }
+
+  // Add one to the frame count so we get the last frame. Otherwise a 1 second, 60 FPS animation
+  // our 60th frame will be at time 983 ms, and we want our last frame to be 1,000 ms. This gets
+  // us 61 frames for a 1 second animation, 121 frames for a 2 second animation, etc.
+  private fun frameCount(start: Long, end: Long, fps: Int): Int = ((end - start).toInt() * fps) / 1000 + 1
 
   public fun unsafeUpdateConfig(
     deviceConfig: DeviceConfig? = null,
@@ -346,38 +370,32 @@ public class PaparazziSdk @JvmOverloads constructor(
       // subcomposed during measure, such as a Dialog inside a Scaffold, depends on to exist at all.
       RenderSizingState.canvasSizedForContent =
         sessionParams.renderingMode == RenderingMode.NORMAL
+      // Only Compose content needs this: Views start animations from the frame they are drawn in.
+      if (recomposer != null && startNanos > 0L) {
+        settleAtTimeZero(recomposer)
+      }
+
       for (frame in 0 until frameCount) {
         val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
+        if (recomposer != null) advanceFramesTo(nowNanos)
 
         // If we have pendingTasks run recomposer to ensure we get the correct frame.
         var hasPendingWork = false
         withTime(nowNanos) {
           resetExpandBaseline()
-          val result = renderSession.render(true)
-          if (result.status == ERROR_UNKNOWN) {
-            throw result.exception
-          }
-          if (hasComposeRuntime && recomposer != null) {
-            // If we have pending tasks, we need to trigger it within the context of the first frame.
-            if (frame == 0 && (recomposer as Recomposer).hasPendingWork) {
-              hasPendingWork = true
-            }
-          }
+          renderForResult()
+          hasPendingWork = frame == 0 && recomposer.hasPendingWork()
         }
 
         if (hasPendingWork) {
           withTime(nowNanos) {
             resetExpandBaseline()
-            val result = renderSession.render(true)
-            if (result.status == ERROR_UNKNOWN) {
-              throw result.exception
-            }
+            renderForResult()
           }
 
-          val recomposerInstance = recomposer as Recomposer
-          if (recomposerInstance.hasPendingWork) {
+          if (recomposer.hasPendingWork()) {
             logger.warning(
-              "Pending work detected. This may cause unexpected results in your generated snapshots. ${recomposerInstance.changeCount}"
+              "Pending work detected. This may cause unexpected results in your generated snapshots. ${(recomposer as Recomposer).changeCount}"
             )
           }
         }
@@ -416,8 +434,51 @@ public class PaparazziSdk @JvmOverloads constructor(
     }
   }
 
+  /**
+   * Compose animations measure play time from the frame they first receive. Rendering at t=0 until
+   * the composition is idle lets effects launch and each animation receive its first frame at 0, so
+   * a later offset is measured from 0 rather than from whenever the first render happened. Two
+   * renders are always needed: one to compose and launch effects, one to deliver the first frame.
+   */
+  private fun settleAtTimeZero(recomposer: Any?) {
+    for (render in 0 until MAX_SETTLE_RENDERS) {
+      withTime(0L) {
+        resetExpandBaseline()
+        renderForResult()
+      }
+      if (render >= 1 && !recomposer.hasPendingWork()) return
+    }
+  }
+
+  /**
+   * Ticks the clock through every frame between the last frame and [targetNanos], without drawing.
+   * Handler messages (such as a coroutine `delay`) and the state changes they make then run at the
+   * frame they are due in, so animations they start measure their play time from then rather than
+   * from [targetNanos]. Jumping straight to [targetNanos] would start them all at play time 0.
+   */
+  private fun advanceFramesTo(targetNanos: Long) {
+    var nanos = lastFrameNanos + FRAME_INTERVAL_NANOS
+    while (nanos < targetNanos) {
+      withTime(nanos) {}
+      nanos += FRAME_INTERVAL_NANOS
+    }
+  }
+
+  private fun Any?.hasPendingWork(): Boolean = hasComposeRuntime && this != null && (this as Recomposer).hasPendingWork
+
+  private fun renderForResult() {
+    val result = renderSession.render(true)
+    if (result.status == ERROR_UNKNOWN) {
+      throw result.exception
+    }
+  }
+
   private fun withTime(timeNanos: Long, block: () -> Unit) {
     val frameNanos = timeNanos
+    if (frameNanos < lastFrameNanos) {
+      runStaleFrameCallbacks()
+    }
+    lastFrameNanos = frameNanos
 
     // Execute the block at the requested time.
     System_Delegate.setNanosTime(0L)
@@ -443,6 +504,19 @@ public class PaparazziSdk @JvmOverloads constructor(
       Bridge.getLog().error("broken", "Failed executing Choreographer#doFrame", e, null, null)
       throw e
     }
+  }
+
+  /**
+   * Each snapshot rewinds the clock to 0, but layoutlib queues Choreographer callbacks with a due
+   * time on that clock. A callback left over from the previous snapshot would not be due again until
+   * this snapshot reached the same time. Compose's frame dispatcher is shared by every snapshot on the
+   * thread and keeps at most one callback queued, holding every later frame request behind it, so
+   * this snapshot's animations would get no frames before then. Running the leftovers at the time
+   * they were queued for, before the clock moves back, clears them out.
+   */
+  private fun runStaleFrameCallbacks() {
+    RenderAction.getCurrentContext()?.sessionInteractiveData?.choreographerCallbacks
+      ?.execute(lastFrameNanos, Bridge.getLog())
   }
 
   private fun createRenderSession(sessionParams: SessionParams): RenderSessionImpl {
@@ -674,6 +748,11 @@ public class PaparazziSdk @JvmOverloads constructor(
   internal companion object {
     internal lateinit var renderer: Renderer
     internal val isInitialized get() = ::renderer.isInitialized
+
+    private const val MAX_SETTLE_RENDERS = 5
+
+    /** A 60Hz frame, the cadence frames are stepped at between snapshot times. */
+    private const val FRAME_INTERVAL_NANOS = 1_000_000_000L / 60
 
     internal lateinit var sessionParamsBuilder: SessionParamsBuilder
 

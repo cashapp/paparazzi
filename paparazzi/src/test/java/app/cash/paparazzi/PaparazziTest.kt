@@ -260,6 +260,40 @@ class PaparazziTest {
     assertThat(log).isEqualTo(listOf("predraw", "predraw", "draw", "draw", "predraw", "predraw"))
   }
 
+  @Test
+  fun frameCallbackLeftOverFromPreviousSnapshotRunsWhenClockRewinds() {
+    val log = mutableListOf<String>()
+
+    // Queues a zero-delay frame callback from the last frame of the first snapshot. Nothing renders
+    // after that frame, so the callback is still queued, due at 500ms, when the snapshot ends.
+    var posted = false
+    val first = object : View(paparazzi.context) {
+      override fun onDraw(canvas: Canvas) {
+        if (posted || time != 500L) return
+        posted = true
+        Choreographer.getInstance().postFrameCallback { frameTimeNanos ->
+          log += "leftover callback frameTime=${TimeUnit.NANOSECONDS.toMillis(frameTimeNanos)}"
+        }
+      }
+    }
+    paparazzi.snapshot(first, offsetMillis = 500L)
+    assertThat(log).isEmpty()
+
+    // The second snapshot rewinds the clock to 0 and never reaches 500ms. Without running leftover
+    // callbacks first, this one would not be due during it and would stay queued.
+    val second = object : View(paparazzi.context) {
+      override fun onDraw(canvas: Canvas) {
+        log += "second onDraw time=$time"
+      }
+    }
+    paparazzi.snapshot(second, offsetMillis = 0L)
+
+    assertThat(log.first()).isEqualTo("leftover callback frameTime=500")
+    assertThat(log.count { it.startsWith("leftover") }).isEqualTo(1)
+    assertThat(log.drop(1)).isNotEmpty()
+    assertThat(log.drop(1).all { it == "second onDraw time=0" }).isTrue()
+  }
+
   private val time: Long
     get() {
       return TimeUnit.NANOSECONDS.toMillis(System_Delegate.nanoTime())
