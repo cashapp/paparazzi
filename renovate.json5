@@ -4,7 +4,7 @@
     'config:recommended',
   ],
   constraints: {
-    python: '=3.14.8',
+    python: '=3.15.0',
   },
   ignorePaths: [
     '.github/workflows/requirements.in',
