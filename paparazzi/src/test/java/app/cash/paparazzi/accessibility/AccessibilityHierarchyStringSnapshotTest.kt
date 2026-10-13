@@ -7,6 +7,7 @@ import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.LinearLayout
 import android.widget.PopupWindow
 import android.widget.TextView
+import app.cash.paparazzi.ArtifactFrameHandler
 import app.cash.paparazzi.Flags
 import app.cash.paparazzi.Paparazzi
 import app.cash.paparazzi.Snapshot
@@ -20,11 +21,10 @@ import java.awt.image.BufferedImage
 
 class AccessibilityHierarchyStringSnapshotTest {
   private val events = mutableListOf<String>()
+  private val snapshotHandler = InMemorySnapshotHandler(events)
 
   @get:Rule
-  val paparazzi = Paparazzi(
-    snapshotHandler = InMemorySnapshotHandler(events)
-  )
+  val paparazzi = Paparazzi(snapshotHandler = snapshotHandler)
 
   @After
   fun clearHierarchyProperty() {
@@ -39,6 +39,7 @@ class AccessibilityHierarchyStringSnapshotTest {
     paparazzi.snapshot(accessibleView(), name = "default-off")
 
     assertThat(hierarchies).isEmpty()
+    assertThat(snapshotHandler.artifacts).isEmpty()
   }
 
   @Test
@@ -56,6 +57,80 @@ class AccessibilityHierarchyStringSnapshotTest {
       assertThat(frames.single()).contains("\"legendText\": \"First\"")
       assertThat(frames.single()).contains("\"legendText\": \"Second\"")
     }
+  }
+
+  @Test
+  fun `publishes accessibility hierarchy artifact when property enabled`() {
+    System.setProperty(Flags.ACCESSIBILITY_HIERARCHY_ARTIFACTS_ENABLED, "true")
+
+    paparazzi.snapshot(accessibleView(), name = "hierarchy-artifact")
+
+    assertThat(snapshotHandler.artifacts).hasSize(1)
+    val artifact = snapshotHandler.artifacts.single()
+    assertThat(artifact.name).isEqualTo(ACCESSIBILITY_HIERARCHY_ARTIFACT_NAME)
+    assertThat(artifact.content).contains("\"legendText\": \"First\"")
+    assertThat(artifact.content).contains("\"legendText\": \"Second\"")
+  }
+
+  @Test
+  fun `user hierarchy callback does not replace artifact delivery`() {
+    System.setProperty(Flags.ACCESSIBILITY_HIERARCHY_ARTIFACTS_ENABLED, "true")
+    val hierarchies = mutableListOf<List<String>>()
+    paparazzi.onAccessibilityHierarchiesGenerated = hierarchies::add
+
+    paparazzi.snapshot(accessibleView(), name = "composed-callback")
+
+    assertThat(hierarchies).hasSize(1)
+    assertThat(snapshotHandler.artifacts).hasSize(1)
+  }
+
+  @Test
+  fun `user hierarchy callback runs when artifact delivery fails`() {
+    System.setProperty(Flags.ACCESSIBILITY_HIERARCHY_ARTIFACTS_ENABLED, "true")
+    snapshotHandler.artifactFailure = AssertionError("artifact verification failed")
+    val hierarchies = mutableListOf<List<String>>()
+    paparazzi.onAccessibilityHierarchiesGenerated = hierarchies::add
+
+    val failure = assertThrows(AssertionError::class.java) {
+      paparazzi.snapshot(accessibleView(), name = "failing-artifact")
+    }
+
+    assertThat(failure).hasMessageThat().isEqualTo("artifact verification failed")
+    assertThat(hierarchies).hasSize(1)
+  }
+
+  @Test
+  fun `artifact failure remains primary when user hierarchy callback also fails`() {
+    System.setProperty(Flags.ACCESSIBILITY_HIERARCHY_ARTIFACTS_ENABLED, "true")
+    snapshotHandler.artifactFailure = AssertionError("artifact verification failed")
+    paparazzi.onAccessibilityHierarchiesGenerated = {
+      throw IllegalStateException("reporting failed")
+    }
+
+    val failure = assertThrows(AssertionError::class.java) {
+      paparazzi.snapshot(accessibleView(), name = "two-completion-failures")
+    }
+
+    assertThat(failure).hasMessageThat().isEqualTo("artifact verification failed")
+    assertThat(failure.suppressed.single()).hasMessageThat().isEqualTo("reporting failed")
+  }
+
+  @Test
+  fun `gif publishes one accessibility hierarchy per rendered frame`() {
+    System.setProperty(Flags.ACCESSIBILITY_HIERARCHY_ARTIFACTS_ENABLED, "true")
+    val hierarchies = mutableListOf<List<String>>()
+    paparazzi.onAccessibilityHierarchiesGenerated = hierarchies::add
+
+    paparazzi.gif(accessibleView(), name = "hierarchy-gif", start = 0L, end = 500L, fps = 4)
+
+    assertThat(hierarchies).hasSize(1)
+    assertThat(hierarchies.single()).hasSize(3)
+    assertThat(snapshotHandler.artifacts).hasSize(1)
+    assertThat(
+      "\"legendText\": \"First\"".toRegex()
+        .findAll(snapshotHandler.artifacts.single().content)
+        .count()
+    ).isEqualTo(3)
   }
 
   @Test
@@ -172,13 +247,21 @@ private fun String.countOccurrences(value: String): Int = windowed(value.length)
 private class InMemorySnapshotHandler(
   private val events: MutableList<String>
 ) : SnapshotHandler {
+  val artifacts = mutableListOf<Artifact>()
+  var artifactFailure: Throwable? = null
+
   override fun newFrameHandler(snapshot: Snapshot, frameCount: Int, fps: Int): SnapshotHandler.FrameHandler {
-    return object : SnapshotHandler.FrameHandler {
+    return object : SnapshotHandler.FrameHandler, ArtifactFrameHandler {
       override fun handle(image: BufferedImage) {
         events += "frame handled"
         if (snapshot.name == "failing-verification") {
           throw AssertionError("frame verification failed")
         }
+      }
+
+      override fun handleArtifact(name: String, content: String) {
+        artifactFailure?.let { throw it }
+        artifacts += Artifact(name, content)
       }
 
       override fun close() {
@@ -189,3 +272,8 @@ private class InMemorySnapshotHandler(
 
   override fun close() = Unit
 }
+
+private data class Artifact(
+  val name: String,
+  val content: String
+)

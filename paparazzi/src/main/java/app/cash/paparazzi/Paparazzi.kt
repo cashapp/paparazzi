@@ -23,6 +23,8 @@ import android.view.ViewGroup.LayoutParams
 import androidx.annotation.LayoutRes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.ComposeView
+import app.cash.paparazzi.accessibility.ACCESSIBILITY_HIERARCHY_ARTIFACT_NAME
+import app.cash.paparazzi.accessibility.toAccessibilityHierarchyArtifact
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode
 import org.junit.rules.TestRule
 import org.junit.runner.Description
@@ -80,10 +82,6 @@ public class Paparazzi @JvmOverloads constructor(
   private lateinit var frameHandler: SnapshotHandler.FrameHandler
   private var testName: TestName? = null
   internal var onAccessibilityHierarchiesGenerated: (List<String>) -> Unit = {}
-    set(value) {
-      field = value
-      if (::sdk.isInitialized) sdk.onAccessibilityHierarchiesGenerated = value
-    }
 
   public val layoutInflater: LayoutInflater
     get() = sdk.layoutInflater
@@ -126,7 +124,24 @@ public class Paparazzi @JvmOverloads constructor(
       onNewFrame = { frameHandler.handle(it) },
       useDeviceResolution = useDeviceResolution
     )
-    sdk.onAccessibilityHierarchiesGenerated = onAccessibilityHierarchiesGenerated
+    sdk.onAccessibilityHierarchiesGenerated = { hierarchies ->
+      var artifactFailure: Throwable? = null
+      try {
+        (frameHandler as? ArtifactFrameHandler)?.handleArtifact(
+          ACCESSIBILITY_HIERARCHY_ARTIFACT_NAME,
+          hierarchies.toAccessibilityHierarchyArtifact()
+        )
+      } catch (failure: Throwable) {
+        artifactFailure = failure
+      }
+
+      try {
+        onAccessibilityHierarchiesGenerated(hierarchies)
+      } catch (callbackFailure: Throwable) {
+        artifactFailure?.addSuppressed(callbackFailure) ?: throw callbackFailure
+      }
+      artifactFailure?.let { throw it }
+    }
     sdk.setup()
     this.testName = testName
     sdk.prepare()
