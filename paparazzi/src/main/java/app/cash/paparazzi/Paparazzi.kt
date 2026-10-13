@@ -27,6 +27,7 @@ import com.android.ide.common.rendering.api.SessionParams.RenderingMode
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
+import java.io.File
 import java.util.Date
 
 public class Paparazzi @JvmOverloads constructor(
@@ -76,6 +77,58 @@ public class Paparazzi @JvmOverloads constructor(
   ) {
     this.validateAccessibility = validateAccessibility
   }
+
+  /**
+   * Creates a [Paparazzi] with configuration supplied in code rather than through system
+   * properties. This makes it easy to re-run a set of snapshots in a different mode (for example,
+   * to re-record all screenshots after a style change) without Gradle or IntelliJ configuration.
+   *
+   * Configuration values that are left unset fall back to the corresponding system properties,
+   * so this constructor is fully backward compatible with the default constructor.
+   */
+  public constructor(config: Config) : this(
+    environment = detectEnvironment(),
+    deviceConfig = DeviceConfig.NEXUS_5,
+    theme = "android:Theme.Material.NoActionBar.Fullscreen",
+    renderingMode = RenderingMode.NORMAL,
+    appCompatEnabled = true,
+    maxPercentDifference = detectMaxPercentDifferenceDefault(),
+    snapshotHandler = config.toSnapshotHandler(),
+    renderExtensions = setOf(),
+    supportsRtl = false,
+    showSystemUi = false,
+    useDeviceResolution = false
+  )
+
+  /** The mode in which snapshots are handled: [Mode.RECORD] writes goldens, [Mode.VERIFY] checks them. */
+  public enum class Mode {
+    RECORD,
+    VERIFY
+  }
+
+  /**
+   * Code-level configuration for [Paparazzi], as an alternative to system properties.
+   *
+   * Each property that is left `null` falls back to the corresponding system property
+   * (`paparazzi.snapshot.dir`, `paparazzi.failures.dir`, `paparazzi.test.verify`), so
+   * [Config] with no properties set behaves exactly like the default [Paparazzi] constructor.
+   *
+   * ```kotlin
+   * val PAPARAZZI_CONFIG = Paparazzi.Config(
+   *   mode = Paparazzi.Mode.RECORD,
+   *   screenshotsPath = "src/test/screenshots"
+   * )
+   * ```
+   */
+  public data class Config(
+    /** The snapshot mode. `null` defers to the `paparazzi.test.verify` system property. */
+    val mode: Mode? = null,
+    /** Directory where golden snapshots are read from and written to. */
+    val screenshotsPath: String? = null,
+    /** Directory where failure deltas and actual images are written in verify mode. */
+    val failuresPath: String? = null
+  )
+
   private lateinit var sdk: PaparazziSdk
   private lateinit var frameHandler: SnapshotHandler.FrameHandler
   private var testName: TestName? = null
@@ -211,8 +264,8 @@ public class Paparazzi @JvmOverloads constructor(
   }
 
   private companion object {
-    private val isVerifying: Boolean =
-      System.getProperty("paparazzi.test.verify")?.toBoolean() == true
+    private val isVerifying: Boolean
+      get() = System.getProperty("paparazzi.test.verify")?.toBoolean() == true
 
     private fun determineHandler(maxPercentDifference: Double): SnapshotHandler =
       if (isVerifying) {
@@ -220,5 +273,33 @@ public class Paparazzi @JvmOverloads constructor(
       } else {
         HtmlReportWriter(maxPercentDifference = maxPercentDifference)
       }
+
+    private fun Config.toSnapshotHandler(): SnapshotHandler {
+      // When mode is unset, fall back to the paparazzi.test.verify system property exactly as
+      // the default constructor does, but still honor any paths configured in code.
+      val effectiveMode = mode ?: if (isVerifying) Mode.VERIFY else Mode.RECORD
+      return when (effectiveMode) {
+        Mode.RECORD -> HtmlReportWriter(
+          // Only force recording when mode was set in code; otherwise defer to the
+          // paparazzi.test.record system property.
+          record = mode?.let { it == Mode.RECORD },
+          maxPercentDifference = detectMaxPercentDifferenceDefault(),
+          rootDirectory = File(System.getProperty("paparazzi.report.dir") ?: "paparazzi-report"),
+          snapshotRootDirectory = File(screenshotRootDirectory())
+        )
+        Mode.VERIFY -> SnapshotVerifier(
+          maxPercentDifference = detectMaxPercentDifferenceDefault(),
+          rootDirectory = File(screenshotRootDirectory()),
+          failuresPath = failuresPath
+        )
+      }
+    }
+
+    private fun Config.screenshotRootDirectory(): String =
+      screenshotsPath ?: System.getProperty("paparazzi.snapshot.dir")
+        ?: error(
+          "Paparazzi.Config.screenshotsPath is required when the " +
+            "paparazzi.snapshot.dir system property is not set"
+        )
   }
 }
