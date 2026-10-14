@@ -50,7 +50,7 @@ internal object LayoutlibPatch {
     Target(
       binaryName = "android.view.ViewRootImpl",
       methodName = "performTraversals",
-      descriptor = "()V",
+      descriptor = "(J)V",
       advice = RenderSizingAdvice.SuppressPrematureTraversal::class.java
     ),
 
