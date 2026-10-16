@@ -56,7 +56,15 @@ internal class PaparazziCallback(
   @Throws(ClassNotFoundException::class)
   fun initResources() {
     for (rPackageName in resourcePackageNames) {
-      val rClass = Class.forName("$rPackageName.R")
+      val rClass = try {
+        Class.forName("$rPackageName.R")
+      } catch (e: ClassNotFoundException) {
+        if (rPackageName == packageName) throw e
+        // The execution classpath may resolve a newer dependency that no longer includes
+        // a transitive resource package listed in the Android variant's resource config.
+        logger.verbose("Skipping absent dependency R class: $rPackageName.R")
+        continue
+      }
       for (resourceClass in rClass.declaredClasses) {
         val resourceType = ResourceType.fromClassName(resourceClass.simpleName) ?: continue
 
