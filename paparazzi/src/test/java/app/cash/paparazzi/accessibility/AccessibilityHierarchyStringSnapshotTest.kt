@@ -167,6 +167,33 @@ class AccessibilityHierarchyStringSnapshotTest {
     }
 }
 
+class AccessibilityHierarchyWithRenderExtensionSnapshotTest {
+  private val events = mutableListOf<String>()
+
+  @get:Rule
+  val paparazzi = Paparazzi(
+    renderExtensions = setOf(AccessibilityRenderExtension()),
+    snapshotHandler = InMemorySnapshotHandler(events)
+  )
+
+  @After
+  fun clearHierarchyProperty() {
+    System.clearProperty(Flags.ACCESSIBILITY_HIERARCHY_ARTIFACTS_ENABLED)
+  }
+
+  @Test
+  fun `accessibility render extension skips hierarchy generation even when enabled`() {
+    System.setProperty(Flags.ACCESSIBILITY_HIERARCHY_ARTIFACTS_ENABLED, "true")
+    val hierarchies = mutableListOf<List<String>>()
+    paparazzi.onAccessibilityHierarchiesGenerated = hierarchies::add
+
+    paparazzi.snapshot(TextView(paparazzi.context).apply { text = "Accessible content" })
+
+    assertThat(events).containsExactly("frame handled", "handler closed").inOrder()
+    assertThat(hierarchies).isEmpty()
+  }
+}
+
 private fun String.countOccurrences(value: String): Int = windowed(value.length).count { it == value }
 
 private class InMemorySnapshotHandler(

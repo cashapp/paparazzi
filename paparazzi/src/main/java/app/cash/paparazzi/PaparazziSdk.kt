@@ -397,22 +397,25 @@ public class PaparazziSdk @JvmOverloads constructor(
             }
             validateLayoutAccessibility(modifiedView, image)
           }
-          // rootViews contains only the primary content on current Layoutlib. The system roots
-          // include attached windows; normalize their children to window roots and collect each
-          // window once, keeping the primary content after the overlays.
-          val primaryRoot = view.rootView
-          val windowRoots = bridgeRenderSession.systemRootViews
-            .map { (it.viewObject as View).rootView }
-            .distinct()
-            .filterNot { it === primaryRoot } + primaryRoot
-          accessibilityHierarchyGenerator.generate(
-            windowRoots = windowRoots,
-            width = image.width,
-            height = image.height
-          )?.let { accessibilityFrame ->
-            accessibilityHierarchies += accessibilityHierarchyJsonSerializer.toHierarchyString(
-              accessibilityFrame.elements
-            )
+          // Accessibility render extensions already capture accessibility in the image golden.
+          if (renderExtensions.none { it is AccessibilityRenderExtension }) {
+            // rootViews contains only the primary content on current Layoutlib. The system roots
+            // include attached windows; normalize their children to window roots and collect each
+            // window once, keeping the primary content after the overlays.
+            val primaryRoot = view.rootView
+            val windowRoots = bridgeRenderSession.systemRootViews
+              .map { (it.viewObject as View).rootView }
+              .distinct()
+              .filterNot { it === primaryRoot } + primaryRoot
+            accessibilityHierarchyGenerator.generate(
+              windowRoots = windowRoots,
+              width = image.width,
+              height = image.height
+            )?.let { accessibilityFrame ->
+              accessibilityHierarchies += accessibilityHierarchyJsonSerializer.toHierarchyString(
+                accessibilityFrame.elements
+              )
+            }
           }
           onNewFrame(scaleImage(frameImage(image)))
         }
