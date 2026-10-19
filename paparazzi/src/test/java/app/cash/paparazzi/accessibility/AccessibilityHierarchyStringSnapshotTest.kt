@@ -59,6 +59,30 @@ class AccessibilityHierarchyStringSnapshotTest {
   }
 
   @Test
+  fun `gif skips accessibility hierarchy generation while capturing every image frame`() {
+    System.setProperty(Flags.ACCESSIBILITY_HIERARCHY_ARTIFACTS_ENABLED, "true")
+    val hierarchies = mutableListOf<List<String>>()
+    paparazzi.onAccessibilityHierarchiesGenerated = hierarchies::add
+
+    paparazzi.gif(accessibleView(), name = "hierarchy-gif", start = 0L, end = 500L, fps = 4)
+
+    assertThat(events).containsExactly("frame handled", "frame handled", "frame handled", "handler closed").inOrder()
+    assertThat(hierarchies).isEmpty()
+  }
+
+  @Test
+  fun `gif with one frame also skips accessibility hierarchy generation`() {
+    System.setProperty(Flags.ACCESSIBILITY_HIERARCHY_ARTIFACTS_ENABLED, "true")
+    val hierarchies = mutableListOf<List<String>>()
+    paparazzi.onAccessibilityHierarchiesGenerated = hierarchies::add
+
+    paparazzi.gif(accessibleView(), name = "single-frame-gif", start = 0L, end = 0L, fps = 4)
+
+    assertThat(events).containsExactly("frame handled", "handler closed").inOrder()
+    assertThat(hierarchies).isEmpty()
+  }
+
+  @Test
   fun `hierarchy is delivered after frame verification failure and before handler cleanup`() {
     System.setProperty(Flags.ACCESSIBILITY_HIERARCHY_ARTIFACTS_ENABLED, "true")
     events += "snapshot started"

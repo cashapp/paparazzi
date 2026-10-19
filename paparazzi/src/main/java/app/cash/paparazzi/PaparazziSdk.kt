@@ -397,8 +397,9 @@ public class PaparazziSdk @JvmOverloads constructor(
             }
             validateLayoutAccessibility(modifiedView, image)
           }
-          // Accessibility render extensions already capture accessibility in the image golden.
-          if (renderExtensions.none { it is AccessibilityRenderExtension }) {
+          // Only still snapshots generate artifacts; accessibility extensions already cover the image.
+          // The FPS marker also excludes GIFs that capture only one frame.
+          if (fps == -1 && renderExtensions.none { it is AccessibilityRenderExtension }) {
             // rootViews contains only the primary content on current Layoutlib. The system roots
             // include attached windows; normalize their children to window roots and collect each
             // window once, keeping the primary content after the overlays.
