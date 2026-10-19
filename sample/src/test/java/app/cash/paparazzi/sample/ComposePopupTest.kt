@@ -8,9 +8,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.cash.paparazzi.DeviceConfig
@@ -29,6 +32,7 @@ class ComposePopupTest {
   )
 
   @Test
+  @OptIn(ExperimentalMaterial3Api::class)
   fun expandedDropdown() {
     paparazzi.gif(end = 300, fps = 10) {
       MaterialTheme {
@@ -44,8 +48,11 @@ class ComposePopupTest {
                 modifier = Modifier.defaultMinSize(minWidth = 192.dp),
                 shape = RoundedCornerShape(12.dp)
               ) {
-                for (option in listOf("Option 1", "Option 2", "Option 3")) {
-                  DropdownMenuItem(text = { Text(option) }, onClick = {})
+                // Focus indications can start on different frames; capture the popup itself.
+                CompositionLocalProvider(LocalRippleConfiguration provides null) {
+                  for (option in listOf("Option 1", "Option 2", "Option 3")) {
+                    DropdownMenuItem(text = { Text(option) }, onClick = {})
+                  }
                 }
               }
             }
