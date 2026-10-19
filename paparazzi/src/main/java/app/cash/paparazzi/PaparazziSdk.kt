@@ -19,9 +19,7 @@ import android.animation.AnimationHandler
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Bitmap
-import android.os.Handler
 import android.os.Handler_Delegate
-import android.os.Looper
 import android.os.Looper_Accessor
 import android.util.AttributeSet
 import android.util.DisplayMetrics
@@ -51,6 +49,7 @@ import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.PaparazziCallback
 import app.cash.paparazzi.internal.PaparazziLifecycleOwner
 import app.cash.paparazzi.internal.PaparazziLogger
+import app.cash.paparazzi.internal.PaparazziMainDispatcher
 import app.cash.paparazzi.internal.PaparazziOnBackPressedDispatcherOwner
 import app.cash.paparazzi.internal.PaparazziSavedStateRegistryOwner
 import app.cash.paparazzi.internal.Renderer
@@ -81,7 +80,6 @@ import java.awt.geom.Ellipse2D
 import java.awt.image.BufferedImage
 import java.util.EnumSet
 import java.util.concurrent.TimeUnit
-import kotlinx.coroutines.android.asCoroutineDispatcher
 
 @OptIn(ExperimentalComposeUiApi::class, InternalComposeUiApi::class)
 public class PaparazziSdk @JvmOverloads constructor(
@@ -321,8 +319,7 @@ public class PaparazziSdk @JvmOverloads constructor(
         // async to our test Handler. By initializing Recomposer with Dispatchers.Main, Delay will now be backed by our test Handler,
         // synchronizing expected behavior.
         WindowRecomposerPolicy.setFactory {
-          val dispatcher = Handler(Looper.getMainLooper()).asCoroutineDispatcher("Paparazzi-Main")
-          val windowRecomposer = it.createLifecycleAwareWindowRecomposer(dispatcher)
+          val windowRecomposer = it.createLifecycleAwareWindowRecomposer(PaparazziMainDispatcher.INSTANCE)
           recomposer = windowRecomposer
           return@setFactory windowRecomposer
         }
