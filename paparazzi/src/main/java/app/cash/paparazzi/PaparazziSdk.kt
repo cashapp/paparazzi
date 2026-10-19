@@ -54,6 +54,7 @@ import app.cash.paparazzi.internal.PaparazziOnBackPressedDispatcherOwner
 import app.cash.paparazzi.internal.PaparazziSavedStateRegistryOwner
 import app.cash.paparazzi.internal.Renderer
 import app.cash.paparazzi.internal.SessionParamsBuilder
+import app.cash.paparazzi.internal.WindowRedrawListener
 import app.cash.paparazzi.internal.interceptors.EditModeInterceptor
 import app.cash.paparazzi.internal.layoutlib.LayoutlibPatch
 import app.cash.paparazzi.internal.layoutlib.RenderSizingState
@@ -299,7 +300,10 @@ public class PaparazziSdk @JvmOverloads constructor(
 
     lateinit var lifecycleOwner: PaparazziLifecycleOwner
 
+    val windowRedrawListener = WindowRedrawListener(viewGroup)
+
     try {
+      windowRedrawListener.attach()
       AnimationHandler.getInstance().setProvider(SingleDispatchFrameCallbackProvider)
       withTime(0L, tickVsync = false) {
         // Initialize the choreographer at time=0.
@@ -391,6 +395,7 @@ public class PaparazziSdk @JvmOverloads constructor(
         onNewFrame(scaleImage(frameImage(image)))
       }
     } finally {
+      windowRedrawListener.detach()
       if (hasLifecycleOwnerRuntime) {
         lifecycleOwner.registry.currentState = Lifecycle.State.DESTROYED
       }
