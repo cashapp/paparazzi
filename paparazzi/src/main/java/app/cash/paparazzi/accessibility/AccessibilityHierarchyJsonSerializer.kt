@@ -2,12 +2,19 @@ package app.cash.paparazzi.accessibility
 
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
-import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 
 internal class AccessibilityHierarchyJsonSerializer {
-  fun toHierarchyString(elements: Collection<AccessibilityElement>): String =
-    hierarchyJsonAdapter.toJson(elements.map { it.toHierarchyJsonElement() })
+  fun toHierarchyString(frame: AccessibilityFrame): String =
+    hierarchyJsonAdapter.toJson(
+      AccessibilityHierarchyJsonFrame(
+        renderWidth = frame.width,
+        renderHeight = frame.height,
+        imageWidth = frame.imageWidth,
+        imageHeight = frame.imageHeight,
+        elements = frame.elements.map { it.toHierarchyJsonElement() }
+      )
+    )
 
   private fun AccessibilityElement.toHierarchyJsonElement(): AccessibilityHierarchyJsonElement {
     return AccessibilityHierarchyJsonElement(
@@ -25,15 +32,23 @@ internal class AccessibilityHierarchyJsonSerializer {
   }
 
   private companion object {
-    private val hierarchyJsonAdapter: JsonAdapter<List<AccessibilityHierarchyJsonElement>> =
+    private val hierarchyJsonAdapter: JsonAdapter<AccessibilityHierarchyJsonFrame> =
       Moshi.Builder()
         .addLast(KotlinJsonAdapterFactory())
         .build()
-        .adapter<List<AccessibilityHierarchyJsonElement>>(
-          Types.newParameterizedType(List::class.java, AccessibilityHierarchyJsonElement::class.java)
-        )
+        .adapter(AccessibilityHierarchyJsonFrame::class.java)
         .serializeNulls()
         .indent("  ")
+
+    // Bounds use pixels relative to the top-left of the unscaled render canvas. Consumers map
+    // them to the captured image using imageWidth / renderWidth and imageHeight / renderHeight.
+    data class AccessibilityHierarchyJsonFrame(
+      val renderWidth: Int,
+      val renderHeight: Int,
+      val imageWidth: Int,
+      val imageHeight: Int,
+      val elements: List<AccessibilityHierarchyJsonElement>
+    )
 
     data class AccessibilityHierarchyJsonElement(
       val id: String,
