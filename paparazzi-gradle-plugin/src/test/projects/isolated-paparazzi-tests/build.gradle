@@ -1,0 +1,49 @@
+import org.gradle.api.tasks.testing.Test
+import org.gradle.process.CommandLineArgumentProvider
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
+plugins {
+  id 'com.android.library'
+  id 'app.cash.paparazzi'
+}
+
+class IsolatedTestArgumentProvider implements CommandLineArgumentProvider {
+  @Override
+  Iterable<String> asArguments() {
+    return ['-Dapp.cash.paparazzi.test.argumentProvider=present']
+  }
+}
+
+android {
+  namespace = 'app.cash.paparazzi.plugin.test'
+  compileSdk = libs.versions.compileSdk.get() as int
+  defaultConfig {
+    minSdk = libs.versions.minSdk.get() as int
+  }
+  compileOptions {
+    sourceCompatibility = libs.versions.javaTarget.get()
+    targetCompatibility = libs.versions.javaTarget.get()
+  }
+  kotlin {
+    compilerOptions {
+      jvmTarget = JvmTarget.fromTarget(libs.versions.javaTarget.get())
+    }
+  }
+}
+
+dependencies {
+  testImplementation project(':base')
+  testImplementation "org.robolectric:robolectric:4.16.1"
+}
+
+afterEvaluate {
+  tasks.named('testDebugUnitTest', Test) {
+    jvmArgumentProviders.add(new IsolatedTestArgumentProvider())
+    filter {
+      includeTestsMatching '*IsolatedPaparazziTest'
+      includeTestsMatching '*InheritedPaparazziTest'
+      includeTestsMatching '*FailingRobolectricTest*'
+      excludeTestsMatching '*excludedByUnitTestFilter'
+    }
+  }
+}

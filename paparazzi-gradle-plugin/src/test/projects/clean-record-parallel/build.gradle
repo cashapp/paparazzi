@@ -20,5 +20,5 @@ android {
  * `shouldRunAfter` is a soft ordering that is ignored by gradle when `mustRunAfter` is specified.
  */
 tasks.matching { it.name == "deleteDebugPaparazziSnapshots" }.configureEach {
-  shouldRunAfter("testDebugUnitTest")
+  shouldRunAfter("testPaparazziDebug")
 }
