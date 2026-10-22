@@ -50,6 +50,7 @@ import app.cash.paparazzi.internal.PaparazziCallback
 import app.cash.paparazzi.internal.PaparazziLifecycleOwner
 import app.cash.paparazzi.internal.PaparazziLogger
 import app.cash.paparazzi.internal.PaparazziMainDispatcher
+import app.cash.paparazzi.internal.PaparazziMainDispatcherFactory
 import app.cash.paparazzi.internal.PaparazziOnBackPressedDispatcherOwner
 import app.cash.paparazzi.internal.PaparazziSavedStateRegistryOwner
 import app.cash.paparazzi.internal.Renderer
@@ -671,6 +672,10 @@ public class PaparazziSdk @JvmOverloads constructor(
   }
 
   internal companion object {
+    init {
+      PaparazziMainDispatcherFactory.install()
+    }
+
     internal lateinit var renderer: Renderer
     internal val isInitialized get() = ::renderer.isInitialized
 

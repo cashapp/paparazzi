@@ -16,15 +16,17 @@ import kotlin.coroutines.EmptyCoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.resetMain
 
 /**
  * Regression test for https://github.com/cashapp/paparazzi/issues/2382.
  *
- * Each test gets a fresh layoutlib main Looper. The ordering is intentional: the first test
- * initializes the main dispatcher, and the second verifies it still dispatches to the current
- * Looper rather than the previous test's (torn-down) one.
+ * Every test gets a fresh layoutlib main Looper. The ordering is intentional: by the time the
+ * second test runs, `Dispatchers.Main` has been resolved during an earlier test, so it must follow
+ * the current Looper rather than the torn-down one.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -50,6 +52,7 @@ class MainDispatcherAcrossTestsTest {
     val executions = AtomicInteger()
 
     paparazzi.snapshot {
+      // Scaffold composes its content during measure, after the frame's Handler callbacks have run.
       Scaffold {
         DispatcherBackedContent(executions)
       }
@@ -61,19 +64,26 @@ class MainDispatcherAcrossTestsTest {
 
 @Composable
 private fun DispatcherBackedContent(executions: AtomicInteger) {
-  // On the main thread, Main.immediate must run inline. A dispatcher bound to a previous test's
-  // Looper would report a dispatch is needed.
+  // On the main thread, Main.immediate must run inline. A dispatcher bound to an earlier test's
+  // Looper reports that a dispatch is needed.
   assertFalse(Dispatchers.Main.immediate.isDispatchNeeded(EmptyCoroutineContext))
 
   remember {
     object : RememberObserver {
+      private var scope: CoroutineScope? = null
+
       override fun onRemembered() {
-        CoroutineScope(Dispatchers.Main.immediate).launch {
-          executions.incrementAndGet()
+        scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate).apply {
+          launch { executions.incrementAndGet() }
         }
       }
 
-      override fun onForgotten() = Unit
+      // Cancel with the composition, so work that was dispatched instead of run inline is dropped
+      // rather than running during teardown, after the snapshot has been captured.
+      override fun onForgotten() {
+        scope?.cancel()
+      }
+
       override fun onAbandoned() = Unit
     }
   }

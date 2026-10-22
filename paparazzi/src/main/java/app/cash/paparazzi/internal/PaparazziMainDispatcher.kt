@@ -41,19 +41,8 @@ import kotlinx.coroutines.internal.MainDispatcherFactory
 internal class PaparazziMainDispatcher private constructor(
   private val isImmediate: Boolean
 ) : MainCoroutineDispatcher(), Delay {
-  private var cachedLooper: Looper? = null
-  private var cachedDispatcher: HandlerDispatcher? = null
-
-  private val current: MainCoroutineDispatcher
-    @Synchronized get() {
-      val looper = Looper.getMainLooper()
-      val dispatcher = cachedDispatcher.takeIf { looper === cachedLooper }
-        ?: Handler(looper).asCoroutineDispatcher(NAME).also {
-          cachedLooper = looper
-          cachedDispatcher = it
-        }
-      return if (isImmediate) dispatcher.immediate else dispatcher
-    }
+  private val current: HandlerDispatcher
+    get() = currentHandlerDispatcher().let { if (isImmediate) it.immediate else it }
 
   override val immediate: MainCoroutineDispatcher
     get() = if (isImmediate) this else IMMEDIATE
@@ -78,6 +67,30 @@ internal class PaparazziMainDispatcher private constructor(
 
     val INSTANCE: PaparazziMainDispatcher = PaparazziMainDispatcher(isImmediate = false)
     private val IMMEDIATE = PaparazziMainDispatcher(isImmediate = true)
+
+    private var cachedLooper: Looper? = null
+    private var cachedDispatcher: HandlerDispatcher? = null
+
+    /**
+     * Returns a dispatcher for the current main Looper.
+     *
+     * Between render sessions there is no main Looper. Work dispatched then, such as a continuation
+     * resumed from a background thread after teardown, falls back to the previous session's
+     * dispatcher. That matches the stock dispatcher: layoutlib's `Handler_Delegate` queues it in the
+     * active session, or drops it when there is none, rather than failing the caller.
+     */
+    @Synchronized
+    private fun currentHandlerDispatcher(): HandlerDispatcher {
+      val looper = Looper.getMainLooper()
+      if (looper != null && looper !== cachedLooper) {
+        cachedLooper = looper
+        cachedDispatcher = Handler(looper).asCoroutineDispatcher(NAME)
+      }
+      return checkNotNull(cachedDispatcher) {
+        "The main Looper is not available. Dispatchers.Main can only be used once a Paparazzi " +
+          "render session has been prepared."
+      }
+    }
   }
 }
 
@@ -95,4 +108,21 @@ internal class PaparazziMainDispatcherFactory : MainDispatcherFactory {
     PaparazziMainDispatcher.INSTANCE
 
   override fun hintOnError(): String = "Paparazzi must be on the test classpath"
+
+  internal companion object {
+    private const val FAST_SERVICE_LOADER = "kotlinx.coroutines.fast.service.loader"
+
+    /**
+     * When `android.os.Build` is on the classpath, kotlinx-coroutines skips ServiceLoader and
+     * hardcodes its Android factory, so this factory is only found once the fast path is disabled.
+     * The flag is read when `Dispatchers.Main` is first resolved, so this must run before then.
+     * The Gradle plugin also sets it on the test JVM, which covers code that resolves
+     * `Dispatchers.Main` before Paparazzi is loaded. An explicit value is left alone.
+     */
+    fun install() {
+      if (System.getProperty(FAST_SERVICE_LOADER) == null) {
+        System.setProperty(FAST_SERVICE_LOADER, "false")
+      }
+    }
+  }
 }
