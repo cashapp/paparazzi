@@ -57,6 +57,9 @@ class ComposeRippleRegressionTest {
         density = Density.MEDIUM,
         softButtons = false
       ),
+      // Ripple sparkle rasterization differs slightly across platforms (<0.04% in CI).
+      // A missing ripple still differs by over 11% at its peak.
+      maxPercentDifference = 0.1,
       useDeviceResolution = true
     )
     // Exercise separate test lifecycles in the same JVM without depending on method order.
