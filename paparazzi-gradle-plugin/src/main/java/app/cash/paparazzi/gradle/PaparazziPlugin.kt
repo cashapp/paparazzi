@@ -306,6 +306,11 @@ public class PaparazziPlugin @Inject constructor(
           .withPropertyName("paparazzi.failures.dir")
           .optional()
 
+        // On Android, kotlinx-coroutines bypasses ServiceLoader and hardcodes AndroidDispatcherFactory, which
+        // binds Dispatchers.Main to the first test's main Looper. Use ServiceLoader so Paparazzi's
+        // main-Looper-tracking factory is picked up. https://github.com/cashapp/paparazzi/issues/2382
+        test.systemProperty("kotlinx.coroutines.fast.service.loader", "false")
+
         // Hoisted: referencing the task from inside the action breaks configuration cache.
         val paparazziResourcesFile = writeResourcesTask.flatMap { it.paparazziResources.asFile }
 
