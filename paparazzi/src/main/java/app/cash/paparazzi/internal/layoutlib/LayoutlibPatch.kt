@@ -12,15 +12,17 @@ import java.lang.instrument.Instrumentation
 import java.security.ProtectionDomain
 
 /**
- * Load-time bytecode patch for layoutlib's canvas-sizing path.
+ * Load-time bytecode patches for layoutlib's canvas sizing and window rendering.
  *
- * Two independent defects live here; both are described in full on the advice that fixes them.
+ * Each defect is described in full on the advice that fixes it.
  *
  * 1. A traversal can run before the canvas has been sized for the content
  *    ([RenderSizingAdvice.SuppressPrematureTraversal]).
  * 2. The canvas is sized from the base window alone, and windows are then positioned inside the
  *    device display rather than inside that canvas
  *    ([RenderSizingAdvice.MeasureLayoutComplete], [RenderSizingAdvice.WindowRelayout]).
+ * 3. Reusing the root display list skips updates to additional windows
+ *    ([RenderSizingAdvice.RefreshRootDisplayList]).
  *
  * Every layoutlib class is offered to the transformer at first load through the ordinary
  * application class loader, so `Advice` can wrap existing methods without adding members.
@@ -67,6 +69,12 @@ internal object LayoutlibPatch {
         "Landroid/view/WindowManager${'$'}LayoutParams;IIIIII" +
         "Landroid/view/WindowRelayoutResult;Landroid/view/SurfaceControl;)I",
       advice = RenderSizingAdvice.WindowRelayout::class.java
+    ),
+    Target(
+      binaryName = "android.view.LayoutlibRenderer",
+      methodName = "draw",
+      descriptor = "(Ljava/util/List;)V",
+      advice = RenderSizingAdvice.RefreshRootDisplayList::class.java
     )
   )
 
@@ -91,11 +99,9 @@ internal object LayoutlibPatch {
     if (broken.isEmpty()) return
     throw IllegalStateException(
       buildString {
-        append("Paparazzi could not patch layoutlib's canvas-sizing path. ")
+        append("Paparazzi could not patch layoutlib's rendering path. ")
         append("This layoutlib is not the shape Paparazzi was built against. ")
-        append("RenderingMode.V_SCROLL/H_SCROLL/FULL_EXPAND would silently produce an unexpanded ")
-        append("canvas, and RenderingMode.SHRINK would size the canvas from the base window ")
-        append("alone - rendering a dialog-only layout at 0x0. Unpatched targets:")
+        append("Canvas sizing and additional-window rendering may be incorrect. Unpatched targets:")
         broken.forEach {
           append("\n  - ${it.binaryName}#${it.methodName}${it.descriptor}: ${it.status}")
         }
