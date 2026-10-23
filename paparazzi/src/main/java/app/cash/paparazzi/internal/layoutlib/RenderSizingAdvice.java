@@ -3,7 +3,7 @@ package app.cash.paparazzi.internal.layoutlib;
 import net.bytebuddy.asm.Advice;
 
 /**
- * The three {@link Advice} fragments {@link LayoutlibPatch} inlines into layoutlib.
+ * The {@link Advice} fragments {@link LayoutlibPatch} inlines into layoutlib.
  *
  * <p>Advice bodies are copied into the target method, so they may only reference members that are
  * public in the class file. None of these classes is ever loaded at runtime; only their bytecode is
@@ -89,6 +89,24 @@ final class RenderSizingAdvice {
         @Advice.Argument(3) int requestedHeight,
         @Advice.Argument(8) android.view.WindowRelayoutResult result) {
       WindowSizingSupport.positionWindowInCanvas(attrs, requestedWidth, requestedHeight, result);
+    }
+  }
+
+  /**
+   * Rebuild the root before {@code LayoutlibRenderer.draw} so {@code onPostDraw} refreshes
+   * additional windows' content and positions. Layoutlib 17 no longer invalidates the root when
+   * the scale is unchanged, and its window-list listener only handles additions and removals.
+   * Keep root caching when only the base window remains; removal already invalidates the root.
+   */
+  static final class RefreshRootDisplayList {
+    private RefreshRootDisplayList() {}
+
+    @Advice.OnMethodEnter
+    static void enter(@Advice.This Object renderer, @Advice.Argument(0) java.util.List<?> windows) {
+      // Keep the parameter untyped to avoid loading the target class during transformation.
+      if (windows.size() > 1) {
+        ((android.view.LayoutlibRenderer) renderer).invalidateRoot();
+      }
     }
   }
 }
