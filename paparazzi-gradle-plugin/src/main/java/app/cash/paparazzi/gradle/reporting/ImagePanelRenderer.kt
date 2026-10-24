@@ -4,15 +4,26 @@ import org.gradle.internal.html.SimpleHtmlWriter
 import org.gradle.reporting.ReportRenderer
 
 internal class ImagePanelRenderer : ReportRenderer<DiffImage, SimpleHtmlWriter>() {
+  private var panelCount = 0
+
   override fun render(image: DiffImage, htmlWriter: SimpleHtmlWriter) {
+    // SimpleHtmlWriter rejects <details>, so a checkbox toggles the diff via style.css instead
+    val toggleId = "failure-diff-${panelCount++}"
+
     // Wrap in a <span>, to work around CSS problem in IE
     htmlWriter
       .startElement("span")
-      .startElement("details")
-      .startElement("summary")
+      .startElement("input")
+      .attribute("type", "checkbox")
+      .attribute("id", toggleId)
+      .attribute("class", "diffToggle")
+      .endElement()
+      .startElement("label")
+      .attribute("for", toggleId)
       .characters("Show failure diff")
       .endElement()
       .startElement("table")
+      .attribute("class", "diffPanel")
       .attribute("style", "table-layout: fixed")
 
     // Render a grid background to better show the diff between images with and without background
@@ -26,7 +37,6 @@ internal class ImagePanelRenderer : ReportRenderer<DiffImage, SimpleHtmlWriter>(
     htmlWriter
       .endElement() // tbody
       .endElement() // table
-      .endElement() // details
       .endElement() // span
 
     htmlWriter
