@@ -67,6 +67,12 @@ internal class ApngVerifier(
 
   fun verifyFrame(image: BufferedImage) {
     val (expectedFrame, actualFrame) = resizeMaxBounds(currentGoldenFrame ?: blankFrame, image)
+    if (deltaWriter == null && maxPercentDifference >= 0 &&
+      ImageUtils.imagesMatch(expectedFrame, actualFrame, differ)
+    ) {
+      currentGoldenFrame = pngReader.readNextFrame()
+      return
+    }
     val (deltaImage, percentDifferent) = ImageUtils.compareImages(expectedFrame, actualFrame, differ)
     if (percentDifferent > maxPercentDifference) {
       if (deltaWriter == null) {
