@@ -13,6 +13,7 @@ import org.gradle.api.provider.Provider
  * All the relevant sources for a given Android variant.
  */
 internal class AndroidVariantSources(
+  private val projectPath: String,
   private val variant: Variant,
   private val testVariant: UnitTest? = null
 ) {
@@ -26,7 +27,9 @@ internal class AndroidVariantSources(
       .artifactsFor(AndroidArtifacts.ArtifactType.ANDROID_RES.type) { it is ProjectComponentIdentifier }
       .artifactFiles
     val testArtifacts = testVariant?.runtimeConfiguration
-      ?.artifactsFor(AndroidArtifacts.ArtifactType.ANDROID_RES.type) { it is ProjectComponentIdentifier }
+      ?.artifactsFor(AndroidArtifacts.ArtifactType.ANDROID_RES.type) {
+        it is ProjectComponentIdentifier && it.projectPath != projectPath
+      }
       ?.artifactFiles
     if (testArtifacts != null) mainArtifacts + testArtifacts else mainArtifacts
   }
@@ -51,7 +54,9 @@ internal class AndroidVariantSources(
       .artifactsFor(AndroidArtifacts.ArtifactType.ASSETS.type) { it is ProjectComponentIdentifier }
       .artifactFiles
     val testArtifacts = testVariant?.runtimeConfiguration
-      ?.artifactsFor(AndroidArtifacts.ArtifactType.ASSETS.type) { it is ProjectComponentIdentifier }
+      ?.artifactsFor(AndroidArtifacts.ArtifactType.ASSETS.type) {
+        it is ProjectComponentIdentifier && it.projectPath != projectPath
+      }
       ?.artifactFiles
     if (testArtifacts != null) mainArtifacts + testArtifacts else mainArtifacts
   }
@@ -71,7 +76,9 @@ internal class AndroidVariantSources(
       .artifactsFor(AndroidArtifacts.ArtifactType.SYMBOL_LIST_WITH_PACKAGE_NAME.type)
       .artifactFiles
     val testArtifacts = testVariant?.runtimeConfiguration
-      ?.artifactsFor(AndroidArtifacts.ArtifactType.SYMBOL_LIST_WITH_PACKAGE_NAME.type)
+      ?.artifactsFor(AndroidArtifacts.ArtifactType.SYMBOL_LIST_WITH_PACKAGE_NAME.type) {
+        it !is ProjectComponentIdentifier || it.projectPath != projectPath
+      }
       ?.artifactFiles
     if (testArtifacts != null) mainArtifacts + testArtifacts else mainArtifacts
   }
