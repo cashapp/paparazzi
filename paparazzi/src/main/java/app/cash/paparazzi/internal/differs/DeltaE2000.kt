@@ -20,7 +20,6 @@ internal object DeltaE2000 : Differ {
 
     val width = expected.width
     val height = expected.height
-    var totalDifference = 0.0
     var numDifferent = 0L
     var numSimilar = 0L
 
@@ -40,7 +39,7 @@ internal object DeltaE2000 : Differ {
 
         if (isDifferent) {
           numDifferent++
-        } else {
+        } else if (deltaE > 0.0) {
           numSimilar++
         }
 
@@ -48,8 +47,6 @@ internal object DeltaE2000 : Differ {
         val intensity = (min(1.0, deltaE / 10.0) * 255).toInt()
         val gray = Color(intensity, intensity, intensity).rgb
         deltaImage.setRGB(x, y, gray)
-
-        totalDifference += deltaE
       }
     }
 
@@ -57,8 +54,8 @@ internal object DeltaE2000 : Differ {
     val percentDifference = numDifferent.toFloat() / totalPixels * 100f
 
     return when {
-      percentDifference == 0f -> DiffResult.Identical(deltaImage)
-      percentDifference < 5f -> DiffResult.Similar(deltaImage, numSimilar)
+      numDifferent == 0L && numSimilar == 0L -> DiffResult.Identical(deltaImage)
+      numDifferent == 0L -> DiffResult.Similar(deltaImage, numSimilar)
       else -> DiffResult.Different(deltaImage, percentDifference, numDifferent)
     }
   }
