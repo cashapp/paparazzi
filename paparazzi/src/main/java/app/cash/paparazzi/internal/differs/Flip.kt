@@ -21,9 +21,8 @@ internal object Flip : Differ {
     val pixelsPerDegree = 60.0
     val maxFrequency = 30.0
 
-    var weightedSum = 0.0
-    var weightTotal = 0.0
     var diffCount = 0L
+    var similarCount = 0L
 
     for (y in 0 until h) {
       for (x in 0 until w) {
@@ -46,22 +45,21 @@ internal object Flip : Differ {
           ycxcz1[2] - ycxcz2[2]
         )
         val diffMag = sqrt(diffVec.mapIndexed { i, dv -> dv * dv * csfAttn[i] }.sum())
-        weightedSum += diffMag
-        weightTotal += 1.0
-
-        if (diffMag > 0.02) diffCount++
+        when {
+          diffMag > 0.02 -> diffCount++
+          diffMag > 0.0 -> similarCount++
+        }
 
         val gray = (min(1.0, diffMag) * 255).toInt()
         deltaImage.setRGB(x, y, Color(gray, gray, gray).rgb)
       }
     }
 
-    val avgError = (weightedSum / weightTotal).toFloat()
     val percentDiff = diffCount.toFloat() / (w * h) * 100f
 
     return when {
-      avgError < 0.005f -> DiffResult.Identical(deltaImage)
-      avgError < 0.02f -> DiffResult.Similar(deltaImage, (w * h - diffCount))
+      diffCount == 0L && similarCount == 0L -> DiffResult.Identical(deltaImage)
+      diffCount == 0L -> DiffResult.Similar(deltaImage, similarCount)
       else -> DiffResult.Different(deltaImage, percentDiff, diffCount)
     }
   }
