@@ -17,5 +17,6 @@ android {
 
 dependencies {
   implementation libs.androidx.appcompat
+  testImplementation libs.androidx.recyclerview
 }
 
