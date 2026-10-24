@@ -10,6 +10,9 @@ import kotlin.math.pow
 import kotlin.math.sqrt
 
 internal object Flip : Differ {
+
+  private const val THRESHOLD = 0.02f
+
   override fun compare(expected: BufferedImage, actual: BufferedImage): DiffResult {
     require(expected.width == actual.width && expected.height == actual.height)
 
@@ -23,56 +26,70 @@ internal object Flip : Differ {
 
     var weightedSum = 0.0
     var weightTotal = 0.0
-    var diffCount = 0L
+    var numDifferent = 0L
+    var numSimilar = 0L
 
     for (y in 0 until h) {
       for (x in 0 until w) {
         val c1 = Color(expected.getRGB(x, y))
         val c2 = Color(actual.getRGB(x, y))
-        val lin1 = srgbToLinear(c1)
-        val lin2 = srgbToLinear(c2)
+        val diffMag = if (c1 != c2) {
+          val lin1 = srgbToLinear(c1)
+          val lin2 = srgbToLinear(c2)
 
-        val fc1 = toFloatArray(lin1)
-        val fc2 = toFloatArray(lin2)
-        val ycxcz1 = toYCxCz(fc1)
-        val ycxcz2 = toYCxCz(fc2)
+          val fc1 = toFloatArray(lin1)
+          val fc2 = toFloatArray(lin2)
+          val ycxcz1 = toYCxCz(fc1)
+          val ycxcz2 = toYCxCz(fc2)
 
-        // Contrast sensitivity filter
-        val csfAttn = contrastSensitivity(ycxcz1, pixelsPerDegree, maxFrequency)
+          // Contrast sensitivity filter
+          val csfAttn = contrastSensitivity(ycxcz1, pixelsPerDegree, maxFrequency)
 
-        val diffVec = doubleArrayOf(
-          ycxcz1[0] - ycxcz2[0],
-          ycxcz1[1] - ycxcz2[1],
-          ycxcz1[2] - ycxcz2[2]
-        )
-        val diffMag = sqrt(diffVec.mapIndexed { i, dv -> dv * dv * csfAttn[i] }.sum())
+          val diffVec = doubleArrayOf(
+            ycxcz1[0] - ycxcz2[0],
+            ycxcz1[1] - ycxcz2[1],
+            ycxcz1[2] - ycxcz2[2]
+          )
+          sqrt(diffVec.mapIndexed { i, dv -> dv * dv * csfAttn[i] }.sum())
+        } else {
+          0.0
+        }
+
         weightedSum += diffMag
         weightTotal += 1.0
 
-        if (diffMag > 0.02) diffCount++
+        when {
+          diffMag > THRESHOLD -> numDifferent++
+          diffMag > 0.0 -> numSimilar++
+        }
 
         val gray = (min(1.0, diffMag) * 255).toInt()
         deltaImage.setRGB(x, y, Color(gray, gray, gray).rgb)
       }
     }
 
-    val avgError = (weightedSum / weightTotal).toFloat()
-    val percentDiff = diffCount.toFloat() / (w * h) * 100f
+    val percentDiff = numDifferent.toFloat() / (w * h) * 100f
 
     return when {
-      avgError < 0.005f -> DiffResult.Identical(deltaImage)
-      avgError < 0.02f -> DiffResult.Similar(deltaImage, (w * h - diffCount))
-      else -> DiffResult.Different(deltaImage, percentDiff, diffCount)
+      numDifferent + numSimilar == 0L -> DiffResult.Identical(delta = deltaImage)
+      numDifferent == 0L -> DiffResult.Similar(delta = deltaImage, numSimilarPixels = numSimilar)
+      else -> DiffResult.Different(
+        delta = deltaImage,
+        percentDifference = percentDiff,
+        numDifferentPixels = numDifferent
+      )
     }
   }
 
   private data class LinearRGB(val r: Double, val g: Double, val b: Double)
+
   private fun srgbToLinear(c: Color) =
     LinearRGB(
       gammaExpand(c.red / 255.0),
       gammaExpand(c.green / 255.0),
       gammaExpand(c.blue / 255.0)
     )
+
   private fun gammaExpand(c: Double) = if (c <= 0.04045) c / 12.92 else ((c + 0.055) / 1.055).pow(2.4)
 
   private fun toFloatArray(rgb: LinearRGB) = doubleArrayOf(rgb.r, rgb.g, rgb.b)
