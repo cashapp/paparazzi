@@ -380,10 +380,12 @@ coordinates by `imageWidth / renderWidth` and vertical coordinates by
 image dimensions are rounded to whole pixels. With `useDeviceResolution = true`, both
 ratios are one. Retain out-of-canvas bounds; clip only when drawing the visualization.
 
-These fields allow a future failure reporter to reconstruct overlays without rerendering
-the UI. The JSON does not contain screenshot pixels, and this format does not yet add
-accessibility images to failure reports. Goldens recorded in the earlier element-array
-format must be recorded again.
+When `app.cash.paparazzi.reportType=native`, a missing or mismatched accessibility artifact
+attaches an image to the failing test's report. It shows the current snapshot with accessibility
+highlights and the same legend used by `AccessibilityRenderExtension`, drawn from the captured
+hierarchy without rerendering the UI. This diagnostic image is not recorded or compared as a
+golden and is not generated for legacy reports or passing artifact checks. Goldens recorded in
+the earlier element-array format must be recorded again.
 
 Things to Look For
 -------
