@@ -46,6 +46,49 @@ class HtmlReportWriterTest {
   private val anyVideoHash = "80ff0587a0fbd0ede0247a021edfb1a3aaf9ccb5"
 
   @Test
+  fun genericPreviewParameterCanBeRecordedAndVerified() {
+    val previousRecord = System.getProperty("paparazzi.test.record")
+    val snapshot = Snapshot(
+      name = null,
+      testName = TestName("app.cash.paparazzi", "PreviewTest", "previewTests[43.MyPreview_ClosedRange<Float>_0]"),
+      timestamp = Date(0)
+    )
+    try {
+      System.setProperty("paparazzi.test.record", "true")
+      HtmlReportWriter(
+        runName = "generic_preview",
+        rootDirectory = reportRoot.root,
+        maxPercentDifference = 0.0,
+        differ = PixelPerfect,
+        snapshotRootDirectory = snapshotRoot.root
+      ).use { writer ->
+        writer.newFrameHandler(snapshot, frameCount = 1, fps = -1).use { it.handle(anyImage) }
+      }
+
+      val golden = File(
+        snapshotRoot.root,
+        "images/app.cash.paparazzi_PreviewTest_previewTests[43.MyPreview_ClosedRange%3CFloat%3E_0].png"
+      )
+      assertThat(golden).exists()
+      SnapshotVerifier(
+        maxPercentDifference = 0.0,
+        rootDirectory = snapshotRoot.root,
+        differ = PixelPerfect
+      ).use { verifier ->
+        verifier.newFrameHandler(snapshot, frameCount = 1, fps = -1).use { it.handle(anyImage) }
+      }
+      assertThat(File(reportRoot.root, "runs/generic_preview.js").readText())
+        .contains("PreviewTest#previewTests[43.MyPreview_ClosedRange<Float>_0]")
+    } finally {
+      if (previousRecord == null) {
+        System.clearProperty("paparazzi.test.record")
+      } else {
+        System.setProperty("paparazzi.test.record", previousRecord)
+      }
+    }
+  }
+
+  @Test
   fun happyPathImages() {
     val htmlReportWriter = HtmlReportWriter(
       runName = "run_one",
