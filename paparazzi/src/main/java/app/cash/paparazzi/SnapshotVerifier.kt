@@ -17,6 +17,7 @@ package app.cash.paparazzi
 
 import app.cash.paparazzi.Differ
 import app.cash.paparazzi.SnapshotHandler.FrameHandler
+import app.cash.paparazzi.accessibility.ACCESSIBILITY_HIERARCHY_ARTIFACT_NAME
 import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.apng.ApngVerifier
 import app.cash.paparazzi.internal.differs.DeltaE2000
@@ -151,6 +152,26 @@ public class SnapshotVerifier @JvmOverloads constructor(
           "Artifact '$name' mismatch for ${expected.path}. " +
             "See ${actualFile.path} and ${diffFile.path}."
         )
+      }
+
+      override fun handleArtifact(name: String, content: String, failureImage: () -> BufferedImage) {
+        if (name != ACCESSIBILITY_HIERARCHY_ARTIFACT_NAME || System.getProperty("paparazzi.reportType") != "native") {
+          handleArtifact(name, content)
+          return
+        }
+
+        val imageFile = File(failureDir, "accessibility-${snapshot.toFileName(extension = "png")}")
+        try {
+          handleArtifact(name, content)
+          imageFile.delete()
+        } catch (failure: AssertionError) {
+          try {
+            ImageIO.write(failureImage(), "png", imageFile)
+          } catch (imageFailure: Throwable) {
+            failure.addSuppressed(imageFailure)
+          }
+          throw failure
+        }
       }
     }
   }

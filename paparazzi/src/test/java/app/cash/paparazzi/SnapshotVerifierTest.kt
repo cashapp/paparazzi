@@ -8,9 +8,11 @@ import org.junit.Assert.assertThrows
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import java.awt.image.BufferedImage
 import java.io.File
 import java.time.Instant
 import java.util.Date
+import javax.imageio.ImageIO
 
 class SnapshotVerifierTest {
   @get:Rule
@@ -253,6 +255,136 @@ class SnapshotVerifierTest {
             frameHandler.handleArtifact(artifactName, """{"second":2,"first":1}""")
           }
         }
+      }
+    }
+  }
+
+  @Test
+  fun `native artifact mismatch writes diagnostic image and successful retry removes it`() {
+    withBuildDir {
+      withReportType("native") {
+        val snapshot = testSnapshot()
+        val golden = snapshot.artifactFile(
+          ACCESSIBILITY_HIERARCHY_ARTIFACT_NAME,
+          File(snapshotRoot.root, ARTIFACTS_DIRECTORY_NAME)
+        )
+        golden.parentFile.mkdirs()
+        golden.writeText("expected")
+        val verifier = SnapshotVerifier(0.0, snapshotRoot.root, PixelPerfect)
+        val image = BufferedImage(20, 10, BufferedImage.TYPE_INT_ARGB).apply { setRGB(5, 5, -1) }
+        var imageRequests = 0
+        val failureImage = {
+          imageRequests++
+          image
+        }
+
+        assertThrows(AssertionError::class.java) {
+          (verifier.newFrameHandler(snapshot, 1, -1) as ArtifactFrameHandler)
+            .handleArtifact(ACCESSIBILITY_HIERARCHY_ARTIFACT_NAME, "actual", failureImage)
+        }
+        val imageFile =
+          File(buildRoot.root, "paparazzi/failures/accessibility-${snapshot.toFileName(extension = "png")}")
+        assertThat(imageRequests).isEqualTo(1)
+        assertThat(ImageIO.read(imageFile).getRGB(5, 5)).isEqualTo(-1)
+        assertThat(golden).hasContent("expected")
+
+        golden.writeText("actual")
+        (verifier.newFrameHandler(snapshot, 1, -1) as ArtifactFrameHandler)
+          .handleArtifact(ACCESSIBILITY_HIERARCHY_ARTIFACT_NAME, "actual", failureImage)
+        assertThat(imageRequests).isEqualTo(1)
+        assertThat(imageFile.exists()).isFalse()
+      }
+    }
+  }
+
+  @Test
+  fun `native missing artifact writes diagnostic image and preserves assertion if image fails`() {
+    withBuildDir {
+      withReportType("native") {
+        val snapshot = testSnapshot()
+        val handler = SnapshotVerifier(0.0, snapshotRoot.root, PixelPerfect)
+          .newFrameHandler(snapshot, 1, -1) as ArtifactFrameHandler
+        assertThrows(AssertionError::class.java) {
+          handler.handleArtifact(ACCESSIBILITY_HIERARCHY_ARTIFACT_NAME, "actual") {
+            BufferedImage(20, 10, BufferedImage.TYPE_INT_ARGB)
+          }
+        }
+        val imageFile =
+          File(buildRoot.root, "paparazzi/failures/accessibility-${snapshot.toFileName(extension = "png")}")
+        assertThat(ImageIO.read(imageFile).width).isEqualTo(20)
+
+        val imageFailure = IllegalStateException("diagnostic rendering failed")
+        val failure = assertThrows(AssertionError::class.java) {
+          handler.handleArtifact(ACCESSIBILITY_HIERARCHY_ARTIFACT_NAME, "actual") { throw imageFailure }
+        }
+        assertThat(failure).hasMessageThat().contains("not found")
+        assertThat(failure.suppressed).asList().containsExactly(imageFailure)
+      }
+    }
+  }
+
+  @Test
+  fun `legacy and default reports do not request artifact failure images`() {
+    withBuildDir {
+      for (reportType in listOf(null, "legacy")) {
+        withReportType(reportType) {
+          val handler = SnapshotVerifier(0.0, snapshotRoot.root, PixelPerfect)
+            .newFrameHandler(testSnapshot(), 1, -1) as ArtifactFrameHandler
+          val failure = assertThrows(AssertionError::class.java) {
+            handler.handleArtifact(ACCESSIBILITY_HIERARCHY_ARTIFACT_NAME, "actual") {
+              error("Image should not be requested")
+            }
+          }
+          assertThat(failure.suppressed).isEmpty()
+          assertThat(
+            File(buildRoot.root, "paparazzi/failures").listFiles { _, name ->
+              name.endsWith(".png")
+            }
+          ).isEmpty()
+        }
+      }
+    }
+  }
+
+  @Test
+  fun `native passing and non accessibility artifacts do not request failure images`() {
+    withBuildDir {
+      withReportType("native") {
+        val snapshot = testSnapshot()
+        val golden = snapshot.artifactFile(
+          ACCESSIBILITY_HIERARCHY_ARTIFACT_NAME,
+          File(snapshotRoot.root, ARTIFACTS_DIRECTORY_NAME)
+        )
+        golden.parentFile.mkdirs()
+        golden.writeText("actual")
+        val handler = SnapshotVerifier(0.0, snapshotRoot.root, PixelPerfect)
+          .newFrameHandler(snapshot, 1, -1) as ArtifactFrameHandler
+        handler.handleArtifact(ACCESSIBILITY_HIERARCHY_ARTIFACT_NAME, "actual") {
+          error("Image should not be requested")
+        }
+        val failure = assertThrows(AssertionError::class.java) {
+          handler.handleArtifact("debug.txt", "actual") { error("Image should not be requested") }
+        }
+        assertThat(failure.suppressed).isEmpty()
+        assertThat(File(buildRoot.root, "paparazzi/failures").listFiles { _, name -> name.endsWith(".png") }).isEmpty()
+      }
+    }
+  }
+
+  private inline fun withReportType(reportType: String?, block: () -> Unit) {
+    val original = System.getProperty("paparazzi.reportType")
+    try {
+      if (reportType == null) {
+        System.clearProperty("paparazzi.reportType")
+      } else {
+        System.setProperty("paparazzi.reportType", reportType)
+      }
+      block()
+    } finally {
+      if (original == null) {
+        System.clearProperty("paparazzi.reportType")
+      } else {
+        System.setProperty("paparazzi.reportType", original)
       }
     }
   }
