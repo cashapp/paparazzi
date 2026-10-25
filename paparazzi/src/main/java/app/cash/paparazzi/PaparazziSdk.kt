@@ -147,9 +147,10 @@ public class PaparazziSdk @JvmOverloads constructor(
     if (!isInitialized) {
       registerViewEditModeInterception()
 
-      LayoutlibPatch.install(ByteBuddyAgent.install())
+      val instrumentation = ByteBuddyAgent.install()
+      LayoutlibPatch.install(instrumentation)
       InterceptorRegistrar.registerMethodInterceptors()
-      ResourcesCompatPatch.install()
+      ResourcesCompatPatch.install(instrumentation)
     }
   }
 

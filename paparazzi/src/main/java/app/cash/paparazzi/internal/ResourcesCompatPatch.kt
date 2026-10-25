@@ -1,15 +1,13 @@
 package app.cash.paparazzi.internal
 
-import net.bytebuddy.ByteBuddy
-import net.bytebuddy.asm.AsmVisitorWrapper
-import net.bytebuddy.description.method.MethodDescription
-import net.bytebuddy.dynamic.ClassFileLocator
-import net.bytebuddy.dynamic.loading.ClassReloadingStrategy
-import net.bytebuddy.jar.asm.MethodVisitor
-import net.bytebuddy.jar.asm.Opcodes
-import net.bytebuddy.matcher.ElementMatchers.hasDescriptor
-import net.bytebuddy.matcher.ElementMatchers.named
-import net.bytebuddy.pool.TypePool
+import org.objectweb.asm.ClassReader
+import org.objectweb.asm.ClassVisitor
+import org.objectweb.asm.ClassWriter
+import org.objectweb.asm.MethodVisitor
+import org.objectweb.asm.Opcodes
+import java.lang.instrument.ClassFileTransformer
+import java.lang.instrument.Instrumentation
+import java.security.ProtectionDomain
 
 /**
  * Allows ResourcesCompat to load fonts from layoutlib's absolute resource paths.
@@ -19,27 +17,68 @@ import net.bytebuddy.pool.TypePool
  * of every test variant, even when those dependencies contain no classes that need patching.
  */
 internal object ResourcesCompatPatch {
-  fun install() {
-    val classLoader = ResourcesCompatPatch::class.java.classLoader
-    val locator = ClassFileLocator.ForClassLoader.of(classLoader)
-    val resolution = TypePool.Default.of(locator).describe(RESOURCES_COMPAT_CLASS_NAME)
-    // AndroidX Core is optional for consumers that only use framework views.
-    if (!resolution.isResolved) return
+  private var installed = false
 
-    ByteBuddy()
-      .redefine<Any>(resolution.resolve(), locator)
-      .visit(
-        AsmVisitorWrapper.ForDeclaredMethods().method(
-          named<MethodDescription>("loadFont").and(hasDescriptor(LOAD_FONT_METHOD_DESCRIPTOR)),
-          { _, _, methodVisitor, _, _, _, _ -> LoadFontVisitor(methodVisitor) }
-        )
-      )
-      .make()
-      // Redefinition also handles ResourcesCompat loaded by an earlier, non-Paparazzi test.
-      .load(classLoader, ClassReloadingStrategy.fromInstalledAgent())
+  @Synchronized
+  fun install(instrumentation: Instrumentation) {
+    if (installed) return
+
+    val classLoader = ResourcesCompatPatch::class.java.classLoader
+    val transformer = Transformer(classLoader)
+    // Register before scanning, so a concurrent first load cannot miss the patch. AndroidX Core
+    // is optional: do not load it, or resolve any of its dependencies, merely to install a patch.
+    instrumentation.addTransformer(transformer, true)
+    try {
+      instrumentation.allLoadedClasses
+        .filter { it.name == RESOURCES_COMPAT_CLASS_NAME && it.classLoader === classLoader }
+        .forEach { instrumentation.retransformClasses(it) }
+      installed = true
+    } catch (t: Throwable) {
+      instrumentation.removeTransformer(transformer)
+      throw t
+    }
   }
 
-  private class LoadFontVisitor(delegate: MethodVisitor) : MethodVisitor(Opcodes.ASM9, delegate) {
+  private class Transformer(private val targetClassLoader: ClassLoader) : ClassFileTransformer {
+    override fun transform(
+      loader: ClassLoader?,
+      className: String?,
+      classBeingRedefined: Class<*>?,
+      protectionDomain: ProtectionDomain?,
+      classfileBuffer: ByteArray
+    ): ByteArray? {
+      if (loader !== targetClassLoader || className != RESOURCES_COMPAT_INTERNAL_NAME) return null
+
+      val reader = ClassReader(classfileBuffer)
+      // The substitution preserves the stack effect, locals and branches. Keep the existing
+      // frames to avoid loading Android classes from inside the class-loading callback.
+      val writer = ClassWriter(reader, 0)
+      var changed = false
+      reader.accept(
+        object : ClassVisitor(Opcodes.ASM9, writer) {
+          override fun visitMethod(
+            access: Int,
+            name: String,
+            descriptor: String,
+            signature: String?,
+            exceptions: Array<String>?
+          ): MethodVisitor {
+            val visitor = super.visitMethod(access, name, descriptor, signature, exceptions)
+            return if (name == "loadFont" && descriptor == LOAD_FONT_METHOD_DESCRIPTOR) {
+              LoadFontVisitor(visitor) { changed = true }
+            } else {
+              visitor
+            }
+          }
+        },
+        0
+      )
+      return if (changed) writer.toByteArray() else null
+    }
+  }
+
+  private class LoadFontVisitor(delegate: MethodVisitor, private val onChanged: () -> Unit) :
+    MethodVisitor(Opcodes.ASM9, delegate) {
     override fun visitMethodInsn(opcode: Int, owner: String, name: String, descriptor: String, isInterface: Boolean) {
       if (
         opcode == Opcodes.INVOKEVIRTUAL && owner == "java/lang/String" &&
@@ -50,6 +89,7 @@ internal object ResourcesCompatPatch {
         super.visitInsn(Opcodes.POP)
         super.visitInsn(Opcodes.POP)
         super.visitInsn(Opcodes.ICONST_1)
+        onChanged()
       } else {
         super.visitMethodInsn(opcode, owner, name, descriptor, isInterface)
       }
@@ -57,6 +97,7 @@ internal object ResourcesCompatPatch {
   }
 
   private const val RESOURCES_COMPAT_CLASS_NAME = "androidx.core.content.res.ResourcesCompat"
+  private const val RESOURCES_COMPAT_INTERNAL_NAME = "androidx/core/content/res/ResourcesCompat"
   private const val LOAD_FONT_METHOD_DESCRIPTOR =
     "(Landroid/content/Context;Landroid/content/res/Resources;Landroid/util/TypedValue;IILandroidx/core/content/res/ResourcesCompat\$FontCallback;Landroid/os/Handler;ZZ)Landroid/graphics/Typeface;"
 }
