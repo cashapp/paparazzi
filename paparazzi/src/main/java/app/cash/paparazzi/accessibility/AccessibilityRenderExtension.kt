@@ -82,6 +82,11 @@ public class AccessibilityRenderExtension : RenderExtension {
         LinearLayout.LayoutParams(0, MATCH_PARENT, 1f)
       )
 
+      // Global layout runs on every layout pass, so it only records the sub-window and registers
+      // the pre-draw collection once; a listener added per pass would collect once for every pass
+      // so far on each later one.
+      var windowManagerRootView: ViewGroup? = null
+      var collectsOnPreDraw = false
       viewTreeObserver.addOnGlobalLayoutListener {
         // The root of the view hierarchy is rendered at full width.
         // We need to restrict it when taking accessibility snapshots.
@@ -91,17 +96,21 @@ public class AccessibilityRenderExtension : RenderExtension {
         // and shrink it to the content width.
         val views = contentView.context.getWindowViews()
         val baseRoot = if (contentView.isAttachedToWindow) contentView.rootView else null
-        val windowManagerRootView = views.lastOrNull {
+        val subWindowRoot = views.lastOrNull {
           baseRoot != null && it !== baseRoot && it !== overlay.window && it.isVisible
         } as ViewGroup?
+        windowManagerRootView = subWindowRoot
 
-        if (windowManagerRootView != null) {
-          val wmLp = windowManagerRootView.layoutParams as WindowManager.LayoutParams
+        if (subWindowRoot != null) {
+          val wmLp = subWindowRoot.layoutParams as WindowManager.LayoutParams
           wmLp.width = contentView.measuredWidth
           wmLp.gravity = Gravity.START or (wmLp.gravity and Gravity.VERTICAL_GRAVITY_MASK)
           val windowManager = contentView.context.getSystemService(WindowManager::class.java)
-          windowManager.updateViewLayout(windowManagerRootView, wmLp)
+          windowManager.updateViewLayout(subWindowRoot, wmLp)
         }
+
+        if (collectsOnPreDraw) return@addOnGlobalLayoutListener
+        collectsOnPreDraw = true
 
         // Collect on every pre-draw so the last pass before capture wins. Until 6551ba39cf
         // layoutlib dispatched pre-draw from inside the draw, so a draw-time transform, a Compose

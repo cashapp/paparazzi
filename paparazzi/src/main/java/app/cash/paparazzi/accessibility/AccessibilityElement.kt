@@ -148,10 +148,10 @@ internal data class AccessibilityElement(
 
       val parentView = parent as? View
       val isInList = if (parentView != null && parentView.isImportantForAccessibility) {
-        val parentNodeInfo = createAccessibilityNodeInfo()
-        parentView.onInitializeAccessibilityNodeInfo(parentNodeInfo)
-
-        parentNodeInfo.collectionInfo?.let { IN_LIST_LABEL }
+        // The parent's node has to be sourced from the parent: an attached ViewGroup adds each of
+        // its children to the node it initializes, and Android rejects - and logs - adding the
+        // node's own source as its child.
+        parentView.createAccessibilityNodeInfo().collectionInfo?.let { IN_LIST_LABEL }
       } else {
         null
       }
