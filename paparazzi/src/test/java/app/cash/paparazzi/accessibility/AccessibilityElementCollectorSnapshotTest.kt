@@ -14,9 +14,11 @@ import org.junit.Test
 
 class AccessibilityElementCollectorSnapshotTest {
   private var collectedElements: List<AccessibilityElement> = emptyList()
-  private val collectingRenderExtension = CollectingAccessibilityRenderExtension { elements ->
-    collectedElements = elements
-  }
+  private var additionalRoots: List<View> = emptyList()
+  private val collectingRenderExtension = CollectingAccessibilityRenderExtension(
+    additionalRoots = { additionalRoots },
+    onElementsCollected = { elements -> collectedElements = elements }
+  )
 
   @get:Rule
   val paparazzi = Paparazzi(
@@ -71,9 +73,26 @@ class AccessibilityElementCollectorSnapshotTest {
     assertThat(thirdElement.beforeElementId).isEqualTo(secondElement.id)
     assertThat(thirdElement.afterElementId).isNull()
   }
+
+  @Test
+  fun `collect traverses render roots once in provided order`() {
+    additionalRoots = listOf(
+      FrameLayout(paparazzi.context).apply {
+        addView(TextView(context).apply { text = "Window root" })
+      }
+    )
+    val content = TextView(paparazzi.context).apply { text = "Content root" }
+
+    paparazzi.snapshot(content)
+
+    assertThat(collectedElements.mapNotNull { it.mainAccessibilityText })
+      .containsExactly("Window root", "Content root")
+      .inOrder()
+  }
 }
 
 private class CollectingAccessibilityRenderExtension(
+  private val additionalRoots: () -> List<View>,
   private val onElementsCollected: (List<AccessibilityElement>) -> Unit
 ) : RenderExtension {
   private val collector = AccessibilityElementCollector()
@@ -90,10 +109,7 @@ private class CollectingAccessibilityRenderExtension(
         override fun onPreDraw(): Boolean {
           viewTreeObserver.removeOnPreDrawListener(this)
           onElementsCollected(
-            collector.collect(
-              rootView = this@apply,
-              windowManagerRootView = null
-            ).toList()
+            collector.collect(additionalRoots() + this@apply)
           )
           return true
         }
