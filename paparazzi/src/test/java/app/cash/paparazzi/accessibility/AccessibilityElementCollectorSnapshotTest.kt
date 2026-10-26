@@ -3,6 +3,8 @@ package app.cash.paparazzi.accessibility
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver.OnPreDrawListener
+import android.view.accessibility.AccessibilityNodeInfo
+import android.view.accessibility.AccessibilityNodeInfo.CollectionInfo
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -11,6 +13,9 @@ import app.cash.paparazzi.RenderExtension
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
+import java.util.logging.Handler
+import java.util.logging.LogRecord
+import java.util.logging.Logger
 
 class AccessibilityElementCollectorSnapshotTest {
   private var collectedElements: List<AccessibilityElement> = emptyList()
@@ -70,6 +75,42 @@ class AccessibilityElementCollectorSnapshotTest {
     assertThat(secondElement.afterElementId).isEqualTo(thirdElement.id)
     assertThat(thirdElement.beforeElementId).isEqualTo(secondElement.id)
     assertThat(thirdElement.afterElementId).isNull()
+  }
+
+  @Test
+  fun `list membership is read from the parent without making a view its own child`() {
+    val view = LinearLayout(paparazzi.context).apply {
+      orientation = LinearLayout.VERTICAL
+      accessibilityDelegate = object : View.AccessibilityDelegate() {
+        override fun onInitializeAccessibilityNodeInfo(host: View, info: AccessibilityNodeInfo) {
+          super.onInitializeAccessibilityNodeInfo(host, info)
+          info.collectionInfo = CollectionInfo(1, 1, false)
+        }
+      }
+      addView(TextView(context).apply { text = "Item" })
+    }
+
+    val frameworkLogs = mutableListOf<String>()
+    val handler = object : Handler() {
+      override fun publish(record: LogRecord) {
+        frameworkLogs += record.message
+      }
+
+      override fun flush() = Unit
+
+      override fun close() = Unit
+    }
+    val logger = Logger.getLogger(Paparazzi::class.java.name)
+    logger.addHandler(handler)
+    try {
+      paparazzi.snapshot(view)
+    } finally {
+      logger.removeHandler(handler)
+    }
+
+    assertThat(collectedElements.single { it.mainAccessibilityText == "Item" }.isInList)
+      .isEqualTo("<in-list>")
+    assertThat(frameworkLogs.filter { "its own child" in it }).isEmpty()
   }
 }
 
