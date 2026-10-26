@@ -343,6 +343,48 @@ paparazzi.snapshot {
 }
 ```
 
+Accessibility JSON artifacts
+-------
+
+Enable `app.cash.paparazzi.accessibility.hierarchy.artifacts.enabled=true` to record and
+verify accessibility metadata alongside still image snapshots. Animated snapshots (`gif`),
+including those that capture only one frame, do not generate accessibility JSON. Snapshots
+using `AccessibilityRenderExtension` also skip JSON generation. The artifact is named
+`accessibility-hierarchy.json` and contains a list of frames:
+
+```json
+{
+  "frames": [
+    {
+      "renderWidth": 1080,
+      "renderHeight": 1920,
+      "imageWidth": 562,
+      "imageHeight": 1000,
+      "elements": []
+    }
+  ]
+}
+```
+
+`frames` contains one entry for the still snapshot. An empty accessibility hierarchy
+retains its frame dimensions and has an empty `elements` list. Each element retains its ID, traversal
+neighbors, `legendText`, and `bounds` (`left`, `top`, `right`, `bottom`).
+
+Bounds are pixel coordinates relative to the top-left of the unscaled render canvas;
+they are not density-independent units or coordinates relative to the element's parent.
+`renderWidth` and `renderHeight` describe that canvas. `imageWidth` and `imageHeight`
+describe the corresponding image delivered to the snapshot handler, after framing and
+optional downscaling. To draw an element's bounds on that image, multiply horizontal
+coordinates by `imageWidth / renderWidth` and vertical coordinates by
+`imageHeight / renderHeight`, using floating-point division. Use separate ratios because
+image dimensions are rounded to whole pixels. With `useDeviceResolution = true`, both
+ratios are one. Retain out-of-canvas bounds; clip only when drawing the visualization.
+
+These fields allow a future failure reporter to reconstruct overlays without rerendering
+the UI. The JSON does not contain screenshot pixels, and this format does not yet add
+accessibility images to failure reports. Goldens recorded in the earlier element-array
+format must be recorded again.
+
 Things to Look For
 -------
 
