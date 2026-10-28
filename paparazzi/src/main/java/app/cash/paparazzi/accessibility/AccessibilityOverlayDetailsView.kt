@@ -28,6 +28,7 @@ import androidx.core.graphics.withTranslation
 import app.cash.paparazzi.accessibility.RenderSettings.DEFAULT_TEXT_COLOR
 import app.cash.paparazzi.accessibility.RenderSettings.toColorInt
 import java.lang.Float.max
+import kotlin.math.ceil
 
 internal class AccessibilityOverlayDetailsView(context: Context) : FrameLayout(context) {
   private val accessibilityElements = mutableSetOf<AccessibilityElement>()
@@ -58,6 +59,16 @@ internal class AccessibilityOverlayDetailsView(context: Context) : FrameLayout(c
     invalidate()
   }
 
+  fun contentHeightForWidth(width: Int): Int {
+    val textPaint = TextPaint(textPaint)
+    var height = innerMargin
+    accessibilityElements.forEach {
+      val textLayout = createTextLayout(it.legendText, width, textPaint)
+      height += max(rectSize + margin, textLayout.height.toFloat())
+    }
+    return ceil(height).toInt()
+  }
+
   override fun draw(canvas: Canvas) {
     super.draw(canvas)
 
@@ -70,15 +81,9 @@ internal class AccessibilityOverlayDetailsView(context: Context) : FrameLayout(c
       canvas.drawRoundRect(badge, cornerRadius, cornerRadius, paint)
       canvas.save()
 
-      val text = it.legendText
       val textX = badge.right + innerMargin
       val textY = badge.top
-      val textLayoutWidth = (width - textX).toInt()
-
-      val textLayout = StaticLayout.Builder
-        .obtain(text, 0, text.length, textPaint, textLayoutWidth)
-        .setEllipsize(TextUtils.TruncateAt.END)
-        .build()
+      val textLayout = createTextLayout(it.legendText, width, textPaint)
       canvas.withTranslation(textX, textY) {
         textLayout.draw(this)
       }
@@ -86,6 +91,12 @@ internal class AccessibilityOverlayDetailsView(context: Context) : FrameLayout(c
       lastYCoord = max(badge.bottom + margin, textY + textLayout.height.toFloat())
     }
   }
+
+  private fun createTextLayout(text: String, width: Int, textPaint: TextPaint): StaticLayout =
+    StaticLayout.Builder
+      .obtain(text, 0, text.length, textPaint, (width - (margin + rectSize + innerMargin)).toInt())
+      .setEllipsize(TextUtils.TruncateAt.END)
+      .build()
 
   private fun Context.dip(value: Float): Float =
     TypedValue.applyDimension(
