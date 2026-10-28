@@ -1765,6 +1765,72 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun accessibilityArtifactFailureNativeReport() {
+    val fixtureRoot = File("src/test/projects/accessibility-hierarchy-artifact")
+    val snapshotsDir = File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
+    File(fixtureRoot, "build").registerForDeletionOnExit()
+    val snapshotName = "app.cash.paparazzi.plugin.test_AccessibilityHierarchyArtifactTest_record_accessibility"
+    val golden = File(snapshotsDir, "artifacts/accessibility-hierarchy/$snapshotName.json")
+    val imageFile = File(snapshotsDir, "images/$snapshotName.png")
+    val failureImage = File(fixtureRoot, "build/paparazzi/failures/debug/accessibility-$snapshotName.png")
+    val smallSnapshotName = "app.cash.paparazzi.plugin.test_AccessibilityHierarchyArtifactTest_recordSmall_accessibility"
+    val smallGolden = File(snapshotsDir, "artifacts/accessibility-hierarchy/$smallSnapshotName.json")
+    val smallImageFile = File(snapshotsDir, "images/$smallSnapshotName.png")
+    val smallFailureImage = File(fixtureRoot, "build/paparazzi/failures/debug/accessibility-$smallSnapshotName.png")
+
+    gradleRunner
+      .withArguments("recordPaparazziDebug", "-Papp.cash.paparazzi.reportType=native", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+    val originalImage = imageFile.readBytes()
+    val originalArtifact = golden.readText()
+    val originalSmallImage = smallImageFile.readBytes()
+    val originalSmallArtifact = smallGolden.readText()
+    assertThat(failureImage.exists()).isFalse()
+    assertThat(smallFailureImage.exists()).isFalse()
+
+    gradleRunner
+      .withArguments("verifyPaparazziDebug", "-Papp.cash.paparazzi.reportType=native", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+    assertThat(failureImage.exists()).isFalse()
+    assertThat(smallFailureImage.exists()).isFalse()
+
+    // Change only semantics: the main image still matches, so this attachment must come from
+    // artifact verification rather than the pixel diff path. The dialog exercises window bounds.
+    golden.writeText(originalArtifact.replace("Dialog overlay", "Expected dialog"))
+    smallGolden.writeText(originalSmallArtifact.replace("Icon", "Expected icon"))
+    val result = gradleRunner
+      .withArguments("verifyPaparazziDebug", "-Papp.cash.paparazzi.reportType=native", "--stacktrace")
+      .runFixture(fixtureRoot) { buildAndFail() }
+    assertThat(result.task(":testDebugUnitTest")!!.outcome).isEqualTo(TaskOutcome.FAILED)
+    val artifactDiff =
+      File(fixtureRoot, "build/paparazzi/failures/debug/diff-accessibility-hierarchy-$snapshotName.json.txt")
+    assertThat(artifactDiff.readText()).contains("Artifact mismatch for 'accessibility-hierarchy.json'")
+    assertAttachmentPublished(fixtureRoot, "AccessibilityHierarchyArtifactTest", failureImage.name)
+    val snapshotImage = javax.imageio.ImageIO.read(imageFile)
+    val diagnosticImage = javax.imageio.ImageIO.read(failureImage)
+    assertThat(diagnosticImage.width).isEqualTo(snapshotImage.width * 2)
+    assertThat(diagnosticImage.height).isEqualTo(snapshotImage.height)
+    assertThat(imageFile.readBytes()).isEqualTo(originalImage)
+    assertThat(File(fixtureRoot, "build/paparazzi/failures/debug/delta-$snapshotName.png").exists()).isFalse()
+    assertAttachmentPublished(fixtureRoot, "AccessibilityHierarchyArtifactTest", smallFailureImage.name)
+    val smallSnapshotImage = javax.imageio.ImageIO.read(smallImageFile)
+    val smallDiagnosticImage = javax.imageio.ImageIO.read(smallFailureImage)
+    assertThat(smallSnapshotImage.width).isLessThan(100)
+    assertThat(smallDiagnosticImage.width).isGreaterThan(smallSnapshotImage.width * 2)
+    assertThat(smallDiagnosticImage.height).isGreaterThan(smallSnapshotImage.height)
+    assertThat(smallImageFile.readBytes()).isEqualTo(originalSmallImage)
+    assertThat(File(fixtureRoot, "build/paparazzi/failures/debug/delta-$smallSnapshotName.png").exists()).isFalse()
+
+    golden.writeText(originalArtifact)
+    smallGolden.writeText(originalSmallArtifact)
+    gradleRunner
+      .withArguments("verifyPaparazziDebug", "-Papp.cash.paparazzi.reportType=native", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+    assertThat(failureImage.exists()).isFalse()
+    assertThat(smallFailureImage.exists()).isFalse()
+  }
+
+  @Test
   fun snapshotReport() {
     val fixtureRoot = File("src/test/projects/report-snapshots")
     val testReportDir = File(fixtureRoot, "build/reports/tests/testDebugUnitTest/classes")

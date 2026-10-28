@@ -124,12 +124,13 @@ public class Paparazzi @JvmOverloads constructor(
       onNewFrame = { frameHandler.handle(it) },
       useDeviceResolution = useDeviceResolution
     )
-    sdk.onAccessibilityHierarchiesGenerated = { hierarchies ->
+    sdk.onAccessibilityHierarchiesGenerated = { hierarchies, failureImage ->
       var artifactFailure: Throwable? = null
       try {
         (frameHandler as? ArtifactFrameHandler)?.handleArtifact(
           ACCESSIBILITY_HIERARCHY_ARTIFACT_NAME,
-          hierarchies.toAccessibilityHierarchyArtifact()
+          hierarchies.toAccessibilityHierarchyArtifact(),
+          failureImage
         )
       } catch (failure: Throwable) {
         artifactFailure = failure
