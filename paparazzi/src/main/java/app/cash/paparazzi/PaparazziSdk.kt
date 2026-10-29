@@ -53,6 +53,7 @@ import app.cash.paparazzi.internal.PaparazziLogger
 import app.cash.paparazzi.internal.PaparazziOnBackPressedDispatcherOwner
 import app.cash.paparazzi.internal.PaparazziSavedStateRegistryOwner
 import app.cash.paparazzi.internal.Renderer
+import app.cash.paparazzi.internal.ResourcesCompatPatch
 import app.cash.paparazzi.internal.SessionParamsBuilder
 import app.cash.paparazzi.internal.interceptors.EditModeInterceptor
 import app.cash.paparazzi.internal.layoutlib.LayoutlibPatch
@@ -146,8 +147,10 @@ public class PaparazziSdk @JvmOverloads constructor(
     if (!isInitialized) {
       registerViewEditModeInterception()
 
-      LayoutlibPatch.install(ByteBuddyAgent.install())
+      val instrumentation = ByteBuddyAgent.install()
+      LayoutlibPatch.install(instrumentation)
       InterceptorRegistrar.registerMethodInterceptors()
+      ResourcesCompatPatch.install(instrumentation)
     }
   }
 

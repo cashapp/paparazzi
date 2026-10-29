@@ -32,6 +32,11 @@ import org.junit.Rule
 import org.junit.Test
 
 class CustomFontsTest {
+  init {
+    // Ordinary tests may load AndroidX before Paparazzi installs its runtime patches.
+    Class.forName("androidx.core.content.res.ResourcesCompat")
+  }
+
   @get:Rule
   val paparazzi = Paparazzi()
 
