@@ -356,7 +356,11 @@ public class PaparazziPlugin @Inject constructor(
             val nameSegments = diff.name.split("_", limit = 3)
             val testClassPackage = nameSegments[0].replace("delta-", "")
             val testClass = "$testClassPackage.${nameSegments[1]}"
+            // Snapshot.toFileName percent-escapes invalid method characters and '%' itself.
             val testMethodWithLabel = nameSegments[2].removeSuffix(".png")
+              .replace(Regex("%(25|3C|3E|3A|22|2F|5C|7C|3F|2A)")) {
+                it.value.substring(1).toInt(16).toChar().toString()
+              }
 
             Pair(testClass, testMethodWithLabel) to DiffImage(
               path = diff.path,

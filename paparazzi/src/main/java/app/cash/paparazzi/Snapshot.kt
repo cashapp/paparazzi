@@ -48,15 +48,25 @@ internal fun Snapshot.toFileName(delimiter: String = "_", extension: String): St
   } else {
     ""
   }
-  if (invalidPrintableChars.matchesAnyOf(testName.methodName)) {
-    throw IllegalArgumentException("Generated method name contains invalid characters ('${testName.methodName}')")
+  // Parameterized runners can include type names such as ClosedRange<Float>. Escape rather
+  // than replace invalid characters, so distinct parameters don't overwrite the same golden.
+  // Escape '%' too, to distinguish a literal escape sequence from an encoded character.
+  val methodName = buildString {
+    for (char in testName.methodName) {
+      if (char == '%' || invalidPrintableChars.matches(char)) {
+        append('%')
+        append(char.code.toString(16).uppercase(Locale.US).padStart(2, '0'))
+      } else {
+        append(char)
+      }
+    }
   }
   return buildString {
     append(testName.packageName)
     append(delimiter)
     append(testName.className)
     append(delimiter)
-    append(testName.methodName.replace("\\s".toRegex(), delimiter))
+    append(methodName.replace("\\s".toRegex(), delimiter))
     append(formattedLabel)
     append(".")
     append(extension)
