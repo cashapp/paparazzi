@@ -1,6 +1,6 @@
 [versions]
 agp = "9.4.1"
-androidTools = "32.4.1" # == 23.0.0 + agp version
+androidTools = "32.5.0" # == 23.0.0 + agp version
 bytebuddy = "1.18.16-jdk5"
 compose = "1.12.1"
 coroutines = "1.11.0"
