@@ -106,7 +106,9 @@ public class HtmlReportWriter @JvmOverloads constructor(
       override fun close() {
         if (hashes.isEmpty()) return
         writer.close()
-        val snapshotFile = File(snapshotDir, "${hash(hashes)}.png")
+        // Frame timing is part of a video's contents, even when all its pixels are unchanged.
+        val snapshotHash = if (fps == -1) hash(hashes) else hash(listOf("fps:$fps") + hashes)
+        val snapshotFile = File(snapshotDir, "$snapshotHash.png")
         Files.move(snapshotTmpFile, snapshotFile)
         snapshotTmpFile.delete()
 
