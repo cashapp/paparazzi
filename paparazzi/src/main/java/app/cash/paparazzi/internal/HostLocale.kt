@@ -31,6 +31,10 @@ internal val hostLocale: Locale by lazy {
 
   try {
     Locale.Builder()
+      .apply {
+        val extensions = property("user.extensions")
+        if (extensions.isNotEmpty()) setLanguageTag("und-$extensions")
+      }
       .setLanguage(property("user.language"))
       .setScript(property("user.script"))
       .setRegion(property("user.country"))
