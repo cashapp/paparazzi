@@ -37,8 +37,6 @@ dependencies {
   compileOnlyAarAsJar libs.androidx.lifecycle.runtime // Needed for setViewTreeLifecycleOwner
   compileOnlyAarAsJar libs.androidx.savedstate // Needed for setViewTreeSavedStateRegistryOwner
 
-  implementation libs.bytebuddy.agent
-  implementation libs.bytebuddy.core
   implementation libs.asm
   implementation libs.trove4j
   api libs.tools.common
