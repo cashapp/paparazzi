@@ -45,7 +45,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import app.cash.paparazzi.accessibility.AccessibilityRenderExtension
-import app.cash.paparazzi.agent.InterceptorRegistrar
+import app.cash.paparazzi.agent.AgentInstaller
 import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.PaparazziCallback
 import app.cash.paparazzi.internal.PaparazziLifecycleOwner
@@ -55,7 +55,6 @@ import app.cash.paparazzi.internal.PaparazziSavedStateRegistryOwner
 import app.cash.paparazzi.internal.Renderer
 import app.cash.paparazzi.internal.ResourcesCompatPatch
 import app.cash.paparazzi.internal.SessionParamsBuilder
-import app.cash.paparazzi.internal.interceptors.EditModeInterceptor
 import app.cash.paparazzi.internal.layoutlib.LayoutlibPatch
 import app.cash.paparazzi.internal.layoutlib.RenderSizingState
 import app.cash.paparazzi.internal.parsers.LayoutPullParser
@@ -76,7 +75,6 @@ import com.android.tools.idea.validator.LayoutValidator
 import com.android.tools.idea.validator.ValidatorData.Level
 import com.android.tools.idea.validator.ValidatorData.Policy
 import com.android.tools.idea.validator.ValidatorData.Type
-import net.bytebuddy.agent.ByteBuddyAgent
 import java.awt.geom.Ellipse2D
 import java.awt.image.BufferedImage
 import java.util.EnumSet
@@ -145,11 +143,8 @@ public class PaparazziSdk @JvmOverloads constructor(
 
   public fun setup() {
     if (!isInitialized) {
-      registerViewEditModeInterception()
-
-      val instrumentation = ByteBuddyAgent.install()
+      val instrumentation = AgentInstaller.install()
       LayoutlibPatch.install(instrumentation)
-      InterceptorRegistrar.registerMethodInterceptors()
       ResourcesCompatPatch.install(instrumentation)
     }
   }
@@ -586,14 +581,6 @@ public class PaparazziSdk @JvmOverloads constructor(
         )
       }
     }
-  }
-
-  private fun registerViewEditModeInterception() {
-    InterceptorRegistrar.addMethodInterceptor(
-      "android.view.View",
-      "isInEditMode",
-      EditModeInterceptor::class.java
-    )
   }
 
   private fun forceReleaseComposeReferenceLeaks() {

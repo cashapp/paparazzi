@@ -1,8 +1,8 @@
 package app.cash.paparazzi.internal.layoutlib
 
 /**
- * Single-threaded state shared between Paparazzi and the [net.bytebuddy.asm.Advice] fragments that
- * [LayoutlibPatch] inlines into layoutlib.
+ * Single-threaded state shared between Paparazzi and the ASM hooks that [LayoutlibPatch] inserts
+ * into layoutlib.
  *
  * Every member here ends up read from bytecode that lives inside `android.view.ViewRootImpl` and
  * `com.android.layoutlib.bridge.impl.RenderSessionImpl`, so it has to be `public` and unmangled in
