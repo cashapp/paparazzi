@@ -18,6 +18,7 @@ package app.cash.paparazzi.internal.apng
 import app.cash.paparazzi.Differ
 import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.ImageUtils.resize
+import app.cash.paparazzi.internal.formatForHost
 import okio.FileSystem
 import okio.Path
 import java.awt.image.BufferedImage
@@ -120,7 +121,7 @@ internal class ApngVerifier(
     val error = buildString {
       if (invalidFrames >= 1) {
         appendLine(
-          "$invalidFrames frames differed by more than %f%%".format(maxPercentDifference)
+          "$invalidFrames frames differed by more than %f%%".formatForHost(maxPercentDifference)
         )
       }
       if (goldenFps != fps) {
