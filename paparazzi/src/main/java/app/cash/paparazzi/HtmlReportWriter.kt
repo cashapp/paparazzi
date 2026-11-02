@@ -107,7 +107,7 @@ public class HtmlReportWriter @JvmOverloads constructor(
         if (hashes.isEmpty()) return
         writer.close()
         // Frame timing is part of a video's contents, even when all its pixels are unchanged.
-        val snapshotHash = if (fps == -1) hash(hashes) else hash(listOf("fps:$fps") + hashes)
+        val snapshotHash = hash(hashes, fps)
         val snapshotFile = File(snapshotDir, "$snapshotHash.png")
         Files.move(snapshotTmpFile, snapshotFile)
         snapshotTmpFile.delete()
@@ -148,10 +148,13 @@ public class HtmlReportWriter @JvmOverloads constructor(
     return hashingSink.hash.hex()
   }
 
-  /** Returns a SHA-1 hash of [lines]. */
-  private fun hash(lines: List<String>): String {
+  /** Returns a SHA-1 hash of [lines] and, for animations, [fps]. */
+  private fun hash(lines: List<String>, fps: Int): String {
     val hashingSink = HashingSink.sha1(blackholeSink())
     hashingSink.buffer().use { sink ->
+      if (fps != -1) {
+        sink.writeUtf8("fps:$fps\n")
+      }
       for (hash in lines) {
         sink.writeUtf8(hash)
         sink.writeUtf8("\n")
