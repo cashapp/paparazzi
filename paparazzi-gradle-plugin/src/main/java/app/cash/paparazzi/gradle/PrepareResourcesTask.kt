@@ -75,7 +75,7 @@ public abstract class PrepareResourcesTask : DefaultTask() {
         artifactFiles.files.forEach { file ->
           add(file.useLines { lines -> lines.first() })
         }
-      }
+      }.distinct()
     } else {
       listOf(mainPackage)
     }
