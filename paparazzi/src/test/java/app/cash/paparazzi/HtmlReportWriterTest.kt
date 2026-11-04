@@ -657,6 +657,71 @@ class HtmlReportWriterTest {
     }
   }
 
+  @Test
+  fun videoOverwritesOnRecordWithFlagAndExtraFrames() {
+    assertVideoOverwritesOnRecord(
+      firstFrames = listOf(anyImage, anyImage),
+      secondFrames = listOf(anyImage, anyImage, anyImage),
+      secondFrameCount = 2
+    )
+  }
+
+  @Test
+  fun videoOverwritesOnRecordWithFlagAndFewerFrames() {
+    assertVideoOverwritesOnRecord(
+      firstFrames = listOf(anyImage, anyImage, anyImage),
+      secondFrames = listOf(anyImage, anyImage)
+    )
+  }
+
+  @Test
+  fun videoOverwritesOnRecordWithFlagWhenOnlyFpsChanges() {
+    val frames = listOf(anyImage, otherImage)
+    assertVideoOverwritesOnRecord(frames, frames, firstFps = 1, secondFps = 2)
+  }
+
+  private fun assertVideoOverwritesOnRecord(
+    firstFrames: List<BufferedImage>,
+    secondFrames: List<BufferedImage>,
+    firstFps: Int = 1,
+    secondFps: Int = firstFps,
+    secondFrameCount: Int = secondFrames.size
+  ) {
+    try {
+      System.setProperty("paparazzi.test.record", "true")
+      System.setProperty("paparazzi.test.record.overwriteOnMaxPercentDifference", "true")
+
+      HtmlReportWriter(
+        runName = "record_run",
+        rootDirectory = reportRoot.root,
+        maxPercentDifference = 0.0,
+        differ = PixelPerfect,
+        snapshotRootDirectory = snapshotRoot.root
+      ).use { htmlReportWriter ->
+        val snapshot = Snapshot(
+          name = "test",
+          testName = TestName("app.cash.paparazzi", "HomeView", "testSettings"),
+          timestamp = Instant.parse("2021-02-23T10:27:43Z").toDate()
+        )
+        val golden =
+          File("${snapshotRoot.root}/videos/app.cash.paparazzi_HomeView_testSettings_test.png")
+
+        htmlReportWriter.newFrameHandler(snapshot, firstFrames.size, firstFps).use { handler ->
+          firstFrames.forEach(handler::handle)
+        }
+        val firstRecording = golden.readBytes()
+
+        htmlReportWriter.newFrameHandler(snapshot, secondFrameCount, secondFps).use { handler ->
+          secondFrames.forEach(handler::handle)
+        }
+        assertThat(golden.readBytes()).isNotEqualTo(firstRecording)
+      }
+    } finally {
+      System.clearProperty("paparazzi.test.record")
+      System.clearProperty("paparazzi.test.record.overwriteOnMaxPercentDifference")
+    }
+  }
+
   private fun Instant.toDate() = Date(toEpochMilli())
 
   private fun File.lastModifiedTime(): FileTime {

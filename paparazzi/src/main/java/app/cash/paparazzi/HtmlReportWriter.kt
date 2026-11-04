@@ -140,14 +140,11 @@ public class HtmlReportWriter @JvmOverloads constructor(
   private fun apngExceedsThreshold(snapshotFile: File, goldenFile: File): Boolean {
     ApngReader(FileSystem.SYSTEM.openReadOnly(goldenFile.path.toPath())).use { goldenReader ->
       ApngReader(FileSystem.SYSTEM.openReadOnly(snapshotFile.path.toPath())).use { snapshotReader ->
-        if (goldenReader.frameCount != snapshotReader.frameCount ||
-          goldenReader.getFps() != snapshotReader.getFps()
-        ) {
-          return true
-        }
+        if (goldenReader.frameCount != snapshotReader.frameCount) return true
         while (!goldenReader.isFinished() && !snapshotReader.isFinished()) {
           val goldenFrame = goldenReader.readNextFrame() ?: return true
           val snapshotFrame = snapshotReader.readNextFrame() ?: return true
+          if (goldenReader.getFps() != snapshotReader.getFps()) return true
           val (_, percentDifferent) = ImageUtils.compareImages(goldenFrame, snapshotFrame, differ)
           if (percentDifferent > maxPercentDifference) return true
         }
