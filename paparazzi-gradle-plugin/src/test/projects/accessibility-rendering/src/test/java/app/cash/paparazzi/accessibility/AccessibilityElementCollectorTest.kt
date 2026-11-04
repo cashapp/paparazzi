@@ -17,6 +17,7 @@ import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.toggleableState
@@ -115,6 +116,50 @@ class AccessibilityElementCollectorTest {
 
     assertThat(collected).isTrue()
     assertThat(element).isNull()
+  }
+
+  @Test
+  fun `state description hides selection except on tabs`() {
+    var tab: AccessibilityElement? = null
+    var option: AccessibilityElement? = null
+    paparazzi.snapshot {
+      val root = LocalView.current as ViewRootForTest
+      SemanticsLayout(
+        Modifier.drawWithContent {
+          drawContent()
+          val owner = root.semanticsOwner
+          fun elementLabelled(label: String) =
+            AccessibilityElement.fromSemanticsNode(
+              owner.getAllSemanticsNodes(true).single {
+                it.config.getOrNull(SemanticsProperties.ContentDescription) == listOf(label)
+              },
+              Rect(),
+              owner.getAllSemanticsNodes(false)
+            )
+          tab = elementLabelled("Step")
+          option = elementLabelled("Option")
+        }
+      ) {
+        SemanticsLayout(
+          Modifier.semantics {
+            contentDescription = "Step"
+            role = Role.Tab
+            selected = true
+            stateDescription = "Completed"
+          }
+        )
+        SemanticsLayout(
+          Modifier.semantics {
+            contentDescription = "Option"
+            selected = true
+            stateDescription = "Completed"
+          }
+        )
+      }
+    }
+
+    assertThat(requireNotNull(tab).legendText).isEqualTo("Completed, <selected>, Step, Tab")
+    assertThat(requireNotNull(option).legendText).isEqualTo("Completed, Option")
   }
 
   @Test

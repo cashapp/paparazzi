@@ -24,6 +24,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.semantics.LiveRegionMode.Companion.Assertive
 import androidx.compose.ui.semantics.LiveRegionMode.Companion.Polite
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsConfiguration
 import androidx.compose.ui.semantics.SemanticsNode
@@ -224,8 +225,10 @@ internal data class AccessibilityElement(
       }
 
       val stateDescription = config.getOrNull(SemanticsProperties.StateDescription)
-      val selected = if (stateDescription != null) {
-        // The selected state is only read by TalkBack if the state description is not set.
+      val isTab = config.getOrNull(SemanticsProperties.Role) == Role.Tab
+      val selected = if (stateDescription != null && !isTab) {
+        // Compose reports selection as a state description, which a set one replaces. Tabs report
+        // it as AccessibilityNodeInfo.isSelected instead, so TalkBack reads both.
         null
       } else {
         config.getOrNull(SemanticsProperties.Selected)
