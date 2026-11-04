@@ -204,9 +204,10 @@ internal class ApngReader(
         val rgba = if (hasAlpha) {
           readInt()
         } else {
-          (readByte().toInt() shl 24) or
-            (readByte().toInt() shl 16) or
-            (readByte().toInt() shl 8)
+          ((readByte().toInt() and 0xFF) shl 24) or
+            ((readByte().toInt() and 0xFF) shl 16) or
+            ((readByte().toInt() and 0xFF) shl 8) or
+            0xFF
         }
 
         val argb = rgba.rotateRight(8)

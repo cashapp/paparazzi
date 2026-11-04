@@ -680,6 +680,15 @@ class HtmlReportWriterTest {
     assertVideoOverwritesOnRecord(frames, frames, firstFps = 1, secondFps = 2)
   }
 
+  @Test
+  fun videoOverwritesOnRecordWithFlagWhenRgbFramesChange() {
+    val black = BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB)
+    val white = BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB).apply {
+      setRGB(0, 0, 0xFFFFFFFF.toInt())
+    }
+    assertVideoOverwritesOnRecord(listOf(black, black), listOf(white, white))
+  }
+
   private fun assertVideoOverwritesOnRecord(
     firstFrames: List<BufferedImage>,
     secondFrames: List<BufferedImage>,
