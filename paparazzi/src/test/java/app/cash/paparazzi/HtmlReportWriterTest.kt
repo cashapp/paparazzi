@@ -17,8 +17,12 @@ package app.cash.paparazzi
 
 import app.cash.paparazzi.FileSubject.Companion.assertThat
 import app.cash.paparazzi.internal.ImageUtils
+import app.cash.paparazzi.internal.PaparazziJson
+import app.cash.paparazzi.internal.apng.ApngReader
 import app.cash.paparazzi.internal.differs.PixelPerfect
 import com.google.common.truth.Truth.assertThat
+import okio.FileSystem
+import okio.Path.Companion.toPath
 import org.junit.Assert.assertThrows
 import org.junit.Rule
 import org.junit.Test
@@ -43,7 +47,7 @@ class HtmlReportWriterTest {
     setRGB(0, 0, 0xFFFFFFFF.toInt())
   }
   private val anyImageHash = "5007e8fef3bc5eeffa89d2797c63768390460f90"
-  private val anyVideoHash = "80ff0587a0fbd0ede0247a021edfb1a3aaf9ccb5"
+  private val anyVideoHash = "e03af44d3fe225ffc662e32274bd90a51802d41d"
 
   @Test
   fun happyPathImages() {
@@ -397,6 +401,53 @@ class HtmlReportWriterTest {
         |];
       """.trimMargin()
     )
+  }
+
+  @Test
+  fun videosWithDifferentFrameRatesHaveSeparateReportFiles() {
+    val snapshots = recordReportVideos(listOf(1, 2))
+
+    assertThat(snapshots.map { it.file }.distinct()).hasSize(2)
+    for ((snapshot, fps) in snapshots.zip(listOf(1, 2))) {
+      val file = File(reportRoot.root, snapshot.file!!)
+      ApngReader(FileSystem.SYSTEM.openReadOnly(file.path.toPath())).use { reader ->
+        reader.readNextFrame()
+        assertThat(reader.getFps()).isEqualTo(fps)
+        assertThat(reader.frameCount).isEqualTo(2)
+      }
+    }
+  }
+
+  @Test
+  fun videosWithMatchingFramesAndFrameRatesShareReportFile() {
+    val snapshots = recordReportVideos(listOf(2, 2))
+
+    assertThat(snapshots.map { it.file }.distinct()).hasSize(1)
+    assertThat(File(reportRoot.root, "videos").listFiles()!!.toList()).hasSize(1)
+  }
+
+  private fun recordReportVideos(frameRates: List<Int>): List<Snapshot> {
+    HtmlReportWriter(
+      runName = "frame_rates",
+      rootDirectory = reportRoot.root,
+      maxPercentDifference = 0.0,
+      differ = PixelPerfect,
+      snapshotRootDirectory = snapshotRoot.root
+    ).use { report ->
+      for ((index, fps) in frameRates.withIndex()) {
+        val snapshot = Snapshot(
+          name = "video_$index",
+          testName = TestName("app.cash.paparazzi", "HomeView", "testSettings"),
+          timestamp = Instant.parse("2021-02-23T10:27:43Z").toDate()
+        )
+        report.newFrameHandler(snapshot, frameCount = 2, fps = fps).use { handler ->
+          handler.handle(anyImage)
+          handler.handle(otherImage)
+        }
+      }
+    }
+    val runJs = File(reportRoot.root, "runs/frame_rates.js").readText()
+    return PaparazziJson.listOfShotsAdapter.fromJson(runJs.substringAfter(" = ").trim().removeSuffix(";"))!!
   }
 
   @Test
