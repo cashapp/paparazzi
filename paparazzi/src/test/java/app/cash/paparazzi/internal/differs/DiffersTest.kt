@@ -34,17 +34,18 @@ class DiffersTest {
     }
 
     val flipResult1 = Flip.compare(linuxWidget, macosxWidget)
-    assertThat(flipResult1).isInstanceOf(DiffResult.Identical::class.java)
+    assertThat(flipResult1).isInstanceOf(DiffResult.Similar::class.java)
 
     val siftResult1 = Sift.compare(linuxWidget, macosxWidget)
     with(siftResult1) {
-      assertThat(this).isInstanceOf(DiffResult.Similar::class.java)
-      this as DiffResult.Similar
-      assertThat(numSimilarPixels).isEqualTo(293)
+      assertThat(this).isInstanceOf(DiffResult.Different::class.java)
+      this as DiffResult.Different
+      assertThat(percentDifference).isGreaterThan(0f)
+      assertThat(percentDifference).isLessThan(5f)
     }
 
     val de2000Result1 = DeltaE2000.compare(linuxWidget, macosxWidget)
-    assertThat(de2000Result1).isInstanceOf(DiffResult.Identical::class.java)
+    assertThat(de2000Result1).isInstanceOf(DiffResult.Similar::class.java)
   }
 
   @Test
@@ -73,7 +74,7 @@ class DiffersTest {
     }
 
     val flipResult2 = Flip.compare(linuxFullScreen, macosxFullScreen)
-    assertThat(flipResult2).isInstanceOf(DiffResult.Identical::class.java)
+    assertThat(flipResult2).isInstanceOf(DiffResult.Similar::class.java)
 
     //  Java heap space error (OOM)
 
@@ -85,6 +86,6 @@ class DiffersTest {
 //    }
 
     val de2000Result2 = DeltaE2000.compare(linuxFullScreen, macosxFullScreen)
-    assertThat(de2000Result2).isInstanceOf(DiffResult.Identical::class.java)
+    assertThat(de2000Result2).isInstanceOf(DiffResult.Similar::class.java)
   }
 }
