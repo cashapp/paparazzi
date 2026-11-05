@@ -83,3 +83,15 @@ ul.linkList li {
     list-style: none;
     margin-bottom: 5px;
 }
+
+.diffToggle + label {
+    cursor: pointer;
+}
+
+.diffPanel {
+    display: none;
+}
+
+.diffToggle:checked ~ .diffPanel {
+    display: table;
+}
