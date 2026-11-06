@@ -1,3 +1,19 @@
+import org.gradle.api.tasks.testing.Test
+import org.gradle.process.CommandLineArgumentProvider
+
+class JacocoFixtureArgumentProvider implements CommandLineArgumentProvider {
+  private final String propertyName
+
+  JacocoFixtureArgumentProvider(String propertyName) {
+    this.propertyName = propertyName
+  }
+
+  @Override
+  Iterable<String> asArguments() {
+    return ["-Dapp.cash.paparazzi.test.${propertyName}=present"]
+  }
+}
+
 plugins {
   id 'com.android.library'
   id 'org.jetbrains.kotlin.plugin.compose'
@@ -24,3 +40,23 @@ dependencies {
   implementation libs.composeUi.material
 }
 
+afterEvaluate {
+  tasks.named('testDebugUnitTest', Test) {
+    jvmArgumentProviders.add(new JacocoFixtureArgumentProvider('firstArgumentProvider'))
+    jvmArgumentProviders.add(new JacocoFixtureArgumentProvider('secondArgumentProvider'))
+  }
+}
+
+tasks.register('assertPaparazziJvmArgumentProviders') {
+  doLast {
+    def unitTestTask = tasks.named('testDebugUnitTest', Test).get()
+    def paparazziTestTask = tasks.named('testPaparazziDebug', Test).get()
+    def unitTestProviderCounts = unitTestTask.jvmArgumentProviders.countBy { it.class }
+    def paparazziProviderCounts = paparazziTestTask.jvmArgumentProviders.countBy { it.class }
+
+    assert paparazziProviderCounts == unitTestProviderCounts:
+      "Expected matching JVM argument provider type counts. " +
+        "Unit test: ${unitTestProviderCounts}; Paparazzi: ${paparazziProviderCounts}"
+    assert paparazziProviderCounts[JacocoFixtureArgumentProvider] == 2
+  }
+}
