@@ -23,6 +23,7 @@ import android.view.ViewGroup.LayoutParams
 import androidx.annotation.LayoutRes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.ComposeView
+import app.cash.paparazzi.internal.PaparazziMainDispatcherFactory
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode
 import org.junit.rules.TestRule
 import org.junit.runner.Description
@@ -211,6 +212,12 @@ public class Paparazzi @JvmOverloads constructor(
   }
 
   private companion object {
+    init {
+      // The rule is usually constructed before a test touches Dispatchers.Main, unlike PaparazziSdk,
+      // which is only created when the rule is applied.
+      PaparazziMainDispatcherFactory.install()
+    }
+
     private val isVerifying: Boolean =
       System.getProperty("paparazzi.test.verify")?.toBoolean() == true
 
