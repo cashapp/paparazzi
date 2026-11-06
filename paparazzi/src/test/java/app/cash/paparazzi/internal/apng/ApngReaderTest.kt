@@ -25,6 +25,7 @@ import org.junit.Assert.fail
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import java.awt.image.BufferedImage
 import java.io.File
 import java.io.IOException
 import javax.imageio.ImageIO
@@ -54,6 +55,36 @@ class ApngReaderTest {
 
     assertThat(reader.isFinished()).isTrue()
     assertThat(reader.frameCount).isEqualTo(reader.frameNumber)
+  }
+
+  @Test
+  fun decodesRgbFramesAsOpaquePixels() {
+    val colors = intArrayOf(0xFF1280FE.toInt(), 0xFFFE8012.toInt(), 0xFF807FFE.toInt(), 0xFF123456.toInt())
+    val frames = List(2) { frame ->
+      BufferedImage(2, 2, BufferedImage.TYPE_INT_RGB).apply {
+        for (y in 0 until height) {
+          for (x in 0 until width) {
+            setRGB(x, y, colors[(y * width + x + frame) % colors.size])
+          }
+        }
+      }
+    }
+    val path = tempDir.newFile("rgb-animation.png").path.toPath()
+    ApngWriter(path, fps = 1).use { writer ->
+      frames.forEach(writer::writeImage)
+    }
+
+    ApngReader(FileSystem.SYSTEM.openReadOnly(path)).use { reader ->
+      for (expected in frames) {
+        val actual = reader.readNextFrame()!!
+        for (y in 0 until expected.height) {
+          for (x in 0 until expected.width) {
+            assertThat(actual.getRGB(x, y)).isEqualTo(expected.getRGB(x, y))
+          }
+        }
+      }
+      assertThat(reader.isFinished()).isTrue()
+    }
   }
 
   @Test
