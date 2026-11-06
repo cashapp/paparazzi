@@ -8,6 +8,67 @@ import kotlin.math.abs
 import kotlin.math.max
 
 internal object OffByTwo : Differ {
+  /** Checks the passing case without allocating or painting a diagnostic image. */
+  fun isSimilar(expected: BufferedImage, actual: BufferedImage): Boolean {
+    if (expected.width != actual.width || expected.height != actual.height) return false
+    // Subclasses may override getRGB; let the full differ honor their per-pixel behavior.
+    if (expected.javaClass != BufferedImage::class.java || actual.javaClass != BufferedImage::class.java) return false
+
+    val width = expected.width
+    val expectedRow = IntArray(width)
+    val actualRow = IntArray(width)
+    for (y in 0 until expected.height) {
+      readArgbRow(expected, y, expectedRow)
+      readArgbRow(actual, y, actualRow)
+      if (expectedRow.contentEquals(actualRow)) continue
+      for (x in 0 until width) {
+        val expectedRgb = expectedRow[x]
+        val actualRgb = actualRow[x]
+        if (expectedRgb == actualRgb) continue
+        if (expectedRgb ushr 24 == 0 && actualRgb ushr 24 == 0) continue
+        if (abs((expectedRgb ushr 24) - (actualRgb ushr 24)) > 2 ||
+          abs((expectedRgb shr 16 and 0xFF) - (actualRgb shr 16 and 0xFF)) > 2 ||
+          abs((expectedRgb shr 8 and 0xFF) - (actualRgb shr 8 and 0xFF)) > 2 ||
+          abs((expectedRgb and 0xFF) - (actualRgb and 0xFF)) > 2
+        ) {
+          return false
+        }
+      }
+    }
+    return true
+  }
+
+  internal fun readArgbRow(image: BufferedImage, y: Int, row: IntArray) {
+    when (image.type) {
+      TYPE_INT_ARGB, BufferedImage.TYPE_INT_ARGB_PRE -> {
+        image.raster.getDataElements(0, y, image.width, 1, row)
+        // coerceData changes the alpha state without updating the image type.
+        if (!image.isAlphaPremultiplied) return
+        val components = unpremultipliedComponents
+        for (x in row.indices) {
+          val pixel = row[x]
+          val alpha = pixel ushr 24
+          if (alpha == 255) continue
+          val offset = alpha shl 8
+          row[x] = (alpha shl 24) or
+            (components[offset or (pixel shr 16 and 0xFF)] shl 16) or
+            (components[offset or (pixel shr 8 and 0xFF)] shl 8) or
+            components[offset or (pixel and 0xFF)]
+        }
+      }
+      else -> image.getRGB(0, y, image.width, 1, row, 0, image.width)
+    }
+  }
+
+  // Use the JDK's conversion, including its rounding, once per possible alpha/component pair.
+  // Layoutlib supplies premultiplied images; getRGB otherwise repeats this conversion per pixel.
+  private val unpremultipliedComponents: IntArray by lazy {
+    val model = BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB_PRE).colorModel
+    IntArray(256 * 256) { index ->
+      model.getBlue((index shr 8 shl 24) or (index and 0xFF))
+    }
+  }
+
   override fun compare(expected: BufferedImage, actual: BufferedImage): DiffResult {
     val expectedWidth = expected.width
     val expectedHeight = expected.height
