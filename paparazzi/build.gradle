@@ -129,6 +129,17 @@ def generateTestConfig = tasks.register("generateTestConfig") {
 
 tasks.withType(Test).configureEach {
   dependsOn(generateTestConfig)
+  // Pin the host locale so assertions on formatted messages are stable across machines.
+  systemProperty("user.language", "en")
+  systemProperty("user.country", "US")
+  systemProperty("user.script", "")
+  systemProperty("user.variant", "")
+  systemProperty("user.extensions", "")
+  systemProperty("user.language.format", "en")
+  systemProperty("user.country.format", "US")
+  systemProperty("user.script.format", "")
+  systemProperty("user.variant.format", "")
+  systemProperty("user.extensions.format", "")
   systemProperty(
     "paparazzi.test.resources",
     generateTestConfig.map { it.outputs.files.singleFile }.get().path
