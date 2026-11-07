@@ -1,0 +1,19 @@
+plugins {
+  id 'com.android.library'
+}
+
+android {
+  namespace = 'app.cash.paparazzi.plugin.test.lib'
+  compileSdk = libs.versions.compileSdk.get() as int
+  defaultConfig {
+    minSdk = libs.versions.minSdk.get() as int
+  }
+  compileOptions {
+    sourceCompatibility = libs.versions.javaTarget.get()
+    targetCompatibility = libs.versions.javaTarget.get()
+  }
+}
+
+dependencies {
+  implementation 'androidx.work:work-runtime-ktx:2.10.0'
+}
