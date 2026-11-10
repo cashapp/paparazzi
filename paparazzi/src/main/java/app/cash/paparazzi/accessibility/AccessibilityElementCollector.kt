@@ -87,7 +87,11 @@ internal class AccessibilityElementCollector {
       AccessibilityElement.fromView(this, bounds)?.let(processElement)
     }
 
-    val composeViewRoot = (this as? AbstractComposeView)?.getChildAt(0) as? ViewRootForTest
+    val composeViewRoot = if (hasComposeUi) {
+      (this as? AbstractComposeView)?.getChildAt(0) as? ViewRootForTest
+    } else {
+      null
+    }
     // Another window can trigger collection before this Compose root is attached. Its merged
     // semantics root is not ready yet; leave it for a subsequent collection after attachment.
     if (composeViewRoot != null && isVisible && composeViewRoot.view.isAttachedToWindow) {
@@ -286,6 +290,18 @@ internal class AccessibilityElementCollector {
   }
 
   private companion object {
+    // Compose is compileOnly; Views-only consumers must never resolve its traversal types.
+    val hasComposeUi: Boolean = try {
+      Class.forName(
+        "androidx.compose.ui.platform.AbstractComposeView",
+        false,
+        AccessibilityElementCollector::class.java.classLoader
+      )
+      true
+    } catch (_: ClassNotFoundException) {
+      false
+    }
+
     data class SemanticsNodeTraversalEntry(
       val traversalIndex: Float = 0f,
       val nodes: List<SemanticsNode>, // May be 1 node or a whole traversal group
