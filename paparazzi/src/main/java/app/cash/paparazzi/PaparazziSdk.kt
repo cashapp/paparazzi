@@ -399,7 +399,8 @@ public class PaparazziSdk @JvmOverloads constructor(
             }
             validateLayoutAccessibility(modifiedView, image)
           }
-          val snapshotImage = scaleImage(frameImage(image))
+          val framedImage = frameImage(image)
+          val snapshotImage = scaleImage(framedImage)
           // Only still snapshots generate artifacts; accessibility extensions already cover the image.
           // The FPS marker also excludes GIFs that capture only one frame.
           if (fps == -1 && renderExtensions.none { it is AccessibilityRenderExtension }) {
@@ -420,7 +421,7 @@ public class PaparazziSdk @JvmOverloads constructor(
                 accessibilityFrame.copy(imageWidth = snapshotImage.width, imageHeight = snapshotImage.height)
               )
               accessibilityFailureImage = {
-                AccessibilityFailureImage.render(context, snapshotImage, accessibilityFrame)
+                AccessibilityFailureImage.render(context, framedImage, accessibilityFrame)
               }
             }
           }

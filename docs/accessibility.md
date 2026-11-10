@@ -383,8 +383,10 @@ ratios are one. Retain out-of-canvas bounds; clip only when drawing the visualiz
 When `app.cash.paparazzi.reportType=native`, a missing or mismatched accessibility artifact
 attaches an image to the failing test's report. It shows the current snapshot with accessibility
 highlights and the same legend used by `AccessibilityRenderExtension`, drawn from the captured
-hierarchy without rerendering the UI. This diagnostic image is not recorded or compared as a
-golden and is not generated for legacy reports or passing artifact checks. Goldens recorded in
+hierarchy without rerendering the UI. Diagnostics retain full render resolution, including when
+the golden screenshot is downscaled, so the captured UI and legend text remain readable.
+This diagnostic image is not recorded or compared as a golden and is not generated for legacy
+reports or passing artifact checks. Goldens recorded in
 the earlier element-array format must be recorded again.
 
 Things to Look For

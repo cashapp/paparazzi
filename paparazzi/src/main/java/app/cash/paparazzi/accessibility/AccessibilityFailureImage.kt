@@ -25,7 +25,7 @@ import kotlin.math.max
 
 internal object AccessibilityFailureImage {
   fun render(context: Context, image: BufferedImage, frame: AccessibilityFrame): BufferedImage {
-    // Draw in the collected bounds' coordinate space, then scale to the actual snapshot pixels.
+    // Keep the captured pixels, highlights, and legend at full render resolution so text stays readable.
     // Reuse the render extension's highlights and legend without relaying out the captured UI.
     // A cropped snapshot can be smaller than the legend's badge and margins. Give the diagnostic
     // legend enough room for text and every row, independently of the captured UI's dimensions.
@@ -51,15 +51,10 @@ internal object AccessibilityFailureImage {
       bitmap.recycle()
     }
 
-    val scaleX = image.width.toDouble() / frame.width
-    val scaleY = image.height.toDouble() / frame.height
-    val width = image.width + ceil(legendWidth.toDouble() * image.width / frame.width).toInt()
-    val height = max(image.height, ceil(legendHeight.toDouble() * image.height / frame.height).toInt())
-    return BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB).apply {
+    return BufferedImage(overlayImage.width, overlayImage.height, BufferedImage.TYPE_INT_ARGB).apply {
       val graphics = createGraphics()
       try {
         graphics.drawImage(image, 0, 0, null)
-        graphics.scale(scaleX, scaleY)
         graphics.drawImage(overlayImage, 0, 0, null)
       } finally {
         graphics.dispose()
