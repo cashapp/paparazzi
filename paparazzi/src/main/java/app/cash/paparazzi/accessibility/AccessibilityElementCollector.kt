@@ -291,15 +291,19 @@ internal class AccessibilityElementCollector {
 
   private companion object {
     // Compose is compileOnly; Views-only consumers must never resolve its traversal types.
-    val hasComposeUi: Boolean = try {
-      Class.forName(
-        "androidx.compose.ui.platform.AbstractComposeView",
-        false,
-        AccessibilityElementCollector::class.java.classLoader
-      )
-      true
-    } catch (_: ClassNotFoundException) {
-      false
+    // Defer the lookup until collection: loading AbstractComposeView also loads View, which must
+    // happen after Paparazzi installs its interceptors when a coverage agent is present.
+    val hasComposeUi: Boolean by lazy {
+      try {
+        Class.forName(
+          "androidx.compose.ui.platform.AbstractComposeView",
+          false,
+          AccessibilityElementCollector::class.java.classLoader
+        )
+        true
+      } catch (_: ClassNotFoundException) {
+        false
+      }
     }
 
     data class SemanticsNodeTraversalEntry(
