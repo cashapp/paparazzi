@@ -16,6 +16,6 @@ android {
 }
 
 dependencies {
-  testImplementation "org.robolectric:robolectric:4.17"
+  testImplementation "org.robolectric:robolectric:4.18"
 }
 
