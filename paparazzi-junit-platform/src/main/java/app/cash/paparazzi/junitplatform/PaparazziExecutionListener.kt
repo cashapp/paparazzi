@@ -80,14 +80,19 @@ internal class PaparazziExecutionListener(
     val simpleClassName = source.className.substringAfterLast('.')
     val methodName = methodNameOf(testDescriptor, source).replace(WHITESPACE, "_")
 
-    val prefix = "delta-${packageName}_${simpleClassName}_$methodName"
+    val classPrefix = "delta-${packageName}_${simpleClassName}_"
 
     failureDir.listFiles()
       ?.filter { file ->
-        val name = file.name
-        if (!name.startsWith(prefix) || !name.endsWith(".png")) return@filter false
+        if (!file.name.startsWith(classPrefix) || !file.name.endsWith(".png")) return@filter false
+        // Snapshot.toFileName escapes invalid method characters and literal percent signs.
+        // Decode only those escapes, once; labels can contain arbitrary literal '%' and '+'.
+        val name = file.name.removePrefix(classPrefix).replace(METHOD_NAME_ESCAPE) {
+          it.value.substring(1).toInt(16).toChar().toString()
+        }
+        if (!name.startsWith(methodName)) return@filter false
         // '.' when unlabelled, '_' before a label; a '_' inside the method name over-matches.
-        val boundary = name.getOrNull(prefix.length)
+        val boundary = name.getOrNull(methodName.length)
         boundary == '.' || boundary == '_'
       }
       ?.forEach { file ->
@@ -101,5 +106,6 @@ internal class PaparazziExecutionListener(
   private companion object {
     const val SYSTEM_PROPERTY_FAILURES_DIR: String = "paparazzi.failures.dir"
     val WHITESPACE = Regex("\\s")
+    val METHOD_NAME_ESCAPE = Regex("%(25|3C|3E|3A|22|2F|5C|7C|3F|2A)")
   }
 }
