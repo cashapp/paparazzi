@@ -37,20 +37,18 @@ import androidx.core.view.isVisible
 internal class AccessibilityElementCollector {
   /**
    * Collects accessibility elements from the provided render roots.
-   *
-   * [windowManagerRootView] is optional and is used for UI that renders in separate windows
-   * (dialogs, popups, etc.). [rootView] is always traversed.
    */
-  fun collect(rootView: View, windowManagerRootView: View?): Set<AccessibilityElement> {
-    val orderedElements = linkedSetOf<AccessibilityElement>().apply {
-      windowManagerRootView?.processAccessibleChildren { add(it) }
-      rootView.processAccessibleChildren { add(it) }
+  fun collect(windowRoots: List<View>): List<AccessibilityElement> {
+    val orderedElements = buildList {
+      windowRoots.forEach { rootView ->
+        rootView.processAccessibleChildren(::add)
+      }
     }
 
     return withTraversalNeighbors(orderedElements)
   }
 
-  internal fun withTraversalNeighbors(elements: Collection<AccessibilityElement>): Set<AccessibilityElement> {
+  internal fun withTraversalNeighbors(elements: Collection<AccessibilityElement>): List<AccessibilityElement> {
     val duplicateIds = elements
       .groupingBy { it.id }
       .eachCount()
@@ -72,14 +70,12 @@ internal class AccessibilityElementCollector {
       }
     }
 
-    return orderedElements
-      .mapIndexed { index, element ->
-        element.copy(
-          beforeElementId = orderedElements.getOrNull(index - 1)?.id,
-          afterElementId = orderedElements.getOrNull(index + 1)?.id
-        )
-      }
-      .toCollection(linkedSetOf())
+    return orderedElements.mapIndexed { index, element ->
+      element.copy(
+        beforeElementId = orderedElements.getOrNull(index - 1)?.id,
+        afterElementId = orderedElements.getOrNull(index + 1)?.id
+      )
+    }
   }
 
   private fun View.processAccessibleChildren(processElement: (AccessibilityElement) -> Unit) {
@@ -91,7 +87,11 @@ internal class AccessibilityElementCollector {
       AccessibilityElement.fromView(this, bounds)?.let(processElement)
     }
 
-    val composeViewRoot = (this as? AbstractComposeView)?.getChildAt(0) as? ViewRootForTest
+    val composeViewRoot = if (hasComposeUi) {
+      (this as? AbstractComposeView)?.getChildAt(0) as? ViewRootForTest
+    } else {
+      null
+    }
     // Another window can trigger collection before this Compose root is attached. Its merged
     // semantics root is not ready yet; leave it for a subsequent collection after attachment.
     if (composeViewRoot != null && isVisible && composeViewRoot.view.isAttachedToWindow) {
@@ -290,6 +290,22 @@ internal class AccessibilityElementCollector {
   }
 
   private companion object {
+    // Compose is compileOnly; Views-only consumers must never resolve its traversal types.
+    // Defer the lookup until collection: loading AbstractComposeView also loads View, which must
+    // happen after Paparazzi installs its interceptors when a coverage agent is present.
+    val hasComposeUi: Boolean by lazy {
+      try {
+        Class.forName(
+          "androidx.compose.ui.platform.AbstractComposeView",
+          false,
+          AccessibilityElementCollector::class.java.classLoader
+        )
+        true
+      } catch (_: ClassNotFoundException) {
+        false
+      }
+    }
+
     data class SemanticsNodeTraversalEntry(
       val traversalIndex: Float = 0f,
       val nodes: List<SemanticsNode>, // May be 1 node or a whole traversal group

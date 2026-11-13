@@ -435,6 +435,26 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun accessibilityHierarchyArtifactsWithoutCompose() {
+    val fixtureRoot = File("src/test/projects/accessibility-artifacts-without-compose")
+    val snapshotsDir = File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
+    val artifactFlag = "-Papp.cash.paparazzi.accessibility.hierarchy.artifacts.enabled=true"
+
+    gradleRunner
+      .withArguments("recordPaparazziDebug", artifactFlag, "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    val snapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_AccessibilityArtifactsTest_snapshot.png")
+    assertThat(snapshot.exists()).isTrue()
+
+    val result = gradleRunner
+      .withArguments("verifyPaparazziDebug", artifactFlag, "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":testDebugUnitTest")!!.outcome).isEqualTo(SUCCESS)
+  }
+
+  @Test
   fun recordAllVariants() {
     val fixtureRoot = File("src/test/projects/record-mode")
     File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
