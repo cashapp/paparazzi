@@ -92,9 +92,9 @@ internal class PaparazziLogger : ILayoutLog, ILogger {
 
     override val message: String
       get() = buildString {
-        appendLine(String.format("There were %d errors:", causes.size))
+        appendLine("There were %d errors:".formatForHost(causes.size))
         causes.forEach { e ->
-          appendLine(String.format("%n  %s: %s", e.javaClass.name, e.message))
+          appendLine("%n  %s: %s".formatForHost(e.javaClass.name, e.message))
           e.stackTrace.forEach { traceElement ->
             appendLine("\tat $traceElement")
           }
