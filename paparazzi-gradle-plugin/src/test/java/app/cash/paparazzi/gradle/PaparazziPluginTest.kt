@@ -1734,6 +1734,11 @@ class PaparazziPluginTest {
     val fixtureRoot = File("src/test/projects/report-snapshots")
     val testReportDir = File(fixtureRoot, "build/reports/tests/testDebugUnitTest/classes")
 
+    // A stylesheet left behind by an older report must be replaced.
+    val styleFile = File(fixtureRoot, "build/reports/tests/testDebugUnitTest/css/style.css")
+    styleFile.parentFile.mkdirs()
+    styleFile.writeText("/* stale */")
+
     val result = gradleRunner
       .withArguments("verifyPaparazziDebug", "--stacktrace")
       .runFixture(fixtureRoot) { buildAndFail() }
@@ -1760,6 +1765,37 @@ class PaparazziPluginTest {
     assertThat(htmlText).contains("Tests")
     assertThat(htmlText).contains("Standard output")
     assertThat(htmlText).contains("Standard error")
+
+    assertThat(styleFile.readText()).contains(".diffToggle:checked")
+  }
+
+  @Test
+  fun snapshotReportFromReusedConfigurationCache() {
+    val fixtureRoot = File("src/test/projects/report-snapshots")
+    File(fixtureRoot, ".gradle/configuration-cache").registerForDeletionOnExit()
+    val gradleProperties = File(fixtureRoot, "gradle.properties").registerForDeletionOnExit()
+    val testReportFile =
+      File(fixtureRoot, "build/reports/tests/testDebugUnitTest/classes/app.cash.paparazzi.plugin.test.SimpleTest.html")
+
+    gradleRunner
+      .withArguments("verifyPaparazziDebug", "--configuration-cache", "--stacktrace")
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    // Different daemon JVM args force a fresh daemon, which loads the reporter from the
+    // configuration cache without constructing it.
+    gradleProperties.writeText(
+      """
+        |android.dependencyResolutionAtConfigurationTime.disallow=true
+        |org.gradle.jvmargs=-Xmx1g -Dpaparazzi.test.freshDaemon=true
+      """.trimMargin()
+    )
+    val result = gradleRunner
+      .withArguments("verifyPaparazziDebug", "--configuration-cache", "--stacktrace")
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    assertThat(result.output).contains("Reusing configuration cache.")
+    assertThat(result.output).doesNotContain("Could not generate test report")
+    assertThat(testReportFile.readText()).contains("Show failure diff")
   }
 
   @Test
