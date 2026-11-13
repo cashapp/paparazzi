@@ -12,7 +12,7 @@ class AccessibilityHierarchyJsonSerializerTest {
   fun `toHierarchyString serializes all elements in traversal order`() {
     val first = AccessibilityElement(
       id = "first",
-      displayBounds = Rect(0, 0, 10, 10),
+      displayBounds = Rect(-5, -7, 10, 10),
       mainAccessibilityText = "First"
     )
     val second = AccessibilityElement(
@@ -22,44 +22,64 @@ class AccessibilityHierarchyJsonSerializerTest {
     )
     val orderedElements = collector.withTraversalNeighbors(linkedSetOf(first, second))
 
-    val hierarchy = serializer.toHierarchyString(orderedElements)
+    val hierarchy = serializer.toHierarchyString(
+      AccessibilityFrame(orderedElements.toList(), width = 100, height = 200)
+    )
 
     assertThat(hierarchy).isEqualTo(
       """
-      [
-        {
-          "id": "first",
-          "beforeElementId": null,
-          "afterElementId": "second",
-          "bounds": {
-            "left": 0,
-            "top": 0,
-            "right": 10,
-            "bottom": 10
+      {
+        "renderWidth": 100,
+        "renderHeight": 200,
+        "imageWidth": 100,
+        "imageHeight": 200,
+        "elements": [
+          {
+            "id": "first",
+            "beforeElementId": null,
+            "afterElementId": "second",
+            "bounds": {
+              "left": -5,
+              "top": -7,
+              "right": 10,
+              "bottom": 10
+            },
+            "legendText": "First"
           },
-          "legendText": "First"
-        },
-        {
-          "id": "second",
-          "beforeElementId": "first",
-          "afterElementId": null,
-          "bounds": {
-            "left": 0,
-            "top": 10,
-            "right": 10,
-            "bottom": 20
-          },
-          "legendText": "Second"
-        }
-      ]
+          {
+            "id": "second",
+            "beforeElementId": "first",
+            "afterElementId": null,
+            "bounds": {
+              "left": 0,
+              "top": 10,
+              "right": 10,
+              "bottom": 20
+            },
+            "legendText": "Second"
+          }
+        ]
+      }
       """.trimIndent()
     )
   }
 
   @Test
-  fun `toHierarchyString returns empty JSON array for empty hierarchy`() {
-    val hierarchy = serializer.toHierarchyString(emptyList())
+  fun `empty hierarchy retains canvas and image dimensions`() {
+    val hierarchy = serializer.toHierarchyString(
+      AccessibilityFrame(emptyList(), width = 1001, height = 2003, imageWidth = 500, imageHeight = 1000)
+    )
 
-    assertThat(hierarchy).isEqualTo("[]")
+    assertThat(hierarchy).isEqualTo(
+      """
+      {
+        "renderWidth": 1001,
+        "renderHeight": 2003,
+        "imageWidth": 500,
+        "imageHeight": 1000,
+        "elements": []
+      }
+      """.trimIndent()
+    )
   }
 }
