@@ -218,10 +218,13 @@ class PaparazziPluginTest {
   fun resourceMultiModule() {
     val fixtureRoot = File("src/test/projects/resource-multi-module")
 
-    gradleRunner
-      .withArguments("verifyPaparazziDebug", "--stacktrace")
+    val result = gradleRunner
+      .withArguments("verifyPaparazziDebug", "--stacktrace", "--info")
       .forwardOutput()
       .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":app:transformDebugUnitTestClassesWithAsm")).isNull()
+    assertThat(result.output).doesNotContain("AsmClassesTransform")
   }
 
   @Test
@@ -1622,9 +1625,13 @@ class PaparazziPluginTest {
   fun customFonts() {
     val fixtureRoot = File("src/test/projects/custom-fonts")
 
-    gradleRunner
-      .withArguments("verifyPaparazziDebug", "--stacktrace")
+    val result = gradleRunner
+      .withArguments("verifyPaparazziDebug", "--stacktrace", "--info")
       .runFixture(fixtureRoot) { build() }
+
+    // Loading fonts must not require instrumenting every dependency in the Gradle build.
+    assertThat(result.task(":transformDebugUnitTestClassesWithAsm")).isNull()
+    assertThat(result.output).doesNotContain("AsmClassesTransform")
   }
 
   @Test
