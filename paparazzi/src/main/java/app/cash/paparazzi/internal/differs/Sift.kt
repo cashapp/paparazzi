@@ -48,7 +48,6 @@ internal object Sift : Differ {
 
     return when {
       percentMatch == 100f -> DiffResult.Identical(delta)
-      percentMatch > 95f -> DiffResult.Similar(delta, matched.toLong())
       else -> DiffResult.Different(delta, 100f - percentMatch, (total - matched).toLong())
     }
   }
