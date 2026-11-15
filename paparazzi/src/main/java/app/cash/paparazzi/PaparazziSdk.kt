@@ -151,6 +151,21 @@ public class PaparazziSdk @JvmOverloads constructor(
     }
   }
 
+  /**
+   * Creates the shared [Renderer] and [SessionParamsBuilder] exactly once, under
+   * [initializationLock]. Concurrent first-time callers block until the winner finishes
+   * `Renderer.prepare()` instead of racing a second layoutlib `Bridge` init. See #2547.
+   */
+  internal fun initializeRendererOnce(layoutlibCallback: PaparazziCallback): SessionParamsBuilder {
+    synchronized(initializationLock) {
+      if (!isInitialized) {
+        renderer = Renderer(environment, layoutlibCallback, logger)
+        sessionParamsBuilder = renderer.prepare()
+      }
+      return sessionParamsBuilder
+    }
+  }
+
   public fun prepare() {
     RenderSizingState.reset()
 
@@ -158,10 +173,7 @@ public class PaparazziSdk @JvmOverloads constructor(
       PaparazziCallback(logger, environment.packageName, environment.resourcePackageNames)
     layoutlibCallback.initResources()
 
-    if (!isInitialized) {
-      renderer = Renderer(environment, layoutlibCallback, logger)
-      sessionParamsBuilder = renderer.prepare()
-    }
+    sessionParamsBuilder = initializeRendererOnce(layoutlibCallback)
     forcePlatformSdkVersion(environment.compileSdkVersion)
 
     sessionParamsBuilder = sessionParamsBuilder
@@ -676,6 +688,15 @@ public class PaparazziSdk @JvmOverloads constructor(
     internal val isInitialized get() = ::renderer.isInitialized
 
     internal lateinit var sessionParamsBuilder: SessionParamsBuilder
+
+    /**
+     * Serializes one-time initialization of [renderer] and [sessionParamsBuilder]. Without this
+     * lock, two threads calling [prepare] concurrently on the same JVM can both observe
+     * `!isInitialized`, double-init the layoutlib `Bridge` (which fails with "Failed to init
+     * Bridge"), or tear the pair of properties (renderer set, builder not yet set), which fails
+     * the other thread with `UninitializedPropertyAccessException`. See #2547.
+     */
+    internal val initializationLock = Any()
 
     private val MAIN_DISPATCHER by lazy {
       Handler.getMain().asCoroutineDispatcher("Paparazzi-Main")
