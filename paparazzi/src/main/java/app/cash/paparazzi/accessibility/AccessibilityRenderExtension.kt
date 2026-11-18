@@ -28,6 +28,7 @@ import android.view.WindowManager.LayoutParams.TYPE_APPLICATION_ABOVE_SUB_PANEL
 import android.view.WindowManagerGlobal
 import android.widget.FrameLayout
 import android.widget.LinearLayout
+import androidx.compose.ui.platform.ViewRootForTest
 import androidx.core.view.isVisible
 import app.cash.paparazzi.RenderExtension
 import app.cash.paparazzi.accessibility.RenderSettings.DEFAULT_DESCRIPTION_BACKGROUND_COLOR
@@ -118,6 +119,11 @@ public class AccessibilityRenderExtension : RenderExtension {
         // `ViewRootImpl` now dispatches during the traversal, which is earlier. Collecting on each
         // pass also covers a sub-window whose frame is unresolved on the first one.
         viewTreeObserver.addOnPreDrawListener {
+          // Compose measures and places its content lazily, from `dispatchDraw`, which runs after
+          // pre-draw. Content positioned from its own layout, such as padding derived from
+          // `onGloballyPositioned`, would otherwise be collected one layout behind what is drawn.
+          windowManagerRootView?.measureAndLayoutCompose()
+          measureAndLayoutCompose()
           val windowElements = windowManagerRootView?.let {
             accessibilityElementCollector.collect(rootView = it, windowManagerRootView = null)
           } ?: emptySet()
@@ -131,6 +137,18 @@ public class AccessibilityRenderExtension : RenderExtension {
           overlay.details.updateElements(windowElements + baseElements)
           true
         }
+      }
+    }
+  }
+
+  /** Runs the pending measure and layout of every attached Compose root in this hierarchy. */
+  private fun View.measureAndLayoutCompose() {
+    if (this is ViewRootForTest && isAttachedToWindow) {
+      measureAndLayoutForTest()
+    }
+    if (this is ViewGroup) {
+      for (i in 0 until childCount) {
+        getChildAt(i).measureAndLayoutCompose()
       }
     }
   }
