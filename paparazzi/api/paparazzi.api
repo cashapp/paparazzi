@@ -256,6 +256,15 @@ public abstract interface class app/cash/paparazzi/SnapshotHandler$FrameHandler 
 	public abstract fun handle (Ljava/awt/image/BufferedImage;)V
 }
 
+public abstract interface class app/cash/paparazzi/SnapshotHandler$LazyFrameHandler : app/cash/paparazzi/SnapshotHandler$FrameHandler {
+	public fun handle (Ljava/awt/image/BufferedImage;)V
+	public abstract fun handle (Lkotlin/jvm/functions/Function0;)V
+}
+
+public final class app/cash/paparazzi/SnapshotHandler$LazyFrameHandler$DefaultImpls {
+	public static fun handle (Lapp/cash/paparazzi/SnapshotHandler$LazyFrameHandler;Ljava/awt/image/BufferedImage;)V
+}
+
 public final class app/cash/paparazzi/SnapshotHandlerKt {
 	public static final fun detectMaxPercentDifferenceDefault ()D
 }

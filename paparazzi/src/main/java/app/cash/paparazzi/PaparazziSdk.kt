@@ -97,6 +97,10 @@ public class PaparazziSdk @JvmOverloads constructor(
 ) {
   private var validateAccessibility = false
 
+  // Only Paparazzi's explicitly opted-in frame handlers use lazy image delivery. Public SDK
+  // callbacks retain their eager behavior and constructor signatures.
+  internal var onNewFrameLazy: ((() -> BufferedImage) -> Unit)? = null
+
   @Deprecated(
     "validateAccessibility is deprecated. " +
       "Use the AccessibilityRenderExtension for accessibility testing instead."
@@ -389,7 +393,12 @@ public class PaparazziSdk @JvmOverloads constructor(
           }
           validateLayoutAccessibility(modifiedView, image)
         }
-        onNewFrame(scaleImage(frameImage(image)))
+        val lazyHandler = onNewFrameLazy
+        if (lazyHandler != null) {
+          withLazyFrame({ scaleImage(frameImage(image)) }, lazyHandler)
+        } else {
+          onNewFrame(scaleImage(frameImage(image)))
+        }
       }
     } finally {
       if (hasLifecycleOwnerRuntime) {
