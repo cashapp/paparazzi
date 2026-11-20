@@ -143,7 +143,7 @@ public class Paparazzi @JvmOverloads constructor(
 
   public fun snapshot(name: String? = null, composable: @Composable () -> Unit) {
     createFrameHandler(name).use { handler ->
-      frameHandler = handler
+      setFrameHandler(handler)
       sdk.snapshot(composable)
     }
   }
@@ -151,7 +151,7 @@ public class Paparazzi @JvmOverloads constructor(
   @JvmOverloads
   public fun snapshot(view: View, name: String? = null, offsetMillis: Long = 0L) {
     createFrameHandler(name).use { handler ->
-      frameHandler = handler
+      setFrameHandler(handler)
       sdk.snapshot(view, offsetMillis)
     }
   }
@@ -183,7 +183,7 @@ public class Paparazzi @JvmOverloads constructor(
     val durationMillis = (end - start).toInt()
     val frameCount = (durationMillis * fps) / 1000 + 1
     createFrameHandler(name, frameCount, fps).use { handler ->
-      frameHandler = handler
+      setFrameHandler(handler)
       sdk.gif(view, start, end, fps)
     }
   }
@@ -193,6 +193,11 @@ public class Paparazzi @JvmOverloads constructor(
     theme: String? = null,
     renderingMode: RenderingMode? = null
   ): Unit = sdk.unsafeUpdateConfig(deviceConfig, theme, renderingMode)
+
+  private fun setFrameHandler(handler: SnapshotHandler.FrameHandler) {
+    frameHandler = handler
+    sdk.onNewFrameLazy = if (handler is SnapshotHandler.LazyFrameHandler) handler::handle else null
+  }
 
   private fun createFrameHandler(
     name: String? = null,
