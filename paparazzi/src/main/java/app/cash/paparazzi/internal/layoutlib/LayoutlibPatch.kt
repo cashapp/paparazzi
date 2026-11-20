@@ -12,15 +12,17 @@ import java.lang.instrument.Instrumentation
 import java.security.ProtectionDomain
 
 /**
- * Load-time bytecode patch for layoutlib's canvas-sizing path.
+ * Load-time bytecode patches for layoutlib's rendering path.
  *
- * Two independent defects live here; both are described in full on the advice that fixes them.
+ * The defects are described in full on the advice and support code that fixes them.
  *
  * 1. A traversal can run before the canvas has been sized for the content
  *    ([RenderSizingAdvice.SuppressPrematureTraversal]).
  * 2. The canvas is sized from the base window alone, and windows are then positioned inside the
  *    device display rather than inside that canvas
  *    ([RenderSizingAdvice.MeasureLayoutComplete], [RenderSizingAdvice.WindowRelayout]).
+ * 3. The synthetic preview window loses its seeded insets on relayout, and its outer decor can
+ *    inset content that Layoutlib already positions ([WindowInsetsSupport]).
  *
  * Every layoutlib class is offered to the transformer at first load through the ordinary
  * application class loader, so `Advice` can wrap existing methods without adding members. Targets
@@ -48,6 +50,12 @@ internal object LayoutlibPatch {
   private const val APPLIED = "applied"
 
   private val targets = listOf(
+    Target(
+      binaryName = "com.android.internal.policy.PhoneWindow",
+      methodName = "setContentView",
+      descriptor = "(Landroid/view/View;)V",
+      advice = WindowInsetsAdvice.SetContentView::class.java
+    ),
     Target(
       binaryName = "android.view.ViewRootImpl",
       methodName = "performTraversals",
@@ -106,11 +114,13 @@ internal object LayoutlibPatch {
     if (broken.isEmpty()) return
     throw IllegalStateException(
       buildString {
-        append("Paparazzi could not patch layoutlib's canvas-sizing path. ")
+        append("Paparazzi could not patch layoutlib's rendering path. ")
         append("This layoutlib is not the shape Paparazzi was built against. ")
         append("RenderingMode.V_SCROLL/H_SCROLL/FULL_EXPAND would silently produce an unexpanded ")
         append("canvas, and RenderingMode.SHRINK would size the canvas from the base window ")
-        append("alone - rendering a dialog-only layout at 0x0. Unpatched targets:")
+        append("alone - rendering a dialog-only layout at 0x0. ")
+        append("System-UI snapshots could also lose their safe drawing insets or apply them twice. ")
+        append("Unpatched targets:")
         broken.forEach {
           append("\n  - ${it.binaryName}#${it.methodName}${it.descriptor}: ${it.status}")
         }
