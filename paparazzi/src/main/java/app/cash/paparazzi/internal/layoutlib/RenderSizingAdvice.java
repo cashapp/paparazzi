@@ -82,12 +82,23 @@ final class RenderSizingAdvice {
   static final class WindowRelayout {
     private WindowRelayout() {}
 
+    @Advice.OnMethodEnter
+    static android.view.InsetsState enter(
+        @Advice.Argument(0) android.view.IWindow window,
+        @Advice.Argument(8) android.view.WindowRelayoutResult result) {
+      android.view.InsetsState saved = WindowInsetsSupport.captureInsets(window);
+      WindowInsetsSupport.clearReply(saved, result);
+      return saved;
+    }
+
     @Advice.OnMethodExit
     static void exit(
+        @Advice.Enter android.view.InsetsState savedInsets,
         @Advice.Argument(1) android.view.WindowManager.LayoutParams attrs,
         @Advice.Argument(2) int requestedWidth,
         @Advice.Argument(3) int requestedHeight,
         @Advice.Argument(8) android.view.WindowRelayoutResult result) {
+      WindowInsetsSupport.restoreInsets(savedInsets, result);
       WindowSizingSupport.positionWindowInCanvas(attrs, requestedWidth, requestedHeight, result);
     }
   }
