@@ -30,8 +30,8 @@ class ApngVerifierTest {
 
   @Before
   fun setup() {
-    // set locale to US to avoid issues with different locales
-    Locale.setDefault(Locale.US)
+    // Simulate code under test switching locale; messages must still use the host locale.
+    Locale.setDefault(Locale.forLanguageTag("ar"))
   }
 
   @After
