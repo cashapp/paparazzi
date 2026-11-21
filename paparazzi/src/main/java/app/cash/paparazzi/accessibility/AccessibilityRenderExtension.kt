@@ -125,11 +125,10 @@ public class AccessibilityRenderExtension : RenderExtension {
           windowManagerRootView?.measureAndLayoutCompose()
           measureAndLayoutCompose()
           val windowElements = windowManagerRootView?.let {
-            accessibilityElementCollector.collect(rootView = it, windowManagerRootView = null)
+            accessibilityElementCollector.collect(listOf(it))
           } ?: emptySet()
           val baseElements = accessibilityElementCollector.collect(
-            rootView = this@apply,
-            windowManagerRootView = null
+            listOf(this@apply)
           )
           windowOverlayDrawable.updateElements(windowElements)
           baseOverlayDrawable.updateElements(baseElements)
