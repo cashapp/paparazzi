@@ -25,7 +25,14 @@ class ParameterizedVerifyTest(private val label: String) {
 
   companion object {
     @JvmStatic
-    @Parameterized.Parameters
-    fun data(): List<Array<Any>> = listOf(arrayOf<Any>("alpha"))
+    @Parameterized.Parameters(name = "{index}.{0}")
+    fun data(): List<Array<Any>> =
+      listOf(
+        arrayOf<Any>("alpha"),
+        arrayOf<Any>("ClosedRange<Float>"),
+        arrayOf<Any>("ClosedRange%3CFloat%3E"),
+        arrayOf<Any>("Map<String,Float?>"),
+        arrayOf<Any>("50%+done")
+      )
   }
 }

@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Fixed
+* Escape filesystem-invalid characters in generated test method names so parameterized previews with generic types can be recorded and verified (#1963). Method names containing literal `%` now escape it as `%25` and need their snapshots re-recorded.
+
 ## [2.0.0-alpha05.1] - 2026-09-28
 
 This release swaps layoutlib's simplified window and render model for the framework's, so behavior follows the platform as it changes. Dialogs, popups and sheets are real windows with their own `ViewRootImpl`, giving z-order, dimming and per-window insets that match the device. Measure, layout and pre-draw run through `ViewRootImpl.doTraversal()`, and each render session owns its `Looper`.

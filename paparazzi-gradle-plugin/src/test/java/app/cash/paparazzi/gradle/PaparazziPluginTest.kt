@@ -834,7 +834,7 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun verifyFailureNativeReportParameterized() {
+  fun verifyFailureReportsParameterized() {
     val fixtureRoot = File("src/test/projects/verify-mode-failure-parameterized")
     File(fixtureRoot, "build").registerForDeletionOnExit()
     File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
@@ -844,15 +844,33 @@ class PaparazziPluginTest {
       .runFixture(fixtureRoot) { build() }
 
     gradleRunner
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    val legacyReport = File(
+      fixtureRoot,
+      "build/reports/tests/testDebugUnitTest/classes/app.cash.paparazzi.plugin.test.ParameterizedVerifyTest.html"
+    ).readText()
+    assertThat(Regex("data:image/png;base64,").findAll(legacyReport).count()).isEqualTo(5)
+
+    gradleRunner
       .withArguments("verifyPaparazziDebug", "-Papp.cash.paparazzi.reportType=native", "--stacktrace")
       .runFixture(fixtureRoot) { buildAndFail() }
 
-    // The file carries Parameterized's `[0]`, which only the descriptor's display name has.
-    assertAttachmentPublished(
-      fixtureRoot,
-      "ParameterizedVerifyTest",
-      "delta-app.cash.paparazzi.plugin.test_ParameterizedVerifyTest_verify[0].png"
-    )
+    // Parameterized names come from the display name; escapes must be decoded exactly once.
+    for (parameter in listOf(
+      "0.alpha",
+      "1.ClosedRange%3CFloat%3E",
+      "2.ClosedRange%253CFloat%253E",
+      "3.Map%3CString,Float%3F%3E",
+      "4.50%25+done"
+    )) {
+      assertAttachmentPublished(
+        fixtureRoot,
+        "ParameterizedVerifyTest",
+        "delta-app.cash.paparazzi.plugin.test_ParameterizedVerifyTest_verify[$parameter].png"
+      )
+    }
   }
 
   @Test
