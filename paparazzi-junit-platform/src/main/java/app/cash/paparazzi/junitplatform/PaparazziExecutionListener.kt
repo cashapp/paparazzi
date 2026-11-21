@@ -27,11 +27,11 @@ import java.io.File
  * Wraps the [EngineExecutionListener] passed in by JUnit Platform.
  *
  * On `executionFinished` for leaf test descriptors, scans Paparazzi's failure
- * directory for any diff images produced during the test method and emits each
+ * directory for any diff or accessibility images produced during the test method and emits each
  * one as a [FileEntry] attachment on that test descriptor. Diff files are
  * discovered by filesystem convention: Paparazzi writes them to
  * `paparazzi.failures.dir` with names of the form
- * `delta-<packageName>_<simpleClassName>_<methodName>[_<label>].png`. The class comes from the
+ * `<delta|accessibility>-<packageName>_<simpleClassName>_<methodName>[_<label>].png`. The class comes from the
  * descriptor's [MethodSource], the method name from [methodNameOf].
  *
  * All other events are forwarded to the delegate unchanged.
@@ -80,12 +80,13 @@ internal class PaparazziExecutionListener(
     val simpleClassName = source.className.substringAfterLast('.')
     val methodName = methodNameOf(testDescriptor, source).replace(WHITESPACE, "_")
 
-    val prefix = "delta-${packageName}_${simpleClassName}_$methodName"
+    val prefixes = listOf("delta", "accessibility").map { "$it-${packageName}_${simpleClassName}_$methodName" }
 
     failureDir.listFiles()
       ?.filter { file ->
         val name = file.name
-        if (!name.startsWith(prefix) || !name.endsWith(".png")) return@filter false
+        if (!name.endsWith(".png")) return@filter false
+        val prefix = prefixes.firstOrNull { name.startsWith(it) } ?: return@filter false
         // '.' when unlabelled, '_' before a label; a '_' inside the method name over-matches.
         val boundary = name.getOrNull(prefix.length)
         boundary == '.' || boundary == '_'
