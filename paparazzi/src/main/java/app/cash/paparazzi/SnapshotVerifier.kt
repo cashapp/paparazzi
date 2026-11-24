@@ -18,6 +18,7 @@ package app.cash.paparazzi
 import app.cash.paparazzi.Differ
 import app.cash.paparazzi.SnapshotHandler.FrameHandler
 import app.cash.paparazzi.internal.ImageUtils
+import app.cash.paparazzi.internal.NativeReportAttachments
 import app.cash.paparazzi.internal.apng.ApngVerifier
 import app.cash.paparazzi.internal.differs.DeltaE2000
 import app.cash.paparazzi.internal.differs.Flip
@@ -87,10 +88,20 @@ public class SnapshotVerifier @JvmOverloads constructor(
       }
 
       override fun close() {
+        var failed = false
         try {
           pngVerifier?.assertFinished()
+        } catch (t: Throwable) {
+          failed = true
+          throw t
         } finally {
           pngVerifier?.close()
+          if (failed) {
+            val deltaFile = failurePath.toFile()
+            if (deltaFile.isFile) {
+              NativeReportAttachments.record(deltaFile)
+            }
+          }
         }
       }
     }

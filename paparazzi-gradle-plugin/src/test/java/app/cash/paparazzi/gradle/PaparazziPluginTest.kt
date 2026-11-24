@@ -912,6 +912,56 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun verifyFailureNativeReportNameCollision() {
+    val fixtureRoot = File("src/test/projects/verify-mode-failure-name-collision")
+    File(fixtureRoot, "build").registerForDeletionOnExit()
+    File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
+
+    gradleRunner
+      .withArguments("recordPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    gradleRunner
+      .withArguments("verifyPaparazziDebug", "-Papp.cash.paparazzi.reportType=native", "--stacktrace")
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    val testResultsDir = File(fixtureRoot, "build/test-results/testDebugUnitTest")
+    val xml = File(
+      testResultsDir,
+      "TEST-app.cash.paparazzi.plugin.test.NameCollisionTest.xml"
+    ).readText()
+
+    // Prefix collision: render_detail fails with its diff, while passing render has no attachment.
+    assertThat(xml).contains("name=\"render_detail\"")
+    assertThat(xml).contains("name=\"render\"")
+    assertAttachmentPublished(
+      fixtureRoot,
+      "NameCollisionTest",
+      "delta-app.cash.paparazzi.plugin.test_NameCollisionTest_render_detail.png"
+    )
+    val renderCaseBlock = Regex("""<testcase name="render"[^>]*/>""").find(xml)?.value
+      ?: Regex("""<testcase name="render"[^>]*>(.*?)</testcase>""", RegexOption.DOT_MATCHES_ALL)
+        .find(xml)
+        ?.value
+    assertThat(renderCaseBlock).isNotNull()
+    assertThat(renderCaseBlock).doesNotContain("ATTACHMENT")
+
+    // Exact-filename collision: both collide_detail and collide(label="detail") produce the same
+    // filename, and Gradle's report must preserve each test's distinct diff image.
+    val collideDeltaName = "delta-app.cash.paparazzi.plugin.test_NameCollisionTest_collide_detail.png"
+    assertThat(File(fixtureRoot, "build/paparazzi/failures/debug/$collideDeltaName").exists()).isTrue()
+    val collideAttachmentFiles = Regex("""\[\[ATTACHMENT\|([^\]]*${Regex.escape(collideDeltaName)})\]\]""")
+      .findAll(xml)
+      .map { match -> File(testResultsDir, match.groupValues[1]).canonicalFile }
+      .toList()
+    assertThat(collideAttachmentFiles).hasSize(2)
+    assertThat(collideAttachmentFiles[0]).isNotEqualTo(collideAttachmentFiles[1])
+    assertThat(collideAttachmentFiles[0].exists()).isTrue()
+    assertThat(collideAttachmentFiles[1].exists()).isTrue()
+    assertThat(collideAttachmentFiles[0].readBytes()).isNotEqualTo(collideAttachmentFiles[1].readBytes())
+  }
+
+  @Test
   fun verifySimilar() {
     val fixtureRoot = File("src/test/projects/verify-similar")
 

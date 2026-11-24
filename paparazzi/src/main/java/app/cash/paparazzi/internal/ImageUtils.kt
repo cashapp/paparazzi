@@ -112,6 +112,7 @@ internal object ImageUtils {
         }
       }
       ImageIO.write(deltaImage, "PNG", deltaOutput)
+      NativeReportAttachments.record(deltaOutput)
       error += " - see details in file://" + deltaOutput.path + "\n"
       val actualOutput = File(failureDir, getName(relativePath))
       if (actualOutput.exists()) {

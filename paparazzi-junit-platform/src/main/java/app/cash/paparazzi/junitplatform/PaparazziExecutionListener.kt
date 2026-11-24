@@ -20,25 +20,26 @@ import org.junit.platform.engine.TestDescriptor
 import org.junit.platform.engine.TestExecutionResult
 import org.junit.platform.engine.reporting.FileEntry
 import org.junit.platform.engine.reporting.ReportEntry
-import org.junit.platform.engine.support.descriptor.MethodSource
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.StandardCopyOption
+import java.util.Collections
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicLong
 
 /**
  * Wraps the [EngineExecutionListener] passed in by JUnit Platform.
  *
- * On `executionFinished` for leaf test descriptors, scans Paparazzi's failure
- * directory for any diff images produced during the test method and emits each
- * one as a [FileEntry] attachment on that test descriptor. Diff files are
- * discovered by filesystem convention: Paparazzi writes them to
- * `paparazzi.failures.dir` with names of the form
- * `delta-<packageName>_<simpleClassName>_<methodName>[_<label>].png`. The class comes from the
- * descriptor's [MethodSource], the method name from [methodNameOf].
+ * Tracks diff images recorded by Paparazzi during each leaf test execution and emits them as
+ * [FileEntry] attachments on that test descriptor before forwarding `executionFinished`. Each
+ * recorded diff is immediately copied into a per-test-execution directory so later tests with
+ * colliding filenames cannot overwrite an earlier test's attachment.
  *
  * All other events are forwarded to the delegate unchanged.
  */
 internal class PaparazziExecutionListener(
-  private val delegate: EngineExecutionListener,
-  private val methodNameOf: (TestDescriptor, MethodSource) -> String
+  private val delegate: EngineExecutionListener
 ) : EngineExecutionListener {
 
   override fun dynamicTestRegistered(testDescriptor: TestDescriptor) {
@@ -50,6 +51,9 @@ internal class PaparazziExecutionListener(
   }
 
   override fun executionStarted(testDescriptor: TestDescriptor) {
+    if (testDescriptor.isTest) {
+      activeScope.set(AttachmentScope(id = nextScopeId.incrementAndGet(), parent = activeScope.get()))
+    }
     delegate.executionStarted(testDescriptor)
   }
 
@@ -57,7 +61,20 @@ internal class PaparazziExecutionListener(
     // Emit attachments before forwarding the finished event, because Gradle's binary result
     // store ties published events to whichever test is still current.
     if (testDescriptor.isTest) {
-      emitDiffAttachments(testDescriptor)
+      val scope = activeScope.get()
+      if (scope != null) {
+        if (scope.parent != null) {
+          activeScope.set(scope.parent)
+        } else {
+          activeScope.remove()
+        }
+        scope.attachments.forEach { file ->
+          delegate.fileEntryPublished(
+            testDescriptor,
+            FileEntry.from(file, "image/png")
+          )
+        }
+      }
     }
     delegate.executionFinished(testDescriptor, testExecutionResult)
   }
@@ -70,36 +87,30 @@ internal class PaparazziExecutionListener(
     delegate.fileEntryPublished(testDescriptor, file)
   }
 
-  private fun emitDiffAttachments(testDescriptor: TestDescriptor) {
-    val failureDirPath = System.getProperty(SYSTEM_PROPERTY_FAILURES_DIR) ?: return
-    val failureDir = File(failureDirPath)
-    if (!failureDir.isDirectory) return
+  private class AttachmentScope(
+    val id: Long,
+    val parent: AttachmentScope?
+  ) {
+    private val nextIndex = AtomicInteger(0)
+    val attachments: MutableList<Path> = Collections.synchronizedList(mutableListOf())
 
-    val source = testDescriptor.source.orElse(null) as? MethodSource ?: return
-    val packageName = source.className.substringBeforeLast('.', missingDelimiterValue = "")
-    val simpleClassName = source.className.substringAfterLast('.')
-    val methodName = methodNameOf(testDescriptor, source).replace(WHITESPACE, "_")
-
-    val prefix = "delta-${packageName}_${simpleClassName}_$methodName"
-
-    failureDir.listFiles()
-      ?.filter { file ->
-        val name = file.name
-        if (!name.startsWith(prefix) || !name.endsWith(".png")) return@filter false
-        // '.' when unlabelled, '_' before a label; a '_' inside the method name over-matches.
-        val boundary = name.getOrNull(prefix.length)
-        boundary == '.' || boundary == '_'
-      }
-      ?.forEach { file ->
-        delegate.fileEntryPublished(
-          testDescriptor,
-          FileEntry.from(file.toPath(), "image/png")
-        )
-      }
+    fun nextAttachmentIndex(): Int = nextIndex.getAndIncrement()
   }
 
-  private companion object {
-    const val SYSTEM_PROPERTY_FAILURES_DIR: String = "paparazzi.failures.dir"
-    val WHITESPACE = Regex("\\s")
+  internal companion object {
+    private val nextScopeId = AtomicLong(0)
+    private val activeScope = InheritableThreadLocal<AttachmentScope?>()
+
+    fun recordAttachment(deltaFile: File) {
+      val scope = activeScope.get() ?: return
+      if (!deltaFile.isFile) return
+
+      val parentDir = deltaFile.absoluteFile.parentFile ?: return
+      val isolatedDir = File(parentDir, ".attachments/${scope.id}/${scope.nextAttachmentIndex()}")
+      isolatedDir.mkdirs()
+      val isolatedCopy = File(isolatedDir, deltaFile.name).toPath()
+      Files.copy(deltaFile.toPath(), isolatedCopy, StandardCopyOption.REPLACE_EXISTING)
+      scope.attachments.add(isolatedCopy)
+    }
   }
 }
