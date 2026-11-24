@@ -35,22 +35,32 @@ internal class ApngVerifier(
   private val withErrorText: Boolean = true,
   private val differ: Differ
 ) : Closeable {
+  init {
+    // Validate before the pngReader initializer below opens the golden file, so a bad fps
+    // does not leak an open file handle.
+    require(fps > 0) { "fps must be positive, was: $fps" }
+  }
+
   private val pngReader = ApngReader(fileSystem.openReadOnly(goldenFilePath))
   private val blankFrame by lazy { createBlankFrame(pngReader.width, pngReader.height) }
 
   private var deltaWriter: ApngWriter? = null
-  private var commonFrameRate: Int = -1
-  private var actualDeltasPerFrame: Int = 1
-  private var expectedDeltasPerFrame: Int = 1
+  private val goldenFps: Int
+  private val commonFrameRate: Int
+  private val actualDeltasPerFrame: Int
+  private val expectedDeltasPerFrame: Int
   private var currentGoldenFrame: BufferedImage?
   private var invalidFrames = 0
 
   init {
     currentGoldenFrame = pngReader.readNextFrame()
-    commonFrameRate = leastCommonMultiple(fps, pngReader.getFps())
+    // A still golden has no animation chunks, so it records no fps. Any fps describes the same
+    // single frame, and 0 would divide by zero below.
+    goldenFps = pngReader.getFps().takeIf { it > 0 } ?: fps
+    commonFrameRate = leastCommonMultiple(fps, goldenFps)
     actualDeltasPerFrame = commonFrameRate / fps
-    expectedDeltasPerFrame = commonFrameRate / pngReader.getFps()
-    if (frameCount != pngReader.frameCount || fps != pngReader.getFps()) {
+    expectedDeltasPerFrame = commonFrameRate / goldenFps
+    if (frameCount != pngReader.frameCount || fps != goldenFps) {
       deltaWriter = ApngWriter(deltaFilePath, commonFrameRate, fileSystem)
     }
   }
@@ -113,8 +123,8 @@ internal class ApngVerifier(
           "$invalidFrames frames differed by more than %f%%".format(maxPercentDifference)
         )
       }
-      if (pngReader.getFps() != fps) {
-        appendLine("Mismatched video fps expected: ${pngReader.getFps()} actual: $fps")
+      if (goldenFps != fps) {
+        appendLine("Mismatched video fps expected: $goldenFps actual: $fps")
       }
       if (pngReader.frameCount != frameCount) {
         appendLine("Mismatched frame count expected: ${pngReader.frameCount} actual: $frameCount")
@@ -189,20 +199,11 @@ internal class ApngVerifier(
   }
 
   private fun leastCommonMultiple(first: Int, second: Int): Int {
-    return (first * second) / greatestCommonDenominator(first, second)
+    return first / greatestCommonDenominator(first, second) * second
   }
 
-  private fun greatestCommonDenominator(first: Int, second: Int): Int {
-    var first = first
-    var second = second
-    while (first != second) {
-      if (first > second) {
-        first -= second
-      } else {
-        second -= first
-      }
-    }
-    return first
+  private tailrec fun greatestCommonDenominator(first: Int, second: Int): Int {
+    return if (second == 0) first else greatestCommonDenominator(second, first % second)
   }
 
   private fun BufferedImage.updateSize(targetWidth: Int, targetHeight: Int) =

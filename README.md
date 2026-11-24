@@ -33,10 +33,8 @@ class LaunchViewTest {
 
 See the [project website][paparazzi] for documentation and APIs.
 
-Supporting Multiple Test Frameworks
+Using JUnit 5
 -------
-
-### JUnit Jupiter
 
 ```kotlin
 lateinit var paparazzi: Paparazzi
@@ -68,90 +66,6 @@ fun snapshot_example() {
   }
 
   paparazzi.snapshot(view)
-}
-```
-
-### Kotest
-
-```kotlin
-class PaparazziKotestListener(
-  val api: Paparazzi
-) : TestListener {
-
-  override suspend fun beforeTest(testCase: TestCase) {
-    api.setup(testCase.toTestName())
-    super.beforeTest(testCase)
-  }
-
-  override suspend fun afterTest(testCase: TestCase, result: TestResult) {
-    super.afterTest(testCase, result)
-    api.teardown()
-  }
-
-  private fun TestCase.toTestName() =
-    TestName(
-      packageName = this.spec::class.java.`package`?.name.orEmpty(),
-      className = this::class.simpleName.orEmpty(),
-      methodName = this.name.testName
-    )
-}
-```
-
-Where you can use the Kotest listener like so:
-
-```kotlin
-class KotestPaparazziTest : FunSpec({
-
-  val listener = PaparazziKotestListener(Paparazzi())
-  listeners(listener)
-
-  test("verify paparazzi snapshot works with kotest listener") {
-    val textView = listener.api.inflate<TextView>(android.R.layout.simple_list_item_1)
-    textView.apply {
-      text = "Kotest FunSpec Snapshot"
-      textSize = 24f
-      gravity = Gravity.CENTER
-    }
-    listener.api.snapshot(textView)
-  }
-})
-```
-
-### TestNg
-
-```kotlin
-class TestNgPaparazziTest {
-
-  lateinit var paparazzi: Paparazzi
-
-  @BeforeMethod
-  fun setup(result: ITestResult) {
-    val testMethod = result.method
-    val className = testMethod.realClass.simpleName
-    val methodName = testMethod.methodName
-    val packageName = testMethod?.realClass?.`package`?.name.orEmpty()
-
-    val testName = TestName(packageName, className, methodName)
-
-    paparazzi = Paparazzi()
-    paparazzi.setup(testName = testName)
-  }
-
-  @AfterMethod
-  fun tearDown() {
-    paparazzi.teardown()
-  }
-
-  @Test
-  fun `verify testng snapshot`() {
-    val textView = paparazzi.inflate<TextView>(android.R.layout.simple_list_item_1).apply {
-      text = "Paparazzi TestNg test"
-      textSize = 24f
-      gravity = Gravity.CENTER
-    }
-
-    paparazzi.snapshot(textView)
-  }
 }
 ```
 
@@ -272,7 +186,7 @@ buildscript {
     google()
   }
   dependencies {
-    classpath 'app.cash.paparazzi:paparazzi-gradle-plugin:2.0.0-alpha04'
+    classpath 'app.cash.paparazzi:paparazzi-gradle-plugin:2.0.0-alpha05.1'
   }
 }
 
@@ -282,7 +196,7 @@ apply plugin: 'app.cash.paparazzi'
 Using the plugins DSL:
 ```groovy
 plugins {
-  id 'app.cash.paparazzi' version '2.0.0-alpha04'
+  id 'app.cash.paparazzi' version '2.0.0-alpha05.1'
 }
 ```
 

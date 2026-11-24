@@ -24,6 +24,7 @@ internal object InterceptorRegistrar {
 
     for ((className, methodNamesToInterceptors) in pendingInterceptors) {
       val interceptorMap = methodNamesToInterceptors.associate { (name, clazz) -> name to clazz }
+      val targetClass = InterceptorRegistrar::class.java.classLoader.loadClass(className)
       val transformer = object : ClassFileTransformer {
         override fun transform(
           loader: ClassLoader?,
@@ -32,14 +33,13 @@ internal object InterceptorRegistrar {
           protectionDomain: ProtectionDomain?,
           classfileBuffer: ByteArray
         ): ByteArray? {
-          if (classBeingRedefined == null) return null
+          if (classBeingRedefined !== targetClass) return null
           return transformClass(classfileBuffer, interceptorMap)
         }
       }
 
       instrumentation.addTransformer(transformer, true)
       try {
-        val targetClass = ClassLoader.getSystemClassLoader().loadClass(className)
         instrumentation.retransformClasses(targetClass)
       } finally {
         instrumentation.removeTransformer(transformer)

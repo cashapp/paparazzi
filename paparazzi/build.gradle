@@ -114,7 +114,7 @@ def generateTestConfig = tasks.register("generateTestConfig") {
     configFile.write("""{
       "mainPackage": "app.cash.paparazzi",
       "mergeResourcesOutputDir": ".",
-      "targetSdkVersion": "36",
+      "targetSdkVersion": "37",
       "mergeAssetsOutputDir": ".",
       "resourcePackageNames": ["app.cash.paparazzi"],
       "projectResourceDirs": [],
@@ -126,8 +126,26 @@ def generateTestConfig = tasks.register("generateTestConfig") {
   }
 }
 
+def preloadedTargetsTest = "app.cash.paparazzi.internal.layoutlib.PreloadedLayoutlibTargetsTest"
+
+tasks.named("test", Test) {
+  filter { excludeTestsMatching(preloadedTargetsTest) }
+}
+
+// Runs alone in a fresh JVM so its preloaded class is loaded before Paparazzi's first render.
+def testPreloadedLayoutlibTargets = tasks.register("testPreloadedLayoutlibTargets", Test) {
+  description = "Verifies the layoutlib patch applies to targets loaded before Paparazzi renders."
+  group = "verification"
+  testClassesDirs = sourceSets.test.output.classesDirs
+  classpath = sourceSets.test.runtimeClasspath
+  filter { includeTestsMatching(preloadedTargetsTest) }
+}
+
+tasks.named("check") {
+  dependsOn(testPreloadedLayoutlibTargets)
+}
+
 tasks.withType(Test).configureEach {
-  jvmArgs '-Djdk.attach.allowAttachSelf=true', '-XX:+EnableDynamicAgentLoading'
   dependsOn(generateTestConfig)
   systemProperty(
     "paparazzi.test.resources",
@@ -140,6 +158,10 @@ tasks.withType(Test).configureEach {
   systemProperty(
     "paparazzi.build.dir",
     project.layout.buildDirectory.get().toString()
+  )
+  systemProperty(
+    "paparazzi.failures.dir",
+    project.layout.buildDirectory.dir("paparazzi/failures").get().toString()
   )
   systemProperty(
     "paparazzi.report.dir",

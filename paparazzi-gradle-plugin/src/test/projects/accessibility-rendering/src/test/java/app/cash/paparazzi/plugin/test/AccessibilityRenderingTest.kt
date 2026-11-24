@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.progressSemantics
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -29,6 +30,7 @@ import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -40,6 +42,7 @@ import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.semantics.invisibleToUser
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.progressBarRangeInfo
@@ -132,6 +135,48 @@ class AccessibilityRenderingTest {
   }
 
   @Test
+  fun alertDialogMaterial3() {
+    paparazzi.snapshot {
+      // Bright background content makes the dialog's dim scrim visually unmistakable:
+      // if the scrim is dropped, the background renders fully saturated and the
+      // snapshot diff is large.
+      Column(Modifier.fillMaxSize()) {
+        Box(
+          Modifier
+            .weight(1f)
+            .fillMaxSize()
+            .background(Color(0xFFFF9800))
+        ) {
+          Text(modifier = Modifier.wrapContentSize(), text = "Background top")
+        }
+        Box(
+          Modifier
+            .weight(1f)
+            .fillMaxSize()
+            .background(Color(0xFF4CAF50))
+        ) {
+          Text(modifier = Modifier.wrapContentSize(), text = "Background bottom")
+        }
+      }
+      AlertDialog(
+        onDismissRequest = {},
+        title = { Text(text = "Dialog title") },
+        text = { Text(text = "Dialog message over a dimmed background") },
+        confirmButton = {
+          TextButton(onClick = {}) {
+            Text(text = "Confirm")
+          }
+        },
+        dismissButton = {
+          TextButton(onClick = {}) {
+            Text(text = "Dismiss")
+          }
+        }
+      )
+    }
+  }
+
+  @Test
   fun `verify changing view hierarchy order doesn't change accessibility colors`() {
     val mixedView = MixedView(paparazzi.context).apply {
       addView(
@@ -195,9 +240,44 @@ class AccessibilityRenderingTest {
               .alpha(0f),
             text = "Text with zero alpha"
           )
+          Box(
+            modifier = Modifier
+              .size(0.dp)
+              .clickable(enabled = false, onClick = {})
+              .semantics {
+                hideFromAccessibility()
+              }
+          )
           Text(text = "Text that is visible!")
         }
       }
+    }
+
+    paparazzi.snapshot(view)
+  }
+
+  @Test
+  fun `verify no hide descendants prunes accessibility subtree`() {
+    val view = LinearLayout(paparazzi.context).apply {
+      orientation = LinearLayout.VERTICAL
+      addView(
+        LinearLayout(context).apply {
+          orientation = LinearLayout.VERTICAL
+          importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
+          addView(TextView(context).apply { text = "Hidden classic descendant" })
+          addView(
+            ComposeView(context).apply {
+              setContent { Text("Hidden Compose descendant") }
+            }
+          )
+        }
+      )
+      addView(
+        LinearLayout(context).apply {
+          importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+          addView(TextView(context).apply { text = "Visible descendant" })
+        }
+      )
     }
 
     paparazzi.snapshot(view)
@@ -526,6 +606,31 @@ class AccessibilityRenderingTest {
     }
 
     paparazzi.snapshot(view)
+  }
+
+  @Test
+  fun `verify blank text excluded from merged accessibility labels`() {
+    paparazzi.snapshot {
+      Column(
+        modifier = Modifier.semantics(mergeDescendants = true) {}
+      ) {
+        Text("$356.21")
+        Text("")
+      }
+    }
+  }
+
+  @Test
+  fun `verify whitespace-only text excluded from merged accessibility labels`() {
+    paparazzi.snapshot {
+      Column(
+        modifier = Modifier.semantics(mergeDescendants = true) {}
+      ) {
+        Text("Balance")
+        Text("   ")
+        Text("$100.00")
+      }
+    }
   }
 
   private fun buildViewWithCustomActions(context: Context) =

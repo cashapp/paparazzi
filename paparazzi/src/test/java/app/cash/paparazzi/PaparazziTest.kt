@@ -21,6 +21,7 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.drawable.AnimatedVectorDrawable_VectorDrawableAnimatorUI_Delegate
 import android.os.SystemClock
 import android.view.Choreographer
 import android.view.Choreographer.CALLBACK_ANIMATION
@@ -222,6 +223,16 @@ class PaparazziTest {
   }
 
   @Test
+  fun animatedVectorClockFollowsSnapshotOffset() {
+    // Reading layoutlib's clock back asserts the wiring without an animated vector fixture.
+    paparazzi.snapshot(View(paparazzi.context), name = "offset0", offsetMillis = 0L)
+    assertThat(AnimatedVectorDrawable_VectorDrawableAnimatorUI_Delegate.sFrameTime).isEqualTo(0L)
+
+    paparazzi.snapshot(View(paparazzi.context), name = "offset500", offsetMillis = 500L)
+    assertThat(AnimatedVectorDrawable_VectorDrawableAnimatorUI_Delegate.sFrameTime).isEqualTo(500L)
+  }
+
+  @Test
   fun preDrawOnEveryFrame() {
     val log = mutableListOf<String>()
 
@@ -241,7 +252,12 @@ class PaparazziTest {
 
     paparazzi.gif(view, fps = 4)
 
-    assertThat(log).isEqualTo(listOf("predraw", "draw", "draw", "predraw", "predraw", "predraw"))
+    // Two traversals precede the first draw, each dispatching a pre-draw: the Choreographer drains
+    // the one addView scheduled, then renderAndBuildResult performs its own. Both draws belong to
+    // frame 0:
+    // RenderSessionImpl.renderAndBuildResult draws once into a NopCanvas to prime animations and once
+    // for real, and later frames reuse the display list because this view never invalidates.
+    assertThat(log).isEqualTo(listOf("predraw", "predraw", "draw", "draw", "predraw", "predraw"))
   }
 
   private val time: Long

@@ -1,0 +1,25 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
+plugins {
+  id 'org.jetbrains.kotlin.multiplatform'
+  id 'com.android.kotlin.multiplatform.library'
+  id 'app.cash.paparazzi'
+}
+
+kotlin {
+  android {
+    namespace = 'app.cash.paparazzi.plugin.test'
+    compileSdk = libs.versions.compileSdk.get() as int
+    minSdk = libs.versions.minSdk.get() as int
+
+    compilerOptions {
+      jvmTarget.set(JvmTarget.fromTarget(libs.versions.javaTarget.get()))
+    }
+  }
+
+  jvm()
+}
+
+dependencies {
+  commonTestImplementation('app.cash.paparazzi:paparazzi:99.99.99')
+}
