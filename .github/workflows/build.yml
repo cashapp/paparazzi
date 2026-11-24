@@ -6,8 +6,6 @@ on:
   push:
     branches:
       - '**'
-    tags-ignore:
-      - '**'
 
 env:
   GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false -Dkotlin.incremental=false"
@@ -27,12 +25,12 @@ jobs:
           java-version: 21
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6
 
       - name: Set up Python
         uses: actions/setup-python@v7
         with:
-          python-version: 3.14
+          python-version: 3.15
 
       - name: Prep mkdocs
         run: .github/workflows/prepare_mkdocs.sh
@@ -74,7 +72,7 @@ jobs:
           java-version: ${{ matrix.java-version }}
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6
 
       - name: Run All Tests
         run: ./gradlew check
@@ -107,7 +105,7 @@ jobs:
           java-version: 21
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6
 
       - name: Publish Artifacts
         run: ./gradlew publishMavenPublicationToMavenCentralRepository paparazzi-gradle-plugin:publishAllPublicationsToMavenCentralRepository
@@ -120,7 +118,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v7
         with:
-          python-version: 3.14 # See the pinned version in renovate.json too
+          python-version: 3.15 # See the pinned version in renovate.json too
 
       - name: Prep mkdocs
         run: .github/workflows/prepare_mkdocs.sh

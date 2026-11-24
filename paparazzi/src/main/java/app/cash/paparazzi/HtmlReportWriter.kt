@@ -18,10 +18,12 @@ package app.cash.paparazzi
 import app.cash.paparazzi.SnapshotHandler.FrameHandler
 import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.PaparazziJson
+import app.cash.paparazzi.internal.apng.ApngReader
 import app.cash.paparazzi.internal.apng.ApngWriter
 import com.google.common.base.CharMatcher
 import com.google.common.io.Files
 import okio.BufferedSink
+import okio.FileSystem
 import okio.HashingSink
 import okio.Path.Companion.toPath
 import okio.blackholeSink
@@ -106,7 +108,9 @@ public class HtmlReportWriter @JvmOverloads constructor(
       override fun close() {
         if (hashes.isEmpty()) return
         writer.close()
-        val snapshotFile = File(snapshotDir, "${hash(hashes)}.png")
+        // Frame timing is part of a video's contents, even when all its pixels are unchanged.
+        val snapshotHash = hash(hashes, fps)
+        val snapshotFile = File(snapshotDir, "$snapshotHash.png")
         Files.move(snapshotTmpFile, snapshotFile)
         snapshotTmpFile.delete()
 
@@ -114,6 +118,10 @@ public class HtmlReportWriter @JvmOverloads constructor(
           val goldenFile = File(goldenDir, snapshot.toFileName("_", "png"))
           if (!overwriteOnMaxPercentDifference || !goldenFile.exists()) {
             snapshotFile.copyTo(target = goldenFile, overwrite = true)
+          } else if (fps != -1) {
+            if (apngExceedsThreshold(snapshotFile, goldenFile)) {
+              snapshotFile.copyTo(target = goldenFile, overwrite = true)
+            }
           } else {
             val result = ImageUtils.compareImages(
               goldenImage = ImageIO.read(goldenFile),
@@ -131,6 +139,22 @@ public class HtmlReportWriter @JvmOverloads constructor(
     }
   }
 
+  private fun apngExceedsThreshold(snapshotFile: File, goldenFile: File): Boolean {
+    ApngReader(FileSystem.SYSTEM.openReadOnly(goldenFile.path.toPath())).use { goldenReader ->
+      ApngReader(FileSystem.SYSTEM.openReadOnly(snapshotFile.path.toPath())).use { snapshotReader ->
+        if (goldenReader.frameCount != snapshotReader.frameCount) return true
+        while (!goldenReader.isFinished() && !snapshotReader.isFinished()) {
+          val goldenFrame = goldenReader.readNextFrame() ?: return true
+          val snapshotFrame = snapshotReader.readNextFrame() ?: return true
+          if (goldenReader.getFps() != snapshotReader.getFps()) return true
+          val (_, percentDifferent) = ImageUtils.compareImages(goldenFrame, snapshotFrame, differ)
+          if (percentDifferent > maxPercentDifference) return true
+        }
+      }
+    }
+    return false
+  }
+
   /** Returns a SHA-1 hash of the pixels of [image]. */
   private fun hash(image: BufferedImage): String {
     val hashingSink = HashingSink.sha1(blackholeSink())
@@ -146,10 +170,13 @@ public class HtmlReportWriter @JvmOverloads constructor(
     return hashingSink.hash.hex()
   }
 
-  /** Returns a SHA-1 hash of [lines]. */
-  private fun hash(lines: List<String>): String {
+  /** Returns a SHA-1 hash of [lines] and, for animations, [fps]. */
+  private fun hash(lines: List<String>, fps: Int): String {
     val hashingSink = HashingSink.sha1(blackholeSink())
     hashingSink.buffer().use { sink ->
+      if (fps != -1) {
+        sink.writeUtf8("fps:$fps\n")
+      }
       for (hash in lines) {
         sink.writeUtf8(hash)
         sink.writeUtf8("\n")

@@ -28,6 +28,7 @@ import android.view.WindowManager.LayoutParams.TYPE_APPLICATION_ABOVE_SUB_PANEL
 import android.view.WindowManagerGlobal
 import android.widget.FrameLayout
 import android.widget.LinearLayout
+import androidx.compose.ui.platform.ViewRootForTest
 import androidx.core.view.isVisible
 import app.cash.paparazzi.RenderExtension
 import app.cash.paparazzi.accessibility.RenderSettings.DEFAULT_DESCRIPTION_BACKGROUND_COLOR
@@ -61,6 +62,7 @@ public class AccessibilityRenderExtension : RenderExtension {
 
     return LinearLayout(contentView.context).apply {
       orientation = LinearLayout.HORIZONTAL
+      isBaselineAligned = false
       weightSum = 2f
       layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
 
@@ -69,16 +71,23 @@ public class AccessibilityRenderExtension : RenderExtension {
       val baseOverlayDrawable = AccessibilityOverlayDrawable()
       foreground = baseOverlayDrawable
 
-      addView(contentView, LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, 1f))
+      // Measure weighted children only at their final width. A full-width first pass can make
+      // wrapping Compose content shorter and clamp its ScrollState before the half-width pass.
+      addView(contentView, LinearLayout.LayoutParams(0, MATCH_PARENT, 1f))
 
       // The legend renders in the overlay window, above any sub-window's dim scrim, so only its
       // half of the split is reserved here. The placeholder carries the legend's own background so
       // the seam between the two halves composites to the same colour from either window.
       addView(
         View(context).apply { setBackgroundColor(DEFAULT_DESCRIPTION_BACKGROUND_COLOR.toColorInt()) },
-        LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, 1f)
+        LinearLayout.LayoutParams(0, MATCH_PARENT, 1f)
       )
 
+      // Global layout runs on every layout pass, so it only records the sub-window and registers
+      // the pre-draw collection once; a listener added per pass would collect once for every pass
+      // so far on each later one.
+      var windowManagerRootView: ViewGroup? = null
+      var collectsOnPreDraw = false
       viewTreeObserver.addOnGlobalLayoutListener {
         // The root of the view hierarchy is rendered at full width.
         // We need to restrict it when taking accessibility snapshots.
@@ -88,17 +97,21 @@ public class AccessibilityRenderExtension : RenderExtension {
         // and shrink it to the content width.
         val views = contentView.context.getWindowViews()
         val baseRoot = if (contentView.isAttachedToWindow) contentView.rootView else null
-        val windowManagerRootView = views.lastOrNull {
+        val subWindowRoot = views.lastOrNull {
           baseRoot != null && it !== baseRoot && it !== overlay.window && it.isVisible
         } as ViewGroup?
+        windowManagerRootView = subWindowRoot
 
-        if (windowManagerRootView != null) {
-          val wmLp = windowManagerRootView.layoutParams as WindowManager.LayoutParams
+        if (subWindowRoot != null) {
+          val wmLp = subWindowRoot.layoutParams as WindowManager.LayoutParams
           wmLp.width = contentView.measuredWidth
           wmLp.gravity = Gravity.START or (wmLp.gravity and Gravity.VERTICAL_GRAVITY_MASK)
           val windowManager = contentView.context.getSystemService(WindowManager::class.java)
-          windowManager.updateViewLayout(windowManagerRootView, wmLp)
+          windowManager.updateViewLayout(subWindowRoot, wmLp)
         }
+
+        if (collectsOnPreDraw) return@addOnGlobalLayoutListener
+        collectsOnPreDraw = true
 
         // Collect on every pre-draw so the last pass before capture wins. Until 6551ba39cf
         // layoutlib dispatched pre-draw from inside the draw, so a draw-time transform, a Compose
@@ -106,6 +119,11 @@ public class AccessibilityRenderExtension : RenderExtension {
         // `ViewRootImpl` now dispatches during the traversal, which is earlier. Collecting on each
         // pass also covers a sub-window whose frame is unresolved on the first one.
         viewTreeObserver.addOnPreDrawListener {
+          // Compose measures and places its content lazily, from `dispatchDraw`, which runs after
+          // pre-draw. Content positioned from its own layout, such as padding derived from
+          // `onGloballyPositioned`, would otherwise be collected one layout behind what is drawn.
+          windowManagerRootView?.measureAndLayoutCompose()
+          measureAndLayoutCompose()
           val windowElements = windowManagerRootView?.let {
             accessibilityElementCollector.collect(rootView = it, windowManagerRootView = null)
           } ?: emptySet()
@@ -119,6 +137,18 @@ public class AccessibilityRenderExtension : RenderExtension {
           overlay.details.updateElements(windowElements + baseElements)
           true
         }
+      }
+    }
+  }
+
+  /** Runs the pending measure and layout of every attached Compose root in this hierarchy. */
+  private fun View.measureAndLayoutCompose() {
+    if (this is ViewRootForTest && isAttachedToWindow) {
+      measureAndLayoutForTest()
+    }
+    if (this is ViewGroup) {
+      for (i in 0 until childCount) {
+        getChildAt(i).measureAndLayoutCompose()
       }
     }
   }
@@ -143,9 +173,10 @@ public class AccessibilityRenderExtension : RenderExtension {
       addView(
         LinearLayout(context).apply {
           orientation = LinearLayout.HORIZONTAL
+          isBaselineAligned = false
           weightSum = 2f
-          addView(View(context), LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, 1f))
-          addView(details, LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, 1f))
+          addView(View(context), LinearLayout.LayoutParams(0, MATCH_PARENT, 1f))
+          addView(details, LinearLayout.LayoutParams(0, MATCH_PARENT, 1f))
         },
         FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
       )
