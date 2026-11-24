@@ -1,4 +1,6 @@
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
+import org.jetbrains.dokka.gradle.engine.parameters.KotlinPlatform
+import org.jetbrains.dokka.gradle.engine.parameters.VisibilityModifier
 
 apply plugin: 'org.jetbrains.kotlin.jvm'
 apply plugin: 'org.jetbrains.kotlin.plugin.compose'
@@ -33,6 +35,7 @@ dependencies {
   compileOnlyAarAsJar libs.androidx.compose.ui.android
   compileOnlyAarAsJar libs.androidx.activity
   compileOnlyAarAsJar libs.androidx.lifecycle.runtime // Needed for setViewTreeLifecycleOwner
+  compileOnlyAarAsJar libs.androidx.savedstate // Needed for setViewTreeSavedStateRegistryOwner
 
   implementation libs.bytebuddy.agent
   implementation libs.bytebuddy.core
@@ -73,18 +76,32 @@ dependencies {
   testImplementation libs.truth
 }
 
-tasks.named("dokkaGfm").configure {
-  outputDirectory = rootProject.file("docs/1.x")
+dokka {
+  dokkaPublications.html {
+    outputDirectory.set(rootProject.file("docs/2.x"))
+  }
 
-  dokkaSourceSets.named("main") {
-    configureEach {
-      reportUndocumented = false
-      skipDeprecated = true
-      jdkVersion = 8
-      perPackageOption {
-        prefix = "app.cash.paparazzi.internal"
-        suppress = true
-      }
+  dokkaSourceSets.named("main").configure {
+    reportUndocumented = false
+    skipDeprecated = true
+    jdkVersion = libs.versions.javaTarget.get() as int
+    documentedVisibilities(VisibilityModifier.Public)
+    skipEmptyPackages = true
+    analysisPlatform = KotlinPlatform.JVM
+
+    externalDocumentationLinks.register("docs") {
+      url("https://developer.android.com/reference/")
+    }
+
+    sourceLink {
+      localDirectory.set(file("src/main/java"))
+      remoteUrl("https://github.com/cashapp/paparazzi/tree/master/paparazzi/src/main/java")
+      remoteLineSuffix.set("#L")
+    }
+
+    perPackageOption {
+      matchingRegex = /app\.cash\.paparazzi\.internal(\..*)?/
+      suppress = true
     }
   }
 }
@@ -98,7 +115,7 @@ def generateTestConfig = tasks.register("generateTestConfig") {
     configFile.write("""{
       "mainPackage": "app.cash.paparazzi",
       "mergeResourcesOutputDir": ".",
-      "targetSdkVersion": "34",
+      "targetSdkVersion": "37",
       "mergeAssetsOutputDir": ".",
       "resourcePackageNames": ["app.cash.paparazzi"],
       "projectResourceDirs": [],
@@ -108,6 +125,25 @@ def generateTestConfig = tasks.register("generateTestConfig") {
       "aarAssetDirs": []
     }""")
   }
+}
+
+def preloadedTargetsTest = "app.cash.paparazzi.internal.layoutlib.PreloadedLayoutlibTargetsTest"
+
+tasks.named("test", Test) {
+  filter { excludeTestsMatching(preloadedTargetsTest) }
+}
+
+// Runs alone in a fresh JVM so its preloaded class is loaded before Paparazzi's first render.
+def testPreloadedLayoutlibTargets = tasks.register("testPreloadedLayoutlibTargets", Test) {
+  description = "Verifies the layoutlib patch applies to targets loaded before Paparazzi renders."
+  group = "verification"
+  testClassesDirs = sourceSets.test.output.classesDirs
+  classpath = sourceSets.test.runtimeClasspath
+  filter { includeTestsMatching(preloadedTargetsTest) }
+}
+
+tasks.named("check") {
+  dependsOn(testPreloadedLayoutlibTargets)
 }
 
 tasks.withType(Test).configureEach {
@@ -123,6 +159,10 @@ tasks.withType(Test).configureEach {
   systemProperty(
     "paparazzi.build.dir",
     project.layout.buildDirectory.get().toString()
+  )
+  systemProperty(
+    "paparazzi.failures.dir",
+    project.layout.buildDirectory.dir("paparazzi/failures").get().toString()
   )
   systemProperty(
     "paparazzi.report.dir",

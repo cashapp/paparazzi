@@ -13,8 +13,23 @@ theme:
   favicon: images/icon-square.png
   logo: images/icon-square.png
   palette:
-    primary: 'light blue'
-    accent: 'blue'
+    # Palette toggle for light mode
+    - scheme: default
+      media: "(prefers-color-scheme: light)"
+      primary: 'light blue'
+      accent: 'blue'
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - scheme: slate
+      media: "(prefers-color-scheme: dark)"
+      primary: 'light blue'
+      accent: 'blue'
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
 
 extra_css:
   - 'css/app.css'
@@ -38,7 +53,9 @@ markdown_extensions:
 
 nav:
   - 'Overview': index.md
-  - '1.x API': 1.x/paparazzi/app.cash.paparazzi/index.md
+  - '1.x API': 1.x/paparazzi/app.cash.paparazzi/index.html
+  - '2.x API': 2.x/paparazzi/app.cash.paparazzi/index.html
+  - 'Accessibility Snapshots': accessibility.md
   - 'Change Log': changelog.md
   - 'Code of Conduct': code_of_conduct.md
   - 'Stack Overflow ⏏': https://stackoverflow.com/questions/tagged/paparazzi?sort=active

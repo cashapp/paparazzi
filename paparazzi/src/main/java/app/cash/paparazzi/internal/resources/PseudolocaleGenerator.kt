@@ -19,22 +19,22 @@ private val configCache = hashMapOf<Pair<ResourceSourceFile, LocaleQualifier>, R
 internal fun Table<ResourceNamespace, ResourceType, ResourceValueMap>.pseudolocalizeIfNeeded(
   localeQualifier: LocaleQualifier
 ): Table<ResourceNamespace, ResourceType, ResourceValueMap> {
+  val method = when (localeQualifier.value) {
+    "en-rXA" -> Pseudolocalizer.Method.ACCENT
+    "ar-rXB" -> Pseudolocalizer.Method.BIDI
+    else -> return this
+  }
+
   for (namespace in rowKeySet()) {
     for (type in columnKeySet()) {
       val resourceValues = this[namespace, type]!!
-      resourceValues.forEach { (key, value) ->
+      resourceValues.values().forEach { value ->
         if (value !is BasicValueResourceItemBase || !value.isPseudolocalizable()) {
           return@forEach
         }
 
-        val method = when (localeQualifier.value) {
-          "en-rXA" -> Pseudolocalizer.Method.ACCENT
-          "ar-rXB" -> Pseudolocalizer.Method.BIDI
-          else -> return@forEach
-        }
-
         val pseudoLocaleSourceFile = value.sourceFile.forLocale(localeQualifier)
-        resourceValues[key] = when (value.resourceType) {
+        resourceValues[value.name] = when (value.resourceType) {
           ResourceType.STRING -> {
             pseudolocalizeString(value as BasicValueResourceItem, pseudoLocaleSourceFile, method)
           }

@@ -1,6 +1,6 @@
 package app.cash.paparazzi.gradle.reporting
 
-import org.gradle.api.internal.tasks.testing.junit.result.TestFailure
+import org.gradle.api.internal.tasks.testing.results.serializable.SerializableFailure
 import org.gradle.api.tasks.testing.TestResult.ResultType
 
 internal class TestResult(
@@ -9,7 +9,7 @@ internal class TestResult(
   override val duration: Long,
   val classResults: ClassTestResults
 ) : TestResultModel(), Comparable<TestResult> {
-  private val _failures: MutableList<TestFailure> = mutableListOf()
+  private val _failures: MutableList<SerializableFailure> = mutableListOf()
   private var isIgnored: Boolean = false
 
   val id: Any
@@ -28,10 +28,10 @@ internal class TestResult(
   override val formattedDuration: String
     get() = if (isIgnored) "-" else super.formattedDuration
 
-  val failures: List<TestFailure>
+  val failures: List<SerializableFailure>
     get() = _failures
 
-  fun addFailure(failure: TestFailure) {
+  fun addFailure(failure: SerializableFailure) {
     classResults.failed(this)
     _failures += failure
   }

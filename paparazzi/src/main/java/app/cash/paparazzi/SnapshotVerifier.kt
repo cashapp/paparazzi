@@ -15,17 +15,26 @@
  */
 package app.cash.paparazzi
 
+import app.cash.paparazzi.Differ
 import app.cash.paparazzi.SnapshotHandler.FrameHandler
 import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.apng.ApngVerifier
+import app.cash.paparazzi.internal.differs.DeltaE2000
+import app.cash.paparazzi.internal.differs.Flip
+import app.cash.paparazzi.internal.differs.Mssim
+import app.cash.paparazzi.internal.differs.OffByTwo
+import app.cash.paparazzi.internal.differs.PixelPerfect
+import app.cash.paparazzi.internal.differs.Sift
 import okio.Path.Companion.toOkioPath
 import java.awt.image.BufferedImage
+import java.awt.image.BufferedImage.TYPE_INT_ARGB
 import java.io.File
 import javax.imageio.ImageIO
 
 public class SnapshotVerifier @JvmOverloads constructor(
   private val maxPercentDifference: Double,
-  rootDirectory: File = File(System.getProperty("paparazzi.snapshot.dir"))
+  rootDirectory: File = File(System.getProperty("paparazzi.snapshot.dir")),
+  private val differ: Differ = determineDiffer()
 ) : SnapshotHandler {
   private val imagesDirectory: File = File(rootDirectory, "images")
   private val videosDirectory: File = File(rootDirectory, "videos")
@@ -41,7 +50,7 @@ public class SnapshotVerifier @JvmOverloads constructor(
       val expected = File(snapshotDir, snapshot.toFileName(extension = "png"))
       val failurePath = File(failureDir, "delta-${expected.name}").toOkioPath()
       val pngVerifier: ApngVerifier? = if (fps != -1) {
-        ApngVerifier(expected.toOkioPath(), failurePath, fps, frameCount, maxPercentDifference)
+        ApngVerifier(expected.toOkioPath(), failurePath, fps, frameCount, maxPercentDifference, differ = differ)
       } else {
         null
       }
@@ -52,11 +61,12 @@ public class SnapshotVerifier @JvmOverloads constructor(
           return
         }
 
-        if (!expected.exists()) {
-          throw AssertionError("File $expected does not exist")
-        }
-
-        val goldenImage = ImageIO.read(expected) ?: throw NullPointerException(
+        val goldenImage = if (!expected.exists()) {
+          // Stub image for comparison and to proceed with failure output
+          BufferedImage(image.width, image.height, TYPE_INT_ARGB)
+        } else {
+          ImageIO.read(expected)
+        } ?: throw NullPointerException(
           """
           Failed to read the snapshot file from the file system.
 
@@ -71,7 +81,8 @@ public class SnapshotVerifier @JvmOverloads constructor(
           image = image,
           goldenImage = goldenImage,
           maxPercentDifferent = maxPercentDifference,
-          failureDir = failureDir
+          failureDir = failureDir,
+          differ = differ
         )
       }
 
@@ -91,10 +102,23 @@ public class SnapshotVerifier @JvmOverloads constructor(
     /** Directory where to write the thumbnails and deltas. */
     private val failureDir: File
       get() {
-        val buildDirString = System.getProperty("paparazzi.build.dir")
-        val failureDir = File(buildDirString, "paparazzi/failures")
-        failureDir.mkdirs()
-        return failureDir
+        val path = System.getProperty("paparazzi.failures.dir")
+          ?: error("paparazzi.failures.dir system property is required")
+        return File(path).apply { mkdirs() }
       }
   }
 }
+
+internal fun determineDiffer() =
+  System.getProperty("app.cash.paparazzi.differ")?.lowercase().let { differ ->
+    when (differ) {
+      "offbytwo" -> OffByTwo
+      "pixelperfect" -> PixelPerfect
+      "mssim" -> Mssim
+      "sift" -> Sift
+      "flip" -> Flip
+      "de2000" -> DeltaE2000
+      null, "", "default" -> OffByTwo
+      else -> error("Unknown differ type '$differ'.")
+    }
+  }

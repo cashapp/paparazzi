@@ -2,6 +2,142 @@
 
 ## [Unreleased]
 
+## [2.0.0-alpha05.1] - 2026-09-28
+
+This release swaps layoutlib's simplified window and render model for the framework's, so behavior follows the platform as it changes. Dialogs, popups and sheets are real windows with their own `ViewRootImpl`, giving z-order, dimming and per-window insets that match the device. Measure, layout and pre-draw run through `ViewRootImpl.doTraversal()`, and each render session owns its `Looper`.
+
+Accessibility goldens, and goldens using the `V_SCROLL`, `H_SCROLL` and `FULL_EXPAND` rendering modes, change with this version and will need re-recording.
+
+### New
+* LayoutLib v16.2.3 (#2468)
+* Add a `Paparazzi#gif` overload that accepts a `@Composable` directly (#2365):
+
+```kotlin
+paparazzi.gif {
+  CircularProgressIndicator()
+}
+```
+* Add `app.cash.paparazzi.reportType=native` to publish snapshot diffs as attachments on Gradle's test report instead of replacing Gradle's reporter. Requires Gradle 9.4+. `legacy` stays the default for now, but will be removed in an upcoming release (#2436)
+* Add `app.cash.paparazzi.nativeReportFrameworks` to choose which frameworks native mode supports: `junit4` (the default), `junit5`, or both, so a JUnit 4 project never pulls in the Jupiter engine (#2450)
+* [Gradle Plugin] Android Gradle Plugin 9.0.0 (#2198)
+
+### Fixed
+* `AnimatedVectorDrawable` now advances with the snapshot offset instead of rendering at time zero (#2472)
+* Fix infinite loop when verifying single-frame goldens (#2379)
+* Exclude blank text from merged accessibility labels (#2331, #2372)
+* Prune hidden accessibility subtrees (#2383)
+* Filter hidden Compose accessibility semantics (#2430)
+* [Gradle Plugin] Fix `cleanRecord` race condition between snapshot recording and deletion under parallel builds (#2377)
+* [Gradle Plugin] Fix remote build cache misses caused by absolute paths in the test task's system properties (#1874, #2381, #2452)
+* [Gradle Plugin] `cleanRecordPaparazzi` deletes the variant's own snapshots rather than every variant's (#2456)
+
+Kudos to @geoff-powell, @colinmarsch, @arpitagarwal1301, @FilippoVigani, @abeggsnf, @oldergod and others for contributions this release!
+
+## [2.0.0-alpha05] - 2026-05-20
+
+This release supports pre-AGP 9.0 consumers.
+
+### New
+* Add support for the new Android library multiplatform plugin (#2115, #2332)
+* Add `setup`/`teardown` hooks on Paparazzi to decouple from JUnit 4; document usage with JUnit Jupiter (#2209, #2333)
+* LayoutLib v16.2.1
+* Compose 1.11.2
+* [Gradle Plugin] Gradle 9.3.1
+* [Gradle Plugin] Tidy task wiring and inputs (#2205, #2334)
+
+### Fixed
+* Fix configuration-cache issue resolving `project` in provider mapping (#2241)
+* Fix `NoClassDefFoundError` on `org/gradle/reporting/HtmlWriterTools` to support Gradle 8.x users (#2316)
+* Destroy lifecycle owner after snapshots (#2325)
+* Fix Paparazzi dependency scope for KMP Android tests (#2330)
+
+Kudos to @geoff-powell, @nishatoma, @colinmarsch, @oldergod, @eboudrant, @tcmulcahy and others for contributions this release!
+
+## [2.0.0-alpha04] - 2026-01-20
+
+As of this release, consumers must build on Java 21+ environments.
+
+### New
+* Allow differ to be configured (#2001)
+* Introduce additional differ types (#2009)
+* Introduce defaultLocale system property (#2203)
+* Update DeviceConfigs (#2176)
+* Support custom view accessibility hierarchy ordering in accessibility snapshots (#2150)
+* Add support for overwriting snapshots when max percent diff threshold is reached (#2067)
+* LayoutLib v16.1.1
+* Compose 1.10.1
+* Kotlin 2.3.0
+* [Gradle Plugin] Gradle 9.2.1
+* [Gradle Plugin] Android Gradle Plugin 8.13.2
+
+### Fixed
+* Handle SemanticsNode traversalIndices to support Compose accessibility reordering (#2019)
+* Add fix for boundsInWindow incorrectly calculating position on screen (#1983)
+* Fix compose accessibility ordering (#2037)
+* Fix in-list reporting for nested nodes for accessibility (#2053)
+* Fix reporting in list when item doesn't have any accessibility identifiers (#2051)
+* Fix progress bar accessibility ordering (#2208)
+* Fix font loading on Windows (#2074)
+* Fail test if exception is thrown during effect (#2214)
+* Fix differ comparison between black pixels with 100% alpha and black pixels with 0% alpha (#2078)
+* Adjust apng failure precision (#2186)
+* Make plugin compatible with Gradle Isolated Projects (#2154)
+
+### Changed
+* Deprecate validateAccessibility parameter (#1997)
+* Migrate to Dokka2 (#1783)
+
+Kudos to @geoff-powell, @colinmarsch, @SimonMarquis, @nishatoma, @joshskeen, @kboyarshinov and others for contributions this release!
+
+## [2.0.0-alpha03] - 2026-01-20
+
+Ignore; use 2.0.0-alpha04 instead.
+
+## [2.0.0-alpha02] - 2025-06-20
+
+### New
+* Bump default compileSdk to API 36
+* LayoutLib v15.2.3
+* Compose 1.8.3
+* Kotlin 2.1.21
+* [Gradle Plugin] Gradle 8.14.2
+* [Gradle Plugin] Android Gradle Plugin 8.10.1
+
+### Fixed
+* Generate build failures even if golden images are not present
+* Fully advance choreographer correctly for Compose
+* [Accessibility] Denote elements in lists in the legend
+
+### Changed
+- In-development snapshots are now published to the Central Portal Snapshots repository at https://central.sonatype.com/repository/maven-snapshots/.
+
+Kudos to @geoff-powell, @colinmarsch, @SimonMarquis and others for contributions this release!
+
+## [2.0.0-alpha01] - 2025-04-15
+
+### New
+* Support for editable text in accessibility snapshots
+* Support for error description in accessibility snapshots
+* Support progress compose semantics in accessibility snapshots
+* Support custom actions and link annotations in Compose accessibility snapshots
+* Support additional accessibility properties on views
+* Support live regions in accessibility snapshots
+* Add support for compose views that are hidden or invisible
+* Add gradle property to control default max percent difference
+* LayoutLib v15.1.4
+* [Gradle Plugin] Gradle 8.13
+* [Gradle Plugin] Android Gradle Plugin 8.8.1
+
+### Fixed
+* Fix default layout params for compose snapshots
+* Fix accessibility overlay drawing in root view instead of window manager
+* Fix issue where unmergedNode has 0 elements
+* Don't scale accessibility legend text when font scale is non-default
+* Use compileOnly for kotlin/agp plugins
+* Bypass font path prefix check in ResourcesCompat::loadFont
+
+Kudos to @geoff-powell, @colinmarsch, @darshanparajuli, @DSteve595, @adamalyyan and others for contributions this release!
+
 ## [1.3.5] - 2024-11-06
 
 ### New
@@ -409,7 +545,13 @@ As of this release, consumers must build on Java 11 environments.
 
 
 
-[Unreleased]: https://github.com/cashapp/paparazzi/compare/1.3.5...HEAD
+[Unreleased]: https://github.com/cashapp/paparazzi/compare/2.0.0-alpha05.1...HEAD
+[2.0.0-alpha05.1]: https://github.com/cashapp/paparazzi/releases/tag/2.0.0-alpha05.1
+[2.0.0-alpha05]: https://github.com/cashapp/paparazzi/releases/tag/2.0.0-alpha05
+[2.0.0-alpha04]: https://github.com/cashapp/paparazzi/releases/tag/2.0.0-alpha04
+[2.0.0-alpha03]: https://github.com/cashapp/paparazzi/releases/tag/2.0.0-alpha03
+[2.0.0-alpha02]: https://github.com/cashapp/paparazzi/releases/tag/2.0.0-alpha02
+[2.0.0-alpha01]: https://github.com/cashapp/paparazzi/releases/tag/2.0.0-alpha01
 [1.3.5]: https://github.com/cashapp/paparazzi/releases/tag/1.3.5
 [1.3.4]: https://github.com/cashapp/paparazzi/releases/tag/1.3.4
 [1.3.3]: https://github.com/cashapp/paparazzi/releases/tag/1.3.3

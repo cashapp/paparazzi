@@ -1,12 +1,10 @@
 package app.cash.paparazzi.gradle.reporting
 
 import org.gradle.api.GradleException
-import org.gradle.api.file.Directory
 import org.gradle.api.internal.tasks.testing.junit.result.TestResultsProvider
 import org.gradle.api.internal.tasks.testing.report.TestReporter
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
-import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.testing.TestResult
 import org.gradle.internal.html.SimpleHtmlWriter
 import org.gradle.internal.operations.BuildOperationContext
@@ -24,8 +22,7 @@ import kotlin.time.measureTime
 internal class PaparazziTestReporter(
   private val buildOperationRunner: BuildOperationRunner,
   private val buildOperationExecutor: BuildOperationExecutor,
-  private val isVerifyRun: Provider<Boolean>,
-  private val failureSnapshotDir: Provider<Directory>
+  private val diffRegistryFactory: () -> Map<Pair<String, String>, DiffImage>
 ) : TestReporter {
   init {
     // Rather than copy SimpleHtmlWriter, let's append our desired tags to the allowlist
@@ -105,8 +102,7 @@ internal class PaparazziTestReporter(
                       classResults,
                       ClassPageRenderer(
                         resultsProvider,
-                        isVerifyRun.get(),
-                        failureSnapshotDir.get().asFile
+                        diffRegistryFactory
                       ),
                       output
                     )

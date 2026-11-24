@@ -16,9 +16,12 @@
 
 package app.cash.paparazzi.internal
 
-import app.cash.paparazzi.internal.Differ.DiffResult.Different
-import app.cash.paparazzi.internal.Differ.DiffResult.Identical
-import app.cash.paparazzi.internal.Differ.DiffResult.Similar
+import app.cash.paparazzi.Differ
+import app.cash.paparazzi.Differ.DiffResult.Different
+import app.cash.paparazzi.Differ.DiffResult.Identical
+import app.cash.paparazzi.Differ.DiffResult.Similar
+import app.cash.paparazzi.internal.apng.ApngWriter
+import okio.Path.Companion.toPath
 import java.awt.AlphaComposite
 import java.awt.Color
 import java.awt.Graphics2D
@@ -50,9 +53,10 @@ internal object ImageUtils {
     goldenImage: BufferedImage,
     image: BufferedImage,
     maxPercentDifferent: Double,
-    failureDir: File
+    failureDir: File,
+    differ: Differ
   ) {
-    val (deltaImage, percentDifference) = compareImages(goldenImage, image)
+    val (deltaImage, percentDifference) = compareImages(goldenImage, image, differ)
 
     val goldenImageWidth = goldenImage.width
     val goldenImageHeight = goldenImage.height
@@ -116,7 +120,7 @@ internal object ImageUtils {
           throw IllegalStateException("Unable to delete $actualOutput")
         }
       }
-      ImageIO.write(image, "PNG", actualOutput)
+      ApngWriter(actualOutput.path.toPath(), fps = -1).use { it.writeImage(image) }
       error += "Thumbnail for current rendering stored at file://" + actualOutput.path
       error += "\nRun the following command to accept the changes:\n"
       error += "mv ${actualOutput.absolutePath} ${File(relativePath).absolutePath}"
@@ -126,7 +130,7 @@ internal object ImageUtils {
   }
 
   @Throws(IOException::class)
-  fun compareImages(goldenImage: BufferedImage, image: BufferedImage): Pair<BufferedImage, Float> {
+  fun compareImages(goldenImage: BufferedImage, image: BufferedImage, differ: Differ): Pair<BufferedImage, Float> {
     var goldenImage = goldenImage
     if (goldenImage.type != TYPE_INT_ARGB) {
       val temp = BufferedImage(goldenImage.width, goldenImage.height, TYPE_INT_ARGB)
@@ -137,7 +141,6 @@ internal object ImageUtils {
       throw IllegalStateException("expected:<$TYPE_INT_ARGB> but was:<${goldenImage.type}>")
     }
 
-    val differ: Differ = OffByTwo
     differ.compare(goldenImage, image).let { result ->
       return when (result) {
         is Identical -> result.delta to 0f

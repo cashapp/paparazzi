@@ -19,8 +19,10 @@ import android.content.Context
 import android.content.res.Resources
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup.LayoutParams
 import androidx.annotation.LayoutRes
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.ComposeView
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode
 import org.junit.rules.TestRule
 import org.junit.runner.Description
@@ -33,14 +35,47 @@ public class Paparazzi @JvmOverloads constructor(
   private val theme: String = "android:Theme.Material.NoActionBar.Fullscreen",
   private val renderingMode: RenderingMode = RenderingMode.NORMAL,
   private val appCompatEnabled: Boolean = true,
-  private val maxPercentDifference: Double = 0.1,
+  private val maxPercentDifference: Double = detectMaxPercentDifferenceDefault(),
   private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference),
   private val renderExtensions: Set<RenderExtension> = setOf(),
   private val supportsRtl: Boolean = false,
   private val showSystemUi: Boolean = false,
-  private val validateAccessibility: Boolean = false,
   private val useDeviceResolution: Boolean = false
 ) : TestRule {
+  private var validateAccessibility = false
+
+  @Deprecated(
+    "validateAccessibility is deprecated. " +
+      "Use the AccessibilityRenderExtension for accessibility testing instead."
+  )
+  public constructor(
+    environment: Environment = detectEnvironment(),
+    deviceConfig: DeviceConfig = DeviceConfig.NEXUS_5,
+    theme: String = "android:Theme.Material.NoActionBar.Fullscreen",
+    renderingMode: RenderingMode = RenderingMode.NORMAL,
+    appCompatEnabled: Boolean = true,
+    maxPercentDifference: Double = detectMaxPercentDifferenceDefault(),
+    snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference),
+    renderExtensions: Set<RenderExtension> = setOf(),
+    supportsRtl: Boolean = false,
+    showSystemUi: Boolean = false,
+    useDeviceResolution: Boolean = false,
+    validateAccessibility: Boolean = false
+  ) : this(
+    environment,
+    deviceConfig,
+    theme,
+    renderingMode,
+    appCompatEnabled,
+    maxPercentDifference,
+    snapshotHandler,
+    renderExtensions,
+    supportsRtl,
+    showSystemUi,
+    useDeviceResolution
+  ) {
+    this.validateAccessibility = validateAccessibility
+  }
   private lateinit var sdk: PaparazziSdk
   private lateinit var frameHandler: SnapshotHandler.FrameHandler
   private var testName: TestName? = null
@@ -57,25 +92,11 @@ public class Paparazzi @JvmOverloads constructor(
   override fun apply(base: Statement, description: Description): Statement {
     return object : Statement() {
       override fun evaluate() {
-        sdk = PaparazziSdk(
-          environment = environment,
-          deviceConfig = deviceConfig,
-          theme = theme,
-          renderingMode = renderingMode,
-          appCompatEnabled = appCompatEnabled,
-          renderExtensions = renderExtensions,
-          supportsRtl = supportsRtl,
-          showSystemUi = showSystemUi,
-          validateAccessibility = validateAccessibility,
-          onNewFrame = { frameHandler.handle(it) },
-          useDeviceResolution = useDeviceResolution
-        )
-        sdk.setup()
-        prepare(description)
+        setup(testName = description.toTestName())
         try {
           base.evaluate()
         } finally {
-          close()
+          teardown()
         }
       }
     }
@@ -86,6 +107,32 @@ public class Paparazzi @JvmOverloads constructor(
     sdk.prepare()
   }
 
+  public fun setup(testName: TestName) {
+    sdk = PaparazziSdk(
+      environment = environment,
+      deviceConfig = deviceConfig,
+      theme = theme,
+      renderingMode = renderingMode,
+      appCompatEnabled = appCompatEnabled,
+      renderExtensions = renderExtensions,
+      supportsRtl = supportsRtl,
+      showSystemUi = showSystemUi,
+      validateAccessibility = validateAccessibility,
+      onNewFrame = { frameHandler.handle(it) },
+      useDeviceResolution = useDeviceResolution
+    )
+    sdk.setup()
+    this.testName = testName
+    sdk.prepare()
+  }
+
+  public fun teardown() {
+    testName = null
+    sdk.teardown()
+    snapshotHandler.close()
+  }
+
+  @Deprecated("Please use teardown() instead.")
   public fun close() {
     testName = null
     sdk.teardown()
@@ -107,6 +154,25 @@ public class Paparazzi @JvmOverloads constructor(
       frameHandler = handler
       sdk.snapshot(view, offsetMillis)
     }
+  }
+
+  public fun gif(
+    name: String? = null,
+    start: Long = 0L,
+    end: Long = 500L,
+    fps: Int = 30,
+    composable: @Composable () -> Unit
+  ) {
+    gif(
+      view = ComposeView(context).apply {
+        layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
+        setContent(composable)
+      },
+      name = name,
+      start = start,
+      end = end,
+      fps = fps
+    )
   }
 
   @JvmOverloads
@@ -152,7 +218,7 @@ public class Paparazzi @JvmOverloads constructor(
       if (isVerifying) {
         SnapshotVerifier(maxPercentDifference)
       } else {
-        HtmlReportWriter()
+        HtmlReportWriter(maxPercentDifference = maxPercentDifference)
       }
   }
 }

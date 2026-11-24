@@ -199,8 +199,8 @@ internal abstract class MultiResourceRepository internal constructor(displayName
 
     private var values: Values? = null
 
-    override fun get(key: String?): List<ResourceItem> {
-      val items: List<ResourceItem>? = key?.let { map[key] }
+    override fun get(key: String): List<ResourceItem> {
+      val items: List<ResourceItem>? = map[key]
       return items ?: ImmutableList.of()
     }
 
@@ -302,7 +302,7 @@ internal abstract class MultiResourceRepository internal constructor(displayName
       return !multimap.isEmpty
     }
 
-    override fun replaceValues(key: String?, values: Iterable<ResourceItem>): List<ResourceItem> =
+    override fun replaceValues(key: String, values: Iterable<ResourceItem>): List<ResourceItem> =
       throw UnsupportedOperationException()
 
     override fun asMap(): Map<String, Collection<ResourceItem>> = map

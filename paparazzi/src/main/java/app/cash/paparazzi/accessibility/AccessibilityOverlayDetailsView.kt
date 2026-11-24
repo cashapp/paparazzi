@@ -24,6 +24,7 @@ import android.text.TextPaint
 import android.text.TextUtils
 import android.util.TypedValue
 import android.widget.FrameLayout
+import androidx.core.graphics.withTranslation
 import app.cash.paparazzi.accessibility.RenderSettings.DEFAULT_TEXT_COLOR
 import app.cash.paparazzi.accessibility.RenderSettings.toColorInt
 import java.lang.Float.max
@@ -37,7 +38,7 @@ internal class AccessibilityOverlayDetailsView(context: Context) : FrameLayout(c
   private val textPaint = Paint().apply {
     style = Paint.Style.FILL
     color = DEFAULT_TEXT_COLOR.toColorInt()
-    textSize = context.sp(RenderSettings.DEFAULT_TEXT_SIZE)
+    textSize = context.dip(RenderSettings.DEFAULT_TEXT_SIZE)
   }
   private val margin = context.dip(8f)
   private val innerMargin = margin / 2f
@@ -69,7 +70,7 @@ internal class AccessibilityOverlayDetailsView(context: Context) : FrameLayout(c
       canvas.drawRoundRect(badge, cornerRadius, cornerRadius, paint)
       canvas.save()
 
-      val text = it.contentDescription
+      val text = it.legendText
       val textX = badge.right + innerMargin
       val textY = badge.top
       val textLayoutWidth = (width - textX).toInt()
@@ -78,22 +79,13 @@ internal class AccessibilityOverlayDetailsView(context: Context) : FrameLayout(c
         .obtain(text, 0, text.length, textPaint, textLayoutWidth)
         .setEllipsize(TextUtils.TruncateAt.END)
         .build()
-      canvas.save()
-
-      canvas.translate(textX, textY)
-      textLayout.draw(canvas)
-      canvas.restore()
+      canvas.withTranslation(textX, textY) {
+        textLayout.draw(this)
+      }
 
       lastYCoord = max(badge.bottom + margin, textY + textLayout.height.toFloat())
     }
   }
-
-  private fun Context.sp(value: Float): Float =
-    TypedValue.applyDimension(
-      TypedValue.COMPLEX_UNIT_SP,
-      value,
-      resources.displayMetrics
-    )
 
   private fun Context.dip(value: Float): Float =
     TypedValue.applyDimension(

@@ -22,10 +22,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import app.cash.paparazzi.annotations.Paparazzi
 import app.cash.paparazzi.sample.ResourcesDemoView.Companion.plurals
 
 const val IMAGE_SIZE = 120f
 
+@Paparazzi
 @Preview
 @Composable
 fun ResourcesDemo() {

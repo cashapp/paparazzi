@@ -9,24 +9,15 @@ import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
-import app.cash.paparazzi.internal.ImageUtils
+import app.cash.paparazzi.internal.differs.OffByTwo
 import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.TemporaryFolder
-import java.awt.image.BufferedImage
-import java.io.File
-import javax.imageio.ImageIO
 
 class RenderExtensionTest {
   @get:Rule
-  val tempDir = TemporaryFolder()
-
-  private val snapshotHandler = TestSnapshotVerifier()
-
-  @get:Rule
   val paparazzi = Paparazzi(
     deviceConfig = DeviceConfig.NEXUS_5,
-    snapshotHandler = snapshotHandler,
+    snapshotHandler = SnapshotVerifier(maxPercentDifference = 0.01, differ = OffByTwo),
     renderExtensions = setOf(
       WrappedRenderExtension(Color.DKGRAY),
       WrappedRenderExtension(Color.RED),
@@ -70,29 +61,6 @@ class RenderExtensionTest {
         text = "Button Sample"
       }
     )
-  }
-
-  private inner class TestSnapshotVerifier : SnapshotHandler {
-    override fun newFrameHandler(snapshot: Snapshot, frameCount: Int, fps: Int): SnapshotHandler.FrameHandler {
-      return object : SnapshotHandler.FrameHandler {
-        override fun handle(image: BufferedImage) {
-          val expected = File("src/test/resources/${snapshot.name}.png")
-          ImageUtils.assertImageSimilar(
-            relativePath = expected.path,
-            image = image,
-            goldenImage = ImageIO.read(expected),
-            maxPercentDifferent = 0.1,
-            failureDir = File("src/test/resources/${snapshot.name}").apply {
-              mkdirs()
-            }
-          )
-        }
-
-        override fun close() = Unit
-      }
-    }
-
-    override fun close() = Unit
   }
 }
 

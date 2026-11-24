@@ -15,6 +15,7 @@
  */
 package app.cash.paparazzi.internal.apng
 
+import app.cash.paparazzi.Differ
 import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.ImageUtils.resize
 import okio.FileSystem
@@ -31,31 +32,42 @@ internal class ApngVerifier(
   private val frameCount: Int,
   private val maxPercentDifference: Double,
   private val fileSystem: FileSystem = FileSystem.SYSTEM,
-  private val withErrorText: Boolean = true
+  private val withErrorText: Boolean = true,
+  private val differ: Differ
 ) : Closeable {
+  init {
+    // Validate before the pngReader initializer below opens the golden file, so a bad fps
+    // does not leak an open file handle.
+    require(fps > 0) { "fps must be positive, was: $fps" }
+  }
+
   private val pngReader = ApngReader(fileSystem.openReadOnly(goldenFilePath))
   private val blankFrame by lazy { createBlankFrame(pngReader.width, pngReader.height) }
 
   private var deltaWriter: ApngWriter? = null
-  private var commonFrameRate: Int = -1
-  private var actualDeltasPerFrame: Int = 1
-  private var expectedDeltasPerFrame: Int = 1
+  private val goldenFps: Int
+  private val commonFrameRate: Int
+  private val actualDeltasPerFrame: Int
+  private val expectedDeltasPerFrame: Int
   private var currentGoldenFrame: BufferedImage?
   private var invalidFrames = 0
 
   init {
     currentGoldenFrame = pngReader.readNextFrame()
-    commonFrameRate = leastCommonMultiple(fps, pngReader.getFps())
+    // A still golden has no animation chunks, so it records no fps. Any fps describes the same
+    // single frame, and 0 would divide by zero below.
+    goldenFps = pngReader.getFps().takeIf { it > 0 } ?: fps
+    commonFrameRate = leastCommonMultiple(fps, goldenFps)
     actualDeltasPerFrame = commonFrameRate / fps
-    expectedDeltasPerFrame = commonFrameRate / pngReader.getFps()
-    if (frameCount != pngReader.frameCount || fps != pngReader.getFps()) {
+    expectedDeltasPerFrame = commonFrameRate / goldenFps
+    if (frameCount != pngReader.frameCount || fps != goldenFps) {
       deltaWriter = ApngWriter(deltaFilePath, commonFrameRate, fileSystem)
     }
   }
 
   fun verifyFrame(image: BufferedImage) {
     val (expectedFrame, actualFrame) = resizeMaxBounds(currentGoldenFrame ?: blankFrame, image)
-    val (deltaImage, percentDifferent) = ImageUtils.compareImages(expectedFrame, actualFrame)
+    val (deltaImage, percentDifferent) = ImageUtils.compareImages(expectedFrame, actualFrame, differ)
     if (percentDifferent > maxPercentDifference) {
       if (deltaWriter == null) {
         deltaWriter = pngReader.initializeWriter()
@@ -79,7 +91,7 @@ internal class ApngVerifier(
       if (writer.frameCount % expectedDeltasPerFrame == 0) {
         currentGoldenFrame = pngReader.readNextFrame()
         val (expectedFrame, actualFrame) = resizeMaxBounds(currentGoldenFrame ?: blankFrame, image)
-        currentDelta = ImageUtils.compareImages(expectedFrame, actualFrame).first
+        currentDelta = ImageUtils.compareImages(expectedFrame, actualFrame, differ).first
       }
     }
   }
@@ -88,7 +100,7 @@ internal class ApngVerifier(
     val deltaWriter = deltaWriter ?: return
     currentGoldenFrame?.let { lastFrame ->
       val (expectedFrame, actualFrame) = resizeMaxBounds(lastFrame, blankFrame)
-      val (currentDelta) = ImageUtils.compareImages(expectedFrame, actualFrame)
+      val (currentDelta) = ImageUtils.compareImages(expectedFrame, actualFrame, differ)
 
       val times = expectedDeltasPerFrame - (deltaWriter.frameCount % expectedDeltasPerFrame)
       repeat(times) { deltaWriter.writeImage(currentDelta) }
@@ -98,7 +110,8 @@ internal class ApngVerifier(
     while (!pngReader.isFinished()) {
       val (deltaImage) = ImageUtils.compareImages(
         goldenImage = pngReader.readNextFrame()!!,
-        image = blankFrame
+        image = blankFrame,
+        differ = differ
       )
       repeat(expectedDeltasPerFrame) { deltaWriter.writeImage(deltaImage) }
       invalidFrames++
@@ -107,11 +120,11 @@ internal class ApngVerifier(
     val error = buildString {
       if (invalidFrames >= 1) {
         appendLine(
-          "$invalidFrames frames differed by more than %.1f%%".format(maxPercentDifference)
+          "$invalidFrames frames differed by more than %f%%".format(maxPercentDifference)
         )
       }
-      if (pngReader.getFps() != fps) {
-        appendLine("Mismatched video fps expected: ${pngReader.getFps()} actual: $fps")
+      if (goldenFps != fps) {
+        appendLine("Mismatched video fps expected: $goldenFps actual: $fps")
       }
       if (pngReader.frameCount != frameCount) {
         appendLine("Mismatched frame count expected: ${pngReader.frameCount} actual: $frameCount")
@@ -142,7 +155,8 @@ internal class ApngVerifier(
         val nextFrame = readNextFrame() ?: blankFrame
         val (deltaImage) = ImageUtils.compareImages(
           goldenImage = nextFrame,
-          image = nextFrame
+          image = nextFrame,
+          differ = differ
         )
 
         writeImage(deltaImage)
@@ -185,20 +199,11 @@ internal class ApngVerifier(
   }
 
   private fun leastCommonMultiple(first: Int, second: Int): Int {
-    return (first * second) / greatestCommonDenominator(first, second)
+    return first / greatestCommonDenominator(first, second) * second
   }
 
-  private fun greatestCommonDenominator(first: Int, second: Int): Int {
-    var first = first
-    var second = second
-    while (first != second) {
-      if (first > second) {
-        first -= second
-      } else {
-        second -= first
-      }
-    }
-    return first
+  private tailrec fun greatestCommonDenominator(first: Int, second: Int): Int {
+    return if (second == 0) first else greatestCommonDenominator(second, first % second)
   }
 
   private fun BufferedImage.updateSize(targetWidth: Int, targetHeight: Int) =

@@ -1,25 +1,21 @@
 plugins {
   id 'com.android.library'
-  id 'kotlin-android'
   id 'app.cash.paparazzi'
 }
 
 android {
-  namespace 'app.cash.paparazzi.plugin.test'
-  compileSdk libs.versions.compileSdk.get() as int
+  namespace = 'app.cash.paparazzi.plugin.test'
+  compileSdk = libs.versions.compileSdk.get() as int
   defaultConfig {
-    minSdk libs.versions.minSdk.get() as int
+    minSdk = libs.versions.minSdk.get() as int
   }
   compileOptions {
     sourceCompatibility = libs.versions.javaTarget.get()
     targetCompatibility = libs.versions.javaTarget.get()
   }
-  kotlinOptions {
-    jvmTarget = libs.versions.javaTarget.get()
-  }
 }
 
 dependencies {
-  testImplementation "org.robolectric:robolectric:4.13"
+  testImplementation "org.robolectric:robolectric:4.18.1"
 }
 

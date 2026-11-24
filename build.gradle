@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 buildscript {
   repositories {
     mavenCentral()
@@ -10,6 +12,7 @@ buildscript {
     classpath libs.plugin.kotlin
     classpath libs.plugin.kotlin.compose
     classpath libs.plugin.kotlinApiDump
+    classpath libs.plugin.ksp
     classpath libs.plugin.android
     classpath libs.plugin.mavenPublish
     classpath libs.plugin.dokka
@@ -26,8 +29,14 @@ buildscript {
 
 apply plugin: 'binary-compatibility-validator'
 
+def testProjectProp = System.getProperty("app.cash.paparazzi.testProjectNames")
 apiValidation {
   ignoredProjects += ['sample']
+
+  if (testProjectProp != null) {
+    def testProjectNames = testProjectProp.split(",").toList()
+    ignoredProjects += testProjectNames
+  }
 }
 
 subprojects {
@@ -44,10 +53,10 @@ subprojects {
   tasks.withType(Test).configureEach {
     testLogging {
       events "passed", "failed", "skipped", "standardOut", "standardError"
-      exceptionFormat "full"
-      showExceptions true
-      showStackTraces true
-      showCauses true
+      exceptionFormat = "full"
+      showExceptions = true
+      showStackTraces = true
+      showCauses = true
     }
   }
 
@@ -57,8 +66,8 @@ subprojects {
   }
 
   tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile).configureEach {
-    kotlinOptions {
-      jvmTarget = libs.versions.javaTarget.get()
+    compilerOptions {
+      jvmTarget = JvmTarget.fromTarget(libs.versions.javaTarget.get())
     }
   }
 
@@ -69,9 +78,16 @@ subprojects {
   plugins.withId('com.vanniktech.maven.publish') {
     publishing {
       repositories {
+        def localMavenDir = rootProject.layout.buildDirectory.dir("localMaven")
         maven {
           name = "projectLocalMaven"
-          url = rootProject.layout.buildDirectory.dir("localMaven")
+          url = localMavenDir
+        }
+        publications.configureEach {
+          tasks.named("publish${name.capitalize()}PublicationToProjectLocalMavenRepository").configure {
+	          // Ensure task is up to date, when there are no input changes, fo this we need to declare outputs.
+            outputs.dir(localMavenDir).withPropertyName("repository")
+          }
         }
         /**
          * Want to push to an internal repository for testing?

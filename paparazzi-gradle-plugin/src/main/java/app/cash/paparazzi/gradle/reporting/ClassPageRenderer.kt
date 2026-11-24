@@ -5,42 +5,15 @@ import org.gradle.api.tasks.testing.TestOutputEvent
 import org.gradle.internal.html.SimpleHtmlWriter
 import org.gradle.internal.xml.SimpleMarkupWriter
 import org.gradle.reporting.CodePanelRenderer
-import java.io.File
 import java.io.IOException
-import kotlin.io.encoding.Base64
-import kotlin.io.encoding.ExperimentalEncodingApi
 
 internal class ClassPageRenderer(
   private val resultsProvider: TestResultsProvider,
-  isVerifyRun: Boolean,
-  failureDir: File
+  diffRegistryFactory: () -> Map<Pair<String, String>, DiffImage>
 ) : PageRenderer<ClassTestResults>() {
   private val codePanelRenderer = CodePanelRenderer()
   private val imagePanelRenderer = ImagePanelRenderer()
-
-  @OptIn(ExperimentalEncodingApi::class)
-  private val diffImages: List<DiffImage> =
-    if (isVerifyRun && failureDir.exists()) {
-      failureDir.listFiles()
-        ?.filter { it.name.startsWith("delta-") }
-        ?.map { diff ->
-          // TODO: read from failure diff metadata file instead of brittle parsing
-          val nameSegments = diff.name.split("_", limit = 3)
-          val testClassPackage = nameSegments[0].replace("delta-", "")
-          val testClass = "$testClassPackage.${nameSegments[1]}"
-          val testMethodWithLabel = nameSegments[2].removeSuffix(".png")
-
-          return@map DiffImage(
-            testClass = testClass,
-            testMethod = testMethodWithLabel,
-            path = diff.path,
-            base64EncodedImage = Base64.encode(diff.readBytes())
-          )
-        }
-        ?.toList() ?: emptyList()
-    } else {
-      emptyList()
-    }
+  private val diffImages: Map<Pair<String, String>, DiffImage> = diffRegistryFactory.invoke()
 
   @Throws(IOException::class)
   override fun renderBreadcrumbs(htmlWriter: SimpleHtmlWriter) {
@@ -122,18 +95,20 @@ internal class ClassPageRenderer(
   @Throws(IOException::class)
   override fun renderFailures(htmlWriter: SimpleHtmlWriter) {
     for (test in results.failures) {
+      val testId = test.id.toString()
       htmlWriter
         .startElement("div")
         .attribute("class", "test")
         .startElement("a")
-        .attribute("name", test.id.toString()).characters("")
+        .attribute("name", testId)
+        .characters("")
         .endElement() // browsers dont understand <a name="..."/>
         .startElement("h3")
         .attribute("class", test.statusClass)
         .characters(test.displayName)
         .endElement()
       for (failure in test.failures) {
-        val diffImage = diffImages.find { it.testClass == results.name && it.testMethod == test.name }
+        val diffImage = diffImages[results.name to test.name]
         if (diffImage != null) {
           imagePanelRenderer.render(diffImage, htmlWriter)
         }
@@ -144,7 +119,10 @@ internal class ClassPageRenderer(
           } else {
             failure.stackTrace
           }
-        codePanelRenderer.render(message, htmlWriter)
+        codePanelRenderer.render(
+          CodePanelRenderer.Data(message, "$testId-failure"),
+          htmlWriter
+        )
       }
       htmlWriter.endElement()
     }
@@ -162,39 +140,82 @@ internal class ClassPageRenderer(
       }
     )
     val classId = model.id
-    if (resultsProvider.hasOutput(classId, TestOutputEvent.Destination.StdOut)) {
+    var hasStdOutOutput = false
+    var hasStdErrOutput = false
+    resultsProvider.visitClasses { classResult ->
+      if (classId == classResult.id) {
+        classResult.results.forEach { testMethodResult ->
+          hasStdOutOutput = hasStdOutOutput || resultsProvider.hasOutput(
+            classId,
+            testMethodResult.id,
+            TestOutputEvent.Destination.StdOut
+          )
+          hasStdErrOutput = hasStdErrOutput || resultsProvider.hasOutput(
+            classResult.id,
+            testMethodResult.id,
+            TestOutputEvent.Destination.StdErr
+          )
+        }
+      }
+    }
+
+    if (hasStdOutOutput) {
       addTab(
         "Standard output",
         object : ErroringAction<SimpleHtmlWriter>() {
           @Throws(IOException::class)
           override fun doExecute(htmlWriter: SimpleHtmlWriter) {
+            val codeId = "class-stdout"
             htmlWriter
               .startElement("span")
               .attribute("class", "code")
               .startElement("pre")
+              .attribute("id", codeId)
               .characters("")
             resultsProvider.writeAllOutput(classId, TestOutputEvent.Destination.StdOut, htmlWriter)
-            htmlWriter.endElement().endElement()
+            htmlWriter.endElement()
+            addClipboardCopyButtonIfSupported(htmlWriter, codeId)
+            htmlWriter.endElement()
           }
         }
       )
     }
-    if (resultsProvider.hasOutput(classId, TestOutputEvent.Destination.StdErr)) {
+    if (hasStdErrOutput) {
       addTab(
         "Standard error",
         object : ErroringAction<SimpleHtmlWriter>() {
           @Throws(Exception::class)
           override fun doExecute(htmlWriter: SimpleHtmlWriter) {
+            val codeId = "class-stderr"
             htmlWriter
               .startElement("span")
               .attribute("class", "code")
               .startElement("pre")
+              .attribute("id", codeId)
               .characters("")
             resultsProvider.writeAllOutput(classId, TestOutputEvent.Destination.StdErr, htmlWriter)
-            htmlWriter.endElement().endElement()
+            htmlWriter.endElement()
+            addClipboardCopyButtonIfSupported(htmlWriter, codeId)
+            htmlWriter.endElement()
           }
         }
       )
     }
+  }
+
+  private fun addClipboardCopyButtonIfSupported(htmlWriter: SimpleHtmlWriter, codeId: String) {
+    addClipboardCopyButtonMethod?.invoke(null, htmlWriter, codeId)
+  }
+
+  // Workaround for Gradle 8.x users: remove once ported to the new testing infra
+  private companion object {
+    // Gradle 8 does not expose HtmlWriterTools, so copy buttons are best-effort.
+    val addClipboardCopyButtonMethod = runCatching {
+      Class.forName("org.gradle.reporting.HtmlWriterTools").getMethod(
+        "addClipboardCopyButton",
+        SimpleHtmlWriter::class.java,
+        String::class.java
+      )
+    }.getOrNull()
   }
 }

@@ -8,15 +8,18 @@ trim_trailing_whitespace = true
 insert_final_newline = true
 end_of_line = lf
 
-[*.{kt, kts}]
+[*.{kt,kts}]
 ktlint_code_style = intellij_idea
 ij_kotlin_imports_layout = *,java.**,javax.**,kotlin.**,kotlinx.**,^
 ij_kotlin_allow_trailing_comma = false
 ij_kotlin_allow_trailing_comma_on_call_site = false
 
 ktlint_standard_argument-list-wrapping = disabled
+ktlint_standard_blank-line-between-when-conditions = disabled
 ktlint_standard_class-signature = disabled
 ktlint_standard_function-expression-body = disabled
+# Use KDoc blocks on init{} and inner code blocks to have better code navigation in IntelliJ IDE
+ktlint_standard_kdoc = disabled
 ktlint_function_signature_body_expression_wrapping = multiline
 ktlint_function_naming_ignore_when_annotated_with = Composable
 

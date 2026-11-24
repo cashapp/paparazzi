@@ -33,25 +33,61 @@ class LaunchViewTest {
 
 See the [project website][paparazzi] for documentation and APIs.
 
+Using JUnit 5
+-------
+
+```kotlin
+lateinit var paparazzi: Paparazzi
+
+@BeforeEach
+fun setup(testInfo: TestInfo) {
+  paparazzi = Paparazzi().apply {
+    setup(
+      testName = TestName(
+        packageName = testInfo.testClass.get().`package`?.name.orEmpty(),
+        className = testInfo.testClass.get().simpleName,
+        methodName = testInfo.testMethod.get().name
+      )
+    )
+  }
+}
+
+@AfterEach
+fun tearDown() {
+  paparazzi.teardown()
+}
+
+@Test
+fun snapshot_example() {
+  val view = paparazzi.inflate<TextView>(android.R.layout.simple_list_item_1).apply {
+    text = "Hello Paparazzi"
+    textSize = 24f
+    gravity = Gravity.CENTER
+  }
+
+  paparazzi.snapshot(view)
+}
+```
+
 Tasks
 -------
 
 ```bash
-./gradlew sample:testDebug
+./gradlew :sample:testDebug
 ```
 
 Runs tests and generates an HTML report at `sample/build/reports/paparazzi/` showing all
 test runs and snapshots.
 
 ```bash
-./gradlew sample:recordPaparazziDebug
+./gradlew :sample:recordPaparazziDebug
 ```
 
 Saves snapshots as golden values to a predefined source-controlled location
 (defaults to `src/test/snapshots`).
 
 ```bash
-./gradlew sample:verifyPaparazziDebug
+./gradlew :sample:verifyPaparazziDebug
 ```
 
 Runs tests and verifies against previously-recorded golden values. Failures generate diffs at `sample/build/paparazzi/failures`.
@@ -68,6 +104,8 @@ git config core.hooksPath  # optional, confirm where your git hooks will be inst
 git lfs install --local
 git lfs track "**/snapshots/**/*.png"
 git add .gitattributes
+# Optional to improve git checkout performance
+git config lfs.setlockablereadonly false
 ```
 
 On CI, you might set up something like:
@@ -148,7 +186,7 @@ buildscript {
     google()
   }
   dependencies {
-    classpath 'app.cash.paparazzi:paparazzi-gradle-plugin:1.3.5'
+    classpath 'app.cash.paparazzi:paparazzi-gradle-plugin:2.0.0-alpha05.1'
   }
 }
 
@@ -158,17 +196,17 @@ apply plugin: 'app.cash.paparazzi'
 Using the plugins DSL:
 ```groovy
 plugins {
-  id 'app.cash.paparazzi' version '1.3.5'
+  id 'app.cash.paparazzi' version '2.0.0-alpha05.1'
 }
 ```
 
-Snapshots of the development version are available in [Sonatype's `snapshots` repository][snap].
+Snapshots of the development version are available in [the Central Portal Snapshots repository][snap].
 
 ```groovy
 repositories {
   // ...
   maven {
-    url 'https://oss.sonatype.org/content/repositories/snapshots/'
+    url 'https://central.sonatype.com/repository/maven-snapshots/'
   }
 }
 ```
@@ -196,4 +234,4 @@ limitations under the License.
  [sample]: https://github.com/cashapp/paparazzi/tree/master/sample
  [lfs]: https://git-lfs.github.com/
  [changelog]: https://cashapp.github.io/paparazzi/changelog/
- [snap]: https://oss.sonatype.org/content/repositories/snapshots/app/cash/paparazzi/
+ [snap]: https://central.sonatype.com/service/rest/repository/browse/maven-snapshots/app/cash/paparazzi/

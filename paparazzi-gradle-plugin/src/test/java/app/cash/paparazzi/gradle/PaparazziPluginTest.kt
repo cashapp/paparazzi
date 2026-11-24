@@ -19,6 +19,7 @@ import org.junit.Ignore
 import org.junit.Test
 import java.io.File
 
+@Suppress("ktlint:standard:max-line-length")
 class PaparazziPluginTest {
   private val filesToDelete = mutableListOf<File>()
 
@@ -60,6 +61,14 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun supportsJunitJupiterLibrary() {
+    val fixtureRoot = File("src/test/projects/supports-junit-jupiter")
+
+    gradleRunner.withArguments("verifyPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+  }
+
+  @Test
   fun missingSupportedPlugins() {
     val fixtureRoot = File("src/test/projects/missing-supported-plugins")
 
@@ -69,7 +78,7 @@ class PaparazziPluginTest {
 
     assertThat(result.task(":preparePaparazziDebugResources")).isNull()
     assertThat(result.output).contains(
-      "One of com.android.application, com.android.library, com.android.dynamic-feature must be applied for Paparazzi to work properly."
+      "One of com.android.application, com.android.library, com.android.dynamic-feature, com.android.kotlin.multiplatform.library must be applied for Paparazzi to work properly."
     )
   }
 
@@ -85,27 +94,26 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun kotlinMultiplatformPluginWithAndroidTarget() {
-    val fixtureRoot = File("src/test/projects/multiplatform-plugin-with-android")
+  fun kotlinMultiplatformPluginWithNewAndroidLibraryPlugin() {
+    val fixtureRoot = File("src/test/projects/multiplatform-android-plugin")
 
     val result = gradleRunner
-      .withArguments("preparePaparazziDebugResources", "--stacktrace")
+      .withArguments("verifyPaparazziAndroidMain", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
 
-    assertThat(result.task(":preparePaparazziDebugResources")).isNotNull()
+    assertThat(result.task(":preparePaparazziAndroidMainResources")).isNotNull()
   }
 
   @Test
-  fun kotlinMultiplatformPluginWithoutAndroidTarget() {
-    val fixtureRoot = File("src/test/projects/multiplatform-plugin-without-android")
+  fun erroneouslyConfiguredInCommonTest() {
+    val fixtureRoot = File("src/test/projects/multiplatform-paparazzi-in-commontest")
 
     val result = gradleRunner
       .withArguments("preparePaparazziDebugResources", "--stacktrace")
       .runFixture(fixtureRoot) { buildAndFail() }
 
-    assertThat(result.task(":preparePaparazziDebugResources")).isNull()
     assertThat(result.output).contains(
-      "There must be an Android target configured when using Paparazzi with the Kotlin Multiplatform Plugin"
+      "Paparazzi must not be declared in 'commonTestImplementation', as it should only resolve on Android JVM tests."
     )
   }
 
@@ -221,6 +229,16 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun resourceMultiModule() {
+    val fixtureRoot = File("src/test/projects/resource-multi-module")
+
+    gradleRunner
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .forwardOutput()
+      .runFixture(fixtureRoot) { build() }
+  }
+
+  @Test
   fun invalidChars() {
     val fixtureRoot = File("src/test/projects/invalid-chars")
 
@@ -233,10 +251,10 @@ class PaparazziPluginTest {
     assertThat(result.output).doesNotContain("InvalidCharsTest > goodValues[MULTIPLICATION] FAILED")
     assertThat(result.output).doesNotContain("InvalidCharsTest > goodValues[DIVISION] FAILED")
     assertThat(result.output).contains("InvalidCharsTest > badSnapshotName FAILED")
-    assertThat(result.output).doesNotContain("InvalidCharsTest > badValues[+] FAILED")
-    assertThat(result.output).doesNotContain("InvalidCharsTest > badValues[-] FAILED")
-    assertThat(result.output).contains("InvalidCharsTest > badValues[*] FAILED")
-    assertThat(result.output).contains("InvalidCharsTest > badValues[/] FAILED")
+    assertThat(result.output).doesNotContain("InvalidCharsTest > badValues[char=+] FAILED")
+    assertThat(result.output).doesNotContain("InvalidCharsTest > badValues[char=-] FAILED")
+    assertThat(result.output).contains("InvalidCharsTest > badValues[char=*] FAILED")
+    assertThat(result.output).contains("InvalidCharsTest > badValues[char=/] FAILED")
   }
 
   @Test
@@ -276,6 +294,22 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun maxPercentDifferenceDefaultSet() {
+    val fixtureRoot = File("src/test/projects/max-percent-difference-default-set")
+    // this is only a warning message, so subsequent runs would otherwise be UP-TO-DATE
+    fixtureRoot.resolve("build").registerForDeletionOnExit()
+
+    val result = gradleRunner
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    with(result.task(":testDebugUnitTest")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(SUCCESS)
+    }
+  }
+
+  @Test
   fun cacheable() {
     val fixtureRoot = File("src/test/projects/cacheable")
     val buildDir = fixtureRoot.resolve("build").registerForDeletionOnExit()
@@ -300,6 +334,68 @@ class PaparazziPluginTest {
       assertThat(this).isNotNull()
       assertThat(this!!.outcome).isEqualTo(FROM_CACHE)
     }
+  }
+
+  @Test
+  fun cacheableRelocatable() {
+    // Absolute paths in the cache key would strand the first checkout's entries.
+    val ciCheckout = File("src/test/projects/cacheable")
+    ciCheckout.resolve("build").registerForDeletionOnExit()
+    // A sibling: the fixture's settings.gradle finds the shared test settings by relative path.
+    val localCheckout = ciCheckout.parentFile.resolve("cacheable-relocated").registerForDeletionOnExit()
+    localCheckout.deleteRecursively()
+    ciCheckout.walkTopDown()
+      .onEnter { it.name !in setOf("build", "build-cache", ".gradle") }
+      .filter { it.isFile }
+      .forEach { it.copyTo(localCheckout.resolve(it.toRelativeString(ciCheckout))) }
+
+    val sharedCache = File("build/tmp/cacheableRelocatable").registerForDeletionOnExit()
+    sharedCache.deleteRecursively()
+    val arguments = arrayOf(
+      "testDebug",
+      "--build-cache",
+      "-Dpaparazzi.test.buildCacheDir=${sharedCache.absolutePath}",
+      "--stacktrace"
+    )
+
+    val ciRun = gradleRunner
+      .withArguments(*arguments)
+      .runFixture(ciCheckout) { build() }
+
+    with(ciRun.task(":preparePaparazziDebugResources")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isNotEqualTo(FROM_CACHE)
+    }
+    with(ciRun.task(":testDebugUnitTest")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isNotEqualTo(FROM_CACHE)
+    }
+
+    val localRun = gradleRunner
+      .withArguments(*arguments)
+      .runFixture(localCheckout) { build() }
+
+    with(localRun.task(":preparePaparazziDebugResources")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(FROM_CACHE)
+    }
+    with(localRun.task(":testDebugUnitTest")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(FROM_CACHE)
+    }
+
+    // Restored outputs must not carry ciCheckout's path. The trailing separator matters:
+    // 'cacheable' is a prefix of 'cacheable-relocated'.
+    val restored = listOf("build/intermediates/paparazzi", "build/reports/paparazzi", "build/paparazzi")
+      .flatMap { localCheckout.resolve(it).walkTopDown() }
+      .filter { it.isFile }
+    // Keeps the check below from going vacuous if these paths move.
+    assertThat(restored).isNotEmpty()
+
+    val leaked = restored
+      .filter { it.readText().contains("${ciCheckout.absolutePath}${File.separator}") }
+      .map { it.toRelativeString(localCheckout) }
+    assertThat(leaked).isEmpty()
   }
 
   @Test
@@ -406,13 +502,13 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun rerunOnResourceChange() {
+  fun rerunRecordOnResourceChange() {
     val fixtureRoot = File("src/test/projects/rerun-resource-change")
 
     val snapshotsDir = File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
     val snapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_RecordTest_record.png")
 
-    val valuesDir = File(fixtureRoot, "src/main/res/values/").registerForDeletionOnExit()
+    val valuesDir = File(fixtureRoot, "src/main/res/values").registerForDeletionOnExit()
     val destResourceFile = File(valuesDir, "colors.xml")
     val firstResourceFile = File(fixtureRoot, "src/test/resources/colors1.xml")
     val secondResourceFile = File(fixtureRoot, "src/test/resources/colors2.xml")
@@ -454,13 +550,58 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun rerunVerifyOnResourceChange() {
+    val fixtureRoot = File("src/test/projects/rerun-resource-change")
+
+    val snapshotsDir = File(fixtureRoot, "src/test/snapshots")
+    snapshotsDir.deleteRecursively()
+    val valuesDir = File(fixtureRoot, "src/main/res/values")
+    valuesDir.deleteRecursively()
+
+    val destResourceFile = File(valuesDir, "colors.xml")
+    val firstResourceFile = File(fixtureRoot, "src/test/resources/colors1.xml")
+    val secondResourceFile = File(fixtureRoot, "src/test/resources/colors2.xml")
+
+    // Original resource
+    firstResourceFile.copyTo(destResourceFile, overwrite = false)
+
+    // Setup
+    gradleRunner
+      .withArguments("recordPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    // Take 1
+    val firstRunResult = gradleRunner
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    with(firstRunResult.task(":testDebugUnitTest")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(SUCCESS) // not UP-TO-DATE
+    }
+
+    // Update resource
+    secondResourceFile.copyTo(destResourceFile, overwrite = true)
+
+    // Take 2
+    val secondRunResult = gradleRunner
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    with(secondRunResult.task(":testDebugUnitTest")) {
+      assertThat(this).isNotNull()
+      assertThat(this!!.outcome).isEqualTo(TaskOutcome.FAILED) // not UP-TO-DATE
+    }
+  }
+
+  @Test
   fun rerunOnAssetChange() {
     val fixtureRoot = File("src/test/projects/rerun-asset-change")
 
     val snapshotsDir = File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
     val snapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_RecordTest_record.png")
 
-    val assetsDir = File(fixtureRoot, "src/main/assets/").registerForDeletionOnExit()
+    val assetsDir = File(fixtureRoot, "src/main/assets").registerForDeletionOnExit()
     val destAssetFile = File(assetsDir, "secret.txt")
     val firstAssetFile = File(fixtureRoot, "src/test/resources/secret1.txt")
     val secondAssetFile = File(fixtureRoot, "src/test/resources/secret2.txt")
@@ -635,6 +776,38 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun verifyDeletesFailures() {
+    val fixtureRoot = File("src/test/projects/verify-mode-success")
+    val failureDir = File(fixtureRoot, "build/paparazzi/failures/debug").registerForDeletionOnExit()
+    failureDir.mkdirs()
+    val stale = File(failureDir, "stale.txt")
+    stale.writeText("stale")
+
+    val result = gradleRunner
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":testDebugUnitTest")?.outcome).isEqualTo(SUCCESS)
+    assertThat(stale.exists()).isFalse()
+  }
+
+  @Test
+  fun recordPreservesFailures() {
+    val fixtureRoot = File("src/test/projects/verify-mode-success")
+    val failureDir = File(fixtureRoot, "build/paparazzi/failures/debug").registerForDeletionOnExit()
+    failureDir.mkdirs()
+    val stale = File(failureDir, "stale.txt")
+    stale.writeText("stale")
+
+    val result = gradleRunner
+      .withArguments("recordPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":testDebugUnitTest")?.outcome).isEqualTo(SUCCESS)
+    assertThat(stale.exists()).isTrue()
+  }
+
+  @Test
   fun verifyFailure() {
     val fixtureRoot = File("src/test/projects/verify-mode-failure")
 
@@ -644,12 +817,112 @@ class PaparazziPluginTest {
 
     assertThat(result.task(":testDebugUnitTest")).isNotNull()
 
-    val failureDir = File(fixtureRoot, "build/paparazzi/failures").registerForDeletionOnExit()
+    val failureDir = File(fixtureRoot, "build/paparazzi/failures/debug").registerForDeletionOnExit()
     val delta = File(failureDir, "delta-app.cash.paparazzi.plugin.test_VerifyTest_verify.png")
     assertThat(delta.exists()).isTrue()
 
     val goldenImage = File(fixtureRoot, "src/test/resources/expected_delta.png")
     assertThat(delta).isSimilarTo(goldenImage).withDefaultThreshold()
+  }
+
+  @Test
+  fun verifyFailureNativeReportVintage() {
+    val fixtureRoot = File("src/test/projects/verify-mode-failure")
+    File(fixtureRoot, "build").registerForDeletionOnExit()
+
+    val result = gradleRunner
+      .withArguments(
+        "verifyPaparazziDebug",
+        "-Papp.cash.paparazzi.reportType=native",
+        "--stacktrace"
+      )
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    assertThat(result.task(":testDebugUnitTest")).isNotNull()
+
+    assertAttachmentPublished(
+      fixtureRoot,
+      "VerifyTest",
+      "delta-app.cash.paparazzi.plugin.test_VerifyTest_verify.png"
+    )
+  }
+
+  @Test
+  fun verifyFailureNativeReportParameterized() {
+    val fixtureRoot = File("src/test/projects/verify-mode-failure-parameterized")
+    File(fixtureRoot, "build").registerForDeletionOnExit()
+    File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
+
+    gradleRunner
+      .withArguments("recordPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    gradleRunner
+      .withArguments("verifyPaparazziDebug", "-Papp.cash.paparazzi.reportType=native", "--stacktrace")
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    // The file carries Parameterized's `[0]`, which only the descriptor's display name has.
+    assertAttachmentPublished(
+      fixtureRoot,
+      "ParameterizedVerifyTest",
+      "delta-app.cash.paparazzi.plugin.test_ParameterizedVerifyTest_verify[0].png"
+    )
+  }
+
+  @Test
+  fun verifyFailureNativeReportJupiter() {
+    val fixtureRoot = File("src/test/projects/verify-mode-failure-jupiter")
+    File(fixtureRoot, "build").registerForDeletionOnExit()
+    File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
+
+    gradleRunner
+      .withArguments("recordPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    gradleRunner
+      .withArguments(
+        "verifyPaparazziDebug",
+        "-Papp.cash.paparazzi.reportType=native",
+        "-Papp.cash.paparazzi.nativeReportFrameworks=junit5",
+        "--stacktrace"
+      )
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    // Jupiter needs no name mapping: MethodSource reports the same name the SDK used.
+    assertAttachmentPublished(
+      fixtureRoot,
+      "JupiterVerifyTest",
+      "delta-app.cash.paparazzi.plugin.test_JupiterVerifyTest_verify.png"
+    )
+  }
+
+  @Test
+  fun verifyFailureNativeReportMixedFrameworks() {
+    val fixtureRoot = File("src/test/projects/verify-mode-failure-mixed-frameworks")
+    File(fixtureRoot, "build").registerForDeletionOnExit()
+    File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
+
+    gradleRunner
+      .withArguments("recordPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    gradleRunner
+      .withArguments(
+        "verifyPaparazziDebug",
+        "-Papp.cash.paparazzi.reportType=native",
+        "-Papp.cash.paparazzi.nativeReportFrameworks=junit4,junit5",
+        "--stacktrace"
+      )
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    // Both wrappers publish into the same launcher session, so neither may claim the other's diff.
+    for (className in listOf("MixedRuleTest", "MixedJupiterTest")) {
+      assertAttachmentPublished(
+        fixtureRoot,
+        className,
+        "delta-app.cash.paparazzi.plugin.test_${className}_verify.png"
+      )
+    }
   }
 
   @Test
@@ -662,12 +935,56 @@ class PaparazziPluginTest {
 
     assertThat(result.task(":testDebugUnitTest")).isNotNull()
 
-    val failureDir = File(fixtureRoot, "build/paparazzi/failures").registerForDeletionOnExit()
+    val failureDir = File(fixtureRoot, "build/paparazzi/failures/debug").registerForDeletionOnExit()
     val delta = File(failureDir, "delta-app.cash.paparazzi.plugin.test_VerifyTest_verify.png")
     assertThat(delta.exists()).isTrue()
 
     val goldenImage = File(fixtureRoot, "src/test/resources/expected_delta.png")
     assertThat(delta).isSimilarTo(goldenImage).withDefaultThreshold()
+  }
+
+  @Test
+  fun verifySize() {
+    val fixtureRoot = File("src/test/projects/verify-size")
+
+    val result = gradleRunner
+      .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    assertThat(result.task(":testDebugUnitTest")).isNotNull()
+
+    val failureDir = File(fixtureRoot, "build/paparazzi/failures/debug").registerForDeletionOnExit()
+    val delta = File(failureDir, "delta-app.cash.paparazzi.plugin.test_VerifyTest_verify.png")
+    assertThat(delta.exists()).isTrue()
+
+    val goldenImage = File(fixtureRoot, "src/test/resources/expected_delta.png")
+    assertThat(delta).isSimilarTo(goldenImage).withDefaultThreshold()
+  }
+
+  @Test
+  fun verifyMissingGolden() {
+    val fixtureRoot = File("src/test/projects/verify-missing-golden")
+
+    val fileName = "app.cash.paparazzi.plugin.test_VerifyTest_verify.png"
+    val snapshot = File(fixtureRoot, "src/test/snapshots/images/$fileName")
+    assertThat(snapshot.exists()).isFalse()
+
+    val result = gradleRunner
+      .withArguments("verifyPaparazziDebug", "--stacktrace", "--info")
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    assertThat(result.task(":testDebugUnitTest")).isNotNull()
+
+    val failureDir = File(fixtureRoot, "build/paparazzi/failures/debug").registerForDeletionOnExit()
+
+    val golden = File(failureDir, fileName)
+    assertThat(golden.exists()).isTrue()
+
+    val delta = File(failureDir, "delta-$fileName")
+    assertThat(delta.exists()).isTrue()
+
+    val expectedDelta = File(fixtureRoot, "src/test/resources/expected_delta.png")
+    assertThat(delta).isSimilarTo(expectedDelta).withDefaultThreshold()
   }
 
   @Test
@@ -692,7 +1009,7 @@ class PaparazziPluginTest {
 
     assertThat(result.task(":module:testDebugUnitTest")).isNotNull()
 
-    val failureDir = File(moduleRoot, "build/paparazzi/failures").registerForDeletionOnExit()
+    val failureDir = File(moduleRoot, "build/paparazzi/failures/debug").registerForDeletionOnExit()
     val delta = File(failureDir, "delta-app.cash.paparazzi.plugin.test_VerifyTest_verify.png")
     assertThat(delta.exists()).isTrue()
 
@@ -759,11 +1076,27 @@ class PaparazziPluginTest {
       .withArguments("cleanRecordPaparazziDebug", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
 
-    assertThat(result.task(":deletePaparazziSnapshots")).isNotNull()
+    assertThat(result.task(":deleteDebugPaparazziSnapshots")).isNotNull()
     assertThat(result.task(":recordPaparazziDebug")).isNotNull()
 
     assertThat(snapshotToBeDeleted.exists()).isFalse()
     assertThat(snapshotToBeKept.exists()).isTrue()
+  }
+
+  @Test
+  fun cleanRecordParallel() {
+    val fixtureRoot = File("src/test/projects/clean-record-parallel")
+    val snapshotsDir = File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
+    val snapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_CleanRecordParallelTest_record.png")
+
+    val result = gradleRunner
+      .withArguments("cleanRecordPaparazziDebug", "--parallel", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":deleteDebugPaparazziSnapshots")).isNotNull()
+    assertThat(result.task(":recordPaparazziDebug")).isNotNull()
+
+    assertThat(snapshot.exists()).isTrue()
   }
 
   @Test
@@ -812,7 +1145,6 @@ class PaparazziPluginTest {
     assertThat(config.projectResourceDirs).containsExactly(
       "src/main/res",
       "src/debug/res",
-      "build/generated/res/resValues/debug",
       "build/generated/res/extra"
     )
     assertThat(config.moduleResourceDirs).containsExactly(
@@ -821,7 +1153,7 @@ class PaparazziPluginTest {
     )
     assertThat(config.aarExplodedDirs)
       .comparingElementsUsing(MATCHES_PATTERN)
-      .containsExactly("^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/external/res\$")
+      .containsExactly("$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/external/res\$")
   }
 
   @Test
@@ -848,7 +1180,6 @@ class PaparazziPluginTest {
     assertThat(config.projectResourceDirs).containsExactly(
       "src/main/res",
       "src/debug/res",
-      "build/generated/res/resValues/debug",
       "build/generated/res/extra"
     )
     assertThat(config.moduleResourceDirs).containsExactly(
@@ -857,7 +1188,7 @@ class PaparazziPluginTest {
     )
     assertThat(config.aarExplodedDirs)
       .comparingElementsUsing(MATCHES_PATTERN)
-      .containsExactly("^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/external/res\$")
+      .containsExactly("$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/external/res\$")
   }
 
   @Test
@@ -866,7 +1197,7 @@ class PaparazziPluginTest {
     val buildDir = fixtureRoot.resolve("build").registerForDeletionOnExit()
     fixtureRoot.resolve("build-cache").registerForDeletionOnExit()
 
-    val valuesDir = File(fixtureRoot, "src/main/res/values/").registerForDeletionOnExit()
+    val valuesDir = File(fixtureRoot, "src/main/res/values").registerForDeletionOnExit()
     val destResourceFile = File(valuesDir, "colors.xml")
     val firstResourceFile = File(fixtureRoot, "src/test/resources/colors1.xml")
     val secondResourceFile = File(fixtureRoot, "src/test/resources/colors2.xml")
@@ -893,8 +1224,7 @@ class PaparazziPluginTest {
     var config = resourcesFile.loadConfig()
     assertThat(config.projectResourceDirs).containsExactly(
       "src/main/res",
-      "src/debug/res",
-      "build/generated/res/resValues/debug"
+      "src/debug/res"
     )
 
     buildDir.deleteRecursively()
@@ -919,8 +1249,7 @@ class PaparazziPluginTest {
     config = resourcesFile.loadConfig()
     assertThat(config.projectResourceDirs).containsExactly(
       "src/main/res",
-      "src/debug/res",
-      "build/generated/res/resValues/debug"
+      "src/debug/res"
     )
   }
 
@@ -933,7 +1262,7 @@ class PaparazziPluginTest {
     val buildDir = consumerModuleRoot.resolve("build").registerForDeletionOnExit()
 
     val producerModuleRoot = File(fixtureRoot, "producer")
-    val valuesDir = File(producerModuleRoot, "src/main/res/values/").registerForDeletionOnExit()
+    val valuesDir = File(producerModuleRoot, "src/main/res/values").registerForDeletionOnExit()
     val destResourceFile = File(valuesDir, "colors.xml")
     val firstResourceFile = File(producerModuleRoot, "src/test/resources/colors1.xml")
     val secondResourceFile = File(producerModuleRoot, "src/test/resources/colors2.xml")
@@ -1009,10 +1338,17 @@ class PaparazziPluginTest {
     assertThat(config.aarExplodedDirs)
       .comparingElementsUsing(MATCHES_PATTERN)
       .containsExactly(
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/external1/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/core-1.10.0/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/annotation-experimental-1.3.0/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/lifecycle-runtime-2.3.1/res\$"
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/external1/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/core-1.19.1/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/annotation-experimental-1.4.1/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/core-viewtree-1.0.0/res\$",
+        // lifecycle-runtime is multiplatform as of 2.10.0, and its Android artifact
+        // publishes as lifecycle-runtime.aar, so the transformed directory has no version.
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/lifecycle-runtime/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/profileinstaller-1.4.0/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/startup-runtime-1.1.1/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/tracing-1.2.0/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/core-runtime-2.2.0/res\$"
       )
 
     buildDir.deleteRecursively()
@@ -1033,10 +1369,15 @@ class PaparazziPluginTest {
     assertThat(config.aarExplodedDirs)
       .comparingElementsUsing(MATCHES_PATTERN)
       .containsExactly(
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/external2/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/core-1.10.1/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/annotation-experimental-1.3.0/res\$",
-        "^caches/[0-9]{1,2}.[0-9]{1,2}{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/lifecycle-runtime-2.3.1/res\$"
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/external2/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/core-1.19.1/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/annotation-experimental-1.4.1/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/core-viewtree-1.0.0/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/lifecycle-runtime/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/profileinstaller-1.4.0/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/startup-runtime-1.1.1/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/tracing-1.2.0/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/core-runtime-2.2.0/res\$"
       )
   }
 
@@ -1046,7 +1387,7 @@ class PaparazziPluginTest {
     val buildDir = fixtureRoot.resolve("build").registerForDeletionOnExit()
     fixtureRoot.resolve("build-cache").registerForDeletionOnExit()
 
-    val assetsDir = File(fixtureRoot, "src/main/assets/").registerForDeletionOnExit()
+    val assetsDir = File(fixtureRoot, "src/main/assets").registerForDeletionOnExit()
     val destAssetFile = File(assetsDir, "secret.txt")
     val firstAssetFile = File(fixtureRoot, "src/test/resources/secret1.txt")
     val secondAssetFile = File(fixtureRoot, "src/test/resources/secret2.txt")
@@ -1107,7 +1448,7 @@ class PaparazziPluginTest {
     val buildDir = consumerModuleRoot.resolve("build").registerForDeletionOnExit()
 
     val producerModuleRoot = File(fixtureRoot, "producer")
-    val assetsDir = File(producerModuleRoot, "src/main/assets/").registerForDeletionOnExit()
+    val assetsDir = File(producerModuleRoot, "src/main/assets").registerForDeletionOnExit()
     val destAssetFile = File(assetsDir, "secret.txt")
     val firstAssetFile = File(producerModuleRoot, "src/test/resources/secret1.txt")
     val secondAssetFile = File(producerModuleRoot, "src/test/resources/secret2.txt")
@@ -1136,7 +1477,7 @@ class PaparazziPluginTest {
     assertThat(config.projectAssetDirs).containsExactly(
       "src/main/assets",
       "src/debug/assets",
-      "../producer/build/intermediates/library_assets/debug/packageDebugAssets/out"
+      "../producer/build/intermediates/assets/debug/mergeDebugAssets"
     )
 
     buildDir.deleteRecursively()
@@ -1163,7 +1504,7 @@ class PaparazziPluginTest {
     assertThat(config.projectAssetDirs).containsExactly(
       "src/main/assets",
       "src/debug/assets",
-      "../producer/build/intermediates/library_assets/debug/packageDebugAssets/out"
+      "../producer/build/intermediates/assets/debug/mergeDebugAssets"
     )
   }
 
@@ -1190,7 +1531,7 @@ class PaparazziPluginTest {
     var config = resourcesFile.loadConfig()
     assertThat(config.aarAssetDirs)
       .comparingElementsUsing(MATCHES_PATTERN)
-      .containsExactly("^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/external1/assets\$")
+      .containsExactly("$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/external1/assets\$")
 
     buildDir.deleteRecursively()
 
@@ -1209,7 +1550,7 @@ class PaparazziPluginTest {
     config = resourcesFile.loadConfig()
     assertThat(config.aarAssetDirs)
       .comparingElementsUsing(MATCHES_PATTERN)
-      .containsExactly("^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?/transforms/[0-9a-f]{32}/transformed/external2/assets\$")
+      .containsExactly("$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/external2/assets\$")
   }
 
   @Test
@@ -1395,15 +1736,14 @@ class PaparazziPluginTest {
   }
 
   @Test
-  fun composeA11y() {
-    val fixtureRoot = File("src/test/projects/compose-a11y")
+  fun accessibilityRendering() {
+    val fixtureRoot = File("src/test/projects/accessibility-rendering")
     gradleRunner
       .withArguments("verifyPaparazziDebug", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
   }
 
   @Test
-  @Suppress("ktlint:standard:max-line-length")
   fun snapshotReport() {
     val fixtureRoot = File("src/test/projects/report-snapshots")
     val testReportDir = File(fixtureRoot, "build/reports/tests/testDebugUnitTest/classes")
@@ -1420,12 +1760,20 @@ class PaparazziPluginTest {
     var htmlText = simpleTestHtmlFile.readText()
     assertThat(htmlText).contains("<img")
     assertThat(htmlText).contains("delta-app.cash.paparazzi.plugin.test_SimpleTest_compose.png")
+    assertThat(htmlText).contains("Failed tests")
+    assertThat(htmlText).contains("Tests")
+    assertThat(htmlText).contains("Standard output")
+    assertThat(htmlText).contains("Standard error")
 
     val testParamInjectorTestHtmlFile =
       File(testReportDir, "app.cash.paparazzi.plugin.test.TestParameterInjectorTest.html")
     htmlText = testParamInjectorTestHtmlFile.readText()
     assertThat(htmlText).contains("<img")
     assertThat(htmlText).contains("delta-app.cash.paparazzi.plugin.test_TestParameterInjectorTest_compose[darkMode=false,fontScale=1.0].png")
+    assertThat(htmlText).contains("Failed tests")
+    assertThat(htmlText).contains("Tests")
+    assertThat(htmlText).contains("Standard output")
+    assertThat(htmlText).contains("Standard error")
   }
 
   @Test
@@ -1549,6 +1897,38 @@ class PaparazziPluginTest {
       .runFixture(fixtureRoot) { build() }
   }
 
+  @Test
+  fun composeLaunchedEffectExceptionPropagates() {
+    val fixtureRoot = File("src/test/projects/compose-launched-effect-exception")
+
+    val result = gradleRunner
+      .withArguments("testDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    assertThat(result.task(":testDebugUnitTest")).isNotNull()
+    assertThat(result.output).contains("LaunchedEffectExceptionTest > launchedEffectExceptionPropagates FAILED")
+    assertThat(result.output).contains("java.lang.IllegalStateException: Exception thrown in LaunchedEffect")
+  }
+
+  @Test
+  fun overwriteSnapshotOnMaxPercentDiff() {
+    val fixtureRoot = File("src/test/projects/overwrite-on-max-percent-difference")
+
+    val dontRecordFile =
+      File(fixtureRoot, "src/test/snapshots/images/app.cash.paparazzi.plugin.test_RecordSnapshotTest_dontRecord.png")
+    val dontRecordLastModified = dontRecordFile.lastModified()
+    val recordFile =
+      File(fixtureRoot, "src/test/snapshots/images/app.cash.paparazzi.plugin.test_RecordSnapshotTest_record.png")
+    val recordLastModified = recordFile.lastModified()
+
+    gradleRunner
+      .withArguments("recordPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(dontRecordLastModified).isEqualTo(dontRecordFile.lastModified())
+    assertThat(recordLastModified).isNotEqualTo(recordFile.lastModified())
+  }
+
   private fun File.loadConfig() = source().buffer().use { CONFIG_ADAPTER.fromJson(it)!! }
 
   private fun GradleRunner.runFixture(projectRoot: File, action: GradleRunner.() -> BuildResult): BuildResult {
@@ -1568,7 +1948,6 @@ class PaparazziPluginTest {
         gradleProperties.createNewFile()
         gradleProperties.writeText(
           """
-            |android.useAndroidX=true
             |android.dependencyResolutionAtConfigurationTime.disallow=true
           """.trimMargin()
         )
@@ -1586,7 +1965,30 @@ class PaparazziPluginTest {
 
   private fun File.listFilesSorted() = listFiles()?.sortedBy { it.lastModified() }
 
+  /**
+   * Asserts that [deltaName] was both written by Paparazzi and published as an attachment on
+   * [className]'s own report page. Checking per page rather than across the whole report means an
+   * attachment landing on another test fails here; the report's own filenames are opaque hashes at
+   * a depth that varies by test shape, so its pages have to be discovered rather than addressed.
+   */
+  private fun assertAttachmentPublished(fixtureRoot: File, className: String, deltaName: String) {
+    assertThat(File(fixtureRoot, "build/paparazzi/failures/debug/$deltaName").exists()).isTrue()
+
+    val attachmentImage = Regex("""<img src="[^"]*${Regex.escape(deltaName)}"""")
+    val carrying = File(fixtureRoot, "build/reports/tests/testDebugUnitTest")
+      .walkTopDown()
+      .filter { it.isFile && it.extension == "html" }
+      .map { it.readText() }
+      .filter { attachmentImage.containsMatchIn(it) }
+      .toList()
+
+    assertThat(carrying).hasSize(1)
+    assertThat(carrying.single()).contains(className)
+  }
+
   companion object {
+    private const val GRADLE_CACHE_TRANSFORMS_PATH_REGEX = "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?(-rc-[0-9]{1,2})?/transforms/[0-9a-f]{32}/(workspace/)?transformed"
+
     private val CONFIG_ADAPTER =
       Moshi.Builder().addLast(KotlinJsonAdapterFactory()).build()!!.adapter(Config::class.java)
     private val MATCHES_PATTERN = Correspondence.from<String, String>(

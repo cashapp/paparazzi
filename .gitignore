@@ -18,6 +18,7 @@ generated
 
 # Mkdocs files
 docs/1.x
+docs/2.x
 docs/changelog.md
 docs/index.md
 site/
