@@ -47,6 +47,7 @@ internal class ApngReader(
   private val fileHandle: FileHandle
 ) : Closeable {
   private val crcEngine = CRC32()
+  private val inflateBuffer = ByteArray(8192)
   private val source = fileHandle.source().buffer()
 
   private lateinit var scratchSpace: IntArray
@@ -179,12 +180,15 @@ internal class ApngReader(
       setInput(readByteArray())
     }
 
-    val buffer = ByteArray(1000 * 1024) // Arbitrary buffer size for Inflater
-    return Buffer().apply {
-      do {
-        val byteCount = inflater.inflate(buffer)
-        write(buffer, 0, byteCount)
-      } while (!inflater.finished() && byteCount != 0)
+    try {
+      return Buffer().apply {
+        do {
+          val byteCount = inflater.inflate(inflateBuffer)
+          write(inflateBuffer, 0, byteCount)
+        } while (!inflater.finished() && byteCount != 0)
+      }
+    } finally {
+      inflater.end()
     }
   }
 
@@ -204,9 +208,10 @@ internal class ApngReader(
         val rgba = if (hasAlpha) {
           readInt()
         } else {
-          (readByte().toInt() shl 24) or
-            (readByte().toInt() shl 16) or
-            (readByte().toInt() shl 8)
+          ((readByte().toInt() and 0xFF) shl 24) or
+            ((readByte().toInt() and 0xFF) shl 16) or
+            ((readByte().toInt() and 0xFF) shl 8) or
+            0xFF
         }
 
         val argb = rgba.rotateRight(8)

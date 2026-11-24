@@ -17,8 +17,12 @@ package app.cash.paparazzi
 
 import app.cash.paparazzi.FileSubject.Companion.assertThat
 import app.cash.paparazzi.internal.ImageUtils
+import app.cash.paparazzi.internal.PaparazziJson
+import app.cash.paparazzi.internal.apng.ApngReader
 import app.cash.paparazzi.internal.differs.PixelPerfect
 import com.google.common.truth.Truth.assertThat
+import okio.FileSystem
+import okio.Path.Companion.toPath
 import org.junit.Assert.assertThrows
 import org.junit.Rule
 import org.junit.Test
@@ -43,7 +47,7 @@ class HtmlReportWriterTest {
     setRGB(0, 0, 0xFFFFFFFF.toInt())
   }
   private val anyImageHash = "5007e8fef3bc5eeffa89d2797c63768390460f90"
-  private val anyVideoHash = "80ff0587a0fbd0ede0247a021edfb1a3aaf9ccb5"
+  private val anyVideoHash = "e03af44d3fe225ffc662e32274bd90a51802d41d"
 
   @Test
   fun happyPathImages() {
@@ -400,6 +404,53 @@ class HtmlReportWriterTest {
   }
 
   @Test
+  fun videosWithDifferentFrameRatesHaveSeparateReportFiles() {
+    val snapshots = recordReportVideos(listOf(1, 2))
+
+    assertThat(snapshots.map { it.file }.distinct()).hasSize(2)
+    for ((snapshot, fps) in snapshots.zip(listOf(1, 2))) {
+      val file = File(reportRoot.root, snapshot.file!!)
+      ApngReader(FileSystem.SYSTEM.openReadOnly(file.path.toPath())).use { reader ->
+        reader.readNextFrame()
+        assertThat(reader.getFps()).isEqualTo(fps)
+        assertThat(reader.frameCount).isEqualTo(2)
+      }
+    }
+  }
+
+  @Test
+  fun videosWithMatchingFramesAndFrameRatesShareReportFile() {
+    val snapshots = recordReportVideos(listOf(2, 2))
+
+    assertThat(snapshots.map { it.file }.distinct()).hasSize(1)
+    assertThat(File(reportRoot.root, "videos").listFiles()!!.toList()).hasSize(1)
+  }
+
+  private fun recordReportVideos(frameRates: List<Int>): List<Snapshot> {
+    HtmlReportWriter(
+      runName = "frame_rates",
+      rootDirectory = reportRoot.root,
+      maxPercentDifference = 0.0,
+      differ = PixelPerfect,
+      snapshotRootDirectory = snapshotRoot.root
+    ).use { report ->
+      for ((index, fps) in frameRates.withIndex()) {
+        val snapshot = Snapshot(
+          name = "video_$index",
+          testName = TestName("app.cash.paparazzi", "HomeView", "testSettings"),
+          timestamp = Instant.parse("2021-02-23T10:27:43Z").toDate()
+        )
+        report.newFrameHandler(snapshot, frameCount = 2, fps = fps).use { handler ->
+          handler.handle(anyImage)
+          handler.handle(otherImage)
+        }
+      }
+    }
+    val runJs = File(reportRoot.root, "runs/frame_rates.js").readText()
+    return PaparazziJson.listOfShotsAdapter.fromJson(runJs.substringAfter(" = ").trim().removeSuffix(";"))!!
+  }
+
+  @Test
   fun videosAlwaysOverwriteOnRecord() {
     try {
       // set record mode
@@ -591,6 +642,142 @@ class HtmlReportWriterTest {
     } finally {
       // reset record mode
       System.setProperty("paparazzi.test.record", "false")
+      System.clearProperty("paparazzi.test.record.overwriteOnMaxPercentDifference")
+    }
+  }
+
+  @Test
+  fun videoOverwritesOnRecordWithFlagWhenOnlyLaterFrameChanges() {
+    try {
+      System.setProperty("paparazzi.test.record", "true")
+      System.setProperty("paparazzi.test.record.overwriteOnMaxPercentDifference", "true")
+
+      val htmlReportWriter = HtmlReportWriter(
+        runName = "record_run",
+        rootDirectory = reportRoot.root,
+        maxPercentDifference = 0.0,
+        differ = PixelPerfect,
+        snapshotRootDirectory = snapshotRoot.root
+      )
+      htmlReportWriter.use {
+        val now = Instant.parse("2021-02-23T10:27:43Z")
+        val snapshot = Snapshot(
+          name = "test",
+          testName = TestName("app.cash.paparazzi", "HomeView", "testSettings"),
+          timestamp = now.toDate()
+        )
+        val golden =
+          File("${snapshotRoot.root}/videos/app.cash.paparazzi_HomeView_testSettings_test.png")
+
+        // precondition
+        assertThat(golden).doesNotExist()
+
+        // take 1: record frame1=anyImage, frame2=anyImage
+        val frameHandler1 = htmlReportWriter.newFrameHandler(
+          snapshot = snapshot,
+          frameCount = 2,
+          fps = 1
+        )
+        frameHandler1.use {
+          frameHandler1.handle(anyImage)
+          frameHandler1.handle(anyImage)
+        }
+        assertThat(golden).exists()
+        val timeFirstWrite = golden.lastModifiedTime()
+
+        Thread.sleep(100)
+
+        // take 2: frame1 unchanged, only frame2 changes — ImageIO.read() misses this
+        val frameHandler2 = htmlReportWriter.newFrameHandler(
+          snapshot = snapshot.copy(timestamp = now.plusSeconds(1).toDate()),
+          frameCount = 2,
+          fps = 1
+        )
+        frameHandler2.use {
+          frameHandler2.handle(anyImage)
+          frameHandler2.handle(otherImage)
+        }
+        assertThat(golden).exists()
+        val timeOverwrite = golden.lastModifiedTime()
+
+        assertThat(timeOverwrite).isGreaterThan(timeFirstWrite)
+      }
+    } finally {
+      System.clearProperty("paparazzi.test.record")
+      System.clearProperty("paparazzi.test.record.overwriteOnMaxPercentDifference")
+    }
+  }
+
+  @Test
+  fun videoOverwritesOnRecordWithFlagAndExtraFrames() {
+    assertVideoOverwritesOnRecord(
+      firstFrames = listOf(anyImage, anyImage),
+      secondFrames = listOf(anyImage, anyImage, anyImage),
+      secondFrameCount = 2
+    )
+  }
+
+  @Test
+  fun videoOverwritesOnRecordWithFlagAndFewerFrames() {
+    assertVideoOverwritesOnRecord(
+      firstFrames = listOf(anyImage, anyImage, anyImage),
+      secondFrames = listOf(anyImage, anyImage)
+    )
+  }
+
+  @Test
+  fun videoOverwritesOnRecordWithFlagWhenOnlyFpsChanges() {
+    val frames = listOf(anyImage, otherImage)
+    assertVideoOverwritesOnRecord(frames, frames, firstFps = 1, secondFps = 2)
+  }
+
+  @Test
+  fun videoOverwritesOnRecordWithFlagWhenRgbFramesChange() {
+    val black = BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB)
+    val white = BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB).apply {
+      setRGB(0, 0, 0xFFFFFFFF.toInt())
+    }
+    assertVideoOverwritesOnRecord(listOf(black, black), listOf(white, white))
+  }
+
+  private fun assertVideoOverwritesOnRecord(
+    firstFrames: List<BufferedImage>,
+    secondFrames: List<BufferedImage>,
+    firstFps: Int = 1,
+    secondFps: Int = firstFps,
+    secondFrameCount: Int = secondFrames.size
+  ) {
+    try {
+      System.setProperty("paparazzi.test.record", "true")
+      System.setProperty("paparazzi.test.record.overwriteOnMaxPercentDifference", "true")
+
+      HtmlReportWriter(
+        runName = "record_run",
+        rootDirectory = reportRoot.root,
+        maxPercentDifference = 0.0,
+        differ = PixelPerfect,
+        snapshotRootDirectory = snapshotRoot.root
+      ).use { htmlReportWriter ->
+        val snapshot = Snapshot(
+          name = "test",
+          testName = TestName("app.cash.paparazzi", "HomeView", "testSettings"),
+          timestamp = Instant.parse("2021-02-23T10:27:43Z").toDate()
+        )
+        val golden =
+          File("${snapshotRoot.root}/videos/app.cash.paparazzi_HomeView_testSettings_test.png")
+
+        htmlReportWriter.newFrameHandler(snapshot, firstFrames.size, firstFps).use { handler ->
+          firstFrames.forEach(handler::handle)
+        }
+        val firstRecording = golden.readBytes()
+
+        htmlReportWriter.newFrameHandler(snapshot, secondFrameCount, secondFps).use { handler ->
+          secondFrames.forEach(handler::handle)
+        }
+        assertThat(golden.readBytes()).isNotEqualTo(firstRecording)
+      }
+    } finally {
+      System.clearProperty("paparazzi.test.record")
       System.clearProperty("paparazzi.test.record.overwriteOnMaxPercentDifference")
     }
   }

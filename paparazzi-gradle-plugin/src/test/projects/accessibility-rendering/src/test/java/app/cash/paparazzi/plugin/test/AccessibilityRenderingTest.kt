@@ -42,6 +42,7 @@ import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.semantics.invisibleToUser
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.progressBarRangeInfo
@@ -239,9 +240,44 @@ class AccessibilityRenderingTest {
               .alpha(0f),
             text = "Text with zero alpha"
           )
+          Box(
+            modifier = Modifier
+              .size(0.dp)
+              .clickable(enabled = false, onClick = {})
+              .semantics {
+                hideFromAccessibility()
+              }
+          )
           Text(text = "Text that is visible!")
         }
       }
+    }
+
+    paparazzi.snapshot(view)
+  }
+
+  @Test
+  fun `verify no hide descendants prunes accessibility subtree`() {
+    val view = LinearLayout(paparazzi.context).apply {
+      orientation = LinearLayout.VERTICAL
+      addView(
+        LinearLayout(context).apply {
+          orientation = LinearLayout.VERTICAL
+          importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
+          addView(TextView(context).apply { text = "Hidden classic descendant" })
+          addView(
+            ComposeView(context).apply {
+              setContent { Text("Hidden Compose descendant") }
+            }
+          )
+        }
+      )
+      addView(
+        LinearLayout(context).apply {
+          importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+          addView(TextView(context).apply { text = "Visible descendant" })
+        }
+      )
     }
 
     paparazzi.snapshot(view)

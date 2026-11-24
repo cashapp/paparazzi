@@ -22,6 +22,7 @@ import app.cash.paparazzi.gradle.utils.artifactViewFor
 import app.cash.paparazzi.gradle.utils.capitalize
 import app.cash.paparazzi.gradle.utils.relativize
 import com.android.build.api.artifact.ScopedArtifact
+import com.android.build.api.dsl.AndroidSourceSet
 import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.dsl.KotlinMultiplatformAndroidHostTestCompilation
 import com.android.build.api.instrumentation.FramesComputationMode
@@ -42,6 +43,7 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE
 import org.gradle.api.attributes.Attribute
@@ -65,8 +67,11 @@ import org.gradle.internal.operations.BuildOperationExecutor
 import org.gradle.internal.operations.BuildOperationRunner
 import org.gradle.internal.os.OperatingSystem
 import org.gradle.language.base.plugins.LifecycleBasePlugin.VERIFICATION_GROUP
+import org.gradle.util.GradleVersion
 import org.gradle.process.CommandLineArgumentProvider
+import org.gradle.work.DisableCachingByDefault
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import java.util.Locale
 import javax.inject.Inject
 import kotlin.io.encoding.Base64
@@ -79,6 +84,16 @@ public class PaparazziPlugin @Inject constructor(
   private val buildOperationExecutor: BuildOperationExecutor
 ) : Plugin<Project> {
   override fun apply(project: Project) {
+    if (reportType == ReportType.NATIVE &&
+      GradleVersion.current() < MIN_NATIVE_REPORT_GRADLE_VERSION
+    ) {
+      error(
+        "app.cash.paparazzi.reportType=native requires Gradle " +
+          "${MIN_NATIVE_REPORT_GRADLE_VERSION.version} or later. " +
+          "Current Gradle version: ${GradleVersion.current().version}."
+      )
+    }
+
     val supportedPlugins = listOf(
       "com.android.application",
       "com.android.library",
@@ -128,7 +143,7 @@ public class PaparazziPlugin @Inject constructor(
       it.group = VERIFICATION_GROUP
       it.description = "Clean and record golden images for all variants"
     }
-    val deleteSnapshots = project.tasks.register("deletePaparazziSnapshots") {
+    val deleteVariants = project.tasks.register("deletePaparazziSnapshots") {
       it.group = VERIFICATION_GROUP
       it.description = "Delete all golden images"
     }
@@ -217,7 +232,7 @@ public class PaparazziPlugin @Inject constructor(
             }
             it.delete(files)
           }
-        deleteSnapshots.configure { it.dependsOn(deleteVariantSnapshot) }
+        deleteVariants.configure { it.dependsOn(deleteVariantSnapshot) }
 
         // AGP < 9 does not fully initialize ASM instrumentation for Android KMP variants, causing
         // `lateinit property visitorFactory has not been initialized` during configuration.
@@ -233,17 +248,19 @@ public class PaparazziPlugin @Inject constructor(
         )
 
         val testTasks = project.tasks.named { it == testTaskName }
-        testTasks.configureEach { it.dependsOn(writeResourcesTask) }
+        testTasks.configureEach {
+          it.dependsOn(writeResourcesTask)
+          it.mustRunAfter(deleteVariantSnapshot)
+        }
 
         val recordTaskProvider = project.tasks.register("recordPaparazzi$slug", PaparazziTask::class.java) {
           it.group = VERIFICATION_GROUP
           it.description = "Record golden images for '$componentName'"
-          it.mustRunAfter(deleteSnapshots)
         }
         val cleanRecordTaskProvider = project.tasks.register("cleanRecordPaparazzi$slug") {
           it.group = VERIFICATION_GROUP
           it.description = "Clean and record golden images for '$componentName'"
-          it.dependsOn(deleteSnapshots, recordTaskProvider)
+          it.dependsOn(deleteVariantSnapshot, recordTaskProvider)
         }
         val verifyTaskProvider = project.tasks.register("verifyPaparazzi$slug", PaparazziTask::class.java) {
           it.group = VERIFICATION_GROUP
@@ -266,13 +283,25 @@ public class PaparazziPlugin @Inject constructor(
           val localResourceDirs = sources.localResourceDirs ?: providerFactory.provider { emptyList() }
           val localAssetDirs = sources.localAssetDirs ?: providerFactory.provider { emptyList() }
 
-          test.setTestReporter(
-            PaparazziTestReporter(
-              buildOperationRunner = buildOperationRunner,
-              buildOperationExecutor = buildOperationExecutor,
-              diffRegistryFactory = createDiffRegistryFactory(failureDir, isVerifyRun)
-            )
-          )
+          when (reportType) {
+            ReportType.LEGACY -> {
+              test.setTestReporter(
+                PaparazziTestReporter(
+                  buildOperationRunner = buildOperationRunner,
+                  buildOperationExecutor = buildOperationExecutor,
+                  diffRegistryFactory = createDiffRegistryFactory(failureDir, isVerifyRun)
+                )
+              )
+              test.systemProperties["paparazzi.reportType"] = "legacy"
+            }
+            ReportType.NATIVE -> {
+              // Paparazzi's wrappers delegate to these engines, so excluding the real ones keeps
+              // tests from being discovered twice.
+              val engineIds = nativeReportFrameworks.map { it.engineId }.toTypedArray()
+              test.useJUnitPlatform { it.excludeEngines(*engineIds) }
+              test.systemProperties["paparazzi.reportType"] = "native"
+            }
+          }
 
           // Absolute paths passed via `systemProperties` (an @Input) would pollute the build-cache
           // key and break relocatability. Supply them as @Internal JVM args instead (#1874); task
@@ -373,7 +402,7 @@ public class PaparazziPlugin @Inject constructor(
       if (unitTest != null) {
         hostTestTasks += configureHostTest(
           component = unitTest,
-          taskSuffix = "UnitTest",
+          taskSuffix = if (screenshotSourceSetEnabled) "UnitTest" else "",
           outputName = variant.name,
           testTaskName = "test${unitTest.name.capitalize()}"
         )
@@ -395,6 +424,13 @@ public class PaparazziPlugin @Inject constructor(
       }
 
       if (hostTestTasks.isEmpty()) return@onVariants
+      if (!screenshotSourceSetEnabled) {
+        val unitTasks = hostTestTasks.single()
+        recordVariants.configure { it.dependsOn(unitTasks.record) }
+        cleanRecordVariants.configure { it.dependsOn(unitTasks.cleanRecord) }
+        verifyVariants.configure { it.dependsOn(unitTasks.verify) }
+        return@onVariants
+      }
 
       // Anchors over every host-test component of the variant: always the unit-test source set,
       // plus `src/screenshotTest` when that opt-in is enabled. These keep the historical
@@ -519,6 +555,7 @@ public class PaparazziPlugin @Inject constructor(
       }
     }
 
+  @DisableCachingByDefault(because = "Lifecycle task that only forwards --tests to the Test tasks")
   public abstract class PaparazziTask : DefaultTask() {
     @Option(option = "tests", description = "Sets test class or method name to be included, '*' is supported.")
     public open fun setTestNameIncludePatterns(testNamePattern: List<String>): PaparazziTask {
@@ -585,7 +622,35 @@ public class PaparazziPlugin @Inject constructor(
       dependencies.create("app.cash.paparazzi:paparazzi:$VERSION")
     }
 
+    val nativeReportRuntimeDeps: List<Dependency> =
+      if (reportType == ReportType.NATIVE) {
+        buildList {
+          nativeReportFrameworks.forEach { framework ->
+            add(
+              if (isInternal()) {
+                dependencies.project(mapOf("path" to ":${framework.moduleName}"))
+              } else {
+                dependencies.create(framework.coordinates)
+              }
+            )
+          }
+          // The engines arrive transitively with the wrapper artifacts; the launcher does not,
+          // and Gradle needs it to drive tests through JUnit Platform.
+          add(dependencies.create(JUNIT_PLATFORM_LAUNCHER))
+        }
+      } else {
+        emptyList()
+      }
+
     val allowedConfigs = mutableSetOf<String>()
+
+    fun TestConfigurations.addDependencies() {
+      allowedConfigs += implementation
+      this@addTestDependency.configurations.getByName(implementation).dependencies.add(dependency)
+      nativeReportRuntimeDeps.forEach {
+        this@addTestDependency.configurations.getByName(runtimeOnly).dependencies.add(it)
+      }
+    }
 
     when {
       plugins.hasPlugin(ANDROID_KOTLIN_MULTIPLATFORM_LIBRARY_PLUGIN) -> {
@@ -593,9 +658,7 @@ public class PaparazziPlugin @Inject constructor(
         kmp.targets.configureEach { target ->
           target.compilations.configureEach { compilation ->
             if (compilation is KotlinMultiplatformAndroidHostTestCompilation) {
-              val configurationName = compilation.defaultSourceSet.implementationConfigurationName
-              allowedConfigs += configurationName
-              configurations.getByName(configurationName).dependencies.add(dependency)
+              compilation.defaultSourceSet.testConfigurations.addDependencies()
             }
           }
         }
@@ -604,17 +667,13 @@ public class PaparazziPlugin @Inject constructor(
         val kmp = extensions.getByType(KotlinMultiplatformExtension::class.java)
         with(kmp) {
           sourceSets.androidUnitTest.configure {
-            val configurationName = it.implementationConfigurationName
-            allowedConfigs += configurationName
-            configurations.getByName(configurationName).dependencies.add(dependency)
+            it.testConfigurations.addDependencies()
           }
         }
       }
       else -> {
         val android = extensions.getByType(CommonExtension::class.java)
-        val configurationName = android.sourceSets.getByName(TEST_SOURCE_SET_NAME).implementationConfigurationName
-        allowedConfigs += configurationName
-        configurations.getByName(configurationName).dependencies.add(dependency)
+        android.sourceSets.getByName(TEST_SOURCE_SET_NAME).testConfigurations.addDependencies()
 
         if (isScreenshotSourceSetEnabled()) {
           // AGP registers the `screenshotTest` source set lazily, so resolve its configuration by
@@ -674,6 +733,45 @@ public class PaparazziPlugin @Inject constructor(
 
   private fun Project.isInternal(): Boolean = providers.gradleProperty("app.cash.paparazzi.internal").orNull == "true"
 
+  private val reportType: ReportType by lazy {
+    when (val raw = providerFactory.gradleProperty("app.cash.paparazzi.reportType").getOrElse("legacy")) {
+      "legacy" -> ReportType.LEGACY
+      "native" -> ReportType.NATIVE
+      else -> error(
+        "Unknown app.cash.paparazzi.reportType: '$raw'. Expected one of: legacy, native."
+      )
+    }
+  }
+
+  private val nativeReportFrameworks: Set<TestFramework> by lazy {
+    providerFactory.gradleProperty("app.cash.paparazzi.nativeReportFrameworks")
+      .getOrElse("junit4")
+      .split(',')
+      .map { TestFramework.named(it.trim()) }
+      .toSet()
+  }
+
+  private enum class ReportType { LEGACY, NATIVE }
+
+  private enum class TestFramework(
+    val propertyValue: String,
+    val engineId: String,
+    val moduleName: String,
+    val coordinates: String
+  ) {
+    JUNIT4("junit4", "junit-vintage", "paparazzi-junit-vintage", PAPARAZZI_JUNIT_VINTAGE_COORDINATES),
+    JUNIT5("junit5", "junit-jupiter", "paparazzi-junit-jupiter", PAPARAZZI_JUNIT_JUPITER_COORDINATES);
+
+    companion object {
+      fun named(value: String): TestFramework =
+        entries.firstOrNull { it.propertyValue == value }
+          ?: error(
+            "Unknown app.cash.paparazzi.nativeReportFrameworks value: '$value'. Expected a " +
+              "comma-separated subset of: ${entries.joinToString(", ") { it.propertyValue }}."
+          )
+    }
+  }
+
   private fun Project.overwriteOnMaxPercentDifferenceProvider(): Provider<String> =
     providers.gradleProperty("app.cash.paparazzi.overwriteOnMaxPercentDifference")
 
@@ -731,9 +829,18 @@ private const val ANDROID_MOCKABLE_JAR = "android-mockable-jar"
 private val MOCKABLE_JAR_RETURN_DEFAULT_VALUES: Attribute<Boolean> =
   Attribute.of("returnDefaultValues", Boolean::class.javaObjectType)
 
-private const val DEFAULT_COMPILE_SDK_VERSION = 36
+private const val DEFAULT_COMPILE_SDK_VERSION = 37
 private const val SCREENSHOT_TEST_SOURCE_SET_NAME = "screenshotTest"
 private const val ENABLE_SCREENSHOT_SOURCE_SET_PROPERTY = "app.cash.paparazzi.enableScreenshotTestSourceSet"
 private const val AGP_SCREENSHOT_TEST_PROPERTY = "android.experimental.enableScreenshotTest"
 private const val ANDROID_KOTLIN_MULTIPLATFORM_LIBRARY_PLUGIN = "com.android.kotlin.multiplatform.library"
 private const val KOTLIN_MULTIPLATFORM_PLUGIN = "org.jetbrains.kotlin.multiplatform"
+private val MIN_NATIVE_REPORT_GRADLE_VERSION = GradleVersion.version("9.4")
+
+private class TestConfigurations(val implementation: String, val runtimeOnly: String)
+
+private val KotlinSourceSet.testConfigurations: TestConfigurations
+  get() = TestConfigurations(implementationConfigurationName, runtimeOnlyConfigurationName)
+
+private val AndroidSourceSet.testConfigurations: TestConfigurations
+  get() = TestConfigurations(implementationConfigurationName, runtimeOnlyConfigurationName)

@@ -324,47 +324,64 @@ class PaparazziPluginTest {
 
   @Test
   fun cacheableRelocatable() {
-    val fixtureRoot = File("src/test/projects/cacheable")
-    fixtureRoot.resolve("build").registerForDeletionOnExit()
-    fixtureRoot.resolve("build-cache").registerForDeletionOnExit()
+    // Absolute paths in the cache key would strand the first checkout's entries.
+    val ciCheckout = File("src/test/projects/cacheable")
+    ciCheckout.resolve("build").registerForDeletionOnExit()
+    // A sibling: the fixture's settings.gradle finds the shared test settings by relative path.
+    val localCheckout = ciCheckout.parentFile.resolve("cacheable-relocated").registerForDeletionOnExit()
+    localCheckout.deleteRecursively()
+    ciCheckout.walkTopDown()
+      .onEnter { it.name !in setOf("build", "build-cache", ".gradle") }
+      .filter { it.isFile }
+      .forEach { it.copyTo(localCheckout.resolve(it.toRelativeString(ciCheckout))) }
 
-    val firstRun = gradleRunner
-      .withArguments("testDebug", "--build-cache", "--stacktrace")
-      .runFixture(fixtureRoot) { build() }
+    val sharedCache = File("build/tmp/cacheableRelocatable").registerForDeletionOnExit()
+    sharedCache.deleteRecursively()
+    val arguments = arrayOf(
+      "testDebug",
+      "--build-cache",
+      "-Dpaparazzi.test.buildCacheDir=${sharedCache.absolutePath}",
+      "--stacktrace"
+    )
 
-    with(firstRun.task(":preparePaparazziDebugResources")) {
+    val ciRun = gradleRunner
+      .withArguments(*arguments)
+      .runFixture(ciCheckout) { build() }
+
+    with(ciRun.task(":preparePaparazziDebugResources")) {
       assertThat(this).isNotNull()
       assertThat(this!!.outcome).isNotEqualTo(FROM_CACHE)
     }
-    with(firstRun.task(":testDebugUnitTest")) {
+    with(ciRun.task(":testDebugUnitTest")) {
       assertThat(this).isNotNull()
       assertThat(this!!.outcome).isNotEqualTo(FROM_CACHE)
     }
 
-    // Rebuild the same project (with its populated cache) from a different directory, as CI and a
-    // local clone would. Absolute paths in the cache key would make these entries unreachable here.
-    val relocatedRoot = fixtureRoot.parentFile.resolve("cacheable-relocated").registerForDeletionOnExit()
-    relocatedRoot.deleteRecursively()
-    fixtureRoot.copyRecursively(relocatedRoot)
-    relocatedRoot.resolve("build").deleteRecursively()
-    // Pin the project name (fed into the Kotlin module name embedded in compiled classes) so it
-    // stays constant across dirs; real CI-vs-local checkouts share the same leaf directory name.
-    relocatedRoot.resolve("settings.gradle").let {
-      it.writeText("rootProject.name = 'cacheable'\n${it.readText()}")
-    }
+    val localRun = gradleRunner
+      .withArguments(*arguments)
+      .runFixture(localCheckout) { build() }
 
-    val secondRun = gradleRunner
-      .withArguments("testDebug", "--build-cache", "--stacktrace")
-      .runFixture(relocatedRoot) { build() }
-
-    with(secondRun.task(":preparePaparazziDebugResources")) {
+    with(localRun.task(":preparePaparazziDebugResources")) {
       assertThat(this).isNotNull()
       assertThat(this!!.outcome).isEqualTo(FROM_CACHE)
     }
-    with(secondRun.task(":testDebugUnitTest")) {
+    with(localRun.task(":testDebugUnitTest")) {
       assertThat(this).isNotNull()
       assertThat(this!!.outcome).isEqualTo(FROM_CACHE)
     }
+
+    // Restored outputs must not carry ciCheckout's path. The trailing separator matters:
+    // 'cacheable' is a prefix of 'cacheable-relocated'.
+    val restored = listOf("build/intermediates/paparazzi", "build/reports/paparazzi", "build/paparazzi")
+      .flatMap { localCheckout.resolve(it).walkTopDown() }
+      .filter { it.isFile }
+    // Keeps the check below from going vacuous if these paths move.
+    assertThat(restored).isNotEmpty()
+
+    val leaked = restored
+      .filter { it.readText().contains("${ciCheckout.absolutePath}${File.separator}") }
+      .map { it.toRelativeString(localCheckout) }
+    assertThat(leaked).isEmpty()
   }
 
   @Test
@@ -883,6 +900,106 @@ class PaparazziPluginTest {
   }
 
   @Test
+  fun verifyFailureNativeReportVintage() {
+    val fixtureRoot = File("src/test/projects/verify-mode-failure")
+    File(fixtureRoot, "build").registerForDeletionOnExit()
+
+    val result = gradleRunner
+      .withArguments(
+        "verifyPaparazziDebug",
+        "-Papp.cash.paparazzi.reportType=native",
+        "--stacktrace"
+      )
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    assertThat(result.task(":testDebugUnitTest")).isNotNull()
+
+    assertAttachmentPublished(
+      fixtureRoot,
+      "VerifyTest",
+      "delta-app.cash.paparazzi.plugin.test_VerifyTest_verify.png"
+    )
+  }
+
+  @Test
+  fun verifyFailureNativeReportParameterized() {
+    val fixtureRoot = File("src/test/projects/verify-mode-failure-parameterized")
+    File(fixtureRoot, "build").registerForDeletionOnExit()
+    File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
+
+    gradleRunner
+      .withArguments("recordPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    gradleRunner
+      .withArguments("verifyPaparazziDebug", "-Papp.cash.paparazzi.reportType=native", "--stacktrace")
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    // The file carries Parameterized's `[0]`, which only the descriptor's display name has.
+    assertAttachmentPublished(
+      fixtureRoot,
+      "ParameterizedVerifyTest",
+      "delta-app.cash.paparazzi.plugin.test_ParameterizedVerifyTest_verify[0].png"
+    )
+  }
+
+  @Test
+  fun verifyFailureNativeReportJupiter() {
+    val fixtureRoot = File("src/test/projects/verify-mode-failure-jupiter")
+    File(fixtureRoot, "build").registerForDeletionOnExit()
+    File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
+
+    gradleRunner
+      .withArguments("recordPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    gradleRunner
+      .withArguments(
+        "verifyPaparazziDebug",
+        "-Papp.cash.paparazzi.reportType=native",
+        "-Papp.cash.paparazzi.nativeReportFrameworks=junit5",
+        "--stacktrace"
+      )
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    // Jupiter needs no name mapping: MethodSource reports the same name the SDK used.
+    assertAttachmentPublished(
+      fixtureRoot,
+      "JupiterVerifyTest",
+      "delta-app.cash.paparazzi.plugin.test_JupiterVerifyTest_verify.png"
+    )
+  }
+
+  @Test
+  fun verifyFailureNativeReportMixedFrameworks() {
+    val fixtureRoot = File("src/test/projects/verify-mode-failure-mixed-frameworks")
+    File(fixtureRoot, "build").registerForDeletionOnExit()
+    File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
+
+    gradleRunner
+      .withArguments("recordPaparazziDebug", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    gradleRunner
+      .withArguments(
+        "verifyPaparazziDebug",
+        "-Papp.cash.paparazzi.reportType=native",
+        "-Papp.cash.paparazzi.nativeReportFrameworks=junit4,junit5",
+        "--stacktrace"
+      )
+      .runFixture(fixtureRoot) { buildAndFail() }
+
+    // Both wrappers publish into the same launcher session, so neither may claim the other's diff.
+    for (className in listOf("MixedRuleTest", "MixedJupiterTest")) {
+      assertAttachmentPublished(
+        fixtureRoot,
+        className,
+        "delta-app.cash.paparazzi.plugin.test_${className}_verify.png"
+      )
+    }
+  }
+
+  @Test
   fun verifySimilar() {
     val fixtureRoot = File("src/test/projects/verify-similar")
 
@@ -1033,11 +1150,27 @@ class PaparazziPluginTest {
       .withArguments("cleanRecordPaparazziDebug", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
 
-    assertThat(result.task(":deletePaparazziSnapshots")).isNotNull()
-    assertThat(result.task(":recordPaparazziDebugUnitTest")).isNotNull()
+    assertThat(result.task(":deleteDebugPaparazziSnapshots")).isNotNull()
+    assertThat(result.task(":recordPaparazziDebug")).isNotNull()
 
     assertThat(snapshotToBeDeleted.exists()).isFalse()
     assertThat(snapshotToBeKept.exists()).isTrue()
+  }
+
+  @Test
+  fun cleanRecordParallel() {
+    val fixtureRoot = File("src/test/projects/clean-record-parallel")
+    val snapshotsDir = File(fixtureRoot, "src/test/snapshots").registerForDeletionOnExit()
+    val snapshot = File(snapshotsDir, "images/app.cash.paparazzi.plugin.test_CleanRecordParallelTest_record.png")
+
+    val result = gradleRunner
+      .withArguments("cleanRecordPaparazziDebug", "--parallel", "--stacktrace")
+      .runFixture(fixtureRoot) { build() }
+
+    assertThat(result.task(":deleteDebugPaparazziSnapshots")).isNotNull()
+    assertThat(result.task(":recordPaparazziDebug")).isNotNull()
+
+    assertThat(snapshot.exists()).isTrue()
   }
 
   @Test
@@ -1280,11 +1413,13 @@ class PaparazziPluginTest {
       .comparingElementsUsing(MATCHES_PATTERN)
       .containsExactly(
         "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/external1/res\$",
-        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/core-1.17.0/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/core-1.19.1/res\$",
         "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/annotation-experimental-1.4.1/res\$",
         "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/core-viewtree-1.0.0/res\$",
-        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/lifecycle-runtime-2.6.2/res\$",
-        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/profileinstaller-1.3.0/res\$",
+        // lifecycle-runtime is multiplatform as of 2.10.0, and its Android artifact
+        // publishes as lifecycle-runtime.aar, so the transformed directory has no version.
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/lifecycle-runtime/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/profileinstaller-1.4.0/res\$",
         "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/startup-runtime-1.1.1/res\$",
         "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/tracing-1.2.0/res\$",
         "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/core-runtime-2.2.0/res\$"
@@ -1309,11 +1444,11 @@ class PaparazziPluginTest {
       .comparingElementsUsing(MATCHES_PATTERN)
       .containsExactly(
         "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/external2/res\$",
-        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/core-1.17.0/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/core-1.19.1/res\$",
         "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/annotation-experimental-1.4.1/res\$",
         "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/core-viewtree-1.0.0/res\$",
-        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/lifecycle-runtime-2.6.2/res\$",
-        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/profileinstaller-1.3.0/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/lifecycle-runtime/res\$",
+        "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/profileinstaller-1.4.0/res\$",
         "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/startup-runtime-1.1.1/res\$",
         "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/tracing-1.2.0/res\$",
         "$GRADLE_CACHE_TRANSFORMS_PATH_REGEX/core-runtime-2.2.0/res\$"
@@ -1903,6 +2038,27 @@ class PaparazziPluginTest {
   private fun File.registerForDeletionOnExit() = apply { filesToDelete += this }
 
   private fun File.listFilesSorted() = listFiles()?.sortedBy { it.lastModified() }
+
+  /**
+   * Asserts that [deltaName] was both written by Paparazzi and published as an attachment on
+   * [className]'s own report page. Checking per page rather than across the whole report means an
+   * attachment landing on another test fails here; the report's own filenames are opaque hashes at
+   * a depth that varies by test shape, so its pages have to be discovered rather than addressed.
+   */
+  private fun assertAttachmentPublished(fixtureRoot: File, className: String, deltaName: String) {
+    assertThat(File(fixtureRoot, "build/paparazzi/failures/debug/$deltaName").exists()).isTrue()
+
+    val attachmentImage = Regex("""<img src="[^"]*${Regex.escape(deltaName)}"""")
+    val carrying = File(fixtureRoot, "build/reports/tests/testDebugUnitTest")
+      .walkTopDown()
+      .filter { it.isFile && it.extension == "html" }
+      .map { it.readText() }
+      .filter { attachmentImage.containsMatchIn(it) }
+      .toList()
+
+    assertThat(carrying).hasSize(1)
+    assertThat(carrying.single()).contains(className)
+  }
 
   companion object {
     private const val GRADLE_CACHE_TRANSFORMS_PATH_REGEX = "^caches/[0-9]{1,2}.[0-9]{1,2}(.[0-9])?(-rc-[0-9]{1,2})?/transforms/[0-9a-f]{32}/(workspace/)?transformed"

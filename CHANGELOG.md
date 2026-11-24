@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [2.0.0-alpha05.1] - 2026-09-28
+
+This release swaps layoutlib's simplified window and render model for the framework's, so behavior follows the platform as it changes. Dialogs, popups and sheets are real windows with their own `ViewRootImpl`, giving z-order, dimming and per-window insets that match the device. Measure, layout and pre-draw run through `ViewRootImpl.doTraversal()`, and each render session owns its `Looper`.
+
+Accessibility goldens, and goldens using the `V_SCROLL`, `H_SCROLL` and `FULL_EXPAND` rendering modes, change with this version and will need re-recording.
+
 ### New
 * Paparazzi tests can now live in their own `src/screenshotTest` source set, isolated from the project's unit tests. Opt in with:
 
@@ -13,13 +19,29 @@ app.cash.paparazzi.enableScreenshotTestSourceSet=true
 
   Paparazzi then wires a dedicated `test<Variant>ScreenshotTest` task (with standard Gradle JUnit XML/HTML reporting) plus `recordPaparazzi<Variant>ScreenshotTest` and `verifyPaparazzi<Variant>ScreenshotTest`. Goldens are stored in `src/screenshotTest/snapshots`, and dependencies are declared via `screenshotTestImplementation`. Existing `src/test` setups are unaffected.
 
-* Add `Paparazzi#gif` overloads that accept a `@Composable` directly, mirroring the existing `snapshot` Compose overloads:
+* LayoutLib v16.2.3 (#2468)
+* Add a `Paparazzi#gif` overload that accepts a `@Composable` directly (#2365):
 
 ```kotlin
 paparazzi.gif {
   CircularProgressIndicator()
 }
 ```
+* Add `app.cash.paparazzi.reportType=native` to publish snapshot diffs as attachments on Gradle's test report instead of replacing Gradle's reporter. Requires Gradle 9.4+. `legacy` stays the default for now, but will be removed in an upcoming release (#2436)
+* Add `app.cash.paparazzi.nativeReportFrameworks` to choose which frameworks native mode supports: `junit4` (the default), `junit5`, or both, so a JUnit 4 project never pulls in the Jupiter engine (#2450)
+* [Gradle Plugin] Android Gradle Plugin 9.0.0 (#2198)
+
+### Fixed
+* `AnimatedVectorDrawable` now advances with the snapshot offset instead of rendering at time zero (#2472)
+* Fix infinite loop when verifying single-frame goldens (#2379)
+* Exclude blank text from merged accessibility labels (#2331, #2372)
+* Prune hidden accessibility subtrees (#2383)
+* Filter hidden Compose accessibility semantics (#2430)
+* [Gradle Plugin] Fix `cleanRecord` race condition between snapshot recording and deletion under parallel builds (#2377)
+* [Gradle Plugin] Fix remote build cache misses caused by absolute paths in the test task's system properties (#1874, #2381, #2452)
+* [Gradle Plugin] `cleanRecordPaparazzi` deletes the variant's own snapshots rather than every variant's (#2456)
+
+Kudos to @geoff-powell, @colinmarsch, @arpitagarwal1301, @FilippoVigani, @abeggsnf, @oldergod and others for contributions this release!
 
 ## [2.0.0-alpha05] - 2026-05-20
 
@@ -533,7 +555,8 @@ As of this release, consumers must build on Java 11 environments.
 
 
 
-[Unreleased]: https://github.com/cashapp/paparazzi/compare/2.0.0-alpha05...HEAD
+[Unreleased]: https://github.com/cashapp/paparazzi/compare/2.0.0-alpha05.1...HEAD
+[2.0.0-alpha05.1]: https://github.com/cashapp/paparazzi/releases/tag/2.0.0-alpha05.1
 [2.0.0-alpha05]: https://github.com/cashapp/paparazzi/releases/tag/2.0.0-alpha05
 [2.0.0-alpha04]: https://github.com/cashapp/paparazzi/releases/tag/2.0.0-alpha04
 [2.0.0-alpha03]: https://github.com/cashapp/paparazzi/releases/tag/2.0.0-alpha03

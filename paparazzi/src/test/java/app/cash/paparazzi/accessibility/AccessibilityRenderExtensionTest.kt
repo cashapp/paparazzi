@@ -2,6 +2,7 @@ package app.cash.paparazzi.accessibility
 
 import android.content.Context
 import android.graphics.Color
+import android.graphics.Rect
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.GradientDrawable.OVAL
 import android.graphics.drawable.GradientDrawable.Orientation.TL_BR
@@ -15,6 +16,7 @@ import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Paparazzi
 import app.cash.paparazzi.SnapshotVerifier
 import app.cash.paparazzi.internal.differs.OffByTwo
+import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
 
@@ -44,6 +46,28 @@ class AccessibilityRenderExtensionTest {
       addView(View(context).apply { contentDescription = "Empty View" }, 0, LinearLayout.LayoutParams(0, 0))
     }
     paparazzi.snapshot(view, name = "accessibility-new-view")
+  }
+
+  @Test
+  fun `blank accessibility labels are ignored`() {
+    val view = View(paparazzi.context).apply {
+      contentDescription = "   "
+    }
+
+    val element = AccessibilityElement.fromView(view, Rect())
+
+    assertThat(element).isNull()
+  }
+
+  @Test
+  fun `list membership alone is ignored`() {
+    val element = AccessibilityElement(
+      id = "list-item",
+      displayBounds = Rect(),
+      isInList = "<in-list>"
+    )
+
+    assertThat(element.legendText).isEmpty()
   }
 
   private fun buildView(
