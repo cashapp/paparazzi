@@ -60,8 +60,18 @@ internal object WindowSizingSupport {
     width = maxOf(width, 1)
     height = maxOf(height, 1)
 
+    val canvasSizeChanged = width != RenderSizingState.canvasWidth || height != RenderSizingState.canvasHeight
     RenderSizingState.canvasWidth = width
     RenderSizingState.canvasHeight = height
+    if (canvasSizeChanged) {
+      // Measuring a sub-window can position it against the previous canvas. Its dimensions may
+      // stay the same, so another traversal alone need not relayout it. Reapply its attributes to
+      // make the next traversal position it against the canvas we just measured.
+      for (window in sessionWindows(baseWindow)) {
+        val viewRoot = window.parent as? ViewRootImpl ?: continue
+        viewRoot.setLayoutParams(window.layoutParams as WindowManager.LayoutParams, false)
+      }
+    }
     return (width.toLong() shl 32) or (height.toLong() and 0xffffffffL)
   }
 
