@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:orientation="vertical"
+  android:layout_width="fill_parent"
+  android:layout_height="fill_parent">
+
+  <!-- View with an empty id. -->
+  <ImageView android:id="@+id/" />
+
+  <RelativeLayout style="@style/TitleBar" android:id="@+id/header">
+    <ImageView style="@style/TitleBarLogo"
+      android:id="@+id/image"
+      android:contentDescription="@string/description_logo"
+      android:layout_above="@+id/styledView"
+      android:layout_alignParentLeft="true"
+      android:src="@drawable/title_logo" />
+
+    <View style="@style/TitleBarSpring"
+      android:layout_alignParentLeft="true"
+      android:id="@id/styledView"/>
+
+    <ImageView style="@style/TitleBarSeparator"
+      android:id="@+id/imageView"
+      android:layout_below="@id/styledView"
+      android:layout_above="@+id/btn_title_refresh"
+      android:layout_alignParentLeft="true"/>
+
+    <ImageButton style="@style/TitleBarAction"
+      android:id="@+id/btn_title_refresh"
+      android:contentDescription="@string/description_refresh"
+      android:src="@drawable/ic_title_refresh"
+      android:layout_width="wrap_content"
+      android:layout_height="42dp"
+      android:align_parentLeft="@+id/nonExistent"
+      android:onClick="onRefreshClick"
+      android:layout_below="@id/imageView"/>
+    <ProgressBar style="@style/TitleBarProgressIndicator"
+      android:id="@+id/title_refresh_progress"
+      android:layout_width="wrap_content"
+      android:visibility="visible"
+      android:layout_below="@+id/btn_title_refresh"/>
+
+    <ImageView style="@style/TitleBarSeparator"
+      android:id="@+id/imageView2"
+      android:layout_below="@id/title_refresh_progress"
+      android:layout_above="@+id/imageButton" />
+
+    <ImageButton style="@style/TitleBarAction"
+      android:contentDescription="@string/description_search"
+      android:src="@drawable/ic_title_search"
+      android:id="@id/imageButton"
+      android:layout_width="wrap_content"
+      android:layout_height="42dp"
+      android:onClick="onSearchClick" />
+  </RelativeLayout>
+
+  <LinearLayout
+    android:id="@+id/noteArea"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:layout_weight="1"
+    android:layout_margin="5dip">
+    <EditText
+      android:id="@android:id/text1"
+      android:layout_height="fill_parent"
+      android:hint="@string/note_hint"
+      android:freezesText="true"
+      android:gravity="top" android:layout_width="wrap_content" android:layout_weight="1">
+    </EditText>
+    <EditText
+      android:id="@+id/text2"
+      android:layout_height="fill_parent"
+      android:freezesText="true"
+      android:gravity="top" android:layout_width="wrap_content" android:layout_weight="1">
+      <requestFocus />
+    </EditText>
+  </LinearLayout>
+
+  <LinearLayout
+    android:orientation="horizontal"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    style="@android:style/ButtonBar">
+    <Button
+      android:layout_width="0dip"
+      android:layout_height="wrap_content"
+      android:layout_weight="1"
+      android:onClick="onSaveClick"
+      android:text="@string/note_save" />
+    <Button
+      android:layout_width="0dip"
+      android:layout_height="wrap_content"
+      android:layout_weight="1"
+      android:onClick="onDiscardClick"
+      android:text="@string/note_discard" />
+  </LinearLayout>
+
+  <android.support.constraint.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <FrameLayout
+      android:layout_width="match_parent"
+      android:layout_height="0dp"
+      app:layout_constraintTop_toBottomOf="parent"
+      app:layout_constraintBottom_toTopOf="@+id/bug123032845" />
+    <LinearLayout
+      android:id="@id/bug123032845"
+      android:layout_width="match_parent"
+      android:layout_height="64dp"
+      android:background="@color/colorAccent"
+      android:orientation="horizontal"
+      app:layout_constraintBottom_toBottomOf="parent" />
+  </android.support.constraint.ConstraintLayout>
+
+</LinearLayout>

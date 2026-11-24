@@ -15,15 +15,26 @@
  */
 package app.cash.paparazzi
 
+import app.cash.paparazzi.Differ
 import app.cash.paparazzi.SnapshotHandler.FrameHandler
 import app.cash.paparazzi.internal.ImageUtils
+import app.cash.paparazzi.internal.apng.ApngVerifier
+import app.cash.paparazzi.internal.differs.DeltaE2000
+import app.cash.paparazzi.internal.differs.Flip
+import app.cash.paparazzi.internal.differs.Mssim
+import app.cash.paparazzi.internal.differs.OffByTwo
+import app.cash.paparazzi.internal.differs.PixelPerfect
+import app.cash.paparazzi.internal.differs.Sift
+import okio.Path.Companion.toOkioPath
 import java.awt.image.BufferedImage
+import java.awt.image.BufferedImage.TYPE_INT_ARGB
 import java.io.File
 import javax.imageio.ImageIO
 
-class SnapshotVerifier @JvmOverloads constructor(
+public class SnapshotVerifier @JvmOverloads constructor(
   private val maxPercentDifference: Double,
-  rootDirectory: File = File("src/test/snapshots"),
+  rootDirectory: File = File(System.getProperty("paparazzi.snapshot.dir")),
+  private val differ: Differ = determineDiffer()
 ) : SnapshotHandler {
   private val imagesDirectory: File = File(rootDirectory, "images")
   private val videosDirectory: File = File(rootDirectory, "videos")
@@ -33,31 +44,81 @@ class SnapshotVerifier @JvmOverloads constructor(
     videosDirectory.mkdirs()
   }
 
-  override fun newFrameHandler(
-    snapshot: Snapshot,
-    frameCount: Int,
-    fps: Int
-  ): FrameHandler {
+  override fun newFrameHandler(snapshot: Snapshot, frameCount: Int, fps: Int): FrameHandler {
     return object : FrameHandler {
+      val snapshotDir = if (fps == -1) imagesDirectory else videosDirectory
+      val expected = File(snapshotDir, snapshot.toFileName(extension = "png"))
+      val failurePath = File(failureDir, "delta-${expected.name}").toOkioPath()
+      val pngVerifier: ApngVerifier? = if (fps != -1) {
+        ApngVerifier(expected.toOkioPath(), failurePath, fps, frameCount, maxPercentDifference, differ = differ)
+      } else {
+        null
+      }
+
       override fun handle(image: BufferedImage) {
-        // Note: does not handle videos or its frames at the moment
-        val expected = File(imagesDirectory, snapshot.toFileName(extension = "png"))
-        if (!expected.exists()) {
-          throw AssertionError("File $expected does not exist")
+        if (pngVerifier != null) {
+          pngVerifier.verifyFrame(image)
+          return
         }
 
-        val goldenImage = ImageIO.read(expected)
+        val goldenImage = if (!expected.exists()) {
+          // Stub image for comparison and to proceed with failure output
+          BufferedImage(image.width, image.height, TYPE_INT_ARGB)
+        } else {
+          ImageIO.read(expected)
+        } ?: throw NullPointerException(
+          """
+          Failed to read the snapshot file from the file system.
+
+          If your project uses git LFS, it's possible that it's misconfigured on your machine and
+          Paparazzi has just loaded a pointer file instead of the real snapshot file. Follow git
+          LFS troubleshooting instructions and try again.
+
+          """.trimIndent()
+        )
         ImageUtils.assertImageSimilar(
-            relativePath = expected.path,
-            image = image,
-            goldenImage = goldenImage,
-            maxPercentDifferent = maxPercentDifference
+          relativePath = expected.path,
+          image = image,
+          goldenImage = goldenImage,
+          maxPercentDifferent = maxPercentDifference,
+          failureDir = failureDir,
+          differ = differ
         )
       }
 
-      override fun close() = Unit
+      override fun close() {
+        try {
+          pngVerifier?.assertFinished()
+        } finally {
+          pngVerifier?.close()
+        }
+      }
     }
   }
 
-  override fun close() = Unit
+  override fun close(): Unit = Unit
+
+  private companion object {
+    /** Directory where to write the thumbnails and deltas. */
+    private val failureDir: File
+      get() {
+        val path = System.getProperty("paparazzi.failures.dir")
+          ?: error("paparazzi.failures.dir system property is required")
+        return File(path).apply { mkdirs() }
+      }
+  }
 }
+
+internal fun determineDiffer() =
+  System.getProperty("app.cash.paparazzi.differ")?.lowercase().let { differ ->
+    when (differ) {
+      "offbytwo" -> OffByTwo
+      "pixelperfect" -> PixelPerfect
+      "mssim" -> Mssim
+      "sift" -> Sift
+      "flip" -> Flip
+      "de2000" -> DeltaE2000
+      null, "", "default" -> OffByTwo
+      else -> error("Unknown differ type '$differ'.")
+    }
+  }

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <plurals name="plural_name">
+    <!-- https://www.unicode.org/cldr/charts/43/supplemental/language_plural_rules.html#ar -->
+    <item quantity="zero">0 ولد حضر</item>
+    <item quantity="one">ولد واحد حضر</item>
+    <item quantity="two">ولدان حضرا</item>
+    <item quantity="few">3 أولاد حضروا</item>
+    <item quantity="many">11 ولدًا حضروا</item>
+    <item quantity="other">100 ولد حضروا</item>
+  </plurals>
+</resources>

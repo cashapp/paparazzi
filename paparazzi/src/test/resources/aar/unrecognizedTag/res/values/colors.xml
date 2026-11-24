@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <color name="black">#FF000000</color>
+  <unrecognized>
+    <color name="red">#FFFF0000</color>
+    <more_unrecognized/>
+  </unrecognized>
+  <color name="white">#FFFFFFFF</color>
+</resources>

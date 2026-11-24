@@ -15,7 +15,6 @@
  */
 package app.cash.paparazzi.internal.parsers
 
-import java.lang.IndexOutOfBoundsException
 import org.kxml2.io.KXmlParser
 import org.xmlpull.v1.XmlPullParserException
 
@@ -24,7 +23,7 @@ import org.xmlpull.v1.XmlPullParserException
  *
  * A parser implementation that walks an in-memory XML DOM tree.
  */
-abstract class InMemoryParser : KXmlParser() {
+internal abstract class InMemoryParser : KXmlParser() {
   abstract fun rootTag(): TagSnapshot
 
   private val nodeStack = mutableListOf<TagSnapshot>()
@@ -55,10 +54,7 @@ abstract class InMemoryParser : KXmlParser() {
     return attribute.value
   }
 
-  override fun getAttributeValue(
-    namespace: String?,
-    name: String?
-  ): String? {
+  override fun getAttributeValue(namespace: String?, name: String?): String? {
     val tag = getCurrentNode() ?: return null
     return tag.attributes.find { it.name == name }?.value
   }
@@ -103,12 +99,8 @@ abstract class InMemoryParser : KXmlParser() {
 
   private fun onNextFromStartDocument() {
     val rootTag = rootTag()
-    parsingState = if (rootTag != null) {
-      push(rootTag)
-      START_TAG
-    } else {
-      END_DOCUMENT
-    }
+    push(rootTag)
+    parsingState = START_TAG
   }
 
   private fun onNextFromStartTag() {

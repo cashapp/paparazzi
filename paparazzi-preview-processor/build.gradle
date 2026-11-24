@@ -1,0 +1,11 @@
+apply plugin: 'org.jetbrains.kotlin.jvm'
+apply plugin: 'com.vanniktech.maven.publish'
+
+dependencies {
+  implementation libs.kotlinpoet.ksp
+  implementation libs.ksp
+
+  testImplementation libs.junit
+  testImplementation libs.truth
+  testImplementation libs.kotlin.compile.testing.ksp
+}

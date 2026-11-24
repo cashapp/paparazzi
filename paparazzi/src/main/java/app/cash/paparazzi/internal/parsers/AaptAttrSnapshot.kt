@@ -25,7 +25,7 @@ import com.android.SdkConstants.AAPT_PREFIX
  * of the reference. This snapshot will generate a dynamic reference that will be used by the
  * resource resolution to be able to retrieve the inlined value.
  */
-class AaptAttrSnapshot(
+internal class AaptAttrSnapshot(
   override val namespace: String,
   override val prefix: String,
   override val name: String,

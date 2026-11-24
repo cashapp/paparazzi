@@ -1,33 +1,26 @@
 plugins {
   id 'com.android.library'
-  id 'kotlin-android'
+  id 'org.jetbrains.kotlin.plugin.compose'
   id 'app.cash.paparazzi'
 }
 
-repositories {
-  maven {
-    url "file://${projectDir.absolutePath}/../../../../../build/localMaven"
-  }
-  mavenCentral()
-  //mavenLocal()
-  google()
-}
-
 android {
-  compileSdkVersion 31
+  namespace = 'app.cash.paparazzi.plugin.test'
+  compileSdk = libs.versions.compileSdk.get() as int
   defaultConfig {
-    minSdkVersion 25
+    minSdk = libs.versions.minSdk.get() as int
+  }
+  compileOptions {
+    sourceCompatibility = libs.versions.javaTarget.get()
+    targetCompatibility = libs.versions.javaTarget.get()
   }
   buildFeatures {
-    compose true
-  }
-  composeOptions {
-    kotlinCompilerExtensionVersion '1.1.1'
+    compose = true
   }
 }
 
 dependencies {
-  implementation 'androidx.compose.material:material:1.1.1'
+  implementation libs.composeUi.material
 
   testImplementation 'com.squareup.leakcanary:leakcanary-object-watcher:2.7'
   testImplementation 'com.squareup.leakcanary:shark:2.7'

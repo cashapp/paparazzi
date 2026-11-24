@@ -15,27 +15,50 @@
  */
 package app.cash.paparazzi
 
-import com.squareup.moshi.JsonClass
+import com.google.common.base.CharMatcher
+import dev.drewhamilton.poko.Poko
 import java.util.Date
 import java.util.Locale
 
-@JsonClass(generateAdapter = true)
-data class Snapshot(
-  val name: String?,
-  val testName: TestName,
-  val timestamp: Date,
-  val tags: List<String> = listOf(),
-  val file: String? = null
-)
+@Poko
+public class Snapshot(
+  public val name: String?,
+  public val testName: TestName,
+  public val timestamp: Date,
+  public val tags: List<String> = listOf(),
+  public val file: String? = null
+) {
+  public fun copy(
+    name: String? = this.name,
+    testName: TestName = this.testName,
+    timestamp: Date = this.timestamp,
+    tags: List<String> = this.tags,
+    file: String? = this.file
+  ): Snapshot = Snapshot(name, testName, timestamp, tags, file)
+}
 
-internal fun Snapshot.toFileName(
-  delimiter: String = "_",
-  extension: String
-): String {
-  val formattedLabel = if(name != null) {
-    "$delimiter${name.toLowerCase(Locale.US).replace("\\s".toRegex(), delimiter)}"
+internal val invalidPrintableChars = CharMatcher.anyOf("<>:\"/\\|?*")
+
+internal fun Snapshot.toFileName(delimiter: String = "_", extension: String): String {
+  val formattedLabel = if (name != null) {
+    if (invalidPrintableChars.matchesAnyOf(name)) {
+      throw IllegalArgumentException("Supplied snapshot name contains invalid characters ('$name')")
+    }
+    "$delimiter${name.lowercase(Locale.US).replace("\\s".toRegex(), delimiter)}"
   } else {
     ""
   }
-  return "${testName.packageName}${delimiter}${testName.className}${delimiter}${testName.methodName}$formattedLabel.${extension}"
+  if (invalidPrintableChars.matchesAnyOf(testName.methodName)) {
+    throw IllegalArgumentException("Generated method name contains invalid characters ('${testName.methodName}')")
+  }
+  return buildString {
+    append(testName.packageName)
+    append(delimiter)
+    append(testName.className)
+    append(delimiter)
+    append(testName.methodName.replace("\\s".toRegex(), delimiter))
+    append(formattedLabel)
+    append(".")
+    append(extension)
+  }
 }

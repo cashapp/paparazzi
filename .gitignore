@@ -13,7 +13,12 @@ build
 build-cache
 generated
 
+# Kotlin
+.kotlin
+
 # Mkdocs files
-docs/0.x
+docs/1.x
+docs/2.x
 docs/changelog.md
 docs/index.md
+site/

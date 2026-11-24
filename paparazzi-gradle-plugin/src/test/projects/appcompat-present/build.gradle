@@ -1,25 +1,21 @@
 plugins {
   id 'com.android.library'
-  id 'kotlin-android'
   id 'app.cash.paparazzi'
 }
 
-repositories {
-  maven {
-    url "file://${projectDir.absolutePath}/../../../../../build/localMaven"
-  }
-  mavenCentral()
-  //mavenLocal()
-  google()
-}
-
 android {
-  compileSdkVersion 31
+  namespace = 'app.cash.paparazzi.plugin.test'
+  compileSdk = libs.versions.compileSdk.get() as int
   defaultConfig {
-    minSdkVersion 25
+    minSdk = libs.versions.minSdk.get() as int
+  }
+  compileOptions {
+    sourceCompatibility = libs.versions.javaTarget.get()
+    targetCompatibility = libs.versions.javaTarget.get()
   }
 }
 
 dependencies {
-  implementation 'androidx.appcompat:appcompat:1.3.1'
+  implementation libs.androidx.appcompat
 }
+

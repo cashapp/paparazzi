@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <declare-styleable name="test_styleable">
+    <attr name="TestAttr" format="float"/>
+    <attr name="TestAttrInt" format="integer"/>
+    <attr name="TestAttrReference"/>
+  </declare-styleable>
+</resources>

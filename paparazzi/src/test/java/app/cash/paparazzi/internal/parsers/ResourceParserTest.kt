@@ -15,7 +15,7 @@
  */
 package app.cash.paparazzi.internal.parsers
 
-import org.assertj.core.api.Assertions.assertThat
+import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
 class ResourceParserTest {
@@ -28,10 +28,10 @@ class ResourceParserTest {
     assertThat(root.hasDeclaredAaptAttrs).isEqualTo(false)
     assertThat(root.next).isNull()
     assertThat(root.attributes).containsExactly(
-        AttributeSnapshot(ANDROID_NAMESPACE, ANDROID_PREFIX, "height", "24dp"),
-        AttributeSnapshot(ANDROID_NAMESPACE, ANDROID_PREFIX, "viewportHeight", "40"),
-        AttributeSnapshot(ANDROID_NAMESPACE, ANDROID_PREFIX, "viewportWidth", "40"),
-        AttributeSnapshot(ANDROID_NAMESPACE, ANDROID_PREFIX, "width", "24dp")
+      AttributeSnapshot(ANDROID_NAMESPACE, ANDROID_PREFIX, "height", "24dp"),
+      AttributeSnapshot(ANDROID_NAMESPACE, ANDROID_PREFIX, "viewportHeight", "40"),
+      AttributeSnapshot(ANDROID_NAMESPACE, ANDROID_PREFIX, "viewportWidth", "40"),
+      AttributeSnapshot(ANDROID_NAMESPACE, ANDROID_PREFIX, "width", "24dp")
     )
 
     val pathElement = root.children.single()
@@ -46,14 +46,14 @@ class ResourceParserTest {
     val pathAttributes = pathElement.attributes
     assertThat(pathAttributes).hasSize(2)
     assertThat(pathAttributes[0]).isEqualTo(
-        AttributeSnapshot(ANDROID_NAMESPACE, ANDROID_PREFIX, FILL_COLOR_ATTR_NAME, "#999999")
+      AttributeSnapshot(ANDROID_NAMESPACE, ANDROID_PREFIX, FILL_COLOR_ATTR_NAME, "#999999")
     )
 
     with(pathAttributes[1]) {
       assertThat(namespace).isEqualTo(ANDROID_NAMESPACE)
       assertThat(prefix).isEqualTo(ANDROID_PREFIX)
       assertThat(name).isEqualTo(PATH_DATA_ATTR_NAME)
-      assertThat(value).isNotEmpty // don't care about pathData precision
+      assertThat(value).isNotEmpty() // don't care about pathData precision
     }
   }
 

@@ -18,14 +18,13 @@ package app.cash.paparazzi
 import java.awt.image.BufferedImage
 import java.io.Closeable
 
-interface SnapshotHandler : Closeable {
-  fun newFrameHandler(
-    snapshot: Snapshot,
-    frameCount: Int,
-    fps: Int
-  ): FrameHandler
+public interface SnapshotHandler : Closeable {
+  public fun newFrameHandler(snapshot: Snapshot, frameCount: Int, fps: Int): FrameHandler
 
-  interface FrameHandler : Closeable {
-    fun handle(image: BufferedImage)
+  public interface FrameHandler : Closeable {
+    public fun handle(image: BufferedImage)
   }
 }
+
+public fun detectMaxPercentDifferenceDefault(): Double =
+  System.getProperty("app.cash.paparazzi.maxPercentDifferenceDefault")?.toDoubleOrNull() ?: 0.01

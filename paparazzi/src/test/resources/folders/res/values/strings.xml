@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+  <plurals name="plural_name">
+    <item quantity="zero">Nothing</item>
+    <item quantity="one">One String</item>
+  </plurals>
+  <string name="string_name">Test String</string>
+  <string name="string_name_html">This <b>Test</b> String</string>
+  <string name="string_name_xliff">Test String <xliff:g id="number" example="9">{0}</xliff:g> with suffix</string>
+  <string-array name="string_array_name">
+    <item>First Test String</item>
+    <item>Second Test String</item>
+  </string-array>
+</resources>

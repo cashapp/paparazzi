@@ -1,80 +1,6 @@
-apply plugin: 'com.github.ben-manes.versions'
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 buildscript {
-  ext.repoDir = new File("$rootProject.buildDir/prebuilts/studio/layoutlib")
-
-  // maps to this commit: https://android.googlesource.com/platform/prebuilts/studio/layoutlib/+/573f070
-  // which runs on JDK 11
-  ext.layoutLibPrebuiltSha = '573f070'
-
-  ext.versions = [
-    kotlin: '1.6.10',
-    agp: '7.1.2',
-    layoutlib: "2021.1.1-$layoutLibPrebuiltSha", // "should" be similar to versions.agp
-    compose: '1.1.1',
-    jcodec: '0.2.5',
-    moshi: '1.13.0',
-    bytebuddy: '1.11.22',
-    releasedPaparazzi: '0.9.3'
-  ]
-
-  ext.deps = [
-    plugins: [
-      android: "com.android.tools.build:gradle:${versions.agp}",
-      kotlin: "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}",
-    ],
-    compose: [
-      compiler: "androidx.compose.compiler:compiler:${versions.compose}",
-    ],
-    kotlin: [
-      bom: "org.jetbrains.kotlin:kotlin-bom:${versions.kotlin}",
-    ],
-    kotlinx: [
-      coroutines: [
-        core: 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2',
-      ],
-    ],
-    tools: [
-      common: 'com.android.tools:common:27.1.2',
-      layoutlib: 'com.android.tools.layoutlib:layoutlib-api:27.2.2',
-      sdkcommon: 'com.android.tools:sdk-common:26.6.4',
-      ninepatch: 'com.android.tools:ninepatch:30.1.2',
-    ],
-    kxml2: 'kxml2:kxml2:2.3.0',
-    androidx: [
-      annotations: 'androidx.annotation:annotation:1.3.0',
-      lifecycleCommon: 'androidx.lifecycle:lifecycle-common:2.4.0',
-    ],
-    layoutlib: [
-      native: [
-        jdk11: "app.cash.paparazzi:layoutlib-native-jdk11:${versions.layoutlib}",
-        macArm: "app.cash.paparazzi:layoutlib-native-macarm:${versions.layoutlib}",
-        macOsX: "app.cash.paparazzi:layoutlib-native-macosx:${versions.layoutlib}",
-        windows: "app.cash.paparazzi:layoutlib-native-win:${versions.layoutlib}",
-        linux: "app.cash.paparazzi:layoutlib-native-linux:${versions.layoutlib}",
-      ]
-    ],
-    okio: 'com.squareup.okio:okio:3.0.0',
-    moshi: [
-      core: "com.squareup.moshi:moshi:${versions.moshi}",
-      adapters: "com.squareup.moshi:moshi-adapters:${versions.moshi}",
-      kotlinCodegen: "com.squareup.moshi:moshi-kotlin-codegen:${versions.moshi}",
-    ],
-    jcodec: [
-      core: "org.jcodec:jcodec:${versions.jcodec}",
-      javase: "org.jcodec:jcodec-javase:${versions.jcodec}"
-    ],
-    bytebuddy: [
-      core: "net.bytebuddy:byte-buddy:${versions.bytebuddy}",
-      agent: "net.bytebuddy:byte-buddy-agent:${versions.bytebuddy}",
-    ],
-    guava: 'com.google.guava:guava:31.0.1-jre',
-    junit: 'junit:junit:4.13.2',
-    truth: 'com.google.truth:truth:1.1.3',
-    assertj: 'org.assertj:assertj-core:3.21.0',
-    testparameterinjector: 'com.google.testparameterinjector:test-parameter-injector:1.5',
-  ]
-
   repositories {
     mavenCentral()
     google()
@@ -83,53 +9,85 @@ buildscript {
   }
 
   dependencies {
-    classpath deps.plugins.kotlin
-    classpath deps.plugins.android
-    classpath 'com.vanniktech:gradle-maven-publish-plugin:0.18.0'
-    classpath 'org.ajoberstar.grgit:grgit-gradle:4.1.0'
-    classpath 'com.github.ben-manes:gradle-versions-plugin:0.39.0'
-    classpath 'org.jetbrains.dokka:dokka-gradle-plugin:1.5.31'
-    classpath "app.cash.paparazzi:paparazzi-gradle-plugin:${versions.releasedPaparazzi}"
+    classpath libs.plugin.kotlin
+    classpath libs.plugin.kotlin.compose
+    classpath libs.plugin.kotlinApiDump
+    classpath libs.plugin.ksp
+    classpath libs.plugin.android
+    classpath libs.plugin.mavenPublish
+    classpath libs.plugin.dokka
+    classpath libs.plugin.spotless
+    classpath libs.plugin.buildConfig
+    classpath libs.plugin.poko
+
+    // Normally you would declare a version here, but we use dependency substitution in
+    // settings.gradle to use the version built from inside the repo.
+    classpath 'app.cash.paparazzi:paparazzi-gradle-plugin'
+    classpath 'app.cash.paparazzi:aar2jar'
+  }
+}
+
+apply plugin: 'binary-compatibility-validator'
+
+def testProjectProp = System.getProperty("app.cash.paparazzi.testProjectNames")
+apiValidation {
+  ignoredProjects += ['sample']
+
+  if (testProjectProp != null) {
+    def testProjectNames = testProjectProp.split(",").toList()
+    ignoredProjects += testProjectNames
   }
 }
 
 subprojects {
+  version = property("VERSION_NAME") as String
+
   repositories {
     mavenCentral()
     google()
     //mavenLocal()
   }
 
-  group = GROUP
-  version = VERSION_NAME
-
+  // Uncomment to debug JNI issues in layoutlib
+  // jvmArgs '-Xcheck:jni'
   tasks.withType(Test).configureEach {
     testLogging {
-      events "failed"
-      exceptionFormat "full"
-      showExceptions true
-      showStackTraces true
-      showCauses true
+      events "passed", "failed", "skipped", "standardOut", "standardError"
+      exceptionFormat = "full"
+      showExceptions = true
+      showStackTraces = true
+      showCauses = true
     }
   }
 
   tasks.withType(JavaCompile).configureEach {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = libs.versions.javaTarget.get()
+    targetCompatibility = libs.versions.javaTarget.get()
   }
 
-  tasks.withType(org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile).configureEach {
-    kotlinOptions {
-      jvmTarget = "1.8"
+  tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile).configureEach {
+    compilerOptions {
+      jvmTarget = JvmTarget.fromTarget(libs.versions.javaTarget.get())
     }
+  }
+
+  plugins.withId('org.jetbrains.kotlin.jvm') {
+    extensions.getByName('kotlin').explicitApi()
   }
 
   plugins.withId('com.vanniktech.maven.publish') {
     publishing {
       repositories {
+        def localMavenDir = rootProject.layout.buildDirectory.dir("localMaven")
         maven {
           name = "projectLocalMaven"
-          url = "${rootProject.buildDir}/localMaven"
+          url = localMavenDir
+        }
+        publications.configureEach {
+          tasks.named("publish${name.capitalize()}PublicationToProjectLocalMavenRepository").configure {
+	          // Ensure task is up to date, when there are no input changes, fo this we need to declare outputs.
+            outputs.dir(localMavenDir).withPropertyName("repository")
+          }
         }
         /**
          * Want to push to an internal repository for testing?
@@ -141,49 +99,23 @@ subprojects {
          */
         maven {
           name = "internal"
-          url = providers.gradleProperty("internalUrl").forUseAtConfigurationTime()
+          url = providers.gradleProperty("internalUrl")
           credentials(PasswordCredentials)
         }
       }
     }
+  }
 
-    mavenPublish {
-      releaseSigningEnabled = hasProperty('signingKey')
+  apply plugin: 'com.diffplug.spotless'
+  spotless {
+    kotlin {
+      target("src/**/*.kt")
+      ktlint(libs.ktlint.core.get().version)
+        .setEditorConfigPath(rootProject.file(".editorconfig"))
     }
-  }
-
-  tasks.register('emptySourcesJar', Jar) {
-    // TODO: fetch sources from the corresponding AOSP repos.
-    archiveClassifier = 'sources'
-  }
-
-  tasks.register('emptyJavadocJar', Jar) {
-    archiveClassifier = 'javadoc'
   }
 }
 
 tasks.register("clean", Delete).configure {
-  delete rootProject.buildDir
-}
-
-tasks.named("wrapper").configure {
-  distributionType = Wrapper.DistributionType.ALL
-}
-
-allprojects { project ->
-  tasks.register("mavenLocalize").configure { task ->
-    def projectRootDir = project.projectDir
-    task.doFirst {
-      projectRootDir.eachFileRecurse(groovy.io.FileType.FILES) { file ->
-        if (file.name != 'build.gradle') {
-          return
-        }
-        def text = file.text
-        file.withWriter { w ->
-          // Intentional concatenation to prevent self-replacement
-          w << text.replace("//" + "mavenLocal()", "mavenLocal()")
-        }
-      }
-    }
-  }
+  delete(rootProject.layout.buildDirectory)
 }

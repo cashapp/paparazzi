@@ -16,15 +16,20 @@
 package app.cash.paparazzi
 
 import app.cash.paparazzi.SnapshotHandler.FrameHandler
+import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.PaparazziJson
+import app.cash.paparazzi.internal.apng.ApngReader
+import app.cash.paparazzi.internal.apng.ApngWriter
 import com.google.common.base.CharMatcher
+import com.google.common.io.Files
 import okio.BufferedSink
+import okio.FileSystem
 import okio.HashingSink
+import okio.Path.Companion.toPath
 import okio.blackholeSink
 import okio.buffer
 import okio.sink
 import okio.source
-import org.jcodec.api.awt.AWTSequenceEncoder
 import java.awt.image.BufferedImage
 import java.io.File
 import java.text.SimpleDateFormat
@@ -57,10 +62,12 @@ import javax.imageio.ImageIO
  * paparazzi.js
  * ```
  */
-class HtmlReportWriter @JvmOverloads constructor(
+public class HtmlReportWriter @JvmOverloads constructor(
   private val runName: String = defaultRunName(),
-  private val rootDirectory: File = File("build/reports/paparazzi"),
-  snapshotRootDirectory: File = File("src/test/snapshots")
+  private val rootDirectory: File = File(System.getProperty("paparazzi.report.dir")),
+  private val maxPercentDifference: Double,
+  private val differ: Differ = determineDiffer(),
+  snapshotRootDirectory: File = File(System.getProperty("paparazzi.snapshot.dir"))
 ) : SnapshotHandler {
   private val runsDirectory: File = File(rootDirectory, "runs")
   private val imagesDirectory: File = File(rootDirectory, "images")
@@ -73,6 +80,8 @@ class HtmlReportWriter @JvmOverloads constructor(
 
   private val isRecording: Boolean =
     System.getProperty("paparazzi.test.record")?.toBoolean() == true
+  private val overwriteOnMaxPercentDifference: Boolean =
+    System.getProperty("paparazzi.test.record.overwriteOnMaxPercentDifference")?.toBoolean() == true
 
   init {
     runsDirectory.mkdirs()
@@ -83,70 +92,75 @@ class HtmlReportWriter @JvmOverloads constructor(
     writeIndexJs()
   }
 
-  override fun newFrameHandler(
-    snapshot: Snapshot,
-    frameCount: Int,
-    fps: Int
-  ): FrameHandler {
+  override fun newFrameHandler(snapshot: Snapshot, frameCount: Int, fps: Int): FrameHandler {
     return object : FrameHandler {
+      val snapshotDir = if (fps == -1) imagesDirectory else videosDirectory
+      val goldenDir = if (fps == -1) goldenImagesDirectory else goldenVideosDirectory
       val hashes = mutableListOf<String>()
+      val snapshotTmpFile = File(snapshotDir, snapshot.toFileName(extension = "temp.png"))
+      val writer = ApngWriter(snapshotTmpFile.path.toPath(), fps)
 
       override fun handle(image: BufferedImage) {
-        hashes += writeImage(image)
+        writer.writeImage(image)
+        hashes += hash(image)
       }
 
       override fun close() {
         if (hashes.isEmpty()) return
+        writer.close()
+        // Frame timing is part of a video's contents, even when all its pixels are unchanged.
+        val snapshotHash = hash(hashes, fps)
+        val snapshotFile = File(snapshotDir, "$snapshotHash.png")
+        Files.move(snapshotTmpFile, snapshotFile)
+        snapshotTmpFile.delete()
 
-        val shot = if (hashes.size == 1) {
-          val original = File(imagesDirectory, "${hashes[0]}.png")
-          if (isRecording) {
-            val goldenFile = File(goldenImagesDirectory, snapshot.toFileName("_", "png"))
-            original.copyTo(goldenFile, overwrite = true)
-          }
-          snapshot.copy(file = original.toJsonPath())
-        } else {
-          val hash = writeVideo(hashes, fps)
-
-          if (isRecording) {
-            for ((index, frameHash) in hashes.withIndex()) {
-              val originalFrame = File(imagesDirectory, "$frameHash.png")
-              val frameSnapshot = snapshot.copy(name = "${snapshot.name} $index")
-              val goldenFile = File(goldenImagesDirectory, frameSnapshot.toFileName("_", "png"))
-              if (!goldenFile.exists()) {
-                originalFrame.copyTo(goldenFile)
-              }
+        if (isRecording) {
+          val goldenFile = File(goldenDir, snapshot.toFileName("_", "png"))
+          if (!overwriteOnMaxPercentDifference || !goldenFile.exists()) {
+            snapshotFile.copyTo(target = goldenFile, overwrite = true)
+          } else if (fps != -1) {
+            if (apngExceedsThreshold(snapshotFile, goldenFile)) {
+              snapshotFile.copyTo(target = goldenFile, overwrite = true)
+            }
+          } else {
+            val result = ImageUtils.compareImages(
+              goldenImage = ImageIO.read(goldenFile),
+              image = ImageIO.read(snapshotFile),
+              differ = differ
+            )
+            if (result.second > maxPercentDifference) {
+              snapshotFile.copyTo(target = goldenFile, overwrite = true)
             }
           }
-          val original = File(videosDirectory, "$hash.mov")
-          if (isRecording) {
-            val goldenFile = File(goldenVideosDirectory, snapshot.toFileName("_", "mov"))
-            if (!goldenFile.exists()) {
-              original.copyTo(goldenFile)
-            }
-          }
-          snapshot.copy(file = original.toJsonPath())
         }
 
-        shots += shot
+        shots += snapshot.copy(file = snapshotFile.toJsonPath())
       }
     }
   }
 
-  /** Returns the hash of the image. */
-  private fun writeImage(image: BufferedImage): String {
-    val hash = hash(image)
-    val file = File(imagesDirectory, "$hash.png")
-    if (!file.exists()) {
-      file.writeAtomically(image)
+  private fun apngExceedsThreshold(snapshotFile: File, goldenFile: File): Boolean {
+    ApngReader(FileSystem.SYSTEM.openReadOnly(goldenFile.path.toPath())).use { goldenReader ->
+      ApngReader(FileSystem.SYSTEM.openReadOnly(snapshotFile.path.toPath())).use { snapshotReader ->
+        if (goldenReader.frameCount != snapshotReader.frameCount) return true
+        while (!goldenReader.isFinished() && !snapshotReader.isFinished()) {
+          val goldenFrame = goldenReader.readNextFrame() ?: return true
+          val snapshotFrame = snapshotReader.readNextFrame() ?: return true
+          if (goldenReader.getFps() != snapshotReader.getFps()) return true
+          val (_, percentDifferent) = ImageUtils.compareImages(goldenFrame, snapshotFrame, differ)
+          if (percentDifferent > maxPercentDifference) return true
+        }
+      }
     }
-    return hash
+    return false
   }
 
   /** Returns a SHA-1 hash of the pixels of [image]. */
   private fun hash(image: BufferedImage): String {
     val hashingSink = HashingSink.sha1(blackholeSink())
     hashingSink.buffer().use { sink ->
+      sink.writeInt(image.width)
+      sink.writeInt(image.height)
       for (y in 0 until image.height) {
         for (x in 0 until image.width) {
           sink.writeInt(image.getRGB(x, y))
@@ -156,29 +170,13 @@ class HtmlReportWriter @JvmOverloads constructor(
     return hashingSink.hash.hex()
   }
 
-  private fun writeVideo(
-    frameHashes: List<String>,
-    fps: Int
-  ): String {
-    val hash = hash(frameHashes)
-    val file = File(videosDirectory, "$hash.mov")
-    if (!file.exists()) {
-      val tmpFile = File(videosDirectory, "$hash.mov.tmp")
-      val encoder = AWTSequenceEncoder.createSequenceEncoder(tmpFile, fps)
-      for (frameHash in frameHashes) {
-        val frame = ImageIO.read(File(imagesDirectory, "$frameHash.png"))
-        encoder.encodeImage(frame)
-      }
-      encoder.finish()
-      tmpFile.renameTo(file)
-    }
-    return hash
-  }
-
-  /** Returns a SHA-1 hash of [lines]. */
-  private fun hash(lines: List<String>): String {
+  /** Returns a SHA-1 hash of [lines] and, for animations, [fps]. */
+  private fun hash(lines: List<String>, fps: Int): String {
     val hashingSink = HashingSink.sha1(blackholeSink())
     hashingSink.buffer().use { sink ->
+      if (fps != -1) {
+        sink.writeUtf8("fps:$fps\n")
+      }
       for (hash in lines) {
         sink.writeUtf8(hash)
         sink.writeUtf8("\n")
@@ -257,20 +255,13 @@ class HtmlReportWriter @JvmOverloads constructor(
     }
   }
 
-  private fun File.writeAtomically(bufferedImage: BufferedImage) {
-    val tmpFile = File(parentFile, "$name.tmp")
-    ImageIO.write(bufferedImage, "PNG", tmpFile)
-    delete()
-    tmpFile.renameTo(this)
-  }
-
   private fun File.writeAtomically(writerAction: BufferedSink.() -> Unit) {
     val tmpFile = File(parentFile, "$name.tmp")
     tmpFile.sink()
-        .buffer()
-        .use { sink ->
-          sink.writerAction()
-        }
+      .buffer()
+      .use { sink ->
+        sink.writerAction()
+      }
     delete()
     tmpFile.renameTo(this)
   }
@@ -286,10 +277,9 @@ internal fun defaultRunName(): String {
 }
 
 internal val filenameSafeChars = CharMatcher.inRange('a', 'z')
-    .or(CharMatcher.inRange('0', '9'))
-    .or(CharMatcher.anyOf("_-.~@^()[]{}:;,"))
+  .or(CharMatcher.inRange('0', '9'))
+  .or(CharMatcher.anyOf("_-.~@^()[]{}:;,"))
 
-internal fun String.sanitizeForFilename(): String? {
-  return filenameSafeChars.negate().replaceFrom(toLowerCase(Locale.US), '_')
+internal fun String.sanitizeForFilename(): String {
+  return filenameSafeChars.negate().replaceFrom(lowercase(Locale.US), '_')
 }
-

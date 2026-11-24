@@ -1,0 +1,26 @@
+public final class app/cash/paparazzi/gradle/PaparazziPlugin : org/gradle/api/Plugin {
+	public fun <init> (Lorg/gradle/api/provider/ProviderFactory;Lorg/gradle/internal/operations/BuildOperationRunner;Lorg/gradle/internal/operations/BuildOperationExecutor;)V
+	public synthetic fun apply (Ljava/lang/Object;)V
+	public fun apply (Lorg/gradle/api/Project;)V
+}
+
+public abstract class app/cash/paparazzi/gradle/PaparazziPlugin$PaparazziTask : org/gradle/api/DefaultTask {
+	public fun <init> ()V
+	public fun setTestNameIncludePatterns (Ljava/util/List;)Lapp/cash/paparazzi/gradle/PaparazziPlugin$PaparazziTask;
+}
+
+public abstract class app/cash/paparazzi/gradle/PrepareResourcesTask : org/gradle/api/DefaultTask {
+	public fun <init> ()V
+	public abstract fun getAarAssetDirs ()Lorg/gradle/api/provider/ListProperty;
+	public abstract fun getAarExplodedDirs ()Lorg/gradle/api/provider/ListProperty;
+	public abstract fun getArtifactFiles ()Lorg/gradle/api/file/ConfigurableFileCollection;
+	public abstract fun getModuleResourceDirs ()Lorg/gradle/api/provider/ListProperty;
+	public abstract fun getNonTransitiveRClassEnabled ()Lorg/gradle/api/provider/Property;
+	public abstract fun getPackageName ()Lorg/gradle/api/provider/Property;
+	public abstract fun getPaparazziResources ()Lorg/gradle/api/file/RegularFileProperty;
+	public abstract fun getProjectAssetDirs ()Lorg/gradle/api/provider/ListProperty;
+	public abstract fun getProjectResourceDirs ()Lorg/gradle/api/provider/ListProperty;
+	public abstract fun getTargetSdkVersion ()Lorg/gradle/api/provider/Property;
+	public final fun writeResourcesFile ()V
+}
+

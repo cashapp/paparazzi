@@ -1,0 +1,32 @@
+plugins {
+  id 'com.android.library'
+  id 'org.jetbrains.kotlin.plugin.compose'
+  id 'app.cash.paparazzi'
+}
+
+android {
+  namespace = 'app.cash.paparazzi.plugin.test'
+  compileSdk = libs.versions.compileSdk.get() as int
+  defaultConfig {
+    minSdk = libs.versions.minSdk.get() as int
+  }
+  compileOptions {
+    sourceCompatibility = libs.versions.javaTarget.get()
+    targetCompatibility = libs.versions.javaTarget.get()
+  }
+  kotlin {
+    compilerOptions {
+      javaParameters = true
+    }
+  }
+  buildFeatures {
+    compose = true
+  }
+}
+
+dependencies {
+  implementation libs.composeUi.material
+
+  testImplementation libs.testParameterInjector
+}
+

@@ -2,6 +2,7 @@ package app.cash.paparazzi.accessibility
 
 import android.content.Context
 import android.graphics.Color
+import android.graphics.Rect
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.GradientDrawable.OVAL
 import android.graphics.drawable.GradientDrawable.Orientation.TL_BR
@@ -13,26 +14,17 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Paparazzi
-import app.cash.paparazzi.Snapshot
-import app.cash.paparazzi.SnapshotHandler
-import app.cash.paparazzi.internal.ImageUtils
+import app.cash.paparazzi.SnapshotVerifier
+import app.cash.paparazzi.internal.differs.OffByTwo
+import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
-import java.awt.image.BufferedImage
-import java.io.File
-import javax.imageio.ImageIO
 
 class AccessibilityRenderExtensionTest {
-  private val snapshotHandler = TestSnapshotVerifier()
-
   @get:Rule
   val paparazzi = Paparazzi(
-    deviceConfig = DeviceConfig.NEXUS_5.copy(
-      // Needed to render accessibility content next to main content.
-      screenWidth = DeviceConfig.NEXUS_5.screenWidth * 2,
-      softButtons = false
-    ),
-    snapshotHandler = snapshotHandler,
+    deviceConfig = DeviceConfig.NEXUS_5,
+    snapshotHandler = SnapshotVerifier(maxPercentDifference = 0.01, differ = OffByTwo),
     renderExtensions = setOf(AccessibilityRenderExtension())
   )
 
@@ -56,36 +48,64 @@ class AccessibilityRenderExtensionTest {
     paparazzi.snapshot(view, name = "accessibility-new-view")
   }
 
+  @Test
+  fun `blank accessibility labels are ignored`() {
+    val view = View(paparazzi.context).apply {
+      contentDescription = "   "
+    }
+
+    val element = AccessibilityElement.fromView(view, Rect())
+
+    assertThat(element).isNull()
+  }
+
+  @Test
+  fun `list membership alone is ignored`() {
+    val element = AccessibilityElement(
+      id = "list-item",
+      displayBounds = Rect(),
+      isInList = "<in-list>"
+    )
+
+    assertThat(element.legendText).isEmpty()
+  }
+
   private fun buildView(
     context: Context,
     rootLayoutParams: ViewGroup.LayoutParams? = ViewGroup.LayoutParams(
       ViewGroup.LayoutParams.MATCH_PARENT,
       ViewGroup.LayoutParams.MATCH_PARENT
     )
-  ) =
-    LinearLayout(context).apply {
-      orientation = LinearLayout.VERTICAL
-      rootLayoutParams?.let { layoutParams = it }
-      addView(TextView(context).apply {
+  ) = LinearLayout(context).apply {
+    orientation = LinearLayout.VERTICAL
+    rootLayoutParams?.let { layoutParams = it }
+    addView(
+      TextView(context).apply {
         id = 1
         text = "Text View Sample"
-      })
+      }
+    )
 
-      addView(View(context).apply {
+    addView(
+      View(context).apply {
         id = 2
         layoutParams = LinearLayout.LayoutParams(100, 100)
         contentDescription = "Content Description Sample"
-      })
+      }
+    )
 
-      addView(View(context).apply {
+    addView(
+      View(context).apply {
         id = 3
         layoutParams = LinearLayout.LayoutParams(100, 100).apply {
           setMarginsRelative(20, 20, 20, 20)
         }
         contentDescription = "Margin Sample"
-      })
+      }
+    )
 
-      addView(View(context).apply {
+    addView(
+      View(context).apply {
         id = 4
         layoutParams = LinearLayout.LayoutParams(100, 100).apply {
           setMarginsRelative(20, 20, 20, 20)
@@ -94,9 +114,11 @@ class AccessibilityRenderExtensionTest {
           shape = OVAL
         }
         contentDescription = "Foreground Drawable"
-      })
+      }
+    )
 
-      addView(Button(context).apply {
+    addView(
+      Button(context).apply {
         id = 5
         layoutParams = LinearLayout.LayoutParams(
           ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -105,30 +127,7 @@ class AccessibilityRenderExtensionTest {
           gravity = Gravity.CENTER
         }
         text = "Button Sample"
-      })
-    }
-
-  private class TestSnapshotVerifier : SnapshotHandler {
-    override fun newFrameHandler(
-      snapshot: Snapshot,
-      frameCount: Int,
-      fps: Int
-    ): SnapshotHandler.FrameHandler {
-      return object : SnapshotHandler.FrameHandler {
-        override fun handle(image: BufferedImage) {
-          val expected = File("src/test/resources/${snapshot.name}.png")
-          ImageUtils.assertImageSimilar(
-            relativePath = expected.path,
-            image = image,
-            goldenImage = ImageIO.read(expected),
-            maxPercentDifferent = 0.1,
-          )
-        }
-
-        override fun close() = Unit
       }
-    }
-
-    override fun close() = Unit
+    )
   }
 }

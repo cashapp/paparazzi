@@ -18,6 +18,7 @@ package app.cash.paparazzi.internal
 
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.internal.parsers.LayoutPullParser
+import app.cash.paparazzi.internal.resources.pseudolocalizeIfNeeded
 import com.android.SdkConstants
 import com.android.ide.common.rendering.api.AssetRepository
 import com.android.ide.common.rendering.api.ResourceNamespace
@@ -25,9 +26,12 @@ import com.android.ide.common.rendering.api.ResourceReference
 import com.android.ide.common.rendering.api.SessionParams
 import com.android.ide.common.rendering.api.SessionParams.Key
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode
+import com.android.ide.common.resources.ResourceRepository
 import com.android.ide.common.resources.ResourceResolver
 import com.android.ide.common.resources.ResourceValueMap
-import com.android.ide.common.resources.deprecated.ResourceRepository
+import com.android.ide.common.resources.getConfiguredResources
+import com.android.layoutlib.bridge.Bridge
+import com.android.resources.LayoutDirection
 import com.android.resources.ResourceType
 
 /** Creates [SessionParams] objects. */
@@ -46,12 +50,10 @@ internal data class SessionParamsBuilder(
   private val layoutPullParser: LayoutPullParser? = null,
   private val projectKey: Any? = null,
   private val minSdk: Int = 0,
-  private val decor: Boolean = true
+  private val decor: Boolean = true,
+  private val supportsRtl: Boolean = false
 ) {
-  fun withTheme(
-    themeName: String,
-    isProjectTheme: Boolean
-  ): SessionParamsBuilder {
+  fun withTheme(themeName: String, isProjectTheme: Boolean): SessionParamsBuilder {
     return copy(themeName = themeName, isProjectTheme = isProjectTheme)
   }
 
@@ -64,36 +66,47 @@ internal data class SessionParamsBuilder(
     }
   }
 
-  fun plusFlag(
-    flag: SessionParams.Key<*>,
-    value: Any
-  ) = copy(flags = flags + (flag to value))
+  fun plusFlag(flag: SessionParams.Key<*>, value: Any) = copy(flags = flags + (flag to value))
 
   fun build(): SessionParams {
     require(themeName != null)
 
     val folderConfiguration = deviceConfig.folderConfiguration
     val resourceResolver = ResourceResolver.create(
-        mapOf<ResourceNamespace, Map<ResourceType, ResourceValueMap>>(
-            ResourceNamespace.ANDROID to frameworkResources.getConfiguredResources(
-                folderConfiguration
-            ),
-            ResourceNamespace.TODO() to projectResources.getConfiguredResources(
-                folderConfiguration
-            )
-        ),
-        ResourceReference(
-            ResourceNamespace.fromBoolean(!isProjectTheme),
-            ResourceType.STYLE,
-            themeName
-        )
+      mapOf<ResourceNamespace, Map<ResourceType, ResourceValueMap>>(
+        ResourceNamespace.ANDROID to
+          frameworkResources.getConfiguredResources(folderConfiguration)
+            .pseudolocalizeIfNeeded(folderConfiguration.localeQualifier)
+            .row(ResourceNamespace.ANDROID),
+        *projectResources.getConfiguredResources(folderConfiguration)
+          .pseudolocalizeIfNeeded(folderConfiguration.localeQualifier)
+          .rowMap()
+          .map { (key, value) -> key to value }
+          .toTypedArray()
+      ),
+      ResourceReference(
+        ResourceNamespace.fromBoolean(!isProjectTheme),
+        ResourceType.STYLE,
+        themeName
+      )
     )
 
     val result = SessionParams(
-        layoutPullParser, renderingMode, projectKey /* for caching */,
-        deviceConfig.hardwareConfig, resourceResolver, layoutlibCallback, minSdk, targetSdk, logger
+      layoutPullParser, renderingMode, projectKey,
+      deviceConfig.hardwareConfig, resourceResolver, layoutlibCallback, minSdk, targetSdk, logger
     )
     result.fontScale = deviceConfig.fontScale
+    result.uiMode = deviceConfig.uiModeMask
+
+    val localeQualifier = folderConfiguration.localeQualifier
+    val layoutDirectionQualifier = folderConfiguration.layoutDirectionQualifier
+    // https://cs.android.com/android-studio/platform/tools/adt/idea/+/mirror-goog-studio-main:rendering/src/com/android/tools/rendering/RenderTask.java;l=705;drc=1c797047cbbecd4c6dba47ea5c3c93703d4d79d0
+    if (LayoutDirection.RTL == layoutDirectionQualifier.value && !Bridge.isLocaleRtl(localeQualifier.tag)) {
+      result.locale = "ur"
+    } else {
+      result.locale = localeQualifier.tag
+    }
+    result.setRtlSupport(supportsRtl)
 
     for ((key, value) in flags) {
       result.setFlag(key as Key<Any>, value)

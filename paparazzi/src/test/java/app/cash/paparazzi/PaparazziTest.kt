@@ -21,13 +21,16 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.drawable.AnimatedVectorDrawable_VectorDrawableAnimatorUI_Delegate
+import android.os.SystemClock
 import android.view.Choreographer
 import android.view.Choreographer.CALLBACK_ANIMATION
 import android.view.View
 import android.view.animation.LinearInterpolator
 import android.widget.Button
+import android.widget.TextView
 import com.android.internal.lang.System_Delegate
-import org.assertj.core.api.Assertions.assertThat
+import com.google.common.truth.Truth.assertThat
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
@@ -35,7 +38,10 @@ import java.util.concurrent.TimeUnit
 
 class PaparazziTest {
   @get:Rule
-  val paparazzi = Paparazzi()
+  val testRule = PaparazziTestRule()
+
+  val paparazzi
+    get() = testRule.paparazzi
 
   @Test
   fun drawCalls() {
@@ -49,7 +55,7 @@ class PaparazziTest {
 
     paparazzi.snapshot(view)
 
-    assertThat(log).containsExactly("onDraw time=0")
+    assertThat(log).containsExactly("onDraw time=0", "onDraw time=0")
   }
 
   @Test
@@ -99,20 +105,81 @@ class PaparazziTest {
     paparazzi.gif(view, start = 1_000L, end = 4_000L, fps = 4)
 
     assertThat(log).containsExactly(
-        "onDraw time=1000 animationElapsed=0.0",
-        "onAnimationStart time=2000 animationElapsed=0.0",
-        "onAnimationUpdate time=2000 animationElapsed=0.0",
-        "onDraw time=2000 animationElapsed=0.0",
-        "onAnimationUpdate time=2250 animationElapsed=0.25",
-        "onDraw time=2250 animationElapsed=0.25",
-        "onAnimationUpdate time=2500 animationElapsed=0.5",
-        "onDraw time=2500 animationElapsed=0.5",
-        "onAnimationUpdate time=2750 animationElapsed=0.75",
-        "onDraw time=2750 animationElapsed=0.75",
-        "onAnimationUpdate time=3000 animationElapsed=1.0",
-        "onAnimationEnd time=3000 animationElapsed=1.0",
-        "onDraw time=3000 animationElapsed=1.0",
+      "onDraw time=1000 animationElapsed=0.0",
+      "onDraw time=1000 animationElapsed=0.0",
+      "onAnimationStart time=2000 animationElapsed=0.0",
+      "onAnimationUpdate time=2000 animationElapsed=0.0",
+      "onDraw time=2000 animationElapsed=0.0",
+      "onAnimationUpdate time=2250 animationElapsed=0.25",
+      "onDraw time=2250 animationElapsed=0.25",
+      "onAnimationUpdate time=2500 animationElapsed=0.5",
+      "onDraw time=2500 animationElapsed=0.5",
+      "onAnimationUpdate time=2750 animationElapsed=0.75",
+      "onDraw time=2750 animationElapsed=0.75",
+      "onAnimationUpdate time=3000 animationElapsed=1.0",
+      "onAnimationEnd time=3000 animationElapsed=1.0",
+      "onDraw time=3000 animationElapsed=1.0"
     )
+  }
+
+  @Test
+  fun animationCallbacksForStaticSnapshots() {
+    val log = mutableListOf<String>()
+
+    val view = object : TextView(paparazzi.context) {
+      override fun onDraw(canvas: Canvas) {
+        log += "onDraw text=$text"
+      }
+    }
+
+    val animator = ValueAnimator.ofInt(200, 300)
+    animator.addUpdateListener {
+      view.text = it.animatedFraction.toString()
+    }
+    animator.addListener(object : AnimatorListenerAdapter() {
+      override fun onAnimationStart(animation: Animator, isReverse: Boolean) {
+        log += "onAnimationStart uptimeMillis=$uptime"
+      }
+
+      override fun onAnimationEnd(animator: Animator) {
+        log += "onAnimationEnd uptimeMillis=$uptime"
+      }
+    })
+
+    animator.startDelay = 2_000L
+    animator.duration = 1_000L
+    animator.interpolator = LinearInterpolator()
+    assertThat(AnimationHandler.getAnimationCount()).isEqualTo(0)
+    animator.start()
+    assertThat(AnimationHandler.getAnimationCount()).isEqualTo(1)
+
+    paparazzi.snapshot(view, offsetMillis = 0L)
+    assertThat(log).containsExactly(
+      "onDraw text=",
+      "onDraw text="
+    )
+    log.clear()
+
+    paparazzi.snapshot(view, offsetMillis = 2_000L)
+    assertThat(log).containsExactly(
+      "onAnimationStart uptimeMillis=2000",
+      "onDraw text=0.0"
+    )
+    log.clear()
+
+    paparazzi.snapshot(view, offsetMillis = 2_500L)
+    assertThat(log).containsExactly(
+      "onDraw text=0.5"
+    )
+    log.clear()
+
+    paparazzi.snapshot(view, offsetMillis = 3_000L)
+    assertThat(log).containsExactly(
+      "onAnimationEnd uptimeMillis=3000",
+      "onDraw text=1.0"
+    )
+    assertThat(AnimationHandler.getAnimationCount()).isEqualTo(0)
+    log.clear()
   }
 
   @Test
@@ -126,7 +193,7 @@ class PaparazziTest {
         Choreographer.getInstance()
           .postCallback(
             CALLBACK_ANIMATION,
-            { log += "view width=${width} height=${height}" },
+            { log += "view width=$width height=$height" },
             false
           )
       }
@@ -152,12 +219,54 @@ class PaparazziTest {
       true
     }
 
-    assertThat(thrown).isTrue
+    assertThat(thrown).isTrue()
+  }
+
+  @Test
+  fun animatedVectorClockFollowsSnapshotOffset() {
+    // Reading layoutlib's clock back asserts the wiring without an animated vector fixture.
+    paparazzi.snapshot(View(paparazzi.context), name = "offset0", offsetMillis = 0L)
+    assertThat(AnimatedVectorDrawable_VectorDrawableAnimatorUI_Delegate.sFrameTime).isEqualTo(0L)
+
+    paparazzi.snapshot(View(paparazzi.context), name = "offset500", offsetMillis = 500L)
+    assertThat(AnimatedVectorDrawable_VectorDrawableAnimatorUI_Delegate.sFrameTime).isEqualTo(500L)
+  }
+
+  @Test
+  fun preDrawOnEveryFrame() {
+    val log = mutableListOf<String>()
+
+    val view = object : View(paparazzi.context) {
+      override fun onAttachedToWindow() {
+        viewTreeObserver.addOnPreDrawListener {
+          log += "predraw"
+          true
+        }
+      }
+
+      override fun onDraw(canvas: Canvas) {
+        super.onDraw(canvas)
+        log += "draw"
+      }
+    }
+
+    paparazzi.gif(view, fps = 4)
+
+    // Two traversals precede the first draw, each dispatching a pre-draw: the Choreographer drains
+    // the one addView scheduled, then renderAndBuildResult performs its own. Both draws belong to
+    // frame 0:
+    // RenderSessionImpl.renderAndBuildResult draws once into a NopCanvas to prime animations and once
+    // for real, and later frames reuse the display list because this view never invalidates.
+    assertThat(log).isEqualTo(listOf("predraw", "predraw", "draw", "draw", "predraw", "predraw"))
   }
 
   private val time: Long
     get() {
-      return TimeUnit.NANOSECONDS.toMillis(System_Delegate.nanoTime() - Paparazzi.TIME_OFFSET_NANOS)
+      return TimeUnit.NANOSECONDS.toMillis(System_Delegate.nanoTime())
+    }
+
+  private val uptime: Long
+    get() {
+      return SystemClock.uptimeMillis()
     }
 }
-

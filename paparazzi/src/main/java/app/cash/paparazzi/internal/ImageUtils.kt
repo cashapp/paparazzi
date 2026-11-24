@@ -16,12 +16,16 @@
 
 package app.cash.paparazzi.internal
 
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
-import org.junit.Assert.fail
+import app.cash.paparazzi.Differ
+import app.cash.paparazzi.Differ.DiffResult.Different
+import app.cash.paparazzi.Differ.DiffResult.Identical
+import app.cash.paparazzi.Differ.DiffResult.Similar
+import app.cash.paparazzi.internal.apng.ApngWriter
+import okio.Path.Companion.toPath
 import java.awt.AlphaComposite
 import java.awt.Color
 import java.awt.Graphics2D
+import java.awt.Rectangle
 import java.awt.RenderingHints.KEY_ANTIALIASING
 import java.awt.RenderingHints.KEY_INTERPOLATION
 import java.awt.RenderingHints.KEY_RENDERING
@@ -34,180 +38,116 @@ import java.io.File
 import java.io.File.separatorChar
 import java.io.IOException
 import javax.imageio.ImageIO
+import kotlin.math.abs
+import kotlin.math.max
 
 /**
  * Utilities related to image processing.
  */
 internal object ImageUtils {
-  /**
-   * Normally, this test will fail when there is a missing thumbnail. However, when
-   * you create creating a new test, it's useful to be able to turn this off such that
-   * you can generate all the missing thumbnails in one go, rather than having to run
-   * the test repeatedly to get to each new render assertion generating its thumbnail.
-   */
-  private val FAIL_ON_MISSING_THUMBNAIL = true
-
-  private val THUMBNAIL_SIZE = 1000
-
-  /** Directory where to write the thumbnails and deltas. */
-  private val failureDir: File
-    get() {
-      val workingDirString = System.getProperty("user.dir")
-      val failureDir = File(workingDirString, "out/failures")
-      failureDir.mkdirs()
-      return failureDir
-    }
-
-  @Throws(IOException::class)
-  fun requireSimilar(
-    relativePath: String,
-    image: BufferedImage,
-    maxPercentDifference: Double
-  ) {
-    val maxDimension = Math.max(image.width, image.height)
-    val scale = THUMBNAIL_SIZE / maxDimension.toDouble()
-    val thumbnail = scale(image, scale, scale)
-
-    val `is` = ImageUtils::class.java.classLoader.getResourceAsStream(relativePath)
-    if (`is` ==
-        null
-    ) {
-      var message = "Unable to load golden thumbnail: $relativePath\n"
-      message = saveImageAndAppendMessage(thumbnail, message, relativePath)
-      if (FAIL_ON_MISSING_THUMBNAIL) {
-        fail(message)
-      } else {
-        println(message)
-      }
-    } else {
-      try {
-        val goldenImage = ImageIO.read(`is`)
-        assertImageSimilar(
-            relativePath,
-            goldenImage,
-            thumbnail,
-            maxPercentDifference
-        )
-      } finally {
-        `is`.close()
-      }
-    }
-  }
+  private const val THUMBNAIL_SIZE = 1000
 
   @Throws(IOException::class)
   fun assertImageSimilar(
     relativePath: String,
     goldenImage: BufferedImage,
     image: BufferedImage,
-    maxPercentDifferent: Double
+    maxPercentDifferent: Double,
+    failureDir: File,
+    differ: Differ
   ) {
-    var goldenImage = goldenImage
-    if (goldenImage.type != TYPE_INT_ARGB) {
-      val temp = BufferedImage(
-          goldenImage.width, goldenImage.height,
-          TYPE_INT_ARGB
-      )
-      temp.graphics.drawImage(goldenImage, 0, 0, null)
-      goldenImage = temp
-    }
-    assertEquals(TYPE_INT_ARGB.toLong(), goldenImage.type.toLong())
+    val (deltaImage, percentDifference) = compareImages(goldenImage, image, differ)
 
-    val imageWidth = Math.min(goldenImage.width, image.width)
-    val imageHeight = Math.min(goldenImage.height, image.height)
+    val goldenImageWidth = goldenImage.width
+    val goldenImageHeight = goldenImage.height
 
-    // Blur the images to account for the scenarios where there are pixel
-    // differences
-    // in where a sharp edge occurs
-    // goldenImage = blur(goldenImage, 6);
-    // image = blur(image, 6);
+    val imageWidth = image.width
+    val imageHeight = image.height
 
-    val width = 3 * imageWidth
-    val deltaImage = BufferedImage(width, imageHeight, TYPE_INT_ARGB)
-    val g = deltaImage.graphics
-
-    // Compute delta map
-    var delta: Long = 0
-    for (y in 0 until imageHeight) {
-      for (x in 0 until imageWidth) {
-        val goldenRgb = goldenImage.getRGB(x, y)
-        val rgb = image.getRGB(x, y)
-        if (goldenRgb == rgb) {
-          deltaImage.setRGB(imageWidth + x, y, 0x00808080)
-          continue
-        }
-
-        // If the pixels have no opacity, don't delta colors at all
-        if (goldenRgb and -0x1000000 == 0 && rgb and -0x1000000 == 0) {
-          deltaImage.setRGB(imageWidth + x, y, 0x00808080)
-          continue
-        }
-
-        val deltaR = (rgb and 0xFF0000).ushr(16) - (goldenRgb and 0xFF0000).ushr(16)
-        val newR = 128 + deltaR and 0xFF
-        val deltaG = (rgb and 0x00FF00).ushr(8) - (goldenRgb and 0x00FF00).ushr(8)
-        val newG = 128 + deltaG and 0xFF
-        val deltaB = (rgb and 0x0000FF) - (goldenRgb and 0x0000FF)
-        val newB = 128 + deltaB and 0xFF
-
-        val avgAlpha =
-          ((goldenRgb and -0x1000000).ushr(24) + (rgb and -0x1000000).ushr(24)) / 2 shl 24
-
-        val newRGB = avgAlpha or (newR shl 16) or (newG shl 8) or newB
-        deltaImage.setRGB(imageWidth + x, y, newRGB)
-
-        delta += Math.abs(deltaR)
-            .toLong()
-        delta += Math.abs(deltaG)
-            .toLong()
-        delta += Math.abs(deltaB)
-            .toLong()
-      }
-    }
-
-    // 3 different colors, 256 color levels
-    val total = imageHeight.toLong() * imageWidth.toLong() * 3L * 256L
-    val percentDifference = (delta * 100 / total.toDouble()).toFloat()
-
-    var error: String? = null
     val imageName = getName(relativePath)
-    if (percentDifference > maxPercentDifferent) {
-      error = String.format("Images differ (by %.1f%%)", percentDifference)
-    } else if (Math.abs(goldenImage.width - image.width) >= 2) {
-      error = "Widths differ too much for " + imageName + ": " +
-          goldenImage.width + "x" + goldenImage.height +
-          "vs" + image.width + "x" + image.height
-    } else if (Math.abs(goldenImage.height - image.height) >= 2) {
-      error = "Heights differ too much for " + imageName + ": " +
-          goldenImage.width + "x" + goldenImage.height +
-          "vs" + image.width + "x" + image.height
+    var error = when {
+      percentDifference > maxPercentDifferent -> "Images differ (by %f%%)".format(percentDifference)
+      abs(goldenImageWidth - imageWidth) >= 2 ->
+        "Widths differ too much for $imageName: ${goldenImageWidth}x$goldenImageHeight vs ${imageWidth}x$imageHeight"
+
+      abs(goldenImageHeight - imageHeight) >= 2 ->
+        "Heights differ too much for $imageName: ${goldenImageWidth}x$goldenImageHeight vs ${imageWidth}x$imageHeight"
+
+      else -> null
     }
 
     if (error != null) {
-      // Expected on the left
-      // Golden on the right
-      g.drawImage(goldenImage, 0, 0, null)
-      g.drawImage(image, 2 * imageWidth, 0, null)
-
-      // Labels
-      if (imageWidth > 80) {
-        g.color = Color.RED
-        g.drawString("Expected", 10, 20)
-        g.drawString("Actual", 2 * imageWidth + 10, 20)
+      val deltaWidth = max(goldenImageWidth, imageWidth)
+      if (deltaWidth > 80) {
+        /**
+         * AWT uses native text rendering under the hood, making it extremely difficult to get
+         * consistent cross-platform label text rendering, due to antialiasing, etc. This can
+         * result in false negatives when comparing delta images.
+         *
+         * As a workaround, we instead use text images pre-rendered on MacOSX 14 with the default
+         * font=Dialog, size=12 and composite them into the delta image here.
+         *
+         * We use that original font's ascent to offset the labels, which is determined by running
+         * the following on MacOSX 14:
+         *
+         * ```
+         * val z = BufferedImage(1, 1, TYPE_INT_ARGB)
+         * val MAC_OSX_FONT_DIALOG_SIZE_12_ASCENT = z.graphics.fontMetrics.ascent
+         * ```
+         */
+        val g = deltaImage.graphics
+        val yOffset = 20 - MAC_OSX_FONT_DIALOG_SIZE_12_ASCENT
+        val myClassLoader = ImageUtils::class.java.classLoader!!
+        val expectedLabel = ImageIO.read(myClassLoader.getResourceAsStream("expected_label.png"))
+        g.drawImage(expectedLabel, 10, yOffset, null)
+        val actualLabel = ImageIO.read(myClassLoader.getResourceAsStream("actual_label.png"))
+        g.drawImage(actualLabel, goldenImageWidth + deltaWidth + 10, yOffset, null)
       }
 
-      val output = File(failureDir, "delta-$imageName")
-      if (output.exists()) {
-        val deleted = output.delete()
-        assertTrue(deleted)
+      val deltaOutput = File(failureDir, "delta-$imageName")
+      if (deltaOutput.exists()) {
+        val deleted = deltaOutput.delete()
+        if (!deleted) {
+          throw IllegalStateException("Unable to delete $deltaOutput")
+        }
       }
-      ImageIO.write(deltaImage, "PNG", output)
-      error += " - see details in file://" + output.path + "\n"
-      error = saveImageAndAppendMessage(image, error, relativePath)
+      ImageIO.write(deltaImage, "PNG", deltaOutput)
+      error += " - see details in file://" + deltaOutput.path + "\n"
+      val actualOutput = File(failureDir, getName(relativePath))
+      if (actualOutput.exists()) {
+        val deleted = actualOutput.delete()
+        if (!deleted) {
+          throw IllegalStateException("Unable to delete $actualOutput")
+        }
+      }
+      ApngWriter(actualOutput.path.toPath(), fps = -1).use { it.writeImage(image) }
+      error += "Thumbnail for current rendering stored at file://" + actualOutput.path
+      error += "\nRun the following command to accept the changes:\n"
+      error += "mv ${actualOutput.absolutePath} ${File(relativePath).absolutePath}"
       println(error)
-      fail(error)
+      throw AssertionError(error)
+    }
+  }
+
+  @Throws(IOException::class)
+  fun compareImages(goldenImage: BufferedImage, image: BufferedImage, differ: Differ): Pair<BufferedImage, Float> {
+    var goldenImage = goldenImage
+    if (goldenImage.type != TYPE_INT_ARGB) {
+      val temp = BufferedImage(goldenImage.width, goldenImage.height, TYPE_INT_ARGB)
+      temp.graphics.drawImage(goldenImage, 0, 0, null)
+      goldenImage = temp
+    }
+    if (TYPE_INT_ARGB != goldenImage.type) {
+      throw IllegalStateException("expected:<$TYPE_INT_ARGB> but was:<${goldenImage.type}>")
     }
 
-    g.dispose()
+    differ.compare(goldenImage, image).let { result ->
+      return when (result) {
+        is Identical -> result.delta to 0f
+        is Similar -> result.delta to 0f
+        is Different -> result.delta to result.percentDifference
+      }
+    }
   }
 
   /**
@@ -218,11 +158,7 @@ internal object ImageUtils {
    * @param yScale y scale
    * @return the scaled image
    */
-  fun scale(
-    source: BufferedImage,
-    xScale: Double,
-    yScale: Double
-  ): BufferedImage {
+  fun scale(source: BufferedImage, xScale: Double, yScale: Double): BufferedImage {
     var source = source
 
     var sourceWidth = source.width
@@ -311,41 +247,60 @@ internal object ImageUtils {
     }
   }
 
+  fun smallestDiffRect(firstImage: BufferedImage, secondImage: BufferedImage): Rectangle? {
+    val firstImageWidth = firstImage.width
+    val firstImageHeight = firstImage.height
+    val secondImageWidth = secondImage.width
+    val secondImageHeight = secondImage.height
+
+    val maxWidth = max(firstImageWidth, secondImageWidth)
+    val maxHeight = max(firstImageHeight, secondImageHeight)
+
+    var (left, right, top, bottom) = listOf(-1, -1, -1, -1)
+    for (y in 0 until maxHeight) {
+      for (x in 0 until maxWidth) {
+        val firstRgb = if (x < firstImageWidth && y < firstImageHeight) firstImage.getRGB(x, y) else null
+        val secondRgb = if (x < secondImageWidth && y < secondImageHeight) secondImage.getRGB(x, y) else null
+        if (firstRgb != secondRgb) {
+          if (x < left || left == -1) left = x
+          if (x > right) right = x
+          if (y < top || top == -1) top = y
+          if (y > bottom) bottom = y
+        }
+      }
+    }
+
+    val diffWidth = right - left
+    val diffHeight = bottom - top
+    return if (diffWidth > 0 && diffHeight > 0) {
+      Rectangle(left, top, diffWidth + 1, diffHeight + 1)
+    } else {
+      null
+    }
+  }
+
+  fun BufferedImage.resize(targetWidth: Int, targetHeight: Int): BufferedImage {
+    return BufferedImage(targetWidth, targetHeight, type).apply {
+      val g = createGraphics()
+      g.drawImage(this@resize, 0, 0, null)
+      g.dispose()
+    }
+  }
+
+  fun getThumbnailScale(image: BufferedImage): Double {
+    val maxDimension = max(image.width, image.height)
+    return THUMBNAIL_SIZE / maxDimension.toDouble()
+  }
+
   private fun setRenderingHints(g2: Graphics2D) {
     g2.setRenderingHint(KEY_INTERPOLATION, VALUE_INTERPOLATION_BILINEAR)
     g2.setRenderingHint(KEY_RENDERING, VALUE_RENDER_QUALITY)
     g2.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_ON)
   }
 
-  /**
-   * Saves the generated thumbnail image and appends the info message to an initial message
-   */
-  @Throws(IOException::class)
-  private fun saveImageAndAppendMessage(
-    image: BufferedImage,
-    initialMessage: String,
-    relativePath: String
-  ): String {
-    var initialMessage = initialMessage
-    val output = File(
-        failureDir,
-        getName(relativePath)
-    )
-    if (output.exists()) {
-      val deleted = output.delete()
-      assertTrue(deleted)
-    }
-    ImageIO.write(image, "PNG", output)
-    initialMessage += "Thumbnail for current rendering stored at file://" + output.path
-    //        initialMessage += "\nRun the following command to accept the changes:\n";
-    //        initialMessage += String.format("mv %1$s %2$s", output.getPath(),
-    //                ImageUtils.class.getResource(relativePath).getPath());
-    // The above has been commented out, since the destination path returned is in out dir
-    // and it makes the tests pass without the code being actually checked in.
-    return initialMessage
-  }
-
   private fun getName(relativePath: String): String {
     return relativePath.substring(relativePath.lastIndexOf(separatorChar) + 1)
   }
 }
+
+private const val MAC_OSX_FONT_DIALOG_SIZE_12_ASCENT: Int = 12

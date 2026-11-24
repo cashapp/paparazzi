@@ -1,13 +1,69 @@
-rootProject.name = 'paparazzi-parent'
+plugins {
+  id 'com.gradle.develocity' version '4.6.1'
+}
+
+develocity {
+  buildScan {
+    termsOfUseUrl = 'https://gradle.com/help/legal-terms-of-use'
+    if (System.getenv('CI') == 'true') {
+      termsOfUseAgree = 'yes'
+      tag 'CI'
+    } else {
+      publishing.onlyIf { false }
+    }
+  }
+}
+
+rootProject.name = 'paparazzi-root'
+
+include ':paparazzi'
+include ':paparazzi-annotations'
+include ':paparazzi-gradle-plugin'
+include ':paparazzi-junit-platform'
+include ':paparazzi-junit-jupiter'
+include ':paparazzi-junit-vintage'
+include ':paparazzi-preview-lints'
+include ':paparazzi-preview-processor'
+include ':paparazzi-preview-runtime'
 
 include ':sample'
-include ':paparazzi'
-include ':paparazzi-agent'
-include ':paparazzi-gradle-plugin'
-include ':libs:layoutlib'
-include ':libs:native-macarm'
-include ':libs:native-macosx'
-include ':libs:native-win'
-include ':libs:native-linux'
 
 enableFeaturePreview('TYPESAFE_PROJECT_ACCESSORS')
+
+includeBuild('build-logic') {
+  dependencySubstitution {
+    substitute module('app.cash.paparazzi:paparazzi-gradle-plugin') using project(':paparazzi-gradle-plugin')
+    substitute module('app.cash.paparazzi:aar2jar') using project(':aar2jar')
+  }
+}
+
+// Some of the test projects are intentionally supposed to fail. Don't import these into the main project.
+def brokenProjects = [
+  "invalid-application-plugin", // intentionally does not import
+  "missing-library-plugin", // intentionally does not import
+  "missing-supported-plugins", // intentionally does not import
+  "multiplatform-paparazzi-in-commontest", // intentionally throws on invalid configuration
+]
+def testProjectNames = []
+new File(rootDir, "paparazzi-gradle-plugin/src/test/projects").eachDir {
+  def dirName = it.name
+  if (!dirName.startsWith(".") && !brokenProjects.contains(dirName)) {
+    testProjectNames += dirName
+  }
+}
+
+def isIdea = !(System.getProperty("idea.version") ?: "").isEmpty()
+if (isIdea) {
+  System.setProperty("app.cash.paparazzi.testProjectNames", testProjectNames.join(","))
+  includeTestProjectsIntoIDE(testProjectNames)
+}
+
+private void includeTestProjectsIntoIDE(ArrayList<String> testProjectNames) {
+  include(":test-projects")
+  project(":test-projects").projectDir = new File(rootDir, "paparazzi-gradle-plugin/src/test/projects")
+
+  testProjectNames.forEach { dirName ->
+    include ":test-projects:$dirName"
+    project(":test-projects:$dirName").projectDir = new File(rootDir, "paparazzi-gradle-plugin/src/test/projects/$dirName")
+  }
+}

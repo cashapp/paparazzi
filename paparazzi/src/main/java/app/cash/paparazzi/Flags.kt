@@ -1,5 +1,5 @@
 package app.cash.paparazzi
 
-object Flags {
-  const val DEBUG_LINKED_OBJECTS = "app.cash.paparazzi.debug.linked.objects"
+public object Flags {
+  public const val DEBUG_LINKED_OBJECTS: String = "app.cash.paparazzi.debug.linked.objects"
 }

@@ -1,0 +1,19 @@
+dependencyResolutionManagement {
+  versionCatalogs {
+    libs {
+      from(files("../../../../gradle/libs.versions.toml"))
+    }
+  }
+
+  repositories {
+    maven {
+      // Equivalent to the following: $rootDir/../../../../../build/localMaven
+      url rootDir.parentFile.parentFile.parentFile.parentFile.parentFile.path + "/build/localMaven"
+    }
+    mavenCentral()
+    //mavenLocal()
+    google()
+  }
+}
+
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")

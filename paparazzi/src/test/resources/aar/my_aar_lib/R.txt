@@ -1,0 +1,16 @@
+int anim anim1 0x7f040000
+int attr attr1 0x7f010000
+int id id1 0x7f0b0000
+int id id2 0x7f0b0001
+int id id3 0x7f0b0002
+int style style1 0x7f070000
+int[] styleable Styleable1 { 0x7f010000 }
+int styleable Styleable1_some_attr 0
+int[] styleable Styleable_with_dots { 0x7f010000 }
+int styleable Styleable_with_dots_some_attr 0
+int[] styleable Styleable_with_underscore { 0x7f010000, 0x01010002, 0x01010030, 0x7f010068, 0x7f010069 }
+int styleable Styleable_with_underscore_app_attr2 3
+int styleable Styleable_with_underscore_app_attr1 0
+int styleable Styleable_with_underscore_android_colorForeground 2
+int styleable Styleable_with_underscore_app_attr3 4
+int styleable Styleable_with_underscore_android_icon 1

@@ -42,7 +42,7 @@ class JvmHeapAnalyzer(private val objectWatcher: ObjectWatcher) {
       referenceMatchers = AndroidReferenceMatchers.ignoredReferencesOnly +
         instanceFieldLeak(
           "app.cash.paparazzi.plugin.test.LeakWatcherRule",
-          "instance",
+          "paparazzi",
           "The rule reference itself should not count as a leak."
         )
     )

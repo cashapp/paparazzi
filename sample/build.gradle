@@ -1,14 +1,54 @@
 apply plugin: 'com.android.library'
-apply plugin: 'org.jetbrains.kotlin.android'
+apply plugin: 'org.jetbrains.kotlin.plugin.compose'
 apply plugin: 'app.cash.paparazzi'
+apply plugin: 'jacoco'
 
 android {
-  compileSdkVersion 29
+  namespace = 'app.cash.paparazzi.sample'
+
+  compileSdk = libs.versions.compileSdk.get() as int
   defaultConfig {
-    minSdkVersion 25
+    minSdk = libs.versions.minSdk.get() as int
+    resValue("string", "generated_string_name", "Generated Test String")
+  }
+  compileOptions {
+    sourceCompatibility = libs.versions.javaTarget.get()
+    targetCompatibility = libs.versions.javaTarget.get()
+  }
+  buildFeatures {
+    compose = true
+    viewBinding = true
+    resValues = true
   }
 }
 
+// Disable unnecessary release build type
+androidComponents {
+  beforeVariants(selector().withBuildType("release")) { enable = false }
+}
+
 dependencies {
-  testImplementation deps.testparameterinjector
+  implementation libs.composeUi.material
+  implementation libs.composeUi.material.icons
+  implementation libs.composeUi.uiTooling
+  // Remove if https://github.com/airbnb/lottie-android/pull/2507 lands
+  implementation libs.androidx.appcompat
+  // deliberately not in versions.toml as a one-off
+  implementation 'com.airbnb.android:lottie:6.7.1'
+
+  // TODO: wire via plugin
+  implementation projects.paparazziAnnotations
+  lintChecks projects.paparazziPreviewLints
+
+  testImplementation libs.testParameterInjector
+}
+
+// https://github.com/diffplug/spotless/issues/1572
+tasks.withType(com.diffplug.gradle.spotless.SpotlessTask).configureEach {
+  mustRunAfter(tasks.withType(Test))
+}
+
+// Verify screenshots as part of the standard check process
+tasks.named("check").configure {
+  dependsOn("verifyPaparazzi")
 }

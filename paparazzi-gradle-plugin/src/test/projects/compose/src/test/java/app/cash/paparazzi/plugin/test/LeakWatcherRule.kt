@@ -7,7 +7,7 @@ import org.junit.runner.Description
 
 class LeakWatcherRule(val paparazzi: Paparazzi) : TestWatcher() {
   private val objectWatcher = ObjectWatcher(
-    clock = { System.currentTimeMillis() },
+    clock = { System.nanoTime() / 1_000_000 },
     checkRetainedExecutor = Runnable::run
   )
 

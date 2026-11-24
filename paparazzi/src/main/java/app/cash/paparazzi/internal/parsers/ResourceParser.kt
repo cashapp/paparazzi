@@ -23,7 +23,7 @@ import java.io.InputStream
 /**
  * An XML resource parser that creates a tree of [TagSnapshot]s
  */
-class ResourceParser(inputStream: InputStream) : KXmlParser() {
+internal class ResourceParser(inputStream: InputStream) : KXmlParser() {
   init {
     setFeature(FEATURE_PROCESS_NAMESPACES, true)
     setInput(inputStream, null)
@@ -69,7 +69,12 @@ class ResourceParser(inputStream: InputStream) : KXmlParser() {
         }
         END_TAG -> {
           return TagSnapshot(
-              tagName, tagNamespace, prefix, attributes, children.toList(), hasDeclaredAaptAttrs
+            tagName,
+            tagNamespace,
+            prefix,
+            attributes,
+            children.toList(),
+            hasDeclaredAaptAttrs
           )
         }
       }
@@ -114,7 +119,9 @@ class ResourceParser(inputStream: InputStream) : KXmlParser() {
     val prefixEnd = name.indexOf(':')
     return if (prefixEnd > 0) {
       name.substring(0, prefixEnd)
-    } else ""
+    } else {
+      ""
+    }
   }
 
   private fun findLocalNameByQualifiedName(name: String): String {
@@ -125,12 +132,12 @@ class ResourceParser(inputStream: InputStream) : KXmlParser() {
     return buildList {
       for (i in 0 until attributeCount) {
         add(
-            AttributeSnapshot(
-                getAttributeNamespace(i),
-                getAttributePrefix(i),
-                getAttributeName(i),
-                getAttributeValue(i)
-            )
+          AttributeSnapshot(
+            getAttributeNamespace(i),
+            getAttributePrefix(i),
+            getAttributeName(i),
+            getAttributeValue(i)
+          )
         )
       }
     }.toMutableList()

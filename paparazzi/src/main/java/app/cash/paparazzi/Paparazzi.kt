@@ -15,358 +15,192 @@
  */
 package app.cash.paparazzi
 
-import android.animation.AnimationHandler
 import android.content.Context
 import android.content.res.Resources
-import android.graphics.Bitmap
-import android.os.Handler_Delegate
-import android.os.SystemClock_Delegate
-import android.util.AttributeSet
-import android.util.DisplayMetrics
-import android.view.BridgeInflater
-import android.view.Choreographer
 import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
-import android.widget.FrameLayout
 import androidx.annotation.LayoutRes
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Recomposer
-import androidx.compose.ui.platform.AndroidUiDispatcher
 import androidx.compose.ui.platform.ComposeView
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LifecycleRegistry
-import androidx.lifecycle.ViewTreeLifecycleOwner
-import androidx.savedstate.SavedStateRegistry
-import androidx.savedstate.SavedStateRegistryController
-import androidx.savedstate.SavedStateRegistryOwner
-import androidx.savedstate.ViewTreeSavedStateRegistryOwner
-import app.cash.paparazzi.agent.AgentTestRule
-import app.cash.paparazzi.agent.InterceptorRegistrar
-import app.cash.paparazzi.internal.EditModeInterceptor
-import app.cash.paparazzi.internal.ImageUtils
-import app.cash.paparazzi.internal.MatrixMatrixMultiplicationInterceptor
-import app.cash.paparazzi.internal.MatrixVectorMultiplicationInterceptor
-import app.cash.paparazzi.internal.parsers.LayoutPullParser
-import app.cash.paparazzi.internal.PaparazziCallback
-import app.cash.paparazzi.internal.PaparazziLogger
-import app.cash.paparazzi.internal.Renderer
-import app.cash.paparazzi.internal.ResourcesInterceptor
-import app.cash.paparazzi.internal.SessionParamsBuilder
-import app.cash.paparazzi.internal.ChoreographerDelegateInterceptor
-import app.cash.paparazzi.internal.IInputMethodManagerInterceptor
-import app.cash.paparazzi.internal.ServiceManagerInterceptor
-import com.android.ide.common.rendering.api.RenderSession
-import com.android.ide.common.rendering.api.Result
-import com.android.ide.common.rendering.api.Result.Status.ERROR_UNKNOWN
-import com.android.ide.common.rendering.api.SessionParams
-import com.android.internal.lang.System_Delegate
-import com.android.layoutlib.bridge.Bridge
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode
-import com.android.layoutlib.bridge.Bridge.cleanupThread
-import com.android.layoutlib.bridge.Bridge.prepareThread
-import com.android.layoutlib.bridge.BridgeRenderSession
-import com.android.layoutlib.bridge.impl.RenderAction
-import com.android.layoutlib.bridge.impl.RenderSessionImpl
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
-import java.awt.image.BufferedImage
-import java.lang.reflect.Field
-import java.lang.reflect.Modifier
 import java.util.Date
-import java.util.concurrent.TimeUnit
-import kotlin.coroutines.ContinuationInterceptor
 
-class Paparazzi @JvmOverloads constructor(
+public class Paparazzi @JvmOverloads constructor(
   private val environment: Environment = detectEnvironment(),
   private val deviceConfig: DeviceConfig = DeviceConfig.NEXUS_5,
   private val theme: String = "android:Theme.Material.NoActionBar.Fullscreen",
   private val renderingMode: RenderingMode = RenderingMode.NORMAL,
   private val appCompatEnabled: Boolean = true,
-  private val maxPercentDifference: Double = 0.1,
+  private val maxPercentDifference: Double = detectMaxPercentDifferenceDefault(),
   private val snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference),
-  private val renderExtensions: Set<RenderExtension> = setOf()
+  private val renderExtensions: Set<RenderExtension> = setOf(),
+  private val supportsRtl: Boolean = false,
+  private val showSystemUi: Boolean = false,
+  private val useDeviceResolution: Boolean = false
 ) : TestRule {
-  private val THUMBNAIL_SIZE = 1000
+  private var validateAccessibility = false
 
-  private val logger = PaparazziLogger()
-  private lateinit var sessionParamsBuilder: SessionParamsBuilder
-  private lateinit var renderer: Renderer
-  private lateinit var renderSession: RenderSessionImpl
-  private lateinit var bridgeRenderSession: RenderSession
+  @Deprecated(
+    "validateAccessibility is deprecated. " +
+      "Use the AccessibilityRenderExtension for accessibility testing instead."
+  )
+  public constructor(
+    environment: Environment = detectEnvironment(),
+    deviceConfig: DeviceConfig = DeviceConfig.NEXUS_5,
+    theme: String = "android:Theme.Material.NoActionBar.Fullscreen",
+    renderingMode: RenderingMode = RenderingMode.NORMAL,
+    appCompatEnabled: Boolean = true,
+    maxPercentDifference: Double = detectMaxPercentDifferenceDefault(),
+    snapshotHandler: SnapshotHandler = determineHandler(maxPercentDifference),
+    renderExtensions: Set<RenderExtension> = setOf(),
+    supportsRtl: Boolean = false,
+    showSystemUi: Boolean = false,
+    useDeviceResolution: Boolean = false,
+    validateAccessibility: Boolean = false
+  ) : this(
+    environment,
+    deviceConfig,
+    theme,
+    renderingMode,
+    appCompatEnabled,
+    maxPercentDifference,
+    snapshotHandler,
+    renderExtensions,
+    supportsRtl,
+    showSystemUi,
+    useDeviceResolution
+  ) {
+    this.validateAccessibility = validateAccessibility
+  }
+  private lateinit var sdk: PaparazziSdk
+  private lateinit var frameHandler: SnapshotHandler.FrameHandler
   private var testName: TestName? = null
 
-  val layoutInflater: LayoutInflater
-    get() = RenderAction.getCurrentContext().getSystemService("layout_inflater") as BridgeInflater
+  public val layoutInflater: LayoutInflater
+    get() = sdk.layoutInflater
 
-  val resources: Resources
-    get() = RenderAction.getCurrentContext().resources
+  public val resources: Resources
+    get() = sdk.resources
 
-  val context: Context
-    get() = RenderAction.getCurrentContext()
+  public val context: Context
+    get() = sdk.context
 
-  private val contentRoot = """
-        |<?xml version="1.0" encoding="utf-8"?>
-        |<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        |              android:layout_width="match_parent"
-        |              android:layout_height="match_parent"/>
-        """.trimMargin()
-
-  override fun apply(
-    base: Statement,
-    description: Description
-  ): Statement {
-    val statement = object : Statement() {
+  override fun apply(base: Statement, description: Description): Statement {
+    return object : Statement() {
       override fun evaluate() {
-        prepare(description)
+        setup(testName = description.toTestName())
         try {
           base.evaluate()
         } finally {
-          close()
+          teardown()
         }
       }
     }
-
-    registerFontLookupInterceptionIfResourceCompatDetected()
-    registerViewEditModeInterception()
-    registerMatrixMultiplyInterception()
-    registerChoreographerDelegateInterception()
-    registerServiceManagerInterception()
-    registerIInputMethodManagerInterception()
-
-    val outerRule = AgentTestRule()
-    return outerRule.apply(statement, description)
   }
 
-  fun prepare(description: Description) {
-    forcePlatformSdkVersion(environment.compileSdkVersion)
-
-    val layoutlibCallback =
-      PaparazziCallback(logger, environment.packageName, environment.resourcePackageNames)
-    layoutlibCallback.initResources()
-
+  public fun prepare(description: Description) {
     testName = description.toTestName()
-
-    renderer = Renderer(environment, layoutlibCallback, logger, maxPercentDifference)
-    sessionParamsBuilder = renderer.prepare()
-
-    sessionParamsBuilder = sessionParamsBuilder
-        .copy(
-            layoutPullParser = LayoutPullParser.createFromString(contentRoot),
-            deviceConfig = deviceConfig,
-            renderingMode = renderingMode
-        )
-        .withTheme(theme)
-
-    val sessionParams = sessionParamsBuilder.build()
-    renderSession = createRenderSession(sessionParams)
-    prepareThread()
-    renderSession.init(sessionParams.timeout)
-    Bitmap.setDefaultDensity(DisplayMetrics.DENSITY_DEVICE_STABLE)
-
-    // requires LayoutInflater to be created, which is a side-effect of RenderSessionImpl.init()
-    if (appCompatEnabled) {
-      initializeAppCompatIfPresent()
-    }
-
-    bridgeRenderSession = createBridgeSession(renderSession, renderSession.inflate())
+    sdk.prepare()
   }
 
-  fun close() {
+  public fun setup(testName: TestName) {
+    sdk = PaparazziSdk(
+      environment = environment,
+      deviceConfig = deviceConfig,
+      theme = theme,
+      renderingMode = renderingMode,
+      appCompatEnabled = appCompatEnabled,
+      renderExtensions = renderExtensions,
+      supportsRtl = supportsRtl,
+      showSystemUi = showSystemUi,
+      validateAccessibility = validateAccessibility,
+      onNewFrame = { frameHandler.handle(it) },
+      useDeviceResolution = useDeviceResolution
+    )
+    sdk.setup()
+    this.testName = testName
+    sdk.prepare()
+  }
+
+  public fun teardown() {
     testName = null
-    renderer.close()
-    renderSession.release()
-    bridgeRenderSession.dispose()
-    cleanupThread()
+    sdk.teardown()
     snapshotHandler.close()
   }
 
-  fun <V : View> inflate(@LayoutRes layoutId: Int): V = layoutInflater.inflate(layoutId, null) as V
+  @Deprecated("Please use teardown() instead.")
+  public fun close() {
+    testName = null
+    sdk.teardown()
+    snapshotHandler.close()
+  }
 
-  fun snapshot(name: String? = null, composable: @Composable () -> Unit) {
-    val hostView = ComposeView(context)
-    // During onAttachedToWindow, AbstractComposeView will attempt to resolve its parent's
-    // CompositionContext, which requires first finding the "content view", then using that to
-    // find a root view with a ViewTreeLifecycleOwner
-    val parent = FrameLayout(context).apply { id = android.R.id.content }
-    parent.addView(hostView, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
-    PaparazziComposeOwner.register(parent)
-    hostView.setContent(composable)
-    snapshot(parent, name)
+  public fun <V : View> inflate(@LayoutRes layoutId: Int): V = sdk.inflate(layoutId)
 
-    forceReleaseComposeReferenceLeaks()
+  public fun snapshot(name: String? = null, composable: @Composable () -> Unit) {
+    createFrameHandler(name).use { handler ->
+      frameHandler = handler
+      sdk.snapshot(composable)
+    }
   }
 
   @JvmOverloads
-  fun snapshot(view: View, name: String? = null) {
-    takeSnapshots(view, name, 0, -1, 1)
+  public fun snapshot(view: View, name: String? = null, offsetMillis: Long = 0L) {
+    createFrameHandler(name).use { handler ->
+      frameHandler = handler
+      sdk.snapshot(view, offsetMillis)
+    }
   }
 
-  @JvmOverloads
-  fun gif(
-    view: View,
+  public fun gif(
     name: String? = null,
     start: Long = 0L,
     end: Long = 500L,
-    fps: Int = 30
+    fps: Int = 30,
+    composable: @Composable () -> Unit
   ) {
+    gif(
+      view = ComposeView(context).apply {
+        layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
+        setContent(composable)
+      },
+      name = name,
+      start = start,
+      end = end,
+      fps = fps
+    )
+  }
+
+  @JvmOverloads
+  public fun gif(view: View, name: String? = null, start: Long = 0L, end: Long = 500L, fps: Int = 30) {
     // Add one to the frame count so we get the last frame. Otherwise a 1 second, 60 FPS animation
     // our 60th frame will be at time 983 ms, and we want our last frame to be 1,000 ms. This gets
     // us 61 frames for a 1 second animation, 121 frames for a 2 second animation, etc.
     val durationMillis = (end - start).toInt()
     val frameCount = (durationMillis * fps) / 1000 + 1
-    val startNanos = TimeUnit.MILLISECONDS.toNanos(start)
-    takeSnapshots(view, name, startNanos, fps, frameCount)
+    createFrameHandler(name, frameCount, fps).use { handler ->
+      frameHandler = handler
+      sdk.gif(view, start, end, fps)
+    }
   }
 
-  fun unsafeUpdateConfig(
+  public fun unsafeUpdateConfig(
     deviceConfig: DeviceConfig? = null,
     theme: String? = null,
     renderingMode: RenderingMode? = null
-  ) {
-    require(deviceConfig != null || theme != null || renderingMode != null) {
-      "Calling unsafeUpdateConfig requires at least one non-null argument."
-    }
+  ): Unit = sdk.unsafeUpdateConfig(deviceConfig, theme, renderingMode)
 
-    renderSession.release()
-    bridgeRenderSession.dispose()
-    cleanupThread()
-
-    sessionParamsBuilder = sessionParamsBuilder
-      .copy(
-        // Required to reset underlying parser stream
-        layoutPullParser = LayoutPullParser.createFromString(contentRoot)
-      )
-
-    if (deviceConfig != null) {
-      sessionParamsBuilder = sessionParamsBuilder.copy(deviceConfig = deviceConfig)
-    }
-
-    if (theme != null) {
-      sessionParamsBuilder = sessionParamsBuilder.withTheme(theme)
-    }
-
-    if (renderingMode != null) {
-      sessionParamsBuilder = sessionParamsBuilder.copy(renderingMode = renderingMode)
-    }
-
-    val sessionParams = sessionParamsBuilder.build()
-    renderSession = createRenderSession(sessionParams)
-    prepareThread()
-    renderSession.init(sessionParams.timeout)
-    Bitmap.setDefaultDensity(DisplayMetrics.DENSITY_DEVICE_STABLE)
-    bridgeRenderSession = createBridgeSession(renderSession, renderSession.inflate())
-  }
-
-  private fun takeSnapshots(
-    view: View,
-    name: String?,
-    startNanos: Long,
-    fps: Int,
-    frameCount: Int
-  ) {
+  private fun createFrameHandler(
+    name: String? = null,
+    frameCount: Int = 1,
+    fps: Int = -1
+  ): SnapshotHandler.FrameHandler {
     val snapshot = Snapshot(name, testName!!, Date())
-
-    val frameHandler = snapshotHandler.newFrameHandler(snapshot, frameCount, fps)
-    frameHandler.use {
-      val viewGroup = bridgeRenderSession.rootViews[0].viewObject as ViewGroup
-      val modifiedView = renderExtensions.fold(view) { view, renderExtension ->
-        renderExtension.renderView(view)
-      }
-
-      System_Delegate.setBootTimeNanos(0L)
-      try {
-        withTime(0L) {
-          // Initialize the choreographer at time=0.
-        }
-
-        viewGroup.addView(modifiedView)
-        for (frame in 0 until frameCount) {
-          val nowNanos = (startNanos + (frame * 1_000_000_000.0 / fps)).toLong()
-          withTime(nowNanos) {
-            val result = renderSession.render(true)
-            if (result.status == ERROR_UNKNOWN) {
-              throw result.exception
-            }
-
-            val image = bridgeRenderSession.image
-            frameHandler.handle(scaleImage(image))
-          }
-        }
-      } finally {
-        viewGroup.removeView(modifiedView)
-        AnimationHandler.sAnimatorHandler.set(null)
-      }
-    }
-  }
-
-  private fun withTime(
-    timeNanos: Long,
-    block: () -> Unit
-  ) {
-    val frameNanos = TIME_OFFSET_NANOS + timeNanos
-
-    // Execute the block at the requested time.
-    System_Delegate.setNanosTime(frameNanos)
-
-    val choreographer = Choreographer.getInstance()
-    val areCallbacksRunningField = choreographer::class.java.getDeclaredField("mCallbacksRunning")
-    areCallbacksRunningField.isAccessible = true
-
-    try {
-      areCallbacksRunningField.setBoolean(choreographer, true)
-
-      // https://android.googlesource.com/platform/frameworks/layoutlib/+/d58aa4703369e109b24419548f38b422d5a44738/bridge/src/com/android/layoutlib/bridge/BridgeRenderSession.java#171
-      // BridgeRenderSession.executeCallbacks aggressively tears down the main Looper and BridgeContext, so we call the static delegates ourselves.
-      Handler_Delegate.executeCallbacks()
-      val currentTimeMs = SystemClock_Delegate.uptimeMillis()
-      val choreographerCallbacks =
-        RenderAction.getCurrentContext().sessionInteractiveData.choreographerCallbacks
-      choreographerCallbacks.execute(currentTimeMs, Bridge.getLog())
-
-      block()
-    } catch (e: Throwable) {
-      Bridge.getLog().error("broken", "Failed executing Choreographer#doFrame", e, null, null)
-      throw e
-    } finally {
-      areCallbacksRunningField.setBoolean(choreographer, false)
-    }
-  }
-
-  private fun createRenderSession(sessionParams: SessionParams): RenderSessionImpl {
-    val renderSession = RenderSessionImpl(sessionParams)
-    renderSession.setElapsedFrameTimeNanos(0L)
-    RenderSessionImpl::class.java
-        .getDeclaredField("mFirstFrameExecuted")
-        .apply {
-          isAccessible = true
-          set(renderSession, true)
-        }
-    return renderSession
-  }
-
-  private fun createBridgeSession(
-    renderSession: RenderSessionImpl,
-    result: Result
-  ): BridgeRenderSession {
-    try {
-      val bridgeSessionClass = Class.forName("com.android.layoutlib.bridge.BridgeRenderSession")
-      val constructor =
-        bridgeSessionClass.getDeclaredConstructor(RenderSessionImpl::class.java, Result::class.java)
-      constructor.isAccessible = true
-      return constructor.newInstance(renderSession, result) as BridgeRenderSession
-    } catch (e: Exception) {
-      throw RuntimeException(e)
-    }
-  }
-
-  private fun scaleImage(image: BufferedImage): BufferedImage {
-    val maxDimension = Math.max(image.width, image.height)
-    val scale = THUMBNAIL_SIZE / maxDimension.toDouble()
-    return ImageUtils.scale(image, scale, scale)
+    return snapshotHandler.newFrameHandler(snapshot, frameCount, fps)
   }
 
   private fun Description.toTestName(): TestName {
@@ -376,230 +210,7 @@ class Paparazzi @JvmOverloads constructor(
     return TestName(packageName, className, methodName)
   }
 
-  private fun forcePlatformSdkVersion(compileSdkVersion: Int) {
-    val modifiersField =
-      try {
-        Field::class.java.getDeclaredField("modifiers")
-      } catch (e: NoSuchFieldException) {
-        // Hack for Java 12+ access
-        // https://stackoverflow.com/q/56039341
-        // https://github.com/powermock/powermock/commit/66ce9f77215bae68b45f35481abc8b52a5d5b6ae#diff-21c1fc51058efd316026f11f34f51c5c
-        try {
-          val getDeclaredFields0 =
-            Class::class.java.getDeclaredMethod(
-                "getDeclaredFields0", Boolean::class.javaPrimitiveType
-            )
-          getDeclaredFields0.isAccessible = true
-          val fields = getDeclaredFields0.invoke(Field::class.java, false) as Array<Field>
-          fields.find { it.name == "modifiers" } ?: throw e
-        } catch (ex: Exception) {
-          e.addSuppressed(ex)
-          throw e
-        }
-      }
-    modifiersField.isAccessible = true
-
-    val versionClass = try {
-      Paparazzi::class.java.classLoader.loadClass("android.os.Build\$VERSION")
-    } catch (e: ClassNotFoundException) {
-      return
-    }
-
-    versionClass
-        .getDeclaredField("SDK_INT")
-        .apply {
-          isAccessible = true
-          modifiersField.setInt(this, modifiers and Modifier.FINAL.inv())
-          setInt(null, compileSdkVersion)
-        }
-  }
-
-  private fun initializeAppCompatIfPresent() {
-    lateinit var appCompatDelegateClass: Class<*>
-    try {
-      // See androidx.appcompat.widget.AppCompatDrawableManager#preload()
-      val appCompatDrawableManagerClass =
-        Class.forName("androidx.appcompat.widget.AppCompatDrawableManager")
-      val preloadMethod = appCompatDrawableManagerClass.getMethod("preload")
-      preloadMethod.invoke(null)
-
-      appCompatDelegateClass = Class.forName("androidx.appcompat.app.AppCompatDelegate")
-    } catch (e: ClassNotFoundException) {
-      logger.verbose("AppCompat not found on classpath")
-      return
-    }
-
-    // See androidx.appcompat.app.AppCompatDelegateImpl#installViewFactory()
-    if (layoutInflater.factory == null) {
-      layoutInflater.factory2 = object : LayoutInflater.Factory2 {
-        override fun onCreateView(
-          parent: View?,
-          name: String,
-          context: Context,
-          attrs: AttributeSet
-        ): View? {
-          val appCompatViewInflaterClass =
-            Class.forName("androidx.appcompat.app.AppCompatViewInflater")
-
-          val createViewMethod = appCompatViewInflaterClass
-              .getDeclaredMethod(
-                  "createView",
-                  View::class.java,
-                  String::class.java,
-                  Context::class.java,
-                  AttributeSet::class.java,
-                  Boolean::class.javaPrimitiveType,
-                  Boolean::class.javaPrimitiveType,
-                  Boolean::class.javaPrimitiveType,
-                  Boolean::class.javaPrimitiveType
-              )
-              .apply { isAccessible = true }
-
-          val inheritContext = true
-          val readAndroidTheme = true
-          val readAppTheme = true
-          val wrapContext = true
-
-          val newAppCompatViewInflaterInstance = appCompatViewInflaterClass
-              .getConstructor()
-              .newInstance()
-
-          return createViewMethod.invoke(
-              newAppCompatViewInflaterInstance, parent, name, context, attrs,
-              inheritContext, readAndroidTheme, readAppTheme, wrapContext
-          ) as View?
-        }
-
-        override fun onCreateView(
-          name: String,
-          context: Context,
-          attrs: AttributeSet
-        ): View? = onCreateView(null, name, context, attrs)
-      }
-    } else {
-      if (!appCompatDelegateClass.isAssignableFrom(layoutInflater.factory2::class.java)) {
-        throw IllegalStateException(
-            "The LayoutInflater already has a Factory installed so we can not install AppCompat's"
-        )
-      }
-    }
-  }
-
-  /**
-   * Current workaround for supporting custom fonts when constructing views in code. This check
-   * may be used or expanded to support other cases requiring similar method interception
-   * techniques.
-   *
-   * See:
-   * https://github.com/cashapp/paparazzi/issues/119
-   * https://issuetracker.google.com/issues/156065472
-   */
-  private fun registerFontLookupInterceptionIfResourceCompatDetected() {
-    try {
-      val resourcesCompatClass = Class.forName("androidx.core.content.res.ResourcesCompat")
-      InterceptorRegistrar.addMethodInterceptor(
-          resourcesCompatClass, "getFont", ResourcesInterceptor::class.java
-      )
-    } catch (e: ClassNotFoundException) {
-      logger.verbose("ResourceCompat not found on classpath")
-    }
-  }
-
-  private fun registerServiceManagerInterception() {
-    val serviceManager = Class.forName("android.os.ServiceManager")
-    InterceptorRegistrar.addMethodInterceptor(
-      serviceManager, "getServiceOrThrow", ServiceManagerInterceptor::class.java
-    )
-  }
-
-  private fun registerIInputMethodManagerInterception() {
-    val iimm = Class.forName("com.android.internal.view.IInputMethodManager\$Stub")
-    InterceptorRegistrar.addMethodInterceptor(
-      iimm, "asInterface", IInputMethodManagerInterceptor::class.java
-    )
-  }
-
-  private fun registerViewEditModeInterception() {
-    val viewClass = Class.forName("android.view.View")
-    InterceptorRegistrar.addMethodInterceptor(
-        viewClass, "isInEditMode", EditModeInterceptor::class.java
-    )
-  }
-
-  private fun registerMatrixMultiplyInterception() {
-    val matrixClass = Class.forName("android.opengl.Matrix")
-    InterceptorRegistrar.addMethodInterceptors(
-      matrixClass,
-      setOf(
-        "multiplyMM" to MatrixMatrixMultiplicationInterceptor::class.java,
-        "multiplyMV" to MatrixVectorMultiplicationInterceptor::class.java
-      )
-    )
-  }
-
-  private fun registerChoreographerDelegateInterception() {
-    val choreographerDelegateClass = Class.forName("android.view.Choreographer_Delegate")
-    InterceptorRegistrar.addMethodInterceptor(
-        choreographerDelegateClass, "getFrameTimeNanos", ChoreographerDelegateInterceptor::class.java
-    )
-  }
-
-  private fun forceReleaseComposeReferenceLeaks() {
-    val snapshotClass = Class.forName("androidx.compose.runtime.snapshots.SnapshotKt")
-    val applyObservers = snapshotClass
-      .getDeclaredField("applyObservers")
-      .apply { isAccessible = true }
-      .get(null) as MutableList<*>
-    val applyObserver = applyObservers.getOrNull(0)
-    if (applyObserver != null) {
-      val recomposer = applyObserver.javaClass
-        .getDeclaredField("this\$0")
-        .apply { isAccessible = true }
-        .get(applyObserver) as Recomposer
-      val compositionInvalidations = recomposer.javaClass
-        .getDeclaredField("compositionInvalidations")
-        .apply { isAccessible = true }
-        .get(recomposer) as MutableList<*>
-      val snapshotInvalidations = recomposer.javaClass
-        .getDeclaredField("snapshotInvalidations")
-        .apply { isAccessible = true }
-        .get(recomposer) as MutableList<*>
-      compositionInvalidations.clear()
-      snapshotInvalidations.clear()
-      applyObservers.clear()
-    }
-
-    val dispatcher =
-      AndroidUiDispatcher.CurrentThread[ContinuationInterceptor] as AndroidUiDispatcher
-    val toRunTrampolined = dispatcher.javaClass
-      .getDeclaredField("toRunTrampolined")
-      .apply { isAccessible = true }
-      .get(dispatcher) as ArrayDeque<*>
-    toRunTrampolined.clear()
-  }
-
-  private class PaparazziComposeOwner private constructor() : LifecycleOwner, SavedStateRegistryOwner {
-    private val lifecycleRegistry: LifecycleRegistry = LifecycleRegistry(this)
-    private val savedStateRegistryController = SavedStateRegistryController.create(this)
-
-    override fun getLifecycle(): Lifecycle = lifecycleRegistry
-    override fun getSavedStateRegistry(): SavedStateRegistry = savedStateRegistryController.savedStateRegistry
-
-    companion object {
-      fun register(view: View) {
-        val owner = PaparazziComposeOwner()
-        owner.savedStateRegistryController.performRestore(null)
-        owner.lifecycleRegistry.currentState = Lifecycle.State.CREATED
-        ViewTreeLifecycleOwner.set(view, owner)
-        ViewTreeSavedStateRegistryOwner.set(view, owner)
-      }
-    }
-  }
-
-  companion object {
-    /** The choreographer doesn't like 0 as a frame time, so start an hour later. */
-    internal val TIME_OFFSET_NANOS = TimeUnit.HOURS.toNanos(1L)
-
+  private companion object {
     private val isVerifying: Boolean =
       System.getProperty("paparazzi.test.verify")?.toBoolean() == true
 
@@ -607,7 +218,7 @@ class Paparazzi @JvmOverloads constructor(
       if (isVerifying) {
         SnapshotVerifier(maxPercentDifference)
       } else {
-        HtmlReportWriter()
+        HtmlReportWriter(maxPercentDifference = maxPercentDifference)
       }
   }
 }

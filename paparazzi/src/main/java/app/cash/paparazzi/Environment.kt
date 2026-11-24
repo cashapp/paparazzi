@@ -15,58 +15,88 @@
  */
 package app.cash.paparazzi
 
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import dev.drewhamilton.poko.Poko
+import okio.buffer
+import okio.source
 import java.io.File
 import java.nio.file.Paths
-import java.util.Locale
 
-data class Environment(
-  val platformDir: String,
-  val appTestDir: String,
-  val resDir: String,
-  val assetsDir: String,
-  val packageName: String,
-  val compileSdkVersion: Int,
-  val platformDataDir: String,
-  val resourcePackageNames: List<String>,
-)
+@Poko
+public class Environment(
+  public val appTestDir: String,
+  public val packageName: String,
+  public val compileSdkVersion: Int,
+  public val resourcePackageNames: List<String>,
+  public val localResourceDirs: List<String>,
+  public val moduleResourceDirs: List<String>,
+  public val libraryResourceDirs: List<String>,
+  public val allModuleAssetDirs: List<String>,
+  public val libraryAssetDirs: List<String>
+) {
+  public fun copy(
+    appTestDir: String = this.appTestDir,
+    packageName: String = this.packageName,
+    compileSdkVersion: Int = this.compileSdkVersion,
+    resourcePackageNames: List<String> = this.resourcePackageNames,
+    localResourceDirs: List<String> = this.localResourceDirs,
+    moduleResourceDirs: List<String> = this.moduleResourceDirs,
+    libraryResourceDirs: List<String> = this.libraryResourceDirs,
+    allModuleAssetDirs: List<String> = this.allModuleAssetDirs,
+    libraryAssetDirs: List<String> = this.libraryAssetDirs
+  ): Environment =
+    Environment(
+      appTestDir,
+      packageName,
+      compileSdkVersion,
+      resourcePackageNames,
+      localResourceDirs,
+      moduleResourceDirs,
+      libraryResourceDirs,
+      allModuleAssetDirs,
+      libraryAssetDirs
+    )
+}
 
-@Suppress("unused")
-fun androidHome() = System.getenv("ANDROID_SDK_ROOT")
-    ?: System.getenv("ANDROID_HOME")
-    ?: androidSdkPath()
-
-fun detectEnvironment(): Environment {
+public fun detectEnvironment(): Environment {
   checkInstalledJvm()
 
-  val resourcesFile = File(System.getProperty("paparazzi.test.resources"))
-  val configLines = resourcesFile.readLines()
+  val projectDir = Paths.get(System.getProperty("paparazzi.project.dir"))
+  val appTestDir = Paths.get(System.getProperty("paparazzi.build.dir"))
+  val artifactsCacheDir = Paths.get(System.getProperty("paparazzi.artifacts.cache.dir"))
 
-  val appTestDir = Paths.get(System.getProperty("user.dir"))
-  val androidHome = Paths.get(androidHome())
+  val resourcesFile = File(System.getProperty("paparazzi.test.resources"))
+  val config =
+    resourcesFile.source().buffer().use { configAdapter.fromJson(it)!! }
+
   return Environment(
-      platformDir = androidHome.resolve(configLines[3]).toString(),
-      appTestDir = appTestDir.toString(),
-      resDir = appTestDir.resolve(configLines[1]).toString(),
-      assetsDir = appTestDir.resolve(configLines[4]).toString(),
-      packageName = configLines[0],
-      compileSdkVersion = configLines[2].toInt(),
-      platformDataDir = configLines[5],
-      resourcePackageNames = configLines[6].split(",")
+    appTestDir = appTestDir.toString(),
+    packageName = config.mainPackage,
+    compileSdkVersion = config.targetSdkVersion.toInt(),
+    resourcePackageNames = config.resourcePackageNames,
+    localResourceDirs = config.projectResourceDirs.map { projectDir.resolve(it).toString() },
+    moduleResourceDirs = config.moduleResourceDirs.map { projectDir.resolve(it).toString() },
+    libraryResourceDirs = config.aarExplodedDirs.map { artifactsCacheDir.resolve(it).toString() },
+    allModuleAssetDirs = config.projectAssetDirs.map { projectDir.resolve(it).toString() },
+    libraryAssetDirs = config.aarAssetDirs.map { artifactsCacheDir.resolve(it).toString() }
   )
 }
 
-private fun androidSdkPath(): String {
-  val osName = System.getProperty("os.name").lowercase(Locale.US)
-  val sdkPathDir = if (osName.startsWith("windows")) {
-    "\\AppData\\Local\\Android\\Sdk"
-  } else if (osName.startsWith("mac")) {
-    "/Library/Android/sdk"
-  } else {
-    "/Android/Sdk"
-  }
-  val homeDir = System.getProperty("user.home")
-  return homeDir + sdkPathDir
+private val configAdapter by lazy {
+  Moshi.Builder().addLast(KotlinJsonAdapterFactory()).build().adapter(Config::class.java)
 }
+
+internal data class Config(
+  val mainPackage: String,
+  val targetSdkVersion: String,
+  val resourcePackageNames: List<String>,
+  val projectResourceDirs: List<String>,
+  val moduleResourceDirs: List<String>,
+  val aarExplodedDirs: List<String>,
+  val projectAssetDirs: List<String>,
+  val aarAssetDirs: List<String>
+)
 
 private fun checkInstalledJvm() {
   val feature = try {
@@ -74,13 +104,13 @@ private fun checkInstalledJvm() {
     val version = Runtime::class.java.getMethod("version").invoke(null)
     // Runtime.Version#feature() only available as of Java 10.
     version.javaClass.getMethod("feature").invoke(version) as Int
-  } catch(e: NoSuchMethodException) {
+  } catch (e: NoSuchMethodException) {
     -1
   }
 
   if (feature < 11) {
     throw IllegalStateException(
-        "Unsupported JRE detected! Please install and run Paparazzi test suites on JDK 11+."
+      "Unsupported JRE detected! Please install and run Paparazzi test suites on JDK 11+."
     )
   }
 }

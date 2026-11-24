@@ -9,45 +9,88 @@ class LaunchViewTest {
   val paparazzi = Paparazzi(
     deviceConfig = PIXEL_5,
     theme = "android:Theme.Material.Light.NoActionBar"
-    // ...see docs for more options 
+    // ...see docs for more options
   )
- 
+
   @Test
-  fun simple() {
+  fun launchView() {
     val view = paparazzi.inflate<LaunchView>(R.layout.launch)
-    // or... 
+    // or...
     // val view = LaunchView(paparazzi.context)
-    
+
     view.setModel(LaunchModel(title = "paparazzi"))
     paparazzi.snapshot(view)
+  }
+
+  @Test
+  fun launchComposable() {
+    paparazzi.snapshot {
+      MyComposable()
+    }
   }
 }
 ```
 
 See the [project website][paparazzi] for documentation and APIs.
 
+Using JUnit 5
+-------
+
+```kotlin
+lateinit var paparazzi: Paparazzi
+
+@BeforeEach
+fun setup(testInfo: TestInfo) {
+  paparazzi = Paparazzi().apply {
+    setup(
+      testName = TestName(
+        packageName = testInfo.testClass.get().`package`?.name.orEmpty(),
+        className = testInfo.testClass.get().simpleName,
+        methodName = testInfo.testMethod.get().name
+      )
+    )
+  }
+}
+
+@AfterEach
+fun tearDown() {
+  paparazzi.teardown()
+}
+
+@Test
+fun snapshot_example() {
+  val view = paparazzi.inflate<TextView>(android.R.layout.simple_list_item_1).apply {
+    text = "Hello Paparazzi"
+    textSize = 24f
+    gravity = Gravity.CENTER
+  }
+
+  paparazzi.snapshot(view)
+}
+```
+
 Tasks
 -------
-```
-$ ./gradlew sample:testDebug
+
+```bash
+./gradlew :sample:testDebug
 ```
 
-Runs tests and generates an HTML report at `sample/build/reports/paparazzi/` showing all 
-test runs and snapshots. 
+Runs tests and generates an HTML report at `sample/build/reports/paparazzi/` showing all
+test runs and snapshots.
 
-```
-$ ./gradlew sample:recordPaparazziDebug
+```bash
+./gradlew :sample:recordPaparazziDebug
 ```
 
-Saves snapshots as golden values to a predefined source-controlled location 
+Saves snapshots as golden values to a predefined source-controlled location
 (defaults to `src/test/snapshots`).
 
-```
-$ ./gradlew sample:verifyPaparazziDebug
+```bash
+./gradlew :sample:verifyPaparazziDebug
 ```
 
-Runs tests and verifies against previously-recorded golden values.
-
+Runs tests and verifies against previously-recorded golden values. Failures generate diffs at `sample/build/paparazzi/failures`.
 
 For more examples, check out the [sample][sample] project.
 
@@ -56,11 +99,13 @@ Git LFS
 It is recommended you use [Git LFS][lfs] to store your snapshots.  Here's a quick setup:
 
 ```bash
-$ brew install git-lfs
-$ git config core.hooksPath  # optional, confirm where your git hooks will be installed
-$ git lfs install --local
-$ git lfs track **/snapshots/**/*.png
-$ git add .gitattributes
+brew install git-lfs
+git config core.hooksPath  # optional, confirm where your git hooks will be installed
+git lfs install --local
+git lfs track "**/snapshots/**/*.png"
+git add .gitattributes
+# Optional to improve git checkout performance
+git config lfs.setlockablereadonly false
 ```
 
 On CI, you might set up something like:
@@ -93,8 +138,39 @@ Jetifier
 If using Jetifier to migrate off Support libraries, add the following to your `gradle.properties` to
 exclude bundled Android dependencies.
 
-```text
+```properties
 android.jetifier.ignorelist=android-base-common,common
+```
+
+Lottie
+--------
+
+When taking screenshots of Lottie animations, you need to force Lottie to not run on a background thread, otherwise Paparazzi can throw exceptions [#494](https://github.com/cashapp/paparazzi/issues/494), [#630](https://github.com/cashapp/paparazzi/issues/630).
+
+```kotlin
+@Before
+fun setup() {
+    LottieTask.EXECUTOR = Executor(Runnable::run)
+}
+```
+
+LocalInspectionMode
+--------
+Some Composables -- such as `GoogleMap()` -- check for `LocalInspectionMode` to short-circuit to a `@Preview`-safe Composable.
+
+However, Paparazzi does not set `LocalInspectionMode` globally to ensure that the snapshot represents the true production output, similar to how it overrides `View.isInEditMode` for legacy views.
+
+As a workaround, we recommend wrapping such a Composable in a custom Composable with a `CompositionLocalProvider` and setting `LocalInspectionMode` there.
+
+```kotlin
+ @Test
+  fun inspectionModeView() {
+    paparazzi.snapshot(
+      CompositionLocalProvider(LocalInspectionMode provides true) {
+        YourComposable()
+      }
+    )
+  }
 ```
 
 Releases
@@ -110,7 +186,7 @@ buildscript {
     google()
   }
   dependencies {
-    classpath 'app.cash.paparazzi:paparazzi-gradle-plugin:0.9.3'
+    classpath 'app.cash.paparazzi:paparazzi-gradle-plugin:2.0.0-alpha05.1'
   }
 }
 
@@ -120,44 +196,18 @@ apply plugin: 'app.cash.paparazzi'
 Using the plugins DSL:
 ```groovy
 plugins {
-  id 'app.cash.paparazzi' version '0.9.3'
+  id 'app.cash.paparazzi' version '2.0.0-alpha05.1'
 }
 ```
 
-Snapshots of the development version are available in [Sonatype's `snapshots` repository][snap].
+Snapshots of the development version are available in [the Central Portal Snapshots repository][snap].
 
 ```groovy
- repositories {
-   // ...
-   maven {
-     url 'https://oss.sonatype.org/content/repositories/snapshots/'
-   }
- }
-```
-
-Known Limitations
--------
-
-#### Running Tests from the IDE
-```
-java.lang.NullPointerException
-  at java.base/java.io.File.<init>(File.java:278)
-  at app.cash.paparazzi.EnvironmentKt.detectEnvironment(Environment.kt:36)
-```
-Running tests from the IDE requires Android Studio Arctic Fox or later.
-
-#### Could not find ... resource matching value 0x... (resolved name: ...) in current configuration.
-```
-Could not find dimen resource matching value 0x10500C0 (resolved name: config_scrollbarSize) in current configuration.
-android.content.res.Resources$NotFoundException: Could not find dimen resource matching value 0x10500C0 (resolved name: config_scrollbarSize) in current configuration.
-
-Could not find integer resource matching value 0x10E00B4 (resolved name: config_screenshotChordKeyTimeout) in current configuration.
-android.content.res.Resources$NotFoundException: Could not find integer resource matching value 0x10E00B4 (resolved name: config_screenshotChordKeyTimeout) in current configuration.
-```
-`compileSdkVersion` has to be 29 or higher.
-```groovy
-android {
-  compileSdkVersion 29
+repositories {
+  // ...
+  maven {
+    url 'https://central.sonatype.com/repository/maven-snapshots/'
+  }
 }
 ```
 
@@ -180,8 +230,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
- [changelog]: https://cashapp.github.io/paparazzi/changelog/
  [paparazzi]: https://cashapp.github.io/paparazzi/
  [sample]: https://github.com/cashapp/paparazzi/tree/master/sample
- [snap]: https://oss.sonatype.org/content/repositories/snapshots/app/cash/paparazzi/
  [lfs]: https://git-lfs.github.com/
+ [changelog]: https://cashapp.github.io/paparazzi/changelog/
+ [snap]: https://central.sonatype.com/service/rest/repository/browse/maven-snapshots/app/cash/paparazzi/

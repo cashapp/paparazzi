@@ -19,7 +19,7 @@ class Shot {
   }
 
   static get TestMethodRegex() {
-    return /^(.*)\.([^.]*)#([^.]*)$/;
+    return /^(.*)\.(.*)#(.*)$/;
   }
 
   addRun(runId, file, timestamp) {
@@ -117,7 +117,10 @@ class Shot {
     overlayDiv.appendChild(packageP);
     overlayDiv.appendChild(timestampP);
 
-    nameP.innerText = `${this.method} ${this.name}`;
+    nameP.innerText = this.method;
+    if (this.name !== undefined) {
+      nameP.innerText += ` ${this.name}`;
+    }
     classP.innerText = this.clazz;
     packageP.innerText = this.package;
 
@@ -181,7 +184,7 @@ class PaparazziRenderer {
         continue;
       }
       // The js loading is async so the rendering can happen in the next refresh
-      this.loadRunScript(`${runId}/run.js`);
+      this.loadRunScript(`runs/${runId}.js`);
 
       this.render(new Run(runId, window.runs[runId]));
 

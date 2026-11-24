@@ -1,0 +1,64 @@
+{
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  extends: [
+    'config:recommended',
+  ],
+  constraints: {
+    python: '=3.15.2',
+  },
+  ignorePaths: [
+    '.github/workflows/requirements.in',
+  ],
+  'pip-compile': {
+    managerFilePatterns: [
+      '/.github/workflows/requirements.txt/',
+    ],
+  },
+  'gradle-wrapper': {
+    description: 'Update Gradle wrapper to non-stable versions',
+    ignoreUnstable: false,
+  },
+  packageRules: [
+    {
+      description: 'Auto-merge most dependency updates.',
+      matchUpdateTypes: [
+        'minor',
+        'patch',
+      ],
+      matchCurrentVersion: '!/^0/',
+      automerge: true,
+    },
+    {
+      description: 'Compiler plugins are tightly coupled to Kotlin version.',
+      groupName: 'Kotlin',
+      automerge: false,
+      matchPackageNames: [
+        'org.jetbrains.kotlin:{/,}**',
+        'dev.drewhamilton.poko{/,}**',
+      ],
+    },
+    {
+      description: 'Android Gradle Plugin is tightly coupled to its android/platform/tools/base dependencies.',
+      groupName: 'Android Tools',
+      automerge: false,
+      matchPackageNames: [
+        'com.android.tools:{/,}**',
+        'com.android.tools.build:{/,}**',
+      ],
+    },
+    {
+      description: 'Disable Gradle wrapper milestone releases, only interested stables and RCs for now.',
+      matchPackageNames: [
+        'gradle',
+      ],
+      allowedVersions: '!/-milestone-\\d+$/',
+    },
+    {
+      description: "LayoutLib shouldn't auto-merge",
+      automerge: false,
+      matchPackageNames: [
+        'com.android.tools.layoutlib:{/,}**',
+      ],
+    },
+  ],
+}

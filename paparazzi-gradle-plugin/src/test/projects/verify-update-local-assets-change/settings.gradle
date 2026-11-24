@@ -1,0 +1,7 @@
+apply from: '../test.settings.gradle'
+
+buildCache {
+  local {
+    directory = new File(rootDir, 'build-cache')
+  }
+}

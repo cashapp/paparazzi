@@ -23,27 +23,29 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.ToJson
 import com.squareup.moshi.Types
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import java.util.Date
 
 internal object PaparazziJson {
   val moshi = Moshi.Builder()
-      .add(Date::class.java, Rfc3339DateJsonAdapter())
-      .add(this)
-      .build()!!
+    .add(Date::class.java, Rfc3339DateJsonAdapter())
+    .add(this)
+    .addLast(KotlinJsonAdapterFactory())
+    .build()!!
 
   val listOfShotsAdapter: JsonAdapter<List<Snapshot>> =
     moshi
-        .adapter<List<Snapshot>>(
-            Types.newParameterizedType(List::class.java, Snapshot::class.java)
-        )
-        .indent("  ")
+      .adapter<List<Snapshot>>(
+        Types.newParameterizedType(List::class.java, Snapshot::class.java)
+      )
+      .indent("  ")
 
   val listOfStringsAdapter: JsonAdapter<List<String>> =
     moshi
-        .adapter<List<String>>(
-            Types.newParameterizedType(List::class.java, String::class.java)
-        )
-        .indent("  ")
+      .adapter<List<String>>(
+        Types.newParameterizedType(List::class.java, String::class.java)
+      )
+      .indent("  ")
 
   @ToJson
   fun testNameToJson(testName: TestName): String {

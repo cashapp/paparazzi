@@ -3,7 +3,6 @@ package app.cash.paparazzi.plugin.test
 import android.graphics.Color
 import android.util.TypedValue
 import android.view.Gravity.CENTER
-import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.LinearLayout
 import android.widget.LinearLayout.VERTICAL
@@ -35,18 +34,20 @@ class NinePatchTest {
     gravity = CENTER
     setBackgroundColor(Color.GRAY)
     addView(
-        TextView(context).apply {
-          text = "Hello"
-          setTextSize(TypedValue.COMPLEX_UNIT_DIP, 32f)
-        },
-        WRAP_CONTENT, WRAP_CONTENT
+      TextView(context).apply {
+        text = "Hello"
+        setTextSize(TypedValue.COMPLEX_UNIT_DIP, 32f)
+      },
+      WRAP_CONTENT,
+      WRAP_CONTENT
     )
     addView(
-        TextView(context).apply {
-          text = "Paparazzi"
-          setTextSize(TypedValue.COMPLEX_UNIT_DIP, 32f)
-        },
-        WRAP_CONTENT, WRAP_CONTENT
+      TextView(context).apply {
+        text = "Paparazzi"
+        setTextSize(TypedValue.COMPLEX_UNIT_DIP, 32f)
+      },
+      WRAP_CONTENT,
+      WRAP_CONTENT
     )
   }
 }
