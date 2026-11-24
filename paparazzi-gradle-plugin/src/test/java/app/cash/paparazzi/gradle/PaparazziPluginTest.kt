@@ -219,7 +219,7 @@ class PaparazziPluginTest {
     val fixtureRoot = File("src/test/projects/only-junit-test")
 
     val result = gradleRunner
-      .withArguments("verifyPaparazziDebug", "--stacktrace")
+      .withArguments("verifyPaparazziDebug", "--rerun-tasks", "--stacktrace")
       .forwardOutput()
       .runFixture(fixtureRoot) { build() }
 
