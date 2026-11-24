@@ -2,6 +2,7 @@ package app.cash.paparazzi.internal.layoutlib
 
 import android.graphics.Rect
 import android.view.Gravity
+import android.view.LayoutlibRenderer
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewRootImpl
@@ -17,6 +18,13 @@ import com.android.ide.common.rendering.api.SessionParams.RenderingMode.SizeActi
  * [LayoutlibPatch] inlines into layoutlib; see [RenderSizingAdvice].
  */
 internal object WindowSizingSupport {
+  // Keep the advice's receiver typed as Object: referencing its own target class in the advice
+  // signature would load it while its bytecode is still being transformed.
+  @JvmStatic
+  fun refreshWindowComposition(renderer: Any) {
+    (renderer as LayoutlibRenderer).invalidateRoot()
+  }
+
   /**
    * Finishes `RenderSessionImpl.measureLayout` for the shrinking rendering modes, which size the
    * canvas from `mContentRoot.getChildAt(0)` alone and so measure 0x0 whenever the content lives in

@@ -14,13 +14,15 @@ import java.security.ProtectionDomain
 /**
  * Load-time bytecode patch for layoutlib's canvas-sizing path.
  *
- * Two independent defects live here; both are described in full on the advice that fixes them.
+ * The defects are described in full on the advice that fixes them.
  *
  * 1. A traversal can run before the canvas has been sized for the content
  *    ([RenderSizingAdvice.SuppressPrematureTraversal]).
  * 2. The canvas is sized from the base window alone, and windows are then positioned inside the
  *    device display rather than inside that canvas
  *    ([RenderSizingAdvice.MeasureLayoutComplete], [RenderSizingAdvice.WindowRelayout]).
+ * 3. The renderer caches window positions across relayouts
+ *    ([RenderSizingAdvice.RefreshWindowComposition]).
  *
  * Every layoutlib class is offered to the transformer at first load through the ordinary
  * application class loader, so `Advice` can wrap existing methods without adding members. Targets
@@ -68,6 +70,12 @@ internal object LayoutlibPatch {
         "Landroid/view/WindowManager${'$'}LayoutParams;IIIIII" +
         "Landroid/view/WindowRelayoutResult;Landroid/view/SurfaceControl;)I",
       advice = RenderSizingAdvice.WindowRelayout::class.java
+    ),
+    Target(
+      binaryName = "android.view.LayoutlibRenderer",
+      methodName = "draw",
+      descriptor = "(Ljava/util/List;)V",
+      advice = RenderSizingAdvice.RefreshWindowComposition::class.java
     )
   )
 

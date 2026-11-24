@@ -27,6 +27,7 @@ class PreloadedLayoutlibTargetsTest {
     fun preload() {
       listOf(
         "android.view.ViewRootImpl",
+        "android.view.LayoutlibRenderer",
         "com.android.layoutlib.bridge.impl.RenderSessionImpl",
         "com.android.layoutlib.bridge.impl.BridgeWindowSession"
       ).forEach { Class.forName(it, false, PreloadedLayoutlibTargetsTest::class.java.classLoader) }
