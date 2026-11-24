@@ -15,9 +15,14 @@
  */
 package app.cash.paparazzi
 
+import android.app.Dialog
 import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
+import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup.LayoutParams
+import android.view.Window
+import android.view.WindowManager
 import android.widget.FrameLayout
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
@@ -36,7 +41,7 @@ class StaleSnapshotTest {
   private val frames = CapturingSnapshotHandler()
 
   @get:Rule
-  val paparazzi = Paparazzi(snapshotHandler = frames)
+  val paparazzi = Paparazzi(snapshotHandler = frames, useDeviceResolution = true)
 
   @Test
   fun `each snapshot captures the view it was given`() {
@@ -60,6 +65,39 @@ class StaleSnapshotTest {
     assertThat(frames.images.map { it.centre() })
       .containsExactly(Color.RED, Color.GREEN)
       .inOrder()
+  }
+
+  @Test
+  fun `moving a dialog between snapshots captures its current position`() {
+    val background = paparazzi.filled(Color.WHITE)
+    val dialog = Dialog(paparazzi.context).apply {
+      requestWindowFeature(Window.FEATURE_NO_TITLE)
+      setContentView(paparazzi.filled(Color.RED))
+    }
+    try {
+      dialog.show()
+      val window = checkNotNull(dialog.window)
+      window.setBackgroundDrawable(ColorDrawable(Color.RED))
+      window.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+      window.setLayout(100, 100)
+      window.attributes = window.attributes.apply {
+        gravity = Gravity.TOP or Gravity.LEFT
+        x = 20
+        y = 20
+      }
+      paparazzi.snapshot(background)
+
+      window.attributes = window.attributes.apply { x = 200 }
+      paparazzi.snapshot(background)
+
+      assertThat(frames.images).hasSize(2)
+      assertThat(frames.images.map { it.getRGB(30, 30) })
+        .containsExactly(Color.RED, Color.WHITE).inOrder()
+      assertThat(frames.images.map { it.getRGB(210, 30) })
+        .containsExactly(Color.WHITE, Color.RED).inOrder()
+    } finally {
+      dialog.dismiss()
+    }
   }
 
   private fun Paparazzi.filled(color: Int): View =

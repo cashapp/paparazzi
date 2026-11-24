@@ -3,7 +3,7 @@ package app.cash.paparazzi.internal.layoutlib;
 import net.bytebuddy.asm.Advice;
 
 /**
- * The three {@link Advice} fragments {@link LayoutlibPatch} inlines into layoutlib.
+ * The {@link Advice} fragments {@link LayoutlibPatch} inlines into layoutlib.
  *
  * <p>Advice bodies are copied into the target method, so they may only reference members that are
  * public in the class file. None of these classes is ever loaded at runtime; only their bytecode is
@@ -71,6 +71,23 @@ final class RenderSizingAdvice {
       newRenderSize = newRenderSize || sizedWidth != width || sizedHeight != height;
       width = sizedWidth;
       height = sizedHeight;
+    }
+  }
+
+  /**
+   * Re-records the window composition immediately before drawing it.
+   *
+   * <p>Layoutlib records each sub-window's position in ThreadedRenderer's root display list.
+   * Relayout can change that position without invalidating the list, including after SHRINK's
+   * provisional measurement and when a dialog moves between snapshots. Invalidating the views
+   * alone does not refresh those recorded translations or the list of windows being composed.
+   */
+  static final class RefreshWindowComposition {
+    private RefreshWindowComposition() {}
+
+    @Advice.OnMethodEnter
+    static void enter(@Advice.This Object renderer) {
+      WindowSizingSupport.refreshWindowComposition(renderer);
     }
   }
 
