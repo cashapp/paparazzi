@@ -79,6 +79,11 @@ public class Paparazzi @JvmOverloads constructor(
   private lateinit var sdk: PaparazziSdk
   private lateinit var frameHandler: SnapshotHandler.FrameHandler
   private var testName: TestName? = null
+  internal var onAccessibilityHierarchiesGenerated: (List<String>) -> Unit = {}
+    set(value) {
+      field = value
+      if (::sdk.isInitialized) sdk.onAccessibilityHierarchiesGenerated = value
+    }
 
   public val layoutInflater: LayoutInflater
     get() = sdk.layoutInflater
@@ -121,6 +126,7 @@ public class Paparazzi @JvmOverloads constructor(
       onNewFrame = { frameHandler.handle(it) },
       useDeviceResolution = useDeviceResolution
     )
+    sdk.onAccessibilityHierarchiesGenerated = onAccessibilityHierarchiesGenerated
     sdk.setup()
     this.testName = testName
     sdk.prepare()
