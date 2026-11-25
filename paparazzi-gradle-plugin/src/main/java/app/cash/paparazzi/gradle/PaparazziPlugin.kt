@@ -54,6 +54,9 @@ import org.gradle.api.tasks.SourceSet.TEST_SOURCE_SET_NAME
 import org.gradle.api.tasks.options.Option
 import org.gradle.api.tasks.testing.AbstractTestTask
 import org.gradle.api.tasks.testing.Test
+import org.gradle.api.tasks.testing.junit.JUnitOptions
+import org.gradle.api.tasks.testing.junitplatform.JUnitPlatformOptions
+import org.gradle.api.tasks.testing.testng.TestNGOptions
 import org.gradle.internal.operations.BuildOperationExecutor
 import org.gradle.internal.operations.BuildOperationRunner
 import org.gradle.internal.os.OperatingSystem
@@ -62,7 +65,10 @@ import org.gradle.util.GradleVersion
 import org.gradle.work.DisableCachingByDefault
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
+import org.objectweb.asm.ClassReader
+import java.io.File
 import java.util.Locale
+import java.util.jar.JarFile
 import javax.inject.Inject
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
@@ -237,7 +243,36 @@ public class PaparazziPlugin @Inject constructor(
         project.providers.gradlePropertiesPrefixedBy("app.cash.paparazzi")
       val failureDir = buildDirectory.dir("paparazzi/failures/${variant.name}")
       val testTaskProvider = testTasks.withType(Test::class.java)
-      testTaskProvider.configureEach { test ->
+      val paparazziTestTaskProvider = project.tasks.register("testPaparazzi$variantSlug", Test::class.java) {
+        val paparazziTest = it
+        paparazziTest.group = VERIFICATION_GROUP
+        paparazziTest.description = "Run Paparazzi tests for variant '${variant.name}'"
+        paparazziTest.dependsOn(writeResourcesTask)
+        paparazziTest.shouldRunAfter(testTaskProvider)
+
+        paparazziTest.filter.isFailOnNoMatchingTests = false
+        paparazziTest.doFirst {
+          paparazziTest.includeOnlyPaparazziTests()
+        }
+      }
+      project.afterEvaluate {
+        val unitTestTask = testTaskProvider.singleOrNull()
+        if (unitTestTask != null) {
+          paparazziTestTaskProvider.configure {
+            it.configureClasspathFromUnitTestTask(unitTestTask)
+          }
+        }
+      }
+      project.gradle.projectsEvaluated {
+        val unitTestTask = testTaskProvider.singleOrNull()
+        if (unitTestTask != null) {
+          paparazziTestTaskProvider.configure {
+            it.configureExecutionOptionsFromUnitTestTask(unitTestTask)
+          }
+        }
+      }
+
+      fun configureForPaparazzi(test: Test) {
         val localResourceDirs = sources.localResourceDirs ?: providerFactory.provider { emptyList() }
         val localAssetDirs = sources.localAssetDirs ?: providerFactory.provider { emptyList() }
 
@@ -337,9 +372,170 @@ public class PaparazziPlugin @Inject constructor(
         }
       }
 
-      recordVariant.configure { it.dependsOn(testTaskProvider) }
-      verifyVariant.configure { it.dependsOn(testTaskProvider) }
+      testTaskProvider.configureEach { configureForPaparazzi(it) }
+      paparazziTestTaskProvider.configure { configureForPaparazzi(it) }
+
+      recordVariant.configure { it.dependsOn(paparazziTestTaskProvider) }
+      verifyVariant.configure { it.dependsOn(paparazziTestTaskProvider) }
+      paparazziTestTaskProvider.configure { it.mustRunAfter(deleteVariant) }
     }
+  }
+
+  private fun Test.includeOnlyPaparazziTests() {
+    val testClassFiles = testClassesDirs.files
+      .filter { it.isDirectory }
+      .flatMap { testClassesDir ->
+        testClassesDir.walkTopDown()
+          .filter { it.isFile && it.extension == "class" }
+          .map { classFile ->
+            classFile.relativeTo(testClassesDir).invariantSeparatorsPath.removeSuffix(".class") to classFile
+          }
+          .toList()
+      }
+    val allTestClassNames = mutableSetOf<String>()
+    val metadataByClassName = mutableMapOf<String, ClassMetadata>()
+    testClassFiles.forEach { (relativeClassName, classFile) ->
+      val metadata = classFile.classMetadata()
+      val className = metadata?.name ?: relativeClassName
+      allTestClassNames += className
+      if (metadata != null) metadataByClassName[className] = metadata
+    }
+    val classpathFiles = classpath.files
+
+    val testClassNames = metadataByClassName.values.toList()
+      .filter { it.referencesPaparazziApi(metadataByClassName, classpathFiles) }
+      .mapTo(mutableSetOf()) { it.name }
+
+    // Gradle ORs build-script include patterns. Exact exclusions keep Paparazzi discovery
+    // intersected with both the copied unit test filters and command-line --tests filters.
+    allTestClassNames
+      .filterNot { it in testClassNames }
+      .forEach { filter.excludeTestsMatching(it.replace('/', '.')) }
+  }
+
+  private fun Test.configureClasspathFromUnitTestTask(unitTestTask: Test) {
+    testClassesDirs = unitTestTask.testClassesDirs
+    classpath = unitTestTask.classpath
+  }
+
+  private fun Test.configureExecutionOptionsFromUnitTestTask(unitTestTask: Test) {
+    executable = unitTestTask.executable
+    workingDir = unitTestTask.workingDir
+    minHeapSize = unitTestTask.minHeapSize
+    maxHeapSize = unitTestTask.maxHeapSize
+    jvmArgs = unitTestTask.jvmArgs
+    systemProperties.putAll(unitTestTask.systemProperties)
+    environment(unitTestTask.environment)
+    bootstrapClasspath = unitTestTask.bootstrapClasspath
+    setEnableAssertions(unitTestTask.enableAssertions)
+    setDebug(unitTestTask.debug)
+    setFailFast(unitTestTask.failFast)
+    dryRun.set(unitTestTask.dryRun)
+    isScanForTestClasses = unitTestTask.isScanForTestClasses
+    forkEvery = unitTestTask.forkEvery
+    maxParallelForks = unitTestTask.maxParallelForks
+    setIncludes(unitTestTask.includes)
+    setExcludes(unitTestTask.excludes)
+    // Providers installed by plugins (for example, JaCoCo) are task-local. Keep the
+    // destination occurrences and copy only excess source occurrences of each exact class.
+    val unmatchedProviderClassCounts = jvmArgumentProviders
+      .groupingBy { it.javaClass }
+      .eachCount()
+      .toMutableMap()
+    jvmArgumentProviders.addAll(
+      unitTestTask.jvmArgumentProviders.filter { provider ->
+        val unmatchedCount = unmatchedProviderClassCounts[provider.javaClass] ?: 0
+        if (unmatchedCount == 0) {
+          true
+        } else {
+          unmatchedProviderClassCounts[provider.javaClass] = unmatchedCount - 1
+          false
+        }
+      }
+    )
+    filter.setIncludePatterns(*unitTestTask.filter.includePatterns.toTypedArray())
+    filter.setExcludePatterns(*unitTestTask.filter.excludePatterns.toTypedArray())
+
+    when (val unitTestOptions = unitTestTask.options) {
+      is JUnitOptions -> useJUnit { it.copyFrom(unitTestOptions) }
+      is JUnitPlatformOptions -> useJUnitPlatform { it.copyFrom(unitTestOptions) }
+      is TestNGOptions -> useTestNG { it.copyFrom(unitTestOptions) }
+    }
+  }
+
+  private fun ClassMetadata.referencesPaparazziApi(
+    metadataByClassName: MutableMap<String, ClassMetadata>,
+    classpathFiles: Set<File>,
+    visitedClassNames: MutableSet<String> = mutableSetOf()
+  ): Boolean {
+    if (!visitedClassNames.add(name)) return false
+    if (referencesPaparazziApi) return true
+    val superClassName = superName ?: return false
+    val superClassMetadata = metadataByClassName.getOrPut(superClassName) {
+      classpathFiles.findClassMetadata(superClassName) ?: return false
+    }
+    return superClassMetadata.referencesPaparazziApi(metadataByClassName, classpathFiles, visitedClassNames)
+  }
+
+  private fun Set<File>.findClassMetadata(className: String): ClassMetadata? {
+    val classFilePath = "$className.class"
+    for (classpathFile in this) {
+      val metadata = when {
+        classpathFile.isDirectory -> classpathFile.resolve(classFilePath)
+          .takeIf { it.isFile }
+          ?.classMetadata()
+
+        classpathFile.isFile && classpathFile.extension == "jar" -> classpathFile.readClassMetadata(classFilePath)
+
+        else -> null
+      }
+      if (metadata != null) return metadata
+    }
+    return null
+  }
+
+  private fun File.readClassMetadata(classFilePath: String): ClassMetadata? =
+    JarFile(this).use { jarFile ->
+      val entry = jarFile.getJarEntry(classFilePath) ?: return null
+      jarFile.getInputStream(entry).use { it.readBytes().classMetadata() }
+    }
+
+  private fun File.classMetadata(): ClassMetadata? = readBytes().classMetadata()
+
+  private fun ByteArray.classMetadata(): ClassMetadata? {
+    val classReader = try {
+      ClassReader(this)
+    } catch (_: IllegalArgumentException) {
+      return null
+    }
+    return ClassMetadata(
+      name = classReader.className,
+      superName = classReader.superName,
+      referencesPaparazziApi = PAPARAZZI_API_REFERENCES.any { containsAscii(it) }
+    )
+  }
+
+  private data class ClassMetadata(
+    val name: String,
+    val superName: String?,
+    val referencesPaparazziApi: Boolean
+  )
+
+  private fun ByteArray.containsAscii(value: String): Boolean {
+    val needle = value.encodeToByteArray()
+    if (needle.isEmpty() || needle.size > size) return false
+
+    for (startIndex in 0..size - needle.size) {
+      var matches = true
+      for (needleIndex in needle.indices) {
+        if (this[startIndex + needleIndex] != needle[needleIndex]) {
+          matches = false
+          break
+        }
+      }
+      if (matches) return true
+    }
+    return false
   }
 
   private fun createDiffRegistryFactory(
@@ -612,3 +808,10 @@ private val KotlinSourceSet.testConfigurations: TestConfigurations
 
 private val AndroidSourceSet.testConfigurations: TestConfigurations
   get() = TestConfigurations(implementationConfigurationName, runtimeOnlyConfigurationName)
+
+private val PAPARAZZI_API_REFERENCES = listOf(
+  "app/cash/paparazzi/Paparazzi",
+  "app/cash/paparazzi/junit/PaparazziExtension",
+  "app/cash/paparazzi/junit/PaparazziKotestListener",
+  "app/cash/paparazzi/preview/"
+)

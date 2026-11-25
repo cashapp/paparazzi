@@ -3,6 +3,8 @@ package app.cash.paparazzi.plugin.test
 import android.view.Gravity
 import android.widget.TextView
 import app.cash.paparazzi.Paparazzi
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.RegisterExtension
@@ -24,5 +26,13 @@ class PaparazziJupiterTest {
     }
 
     paparazziExtension.api.snapshot(textView)
+  }
+
+  @Nested
+  inner class NestedPaparazziTest {
+    @Test
+    fun `nested paparazzi test runs`() {
+      assertNotNull(paparazziExtension.api.context)
+    }
   }
 }
