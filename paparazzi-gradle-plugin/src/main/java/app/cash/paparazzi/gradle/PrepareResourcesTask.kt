@@ -51,6 +51,9 @@ public abstract class PrepareResourcesTask : DefaultTask() {
   public abstract val projectAssetDirs: ListProperty<String>
 
   @get:Input
+  public abstract val moduleAssetDirs: ListProperty<String>
+
+  @get:Input
   public abstract val aarAssetDirs: ListProperty<String>
 
   @get:Input
@@ -87,7 +90,7 @@ public abstract class PrepareResourcesTask : DefaultTask() {
       projectResourceDirs = projectResourceDirs.get(),
       moduleResourceDirs = moduleResourceDirs.get(),
       aarExplodedDirs = aarExplodedDirs.get(),
-      projectAssetDirs = projectAssetDirs.get(),
+      projectAssetDirs = projectAssetDirs.get() + moduleAssetDirs.get(),
       aarAssetDirs = aarAssetDirs.get()
     )
     val moshi = Moshi.Builder().addLast(KotlinJsonAdapterFactory()).build()!!

@@ -191,10 +191,8 @@ public class PaparazziPlugin @Inject constructor(
         task.projectResourceDirs.set(sources.localResourceDirs.relativize(projectDirectory))
         task.moduleResourceDirs.set(sources.moduleResourceDirs.relativize(projectDirectory))
         task.aarExplodedDirs.set(sources.aarExplodedDirs.relativize(gradleHomeDir))
-        task.projectAssetDirs.set(
-          sources.localAssetDirs.relativize(projectDirectory)
-            .zip(sources.moduleAssetDirs.relativize(projectDirectory), List<String>::plus)
-        )
+        task.projectAssetDirs.set(sources.localAssetDirs.relativize(projectDirectory))
+        task.moduleAssetDirs.set(sources.moduleAssetDirs.relativize(projectDirectory))
         task.aarAssetDirs.set(sources.aarAssetDirs.relativize(gradleHomeDir))
         task.paparazziResources.set(buildDirectory.file("intermediates/paparazzi/${variant.name}/resources.json"))
       }
