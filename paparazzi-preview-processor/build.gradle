@@ -8,4 +8,10 @@ dependencies {
   testImplementation libs.junit
   testImplementation libs.truth
   testImplementation libs.kotlin.compile.testing.ksp
+
+  constraints {
+    testImplementation(libs.ksp.runtime) {
+      because 'Kotlin Compile Testing must use a KSP runtime compatible with the processor API'
+    }
+  }
 }
