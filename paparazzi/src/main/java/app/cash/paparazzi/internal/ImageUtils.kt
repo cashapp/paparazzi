@@ -218,6 +218,10 @@ internal object ImageUtils {
         iterations++
       }
 
+      if (BilinearScaler.supports(source)) {
+        return scaleIteratively(source, nearestWidth, nearestHeight, iterations)
+      }
+
       var scaled = BufferedImage(nearestWidth, nearestHeight, imageType)
 
       var g2 = scaled.createGraphics()
@@ -245,6 +249,34 @@ internal object ImageUtils {
       }
       return scaled
     }
+  }
+
+  /**
+   * Same passes as the Java2D loop in [scale] (resize to `nearestWidth` x `nearestHeight`, then
+   * halve `iterations` times), computed on pixel arrays by [BilinearScaler] with identical output.
+   */
+  private fun scaleIteratively(
+    source: BufferedImage,
+    nearestWidth: Int,
+    nearestHeight: Int,
+    iterations: Int
+  ): BufferedImage {
+    var pixels = BilinearScaler.pixels(source)
+    var width = source.width
+    var height = source.height
+    for (pass in 0..iterations) {
+      val targetWidth = if (pass == 0) nearestWidth else width / 2
+      val targetHeight = if (pass == 0) nearestHeight else height / 2
+      if (pass == iterations) {
+        val scaled = BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_ARGB_PRE)
+        BilinearScaler.scale(pixels, width, height, targetWidth, targetHeight, BilinearScaler.pixels(scaled))
+        return scaled
+      }
+      pixels = BilinearScaler.scale(pixels, width, height, targetWidth, targetHeight)
+      width = targetWidth
+      height = targetHeight
+    }
+    error("unreachable")
   }
 
   fun smallestDiffRect(firstImage: BufferedImage, secondImage: BufferedImage): Rectangle? {
