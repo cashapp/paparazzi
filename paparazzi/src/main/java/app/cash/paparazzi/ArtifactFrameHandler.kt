@@ -15,8 +15,14 @@
  */
 package app.cash.paparazzi
 
+import java.awt.image.BufferedImage
+
 internal fun interface ArtifactFrameHandler {
   fun handleArtifact(name: String, content: String)
+
+  fun handleArtifact(name: String, content: String, failureImage: () -> BufferedImage) {
+    handleArtifact(name, content)
+  }
 }
 
 internal fun SnapshotHandler.FrameHandler.handleArtifact(name: String, content: String) {

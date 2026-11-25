@@ -44,6 +44,7 @@ import androidx.compose.ui.platform.createLifecycleAwareWindowRecomposer
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import app.cash.paparazzi.accessibility.AccessibilityFailureImage
 import app.cash.paparazzi.accessibility.AccessibilityHierarchyGenerator
 import app.cash.paparazzi.accessibility.AccessibilityHierarchyJsonSerializer
 import app.cash.paparazzi.accessibility.AccessibilityRenderExtension
@@ -100,7 +101,7 @@ public class PaparazziSdk @JvmOverloads constructor(
   private var validateAccessibility = false
   private val accessibilityHierarchyGenerator = AccessibilityHierarchyGenerator()
   private val accessibilityHierarchyJsonSerializer = AccessibilityHierarchyJsonSerializer()
-  internal var onAccessibilityHierarchiesGenerated: (List<String>) -> Unit = {}
+  internal var onAccessibilityHierarchiesGenerated: (List<String>, () -> BufferedImage) -> Unit = { _, _ -> }
 
   @Deprecated(
     "validateAccessibility is deprecated. " +
@@ -352,6 +353,7 @@ public class PaparazziSdk @JvmOverloads constructor(
       RenderSizingState.canvasSizedForContent =
         sessionParams.renderingMode == RenderingMode.NORMAL
       val accessibilityHierarchies = mutableListOf<String>()
+      var accessibilityFailureImage: (() -> BufferedImage)? = null
       var renderingFailure: Throwable? = null
       try {
         for (frame in 0 until frameCount) {
@@ -397,7 +399,8 @@ public class PaparazziSdk @JvmOverloads constructor(
             }
             validateLayoutAccessibility(modifiedView, image)
           }
-          val snapshotImage = scaleImage(frameImage(image))
+          val framedImage = frameImage(image)
+          val snapshotImage = scaleImage(framedImage)
           // Only still snapshots generate artifacts; accessibility extensions already cover the image.
           // The FPS marker also excludes GIFs that capture only one frame.
           if (fps == -1 && renderExtensions.none { it is AccessibilityRenderExtension }) {
@@ -417,6 +420,9 @@ public class PaparazziSdk @JvmOverloads constructor(
               accessibilityHierarchies += accessibilityHierarchyJsonSerializer.toHierarchyString(
                 accessibilityFrame.copy(imageWidth = snapshotImage.width, imageHeight = snapshotImage.height)
               )
+              accessibilityFailureImage = {
+                AccessibilityFailureImage.render(context, framedImage, accessibilityFrame)
+              }
             }
           }
           onNewFrame(snapshotImage)
@@ -427,7 +433,7 @@ public class PaparazziSdk @JvmOverloads constructor(
       } finally {
         if (accessibilityHierarchies.isNotEmpty()) {
           try {
-            onAccessibilityHierarchiesGenerated(accessibilityHierarchies)
+            onAccessibilityHierarchiesGenerated(accessibilityHierarchies, checkNotNull(accessibilityFailureImage))
           } catch (completionFailure: Throwable) {
             renderingFailure?.addSuppressed(completionFailure) ?: throw completionFailure
           }
