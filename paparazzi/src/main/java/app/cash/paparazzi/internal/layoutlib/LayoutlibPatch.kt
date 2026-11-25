@@ -5,6 +5,7 @@ import net.bytebuddy.asm.Advice
 import net.bytebuddy.description.method.MethodDescription
 import net.bytebuddy.dynamic.ClassFileLocator
 import net.bytebuddy.matcher.ElementMatchers.hasDescriptor
+import net.bytebuddy.matcher.ElementMatchers.isConstructor
 import net.bytebuddy.matcher.ElementMatchers.named
 import net.bytebuddy.pool.TypePool
 import java.lang.instrument.ClassFileTransformer
@@ -12,15 +13,17 @@ import java.lang.instrument.Instrumentation
 import java.security.ProtectionDomain
 
 /**
- * Load-time bytecode patch for layoutlib's canvas-sizing path.
+ * Load-time compatibility patches for Layoutlib canvas sizing and callback scheduling.
  *
- * Two independent defects live here; both are described in full on the advice that fixes them.
+ * Three independent defects live here; each is described in full on the advice that fixes it.
  *
  * 1. A traversal can run before the canvas has been sized for the content
  *    ([RenderSizingAdvice.SuppressPrematureTraversal]).
  * 2. The canvas is sized from the base window alone, and windows are then positioned inside the
  *    device display rather than inside that canvas
  *    ([RenderSizingAdvice.MeasureLayoutComplete], [RenderSizingAdvice.WindowRelayout]).
+ * 3. Equal-time Handler callbacks otherwise depend on WeakHashMap iteration order
+ *    ([CallbackQueueAdvice.SessionCreated]).
  *
  * Every layoutlib class is offered to the transformer at first load through the ordinary
  * application class loader, so `Advice` can wrap existing methods without adding members. Targets
@@ -48,6 +51,12 @@ internal object LayoutlibPatch {
   private const val APPLIED = "applied"
 
   private val targets = listOf(
+    Target(
+      binaryName = "com.android.layoutlib.bridge.SessionInteractiveData",
+      methodName = "<init>",
+      descriptor = "()V",
+      advice = CallbackQueueAdvice.SessionCreated::class.java
+    ),
     Target(
       binaryName = "android.view.ViewRootImpl",
       methodName = "performTraversals",
@@ -106,11 +115,9 @@ internal object LayoutlibPatch {
     if (broken.isEmpty()) return
     throw IllegalStateException(
       buildString {
-        append("Paparazzi could not patch layoutlib's canvas-sizing path. ")
+        append("Paparazzi could not apply required Layoutlib compatibility patches. ")
         append("This layoutlib is not the shape Paparazzi was built against. ")
-        append("RenderingMode.V_SCROLL/H_SCROLL/FULL_EXPAND would silently produce an unexpanded ")
-        append("canvas, and RenderingMode.SHRINK would size the canvas from the base window ")
-        append("alone - rendering a dialog-only layout at 0x0. Unpatched targets:")
+        append("Canvas sizing or Handler callback ordering would be unreliable. Unpatched targets:")
         broken.forEach {
           append("\n  - ${it.binaryName}#${it.methodName}${it.descriptor}: ${it.status}")
         }
@@ -141,25 +148,30 @@ internal object LayoutlibPatch {
         // Shape guard: `Advice` is silent when nothing matches, so assert the exact descriptor
         // *before* asking for the transform.
         val matched = typeDescription.declaredMethods.filter {
-          it.name == target.methodName && it.descriptor == target.descriptor
+          (if (target.methodName == "<init>") it.isConstructor else it.name == target.methodName) &&
+            it.descriptor == target.descriptor
         }
         if (matched.size != 1) {
           target.status = "expected exactly one method named '${target.methodName}' with " +
             "descriptor '${target.descriptor}', found ${matched.size}; declared overloads: " +
             typeDescription.declaredMethods
-              .filter { it.name == target.methodName }
+              .filter { if (target.methodName == "<init>") it.isConstructor else it.name == target.methodName }
               .joinToString(", ") { it.descriptor }
               .ifEmpty { "<none>" }
           return null
         }
 
+        val memberMatcher = if (target.methodName == "<init>") {
+          isConstructor<MethodDescription>()
+        } else {
+          named<MethodDescription>(target.methodName)
+        }
         val bytes = ByteBuddy()
           .redefine<Any>(typeDescription, locator)
           .visit(
             Advice.to(target.advice)
               .on(
-                named<MethodDescription>(target.methodName)
-                  .and(hasDescriptor(target.descriptor))
+                memberMatcher.and(hasDescriptor(target.descriptor))
               )
           )
           .make()
