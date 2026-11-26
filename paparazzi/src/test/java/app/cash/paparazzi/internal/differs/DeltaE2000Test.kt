@@ -19,7 +19,7 @@ class DeltaE2000Test {
     val expected = createImage(width = 1, height = 1, rgb = 0xFFFFFFFE)
     val actual = createImage(width = 1, height = 1)
     val result = DeltaE2000.compare(expected, actual)
-    assertThat(result).isInstanceOf(Differ.DiffResult.Identical::class.java)
+    assertThat(result).isInstanceOf(Differ.DiffResult.Similar::class.java)
   }
 
   @Test
