@@ -28,11 +28,14 @@ import app.cash.paparazzi.Paparazzi
 import com.android.ide.common.rendering.api.SessionParams.RenderingMode.SHRINK
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.RuleChain
 import kotlin.math.roundToInt
 
 class ComposeTest {
-  @get:Rule
   val paparazzi = Paparazzi()
+
+  @get:Rule
+  val leakCheckingRule: RuleChain = RuleChain.outerRule(LeakWatcherRule(paparazzi)).around(paparazzi)
 
   @Test
   fun compose() {
