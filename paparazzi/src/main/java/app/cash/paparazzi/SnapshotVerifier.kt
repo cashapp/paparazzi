@@ -34,10 +34,19 @@ import javax.imageio.ImageIO
 public class SnapshotVerifier @JvmOverloads constructor(
   private val maxPercentDifference: Double,
   rootDirectory: File = File(System.getProperty("paparazzi.snapshot.dir")),
-  private val differ: Differ = determineDiffer()
+  private val differ: Differ = determineDiffer(),
+  private val failuresPath: String? = null
 ) : SnapshotHandler {
   private val imagesDirectory: File = File(rootDirectory, "images")
   private val videosDirectory: File = File(rootDirectory, "videos")
+
+  /** Directory where to write the thumbnails and deltas. */
+  private val failureDir: File
+    get() {
+      val path = failuresPath ?: System.getProperty("paparazzi.failures.dir")
+        ?: error("paparazzi.failures.dir system property is required")
+      return File(path).apply { mkdirs() }
+    }
 
   init {
     imagesDirectory.mkdirs()
@@ -97,16 +106,6 @@ public class SnapshotVerifier @JvmOverloads constructor(
   }
 
   override fun close(): Unit = Unit
-
-  private companion object {
-    /** Directory where to write the thumbnails and deltas. */
-    private val failureDir: File
-      get() {
-        val path = System.getProperty("paparazzi.failures.dir")
-          ?: error("paparazzi.failures.dir system property is required")
-        return File(path).apply { mkdirs() }
-      }
-  }
 }
 
 internal fun determineDiffer() =
