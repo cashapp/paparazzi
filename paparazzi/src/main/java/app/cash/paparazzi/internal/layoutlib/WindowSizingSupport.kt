@@ -14,9 +14,23 @@ import com.android.ide.common.rendering.api.SessionParams.RenderingMode.SizeActi
 
 /**
  * The out-of-line half of the canvas-sizing patch. Called from bytecode that
- * [LayoutlibPatch] inlines into layoutlib; see [RenderSizingAdvice].
+ * [LayoutlibPatch] inserts into layoutlib.
  */
 internal object WindowSizingSupport {
+  /** Completes measureLayout without adding branches or locals to the instrumented method. */
+  @JvmStatic
+  fun finishMeasureLayout(
+    params: SessionParams,
+    baseWindow: ViewGroup?,
+    measuredWidth: Int,
+    measuredHeight: Int,
+    newRenderSize: Boolean
+  ): Boolean {
+    RenderSizingState.canvasSizedForContent = true
+    val size = sizeCanvasForWindows(params, baseWindow, measuredWidth, measuredHeight)
+    return newRenderSize || (size shr 32).toInt() != measuredWidth || size.toInt() != measuredHeight
+  }
+
   /**
    * Finishes `RenderSessionImpl.measureLayout` for the shrinking rendering modes, which size the
    * canvas from `mContentRoot.getChildAt(0)` alone and so measure 0x0 whenever the content lives in

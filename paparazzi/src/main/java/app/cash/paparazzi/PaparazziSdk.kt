@@ -45,6 +45,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import app.cash.paparazzi.accessibility.AccessibilityRenderExtension
+import app.cash.paparazzi.agent.AgentInstaller
 import app.cash.paparazzi.agent.InterceptorRegistrar
 import app.cash.paparazzi.internal.ImageUtils
 import app.cash.paparazzi.internal.PaparazziCallback
@@ -75,7 +76,6 @@ import com.android.tools.idea.validator.LayoutValidator
 import com.android.tools.idea.validator.ValidatorData.Level
 import com.android.tools.idea.validator.ValidatorData.Policy
 import com.android.tools.idea.validator.ValidatorData.Type
-import net.bytebuddy.agent.ByteBuddyAgent
 import java.awt.geom.Ellipse2D
 import java.awt.image.BufferedImage
 import java.util.EnumSet
@@ -146,7 +146,7 @@ public class PaparazziSdk @JvmOverloads constructor(
     if (!isInitialized) {
       registerViewEditModeInterception()
 
-      LayoutlibPatch.install(ByteBuddyAgent.install())
+      LayoutlibPatch.install(AgentInstaller.install())
       InterceptorRegistrar.registerMethodInterceptors()
     }
   }
