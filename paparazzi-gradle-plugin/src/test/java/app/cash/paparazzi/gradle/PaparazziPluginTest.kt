@@ -1661,6 +1661,10 @@ class PaparazziPluginTest {
     gradleRunner
       .withArguments("module:verifyPaparazziDebug", "--stacktrace")
       .runFixture(fixtureRoot) { build() }
+
+    val resourcesFile = File(fixtureRoot, "module/build/intermediates/paparazzi/debug/resources.json")
+    val config = resourcesFile.loadConfig()
+    assertThat(config.aarExplodedDirs.any { it.contains("recyclerview") }).isTrue()
   }
 
   @Test
