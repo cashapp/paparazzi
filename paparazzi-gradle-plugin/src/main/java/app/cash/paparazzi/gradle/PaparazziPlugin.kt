@@ -292,7 +292,7 @@ public class PaparazziPlugin @Inject constructor(
           .withPropertyName("paparazzi.test.resources")
           .withPathSensitivity(PathSensitivity.NONE)
 
-        test.inputs.dir(snapshotOutputDir.presentWhen(isVerifyRun))
+        test.inputs.dir(snapshotOutputDir.presentWhen(isVerifyRun).filter { it.asFile.exists() })
           .withPropertyName("paparazzi.snapshot.input.dir")
           .withPathSensitivity(PathSensitivity.RELATIVE)
           .optional()
@@ -322,7 +322,14 @@ public class PaparazziPlugin @Inject constructor(
           test.systemProperties["paparazzi.test.record.overwriteOnMaxPercentDifference"] =
             overwriteOnMaxPercentDifferenceProvider.orNull == "true"
           test.systemProperties["paparazzi.test.verify"] = isVerifyRun.get()
-          test.systemProperties["paparazzi.snapshot.dir"] = snapshotOutputDir.get().asFile.absolutePath
+          val snapshotDirectory = snapshotOutputDir.get().asFile
+          test.systemProperties["paparazzi.snapshot.dir"] = snapshotDirectory.absolutePath
+          if (isVerifyRun.get() && !snapshotDirectory.exists()) {
+            test.logger.warn(
+              "Snapshot directory not found: ${snapshotDirectory.path}\n" +
+                "Please run the `recordPaparazzi$variantSlug` task to generate snapshots."
+            )
+          }
           test.systemProperties["paparazzi.failures.dir"] = failureDir.get().asFile.absolutePath
           test.systemProperties["paparazzi.test.resources"] = paparazziResourcesFile.get().path
           test.systemProperties["paparazzi.project.dir"] = projectDirectory.toString()
