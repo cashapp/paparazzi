@@ -17,6 +17,7 @@ package app.cash.paparazzi
 
 import android.animation.AnimationHandler
 import android.content.Context
+import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.os.Handler
@@ -28,6 +29,7 @@ import android.view.BridgeInflater
 import android.view.Choreographer
 import android.view.Choreographer_Delegate
 import android.view.LayoutInflater
+import android.view.Surface
 import android.view.View
 import android.view.View.NO_ID
 import android.view.ViewGroup
@@ -129,6 +131,7 @@ public class PaparazziSdk @JvmOverloads constructor(
   }
 
   private val logger = PaparazziLogger()
+  private var activeDeviceConfig: DeviceConfig = deviceConfig
   private lateinit var sessionParams: SessionParams
   private lateinit var renderSession: RenderSessionImpl
   private lateinit var bridgeRenderSession: RenderSession
@@ -164,10 +167,11 @@ public class PaparazziSdk @JvmOverloads constructor(
     }
     forcePlatformSdkVersion(environment.compileSdkVersion)
 
+    activeDeviceConfig = deviceConfig
     sessionParamsBuilder = sessionParamsBuilder
       .copy(
         layoutPullParser = LayoutPullParser.createFromString(contentRoot(renderingMode)),
-        deviceConfig = deviceConfig.updateIfAccessibilityTest(),
+        deviceConfig = activeDeviceConfig.updateIfAccessibilityTest(),
         renderingMode = renderingMode,
         supportsRtl = supportsRtl,
         decor = showSystemUi,
@@ -178,6 +182,7 @@ public class PaparazziSdk @JvmOverloads constructor(
     sessionParams = sessionParamsBuilder.build()
     renderSession = createRenderSession(sessionParams)
     renderSession.init(sessionParams.timeout)
+    restoreDeviceConfigurationIfAccessibilityTest(activeDeviceConfig)
     Bitmap.setDefaultDensity(DisplayMetrics.DENSITY_DEVICE_STABLE)
 
     // requires LayoutInflater to be created, which is a side-effect of RenderSessionImpl.init()
@@ -250,8 +255,9 @@ public class PaparazziSdk @JvmOverloads constructor(
       )
 
     if (deviceConfig != null) {
+      activeDeviceConfig = deviceConfig
       sessionParamsBuilder = sessionParamsBuilder.copy(
-        deviceConfig = deviceConfig.updateIfAccessibilityTest()
+        deviceConfig = activeDeviceConfig.updateIfAccessibilityTest()
       )
     }
 
@@ -266,6 +272,7 @@ public class PaparazziSdk @JvmOverloads constructor(
     sessionParams = sessionParamsBuilder.build()
     renderSession = createRenderSession(sessionParams)
     renderSession.init(sessionParams.timeout)
+    restoreDeviceConfigurationIfAccessibilityTest(activeDeviceConfig)
     Bitmap.setDefaultDensity(DisplayMetrics.DENSITY_DEVICE_STABLE)
     bridgeRenderSession = createBridgeSession(renderSession, renderSession.inflate())
     // inflate() runs a real ViewRootImpl traversal, which instantiates the AnimationHandler
@@ -635,16 +642,55 @@ public class PaparazziSdk @JvmOverloads constructor(
 
   private fun DeviceConfig.updateIfAccessibilityTest(): DeviceConfig =
     if (renderExtensions.any { it is AccessibilityRenderExtension }) {
-      val newWidth = screenWidth * 2
-      val newOrientation = if (newWidth > screenHeight) ScreenOrientation.LANDSCAPE else ScreenOrientation.PORTRAIT
+      val hardware = hardwareConfig
+      val newWidth = hardware.screenWidth * 2
+      val newHeight = hardware.screenHeight
+      val newOrientation = if (newWidth > newHeight) ScreenOrientation.LANDSCAPE else ScreenOrientation.PORTRAIT
       copy(
-        screenWidth = screenWidth * 2,
+        screenWidth = newWidth,
+        screenHeight = newHeight,
         softButtons = false,
         orientation = newOrientation
       )
     } else {
       this
     }
+
+  /**
+   * [updateIfAccessibilityTest] doubles the session's hardware width so layoutlib allocates canvas
+   * room for the side-by-side legend. Restore the runtime [Configuration] to the un-expanded
+   * [originalDeviceConfig] so consumers such as Compose's `LocalWindowInfo.current.containerSize`
+   * and `LocalConfiguration.current` observe the device size rather than the legend-expanded canvas.
+   */
+  private fun restoreDeviceConfigurationIfAccessibilityTest(originalDeviceConfig: DeviceConfig) {
+    if (renderExtensions.none { it is AccessibilityRenderExtension }) return
+
+    val hardware = originalDeviceConfig.hardwareConfig
+    val dpiValue = hardware.density.dpiValue
+    val widthDp = (hardware.screenWidth * 160) / dpiValue
+    val heightDp = (hardware.screenHeight * 160) / dpiValue
+    val smallestWidthDp = minOf(widthDp, heightDp)
+    val (orientation, rotation) = when (hardware.orientation) {
+      ScreenOrientation.PORTRAIT -> Configuration.ORIENTATION_PORTRAIT to Surface.ROTATION_0
+      ScreenOrientation.LANDSCAPE -> Configuration.ORIENTATION_LANDSCAPE to Surface.ROTATION_90
+      else -> Configuration.ORIENTATION_UNDEFINED to Surface.ROTATION_0
+    }
+
+    fun Configuration.applyDeviceDimensions() {
+      screenWidthDp = widthDp
+      screenHeightDp = heightDp
+      smallestScreenWidthDp = smallestWidthDp
+      compatScreenWidthDp = widthDp
+      compatScreenHeightDp = heightDp
+      this.orientation = orientation
+      windowConfiguration.rotation = rotation
+      windowConfiguration.displayRotation = rotation
+    }
+
+    val bridgeContext = RenderAction.getCurrentContext()
+    bridgeContext.configuration.applyDeviceDimensions()
+    bridgeContext.resources.configuration.applyDeviceDimensions()
+  }
 
   /**
    * layoutlib drains a single type-blind Choreographer queue twice per `doFrame`
