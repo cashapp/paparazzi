@@ -22,6 +22,11 @@ androidComponents {
       sourceGen,
       { task -> task.outputDirectory }
     )
+    def assetGen = project.tasks.register("do${variant.name.capitalize()}AssetGen", SourceGenTask)
+    variant.sources.assets.addGeneratedSourceDirectory(
+      assetGen,
+      { task -> task.outputDirectory }
+    )
   }
 }
 
