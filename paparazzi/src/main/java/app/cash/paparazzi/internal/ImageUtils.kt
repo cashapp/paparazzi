@@ -66,7 +66,7 @@ internal object ImageUtils {
 
     val imageName = getName(relativePath)
     var error = when {
-      percentDifference > maxPercentDifferent -> "Images differ (by %f%%)".format(percentDifference)
+      percentDifference > maxPercentDifferent -> "Images differ (by %f%%)".formatForHost(percentDifference)
       abs(goldenImageWidth - imageWidth) >= 2 ->
         "Widths differ too much for $imageName: ${goldenImageWidth}x$goldenImageHeight vs ${imageWidth}x$imageHeight"
 
