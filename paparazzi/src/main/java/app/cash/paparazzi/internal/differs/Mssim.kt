@@ -1,6 +1,5 @@
 package app.cash.paparazzi.internal.differs
 
-import androidx.compose.ui.util.fastCoerceAtLeast
 import app.cash.paparazzi.Differ
 import app.cash.paparazzi.Differ.DiffResult
 import java.awt.Color
@@ -24,6 +23,7 @@ internal object Mssim : Differ {
 
     var sumSSIM = 0.0
     var numWindows = 0
+    var hasDifferentWindow = false
 
     val deltaImage = BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
 
@@ -32,7 +32,9 @@ internal object Mssim : Differ {
         val window1 = extractWindow(expectedLuma, x, y, windowSize)
         val window2 = extractWindow(actualLuma, x, y, windowSize)
 
-        val ssim = computeSSIM(window1, window2, gaussianKernel)
+        val ssim = computeSSIM(window1, window2, gaussianKernel).coerceIn(0.0, 1.0)
+        // Similar is a passing result, so every window must be perceptually similar.
+        if (ssim < 0.99) hasDifferentWindow = true
         sumSSIM += ssim
         numWindows++
 
@@ -49,7 +51,7 @@ internal object Mssim : Differ {
     return when {
       percentDifference == 0f -> DiffResult.Identical(deltaImage)
 
-      percentDifference < 5f ->
+      !hasDifferentWindow ->
         DiffResult.Similar(deltaImage, ((1.0 - percentDifference / 100f) * width * height).toLong())
 
       else -> DiffResult.Different(deltaImage, percentDifference, (percentDifference / 100f * width * height).toLong())
