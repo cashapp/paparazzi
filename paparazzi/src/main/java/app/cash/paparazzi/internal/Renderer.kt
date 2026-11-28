@@ -87,6 +87,7 @@ internal class Renderer(
     val icuLocation = File(platformDataDir, "icu" + File.separator + "icudt76l.dat")
     val keyboardLocation = File(platformDataDir, "keyboards" + File.separator + "Generic.kcm")
     val nativeLibLocation = File(platformDataDir, getNativeLibDir())
+    checkNoForeignAndroidRuntime(nativeLibLocation)
     val hyphenDataLocation = File(platformDataDir, "hyphen-data")
     val attrs = File(layoutlibResDir, "values" + File.separator + "attrs.xml")
     val systemProperties = DeviceConfig.loadProperties(buildProp) + mapOf(
@@ -157,6 +158,30 @@ internal class Renderer(
         }
       }
     }
+  }
+
+  /**
+   * On Linux, layoutlib_jni.so finds its runtime through a DT_NEEDED on libandroid_runtime.so, and
+   * glibc satisfies that with any library already loaded under that soname or name. Robolectric
+   * loads its own libandroid_runtime.so for SDK 35 and above, and that runtime's own
+   * dlopen("libandroid_runtime.so") attaches the name to it, so after a Robolectric test in the same
+   * JVM, layoutlib would bind to Robolectric's runtime and abort the JVM (SIGABRT) while registering
+   * its natives, losing every test still queued on the fork. Fail this test instead, with the cause.
+   */
+  private fun checkNoForeignAndroidRuntime(nativeLibLocation: File) {
+    val maps = File("/proc/self/maps")
+    if (!maps.canRead()) return
+    val ownRuntime = File(nativeLibLocation, "libandroid_runtime.so").canonicalPath
+    val foreign = maps.useLines { lines ->
+      lines.map { line -> line.indexOf('/').let { if (it < 0) "" else line.substring(it) } }
+        .firstOrNull { it.endsWith("/libandroid_runtime.so") && File(it).canonicalPath != ownRuntime }
+    } ?: return
+    throw IllegalStateException(
+      "Another libandroid_runtime.so is already loaded in this JVM ($foreign), most likely " +
+        "Robolectric's native runtime for SDK 35+. layoutlib would bind to it instead of " +
+        "$ownRuntime and crash. Run Paparazzi tests in a JVM without Robolectric tests at " +
+        "SDK 35+, e.g. a separate Test task or forkEvery = 1."
+    )
   }
 
   private fun getNativeLibDir(): String {
