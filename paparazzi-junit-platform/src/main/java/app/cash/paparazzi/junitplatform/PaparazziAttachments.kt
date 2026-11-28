@@ -18,24 +18,36 @@ package app.cash.paparazzi.junitplatform
 import org.junit.platform.engine.ExecutionRequest
 import org.junit.platform.engine.TestDescriptor
 import org.junit.platform.engine.support.descriptor.MethodSource
+import java.io.File
 
 /**
  * Returns [request] rewired so Paparazzi's snapshot diffs are published as attachments on the tests
- * that produced them. [methodNameOf] returns the method name Paparazzi used when naming the file.
+ * that produced them.
  *
  * Only the engine wrappers call this, and only native mode puts them on the classpath.
  */
 public fun paparazziAttachmentRequest(
   request: ExecutionRequest,
+  @Suppress("UNUSED_PARAMETER")
   methodNameOf: (TestDescriptor, MethodSource) -> String
 ): ExecutionRequest =
   // Forward the whole request: the 3-arg factory substitutes a disabled CancellationToken and an
   // absent store. Deliberately INTERNAL API, so a JUnit bump breaks loudly, not silently.
   ExecutionRequest.create(
     request.rootTestDescriptor,
-    PaparazziExecutionListener(request.engineExecutionListener, methodNameOf),
+    PaparazziExecutionListener(request.engineExecutionListener),
     request.configurationParameters,
     request.outputDirectoryCreator,
     request.store,
     request.cancellationToken
   )
+
+/**
+ * Records [file] as a diff attachment for the currently executing test, preserving a copy so
+ * subsequent tests with colliding filenames cannot overwrite it.
+ *
+ * No-op when called outside an active [PaparazziExecutionListener] test execution.
+ */
+public fun recordPaparazziAttachment(file: File) {
+  PaparazziExecutionListener.recordAttachment(file)
+}
