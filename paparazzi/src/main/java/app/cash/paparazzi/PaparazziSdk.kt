@@ -154,11 +154,12 @@ public class PaparazziSdk @JvmOverloads constructor(
   public fun prepare() {
     RenderSizingState.reset()
 
-    val layoutlibCallback =
-      PaparazziCallback(logger, environment.packageName, environment.resourcePackageNames)
-    layoutlibCallback.initResources()
-
     if (!isInitialized) {
+      // The callback is only consumed here: later sessions copy sessionParamsBuilder, which keeps this
+      // instance. Building and initializing one per test would rescan every R class for nothing.
+      val layoutlibCallback =
+        PaparazziCallback(logger, environment.packageName, environment.resourcePackageNames)
+      layoutlibCallback.initResources()
       renderer = Renderer(environment, layoutlibCallback, logger)
       sessionParamsBuilder = renderer.prepare()
     }
